@@ -60,8 +60,14 @@ function Row({ row, board }: { readonly row: RankingRow; readonly board: Ranking
       className={row.me ? "ranking-row ranking-row-me" : "ranking-row"}
       data-testid={ids.row(row.rank)}
       data-me={row.me ? "true" : "false"}
+      flatten={false}
       accessibility-element={true}
-      accessibility-label={copy.rowLabel(row.rank, row.name, episode, `${row.score} ${unit}`)}
+      accessibility-label={copy.rowLabel(
+        row.rank,
+        row.me ? `${row.name}, ${copy.you}` : row.name,
+        episode,
+        `${row.score} ${unit}`,
+      )}
     >
       <view className="ranking-row-inner" accessibility-elements-hidden={true}>
         <RankBadge rank={row.rank} mine={false} />
@@ -89,6 +95,7 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
       <view
         className="ranking-row ranking-row-me"
         data-testid={ids.me}
+        flatten={false}
         accessibility-element={true}
         accessibility-label={copy.rowLabel(
           board.me.rank,
@@ -187,6 +194,7 @@ function Loading() {
     <view
       className="ranking-loading"
       data-testid={ids.loading}
+      flatten={false}
       accessibility-element={true}
       accessibility-label={copy.loading}
     >
@@ -220,7 +228,11 @@ export function RankingScreen(props: RankingScreenProps): ReactNode {
           <view className="ranking-meta">
             {view.kind === "ready" ? (
               <view className="ranking-group">
-                <svg className="ranking-group-icon" content={GROUP_ICON} />
+                <svg
+                  className="ranking-group-icon"
+                  content={GROUP_ICON}
+                  accessibility-elements-hidden={true}
+                />
                 <text className="ranking-group-text" data-testid={ids.group}>
                   {copy.group(view.board.groupSize)}
                 </text>
@@ -245,7 +257,9 @@ export function RankingScreen(props: RankingScreenProps): ReactNode {
                   data-testid={ids.board(kind)}
                   data-selected={selected ? "true" : "false"}
                   hit-slop={SLOP}
+                  flatten={false}
                   accessibility-element={true}
+                  accessibility-enable-tap={true}
                   accessibility-traits="button"
                   accessibility-label={selected ? copy.selected(label) : label}
                   bindtap={() => {

@@ -58,8 +58,9 @@
   border-radius: var(--libitum-radius-full);
 }
 
+/* 흰 글 대비 5.5(brand-primary는 3.0 — 접근성 W1). */
 .chat-words-plus {
-  background-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-strong);
 }
 
 .chat-words-chip {

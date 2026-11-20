@@ -103,8 +103,9 @@
   line-height: var(--libitum-typography-label-l-line-height);
 }
 
+/* 선택은 흰 알약 + 브랜드 글 — 바탕 대비가 낮아(1.1) 글 색으로도 가른다(접근성 W2). */
 .ranking-board-on .ranking-board-text {
-  color: var(--libitum-color-fg-neutral);
+  color: var(--libitum-color-fg-brand);
 }
 
 .ranking-scroll {
@@ -126,7 +127,7 @@
 }
 
 .ranking-zone {
-  color: var(--libitum-color-fg-neutral-subtle);
+  color: var(--libitum-color-fg-neutral-muted);
   padding-top: var(--libitum-spacing-8);
   padding-left: var(--libitum-spacing-4);
   padding-bottom: var(--libitum-spacing-8);
@@ -166,7 +167,7 @@
 
 .ranking-rank {
   text-align: center;
-  color: var(--libitum-color-fg-neutral-subtle);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-xl-font-family);
   font-weight: var(--libitum-typography-label-xl-font-weight);
   font-size: var(--libitum-typography-label-xl-font-size);
@@ -188,8 +189,9 @@
   background-color: var(--libitum-color-feedback-warning);
 }
 
+/* 흰 글 대비 4.5 이상(gray-700은 3.4라 바꿈 — 접근성 W1). */
 .ranking-medal-silver {
-  background-color: var(--libitum-color-gray-700);
+  background-color: var(--libitum-color-fg-neutral-muted);
 }
 
 .ranking-medal-bronze {

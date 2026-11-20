@@ -32,6 +32,7 @@ export function ChatWordsStrip({ words, rank, onOpen }: ChatWordsStripProps): Re
       className="chat-words-strip"
       data-testid={ids.strip}
       hit-slop={SLOP}
+      flatten={false}
       accessibility-element={true}
       accessibility-traits="button"
       accessibility-label={copy.stripLabel(words, rank)}
@@ -48,22 +49,53 @@ export function ChatWordsStrip({ words, rank, onOpen }: ChatWordsStripProps): Re
   );
 }
 
+/** 얻은 단어 줄 낭독 — 칩마다 끊지 않고 한 요소로(「+2 chat words: 김치찌개, 맛있다. 맵다 · …」). */
+function earnedLabel(
+  result: ChatWordsResult,
+  copy: ReturnType<typeof useUiCopy>["ranking"]["chat"],
+): string {
+  const counted =
+    result.counted.length === 0
+      ? []
+      : [
+          `${copy.earned(result.counted.length)}: ${result.counted.map((w) => w.surface).join(", ")}`,
+        ];
+  const pending = result.pending.map((word) => `${word.surface} · ${copy.pending}`);
+  return [...counted, ...pending].join(". ");
+}
+
 export function ChatWordsEarned({ result }: { readonly result: ChatWordsResult }): ReactNode {
   const copy = useUiCopy().ranking.chat;
   return (
-    <view className="chat-words-earned" data-testid={ids.earned}>
+    <view
+      className="chat-words-earned"
+      data-testid={ids.earned}
+      flatten={false}
+      accessibility-element={true}
+      accessibility-label={earnedLabel(result, copy)}
+    >
       {result.counted.length === 0 ? null : (
-        <view className="chat-words-plus">
+        <view className="chat-words-plus" accessibility-elements-hidden={true}>
           <text className="chat-words-plus-text">{copy.earned(result.counted.length)}</text>
         </view>
       )}
       {result.counted.map((word, index) => (
-        <view key={word.id} className="chat-words-chip" data-testid={ids.word(index)}>
+        <view
+          key={word.id}
+          className="chat-words-chip"
+          data-testid={ids.word(index)}
+          accessibility-elements-hidden={true}
+        >
           <text className="chat-words-chip-text">{word.surface}</text>
         </view>
       ))}
       {result.pending.map((word, index) => (
-        <view key={word.id} className="chat-words-pending" data-testid={ids.pending(index)}>
+        <view
+          key={word.id}
+          className="chat-words-pending"
+          data-testid={ids.pending(index)}
+          accessibility-elements-hidden={true}
+        >
           <text className="chat-words-pending-text">{`${word.surface} · ${copy.pending}`}</text>
         </view>
       ))}

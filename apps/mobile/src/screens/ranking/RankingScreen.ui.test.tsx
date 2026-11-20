@@ -159,3 +159,20 @@ test("RK-UI9. 불러오는 중은 자리 표시와 낭독 한 줄, 줄 · 내 �
   expect(screen.queryByTestId(ids.row(1))).toBeNull();
   expect(screen.queryByTestId(ids.me)).toBeNull();
 });
+
+test("RK-UI10. Android 낭독 — 줄 · 내 줄 · 보드 칸 · 불러오는 중은 flatten false, 내 줄은 목록에서도 You를 읽는다(접근성 C1 ~ C4 · S1)", () => {
+  mount({ kind: "ready", board });
+  for (const testId of [ids.row(1), ids.me, ids.board("lessons"), ids.board("chat-words")])
+    expect(screen.getByTestId(testId)).toHaveAttribute("flatten", "false");
+  expect(screen.getByTestId(ids.board("lessons"))).toHaveAttribute(
+    "accessibility-enable-tap",
+    "true",
+  );
+  expect(screen.getByTestId(ids.row(5))).toHaveAttribute(
+    "accessibility-label",
+    "#5, Mai, You, Episode 2, 7 lessons",
+  );
+  cleanup();
+  mount({ kind: "loading" });
+  expect(screen.getByTestId(ids.loading)).toHaveAttribute("flatten", "false");
+});

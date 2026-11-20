@@ -59,3 +59,27 @@ test("CW-UI3. 교정이 짚은 단어는 회색 줄 「맵다 · counts when you
   expect(screen.getByTestId(ids.earned)).not.toHaveTextContent("+");
   expect(screen.queryByTestId(ids.word(0))).toBeNull();
 });
+
+test("CW-UI4. 방 줄은 flatten false, 얻은 단어는 요소 하나로 「+2 chat words: 김치찌개, 맛있다」(접근성 C3 · W6)", () => {
+  render(<ChatWordsStrip words={3} rank={1} onOpen={() => undefined} />);
+  expect(screen.getByTestId(ids.strip)).toHaveAttribute("flatten", "false");
+  cleanup();
+  render(
+    <ChatWordsEarned
+      result={{
+        counted: [
+          { id: "voca:a", surface: "김치찌개" },
+          { id: "voca:b", surface: "맛있다" },
+        ],
+        pending: [{ id: "voca:c", surface: "맵다" }],
+        weekTotal: 3,
+      }}
+    />,
+  );
+  const earned = screen.getByTestId(ids.earned);
+  expect(earned).toHaveAttribute("flatten", "false");
+  expect(earned).toHaveAttribute(
+    "accessibility-label",
+    "+2 chat words: 김치찌개, 맛있다. 맵다 · counts when you resend it right",
+  );
+});
