@@ -16,6 +16,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     signIn: "สมัครหรือเข้าสู่ระบบ",
     promptTitle: "เข้าสู่ระบบเพื่อส่งข้อความ",
     promptBody: "สร้างบัญชีฟรีเพื่อแชทกับตัวละครในเรื่องราวของคุณ ความคืบหน้าของคุณจะยังอยู่ครบ",
+    promptKeepBody: "สร้างบัญชีฟรีเพื่อเก็บ Yeopjeon และตั๋วของคุณไว้",
     promptLater: "ไว้ทีหลัง",
   },
   pushNotice: { chatUnavailable: "ตอนนี้แชทนี้ใช้งานไม่ได้" },

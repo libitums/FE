@@ -16,6 +16,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     signIn: "အကောင့်ဖွင့်ရန် သို့မဟုတ် ဝင်ရန်",
     promptTitle: "စာပို့ရန် အကောင့်ဝင်ပါ",
     promptBody: "သင့်ဇာတ်လမ်းထဲက လူတွေနဲ့ စကားပြောရန် အခမဲ့ အကောင့်ဖွင့်ပါ။ သင့်တိုးတက်မှု မပျောက်ပါဘူး။",
+    promptKeepBody: "သင့် Yeopjeon နှင့် လက်မှတ်များကို ထိန်းသိမ်းထားရန် အခမဲ့ အကောင့်တစ်ခု ဖွင့်ပါ။",
     promptLater: "နောက်မှ",
   },
   pushNotice: { chatUnavailable: "ဒီချတ်ကို ယခု သုံး၍ မရပါ။" },
