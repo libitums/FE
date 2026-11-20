@@ -15,6 +15,7 @@ import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 import { TicketStatModal } from "../screens/tickets/TicketStatModal";
+import { useGuestGate } from "../screens/messenger-chat/use-guest-gate";
 import { UnlimitedTicketModal } from "../screens/tickets/UnlimitedTicketModal";
 import { appVersionFrom } from "../lib/app-version";
 import { openManageSubscription } from "../lib/manage-subscription";
@@ -141,6 +142,8 @@ export function AppHeader({
     [unlimitedOpen, unlimitedPass],
   );
   const ticketModalOpen = openLayer === "tickets";
+  // 비회원 Get more tickets는 「로그인 필요」 대화상자(tickets) — 모달의 형제로 그립니다(ADR-0166, 2026-11-20).
+  const ticketGate = useGuestGate(tickets?.signIn?.onSignIn ?? null, tickets?.signIn?.sink);
   // 구독 성공 알림은 머리가 보일 때만 섭니다 — 레이어가 덮은 동안 4초가 지나가지 않게 합니다.
   const celebrating = (plans?.activated ?? null) !== null && layer === null && !obscured;
   // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
@@ -246,8 +249,9 @@ export function AppHeader({
         <TicketStatModal
           status={tickets.status}
           more={tickets.more}
-          onGetMore={tickets.onGetMore}
+          onGetMore={() => ticketGate.prompt("tickets") || tickets.onGetMore()}
           onClose={close}
+          covered={ticketGate.open}
           {...(plans?.goUnlimited === undefined
             ? {}
             : {
@@ -265,6 +269,7 @@ export function AppHeader({
               })}
         />
       ) : null}
+      {ticketModalOpen ? ticketGate.layer : null}
       {unlimitedView !== null ? (
         <UnlimitedTicketModal
           view={unlimitedView}

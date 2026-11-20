@@ -44,7 +44,8 @@ function setup(
   const tickets = {
     startWithTicket,
     status: ticketStatusAt(ledger, T0),
-  } as Pick<LearningTickets, "startWithTicket" | "status">;
+    header: {} as LearningTickets["header"],
+  } as Pick<LearningTickets, "startWithTicket" | "status" | "header">;
   const markTicketUnit = vi.fn();
   const progress = {
     ...emptyContractState,

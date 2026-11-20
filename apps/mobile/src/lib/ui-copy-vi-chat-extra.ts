@@ -18,6 +18,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     promptBody:
       "Tạo tài khoản miễn phí để trò chuyện với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ.",
     promptLater: "Để sau",
+    promptKeepBody: "Tạo tài khoản miễn phí để giữ Yeopjeon và vé của bạn.",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
   chatSettings: {

@@ -32,6 +32,8 @@ export type TicketStatModalProps = {
   readonly onClose: () => void;
   /** 「∞ Go unlimited · 가격/mo」 줄(ADR-0160 · 시안 T1b) — 요금제 결선이 있을 때만. 가격을 모르면 null. */
   readonly goUnlimited?: { readonly price: string | null; readonly onPress: () => void };
+  /** 위에 대화상자(비회원 로그인 권유)가 떠 있으면 참 — 모달을 낭독에서 숨깁니다(ADR-0166, 2026-11-20). */
+  readonly covered?: boolean;
 };
 
 function slotTime(slot: TicketSlot, readyLabel: string): string {
@@ -44,6 +46,7 @@ export function TicketStatModal({
   onGetMore,
   onClose,
   goUnlimited,
+  covered = false,
 }: TicketStatModalProps): ReactNode {
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const alive = useMotion() === "standard";
@@ -61,6 +64,7 @@ export function TicketStatModal({
     <view
       className="journey-stat-modal ticket-modal"
       data-testid="ticket-modal"
+      accessibility-elements-hidden={covered ? true : undefined}
       data-statusbar={lightStatusBarIcons}
       event-through={false}
       style={{
