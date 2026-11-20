@@ -14,9 +14,11 @@ import type { NotificationItem } from "../screens/notifications/notifications.co
 import { productPhoneSignIn } from "../screens/login/login";
 import { AppHeader } from "./AppHeader";
 import { guestUnlimitedPass } from "../lib/unlimited-pass";
-import { AppNavigator } from "./AppNavigator";
+import { AppBottomBar } from "./AppBottomBar";
 import { useMessengerTabBadge } from "./use-messenger-tab-badge";
-import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./nav-reducer";
+import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
+import { deeplinkActions } from "./deeplink-target";
+import { useLearningTrail } from "./learning-trail-port";
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
 import { roleplaySectionsOf } from "./roleplay-sections";
@@ -76,8 +78,7 @@ export function AppSession({
   applyStagedContent,
   downloadControls,
 }: AppProps & AppSessionControl & AppSessionContent) {
-  // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
-  // 받지 않습니다(ADR-0007 D3). 초기값은 `entryInitialNav`(부팅 진입 스택 `[{ name: "splash" }]`)입니다.
+  // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도 받지 않습니다(ADR-0007 D3). 초기값은 `entryInitialNav`(부팅 진입 스택 `[{ name: "splash" }]`)입니다.
   const [nav, dispatch] = useReducer(navReducer, start);
 
   // 고른 언어(= UI 언어)입니다. 첫 렌더에 저장값을 읽고, Provider가 이 언어의 문구표를 내립니다.
@@ -93,8 +94,7 @@ export function AppSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
-  // 시험 계정 표시를 먼저 맞춥니다 — 아래 진행 · 티켓 · 맵 판정이 같은 렌더에서 읽습니다(ADR-0085).
+  // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다. 시험 계정 표시를 먼저 맞춥니다 — 아래 진행 · 티켓 · 맵 판정이 같은 렌더에서 읽습니다(ADR-0085).
   const testerAccess = useTesterAccess(analyticsUser);
   const progress = useJourneyProgress(progressSeed, catalogSections);
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
@@ -107,8 +107,7 @@ export function AppSession({
   // 남아 있는 알림 — 지운 알림은 세션 동안만 빠집니다(영속하지 않음, ADR-0007 D1).
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
   const sessionWiring = useSessionOptions();
-  // 한 유닛의 활동들이 쌓는 결과 — 평가는 마지막에 한 번이라 정오를 여기 모읍니다(catalog-lesson-wiring.ts).
-  // 건너뛴 문항 수도 같은 자리입니다 — 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
+  // 한 유닛의 활동들이 쌓는 결과 — 평가는 마지막에 한 번이라 정오를 여기 모읍니다(catalog-lesson-wiring.ts). 건너뛴 문항 수도 같은 자리입니다 — 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
   // 첫 시도에 틀린 채점 문항입니다 — 마지막 활동 뒤 다시 풀기 줄이 됩니다(catalog-lesson-finish.ts). 위 둘과 함께 버립니다.
@@ -118,6 +117,8 @@ export function AppSession({
   const finishGuard = useCatalogFinishGuard();
   // 탭 루트 화면 안 겹침 레이어 — 화면이 알려 오고(`onScreenLayerChange`) 그 동안 전역 머리가 낭독에서 빠집니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false); // 더보기 메뉴 — 뒤 화면 낭독 가림(ADR-0169)
+  const learningTrail = useLearningTrail(); // 단어장 · 추천 신호(ADR-0169)
 
   // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
   const catalog = { episodeContent, catalogSections, catalogProgress };
@@ -168,6 +169,7 @@ export function AppSession({
     downloadCatalog: () => downloadCatalogOf(episodeContent, catalogSections, catalogProgress),
     accountState,
     setAccountState,
+    learningTrail,
   });
   useNewFriendBackfill(progress.hasLoadedProgress, catalog, episodeIntroEventSink);
   const screenNow = currentScreen(nav);
@@ -178,7 +180,6 @@ export function AppSession({
   const shop = useShop(); // 하나의 상점(ADR-0160) — 머리 · 티켓 · 메신저 입구가 엽니다
   const signedIn = accountState === "signed-in";
   const plans = usePlans(signedIn, dispatch, episodeIntroEventSink, learner, shop.open);
-  const covered = screenLayerOpen || shop.request !== null;
   const wiring = withDownloadGate(
     withLearningTickets({ ...screens, plans }, tickets, progress, catalogSections),
     downloadGate,
@@ -189,9 +190,7 @@ export function AppSession({
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
   // Airbridge 딥링크 · 지연 딥링크도 앱 구간에 들어선 뒤에 그 탭을 엽니다(ADR-0080).
-  useOpenedDeeplink(nav.entry.length === 0, (tab) => {
-    for (const action of tabRootActions(tab)) dispatch(action);
-  });
+  useOpenedDeeplink(nav.entry.length === 0, (target) => deeplinkActions(target).forEach(dispatch));
   usePushTokenRefresh();
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
   useSystemBack(nav, dispatch);
@@ -217,8 +216,8 @@ export function AppSession({
     onStartChatting: () => dispatch({ type: "switchTab", tab: "messenger" }),
   });
   useMessengerWalletSync(notices.coinCount ?? screens.coinCount); // 메신저 지갑 = 머리 칩(ADR-0146)
-  // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`). 스플래시만 브랜드색.
-  // 아래쪽은 바가 서면 시스템 바만큼(`tappableBottomInset`, Android 3버튼)만 비우고 탭 바 묶음이 덧댑니다.
+  const covered = screenLayerOpen || shop.request !== null || notices.blocking; // 대화상자 뒤는 낭독에서 뺌
+  // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`). 스플래시만 브랜드색. 아래쪽은 바가 서면 시스템 바만큼(`tappableBottomInset`, Android 3버튼)만 비우고 탭 바 묶음이 덧댑니다.
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
     showsNavigator,
@@ -248,7 +247,11 @@ export function AppSession({
           paddingRight: `${shellInsets.right}px`,
         }}
       >
-        <view className="app-content" accessibility-elements-hidden={shop.request !== null}>
+        <view
+          className="app-content"
+          data-testid="app-content"
+          accessibility-elements-hidden={shop.request !== null || moreOpen}
+        >
           {renderAppContent(screenNow, wiring)}
           {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
           {showsNavigator && appHeaderVisibleOn(screenNow) ? (
@@ -268,7 +271,7 @@ export function AppSession({
                 episodeIntroEventSink,
                 onClosed: progress.onEpisodeSurveyClosed,
               })}
-              obscured={covered}
+              obscured={covered || moreOpen}
               onOpenNotifications={wiring.onOpenNotifications}
               onOpenShop={shop.open}
               plans={headerPlansOf(plans, screenNow.name === "journey-map")}
@@ -277,17 +280,13 @@ export function AppSession({
         </view>
         {/* 로그인 뒤 탭 루트에만 바를 겹칩니다. 하단 여백은 각 화면이 집니다. */}
         {showsNavigator ? (
-          <AppNavigator
-            tab={nav.tab}
+          <AppBottomBar
+            {...{ nav, dispatch }}
+            more={wiring.more}
             badges={messengerTabBadge}
             obscured={covered}
+            onOpenChange={setMoreOpen}
             floorHeight={bottomLayout.navigatorFloorHeight}
-            onSelectTab={(tab) => {
-              // 탭이 실제로 설정으로 바뀔 때만 `settings_opened` — 같은 탭 재탭은 열람이 아닙니다.
-              if (tab === "settings" && nav.tab !== "settings")
-                settingsEventSink?.({ name: "settings_opened" });
-              dispatch({ type: "switchTab", tab });
-            }}
           />
         ) : null}
         {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m · 요금제 카드 ADR-0144). */}

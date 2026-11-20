@@ -70,6 +70,11 @@ export function Dialog(props: DialogProps) {
         accessibility-role-description="dialog"
         bindanimationend={contract.phase === "visible" ? undefined : handleMotionEnd}
       >
+        {props.children === undefined || props.children === null ? null : (
+          <view className="ui-lynx-dialog-media" data-testid="ui-lynx-dialog-media">
+            {props.children}
+          </view>
+        )}
         <text
           className="ui-lynx-dialog-title"
           data-testid="ui-lynx-dialog-title"

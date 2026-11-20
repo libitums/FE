@@ -3,6 +3,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import type { UiCopy } from "./ui-copy.contract";
+import { moreCopy } from "./ui-copy-more";
 import {
   audioUnavailableTh,
   catalogCoverTh,
@@ -125,4 +126,5 @@ export const uiCopyTh: UiCopy = {
   login: loginTh,
   verificationCode: verificationCodeTh,
   authFailure: authFailureTh,
+  more: moreCopy.th,
 };

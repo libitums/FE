@@ -61,6 +61,8 @@ import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-
 import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
 import type { PlansWiring } from "./use-plans";
+import type { LearningTrail } from "./learning-trail";
+import { moreWiring, type MoreWiring } from "./more-wiring";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
 //
@@ -147,6 +149,10 @@ export type ScreenWiring = {
   accountState: AccountState;
   /** 메신저 탭 — 대화 출처와 이동 콜백(messenger-chat-ui spec §7.1). */
   messengerChat: MessengerChatWiring;
+  /** 더보기 메뉴 · Letters · My words(ADR-0169). */
+  more: MoreWiring;
+  /** 레슨 자취 — 지도의 Letters 추천이 끝난 레슨의 신호를 꺼냅니다(ADR-0169). */
+  learningTrail: LearningTrail;
 } & GuestWiring &
   AccountWiring &
   JourneyStats &
@@ -178,6 +184,7 @@ export type ScreenWiringArgs = {
   readonly downloadCatalog: () => DownloadCatalogInput;
   readonly accountState: AccountState;
   readonly setAccountState: (state: AccountState) => void;
+  readonly learningTrail: LearningTrail;
 } & ProgressWiringArgs &
   LearnerProfileControls &
   Omit<CatalogWiringArgs, "dispatch">;
@@ -236,5 +243,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     }),
     ...catalogWiring(args),
     ...learnerProfileWiring(args),
+    more: moreWiring(args),
+    learningTrail: args.learningTrail,
   };
 }

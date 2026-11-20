@@ -46,7 +46,7 @@ describe("defaultBackDecision", () => {
   it("BD5. 설정 탭 루트는 여정 탭 루트로 가는 navigate다", () => {
     const nav: Nav = {
       ...initialNav,
-      tab: "settings",
+      tab: "more",
       stacks: { ...initialNav.stacks, journey: journeyWithNotifications },
     };
     const decision = defaultBackDecision(nav);
@@ -67,8 +67,8 @@ describe("defaultBackDecision", () => {
   it("BD7. 설정 탭 스택 [설정, 프로필]은 leave다(navigate가 아니다)", () => {
     const nav: Nav = {
       ...initialNav,
-      tab: "settings",
-      stacks: { ...initialNav.stacks, settings: [{ name: "settings" }, { name: "profile" }] },
+      tab: "more",
+      stacks: { ...initialNav.stacks, more: [{ name: "settings" }, { name: "profile" }] },
     };
     expect(defaultBackDecision(nav)).toEqual({ kind: "leave" });
   });
@@ -78,7 +78,7 @@ describe("defaultBackDecision", () => {
     journey: [{ name: "journey-map" }],
     roleplay: [{ name: "roleplay-list" }],
     messenger: [{ name: "messenger-list" }],
-    settings: [{ name: "settings" }],
+    more: [{ name: "settings" }],
   };
   const room: Screen = { name: "messenger-chat", roomId: "mina" };
 
@@ -106,8 +106,8 @@ describe("defaultBackDecision", () => {
     expect(Object.keys(initialNav.stacks).sort()).toEqual([
       "journey",
       "messenger",
+      "more",
       "roleplay",
-      "settings",
     ]);
   });
 });

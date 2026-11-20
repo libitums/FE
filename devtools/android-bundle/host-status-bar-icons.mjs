@@ -83,6 +83,11 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 더보기 메뉴의 바깥 막(ADR-0169) — 투명한 면이라 띠를 칠하지 않는다(지도의 명암 그대로). 표지가 없다.
+    "components/more-menu.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     // 메신저 채팅방 겹침(ADR-0113) — 가운데 모달 · 설정 사이드바는 ui-lynx 기본 스크림(0.45)이라 표지가 없다.
     // 메신저 새 친구 시트(ADR-0117) — 띠를 덮는 것은 ui-lynx 기본 스크림(0.45)이라 표지가 없다.
     "screens/messenger-chat/new-friend.css": {

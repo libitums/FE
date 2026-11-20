@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -124,7 +125,7 @@ async function boot(): Promise<void> {
 const flush = () => act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
 const present = (testId: string) => screen.queryByTestId(testId) !== null;
 const tap = (testId: string) => act(() => void fireEvent.tap(screen.getByTestId(testId), {}));
-const openSettings = () => tap("ui-lynx-bottom-navigator-item-settings");
+const openSettings = () => openSettingsFromMore();
 const planRow = "ui-lynx-settings-group-item-plans";
 
 beforeEach(() => {

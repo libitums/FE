@@ -82,6 +82,11 @@ function activityScreenOf(
         )
       : wiring.onFinishCatalogReview(episodeId, unitKey, review, results);
   const onExit = wiring.onExitCatalogSession;
+  // 단어 카드 활동이 끝나면 보인 카드를 단어장에 적고(ADR-0169) 평소처럼 잇습니다. 다시 풀기에는 카드가 없습니다.
+  const onCardsFinish: ActivityFinish = (results, skippedCount, skippedIndexes) => {
+    if (review === undefined) wiring.onCatalogCardsSeen(episodeId, itemRefs);
+    onFinish(results, skippedCount, skippedIndexes);
+  };
   const onItemAnswered = (report: ItemAnswerReport): void => {
     const ref = itemRefs[report.questionIndex];
     if (ref !== undefined) wiring.onCatalogItemAnswered(episodeId, unitKey, ref, report);
@@ -150,7 +155,7 @@ function activityScreenOf(
           key={key}
           questions={activity.questions}
           onExit={onExit}
-          onFinish={onFinish}
+          onFinish={onCardsFinish}
           lesson={lesson}
         />
       );

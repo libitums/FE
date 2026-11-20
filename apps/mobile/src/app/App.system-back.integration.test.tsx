@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { legacyPassedSeed, u01OpenSeed } from "./test-helpers/progress-seed";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { afterEach, expect, test, vi } from "vitest";
@@ -51,8 +52,7 @@ function expectOneResponse(host: BackHost, token: string, outcome: "handled" | "
 }
 
 const tap = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
-const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
-  tap(`ui-lynx-bottom-navigator-item-${tab}`);
+const openTab = (tab: "journey" | "roleplay"): void => tap(`ui-lynx-bottom-navigator-item-${tab}`);
 const settingsCell = (id: string): HTMLElement =>
   within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
     "ui-lynx-settings-cell",
@@ -150,7 +150,7 @@ test("[IB4] 설정 탭 루트에서 누르면 여정 맵이 서고 처리됨으�
   await renderSignedInApp(
     <App progressSeed={legacyPassedSeed} settingsEventSink={(event) => events.push(event)} />,
   );
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   const openedBefore = events.filter((event) => event.name === "settings_opened").length;
 
@@ -236,7 +236,7 @@ test("[IB7] 맵의 스텝 말풍선 · 첫 유닛 안내가 열려 있으면 그
 test("[IB9] 설정 → 프로필에서 누르면 설정 루트, 여정 맵, 떠남 순으로 응답한다", async () => {
   const host = stubBackHost();
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
-  openTab("settings");
+  openSettingsFromMore();
   fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
@@ -259,7 +259,7 @@ test("[IB9] 설정 → 프로필에서 누르면 설정 루트, 여정 맵, 떠�
 test("[IB11] 설정의 로그아웃 확인이 열려 있으면 확인창만 닫히고 세션은 유지된다", async () => {
   const host = stubBackHost();
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
-  openTab("settings");
+  openSettingsFromMore();
   fireEvent.tap(settingsCell("sign-out"), {});
   expect(screen.getByTestId("settings-screen-sign-out-dialog")).toBeInTheDocument();
 
@@ -328,7 +328,7 @@ test("[IB14] 온보딩 둘째 스텝은 앞 스텝으로, 로그인은 온보딩
 test("[IB15] 인자 없는 이벤트와 수 인자는 응답하지 않고 화면도 그대로다", async () => {
   const host = stubBackHost();
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   act(() => {
