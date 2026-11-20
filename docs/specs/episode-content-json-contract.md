@@ -826,7 +826,7 @@ UI 언어가 영어가 아닐 때 콘텐츠의 영어(안내 · 뜻 풀이 · �
 ## 부록 H. 나라 이름 파일 `country-names/<언어>.json` ⟨2026-11-19⟩
 
 학습자 프로필 미리보기 뜻 줄 · 레슨 번역 줄의 `{나라}`에 서는 화면 언어별 나라 이름입니다([ADR-0059](../adr/0059-learner-profile.md) 개정 2026-11-19).
-번들 천장(5,327,000 B) 때문에 앱에 싣지 않고 버킷에 둡니다. 원본은 저장소의 `docs/content/country-names/{es,id,ja,vi}.json`이고 그대로 올립니다.
+번들 천장(당시 5,327,000 B) 때문에 앱에 싣지 않고 버킷에 둡니다. 원본은 저장소의 `docs/content/country-names/{es,id,ja,vi,th,my}.json`이고 그대로 올립니다(th · my는 2026-11-20 — ADR-0158 개정).
 
 ```jsonc
 // country-names/vi.json — 앱 나라 표(apps/mobile/content/learner-profile.json)의 코드 199개를 모두 덮습니다
@@ -835,24 +835,50 @@ UI 언어가 영어가 아닐 때 콘텐츠의 영어(안내 · 뜻 풀이 · �
 
 | 규칙 | 내용 |
 |---|---|
-| 파일 경로 | 버킷 `content`의 `country-names/<언어>.json`(es · id · ja · vi). en · th · my는 파일이 없습니다(영어 이름) |
-| 앱이 받는 범위 | 실행의 첫 받기 차례에 네 파일을 모두 분 단위 키(`?m=`)로 받아 새것 · 바뀐 것을 저장합니다(오프라인 언어 전환 대비). 그 뒤 차례(UI 언어를 바꿔 저장했을 때 · 호스트 신호)는 지금 언어의 파일이 기기에 없을 때만 그 하나를 받습니다. `app-policy.json`과 같은 규칙, 기다리지 않음 |
+| 파일 경로 | 버킷 `content`의 `country-names/<언어>.json`(es · id · ja · vi · th · my). en은 파일이 없습니다(영어 이름) |
+| 앱이 받는 범위 | 실행의 첫 받기 차례에 여섯 파일을 모두 분 단위 키(`?m=`)로 받아 새것 · 바뀐 것을 저장합니다(오프라인 언어 전환 대비). 그 뒤 차례(UI 언어를 바꿔 저장했을 때 · 호스트 신호)는 지금 언어의 파일이 기기에 없을 때만 그 하나를 받습니다. `app-policy.json`과 같은 규칙, 기다리지 않음 |
 | 검증 | `schema` = `country-names-1` · `language`가 그 언어 · 키는 대문자 두 글자 · 값은 빈 글자가 아님. 하나라도 어기면 통째로 버리고 저장본을 둡니다. 매니페스트 · sha256 항목은 없습니다 |
 | 없을 때 | 400 · 403 · 404 · 410이면 저장본을 지웁니다. 받기 전 · 실패 · 오프라인이면 영어 이름(영어 밖 문장에는 관사 없이) |
-| 고칠 때 | 원본 JSON을 고치고 같은 이름으로 덮어씁니다(`x-upsert: true`, `cache-control: max-age=60`). 나라 표에 나라가 늘면 네 파일에도 더합니다 |
+| 고칠 때 | 원본 JSON을 고치고 같은 이름으로 덮어씁니다(`x-upsert: true`, `cache-control: max-age=60`). 나라 표에 나라가 늘면 여섯 파일에도 더합니다 |
 
 올리는 법(사람 — 서비스 키는 `supabase projects api-keys --project-ref wgwnitgyotyvixozwrzu -o json`의 `service_role`, 셸 변수에만 둡니다):
 
 ```sh
-for lang in es id ja vi; do
+for lang in es id ja vi th my; do
   curl -sf -X POST "$PUBLIC_SUPABASE_URL/storage/v1/object/content/country-names/$lang.json" \
     -H "Authorization: Bearer $SERVICE_ROLE" -H "apikey: $SERVICE_ROLE" \
     -H "Content-Type: application/json" -H "cache-control: max-age=60" -H "x-upsert: true" \
     --data-binary @docs/content/country-names/$lang.json
 done
 # 확인 — 공개 URL의 sha256이 원본과 같아야 합니다
-for lang in es id ja vi; do
+for lang in es id ja vi th my; do
   diff <(curl -s "$PUBLIC_SUPABASE_URL/storage/v1/object/public/content/country-names/$lang.json?m=$(date +%s)" | shasum -a 256 | cut -d' ' -f1) \
        <(shasum -a 256 docs/content/country-names/$lang.json | cut -d' ' -f1) && echo "$lang ok"
 done
 ```
+
+## 부록 I. 문항 순서 — 카드 → 그 낱말 문제 ⟨2026-11-20 — 사용자 결정⟩
+
+**규칙(사용자 결정 2026-11-20)**: 한 스텝 안의 문항은 **새 낱말 카드 → 그 낱말의 문제 → 다음 카드 → 그 문제 …** 순서다. 앱은 `items[]`를 배열 순서 그대로 보이므로
+([ADR-0058](../adr/0058-catalog-learning-session.md) 「활동 순서는 콘텐츠 순서」 · 개정 2026-11-20) 콘텐츠가 이 순서로 온다.
+
+| 규칙 | 내용 |
+|---|---|
+| 범위 | 스텝 안에서만. 스텝을 넘어 옮기지 않는다. 문항 id · 내용 · 개수 · 소속 스텝 · 다른 키는 그대로이고 **배열 순서만** 바뀐다 |
+| 블록 | `VOCAB_CARD` 하나가 블록 하나를 연다: 카드 → 같은 스텝에서 그 카드의 `ref`와 같은 `ref`를 가진 카드 아닌 문항 전부. 카드보다 앞에 있던 것도 블록으로 온다 — 스텝 안에서 낱말이 카드보다 먼저 나오지 않는다 |
+| 블록 안 순서 | 쉬운 것 먼저 — 문항의 `level`(작을수록 쉬움: IMG_MATCH 1 · LISTEN_SELECT/CLOZE_CHOICE 2 · CLOZE/WORD_ORDER/SYLLABLE_BUILD 3 …), 같으면 원래 순서 |
+| 남는 것 | `ref` 없음, 이 스텝에 카드가 없는 `ref`(뒤 스텝 · 다른 편 복습), `CULTURE_CARD` · `CULTURE_CHECK` · `ROLEPLAY_TURN`(앱이 배열 순서로 짝 · 차례를 정한다)은 **원래 바로 앞 카드 블록의 끝**에 원래 순서로 남는다. 첫 카드 앞에 있던 것은 스텝 맨 앞 |
+| 같은 `ref` 카드 둘 | 문항은 첫 카드의 블록으로 간다 |
+| 판 | 순서가 바뀐 편만 `version`을 올리고 `sha256` · `bytes`를 다시 잰다(§10 · §13 규칙 3). 번역 파일은 원문 글자 키라 그대로 둔다 |
+
+**도구** — 받아 둔 버킷 판에 규칙을 적용해 올릴 파일을 만든다(버킷 · DB에 쓰지 않는다):
+
+```sh
+node devtools/content/card-then-quiz-publish.mjs --manifest <받은 manifests/level-5.json> --episodes <받은 본문 폴더> \
+  --out <출력 폴더> --today YYYY-MM-DD
+```
+
+받은 본문이 매니페스트의 sha256 · bytes와 다르거나, 다시 쓴 본문이 순서 말고 달라지면 멈춘다. stdout에 편별 지표(전 → 후)를 쓴다.
+규칙 함수는 `devtools/content/card-then-quiz.mjs`(`pnpm test:content`). 콘텐츠 원본(staging)이 이 순서로 오면 도구는 아무것도 바꾸지 않는다(멱등) — **원본 쪽에서 이 순서로 만드는 것이 정본**이고, 도구는 그 전까지의 보정이다.
+
+**스텝을 넘는 것은 남는다** — 앞 스텝의 문제가 뒤 스텝 카드의 낱말을 묻는 경우(2026-11-18.1판 u01 ~ u17에 98문항, 예: u05 S1-07 「된장찌개」 ↔ 카드 S3-13)는 이 규칙으로 고쳐지지 않는다. 카드가 그 편에 없는 낱말 문제 307문항(앞 편에 카드 156 · 앞 편에도 카드 없음 151)도 그대로다. 고치려면 원본에서 문항이나 카드를 옮긴다.

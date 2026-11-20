@@ -106,3 +106,27 @@ test("LP-U4. 표를 아직 못 받았으면(받기 전 · 실패 · 오프라인
   const preview = screen.getByTestId("learner-country-screen-preview").textContent ?? "";
   expect(preview).toContain("Tôi đến từ United States.");
 });
+
+test("LP-U5. 나라 화면(th · my) — 뜻 줄이 그 언어 문장 · 그 언어 나라 이름(ADR-0158 개정 2026-11-20)", () => {
+  for (const [language, sentence] of [
+    ["th", "มาจากไทย"],
+    ["my", "ထိုင်းက လာပါတယ်။"],
+  ] as const) {
+    receivedCountryNames(language);
+    inLanguage(
+      language,
+      <LearnerCountryScreen
+        learnerName="Emma"
+        initialCountryCode="TH"
+        port={learnerProfilePort}
+        onContinue={vi.fn()}
+        onBack={vi.fn()}
+      />,
+    );
+    const preview = screen.getByTestId("learner-country-screen-preview").textContent ?? "";
+    expect(preview, language).toContain(sentence);
+    expect(preview, language).not.toContain("I'm from");
+    cleanup();
+    forgetCountryNames();
+  }
+});

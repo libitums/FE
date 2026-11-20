@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -202,7 +203,7 @@ test("SH-I2 여정 지도 둘째 줄 PLANS 칩 → 상점 Plans 탭(header_chip)
         {},
       ),
   );
-  tap("ui-lynx-bottom-navigator-item-settings");
+  openSettingsFromMore();
   await flush();
   expect(present("header-plan-chip")).toBe(false);
 });

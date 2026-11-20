@@ -7,6 +7,7 @@ import { itemAnsweredEventOf } from "./catalog-events";
 import type { ItemAnswerContent } from "./catalog-events";
 import type { EpisodeContent } from "./episode-content";
 import type { CatalogItemRef } from "./catalog-lesson-types";
+import type { LearningTrail } from "./learning-trail";
 
 export type CatalogItemReportWiring = {
   readonly onCatalogItemAnswered: (
@@ -15,6 +16,8 @@ export type CatalogItemReportWiring = {
     ref: CatalogItemRef,
     report: ItemAnswerReport,
   ) => void;
+  /** 단어 카드 활동이 끝났을 때 — 보인 카드들(단어장에 적음, ADR-0169). 다시 풀기에는 카드가 없습니다. */
+  readonly onCatalogCardsSeen: (episodeId: string, refs: readonly CatalogItemRef[]) => void;
 };
 
 /** 그 에피소드의 판 정보입니다 — 준비된 카탈로그 항목만. 저장소 출처 `cache`는 측정에서 `remote`라 부릅니다. */
@@ -34,6 +37,8 @@ export function itemAnswerContentOf(
 export function catalogItemReportWiring(args: {
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly episodeContent?: Pick<EpisodeContent, "catalog">;
+  /** 레슨 자취(단어장 · Letters 추천 신호, ADR-0169). 없으면 측정만 합니다. */
+  readonly learningTrail?: LearningTrail;
 }): CatalogItemReportWiring {
   const sink = args.episodeIntroEventSink;
   return {
@@ -46,6 +51,13 @@ export function catalogItemReportWiring(args: {
         itemAnswerContentOf(args.episodeContent, episodeId),
       );
       if (event !== null) sink?.(event);
+      args.learningTrail?.itemAnswered(episodeId, ref, report.outcome);
+    },
+    onCatalogCardsSeen: (episodeId, refs) => {
+      args.learningTrail?.cardsSeen(
+        episodeId,
+        refs.map((ref) => ref.contentRef),
+      );
     },
   };
 }

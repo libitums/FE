@@ -44,4 +44,6 @@ export type MessengerAccessCopy = {
   readonly promptTitle: string;
   readonly promptBody: string;
   readonly promptLater: string;
+  /** 엽전 · 티켓 자리의 본문(2026-11-20) — 그 밖은 `promptBody`. 자리별 제목은 누른 기능의 기존 이름입니다(`signInPromptCopyOf`). */
+  readonly promptKeepBody: string;
 };

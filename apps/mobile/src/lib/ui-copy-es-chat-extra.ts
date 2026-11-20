@@ -18,6 +18,7 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     promptBody:
       "Crea una cuenta gratis para chatear con las personas de tus historias. Tu progreso se conserva.",
     promptLater: "Ahora no",
+    promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
   chatSettings: {

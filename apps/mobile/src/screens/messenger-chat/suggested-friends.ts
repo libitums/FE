@@ -40,7 +40,7 @@ export type OfferBadge =
 const DAY_MS = 86_400_000;
 const HOUR_MS = 3_600_000;
 
-/** 그 언어 칸, 없으면 en(th · my는 화면 문구가 영어라 늘 en). */
+/** 그 언어 칸, 없으면 en(th · my도 2026-11-20부터 자기 칸 — ADR-0158 개정). */
 export function localizedLine(line: LocalizedLine, language: string): string {
   const own = (line as Readonly<Record<string, string | undefined>>)[language];
   return own === undefined || own === "" ? line.en : own;

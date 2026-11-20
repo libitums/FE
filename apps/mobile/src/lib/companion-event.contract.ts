@@ -2,6 +2,8 @@
 // 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
 // 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
+import type { MoreEvent } from "./more-event.contract";
+
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
 export type EventSurface = "learning" | "chat";
 
@@ -196,16 +198,17 @@ export type PlanEvent =
     });
 
 /**
- * 비회원 로그인 권유(ADR-0166) — 메신저 목록 · 방의 「로그인 필요」 대화상자를 닫을 때 한 번. `trigger`는 권유가 뜬 자리,
+ * 비회원 로그인 권유(ADR-0166) — 메신저 목록 · 방 · 머리 티켓 모달의 「로그인 필요」 대화상자를 닫을 때 한 번. `trigger`는 권유가 뜬 자리,
  * `choice`는 sign_in(로그인 화면으로) · later(닫기 · 뒤로).
  */
 export type GuestPromptEvent = Common & {
   readonly name: "chat_sign_in_prompt_closed";
-  readonly trigger: "send" | "media" | "menu" | "coins" | "add_friend";
+  readonly trigger: "send" | "media" | "menu" | "coins" | "add_friend" | "tickets";
   readonly choice: "sign_in" | "later";
 };
 
 export type CompanionEvent =
+  | MoreEvent
   | LaunchEvent
   | GuestPromptEvent
   | StreakRewardEvent

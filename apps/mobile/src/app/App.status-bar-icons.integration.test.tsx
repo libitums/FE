@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -37,8 +38,7 @@ const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const tapRoundButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
-const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
-  tap(`ui-lynx-bottom-navigator-item-${tab}`);
+const openTab = (tab: "journey" | "roleplay"): void => tap(`ui-lynx-bottom-navigator-item-${tab}`);
 const catchTap = (id: string): void =>
   void fireEvent.tap(screen.getByTestId(id), { eventType: "catchEvent" });
 
@@ -205,7 +205,7 @@ test("[IS4] 맵에서 연속 칩 → 지표 모달 → 닫기, 트로피 칩도 
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(markers()).toBe(0);
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(markers()).toBe(0);
 });
@@ -251,7 +251,7 @@ test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시
 test("[IS9] 설정의 로그아웃 확인창 · 학습 화면의 나가기 확인 · 로그인의 국가 시트를 연 상태: 0 (스크림 0.45는 표지가 없다)", async () => {
   // (a) 설정의 로그아웃 확인 Dialog
   await bootWithoutGuide(<App progressSeed={legacyPassedSeed} />);
-  openTab("settings");
+  openSettingsFromMore();
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-settings-group-item-sign-out")).getByTestId(
       "ui-lynx-settings-cell",

@@ -1,3 +1,4 @@
+import { goToTabRoot, openSettingsFromMore } from "./test-helpers/more-menu";
 import { u01OpenSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
@@ -20,7 +21,7 @@ test("[AH-I1] 탭 루트 넷 중 메신저를 뺀 셋에는 머리와 바텀 네
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   for (const tab of ["journey", "roleplay", "messenger", "settings"] as const) {
-    fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
+    goToTabRoot(tab);
     expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
     if (tab === "messenger") {
       expect(screen.queryByTestId("app-header")).not.toBeInTheDocument();
@@ -69,7 +70,7 @@ test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남�
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
 
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
@@ -88,7 +89,7 @@ function expectTopBarShape(): void {
 test("[NBI1] 머리가 있는 탭 루트 셋(메신저 제외)은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   for (const tab of ["journey", "roleplay", "settings"] as const) {
-    fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
+    goToTabRoot(tab);
     expectTopBarShape();
   }
 

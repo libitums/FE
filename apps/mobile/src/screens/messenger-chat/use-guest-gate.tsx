@@ -3,7 +3,10 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { emitCompanionEvent } from "../../lib/companion-events";
+import type { CompanionEventInput } from "../../lib/companion-event.contract";
 import { useLayerBack } from "../../lib/use-back-handler";
+import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
 import { useChatEvents } from "./chat-events";
 import type { ChatRoomAction } from "./chat-room-state";
 import { guestGateOf, type GuestGateTrigger } from "./guest-gate";
@@ -23,9 +26,19 @@ export type GuestGate = {
   readonly layer: ReactNode;
 };
 
-export function useGuestGate(onSignIn: (() => void) | null | undefined): GuestGate {
+/**
+ * `sink`를 주면 이벤트를 메신저 맥락(`ChatEventsContext`) 대신 그 sink로 보냅니다 — 메신저 밖(머리 티켓 모달, 2026-11-20)에서 씁니다.
+ */
+export function useGuestGate(
+  onSignIn: (() => void) | null | undefined,
+  sink?: EpisodeIntroEventSink,
+): GuestGate {
   const [trigger, setTrigger] = useState<GuestGateTrigger | null>(null);
-  const { emit } = useChatEvents();
+  const chat = useChatEvents();
+  const emit =
+    sink === undefined
+      ? chat.emit
+      : (event: CompanionEventInput) => emitCompanionEvent(sink, event);
   const active = onSignIn !== null && onSignIn !== undefined;
 
   const prompt = (next: GuestGateTrigger): boolean => {
@@ -59,7 +72,11 @@ export function useGuestGate(onSignIn: (() => void) | null | undefined): GuestGa
     },
     layer:
       trigger === null ? null : (
-        <SignInPromptDialog onSignIn={() => close("sign_in")} onLater={() => close("later")} />
+        <SignInPromptDialog
+          trigger={trigger}
+          onSignIn={() => close("sign_in")}
+          onLater={() => close("later")}
+        />
       ),
   };
 }

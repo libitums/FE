@@ -18,6 +18,7 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     promptBody:
       "Buat akun gratis untuk mengobrol dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
     promptLater: "Nanti saja",
+    promptKeepBody: "Buat akun gratis untuk menyimpan Yeopjeon dan tiketmu.",
   },
   pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
   chatSettings: {

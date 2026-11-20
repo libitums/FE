@@ -14,7 +14,7 @@ import { fillPlaceholders } from "./placeholder-fill";
 // 영어 나라 이름을 봤다). 나라 이름 표는 번들 천장 때문에 콘텐츠 버킷 파일(`docs/content/country-names/<lang>.json`이 원본)이고,
 // 받기 전에는 영어 이름입니다. 고르기 목록 · 검색은 영어 이름 그대로입니다(ADR-0059 D4).
 
-const LANGUAGES = ["es", "id", "ja", "vi"] as const;
+const LANGUAGES = ["es", "id", "ja", "vi", "th", "my"] as const;
 const fileOf = (language: string): string =>
   readFileSync(resolve(process.cwd(), `../../docs/content/country-names/${language}.json`), "utf8");
 // 기기가 그 언어의 표를 받아 둔 상태입니다(영어는 표가 없습니다).
@@ -46,7 +46,11 @@ describe("LP-L1 버킷 원본 파일 — 언어마다 199개, 짧은 이름", ()
       "Vietnam",
       "ベトナム",
       "Việt Nam",
+      "เวียดนาม",
+      "ဗီယက်နမ်",
     ]);
+    expect(nameIn(countryOf("HK"), "th")).toBe("ฮ่องกง");
+    expect(nameIn(countryOf("PS"), "my")).toBe("ပါလက်စတိုင်း");
     expect(nameIn(countryOf("HK"), "ja")).toBe("香港");
     expect(nameIn(countryOf("MM"), "es")).toBe("Myanmar");
     expect(nameIn(countryOf("CD"), "vi")).toBe("Cộng hòa Dân chủ Congo");
@@ -64,6 +68,8 @@ describe("LP-L2 미리보기 뜻 줄이 화면 언어다(표를 받은 뒤)", ()
     ["ja", "Emmaの名前で予約しました。", "ベトナムから来ました。"],
     ["es", "Reservé a nombre de Emma.", "Soy de Vietnam."],
     ["id", "Saya memesan atas nama Emma.", "Saya dari Vietnam."],
+    ["th", "จองไว้ในชื่อ Emma", "มาจากเวียดนาม"],
+    ["my", "Emma အမည်နဲ့ ကြိုတင်မှာထားပါတယ်။", "ဗီယက်နမ်က လာပါတယ်။"],
     ["en", "I booked under Emma.", "I'm from Vietnam."],
   ] as const)("%s", (language, name, country) => {
     received(language);
@@ -75,12 +81,13 @@ describe("LP-L2 미리보기 뜻 줄이 화면 언어다(표를 받은 뒤)", ()
     ]);
   });
 
-  test("견본(이름 · 나라 없음)도 화면 언어, th · my는 영어", () => {
+  test("견본(이름 · 나라 없음)도 화면 언어 — th · my도 그 언어(2026-11-20)", () => {
     expect(learnerProfilePort.previewOf(null, null, "ja").lines[0]?.en).toBe(
       "Emmaの名前で予約しました。",
     );
-    expect(learnerProfilePort.previewOf(null, null, "th").lines[0]?.en).toBe(
-      "I booked under Emma.",
+    expect(learnerProfilePort.previewOf(null, null, "th").lines[0]?.en).toBe("จองไว้ในชื่อ Emma");
+    expect(learnerProfilePort.previewOf(null, null, "my").lines[0]?.en).toBe(
+      "Emma အမည်နဲ့ ကြိုတင်မှာထားပါတယ်။",
     );
   });
 });
@@ -93,7 +100,7 @@ describe("LP-L3 표가 없으면(받기 전 · 실패 · 오프라인) 영어 �
     expect(nameIn(countryOf("BS"), "es")).toBe("Bahamas");
     expect(nameIn(countryOf("US"), "es")).toBe("United States");
     expect(nameIn(countryOf("US"), "en")).toBe("the United States");
-    expect(nameIn(countryOf("US"), "th")).toBe("the United States");
+    expect(nameIn(countryOf("US"), "th")).toBe("United States");
   });
 
   test("못 읽는 원문을 기억하면 표가 없는 것과 같다", () => {

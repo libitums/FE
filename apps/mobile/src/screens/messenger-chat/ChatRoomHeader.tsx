@@ -12,7 +12,8 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 export type ChatRoomHeaderProps = {
   readonly name: string;
-  readonly plan: TurnPlan;
+  /** 턴 줄 — null이면 줄을 세우지 않습니다(비회원은 보낼 수 없어 남은 수가 없습니다, 2026-11-20). */
+  readonly plan: TurnPlan | null;
   /** 무료 소진 판이 떠 있는가 — 턴 줄이 「다 씀」으로 섭니다. */
   readonly used: boolean;
   readonly onBack: () => void;
@@ -31,7 +32,11 @@ export function ChatRoomHeader({
   return (
     <ChatHeader
       title={name}
-      subtitle={plan.kind === "unlimited" ? undefined : <TurnLine plan={plan} used={used} />}
+      subtitle={
+        plan === null || plan.kind === "unlimited" ? undefined : (
+          <TurnLine plan={plan} used={used} />
+        )
+      }
       insetTop={0}
       testIds={{ root: ids.header, title: ids.title }}
       start={

@@ -1,0 +1,269 @@
+/* My words 화면 셋(ADR-0169, 시안 WordbookList · WordbookDetail · WordbookReview) — 토큰만 씁니다(ADR-0014 D1).
+   시안의 파랑(복습)은 토큰이 없어 「복습 필요」를 feedback-warning(노란 면 · 짙은 글)로, 짙은 단추를 fg-neutral 면으로 사상합니다
+   (ADR-0169 디자인 절). 상태 칩: New = background-elevated · fg-brand, Review = warning, Got it = correct. */
+
+.wordbook-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-16) 0;
+  background-color: var(--libitum-color-background-primary);
+}
+
+.wordbook-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.wordbook-title {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.wordbook-count {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+}
+
+.wordbook-cta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  padding: 14px var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.wordbook-cta:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.wordbook-cta-idle,
+.wordbook-cta-idle:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.wordbook-cta-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.wordbook-cta-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.wordbook-cta-idle .wordbook-cta-title {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.wordbook-cta-sub {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.wordbook-cta-arrow {
+  width: 18px;
+  height: 18px;
+}
+
+.wordbook-filters {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.wordbook-filter {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  padding-right: 14px;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.wordbook-filter-on {
+  border-color: var(--libitum-color-fg-neutral);
+  background-color: var(--libitum-color-fg-neutral);
+}
+
+.wordbook-filter-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.wordbook-filter-on .wordbook-filter-label {
+  color: var(--libitum-color-white);
+}
+
+.wordbook-scroll {
+  flex: 1;
+}
+
+.wordbook-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  /* 바텀 메뉴(68pt) 몫 + 24. */
+  padding-bottom: calc(
+    var(--libitum-spacing-64) + var(--libitum-spacing-4) + var(--libitum-spacing-24)
+  );
+}
+
+.wordbook-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) 14px;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s1);
+}
+
+/* 줄 본문(누르면 자세히) — 재생 단추의 형제(접근성 감사 C2). */
+.wordbook-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+}
+
+.wordbook-row-body:active {
+  opacity: var(--libitum-opacity-disabled);
+}
+
+.wordbook-play {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.wordbook-play-off {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.wordbook-play-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.wordbook-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.wordbook-row-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+}
+
+.wordbook-row-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.wordbook-row-roman,
+.wordbook-row-meaning {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.wordbook-chip {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  padding-left: var(--libitum-spacing-8);
+  padding-right: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+}
+
+.wordbook-chip-label {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+}
+
+.wordbook-chip-new {
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.wordbook-chip-new .wordbook-chip-label {
+  color: var(--libitum-color-fg-brand);
+}
+
+.wordbook-chip-review {
+  background-color: var(--libitum-color-feedback-warning-surface);
+}
+
+.wordbook-chip-review .wordbook-chip-label {
+  color: var(--libitum-color-feedback-warning-text);
+}
+
+.wordbook-chip-known {
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.wordbook-chip-known .wordbook-chip-label {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.wordbook-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-40);
+}
+
+.wordbook-empty-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+}
+
+.wordbook-empty-body {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}

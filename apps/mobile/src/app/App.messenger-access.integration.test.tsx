@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -67,7 +68,7 @@ test("MA-I2 시험 계정이 아닌 회원 — 지금 목록 · 엽전 칩, 설�
   expect(present("messenger-list-list")).toBe(true);
   expect(present("messenger-list-coins")).toBe(true);
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(present("ui-lynx-settings-group-item-chats")).toBe(true);
 });
 
@@ -77,6 +78,6 @@ test("MA-I3 시험 계정 — 지금 목록, 설정 탭에 Chats 줄", async () 
 
   expect(gate()).toBeNull();
   expect(present("messenger-list-list")).toBe(true);
-  openTab("settings");
+  openSettingsFromMore();
   expect(present("ui-lynx-settings-group-item-chats")).toBe(true);
 });

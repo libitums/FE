@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -64,7 +65,7 @@ test("I3. 완료가 아닌 이벤트(표지 열기 · 설정 · 알림)는 track
     within(screen.getByTestId("episode-intro-screen-back")).getByTestId("ui-lynx-round-button"),
     {},
   );
-  tap("ui-lynx-bottom-navigator-item-settings");
+  openSettingsFromMore();
   tap("top-bar-notifications");
 
   await vi.waitFor(() =>

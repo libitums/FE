@@ -9,18 +9,19 @@ import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { canStartCatalogUnit } from "../screens/journey-map/catalog-map";
 import { catalogIsStoryUnit } from "../screens/journey-map/catalog-map-story";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import type { ScreenWiring } from "./screen-wiring";
 import type { JourneyProgressState } from "./learning-progress";
-import type { LearningTickets } from "./use-learning-tickets";
+import type { LearningTickets, TicketHeaderWiring } from "./use-learning-tickets";
 
 export function withLearningTickets<W extends ScreenWiring>(
   wiring: W,
-  tickets: Pick<LearningTickets, "startWithTicket" | "status">,
+  tickets: Pick<LearningTickets, "startWithTicket" | "status" | "header">,
   progress: JourneyProgressState & {
     readonly markTicketUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
   },
   catalogSections: readonly CatalogMapSection[],
-): W {
+): W & { readonly ticketHeader: TicketHeaderWiring } {
   const { startWithTicket } = tickets;
   const catalogProgress: CatalogProgress = progress.catalogProgress;
   const ticketUnits: CatalogProgress = progress.ticketUnits ?? {};
@@ -30,6 +31,14 @@ export function withLearningTickets<W extends ScreenWiring>(
     ...(ticketsUnlimited() ? {} : { ticketsLeft: tickets.status.available }),
     ticketChip: { count: tickets.status.available, unlimited: ticketsUnlimited() },
     catalogTicketUnits: ticketUnits,
+    // 머리 티켓 모달 결선 — 비회원이면 Get more tickets가 로그인 권유입니다(ADR-0166, 2026-11-20).
+    ticketHeader: {
+      ...tickets.header,
+      signIn:
+        messengerAccessOf(wiring.accountState) === "preview"
+          ? { onSignIn: wiring.onSignIn, sink: wiring.messengerChat.eventSink }
+          : null,
+    },
     onStartCatalogUnit: (episodeId, unitKey, source) => {
       "background only";
       if (!canStartCatalogUnit(catalogSections, episodeId, unitKey, catalogProgress)) return;

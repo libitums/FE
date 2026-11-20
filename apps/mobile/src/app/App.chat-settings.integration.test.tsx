@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
@@ -40,7 +41,7 @@ const tapCell = (testId: string): void => {
 
 async function bootToChats(): Promise<void> {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
-  openTab("settings");
+  openSettingsFromMore();
   tapCell("ui-lynx-settings-group-item-chats");
   expect(present("chat-settings-screen")).toBe(true);
 }
@@ -109,7 +110,7 @@ test("CS-I3 방 사이드바 「What 미나 remembers」 → 미나의 기억 �
 test("CS-I4 Chats 화면 · 기억 화면을 오가도 분석 이벤트가 생기지 않는다(AC3 · AC8)", async () => {
   const { transport, calls: sent } = fakeTransport();
   await renderTesterApp(<App progressSeed={legacyPassedSeed} {...assembleSinks(transport)} />);
-  openTab("settings");
+  openSettingsFromMore();
   await vi.waitFor(() => expect(sentEventNames(sent)).toContain("settings_opened"));
   const before = new Set(sentEventNames(sent));
 

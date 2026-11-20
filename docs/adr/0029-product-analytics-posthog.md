@@ -431,6 +431,9 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-19 — 비회원 메신저(ADR-0166). 적용 기록⟩ **`chat_sign_in_prompt_closed { trigger: send | media | menu | coins | add_friend, choice: sign_in | later }`**
     (공통 속성 둘 포함, `surface: chat`) — 비회원 「로그인 필요」 대화상자를 닫을 때 한 번(`screens/messenger-chat/use-guest-gate.tsx`). 뜬 수 = 이 이벤트 수,
     로그인으로 넘어간 비율 = `choice: sign_in` 비율, 로그인 성공은 `entry_login_method_selected`. 이름이 74 → 75개, Airbridge 매핑 없음.
+  - ⟨2026-11-20 — 비회원 흐름 다듬기(ADR-0166 확인 필요 결정). 적용 기록⟩ `chat_sign_in_prompt_closed`의 `trigger`에 **`tickets`** 값을 더한다 — 머리 티켓 모달의
+    Get more tickets(비회원)에서 뜬 대화상자. `surface`는 그대로 `chat`(같은 대화상자 · 같은 이벤트), sink는 메신저와 같은 제품 이벤트 sink다. 이름 수는 그대로 75개.
+    비회원 방 전구(Reply ideas)는 새 값 없이 `send`로 센다.
 
   #### D3 목적 구분 — 쓰는 법
 
