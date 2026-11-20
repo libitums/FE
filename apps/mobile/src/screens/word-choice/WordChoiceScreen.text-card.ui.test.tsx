@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import { cleanup, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { useCompactDevice } from "../learning/compact-device.test-support";
 import { WordChoiceActivity } from "./WordChoiceScreen";
@@ -89,8 +89,18 @@ test("WC1. 13 mini 창에서는 한글이 한 단계 아래(heading-l)이고 로
   expect(id("word-choice-screen-romanization")).not.toHaveClass("text-role-romanization-s");
 });
 
-test("WC2. CLOZE 로마자는 채운 문장이 조각 셋으로 서고 정답 조각만 answer 클래스를 진다", () => {
+// ⟨2026-11-20⟩ 답 전에는 빈칸 자리가 ___입니다(QA 2번 — 정답 로마자가 답을 알려 줬습니다). 채운 문장 · 정답 밑줄은 답한 뒤입니다.
+const choose = (index: number): void =>
+  void fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${index}`), {});
+
+test("WC2. CLOZE 로마자는 답 전에 빈칸 자리가 ___이고, 답한 뒤 채운 문장이 조각 셋으로 서며 정답 조각만 answer 클래스를 진다", () => {
   mount(cloze);
+
+  const before = id("word-choice-screen-romanization");
+  expect(before).toHaveTextContent("hangugeun ___ iseyo?");
+  expect(before.textContent).not.toContain("cheoeum");
+
+  choose(1);
 
   const roman = id("word-choice-screen-romanization");
   expect(roman).toHaveTextContent("hangugeun cheoeum iseyo?");
@@ -104,14 +114,19 @@ test("WC2. CLOZE 로마자는 채운 문장이 조각 셋으로 서고 정답 �
   ]);
 });
 
-test("WC2. CLOZE 로마자 줄의 이름은 Pronunciation 접두를 붙인 채운 문장이고 한글 제시문은 빈칸을 blank로 읽는다", () => {
+test("WC2. CLOZE 로마자 줄의 이름은 답 전에 빈칸을 blank로 읽고(정답 없음), 답한 뒤 채운 문장이다", () => {
   mount(cloze);
 
-  const name = id("word-choice-screen-romanization").getAttribute("accessibility-label");
-  expect(name).toBe("Pronunciation: hangugeun cheoeum iseyo?");
+  expect(id("word-choice-screen-romanization").getAttribute("accessibility-label")).toBe(
+    "Pronunciation: hangugeun blank iseyo?",
+  );
   expect(id("word-choice-screen-prompt")).toHaveAttribute(
     "accessibility-label",
     "한국은 blank 이세요?",
+  );
+  choose(0);
+  expect(id("word-choice-screen-romanization").getAttribute("accessibility-label")).toBe(
+    "Pronunciation: hangugeun cheoeum iseyo?",
   );
 });
 

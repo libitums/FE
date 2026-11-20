@@ -13,7 +13,7 @@ import {
   romanizationSizeFor,
 } from "../../lib/korean-text-step";
 import type { LearningDensity } from "../../lib/learning-density";
-import { romanizationSegmentsOf } from "../../lib/romanization-segments";
+import { clozeRomanizationMasked, romanizationSegmentsOf } from "../../lib/romanization-segments";
 import { useUiCopy } from "../../lib/ui-copy";
 
 import { CultureCheckScene } from "./CultureCheckScene";
@@ -119,6 +119,12 @@ export function WordChoicePresentation({
   const size = romanizationSizeFor(step);
   // 해설 판이 서는 문화 확인은 답한 뒤 한글 줄만 남깁니다 — 판에 높이를 내줍니다.
   const folded = answered && question.culture !== undefined;
+  // 빈칸 채우기는 답 전에 정답 자리를 한글 줄처럼 빈칸으로 둡니다 — 답한 뒤에 정답 로마자 · 밑줄이 섭니다(QA 2026-11-20).
+  const emphasis = answered ? question.romanizationEmphasis : undefined;
+  const romanization =
+    question.romanization === undefined || answered
+      ? question.romanization
+      : clozeRomanizationMasked(question.romanization, question.romanizationEmphasis);
   return (
     <>
       <text
@@ -130,12 +136,12 @@ export function WordChoicePresentation({
       </text>
       {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는 문항에는 실리지 않습니다(그
           판단은 문항을 만드는 쪽이 집니다). 로마자 → 구분선 → 뜻이 한글 바로 아래 이 순서입니다. */}
-      {question.romanization === undefined || folded ? null : (
+      {romanization === undefined || folded ? null : (
         <TextRoles.Romanization
-          segments={romanizationSegmentsOf(question.romanization, question.romanizationEmphasis)}
+          segments={romanizationSegmentsOf(romanization, emphasis)}
           size={size}
           testId="word-choice-screen-romanization"
-          {...romanizationNameOf(question.romanization)}
+          {...romanizationNameOf(romanization)}
         />
       )}
       {question.translation === undefined || folded ? null : (

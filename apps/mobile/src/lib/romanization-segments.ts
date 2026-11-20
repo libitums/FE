@@ -40,3 +40,13 @@ export function clozeRomanizationOf(
     emphasis: { start: at, length: answer.length },
   };
 }
+
+/**
+ * 답 전의 빈칸 채우기 로마자입니다 — 정답이 들어간 범위를 한글 줄과 같은 빈칸 표시로 되돌립니다. 범위가 없거나 어긋나면
+ * 그대로입니다(QA 2026-11-20 — 답 전에 정답 로마자가 보였습니다).
+ */
+export function clozeRomanizationMasked(text: string, emphasis: TextSpan | undefined): string {
+  const valid = romanizationSegmentsOf(text, emphasis).some((piece) => piece.emphasis === "answer");
+  if (!valid || emphasis === undefined) return text;
+  return text.slice(0, emphasis.start) + blankMarker + text.slice(emphasis.start + emphasis.length);
+}
