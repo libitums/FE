@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -82,7 +83,7 @@ afterEach(() => {
 test("[IF1] 설정 → Send feedback → 별점 · 보내기 → 서버에 한 건 · 이벤트 한 번 · 감사 문구", async () => {
   const events: SettingsEvent[] = [];
   const { rpcs } = await boot(<App settingsEventSink={(e) => events.push(e)} />);
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-settings-group-item-feedback")).getByTestId(
       "ui-lynx-settings-cell",

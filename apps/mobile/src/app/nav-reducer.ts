@@ -3,7 +3,7 @@
 // 리듀서가 집니다(ADR-0007 D3). 순수 함수이므로 `unit` 계층 테스트 대상입니다
 // (ADR-0006 D4).
 
-import type { Nav, NavAction, Screen, Tab } from "./nav-state";
+import type { MoreRoot, Nav, NavAction, Screen, Tab } from "./nav-state";
 
 // `entry`가 비어 있지 않으면 진입 구간입니다 — `phase` 필드를 만들지 않습니다.
 export function isEntrySection(nav: Nav): boolean {
@@ -30,6 +30,17 @@ export function showsTabNavigator(nav: Nav): boolean {
 // 아닙니다.
 export function tabRootActions(tab: Tab): readonly NavAction[] {
   return [{ type: "switchTab", tab }, { type: "backToRoot" }];
+}
+
+// 더보기 메뉴의 줄로 가는 동작 목록입니다(ADR-0168) — 설정으로 가는 모든 길(딥링크 · 다운로드 설정 바로가기)도 이것을 씁니다.
+export function moreRootActions(root: MoreRoot): readonly NavAction[] {
+  return [{ type: "openMore", root }];
+}
+
+/** more 스택 루트가 어느 줄인가입니다(지금 탭과 무관). 루트가 메뉴 화면이 아니면 null. */
+export function moreRootOf(nav: Nav): MoreRoot | null {
+  const root = nav.stacks.more[0]?.name;
+  return root === "letters" || root === "wordbook" || root === "settings" ? root : null;
 }
 
 // 활성 스택 선택 규칙입니다: `entry`가 비어 있지 않으면 `entry`, 아니면 현재
@@ -117,6 +128,10 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
         return nav;
       }
       return { ...nav, tab: action.tab };
+    }
+    case "openMore": {
+      if (nav.entry.length > 0) return nav;
+      return { ...nav, tab: "more", stacks: { ...nav.stacks, more: [{ name: action.root }] } };
     }
     case "enterApp": {
       if (nav.entry.length === 0) {

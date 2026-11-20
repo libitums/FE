@@ -8,6 +8,7 @@ export type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
 export type CatalogPlannedItem = {
   readonly mapped: CatalogMappedItem;
   readonly itemType: CatalogItemRef["itemType"];
+  readonly contentRef?: string;
 };
 
 /** 활동별 문항 ref 묶음입니다(건너뜀 빠짐 · 같은 학습형 연속이 한 묶음). `catalogActivitiesOf`와 같은 규칙입니다. */
@@ -16,10 +17,13 @@ export function catalogActivityItemRefsOf(
 ): readonly (readonly CatalogItemRef[])[] {
   const groups: CatalogItemRef[][] = [];
   let lastForm: CatalogActivity["form"] | null = null;
-  for (const { mapped, itemType } of planned) {
+  for (const { mapped, itemType, contentRef } of planned) {
     if (mapped.kind === "skipped") continue;
     const group = groups[groups.length - 1];
-    const ref: CatalogItemRef = { itemId: mapped.itemId, itemType };
+    const ref: CatalogItemRef =
+      contentRef === undefined
+        ? { itemId: mapped.itemId, itemType }
+        : { itemId: mapped.itemId, itemType, contentRef };
     if (group !== undefined && lastForm === mapped.kind) group.push(ref);
     else groups.push([ref]);
     lastForm = mapped.kind;

@@ -33,6 +33,7 @@ import { canBrowseChats } from "../screens/messenger-chat/messenger-access";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import { renderPlans } from "./render-plans";
+import { renderMoreScreen } from "./render-more";
 import type { ScreenWiring } from "./screen-wiring";
 
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
@@ -106,6 +107,13 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       );
     case "plans":
       return renderPlans(screen, wiring);
+    // 더보기 메뉴의 화면들(ADR-0168).
+    case "letters":
+    case "letters-compose":
+    case "wordbook":
+    case "wordbook-word":
+    case "wordbook-review":
+      return renderMoreScreen(screen, wiring);
     case "profile":
       return <AccountProfileScreen onExit={wiring.onExitProfile} />;
     case "learner-profile":

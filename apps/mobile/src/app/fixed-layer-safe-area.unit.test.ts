@@ -17,6 +17,7 @@ const EXEMPT: Readonly<Record<string, string>> = {
   "chat-modal": "가운데 상자(ChatModalFrame), 단추는 상자 아래",
   "first-unit-guide": "가운데 안내 상자 — 위에 누를 것 없음",
   "first-unit-map-scrim": "맵을 덮는 딤만 — 누를 것 없음",
+  "more-menu-catch": "더보기 메뉴 바깥 막(투명) — 누르면 닫힘만, 위에 누를 것 없음(ADR-0168)",
 };
 
 function walk(dir: string): string[] {

@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -339,8 +340,7 @@ const learnerRowCell = (): HTMLElement =>
   within(screen.getByTestId("ui-lynx-settings-group-item-learner-profile")).getByTestId(
     "ui-lynx-settings-cell",
   );
-const openSettings = (): void =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+const openSettings = (): void => openSettingsFromMore();
 /** 설정의 「Name and country in lessons」에서 이름과 나라를 저장하고 설정 목록으로 돌아옵니다. */
 function saveInSettings(name: string, code: string): void {
   openSettings();

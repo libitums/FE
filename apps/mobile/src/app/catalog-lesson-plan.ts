@@ -122,6 +122,7 @@ export function catalogLessonPlanOf(
   const planned = unit.items.map((item) => ({
     mapped: catalogItemOf(item, port),
     itemType: item.type,
+    ...(item.ref === undefined ? {} : { contentRef: item.ref }),
   }));
   const mapped = planned.map((entryItem) => entryItem.mapped);
   const activities = catalogActivitiesOf(mapped);

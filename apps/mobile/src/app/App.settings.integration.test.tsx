@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@lynx-js/react/testing-library";
@@ -8,7 +9,7 @@ import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // 설정에서 프로필·문서로 이동하고 기본 듣기 동작을 유지하는지 검증합니다.
 function openSettingsTab(): void {
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
 }
 
 // 기존 `render` 직접 호출 자리를 대신하는 공용 헬퍼(`renderApp`)입니다. 토큰이 있는
@@ -76,7 +77,7 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
   fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "data-selected",
     "true",
   );

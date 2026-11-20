@@ -108,6 +108,8 @@ export type CatalogLessonItemPort = CatalogItemPort & {
 export type CatalogItemRef = {
   readonly itemId: string;
   readonly itemType: LearningItem["type"];
+  /** 콘텐츠 문항의 `ref`(`voca:` · `expr:` …) — 단어장이 단어를 찾는 데 씁니다(ADR-0168). 없으면 키가 없습니다. */
+  readonly contentRef?: string;
 };
 
 export type CatalogLessonPlan = {

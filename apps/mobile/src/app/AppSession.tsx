@@ -14,9 +14,12 @@ import type { NotificationItem } from "../screens/notifications/notifications.co
 import { productPhoneSignIn } from "../screens/login/login";
 import { AppHeader } from "./AppHeader";
 import { guestUnlimitedPass } from "../lib/unlimited-pass";
-import { AppNavigator } from "./AppNavigator";
+import { AppBottomBar } from "./AppBottomBar";
 import { useMessengerTabBadge } from "./use-messenger-tab-badge";
-import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./nav-reducer";
+import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
+import { deeplinkActions } from "./deeplink-target";
+import { createLearningTrail } from "./learning-trail";
+import { deviceLearningTrailPort } from "./learning-trail-port";
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
 import { roleplaySectionsOf } from "./roleplay-sections";
@@ -118,6 +121,7 @@ export function AppSession({
   const finishGuard = useCatalogFinishGuard();
   // 탭 루트 화면 안 겹침 레이어 — 화면이 알려 오고(`onScreenLayerChange`) 그 동안 전역 머리가 낭독에서 빠집니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
+  const [learningTrail] = useState(() => createLearningTrail(deviceLearningTrailPort())); // 단어장 · 추천 신호(ADR-0168)
 
   // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
   const catalog = { episodeContent, catalogSections, catalogProgress };
@@ -168,6 +172,7 @@ export function AppSession({
     downloadCatalog: () => downloadCatalogOf(episodeContent, catalogSections, catalogProgress),
     accountState,
     setAccountState,
+    learningTrail,
   });
   useNewFriendBackfill(progress.hasLoadedProgress, catalog, episodeIntroEventSink);
   const screenNow = currentScreen(nav);
@@ -189,8 +194,8 @@ export function AppSession({
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
   // Airbridge 딥링크 · 지연 딥링크도 앱 구간에 들어선 뒤에 그 탭을 엽니다(ADR-0080).
-  useOpenedDeeplink(nav.entry.length === 0, (tab) => {
-    for (const action of tabRootActions(tab)) dispatch(action);
+  useOpenedDeeplink(nav.entry.length === 0, (target) => {
+    for (const action of deeplinkActions(target)) dispatch(action);
   });
   usePushTokenRefresh();
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
@@ -277,17 +282,12 @@ export function AppSession({
         </view>
         {/* 로그인 뒤 탭 루트에만 바를 겹칩니다. 하단 여백은 각 화면이 집니다. */}
         {showsNavigator ? (
-          <AppNavigator
-            tab={nav.tab}
+          <AppBottomBar
+            {...{ nav, dispatch }}
+            more={wiring.more}
             badges={messengerTabBadge}
             obscured={covered}
             floorHeight={bottomLayout.navigatorFloorHeight}
-            onSelectTab={(tab) => {
-              // 탭이 실제로 설정으로 바뀔 때만 `settings_opened` — 같은 탭 재탭은 열람이 아닙니다.
-              if (tab === "settings" && nav.tab !== "settings")
-                settingsEventSink?.({ name: "settings_opened" });
-              dispatch({ type: "switchTab", tab });
-            }}
           />
         ) : null}
         {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m · 요금제 카드 ADR-0144). */}

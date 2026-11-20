@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -150,7 +151,7 @@ test("ITF4. 원격 판이 열린 채 설정에서 언어를 ja로 바꾸면 ja �
   expect(roleplayTitle()).toBe("Mua nước (tệp)");
 
   // 설정 › Language에서 ja를 고릅니다 — 세션 언어가 바뀌고 저장되며, 저장 알림이 받기를 다시 돌립니다.
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   fireEvent.tap(SETTINGS_LANGUAGE_ROW(), {});
   await act(async () => {
     fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-ja"), {});

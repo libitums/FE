@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import {
   legacyPassedRecord,
   legacyPassedSeed,
@@ -195,9 +196,9 @@ function expectEnglishJourneyTabs(): void {
     "accessibility-label",
     "Roleplay",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    "Settings",
+    "More",
   );
 }
 
@@ -319,7 +320,7 @@ test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션 · UI 언어와 
 
 // ------------------------------------------------------------ IL6 · 탭 화면 둘러보기
 
-function openTab(tab: "journey" | "roleplay" | "settings"): void {
+function openTab(tab: "journey" | "roleplay"): void {
   fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
 }
 
@@ -358,7 +359,7 @@ test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한
   expectNoHangul(root());
 
   // 설정 · 프로필 · 약관
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expectNoHangul(root());
 
@@ -472,7 +473,7 @@ test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바�
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     storageModule: storage.module,
   });
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
   expect(languageRow).toHaveTextContent("Intermediate English");
   fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
@@ -483,9 +484,9 @@ test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바�
   tapButtonIn("language-select-screen-next");
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Pengaturan/),
+    expect.stringMatching(/^Lainnya/),
   );
 });
 
@@ -496,7 +497,7 @@ test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     storageModule: storage.module,
   });
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
   fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
 
@@ -505,9 +506,9 @@ test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바
   tapButtonIn("language-select-screen-next");
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Ajustes");
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Ajustes/),
+    expect.stringMatching(/^Más/),
   );
 });
 
@@ -518,7 +519,7 @@ test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     storageModule: storage.module,
   });
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
   fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
 
@@ -527,9 +528,9 @@ test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌
   tapButtonIn("language-select-screen-next");
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("設定");
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^設定/),
+    expect.stringMatching(/^その他/),
   );
 });
 

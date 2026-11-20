@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -95,7 +96,7 @@ test("ITH1. th 사용자의 받기 차례는 th 파일만 받고, 다음 실행�
   resetApp();
   await bootTutorialApp({ offline: true, progressSeed, store });
   expect(roleplayTitle()).toBe("ซื้อน้ำ (ไฟล์)");
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent(uiCopyTh.settings.title);
   expect(uiCopyTh.settings.title).not.toBe(uiCopyEn.settings.title);
 });
@@ -109,7 +110,7 @@ test("ITH2. 원격 판이 열린 채 설정 › Language에서 Burmese를 고르
   await flushAsync();
   expect(store.has(contentTranslationKey("my", U01))).toBe(false);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-settings-group-item-language")).getByTestId(
       "ui-lynx-settings-cell",
@@ -127,7 +128,7 @@ test("ITH2. 원격 판이 열린 채 설정 › Language에서 Burmese를 고르
 
   expect(store.get(contentTranslationKey("my", U01))).toBe(MY);
   expect(roleplayTitle()).toBe("ရေဝယ်ခြင်း (ဖိုင်)");
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent(uiCopyMy.settings.title);
   expect(uiCopyMy.settings.title).not.toBe(uiCopyEn.settings.title);
 });
