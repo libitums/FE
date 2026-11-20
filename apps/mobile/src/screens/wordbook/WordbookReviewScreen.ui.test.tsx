@@ -89,3 +89,10 @@ test("WR5. Skip은 답 없이 다음 · × 닫기", () => {
   );
   expect(onClose).toHaveBeenCalledTimes(1);
 });
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("WR6. 보기는 flatten false", () => {
+  mount();
+  for (const choice of choices()) expect(choice).toHaveAttribute("flatten", "false");
+});

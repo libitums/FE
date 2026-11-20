@@ -12,6 +12,8 @@ export type MoreCopy = {
     readonly wordbookDescription: (words: number, due: number) => string;
     readonly settings: string;
     readonly settingsDescription: string;
+    /** 메뉴가 열릴 때 한 번 낭독 — 「Menu, 3 items」. */
+    readonly opened: string;
   };
   readonly letters: {
     readonly title: string;
@@ -20,6 +22,8 @@ export type MoreCopy = {
     readonly groups: Readonly<Record<"consonants" | "vowels" | "doubles" | "combined", string>>;
     /** 소리가 아직 없는 칸의 낭독 꼬리. */
     readonly soundUnavailable: string;
+    /** 들은 칸의 낭독 꼬리. */
+    readonly heard: string;
   };
   readonly compose: {
     readonly formLabel: string;

@@ -1094,3 +1094,24 @@ test("MM-L3. (ADR-0168) 한글 읽기를 어렵지 않게 끝낸 레슨 뒤에�
   vi.useRealTimers();
   expect(screen.queryByTestId("letters-recommend")).toBeNull();
 });
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("MM-L4. (ADR-0168 접근성 감사) 추천 대화상자가 선 동안 지도 · 바는 낭독에서 빠진다", async () => {
+  await boot({ progress: throughS9 });
+  tapNode(u01, "S9");
+  vi.useFakeTimers();
+  tapId("learning-shell-exit");
+  tapButtonIn("ui-lynx-dialog-action-leave");
+  await settleFake();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1200);
+  });
+  vi.useRealTimers();
+  expect(screen.getByTestId("letters-recommend")).toBeInTheDocument();
+  expect(screen.getByTestId("app-navigator")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "true",
+  );
+  expect(screen.getByTestId("app-header")).toHaveAttribute("accessibility-elements-hidden", "true");
+});

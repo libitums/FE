@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import { LettersComposeScreen } from "./LettersComposeScreen";
 import { lettersTestIds as ids } from "./letters.contract";
 
@@ -121,4 +122,35 @@ test("CS8. ×(머리 나가기)는 레슨과 같은 나가기 확인 뒤 onExit"
     {},
   );
   expect(onExit).toHaveBeenCalledTimes(1);
+});
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("CS9. 누르는 요소는 Android에서도 접근성 트리에 남는다(flatten false)", () => {
+  mount();
+  for (const id of [
+    ids.composeSlot("c"),
+    ids.composeSlot("v"),
+    ids.composeSlot("r"),
+    ids.composeTile(0),
+    ids.composeHint,
+    ids.composePlay,
+  ])
+    expect(screen.getByTestId(id)).toHaveAttribute("flatten", "false");
+});
+
+test("CS10. 판정 · 힌트 · 완료를 낭독한다", () => {
+  const announced: string[] = [];
+  vi.stubGlobal("NativeModules", {
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }) => void announced.push(args.content),
+    },
+  });
+  mount();
+  fireEvent.tap(screen.getByTestId(ids.composeHint), {});
+  expect(announced).toContain("Start with the sound “g”.");
+  pick("ㄱ");
+  pick("ㅏ");
+  expect(announced).toContain(uiCopyEn.common.resultAnnouncement("correct"));
+  vi.unstubAllGlobals();
 });

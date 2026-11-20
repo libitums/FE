@@ -170,3 +170,32 @@ test("MI7. 오늘의 복습 — 맞히면 단어장 기록이 Got it으로(맞�
     true,
   );
 });
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("MI8. 메뉴가 열린 동안 뒤 화면 · 머리는 낭독에서 빠지고(바는 남음) 열림을 한 번 낭독한다", async () => {
+  await boot();
+  const announced: string[] = [];
+  const modules = (globalThis as { NativeModules?: Record<string, unknown> }).NativeModules ?? {};
+  vi.stubGlobal("NativeModules", {
+    ...modules,
+    LynxAccessibilityModule: {
+      accessibilityAnnounce: (args: { content: string }) => void announced.push(args.content),
+    },
+  });
+  tapMore();
+  expect(screen.getByTestId("app-content")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "true",
+  );
+  expect(screen.getByTestId("app-navigator")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "false",
+  );
+  expect(announced).toEqual(["Menu, 3 items"]);
+  tapMore();
+  expect(screen.getByTestId("app-content")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "false",
+  );
+});

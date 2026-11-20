@@ -46,8 +46,11 @@ export function useLettersRecommend(input: {
     if (!ready || pending === null) return undefined;
     const reason = pending;
     const timer = setTimeout(() => {
-      saveLettersRecord(withShown(loadLettersRecord(), todayLocal()));
       setPending(null);
+      // 기다리는 사이 Letters를 열었거나(메뉴) 다른 날이 됐을 수 있어 띄우기 직전에 다시 봅니다(리뷰 M1).
+      const record = loadLettersRecord();
+      if (!canRecommendLetters(record, todayLocal())) return;
+      saveLettersRecord(withShown(record, todayLocal()));
       setShown(reason);
       more.emit({ name: "letters_recommend_shown", reason });
     }, lettersRecommendConfig.delayMs);
@@ -56,7 +59,7 @@ export function useLettersRecommend(input: {
 
   const close = () => setShown(null);
   return {
-    open: shown !== null || pending !== null,
+    open: shown !== null,
     layer:
       shown === null ? null : (
         <LettersRecommendDialog

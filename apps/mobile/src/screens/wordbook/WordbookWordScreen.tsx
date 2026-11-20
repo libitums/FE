@@ -69,6 +69,7 @@ export function WordbookWordScreen({
                   }
                   data-testid={ids.listen}
                   accessibility-element={true}
+                  flatten={false}
                   accessibility-label={copy.listen}
                   accessibility-traits={source === null ? "disabled" : "button"}
                   bindtap={listen(false)}
@@ -79,6 +80,7 @@ export function WordbookWordScreen({
                   className={source === null ? "wordbook-pill wordbook-pill-off" : "wordbook-pill"}
                   data-testid={ids.slow}
                   accessibility-element={true}
+                  flatten={false}
                   accessibility-label={copy.slow}
                   accessibility-traits={source === null ? "disabled" : "button"}
                   bindtap={listen(true)}

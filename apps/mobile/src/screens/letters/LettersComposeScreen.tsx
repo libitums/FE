@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import play from "@libitums/icons/lynx/play";
 
+import { announce, announceCompletion } from "../../lib/accessibility";
 import { composeSyllable, jamoTileRomanOf } from "../../lib/letters/jamo";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -65,8 +66,12 @@ export function LettersComposeScreen({
     ) {
       playSyllable(composeSyllable(next.consonant, next.vowel));
       onAnswered?.(next.round + 1, target, judged === "correct");
+      announce(uiCopy.common.resultAnnouncement(judged));
     }
-    if (action.type === "next" && next.done) onComplete?.(COMPOSE_ROUNDS.length, next.firstTry);
+    if (action.type === "next" && next.done) {
+      onComplete?.(COMPOSE_ROUNDS.length, next.firstTry);
+      announceCompletion(copy.complete);
+    }
   };
 
   const action = state.done
@@ -85,6 +90,7 @@ export function LettersComposeScreen({
     "background only";
     playSound("button");
     setHint(true);
+    announce(copy.hintText(jamoTileRomanOf(round.consonant)));
   };
 
   const slot = (which: "consonant" | "vowel") => {
@@ -97,6 +103,7 @@ export function LettersComposeScreen({
         data-testid={ids.composeSlot(which === "consonant" ? "c" : "v")}
         data-state={slotState}
         accessibility-element={true}
+        flatten={false}
         accessibility-label={`${name}, ${value ?? copy.emptySlot}`}
         accessibility-traits={value !== null && verdict === null ? "button" : "none"}
         bindtap={() => {
@@ -132,6 +139,7 @@ export function LettersComposeScreen({
                 className="letters-compose-hint"
                 data-testid={ids.composeHint}
                 accessibility-element={true}
+                flatten={false}
                 accessibility-label={copy.hint}
                 accessibility-traits="button"
                 bindtap={handleHint}
@@ -156,6 +164,7 @@ export function LettersComposeScreen({
                       }
                       data-testid={ids.composeTile(index)}
                       accessibility-element={true}
+                      flatten={false}
                       accessibility-label={`${letter}, ${jamoTileRomanOf(letter)}`}
                       accessibility-traits={used || verdict !== null ? "disabled" : "button"}
                       bindtap={() => {
@@ -194,6 +203,7 @@ export function LettersComposeScreen({
                   className="letters-compose-play"
                   data-testid={ids.composePlay}
                   accessibility-element={true}
+                  flatten={false}
                   accessibility-label={copy.play}
                   accessibility-traits="button"
                   bindtap={handlePlay}
@@ -219,6 +229,7 @@ export function LettersComposeScreen({
                   className={`syllable-build-slot letters-compose-result${verdict === null ? "" : ` syllable-build-slot-${verdict}`}`}
                   data-testid={ids.composeSlot("r")}
                   accessibility-element={true}
+                  flatten={false}
                   accessibility-label={`${copy.resultSlot}, ${merged === "" ? copy.emptySlot : merged}`}
                 >
                   {merged === "" ? null : (

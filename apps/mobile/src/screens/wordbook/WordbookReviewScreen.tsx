@@ -113,6 +113,7 @@ export function WordbookReviewScreen({
               data-testid={ids.choice(position)}
               data-state={state}
               accessibility-element={true}
+              flatten={false}
               accessibility-label={
                 state === "correct"
                   ? `${choice}, ${copy.correctMark}`

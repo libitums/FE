@@ -13,6 +13,7 @@ export const moreCopyJa: MoreCopy = {
     wordbookDescription: (words, due) => `${words}語 · 復習 ${due}`,
     settings: "設定",
     settingsDescription: "アカウント・言語・サウンド",
+    opened: "メニュー、3項目",
   },
   letters: {
     title: "ハングルの文字",
@@ -25,6 +26,7 @@ export const moreCopyJa: MoreCopy = {
       combined: "合成母音",
     },
     soundUnavailable: "音声はまだありません",
+    heard: "聞いた",
   },
   compose: {
     formLabel: "文字の組み立て",
@@ -98,6 +100,7 @@ export const moreCopyVi: MoreCopy = {
     wordbookDescription: (words, due) => `${words} từ · ${due} cần ôn`,
     settings: "Cài đặt",
     settingsDescription: "Tài khoản, ngôn ngữ, âm thanh",
+    opened: "Menu, 3 mục",
   },
   letters: {
     title: "Chữ cái Hangul",
@@ -110,6 +113,7 @@ export const moreCopyVi: MoreCopy = {
       combined: "Nguyên âm ghép",
     },
     soundUnavailable: "chưa có âm thanh",
+    heard: "đã nghe",
   },
   compose: {
     formLabel: "Ghép chữ",

@@ -67,7 +67,7 @@ test("WS4. 칩으로 거른다 — New 둘 · Review 하나 · Got it 하나 · 
 
 test("WS5. 줄을 누르면 자세히, 재생 단추는 소리만", () => {
   const { onOpenWord, play } = mount();
-  fireEvent.tap(screen.getByTestId(ids.rowPlay(1)), { eventType: "catchEvent" });
+  fireEvent.tap(screen.getByTestId(ids.rowPlay(1)), {});
   expect(play).toHaveBeenCalledExactlyOnceWith("src:mul", false);
   expect(onOpenWord).not.toHaveBeenCalled();
   fireEvent.tap(screen.getByTestId(ids.row(1)), {});
@@ -77,4 +77,29 @@ test("WS5. 줄을 누르면 자세히, 재생 단추는 소리만", () => {
 test("WS6. 단어가 없으면 빈 상태", () => {
   mount([], 0);
   expect(screen.getByTestId(ids.empty).textContent).toContain("No words yet");
+});
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("WS7. 재생 단추는 줄 단추 밖(형제)이고 이름에 단어가 붙는다 · 누르는 요소는 flatten false", () => {
+  mount();
+  const row = screen.getByTestId(ids.row(1));
+  const play = screen.getByTestId(ids.rowPlay(1));
+  expect(row.contains(play)).toBe(false);
+  expect(play).toHaveAttribute("accessibility-label", "Play, 물");
+  for (const element of [
+    row,
+    play,
+    screen.getByTestId(ids.reviewCta),
+    screen.getByTestId(ids.filter("new")),
+  ])
+    expect(element).toHaveAttribute("flatten", "false");
+});
+
+test("WS8. 제목은 단어 수와 함께 한 번에 읽힌다", () => {
+  mount();
+  expect(screen.getByTestId("wordbook-title")).toHaveAttribute(
+    "accessibility-label",
+    "My words, 4",
+  );
 });

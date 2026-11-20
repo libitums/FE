@@ -28,7 +28,9 @@ export function WordbookScreen({
   onOpenWord,
   onReview,
 }: WordbookScreenProps): ReactNode {
-  const copy = useUiCopy().more.wordbook;
+  const uiCopy = useUiCopy();
+  const copy = uiCopy.more.wordbook;
+  const selected = uiCopy.common.selected;
   const [filter, setFilter] = useState<WordbookFilter>("all");
   const shown = filter === "all" ? entries : entries.filter((entry) => entry.status === filter);
 
@@ -42,10 +44,17 @@ export function WordbookScreen({
   return (
     <view className="wordbook-screen" data-testid={ids.screen}>
       <view className="wordbook-head">
-        <text className="wordbook-title" accessibility-traits="header">
+        <text
+          className="wordbook-title"
+          data-testid="wordbook-title"
+          accessibility-traits="header"
+          accessibility-label={`${copy.title}, ${entries.length}`}
+        >
           {copy.title}
         </text>
-        <text className="wordbook-count">{String(entries.length)}</text>
+        <text className="wordbook-count" accessibility-element={false}>
+          {String(entries.length)}
+        </text>
       </view>
       <view
         className={dueCount === 0 ? "wordbook-cta wordbook-cta-idle" : "wordbook-cta"}
@@ -55,6 +64,7 @@ export function WordbookScreen({
           dueCount === 0 ? copy.nothingToReview : `${copy.review(dueCount)}, ${copy.reviewTime}`
         }
         accessibility-traits={dueCount === 0 ? "none" : "button"}
+        flatten={false}
         bindtap={handleReview}
       >
         <view className="wordbook-cta-text">
@@ -75,8 +85,9 @@ export function WordbookScreen({
             data-testid={ids.filter(id)}
             data-selected={filter === id ? "true" : "false"}
             accessibility-element={true}
-            accessibility-label={filter === id ? `${copy.filters[id]}, selected` : copy.filters[id]}
+            accessibility-label={filter === id ? selected(copy.filters[id]) : copy.filters[id]}
             accessibility-traits="button"
+            flatten={false}
             bindtap={() => {
               "background only";
               setFilter(id);
@@ -128,26 +139,17 @@ function WordbookRow({
   const copy = useUiCopy().more.wordbook;
   const source = sound.sourceOf(entry);
   const episode = copy.episodeShort(entry.episodeOrder);
+  // 재생 단추는 줄 단추 밖 형제입니다 — 단추 안 단추는 iOS에서 묶이고 Android에서 닿지 않습니다(접근성 감사 C2).
   return (
-    <view
-      className="wordbook-row"
-      data-testid={ids.row(index)}
-      accessibility-element={true}
-      accessibility-label={`${entry.ko}, ${entry.roman}, ${entry.meaning}, ${episode}, ${copy.status[entry.status]}`}
-      accessibility-traits="button"
-      flatten={false}
-      bindtap={() => {
-        "background only";
-        onOpen(entry);
-      }}
-    >
+    <view className="wordbook-row">
       <view
         className={source === null ? "wordbook-play wordbook-play-off" : "wordbook-play"}
         data-testid={ids.rowPlay(index)}
         accessibility-element={true}
-        accessibility-label={copy.play}
+        accessibility-label={`${copy.play}, ${entry.ko}`}
         accessibility-traits={source === null ? "disabled" : "button"}
-        catchtap={() => {
+        flatten={false}
+        bindtap={() => {
           "background only";
           if (source !== null) sound.play(source, false);
         }}
@@ -158,15 +160,28 @@ function WordbookRow({
           current-color={source === null ? color.fg.disabled : color.brand.strong}
         />
       </view>
-      <view className="wordbook-row-text">
-        <view className="wordbook-row-top">
-          <text className="wordbook-row-ko">{entry.ko}</text>
-          <text className="wordbook-row-roman">{entry.roman}</text>
+      <view
+        className="wordbook-row-body"
+        data-testid={ids.row(index)}
+        accessibility-element={true}
+        accessibility-label={`${entry.ko}, ${entry.roman}, ${entry.meaning}, ${episode}, ${copy.status[entry.status]}`}
+        accessibility-traits="button"
+        flatten={false}
+        bindtap={() => {
+          "background only";
+          onOpen(entry);
+        }}
+      >
+        <view className="wordbook-row-text">
+          <view className="wordbook-row-top">
+            <text className="wordbook-row-ko">{entry.ko}</text>
+            <text className="wordbook-row-roman">{entry.roman}</text>
+          </view>
+          <text className="wordbook-row-meaning">{`${entry.meaning} · ${episode}`}</text>
         </view>
-        <text className="wordbook-row-meaning">{`${entry.meaning} · ${episode}`}</text>
-      </view>
-      <view className={`wordbook-chip wordbook-chip-${entry.status}`}>
-        <text className="wordbook-chip-label">{copy.status[entry.status]}</text>
+        <view className={`wordbook-chip wordbook-chip-${entry.status}`}>
+          <text className="wordbook-chip-label">{copy.status[entry.status]}</text>
+        </view>
       </view>
     </view>
   );

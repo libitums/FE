@@ -1,8 +1,10 @@
-import { useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import type { Dispatch, ReactNode } from "@lynx-js/react";
 
 import { MoreMenu } from "../components/MoreMenu";
+import { announce } from "../lib/accessibility";
 import { useLayerBack } from "../lib/use-back-handler";
+import { useUiCopy } from "../lib/ui-copy";
 import { AppNavigator } from "./AppNavigator";
 import type { MoreWiring } from "./more-wiring";
 import type { Nav, NavAction, Tab } from "./nav-state";
@@ -14,6 +16,8 @@ export type AppBottomBarProps = {
   readonly obscured: boolean;
   readonly floorHeight: number;
   readonly badges?: Partial<Record<Tab, "new">>;
+  /** 메뉴가 열리고 닫힐 때 — 셸이 뒤 화면을 낭독에서 뺍니다. */
+  readonly onOpenChange?: (open: boolean) => void;
 };
 
 // 탭 바 + 더보기 메뉴(ADR-0168)입니다. 넷째 단추(⋯)는 탭을 바꾸지 않고 메뉴 카드를 열고 닫습니다 — 열린 동안 ×, 다시 누르거나
@@ -26,9 +30,20 @@ export function AppBottomBar({
   obscured,
   floorHeight,
   badges,
+  onOpenChange,
 }: AppBottomBarProps): ReactNode {
-  const [menu, setMenu] = useState<{ readonly words: number; readonly due: number } | null>(null);
+  const copy = useUiCopy().more.menu;
+  const [menu, setMenuState] = useState<{ readonly words: number; readonly due: number } | null>(
+    null,
+  );
+  const setMenu = (next: { readonly words: number; readonly due: number } | null) => {
+    setMenuState(next);
+    onOpenChange?.(next !== null);
+    if (next !== null) announce(copy.opened);
+  };
   const close = () => setMenu(null);
+  // 바가 내려가면(쌓인 화면 · 진입 구간) 메뉴도 사라지므로 셸의 가림을 풉니다.
+  useEffect(() => () => onOpenChange?.(false), []);
   useLayerBack(menu === null ? null : close);
 
   const handleSelectTab = (tab: Tab) => {

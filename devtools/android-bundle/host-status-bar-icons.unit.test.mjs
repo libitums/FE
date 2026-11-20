@@ -493,6 +493,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",
     "components/learning-item-guide.css",
+    // 더보기 메뉴 바깥 막(ADR-0168) — 투명, 표지 없음.
+    "components/more-menu.css",
     "screens/catalog-update/catalog-update-notice.css",
     "screens/coin-shop/coin-shop-screen.css",
     "screens/journey-map/journey-stat-modal.css",

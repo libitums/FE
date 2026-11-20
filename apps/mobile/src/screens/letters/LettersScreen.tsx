@@ -78,6 +78,7 @@ export function LettersScreen({
                       heard={heard.indexOf(letter.letter) >= 0}
                       reduced={motion === "reduced"}
                       unavailableLabel={copy.more.letters.soundUnavailable}
+                      heardLabel={copy.more.letters.heard}
                       onTap={(source) => {
                         if (source !== null) sound.play(source);
                         setSelected(letter.letter);
@@ -111,6 +112,7 @@ type LettersCellProps = {
   readonly heard: boolean;
   readonly reduced: boolean;
   readonly unavailableLabel: string;
+  readonly heardLabel: string;
   readonly onTap: (source: string | null) => void;
 };
 
@@ -124,6 +126,7 @@ function LettersCell({
   heard,
   reduced,
   unavailableLabel,
+  heardLabel,
   onTap,
 }: LettersCellProps): ReactNode {
   const handleTap = () => {
@@ -138,7 +141,11 @@ function LettersCell({
   ]
     .filter((part): part is string => part !== null)
     .join(" ");
-  const label = [letter.letter, letter.roman, source === null ? unavailableLabel : null]
+  const label = [
+    letter.letter,
+    letter.roman,
+    source === null ? unavailableLabel : heard ? heardLabel : null,
+  ]
     .filter((part): part is string => part !== null)
     .join(", ");
   const iconColor =

@@ -22,6 +22,7 @@ const en: MoreCopy = {
     wordbookDescription: (words, due) => `${n(words, "word", "words")} · ${due} to review`,
     settings: "Settings",
     settingsDescription: "Account, language, sound",
+    opened: "Menu, 3 items",
   },
   letters: {
     title: "Hangul letters",
@@ -34,6 +35,7 @@ const en: MoreCopy = {
       combined: "Combined vowels",
     },
     soundUnavailable: "sound not available yet",
+    heard: "heard",
   },
   compose: {
     formLabel: "Letter building",
@@ -108,6 +110,7 @@ const es: MoreCopy = {
       `${words} ${words === 1 ? "palabra" : "palabras"} · ${due} por repasar`,
     settings: "Ajustes",
     settingsDescription: "Cuenta, idioma, sonido",
+    opened: "Menú, 3 opciones",
   },
   letters: {
     title: "Letras del hangul",
@@ -120,6 +123,7 @@ const es: MoreCopy = {
       combined: "Vocales compuestas",
     },
     soundUnavailable: "sonido aún no disponible",
+    heard: "escuchada",
   },
   compose: {
     formLabel: "Formar sílabas",
@@ -193,6 +197,7 @@ const id: MoreCopy = {
     wordbookDescription: (words, due) => `${words} kata · ${due} perlu diulang`,
     settings: "Pengaturan",
     settingsDescription: "Akun, bahasa, suara",
+    opened: "Menu, 3 item",
   },
   letters: {
     title: "Huruf Hangul",
@@ -205,6 +210,7 @@ const id: MoreCopy = {
       combined: "Vokal gabungan",
     },
     soundUnavailable: "suara belum tersedia",
+    heard: "sudah didengar",
   },
   compose: {
     formLabel: "Merangkai huruf",

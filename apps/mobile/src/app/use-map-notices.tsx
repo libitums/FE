@@ -31,22 +31,26 @@ export function useMapNotices(input: MapNoticesInput): {
   readonly layer: ReactNode;
   /** 연속 학습 엽전 보상(ADR-0143) — 로그인 사용자만. 머리가 연속 학습 모달에 넘깁니다. */
   readonly streakReward: StreakRewardWiring | undefined;
+  /** 스크림 있는 안내(업데이트 · Letters 추천)가 선 동안 — 셸이 뒤 화면 · 바를 낭독에서 뺍니다. */
+  readonly blocking: boolean;
 } {
   // 업데이트 안내가 이미 떠 있으면 엽전 모달이 그 위로 끼어들지 않습니다 — 안내가 닫힘 처리 없이 사라졌다가 다시 뜨면
   // 누르던 손가락이 엉뚱한 단추를 누릅니다(안정성 리뷰 9). 지난 그림의 값을 씁니다(둘이 서로를 기다리므로).
   const updateOpen = useRef(false);
+  // Letters 추천이 떠 있으면 엽전 · 업데이트 안내도 그 위로 끼어들지 않습니다(리뷰 m1) — 지난 그림의 값.
+  const lettersOpen = useRef(false);
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
     localCoins: input.localCoins,
-    idle: input.idle && !updateOpen.current,
+    idle: input.idle && !updateOpen.current && !lettersOpen.current,
     onStartChatting: input.onStartChatting,
   });
   const updateNotice = useCatalogUpdateNotice({
     catalog: input.catalog,
     sections: input.sections,
     progress: input.progress,
-    ready: input.idle && !launch.open,
+    ready: input.idle && !launch.open && !lettersOpen.current,
   });
   useEffect(() => {
     updateOpen.current = updateNotice.open;
@@ -57,6 +61,9 @@ export function useMapNotices(input: MapNoticesInput): {
     more: input.wiring.more,
     ready: input.idle && !launch.open && !updateNotice.open && !updateOpen.current,
   });
+  useEffect(() => {
+    lettersOpen.current = letters.open;
+  }, [letters.open]);
   // 연속 학습 보상의 지급 잔액은 엽전 출시 결선의 서버 잔액으로 들어가고, 날아가는 동안 닿지 않은 몫은 칩에서 잠시 뺍니다.
   const streak = useStreakReward({
     signedIn: input.wiring.accountState === "signed-in",
@@ -68,6 +75,7 @@ export function useMapNotices(input: MapNoticesInput): {
   return {
     coinCount: launch.coinCount === null ? null : Math.max(0, launch.coinCount - streak.held),
     streakReward: streak.wiring,
+    blocking: updateNotice.open || letters.open,
     layer: (
       <>
         {launch.layer}

@@ -73,3 +73,11 @@ test("WW5. 카탈로그에서 사라진 단어면 뒤로만", () => {
   fireEvent.tap(within(screen.getByTestId(ids.back)).getByTestId("ui-lynx-round-button"), {});
   expect(onBack).toHaveBeenCalledTimes(1);
 });
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("WW6. Listen · Slow는 flatten false", () => {
+  mount();
+  expect(screen.getByTestId(ids.listen)).toHaveAttribute("flatten", "false");
+  expect(screen.getByTestId(ids.slow)).toHaveAttribute("flatten", "false");
+});

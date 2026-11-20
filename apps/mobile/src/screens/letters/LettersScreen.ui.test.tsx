@@ -97,3 +97,11 @@ test("LS6. 연습 단추 → 합치기 퀴즈", () => {
   fireEvent.tap(within(screen.getByTestId(ids.practice)).getByTestId("ui-lynx-button"), {});
   expect(onPractice).toHaveBeenCalledTimes(1);
 });
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+
+test("LS7. 들은 칸은 낭독 이름에도 「heard」", () => {
+  mount();
+  fireEvent.tap(cell(0), {});
+  expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k, heard");
+});
