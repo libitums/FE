@@ -27,7 +27,7 @@ export type CountryNamesRefresh =
 export type CountryNamesRefreshDeps = {
   readonly fetchText: FetchText;
   readonly store: ContentStore;
-  /** 화면 언어(없으면 저장된 UI 언어) — 표가 따로 없는 언어(en · th · my)면 받지 않습니다. */
+  /** 화면 언어(없으면 저장된 UI 언어) — 표가 따로 없는 언어(en)면 받지 않습니다. */
   readonly language?: string;
 };
 

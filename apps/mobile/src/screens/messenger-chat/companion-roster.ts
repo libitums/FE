@@ -50,6 +50,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Guru bahasa Korea-mu",
       ja: "あなたの韓国語の先生",
       vi: "Thầy dạy tiếng Hàn của bạn",
+      th: "ครูสอนภาษาเกาหลีของคุณ",
+      my: "သင့်ရဲ့ ကိုရီးယားစာ ဆရာ",
     }),
   },
   {
@@ -65,6 +67,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Sudah sampai dengan selamat? Saya Jung Yoonkyung dari Ikseon Guesthouse.",
       ja: "無事に着きましたか？益善ゲストハウスのチョン・ユンギョンです。",
       vi: "Bạn đến nơi an toàn chứ? Tôi là Jung Yoonkyung ở nhà nghỉ Ikseon.",
+      th: "เดินทางมาถึงเรียบร้อยไหม? นี่ Jung Yoonkyung จากเกสต์เฮาส์ Ikseon",
+      my: "ချောချောမောမော ရောက်ရဲ့လား။ Ikseon တည်းခိုခန်းက Jung Yoonkyung ပါ။",
     },
     firstLine: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
     ...storyProfile("ISFJ", {
@@ -73,6 +77,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Pemilik Ikseon Guesthouse",
       ja: "益善ゲストハウスのオーナー",
       vi: "Chủ nhà nghỉ Ikseon",
+      th: "เจ้าของเกสต์เฮาส์ Ikseon",
+      my: "Ikseon တည်းခိုခန်း ပိုင်ရှင်",
     }),
   },
   {
@@ -88,6 +94,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Hai! Aku Mina, teman sekamarmu.",
       ja: "こんにちは！同じ部屋のミナです。",
       vi: "Chào bạn! Mình là Mina, bạn cùng phòng.",
+      th: "สวัสดี! เรา Mina รูมเมตของคุณเอง",
+      my: "မင်္ဂလာပါ။ အခန်းဖော် Mina ပါ။",
     },
     firstLine: "안녕하세요! 같은 방 미나예요.",
     ...storyProfile("ESFJ", {
@@ -96,6 +104,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Teman sekamarmu di guesthouse",
       ja: "ゲストハウスのルームメイト",
       vi: "Bạn cùng phòng ở nhà nghỉ",
+      th: "รูมเมตที่เกสต์เฮาส์",
+      my: "တည်းခိုခန်းက အခန်းဖော်",
     }),
   },
   {
@@ -111,6 +121,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Hai! Ini Doyun dari Cafe Kkeullim.",
       ja: "こんにちは！カフェ・クルリムのドユンです。",
       vi: "Chào bạn! Mình là Doyun ở quán cà phê Kkeullim.",
+      th: "สวัสดี! เรา Doyun จากคาเฟ่ Kkeullim",
+      my: "မင်္ဂလာပါ။ Kkeullim ကော်ဖီဆိုင်က Doyun ပါ။",
     },
     firstLine: "안녕하세요! 카페 끌림 도윤이에요.",
     ...storyProfile("ENFP", {
@@ -119,6 +131,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Bertemu di Cafe Kkeullim",
       ja: "カフェ・クルリムで出会った",
       vi: "Gặp ở quán cà phê Kkeullim",
+      th: "เจอกันที่คาเฟ่ Kkeullim",
+      my: "Kkeullim ကော်ဖီဆိုင်မှာ တွေ့ခဲ့",
     }),
   },
   {
@@ -134,6 +148,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Ini Seo Jaemin.",
       ja: "ソ・ジェミンです。",
       vi: "Tôi là Seo Jaemin.",
+      th: "นี่ Seo Jaemin",
+      my: "Seo Jaemin ပါ။",
     },
     firstLine: "서재민이에요.",
     ...storyProfile("INTJ", {
@@ -142,6 +158,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       id: "Bertemu di gang dekat guesthouse",
       ja: "ゲストハウスの路地で出会った",
       vi: "Gặp ở con hẻm gần nhà nghỉ",
+      th: "เจอกันที่ซอยข้างเกสต์เฮาส์",
+      my: "တည်းခိုခန်းနားက လမ်းကြားမှာ တွေ့ခဲ့",
     }),
   },
 ];

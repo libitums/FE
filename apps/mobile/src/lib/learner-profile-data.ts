@@ -15,7 +15,7 @@ import { fillPlaceholders } from "./placeholder-fill";
 
 export { learnerCountryTextOf };
 
-/** 문장 틀 — ko · en은 반드시, 화면 언어(es · id · ja · vi)는 뜻 줄의 그 언어 꼴입니다(2026-11-19). */
+/** 문장 틀 — ko · en은 반드시, 화면 언어(es · id · ja · vi · th · my)는 뜻 줄의 그 언어 꼴입니다(2026-11-19 · th · my 11-20). */
 type PreviewTemplate = { readonly ko: string; readonly en: string } & Readonly<
   Partial<Record<LearnerCountryLanguage, string>>
 >;
@@ -29,7 +29,7 @@ type Asset = {
 
 const isText = (value: unknown): value is string => typeof value === "string" && value !== "";
 
-const LOCAL_LANGUAGES: readonly LearnerCountryLanguage[] = ["es", "id", "ja", "vi"];
+const LOCAL_LANGUAGES: readonly LearnerCountryLanguage[] = ["es", "id", "ja", "vi", "th", "my"];
 
 /** 화면 언어마다 하나씩 — 값이 글자인 칸만 남깁니다. */
 function localTextsOf(
@@ -175,7 +175,7 @@ export function learnerProfilePreviewOf(
   country: LearnerCountry | null,
   language = "en",
 ): LearnerProfilePreview {
-  // 뜻 줄은 화면 언어의 문장 틀 — 틀이 없는 언어(en · th · my)는 영어입니다.
+  // 뜻 줄은 화면 언어의 문장 틀 — 틀이 없는 언어(en)는 영어입니다.
   const local = LOCAL_LANGUAGES.find((candidate) => candidate === language);
   const meaningOf = (template: PreviewTemplate): string =>
     (local === undefined ? undefined : template[local]) ?? template.en;

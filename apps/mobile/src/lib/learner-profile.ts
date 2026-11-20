@@ -124,8 +124,8 @@ export function pickLearnerName(
 
 /**
  * 문장에 서는 세 표기입니다 - `en` 칸은 뜻 줄(번역 줄)의 나라 이름이라 화면 언어의 이름이고(2026-11-19 — 기기에 받아 둔 표,
- * `country-names.ts`), 표가 아직 없거나 그 나라가 없으면 영어 이름입니다. 영어 관사는 영어 문장(en · th · my — UI가 영어인 언어)에만
- * 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다.
+ * `country-names.ts`), 표가 아직 없거나 그 나라가 없으면 영어 이름입니다. 영어 관사는 영어 문장(en)에만 붙습니다
+ * (th · my는 2026-11-20부터 그 언어 문장 — ADR-0158 개정). 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다.
  */
 export function learnerCountryTextOf(country: LearnerCountry, language = "en"): LearnerCountryText {
   const local = COUNTRY_NAME_LANGUAGES.includes(language)

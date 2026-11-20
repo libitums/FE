@@ -11,13 +11,15 @@ import {
 } from "../lib/episode-cache";
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { uiCopyEn } from "../lib/ui-copy-en";
+import { uiCopyMy } from "../lib/ui-copy-my";
+import { uiCopyTh } from "../lib/ui-copy-th";
 import { uiLanguageStorageKey } from "../lib/ui-language";
 import { resetApp } from "./test-helpers/episode-format-harness";
 import { tutorialDoneProgress } from "./test-helpers/progress-seed";
 import { bootTutorialApp, flushAsync } from "./test-helpers/tutorial-boot";
 
-// `integration` 계층: 이야기 번역 전용 언어(ADR-0158) — 태국어 · 미얀마어를 고르면 받기 차례가 그 언어 번역 파일만
-// 받아 에피소드 영어 칸을 바꾸고, 화면 문구는 영어 표 그대로다. 대역은 경계뿐입니다(저장소 · fetch).
+// `integration` 계층: 태국어 · 미얀마어(ADR-0158, 2026-11-20 개정) — 고르면 받기 차례가 그 언어 번역 파일만 받아 에피소드 영어 칸을
+// 바꾸고, 화면 문구도 그 언어 표다(전에는 영어). 대역은 경계뿐입니다(저장소 · fetch).
 
 afterEach(resetApp);
 
@@ -78,7 +80,7 @@ function roleplayTitle(): string {
   return screen.getByTestId(`roleplay-list-item-title-story-${U01}`).textContent ?? "";
 }
 
-test("ITH1. th 사용자의 받기 차례는 th 파일만 받고, 다음 실행의 이야기는 태국어 · 화면 문구는 영어다", async () => {
+test("ITH1. th 사용자의 받기 차례는 th 파일만 받고, 다음 실행의 이야기 · 화면 문구가 모두 태국어다", async () => {
   const { urls, store } = await bootTutorialApp({
     serve,
     progressSeed,
@@ -94,10 +96,11 @@ test("ITH1. th 사용자의 받기 차례는 th 파일만 받고, 다음 실행�
   await bootTutorialApp({ offline: true, progressSeed, store });
   expect(roleplayTitle()).toBe("ซื้อน้ำ (ไฟล์)");
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
-  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent(uiCopyEn.settings.title);
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent(uiCopyTh.settings.title);
+  expect(uiCopyTh.settings.title).not.toBe(uiCopyEn.settings.title);
 });
 
-test("ITH2. 원격 판이 열린 채 설정 › Language에서 Burmese를 고르면 my 파일을 받아 같은 실행 안에서 이야기에 닿는다", async () => {
+test("ITH2. 원격 판이 열린 채 설정 › Language에서 Burmese를 고르면 my 파일을 받아 같은 실행 안에서 이야기 · 화면 문구가 미얀마어다", async () => {
   const { store } = await bootTutorialApp({
     serve,
     progressSeed,
@@ -124,4 +127,7 @@ test("ITH2. 원격 판이 열린 채 설정 › Language에서 Burmese를 고르
 
   expect(store.get(contentTranslationKey("my", U01))).toBe(MY);
   expect(roleplayTitle()).toBe("ရေဝယ်ခြင်း (ဖိုင်)");
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent(uiCopyMy.settings.title);
+  expect(uiCopyMy.settings.title).not.toBe(uiCopyEn.settings.title);
 });

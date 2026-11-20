@@ -94,8 +94,8 @@ describe("refreshCountryNames", () => {
     expect(offline.data.get(KEY)).toBe(TEXT);
   });
 
-  test("CN5. 표가 따로 없는 언어(en · th · my)는 받지 않는다", async () => {
-    for (const language of ["en", "th", "my"]) {
+  test("CN5. 표가 따로 없는 언어(en)는 받지 않는다", async () => {
+    for (const language of ["en"]) {
       const base = reply(ok(TEXT));
       const { store } = fakeStore();
       expect(await refreshCountryNames({ fetchText: base.fetchText, store, language })).toBe(
@@ -106,14 +106,14 @@ describe("refreshCountryNames", () => {
   });
 });
 
-// CN6 ~ CN8 — 받기 차례의 범위(2026-11-19 사용자 우려: 오프라인에서 언어를 바꿔도 이름이 있게). 실행의 첫 차례는 네 언어를 모두 받고,
+// CN6 ~ CN8 — 받기 차례의 범위(2026-11-19 사용자 우려: 오프라인에서 언어를 바꿔도 이름이 있게). 실행의 첫 차례는 여섯 언어(2026-11-20 th · my 추가)를 모두 받고,
 // 그 뒤 차례(언어를 바꿔 저장했을 때 · 호스트 신호)는 지금 언어의 표가 기기에 없을 때만 그 하나를 받습니다.
 const bodyOf = (language: string): string =>
   JSON.stringify({ schema: "country-names-1", language, names: { VN: `VN-${language}` } });
 const allFiles = () =>
   fakeFetch(
     Object.fromEntries(
-      ["es", "id", "ja", "vi"].map((language) => [
+      ["es", "id", "ja", "my", "th", "vi"].map((language) => [
         countryNamesPath(language),
         ok(bodyOf(language)),
       ]),
@@ -123,7 +123,7 @@ const allFiles = () =>
 describe("syncCountryNames", () => {
   afterEach(resetCountryNamesSync);
 
-  test("CN6. 실행의 첫 차례는 지금 언어와 상관없이 es · id · ja · vi 넷을 받아 저장한다", async () => {
+  test("CN6. 실행의 첫 차례는 지금 언어와 상관없이 es · id · ja · my · th · vi 여섯을 받아 저장한다", async () => {
     const files = allFiles();
     const { store, data } = fakeStore();
     await syncCountryNames({ fetchText: files.fetchText, store, language: "en" });
@@ -131,9 +131,11 @@ describe("syncCountryNames", () => {
       "country-names/es.json",
       "country-names/id.json",
       "country-names/ja.json",
+      "country-names/my.json",
+      "country-names/th.json",
       "country-names/vi.json",
     ]);
-    for (const language of ["es", "id", "ja", "vi"]) {
+    for (const language of ["es", "id", "ja", "my", "th", "vi"]) {
       expect(data.get(countryNamesKey(language))).toBe(bodyOf(language));
     }
   });

@@ -5,8 +5,8 @@
 
 import { getItem, isStorageAvailable } from "./storage";
 
-/** 나라 이름 표를 따로 받는 화면 언어입니다(en · th · my는 영어 이름 — UI가 영어). */
-export const COUNTRY_NAME_LANGUAGES: readonly string[] = ["es", "id", "ja", "vi"];
+/** 나라 이름 표를 따로 받는 화면 언어입니다(en은 영어 이름). th · my는 2026-11-20 화면 문구와 함께 더했습니다(ADR-0158 개정). */
+export const COUNTRY_NAME_LANGUAGES: readonly string[] = ["es", "id", "ja", "vi", "th", "my"];
 
 /** 콘텐츠 버킷 기준 상대 경로입니다. */
 export const countryNamesPath = (language: string): string => `country-names/${language}.json`;
