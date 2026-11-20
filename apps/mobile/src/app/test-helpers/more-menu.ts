@@ -8,7 +8,7 @@ export const moreTabTestId = "ui-lynx-bottom-navigator-item-more";
 /** ⋯를 눌러 메뉴를 열고 Settings 줄을 누릅니다 — 옛 「설정 탭 누름」 자리. */
 export function openSettingsFromMore(): void {
   fireEvent.tap(screen.getByTestId(moreTabTestId), {});
-  fireEvent.tap(screen.getByTestId("more-menu-row-settings"), {});
+  fireEvent.tap(screen.getByTestId("more-menu-row-settings"), { eventType: "catchEvent" });
 }
 
 /** 탭 루트로 갑니다 — `settings`는 더보기 › Settings, 나머지는 그 탭 단추. */

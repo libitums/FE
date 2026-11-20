@@ -100,7 +100,7 @@ test("MI2. 바깥을 누르면 닫힘", async () => {
 test("MI3. Letters 줄 → Letters 화면 · 바 그대로 · 선택 C(More, selected) · 이벤트 · 열어 본 기록", async () => {
   const { events, store } = await boot();
   tapMore();
-  fireEvent.tap(row("letters"), {});
+  fireEvent.tap(row("letters"), { eventType: "catchEvent" });
   expect(screen.queryByTestId("more-menu")).not.toBeInTheDocument();
   expect(screen.getByTestId("letters-screen")).toBeInTheDocument();
   expect(more()).toHaveAttribute("accessibility-label", "More, selected");
@@ -115,7 +115,7 @@ test("MI3. Letters 줄 → Letters 화면 · 바 그대로 · 선택 C(More, sel
 test("MI4. Letters의 연습 단추 → 합치기 퀴즈(바 없음) · 나가면 Letters로", async () => {
   await boot();
   tapMore();
-  fireEvent.tap(row("letters"), {});
+  fireEvent.tap(row("letters"), { eventType: "catchEvent" });
   fireEvent.tap(within(screen.getByTestId("letters-practice")).getByTestId("ui-lynx-button"), {});
   expect(screen.getByTestId("letters-compose")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
@@ -130,7 +130,7 @@ test("MI4. Letters의 연습 단추 → 합치기 퀴즈(바 없음) · 나가�
 test("MI5. Settings 줄 → 기존 설정 화면 · settings_opened · 선택 C", async () => {
   const { settings } = await boot();
   tapMore();
-  fireEvent.tap(row("settings"), {});
+  fireEvent.tap(row("settings"), { eventType: "catchEvent" });
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(settings).toEqual([{ name: "settings_opened" }]);
   expect(more()).toHaveAttribute("accessibility-label", "More, selected");
@@ -140,7 +140,7 @@ test("MI6. My words — 메뉴 줄에 단어 수 · 복습 수, 목록 · 자세
   const { events } = await boot(true);
   tapMore();
   expect(row("wordbook").textContent).toContain("2 words · 2 to review");
-  fireEvent.tap(row("wordbook"), {});
+  fireEvent.tap(row("wordbook"), { eventType: "catchEvent" });
   expect(screen.getByTestId("wordbook-screen")).toBeInTheDocument();
   expect(screen.queryAllByTestId(/^wordbook-row-\d+$/)).toHaveLength(2);
   expect(named(events, "wordbook_opened")).toMatchObject([{ words: "2", due: "2" }]);
@@ -152,7 +152,7 @@ test("MI6. My words — 메뉴 줄에 단어 수 · 복습 수, 목록 · 자세
 test("MI7. 오늘의 복습 — 맞히면 단어장 기록이 Got it으로(맞힘 +1) · 이벤트", async () => {
   const { events, store } = await boot(true);
   tapMore();
-  fireEvent.tap(row("wordbook"), {});
+  fireEvent.tap(row("wordbook"), { eventType: "catchEvent" });
   fireEvent.tap(screen.getByTestId("wordbook-review-cta"), {});
   expect(screen.getByTestId("wordbook-review")).toBeInTheDocument();
   const answer = screen.getByTestId("wordbook-review").getAttribute("data-answer") ?? "";

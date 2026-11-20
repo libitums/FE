@@ -1,3 +1,4 @@
+import { useEffect } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
@@ -10,9 +11,13 @@ import type { MoreRoot } from "../app/nav-state";
 import { LETTERS_MENU_GLYPH } from "../lib/letters/jamo";
 import { playSound } from "../lib/sound-effects";
 import { useUiCopy } from "../lib/ui-copy";
+import { restoreAccessibilityFocus } from "../screens/messenger-chat/chat-input-focus";
 import { moreMenuTestIds as ids, type MoreMenuProps } from "./more-menu.contract";
 
 import "./more-menu.css";
+
+/** 메뉴가 그려진 다음 프레임 — 그 전에는 초점을 받을 줄이 아직 없습니다. */
+const NEXT_FRAME_MS = 16;
 
 type Row = {
   readonly root: MoreRoot;
@@ -25,6 +30,8 @@ type Row = {
 // 더보기 메뉴 카드입니다(ADR-0169, 시안 MoreSheet). 스크림 · 바텀 시트가 아니라 바 바로 위(8)에 떠오르는 흰 카드이고, 줄은
 // SettingsCell 모양(높이 72 · 패딩 16/20 · 제목 · 설명 · 화살표)에 아이콘 동그라미가 앞에 섭니다. ui-lynx SettingsCell은 앞 아이콘 ·
 // 태그를 받지 못해 같은 토큰으로 여기서 짓습니다. 바깥을 누르면 닫히도록 투명한 막(`more-menu-catch`)이 카드 뒤 화면을 덮습니다.
+// 카드는 자리(`more-menu-slot`)에 싸여 바 묶음 안 바 앞에 섭니다(AppNavigator) — 자리의 둘레(묶음이 막보다 위라 막이 받지 못하는
+// 곳)를 눌러도 닫힙니다. 줄 · 카드는 catchtap이라 그 탭이 자리까지 올라가지 않습니다.
 export function MoreMenu({ words, due, onSelect, onClose }: MoreMenuProps): ReactNode {
   const copy = useUiCopy();
   const menu = copy.more.menu;
@@ -57,18 +64,38 @@ export function MoreMenu({ words, due, onSelect, onClose }: MoreMenuProps): Reac
     "background only";
     onClose();
   };
+  // 카드는 묶음에서 바 앞에 서므로, 연 단추(「Close menu」)에서 스크린리더로 다음 요소로 쓸면 줄에 닿지 않습니다. 열린 다음 프레임에
+  // 접근성 초점을 첫 줄로 옮깁니다(메신저 「…」 메뉴와 같은 길). 닫으면 초점은 바 단추에 그대로라 돌려줄 일이 없습니다.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      restoreAccessibilityFocus(ids.row("letters"));
+    }, NEXT_FRAME_MS);
+    return () => clearTimeout(handle);
+  }, []);
+  // 카드 면(줄 사이 선)을 누른 탭이 자리(slot)까지 올라가 닫지 않게 멈춥니다. 줄은 저마다 catchtap으로 받습니다.
+  const keepOpen = () => {
+    "background only";
+  };
 
   return (
     <>
       <view className="more-menu-catch" data-testid={ids.catch} bindtap={handleClose} />
-      <view
-        className={motion === "reduced" ? "more-menu more-menu-motion-reduced" : "more-menu"}
-        data-testid={ids.menu}
-        accessibility-role-description="menu"
-      >
-        {rows.map((row) => (
-          <MoreMenuRow key={row.root} row={row} newBadge={copy.shell.tabNew} onSelect={onSelect} />
-        ))}
+      <view className="more-menu-slot" data-testid={ids.slot} bindtap={handleClose}>
+        <view
+          className={motion === "reduced" ? "more-menu more-menu-motion-reduced" : "more-menu"}
+          data-testid={ids.menu}
+          accessibility-role-description="menu"
+          catchtap={keepOpen}
+        >
+          {rows.map((row) => (
+            <MoreMenuRow
+              key={row.root}
+              row={row}
+              newBadge={copy.shell.tabNew}
+              onSelect={onSelect}
+            />
+          ))}
+        </view>
       </view>
     </>
   );
@@ -94,12 +121,13 @@ function MoreMenuRow({
   return (
     <view
       className="more-menu-row"
+      id={ids.row(row.root)}
       data-testid={ids.row(row.root)}
       accessibility-element={true}
       accessibility-label={label}
       accessibility-traits="button"
       flatten={false}
-      bindtap={handleTap}
+      catchtap={handleTap}
     >
       <view
         className={`more-menu-icon more-menu-icon-${row.tone}`}
