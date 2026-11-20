@@ -46,7 +46,8 @@ export function clozeRomanizationOf(
  * 그대로입니다(QA 2026-11-20 — 답 전에 정답 로마자가 보였습니다).
  */
 export function clozeRomanizationMasked(text: string, emphasis: TextSpan | undefined): string {
+  if (emphasis === undefined) return text;
   const valid = romanizationSegmentsOf(text, emphasis).some((piece) => piece.emphasis === "answer");
-  if (!valid || emphasis === undefined) return text;
+  if (!valid) return text;
   return text.slice(0, emphasis.start) + blankMarker + text.slice(emphasis.start + emphasis.length);
 }
