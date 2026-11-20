@@ -34,6 +34,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   path: `u/${M1}.png`,
   aspect: "3:2",
   failure: null,
+  previewPath: null,
   createdAt: 1_000,
   ...over,
 });

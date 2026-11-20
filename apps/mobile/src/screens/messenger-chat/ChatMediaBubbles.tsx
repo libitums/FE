@@ -21,7 +21,12 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import "./messenger-chat.css";
 import "./chat-media.css";
 
-export type PhotoPendingBubbleProps = { readonly name: string; readonly testId: string };
+export type PhotoPendingBubbleProps = {
+  readonly name: string;
+  readonly testId: string;
+  /** 서버 사진의 흐린 중간 그림(서명 URL) — 오면 스켈레톤 대신 흐리게 깔립니다(ADR-0146 「중간 그림」). */
+  readonly previewSrc?: string;
+};
 export type PhotoBubbleProps = {
   readonly src: string | null;
   /** 서버 사진의 비율 · AI 표시(ADR-0146 「앱 연결」) — 없으면 3:4 · 표시 없음. */
@@ -58,7 +63,12 @@ function WaveBars(): ReactNode {
 }
 
 // 사진 pending — 도착할 3:4 사진과 같은 180 × 240 상자. 묶음 전체가 상태 한 줄로 읽히고, 반짝임은 움직임 줄이기에서 멈춥니다.
-export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): ReactNode {
+// 중간 그림이 오면 아이콘 · 줄 대신 그 그림을 흐리게 채웁니다 — 상태 줄 · 반짝임 · 낭독은 그대로(아직 만드는 중이다).
+export function PhotoPendingBubble({
+  name,
+  testId,
+  previewSrc,
+}: PhotoPendingBubbleProps): ReactNode {
   const copy = useUiCopy().messengerChat.room;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   const label = copy.sendingPhoto(name);
@@ -70,17 +80,30 @@ export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): R
       accessibility-label={label}
     >
       <view className="messenger-chat-photo-skeleton">
-        <view className="messenger-chat-photo-disc">
-          <svg
-            className="messenger-chat-icon-sm"
-            content={image}
-            current-color={color.fg["neutral-subtle"]}
+        {previewSrc === undefined ? (
+          <>
+            <view className="messenger-chat-photo-disc">
+              <svg
+                className="messenger-chat-icon-sm"
+                content={image}
+                current-color={color.fg["neutral-subtle"]}
+              />
+            </view>
+            <view className="messenger-chat-skeleton-lines">
+              <view className="messenger-chat-skeleton-line messenger-chat-skeleton-line-long" />
+              <view className="messenger-chat-skeleton-line messenger-chat-skeleton-line-short" />
+            </view>
+          </>
+        ) : (
+          <image
+            className="messenger-chat-photo-preview"
+            data-testid={mediaIds.preview}
+            src={previewSrc}
+            mode="aspectFill"
+            blur-radius={PREVIEW_BLUR}
+            accessibility-element={false}
           />
-        </view>
-        <view className="messenger-chat-skeleton-lines">
-          <view className="messenger-chat-skeleton-line messenger-chat-skeleton-line-long" />
-          <view className="messenger-chat-skeleton-line messenger-chat-skeleton-line-short" />
-        </view>
+        )}
         <view className="messenger-chat-shimmer" />
       </view>
       <text className="messenger-chat-status" accessibility-element={false}>
@@ -89,6 +112,9 @@ export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): R
     </view>
   );
 }
+
+/** 중간 그림의 흐림 — 무엇이 그려지는지만 보이게. 완성본으로 바뀌는 순간이 「선명해짐」으로 읽힌다. */
+const PREVIEW_BLUR = "12px";
 
 const ASPECT_CLASS = {
   "3:2": "messenger-chat-photo-3x2",

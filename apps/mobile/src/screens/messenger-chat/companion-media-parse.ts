@@ -48,6 +48,7 @@ export function remoteMediaOf(raw: unknown): RemoteMedia | null {
     path: stringOf(record?.path),
     aspect: aspect === "3:2" || aspect === "1:1" ? aspect : null,
     failure: stringOf(record?.failure),
+    previewPath: stringOf(record?.previewPath),
     createdAt,
   };
 }

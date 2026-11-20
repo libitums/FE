@@ -43,6 +43,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   path: null,
   aspect: null,
   failure: null,
+  previewPath: null,
   createdAt: 1_000,
   ...over,
 });
@@ -161,6 +162,84 @@ describe("요청 → 다시 읽기 → 결과", () => {
     expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "blocked" });
     expect(env.lines().some((m) => m.kind === "photo-pending")).toBe(false);
     expect(env.settled.at(-1)?.outcome).toBe("blocked");
+  });
+});
+
+describe("중간 그림(ADR-0146 「중간 그림」)", () => {
+  test("CM-U9p 만드는 중에 previewPath가 오면 자리표시자가 흐린 그림이 되고, 완성되면 결과 사진으로 바뀐다", async () => {
+    const preview = `u/${M1}.preview.png`;
+    const env = await opened({
+      loads: [
+        [], // 방을 열 때 resume
+        [media()], // 2초 — 아직 중간 그림 없음
+        [media({ previewPath: preview })], // 4초 — 중간 그림
+        [media({ previewPath: preview })], // 6초 — 같은 그림이면 다시 서명하지 않는다
+        [media({ status: "complete", path: `u/${M1}.png`, aspect: "3:2" })], // 8초
+      ],
+    });
+    env.source.requestMedia("duksu", "photo");
+    await flush();
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toEqual({
+      id: mediaLineId(A1, "photo", M1),
+      at: 1_000,
+      kind: "photo-pending",
+    });
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toEqual({
+      id: mediaLineId(A1, "photo", M1),
+      at: 1_000,
+      kind: "photo-pending",
+      previewUrl: `https://signed/${preview}`,
+    });
+    expect(env.source.snapshot().rooms.find((r) => r.roomId === "duksu")?.activity).toBe(
+      "sending-photo",
+    );
+    await env.advance(2_000);
+    expect(env.port.sign).toHaveBeenCalledTimes(1);
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo",
+      imageUrl: `https://signed/u/${M1}.png`,
+    });
+    expect(env.lines().some((m) => m.kind === "photo-pending")).toBe(false);
+    expect(env.settled).toEqual([{ characterId: "duksu", media: "photo", outcome: "complete" }]);
+  });
+
+  test("CM-U9q 중간 그림 서명에 실패하면 스켈레톤 그대로 — 다음 다시 읽기에서 다시 서명한다", async () => {
+    const preview = `u/${M1}.preview.png`;
+    let signs = 0;
+    const env = await opened({
+      loads: [[], [media({ previewPath: preview })], [media({ previewPath: preview })]],
+      sign: async (path) => {
+        signs += 1;
+        return signs === 1 ? null : `https://signed/${path}`;
+      },
+    });
+    env.source.requestMedia("duksu", "photo");
+    await flush();
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).not.toHaveProperty("previewUrl");
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toMatchObject({ previewUrl: `https://signed/${preview}` });
+  });
+
+  test("CM-U9r 방을 다시 열 때 만드는 중인 사진에 중간 그림이 있으면 처음부터 흐린 그림으로 선다", async () => {
+    const preview = `u/${M1}.preview.png`;
+    const env = await opened({
+      history: {
+        ...history,
+        messages: [
+          ...history.messages,
+          { id: mediaLineId(A1, "photo", M1), at: 2, kind: "photo-pending" },
+        ],
+      },
+      loads: [[media({ previewPath: preview })]],
+    });
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      previewUrl: `https://signed/${preview}`,
+    });
   });
 });
 

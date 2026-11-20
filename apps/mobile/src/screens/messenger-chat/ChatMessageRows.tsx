@@ -142,7 +142,11 @@ function RowBody({
     case "photo-pending":
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
-          <PhotoPendingBubble name={counterpart.name} testId={ids.photoPending} />
+          <PhotoPendingBubble
+            name={counterpart.name}
+            testId={ids.photoPending}
+            {...(message.previewUrl === undefined ? {} : { previewSrc: message.previewUrl })}
+          />
         </ChatIncomingRow>
       );
     case "photo":
