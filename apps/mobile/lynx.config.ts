@@ -53,6 +53,17 @@ export default defineConfig(({ command }): Config => {
         ),
       },
     },
+    tools: {
+      rspack: {
+        module: {
+          // 개발용 탐침 화면(손글씨 · 말하기)은 `__DEV__`가 참일 때만 `render-dev-probe.tsx`로 그립니다.
+          // release에서는 호출이 죽은 코드가 되지만, 패키지에 `sideEffects` 표시가 없으면 번들러가 쓰이지
+          // 않는 import라도 모듈을 남깁니다(탐침 CSS · 모듈 본문 약 27 kB). 이 파일 하나만 부수 효과
+          // 없음으로 표시해 import를 통째로 버리게 합니다 — release 번들 약 −40 kB(ADR-0171).
+          rules: [{ test: /render-dev-probe\.tsx$/, sideEffects: false }],
+        },
+      },
+    },
     plugins: [
       // dev 서버가 Explorer가 붙을 URL/QR을 낸다 (ADR-0006 D1)
       pluginQRCode(),
