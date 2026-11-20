@@ -137,6 +137,12 @@ begin
     return null;
   end if;
   v_units := ranking.progress_units(p_user_id);
+  -- 같은 사용자의 첫 점수가 두 트랜잭션(진도 트리거 · 채팅 단어)에서 겹쳐도 구간 계산 전에 줄을 세운다(리뷰 W1).
+  perform pg_advisory_xact_lock(hashtext('ranking.join_user'), hashtext(p_user_id::text || ':' || v_week::text));
+  select group_id into v_group from ranking.members where week = v_week and user_id = p_user_id;
+  if found then
+    return v_group;
+  end if;
   v_bracket := case
       when v_created > p_now - interval '14 days' then 'lt14d'
       when v_created > p_now - interval '60 days' then 'lt60d'
@@ -163,7 +169,9 @@ begin
   if v_group is null then
     insert into ranking.groups (week, bracket) values (v_week, v_bracket) returning id into v_group;
   end if;
-  insert into ranking.members (week, user_id, group_id) values (v_week, p_user_id, v_group);
+  insert into ranking.members (week, user_id, group_id) values (v_week, p_user_id, v_group)
+  on conflict (week, user_id) do nothing;
+  select group_id into v_group from ranking.members where week = v_week and user_id = p_user_id;
   return v_group;
 end;
 $$;

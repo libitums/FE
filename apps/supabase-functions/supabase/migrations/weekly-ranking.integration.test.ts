@@ -480,3 +480,26 @@ describe("경계", () => {
     expect((await board("lessons")).reward).toBe(30);
   });
 });
+
+describe("WR-D11 배정 경합", () => {
+  test("WR-D11 같은 사용자의 첫 점수가 두 트랜잭션에서 겹쳐 구간이 달라도(진도 10유닛 저장 중 · 채팅 단어) 회원 줄은 하나 · 오류 없음", async () => {
+    const id = "70000000-0000-4000-8000-0000000000d1";
+    await user(id);
+    const first = await db.connect();
+    const second = await db.connect();
+    const units = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"];
+    await first.query("begin");
+    await first.query(
+      "insert into public.learning_progress (user_id, progress) values ($1, $2::jsonb)",
+      [id, JSON.stringify({ version: 1, catalogProgress: { "u01-water": units } })],
+    );
+    // 첫 트랜잭션은 진도 10(p10 구간)으로 배정됐고 아직 커밋 전 — 둘째는 진도 0(p0 구간)으로 본다.
+    const racing = second.query("select ranking.join_week($1::uuid, now()) as g", [id]);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await first.query("commit");
+    const raced = (await racing).rows[0].g as string;
+    const members = await sql("select group_id from ranking.members where user_id = $1", [id]);
+    expect(members).toHaveLength(1);
+    expect(raced).toBe(members[0].group_id);
+  });
+});
