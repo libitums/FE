@@ -18,6 +18,7 @@
 ### D2. `render-dev-probe.tsx` 하나만 부수 효과 없는 모듈로 표시한다
 - 앱 패키지에 `sideEffects` 표시가 없어서, 호출이 죽은 코드가 되어도 번들러가 import된 모듈(과 그 아래 CSS)을 남긴다. `__DEV__`만으로는 약 13 kB만 빠졌다.
 - `lynx.config.ts`의 `tools.rspack.module.rules`에 `{ test: /render-dev-probe\.tsx$/, sideEffects: false }`를 둔다. 쓰이지 않는 import가 탐침 화면 · CSS를 통째로 끌고 들어오지 않는다.
+- 이 규칙은 소스 글자가 아니라 **최종 rspack 설정**에서 확인한다(`lynx-build-config.integration.test.ts` DP-I1). main 병합 때 `tools` 키가 둘 생겨 뒤의 것이 이 규칙을 조용히 덮은 일이 있었다 — 소스 검사는 그때도 초록이었다.
 - 이 파일에는 모듈 최상위 부수 효과(전역 등록 · CSS import)를 두지 않는다 — 두면 표시가 거짓이 된다.
 
 ## 버린 대안
@@ -28,6 +29,6 @@
 
 ## 결과
 
-- release `main.lynx.bundle` 5,835,191 → 5,795,217 bytes(−39,974, .env.local 없는 설정). 번들에 탐침 문자열(`handwriting-probe-screen` · `speech-probe-screen`)이 0건이다. 천장 값(5,850,000)은 그대로다 — 천장은 사용자 결정이다(ADR-0149).
+- release `main.lynx.bundle` 5,835,126 → 5,795,152 bytes(−39,974, .env.local 없는 설정). 번들에 탐침 문자열(`handwriting-probe-screen` · `speech-probe-screen`)이 0건이다. 천장 값(5,850,000)은 그대로다 — 천장은 사용자 결정이다(ADR-0149).
 - dev 빌드는 그대로 탐침을 싣는다(`--mode development` 빌드에서 두 문자열 66 · 107건). 닿는 길(`App.tsx` 부팅 상태 바꿔 끼우기)도 그대로다.
 - 대가: release 설정으로 지은 번들(스토어 빌드 · 내장 번들)에서는 부팅 상태를 바꿔 끼워도 탐침 자리가 빈 화면이다. 탐침은 dev 번들로만 본다.

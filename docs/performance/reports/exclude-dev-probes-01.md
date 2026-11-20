@@ -5,7 +5,7 @@
 - 측정 일시: 2026-11-20T22:00:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 번들 크기만 쟀다
 - 기능 PR: 브랜치 `perf/exclude-dev-probes`
-- 대상 commit: `origin/main` `7195e723` 위의 변경
+- 대상 commit: `origin/main` `2c99e0e1` 위의 변경
 - 기기: 측정 기기 없음 — vitest · 빌드만
 - OS: 해당 없음(기기 측정 없음, 빌드는 macOS)
 - Lynx SDK: 4.0.1
@@ -24,9 +24,9 @@
 
 ## 분석 결과
 
-| 대상 | 앞(main `7195e723`) | 뒤 | 증감 |
+| 대상 | 앞(main `2c99e0e1`) | 뒤 | 증감 |
 |---|---|---|---|
-| `main.lynx.bundle` (release) | 5,835,191 B | 5,795,217 B | −39,974 B |
+| `main.lynx.bundle` (release) | 5,835,126 B | 5,795,152 B | −39,974 B |
 | 탐침 문자열 `handwriting-probe-screen` (release) | 34건 | 0건 | — |
 | 탐침 문자열 `speech-probe-screen` (release) | 50건 | 0건 | — |
 | 탐침 문자열 (dev, `--mode development`) | — | 66 · 107건 | 그대로 실림 |
