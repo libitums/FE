@@ -75,6 +75,7 @@ export function MessengerChatScreen({
     edges,
     onExit,
     authorizeSend: () => !serverBusy.current && gate.current(),
+    guest: guest.active,
   });
   const { state, plan, thread, birthYear, preferences, keyboardHeight, send } = room;
   const dispatch = useMemo(() => guest.guard(room.dispatch), [room.dispatch, guest.active]);
@@ -161,7 +162,7 @@ export function MessengerChatScreen({
         >
           <ChatRoomHeader
             name={thread.counterpart.name}
-            plan={turn.plan}
+            plan={guest.active ? null : turn.plan}
             used={turn.panelOpen}
             onBack={exit}
             onMenu={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
@@ -250,6 +251,7 @@ export function MessengerChatScreen({
             sendCost={turn.sendCost}
             birthYear={birthYear}
             guideClass={guideTargetClass(guide.step)}
+            guest={guest.active}
             aboveComposer={
               turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null
             }

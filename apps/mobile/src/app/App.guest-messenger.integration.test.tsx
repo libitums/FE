@@ -26,7 +26,7 @@ import {
 } from "./test-helpers/guest-entry";
 import { openTab, tapId, tapKeys } from "./test-helpers/messenger-chat-app";
 
-// `integration` 계층(GM1 ~ GM4): 비회원 메신저(ADR-0166) — 회원과 같은 목록(덕수쌤 · 추천 친구 · 첫 입장 안내)을 서버 요청 없이 보고,
+// `integration` 계층(GM1 ~ GM6): 비회원 메신저(ADR-0166) — 회원과 같은 목록(덕수쌤 · 추천 친구 · 첫 입장 안내)을 서버 요청 없이 보고,
 // 방에서 보내면 「로그인 필요」 대화상자, 주 단추는 설정 탭 Sign in과 같은 로그인 화면이며 성공하면 같은 방으로 돌아와 회원으로 보낸다.
 
 beforeEach(() => {
@@ -146,5 +146,44 @@ test("GM4 추천 친구 Start chatting은 대화상자(add_friend) — 친구가
   expect(present(list.row("daeun"))).toBe(false);
   expect(events.filter((event) => event.name === "chat_sign_in_prompt_closed")).toEqual([
     expect.objectContaining({ trigger: "add_friend", choice: "later" }),
+  ]);
+});
+
+// ---------------------------------------------------------------- 2026-11-20 결정(ADR-0166 확인 필요 1 · 2)
+
+test("GM5 비회원이 방을 열면 생년 시트 없이 첫 인사와 입력 줄 — 대화상자 제목은 누른 자리(≡ → 대화 설정)", async () => {
+  await bootGuest();
+  skipGuide();
+  await flush();
+  fireEvent.tap(screen.getByTestId(list.row("duksu")), {});
+  await flush();
+
+  expect(present(room.birthYearSheet)).toBe(false);
+  expect(present(room.field)).toBe(true);
+  tapId(room.settings);
+  await flush();
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Chat settings");
+});
+
+test("GM6 비회원 티켓 모달 Get more tickets → 로그인 권유(tickets) — 「coming soon」 안내 · 무료 지급 없음, 주 단추는 로그인 화면", async () => {
+  const { events } = await bootGuest();
+  skipGuide();
+  await flush();
+  openTab("journey");
+  await flush();
+  fireEvent.tap(screen.getByTestId("top-bar-tickets"), {});
+  await flush();
+  fireEvent.tap(screen.getByTestId("ticket-modal-more"), {});
+  await flush();
+
+  expect(present(access.prompt)).toBe(true);
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Get more tickets");
+  expect(present("ticket-modal-more-notice")).toBe(false);
+  expect(events.filter((event) => event.name === "ticket_more_tapped")).toEqual([]);
+  tapButtonIn("ui-lynx-dialog-action-sign-in");
+  await flush();
+  expect(present("login-screen-title")).toBe(true);
+  expect(events.filter((event) => event.name === "chat_sign_in_prompt_closed")).toEqual([
+    expect.objectContaining({ trigger: "tickets", choice: "sign_in" }),
   ]);
 });

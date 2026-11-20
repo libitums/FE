@@ -18,6 +18,7 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     promptBody:
       "無料アカウントを作ると、ストーリーで出会った人たちとチャットできます。これまでの進み具合も引き継がれます。",
     promptLater: "今はしない",
+    promptKeepBody: "無料アカウントを作ると、Yeopjeonとチケットを保存できます。",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
   chatSettings: {

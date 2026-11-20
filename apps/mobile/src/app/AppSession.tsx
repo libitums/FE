@@ -261,7 +261,7 @@ export function AppSession({
               celebrateStreak={progress.streakCelebration}
               onStreakCelebrated={progress.onStreakCelebrated}
               statBump={progress.wiring}
-              tickets={tickets.header}
+              tickets={wiring.ticketHeader}
               unlimitedPass={testerAccess ? guestUnlimitedPass : plans?.unlimitedPass}
               episodeSurvey={progress.episodeSurvey}
               {...episodeSurveyWiring({

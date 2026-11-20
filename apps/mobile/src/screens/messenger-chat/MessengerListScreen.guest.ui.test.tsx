@@ -16,7 +16,7 @@ import type { GuidePart, GuideStore } from "./messenger-guide";
 import { MessengerListScreen } from "./MessengerListScreen";
 import { suggestedFriendsTestIds as sf } from "./suggested-friends.contract";
 
-// `ui` 계층(GL-U1 ~ GL-U4): 비회원 메신저 목록(ADR-0166) — 회원과 같은 목록(덕수쌤 줄 · 추천 친구 줄 · 첫 입장 안내 · 엽전 칩),
+// `ui` 계층(GL-U1 ~ GL-U6): 비회원 메신저 목록(ADR-0166) — 회원과 같은 목록(덕수쌤 줄 · 추천 친구 줄 · 첫 입장 안내 · 엽전 칩),
 // 가입 권유 안내는 없음. 엽전 칩 · 추천 친구 「Start chatting」은 「로그인 필요」 대화상자(추가하지 않음).
 
 beforeEach(() => {
@@ -108,4 +108,20 @@ test("GL-U4 엽전 칩은 상점 대신 대화상자(coins), Not now로 닫힌�
   tapButtonIn("ui-lynx-dialog-action-later");
   expect(screen.queryByTestId(access.prompt)).toBeNull();
   expect(onSignIn).not.toHaveBeenCalled();
+});
+
+test("GL-U5 엽전 칩 대화상자는 엽전 문구 — 제목 · 본문(2026-11-20)", () => {
+  mount();
+  tapId(list.coins);
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Get Yeopjeon");
+  expect(screen.getByTestId("ui-lynx-dialog-description").textContent).toBe(
+    "Create a free account to keep your Yeopjeon and tickets.",
+  );
+});
+
+test("GL-U6 추천 친구 Start chatting 대화상자는 친구 추가 문구", () => {
+  mount();
+  fireEvent.tap(screen.getByTestId(sf.avatar("daeun")), {});
+  tapId(sf.sheetStart);
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Start chatting");
 });
