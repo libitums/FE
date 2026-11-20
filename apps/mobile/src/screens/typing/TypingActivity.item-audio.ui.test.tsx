@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-
 import {
   echoAudioOf,
   ECHO_SOURCE,
+  passAnswerEchoDelay,
   lessonAudioStub,
   listenAudioOf,
   LISTEN_SOURCE,
@@ -21,7 +22,7 @@ import {
 } from "../../components/listen-controls.test-support";
 
 // `ui` 계층: 타자 활동의 문항 음성 — DICTATION(듣기 갈래)은 간이 줄과 자동 재생, TRANSLATE_TO_KO(정답 뒤 재생
-// 갈래)는 확인한 순간 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
+// 갈래)는 확인 뒤 효과음 틈을 두고 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void, rate?: number) => string>(),
@@ -190,13 +191,22 @@ describe("DICTATION — 듣기 갈래", () => {
 });
 
 describe("TRANSLATE_TO_KO — 정답 뒤 재생 갈래", () => {
-  test("EC3. 확인 전에는 재생이 없고 확인한 순간 한 번 재생하며 줄은 없다", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("EC3. 확인 전에는 재생이 없고 확인 뒤 효과음 틈을 두고 한 번 재생하며 줄은 없다", () => {
     const { lesson } = lessonAudioStub();
     mount([translation], lesson);
     typeText("일주일 묵어요");
     expect(playAudio).not.toHaveBeenCalled();
 
     check();
+    expect(playAudio).not.toHaveBeenCalled();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     const call = playAudio.mock.calls[0];
@@ -211,6 +221,7 @@ describe("TRANSLATE_TO_KO — 정답 뒤 재생 갈래", () => {
     typeText("일주");
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     expect(onListenItemAnswered).not.toHaveBeenCalled();
@@ -221,6 +232,7 @@ describe("TRANSLATE_TO_KO — 정답 뒤 재생 갈래", () => {
     mount([translation, dictationSilent], lesson);
     typeText("일주일 묵어요");
     check();
+    passAnswerEchoDelay();
     stopAudio.mockClear();
 
     fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -234,6 +246,7 @@ describe("TRANSLATE_TO_KO — 정답 뒤 재생 갈래", () => {
     typeText("일주일 묵어요");
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });

@@ -7,6 +7,7 @@
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { ConversationCast } from "../lib/conversation-cast";
+import { audioSyncLengthMs } from "../lib/audio-manifest";
 import { CONTENT_AUDIO_DIR } from "../lib/content-audio";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
@@ -14,6 +15,7 @@ import type { LessonPosition } from "../screens/learning/activity-finish";
 import { appended, catalogActivityItemRefsOf, startedBy } from "./catalog-activity-join";
 import { catalogCultureCardFor } from "./catalog-culture-map";
 import { catalogItemOf } from "./catalog-item-map";
+import { recordedAudioIndexOf } from "./catalog-recorded-audio";
 import type {
   CatalogActivity,
   CatalogActivityForm,
@@ -107,6 +109,7 @@ export function catalogLessonPlanOf(
   fill: CatalogFill,
   imageUrlOf: CatalogImageUrlOf,
   audioUrlOf: CatalogAudioUrlOf = noCatalogAudioUrl,
+  audioSpeechMsOf?: (audioId: string) => number | null,
 ): CatalogLessonPlan | null {
   const unit = entry.episode.units.find((candidate) => candidate.id === unitKey);
   if (unit === undefined) return null;
@@ -118,6 +121,9 @@ export function catalogLessonPlanOf(
     audioUrlOf,
     // 문화 확인의 짝 카드는 단계를 넘어 찾아야 해서(앞 단계 카드) 계획이 그 에피소드 단계로 닫아 줍니다.
     cultureCardOf: (itemId) => catalogCultureCardFor(entry.episode.units, unitKey, itemId),
+    // 자기 음성이 없는 문항의 정답 뒤 음성 — 이 에피소드에 녹음된 같은 글을 찾습니다(ADR-0172).
+    recordedAudioOf: recordedAudioIndexOf(entry.episode),
+    ...(audioSpeechMsOf === undefined ? {} : { audioSpeechMsOf }),
   };
   const planned = unit.items.map((item) => ({
     mapped: catalogItemOf(item, port),
@@ -265,6 +271,7 @@ export function catalogLessonPlanFor(
     catalogFillOf(content, profile),
     content.imageUrlOf,
     probedAudioUrlOf,
+    (audioId) => audioSyncLengthMs(content.audioTimingOf(audioId)),
   );
   const avatar = entry.episode.counterpartAvatar;
   if (avatar !== undefined) probes.push(["image", avatar, content.imageUrlOf(avatar)]);

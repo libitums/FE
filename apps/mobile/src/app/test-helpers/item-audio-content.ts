@@ -36,3 +36,34 @@ export function withItemAudioIds(episode: unknown, episodeId: string): unknown {
   }
   return copy;
 }
+
+/** 정답 뒤 음성 다섯 유형 — 콘텐츠 수준 5는 이 유형들의 음성 id를 `feedback.audio_url`에 싣습니다(ADR-0172). */
+const LEVEL5_FEEDBACK_AUDIO_TYPES: ReadonlySet<string> = new Set([
+  "TRANSLATE_TO_KO",
+  "WORD_ORDER",
+  "SYLLABLE_BUILD",
+  "SPEAK_WORD",
+  "IMG_MATCH",
+]);
+
+type WireItemWithFeedback = WireItem & { feedback?: Record<string, unknown> };
+
+/**
+ * `withItemAudioIds`와 같되 수준 5 모양입니다 — 정답 뒤 음성 다섯 유형은 id를 `stimulus.audio_url`이 아니라
+ * `feedback.audio_url`에 싣습니다(운영 level-5판과 같은 자리). 원본은 바꾸지 않습니다.
+ */
+export function withLevel5ItemAudioIds(episode: unknown, episodeId: string): unknown {
+  const copy = withItemAudioIds(episode, episodeId) as {
+    steps?: { items?: WireItemWithFeedback[] }[];
+  };
+  for (const step of copy.steps ?? []) {
+    for (const item of step.items ?? []) {
+      if (item.id === undefined || item.type === undefined) continue;
+      if (!LEVEL5_FEEDBACK_AUDIO_TYPES.has(item.type)) continue;
+      const { audio_url: moved, ...stimulus } = item.stimulus ?? {};
+      item.stimulus = stimulus;
+      item.feedback = { ...(item.feedback ?? {}), audio_url: moved };
+    }
+  }
+  return copy;
+}
