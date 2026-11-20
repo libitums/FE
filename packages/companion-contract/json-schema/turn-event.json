@@ -221,6 +221,50 @@
                 "required": ["id", "surface"],
                 "additionalProperties": false
               }
+            },
+            "chatWords": {
+              "type": "object",
+              "properties": {
+                "counted": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "surface": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "surface"],
+                    "additionalProperties": false
+                  }
+                },
+                "pending": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "surface": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "surface"],
+                    "additionalProperties": false
+                  }
+                },
+                "weekTotal": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": ["counted", "pending", "weekTotal"],
+              "additionalProperties": false
             }
           },
           "required": [

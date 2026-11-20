@@ -77,6 +77,7 @@ type Options = {
   saveStatus?: number;
   random?: () => number;
   learning?: unknown;
+  chatWords?: unknown;
 };
 
 function setup(options: Options = {}) {
@@ -92,6 +93,7 @@ function setup(options: Options = {}) {
       expressions: [{ id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" }],
     },
     companion_record_learning: 1,
+    ranking_record_chat_words: options.chatWords ?? null,
     companion_finish_turn: options.finish ?? finished,
     companion_turn_status:
       options.status === undefined
@@ -1704,6 +1706,52 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     await manual.settle();
     expect(metaOf(manual.finishArgs())).toMatchObject({ reason: "manual_empty" });
   });
+});
+
+// 주간 순위 「Chat words」(ADR-0170) — 배운 단어(voca)를 바르게 쓰면 세고, 교정이 짚은 단어는 pending. 같은 correction 이벤트 · 저장 카드에.
+test("CWS-H1. correction 이벤트 · 저장 카드에 chatWords — RPC는 유저 메시지 id로", async () => {
+  const { handler, rpcs, finishArgs, settle } = setup({
+    learning: {
+      episodes: ["u01-water"],
+      expressions: [
+        { id: "voca:warm", kind: "voca", surface: "따뜻하다", roman: null, gloss: "warm" },
+        { id: "voca:student", kind: "voca", surface: "학생", roman: null, gloss: "student" },
+      ],
+    },
+    chatWords: { counted: ["voca:warm"], pending: ["voca:student"], weekTotal: 3 },
+  });
+  const list = await events(await handler(post(body({ text: "오늘 따뜻해요. 저는 학생 이에요" }))));
+  await settle();
+  const chatWords = {
+    counted: [{ id: "voca:warm", surface: "따뜻하다" }],
+    pending: [{ id: "voca:student", surface: "학생" }],
+    weekTotal: 3,
+  };
+  expect(list.find((event) => event.event === "correction")?.data).toMatchObject({ chatWords });
+  expect(rpcs.find((rpc) => rpc.fn === "ranking_record_chat_words")?.args).toMatchObject({
+    p_user_id: userId,
+    p_message_id: begun.userMessageId,
+    p_counted: ["voca:warm"],
+    p_pending: ["voca:student"],
+  });
+  expect(finishArgs()?.["p_feedback"]).toMatchObject({ chatWords });
+});
+
+test("CWS-H2. 입력 검사에 걸린 메시지는 단어를 세지 않는다", async () => {
+  const { handler, rpcs, settle } = setup({
+    llm: llmWith({ input: { category: "profanity", action: "block" } }),
+    learning: {
+      episodes: ["u01-water"],
+      expressions: [
+        { id: "voca:warm", kind: "voca", surface: "따뜻하다", roman: null, gloss: "warm" },
+      ],
+    },
+    chatWords: { counted: ["voca:warm"], pending: [], weekTotal: 1 },
+  });
+  await (await handler(post(body({ text: "오늘 따뜻해요" })))).text();
+  await settle();
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  expect(rpcs.find((rpc) => rpc.fn === "ranking_record_chat_words")).toBeUndefined();
 });
 
 describe("출력 차단 되살리기(ADR-0151)", () => {
