@@ -111,3 +111,13 @@ test("[UA7] floorHeight 48 + obscured true → 바닥 면이 가림 속성을 �
   expect(navigator).toHaveAttribute("accessibility-elements-hidden", "true");
   expect(navigator.contains(screen.getByTestId(FLOOR))).toBe(true);
 });
+
+test("[UA8] 더보기 메뉴(children)는 탭 바 **앞** 흐름 자식이다 — 묶음이 위로 자라 카드가 묶음 상자 안에 선다(fix/more-menu-clipped)", () => {
+  render(
+    <AppNavigator {...props({ floorHeight: 48, moreOpen: true })}>
+      <view data-testid="more-menu" />
+    </AppNavigator>,
+  );
+
+  expect(childTestIds(screen.getByTestId(NAVIGATOR))).toEqual(["more-menu", BAR, FLOOR]);
+});

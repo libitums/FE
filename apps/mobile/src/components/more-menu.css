@@ -1,6 +1,9 @@
 /* 더보기 메뉴 카드(ADR-0169, 시안 MoreSheet) — 토큰만 씁니다(ADR-0014 D1).
-   바깥 막은 화면 전체를 덮는 투명 면이라 지도가 어두워지지 않고, 누르면 닫힙니다(바 위를 눌러도 닫힘). 카드는 바(.app-navigator)
-   바로 위 8에 뜹니다 — 좌우 16, 흰 면 · radius-lg · shadow-s3, 바 뒤에서 위로 약 0.2초(d4 · enter) 올라옵니다. */
+   바깥 막은 화면 전체를 덮는 투명 면이라 지도가 어두워지지 않고, 누르면 닫힙니다(바 위를 눌러도 닫힘). 카드는 바
+   바로 위 8에 뜹니다 — 좌우 16, 흰 면 · radius-lg · shadow-s3, 바 뒤에서 위로 약 0.2초(d4 · enter) 올라옵니다.
+   카드는 묶음(.app-navigator) 상자 **안**의 흐름 자식입니다 — 바 앞에 서서 묶음을 위로 키웁니다. 묶음 밖(바 위에 절대 배치)에
+   두면 묶음 경계에서 잘려 iOS · Android 모두 화면에도 접근성 트리에도 나오지 않았고, 묶음 `overflow: visible`이나 `z-index`로는
+   풀리지 않았습니다(기기 확인 2026-11-20, more-menu-in-bounds.unit.test). */
 
 .more-menu-catch {
   position: fixed;
@@ -11,11 +14,13 @@
   background-color: transparent;
 }
 
+/* 카드 자리 — 둘레가 바와의 간격 8 · 좌우 16이고, 위 16은 그림자 s3(아래 4 · 흐림 16)가 묶음 위 경계에서 잘리지 않게 하는 몫입니다.
+   투명하고, 누르면 닫힙니다(묶음이 바깥 막보다 위라 이 둘레는 막이 받지 못합니다). */
+.more-menu-slot {
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-16) var(--libitum-spacing-8);
+}
+
 .more-menu {
-  position: absolute;
-  left: var(--libitum-spacing-16);
-  right: var(--libitum-spacing-16);
-  bottom: calc(100% + var(--libitum-spacing-8));
   display: flex;
   flex-direction: column;
   overflow: hidden;
