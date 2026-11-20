@@ -6,7 +6,7 @@
 // 만들고(`chat-send-turn-recover.ts`, ADR-0151), 그것도 걸리면 `guardrail_blocked`로 끝냅니다.
 
 import type { AgeBand, Feedback, ModerationVerdict, PersonaCard } from "./chat-send.contract.ts";
-import type { TurnContext } from "./chat-send-context.ts";
+import { type TurnContext, turnRomance } from "./chat-send-context.ts";
 import {
   type Finished,
   type ModerationRecord,
@@ -41,11 +41,7 @@ import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { eligibleBeats, pickStory } from "./companion-story.ts";
-import {
-  crisisResourcesFor,
-  effectiveRomanceTier,
-  outputCheckRequired,
-} from "./companion-safety.ts";
+import { crisisResourcesFor, outputCheckRequired } from "./companion-safety.ts";
 import type { SegmentDelta } from "./companion-segments.ts";
 import { withUsageMeta } from "./companion-usage.ts";
 
@@ -54,8 +50,8 @@ export type { TurnContext };
 export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
   const ageBand: AgeBand = gate.ageBand;
-  const romanceTier = effectiveRomanceTier(ageBand, gate.romanceTier); // 적용 수위(ADR-0164)
-  const checkOutput = outputCheckRequired(ageBand, romanceTier);
+  const { tier: romanceTier, line } = turnRomance(context); // 적용 수위(ADR-0164) · 로맨스 선(ADR-0168)
+  const checkOutput = outputCheckRequired(ageBand, line);
   const moderation: ModerationRecord[] = [];
   const persona: PersonaCard = turn.persona ?? { name: body.character_id };
   const topicState = topicStateFrom(turn.topicState);
@@ -139,7 +135,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   let input: ModerationVerdict;
   try {
-    input = await moderateInput(llm, body.text, history, ageBand, abort.signal, romanceTier);
+    input = await moderateInput(llm, body.text, history, ageBand, abort.signal, line);
   } catch {
     // 입력 검사가 실패하면 채팅 단어를 세지 않는다 — 기다리던 피드백 사슬도 여기서 풀린다(리뷰).
     inputPassed(false);
@@ -247,6 +243,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           model: llm.model,
           ageBand,
           romanceTier,
+          romanceLine: line,
           firstDeltaMs: result.firstDeltaMs,
           totalMs: result.totalMs,
           branch: branch.action,

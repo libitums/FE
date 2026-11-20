@@ -20,6 +20,7 @@ import {
   offerDirective,
 } from "./companion-learning.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
+import { offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { storyCardFor } from "./companion-story.ts";
 import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
 
@@ -90,6 +91,7 @@ export async function evalReply(input: {
     : null;
   const speechLevel = item.speechLevel ?? "polite";
   const ageBand = item.ageBand ?? "adult";
+  const line = romanceLine(ageBand, item.romanceTier, persona, speechLevel);
   const expressions = (item.expressions ?? []).map((entry, index) => ({
     id: `x${index + 1}`,
     kind: "expr",
@@ -164,6 +166,7 @@ export async function evalReply(input: {
         persona,
         speechLevel,
         ageBand,
+        romanceLine: offeredRomanceLine(line, persona),
         spoilerNote: item.spoilerNote ?? null,
         story,
         expressions: expressions

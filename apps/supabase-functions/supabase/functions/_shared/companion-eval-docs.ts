@@ -95,6 +95,17 @@ export function promptDocs() {
       input: moderationInstruction("input", "adult", "open"),
       output_sync: moderationInstruction("output_sync", "adult", "open"),
     },
+    // 추천 친구(standard)의 말투 단계 선(ADR-0168) — 반말이면 kiss, slang이면 close. 존댓말 단계는 위 성인 글(hug)과 같다.
+    moderationFriend: {
+      kiss: {
+        input: moderationInstruction("input", "adult", "kiss"),
+        output_sync: moderationInstruction("output_sync", "adult", "kiss"),
+      },
+      close: {
+        input: moderationInstruction("input", "adult", "close"),
+        output_sync: moderationInstruction("output_sync", "adult", "close"),
+      },
+    },
     translation: translationSystem(placeholder("l1"), placeholder("segment count")),
     memory: { adult: memorySystem(false), minor: memorySystem(true) },
     summary: summarySystem,

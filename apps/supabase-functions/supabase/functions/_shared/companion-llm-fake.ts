@@ -167,19 +167,21 @@ export function fakeCompanionLlm(): CompanionLlm {
         return { category: "self_harm", action: "crisis" };
       }
       // 로맨스 · 성(수위선 · 완화 수위)은 `companion-llm-fake-romance.ts`.
+      // 허용한 로맨스(`allow` + `romance`)는 다른 차단 규칙을 본 뒤에 돌려준다.
       const romance = fakeRomanceVerdict(request, text);
+      const allowed = romance ?? { category: "safe", action: "allow" };
       if (request.layer !== "input") {
         if (text.includes("[unsafe]")) return { category: "other_harm", action: "block" };
-        if (romance !== null) return romance;
+        if (romance?.action === "block") return romance;
         // 캐릭터는 가벼운 욕도 쓰지 않는다.
         if (hasInsult(text) || hasMildInsult(text) || swearIn(request.text) !== undefined)
           return { category: "profanity", action: "block" };
-        return { category: "safe", action: "allow" };
+        return allowed;
       }
-      if (romance !== null) return romance;
+      if (romance?.action === "block") return romance;
       if (hasInsult(text) || (swearIn(request.text) !== undefined && aimed.test(request.text)))
         return { category: "profanity", action: "block" };
-      return { category: "safe", action: "allow" };
+      return allowed;
     },
     async feedback(request): Promise<Feedback> {
       const original = request.text;
