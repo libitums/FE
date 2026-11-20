@@ -37,6 +37,15 @@ export const uiCopyLiteralPolicy = {
     "companion-roster.ts#COMPANION_CHARACTERS",
     // 추천 친구 넷의 이름 · 첫 말 — 정본 JSON의 학습 내용입니다(ADR-0164).
     "companion-friends-roster.ts#COMPANION_FRIENDS",
+    // 한글 자모표 · 합치기 퀴즈 — 배우는 글자 자체라 UI 언어를 따르지 않습니다(ADR-0168).
+    "jamo.ts#JAMO_GROUPS",
+    "jamo.ts#INITIALS",
+    "jamo.ts#MEDIALS",
+    "jamo.ts#jamoSoundOf",
+    "jamo.ts#LETTERS_MENU_GLYPH",
+    "jamo.ts#RECOMMEND_ART",
+    "compose-quiz.ts#COMPOSE_ROUNDS",
+    "compose-quiz.ts#COMPOSE_TILES",
   ],
   // 아직 옮기지 않은 파일 — 줄어들기만 합니다(위반이 0이 되면 `check.mjs`가 지우라고 실패합니다).
   // `node devtools/ui-copy-literals/check.mjs --print-pending`이 지금 남은 파일을 찍습니다.
