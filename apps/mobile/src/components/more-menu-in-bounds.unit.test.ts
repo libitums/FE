@@ -12,8 +12,9 @@ import { describe, expect, test } from "vitest";
 // **안**(`bottom: 0`)에 두면 그려졌습니다. 그래서 카드는 묶음 밖으로 내보내지 않고 바 앞 흐름 자식으로 둬 묶음이 위로
 // 자라게 합니다(AppNavigator가 children을 바 앞에 그림 — AppNavigator.ui.test UA8).
 
+// 실행 위치(모노레포 루트 · 패키지)와 상관없게 이 테스트 파일 기준으로 찾습니다.
 const read = (relative: string): string => {
-  const path = resolve(process.cwd(), relative);
+  const path = resolve(import.meta.dirname, relative);
   return existsSync(path) ? readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "") : "";
 };
 
@@ -33,7 +34,7 @@ const declarations = (source: string, selector: string): Record<string, string> 
   return result;
 };
 
-const menuCss = read("src/components/more-menu.css");
+const menuCss = read("more-menu.css");
 
 describe("더보기 메뉴 카드는 바 묶음(.app-navigator) 상자 안에 선다", () => {
   test("CSS 파일을 읽었다", () => {

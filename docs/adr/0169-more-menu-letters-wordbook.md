@@ -28,7 +28,7 @@
   카드가 화면에도 접근성 트리에도 없었다. 묶음 `overflow: visible`(Lynx 기본값은 `hidden`), 카드 `z-index`, 묶음 `z-index` 빼기로는 풀리지 않았고, 같은 카드를
   묶음 안(`bottom: 0`)에 두면 그려졌다(Lynx SDK 4.0.1). 카드를 투명 자리(`more-menu-slot`, 안쪽 여백 16/16/8 — 시안의 좌우 16 · 바 위 8, 위 16은 그림자 s3 몫)로
   감싸 그 둘레를 눌러도 닫히게 했다(묶음이 바깥 막보다 위라 막이 받지 못하는 곳). 줄 · 카드는 `catchtap`이라 그 탭이 자리까지 올라가지 않는다.
-  카드가 트리에서 바보다 앞이라 열면 접근성 초점을 첫 줄(Letters)로 옮긴다(메신저 「…」 메뉴와 같은 `restoreAccessibilityFocus`).
+  카드가 트리에서 바보다 앞이라 열면 접근성 초점을 첫 줄(Letters)로 옮긴다(`lib/accessibility.ts` `focusAccessibilityElement` — 메신저 「…」 메뉴의 `restoreAccessibilityFocus`도 이 함수를 부름).
 - ui-lynx `BottomNavigator` 항목에 `variant: "action"` — 48 brand 동그라미 · 흰 아이콘 · 선택이면 알약 대신 바탕색 틈 3 + brand 고리 2(선택 C), 낭독 「More, selected」.
 - 설정으로 가는 길: 메뉴 Settings 줄(`settings_opened`는 설정 루트가 아닐 때만) · 딥링크 settings → `moreRootActions("settings")` · 다운로드 시트 「Change setting」 ·
   비회원 로그인(설정 스택 그대로). 시스템 뒤로는 more 루트에서 여정으로(기존 규칙).

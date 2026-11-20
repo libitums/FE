@@ -106,3 +106,22 @@ export function announceCompletion(content: string): AnnounceOutcome {
   host.announce({ content }, () => {});
   return "announced";
 }
+
+/**
+ * 접근성 초점을 `id`가 `elementId`인 요소로 보냅니다(`requestAccessibilityFocus`, `@lynx-js/types` 4.1.0 · Android · iOS).
+ * 요소는 그 `id`를 가진 **접근성 요소**여야 합니다 — 접근성 요소가 아닌 감싸개에는 Android `ACTION_ACCESSIBILITY_FOCUS`가
+ * 듣지 않을 수 있습니다(a11y C1). 테스트 환경 · 요소 없음 · 모르는 메서드면 던지지 않고 조용히 무동작입니다(부가 동작).
+ * 메신저 겹침의 초점 돌려주기(`chat-input-focus`)와 더보기 메뉴 첫 줄 초점이 함께 씁니다.
+ */
+export function focusAccessibilityElement(elementId: string): void {
+  "background only";
+  try {
+    lynx
+      .createSelectorQuery()
+      .select(`#${elementId}`)
+      .invoke({ method: "requestAccessibilityFocus", fail: () => {} })
+      .exec();
+  } catch {
+    // 테스트 환경 · 요소 없음 — 호출하지 못했습니다.
+  }
+}

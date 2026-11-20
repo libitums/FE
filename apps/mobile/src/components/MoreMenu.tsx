@@ -10,8 +10,8 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 import type { MoreRoot } from "../app/nav-state";
 import { LETTERS_MENU_GLYPH } from "../lib/letters/jamo";
 import { playSound } from "../lib/sound-effects";
+import { focusAccessibilityElement } from "../lib/accessibility";
 import { useUiCopy } from "../lib/ui-copy";
-import { restoreAccessibilityFocus } from "../screens/messenger-chat/chat-input-focus";
 import { moreMenuTestIds as ids, type MoreMenuProps } from "./more-menu.contract";
 
 import "./more-menu.css";
@@ -68,7 +68,7 @@ export function MoreMenu({ words, due, onSelect, onClose }: MoreMenuProps): Reac
   // 접근성 초점을 첫 줄로 옮깁니다(메신저 「…」 메뉴와 같은 길). 닫으면 초점은 바 단추에 그대로라 돌려줄 일이 없습니다.
   useEffect(() => {
     const handle = setTimeout(() => {
-      restoreAccessibilityFocus(ids.row("letters"));
+      focusAccessibilityElement(ids.row("letters"));
     }, NEXT_FRAME_MS);
     return () => clearTimeout(handle);
   }, []);
