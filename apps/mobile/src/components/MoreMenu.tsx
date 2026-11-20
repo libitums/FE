@@ -22,7 +22,7 @@ type Row = {
   readonly tone: "brand" | "neutral";
 };
 
-// 더보기 메뉴 카드입니다(ADR-0168, 시안 MoreSheet). 스크림 · 바텀 시트가 아니라 바 바로 위(8)에 떠오르는 흰 카드이고, 줄은
+// 더보기 메뉴 카드입니다(ADR-0169, 시안 MoreSheet). 스크림 · 바텀 시트가 아니라 바 바로 위(8)에 떠오르는 흰 카드이고, 줄은
 // SettingsCell 모양(높이 72 · 패딩 16/20 · 제목 · 설명 · 화살표)에 아이콘 동그라미가 앞에 섭니다. ui-lynx SettingsCell은 앞 아이콘 ·
 // 태그를 받지 못해 같은 토큰으로 여기서 짓습니다. 바깥을 누르면 닫히도록 투명한 막(`more-menu-catch`)이 카드 뒤 화면을 덮습니다.
 export function MoreMenu({ words, due, onSelect, onClose }: MoreMenuProps): ReactNode {

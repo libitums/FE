@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 
 import { letterAudioSourceOf } from "./letters-audio";
 
-// `unit` 계층: 글자 소리는 음성 정보 파일에 id가 있고 주소가 풀릴 때만 납니다(ADR-0168) — 아직 버킷에 없으면 unavailable.
+// `unit` 계층: 글자 소리는 음성 정보 파일에 id가 있고 주소가 풀릴 때만 납니다(ADR-0169) — 아직 버킷에 없으면 unavailable.
 
 const url = (path: string) => `https://cdn.test/content/${path}`;
 

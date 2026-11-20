@@ -1,4 +1,4 @@
-// integration 테스트 공용 — 설정으로 가는 길(ADR-0168: 바 넷째 ⋯ → 더보기 메뉴 › Settings). 제품 코드가 import하지 않습니다.
+// integration 테스트 공용 — 설정으로 가는 길(ADR-0169: 바 넷째 ⋯ → 더보기 메뉴 › Settings). 제품 코드가 import하지 않습니다.
 
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 

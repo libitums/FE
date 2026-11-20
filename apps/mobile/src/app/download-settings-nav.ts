@@ -6,7 +6,7 @@ import type { DownloadCatalogInput } from "./download-progress";
 import { moreRootActions } from "./nav-reducer";
 import type { NavAction } from "./nav-state";
 
-// 「설정 바꾸기」 — 더보기 › Settings 루트로 간 뒤(ADR-0168) 설정 › 다운로드를 쌓습니다(동작 목록을 순서대로 dispatch).
+// 「설정 바꾸기」 — 더보기 › Settings 루트로 간 뒤(ADR-0169) 설정 › 다운로드를 쌓습니다(동작 목록을 순서대로 dispatch).
 export function downloadSettingsNav(dispatch: (action: NavAction) => void) {
   return {
     openDownloadSettings: () => {

@@ -11,7 +11,7 @@ import { wordbookTestIds as ids, type WordbookWordScreenProps } from "./wordbook
 import "./wordbook-screen.css";
 import "./wordbook-word.css";
 
-// 단어 자세히입니다(ADR-0168, 시안 WordbookDetail). 단어장 위에 쌓이는 화면이라 바텀 메뉴 없이 뒤로가 섭니다. 큰 단어 · 로마자 ·
+// 단어 자세히입니다(ADR-0169, 시안 WordbookDetail). 단어장 위에 쌓이는 화면이라 바텀 메뉴 없이 뒤로가 섭니다. 큰 단어 · 로마자 ·
 // Listen / Slow · 뜻, 「From your story」 예문(단어 카드의 예문)과 에피소드, 처음 본 날 · 맞힌 수, 「Practice this word」(그 단어
 // 하나의 복습). 카탈로그에서 사라진 단어면 뒤로만 남습니다.
 export function WordbookWordScreen({

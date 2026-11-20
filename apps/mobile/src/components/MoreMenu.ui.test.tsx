@@ -5,7 +5,7 @@ import type { MoreRoot } from "../app/nav-state";
 import { MoreMenu } from "./MoreMenu";
 import { moreMenuTestIds as ids } from "./more-menu.contract";
 
-// `ui` 계층: 더보기 메뉴 카드(ADR-0168) — 줄 셋의 순서 · 글 · NEW · 단어 수, 줄 누름 · 바깥 누름.
+// `ui` 계층: 더보기 메뉴 카드(ADR-0169) — 줄 셋의 순서 · 글 · NEW · 단어 수, 줄 누름 · 바깥 누름.
 
 afterEach(() => {
   cleanup();

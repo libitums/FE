@@ -5,7 +5,7 @@
 import { moreRootActions, tabRootActions } from "./nav-reducer";
 import type { NavAction } from "./nav-state";
 
-/** 딥링크가 여는 곳 — 탭 둘과 설정(더보기 › Settings, ADR-0168). */
+/** 딥링크가 여는 곳 — 탭 둘과 설정(더보기 › Settings, ADR-0169). */
 export type DeeplinkTarget = "journey" | "roleplay" | "settings";
 
 const tabs: Readonly<Record<string, DeeplinkTarget>> = {
@@ -24,7 +24,7 @@ export function deeplinkTabFrom(url: unknown): DeeplinkTarget | null {
   return Object.prototype.hasOwnProperty.call(tabs, name) ? tabs[name] : null;
 }
 
-/** 그 목적지로 가는 동작 목록입니다 — 설정은 더보기 › Settings 루트(ADR-0168). */
+/** 그 목적지로 가는 동작 목록입니다 — 설정은 더보기 › Settings 루트(ADR-0169). */
 export function deeplinkActions(target: DeeplinkTarget): readonly NavAction[] {
   return target === "settings" ? moreRootActions("settings") : tabRootActions(target);
 }

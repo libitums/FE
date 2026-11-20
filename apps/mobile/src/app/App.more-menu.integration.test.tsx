@@ -13,7 +13,7 @@ import { emptyWordbook, localDayOf, saveWordbook, withCardsSeen } from "../lib/w
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
 
-// `integration` 계층: 더보기(ADR-0168) — 바 넷째 ⋯ → 메뉴 카드(스크림 없음) → Letters · My words · Settings, 선택 C,
+// `integration` 계층: 더보기(ADR-0169) — 바 넷째 ⋯ → 메뉴 카드(스크림 없음) → Letters · My words · Settings, 선택 C,
 // 바깥 · 다시 누름으로 닫힘, 설정 길(설정 열람 이벤트 · 하위 화면 · 돌아옴), 단어장 기기 기록 · 이벤트. 경계 대역은 저장소뿐입니다.
 
 afterEach(() => {
@@ -171,7 +171,7 @@ test("MI7. 오늘의 복습 — 맞히면 단어장 기록이 Got it으로(맞�
   );
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("MI8. 메뉴가 열린 동안 뒤 화면 · 머리는 낭독에서 빠지고(바는 남음) 열림을 한 번 낭독한다", async () => {
   await boot();

@@ -37,7 +37,7 @@ export const uiCopyLiteralPolicy = {
     "companion-roster.ts#COMPANION_CHARACTERS",
     // 추천 친구 넷의 이름 · 첫 말 — 정본 JSON의 학습 내용입니다(ADR-0164).
     "companion-friends-roster.ts#COMPANION_FRIENDS",
-    // 한글 자모표 · 합치기 퀴즈 — 배우는 글자 자체라 UI 언어를 따르지 않습니다(ADR-0168).
+    // 한글 자모표 · 합치기 퀴즈 — 배우는 글자 자체라 UI 언어를 따르지 않습니다(ADR-0169).
     "jamo.ts#JAMO_GROUPS",
     "jamo.ts#INITIALS",
     "jamo.ts#MEDIALS",

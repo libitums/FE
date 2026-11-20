@@ -1,4 +1,4 @@
-// 더보기 메뉴 · Letters · 단어장 · Letters 추천의 제품 사용 이벤트입니다(ADR-0168). 타입만 둡니다.
+// 더보기 메뉴 · Letters · 단어장 · Letters 추천의 제품 사용 이벤트입니다(ADR-0169). 타입만 둡니다.
 // 공통 속성(`surface` · `daysSinceFirstOpen`)은 `companion-event.contract.ts`의 묶음과 같은 규약으로 붙습니다 — 보내는 자리는
 // `emitCompanionEvent`입니다. 값은 문자열 · 불리언뿐입니다(수는 10진 문자열).
 

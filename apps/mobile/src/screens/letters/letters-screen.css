@@ -1,4 +1,4 @@
-/* Letters 자모표(ADR-0168, 시안 JamoChart · 선택 C) — 토큰만 씁니다(ADR-0014 D1).
+/* Letters 자모표(ADR-0169, 시안 JamoChart · 선택 C) — 토큰만 씁니다(ADR-0014 D1).
    위 고정(제목 heading-l · 리드 body-m muted · 주 단추)과 아래 스크롤(묶음 제목 + 4열 격자). 바텀 메뉴는 셸이 그립니다. */
 
 .letters-screen {

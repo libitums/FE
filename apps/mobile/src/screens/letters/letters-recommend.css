@@ -1,4 +1,4 @@
-/* Letters 추천 대화상자(ADR-0168) — 대화상자는 ui-lynx Dialog가 그리고, 여기에는 화면 가운데 자리와 제목 위 그림(ㄱ + ㅏ = 가)만
+/* Letters 추천 대화상자(ADR-0169) — 대화상자는 ui-lynx Dialog가 그리고, 여기에는 화면 가운데 자리와 제목 위 그림(ㄱ + ㅏ = 가)만
    둡니다. 그림의 결과 타일은 연한 brand 면 + brand 테두리 + brand-strong 글자(시안). 토큰만 씁니다. */
 
 .letters-recommend {

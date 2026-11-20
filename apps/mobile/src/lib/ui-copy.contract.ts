@@ -127,7 +127,7 @@ export type UiCopy = {
   readonly login: LoginCopy;
   readonly verificationCode: VerificationCodeCopy;
   readonly authFailure: AuthFailureCopy;
-  /** 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천(ADR-0168). */
+  /** 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천(ADR-0169). */
   readonly more: MoreCopy;
 };
 

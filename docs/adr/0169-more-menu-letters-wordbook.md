@@ -1,4 +1,4 @@
-# ADR-0168: 바텀 메뉴 More — Letters(자모표 · 합치기 퀴즈) · My words(기기 단어장) · Letters 추천
+# ADR-0169: 바텀 메뉴 More — Letters(자모표 · 합치기 퀴즈) · My words(기기 단어장) · Letters 추천
 
 - 상태: **제안 — 구현됨, 번들 천장 결정 대기**(로컬 브랜치 `feat/more-menu-letters-wordbook`, push · PR 없음). (2026-11-20)
 - 날짜: 2026-11-20

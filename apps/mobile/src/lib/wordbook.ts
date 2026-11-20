@@ -1,7 +1,7 @@
-// 기기 단어장(ADR-0168) — 단어 카드(VOCAB_CARD)로 만난 콘텐츠 `voca:` ref의 기록입니다. 처음 본 날 · 맞힘 · 틀림을 적고, 간단한
+// 기기 단어장(ADR-0169) — 단어 카드(VOCAB_CARD)로 만난 콘텐츠 `voca:` ref의 기록입니다. 처음 본 날 · 맞힘 · 틀림을 적고, 간단한
 // 간격 반복(상자 0~4, 간격 1 · 3 · 7 · 14 · 30일)으로 다음 복습 날을 정합니다. 기록에는 ref만 두고 글 · 뜻은 카탈로그에서 읽습니다.
 // 저장은 계정마다 `libitum.wordbook.<userId>`, 비회원은 `libitum.wordbook.guest` — 로그인 때 그 계정 칸으로 합칩니다(ADR-0111 방식).
-// 서버로 보내지 않습니다(기존 서버 저장소가 이 기록을 덮지 않음, ADR-0168 D5).
+// 서버로 보내지 않습니다(기존 서버 저장소가 이 기록을 덮지 않음, ADR-0169 D5).
 
 import type { LocalDay } from "./learning-progress.contract";
 import { getItem, isStorageAvailable, removeItem, setItem } from "./storage";

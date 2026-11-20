@@ -16,7 +16,7 @@ import { wordbookTestIds as ids, type WordbookReviewScreenProps } from "./wordbo
 import "./wordbook-screen.css";
 import "./wordbook-word.css";
 
-// 오늘의 복습입니다(ADR-0168, 시안 WordbookReview). 「What does this mean?」 — 단어(와 소리)를 보고 뜻 셋 중 하나를 고릅니다.
+// 오늘의 복습입니다(ADR-0169, 시안 WordbookReview). 「What does this mean?」 — 단어(와 소리)를 보고 뜻 셋 중 하나를 고릅니다.
 // 맞으면 그 보기가 초록 · 「Got it」으로 옮긴다는 안내, 틀리면 고른 보기 빨강 · 정답 초록 · 「내일 다시」 안내입니다. 답은 한 문항에
 // 한 번만 올라가고(간격 반복은 결선이 적음), 아래 단추는 답 전 Skip · 답 뒤 Next · 마지막 Done입니다.
 export function WordbookReviewScreen({

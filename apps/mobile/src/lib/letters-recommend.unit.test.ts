@@ -14,7 +14,7 @@ import {
   withShown,
 } from "./letters-recommend";
 
-// `unit` 계층: Letters 추천의 신호 → 이유와 띄우지 않는 규칙 · 기록(ADR-0168).
+// `unit` 계층: Letters 추천의 신호 → 이유와 띄우지 않는 규칙 · 기록(ADR-0169).
 
 afterEach(() => {
   vi.unstubAllGlobals();

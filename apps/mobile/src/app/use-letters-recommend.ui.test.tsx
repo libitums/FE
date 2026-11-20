@@ -6,7 +6,7 @@ import { createLearningTrail } from "./learning-trail";
 import type { MoreWiring } from "./more-wiring";
 import { useLettersRecommend } from "./use-letters-recommend";
 
-// `ui` 계층: Letters 추천 훅(ADR-0168 D5) — 신호 · 지연 · 띄우지 않는 규칙을 띄우기 직전에도 다시 본다(리뷰 M1).
+// `ui` 계층: Letters 추천 훅(ADR-0169 D5) — 신호 · 지연 · 띄우지 않는 규칙을 띄우기 직전에도 다시 본다(리뷰 M1).
 
 afterEach(() => {
   cleanup();

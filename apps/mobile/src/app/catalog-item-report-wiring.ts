@@ -16,7 +16,7 @@ export type CatalogItemReportWiring = {
     ref: CatalogItemRef,
     report: ItemAnswerReport,
   ) => void;
-  /** 단어 카드 활동이 끝났을 때 — 보인 카드들(단어장에 적음, ADR-0168). 다시 풀기에는 카드가 없습니다. */
+  /** 단어 카드 활동이 끝났을 때 — 보인 카드들(단어장에 적음, ADR-0169). 다시 풀기에는 카드가 없습니다. */
   readonly onCatalogCardsSeen: (episodeId: string, refs: readonly CatalogItemRef[]) => void;
 };
 
@@ -37,7 +37,7 @@ export function itemAnswerContentOf(
 export function catalogItemReportWiring(args: {
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly episodeContent?: Pick<EpisodeContent, "catalog">;
-  /** 레슨 자취(단어장 · Letters 추천 신호, ADR-0168). 없으면 측정만 합니다. */
+  /** 레슨 자취(단어장 · Letters 추천 신호, ADR-0169). 없으면 측정만 합니다. */
   readonly learningTrail?: LearningTrail;
 }): CatalogItemReportWiring {
   const sink = args.episodeIntroEventSink;

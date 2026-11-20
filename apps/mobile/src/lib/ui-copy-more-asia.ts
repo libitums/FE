@@ -1,5 +1,5 @@
-// 더보기 · Letters · My words · Letters 추천 문구의 일본어 · 베트남어 덩어리(ADR-0168) — `ui-copy-more.ts`가 300줄을 넘지 않게 나눴습니다.
-// 태국어 · 미얀마어 덩어리는 #522(화면 문구 th · my)가 들어온 뒤 여기에 더합니다.
+// 더보기 · Letters · My words · Letters 추천 문구의 일본어 · 베트남어 덩어리(ADR-0169) — `ui-copy-more.ts`가 300줄을 넘지 않게 나눴습니다.
+// 태국어 · 미얀마어 덩어리는 `ui-copy-more-th-my.ts`에 있습니다.
 
 import type { MoreCopy } from "./ui-copy-more.contract";
 

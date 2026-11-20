@@ -107,7 +107,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       );
     case "plans":
       return renderPlans(screen, wiring);
-    // 더보기 메뉴의 화면들(ADR-0168).
+    // 더보기 메뉴의 화면들(ADR-0169).
     case "letters":
     case "letters-compose":
     case "wordbook":

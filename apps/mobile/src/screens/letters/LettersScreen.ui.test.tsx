@@ -5,7 +5,7 @@ import type { ChoiceRomanization } from "../../lib/session-options";
 import { LettersScreen } from "./LettersScreen";
 import { lettersTestIds as ids } from "./letters.contract";
 
-// `ui` 계층: Letters 자모표(ADR-0168) — 고정 머리 · 40칸 순서 · 로마자 설정 · 누르면 소리 · 강조 · 들은 칸 · 소리 없음.
+// `ui` 계층: Letters 자모표(ADR-0169) — 고정 머리 · 40칸 순서 · 로마자 설정 · 누르면 소리 · 강조 · 들은 칸 · 소리 없음.
 
 afterEach(() => {
   cleanup();
@@ -98,7 +98,7 @@ test("LS6. 연습 단추 → 합치기 퀴즈", () => {
   expect(onPractice).toHaveBeenCalledTimes(1);
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("LS7. 들은 칸은 낭독 이름에도 「heard」", () => {
   mount();

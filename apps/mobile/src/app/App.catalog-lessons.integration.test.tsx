@@ -1030,9 +1030,9 @@ test("L-ST2. 이미 오늘 한 날(일수가 그대로)이면 레슨을 끝내�
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
 });
 
-// ---------------------------------------------------------------- 더보기 · Letters 추천 · 단어장(ADR-0168)
+// ---------------------------------------------------------------- 더보기 · Letters 추천 · 단어장(ADR-0169)
 
-test("MM-L1. (ADR-0168) 단어 카드로 만난 voca 단어가 기기 단어장에 들고 더보기 메뉴 My words 줄의 수가 된다", async () => {
+test("MM-L1. (ADR-0169) 단어 카드로 만난 voca 단어가 기기 단어장에 들고 더보기 메뉴 My words 줄의 수가 된다", async () => {
   await boot({ progress: upTo() });
   const plan = lessonPlan(u01, "S1");
   const refs = new Set(
@@ -1053,7 +1053,7 @@ test("MM-L1. (ADR-0168) 단어 카드로 만난 voca 단어가 기기 단어장�
   );
 });
 
-test("MM-L2. (ADR-0168) 레슨을 나가고 지도에 돌아오면 연출 지연 뒤 Letters 추천(실패 문구) — Learn → Letters · 선택 C", async () => {
+test("MM-L2. (ADR-0169) 레슨을 나가고 지도에 돌아오면 연출 지연 뒤 Letters 추천(실패 문구) — Learn → Letters · 선택 C", async () => {
   const { events } = await boot({ progress: throughS9 });
 
   tapNode(u01, "S9");
@@ -1081,7 +1081,7 @@ test("MM-L2. (ADR-0168) 레슨을 나가고 지도에 돌아오면 연출 지연
   );
 });
 
-test("MM-L3. (ADR-0168) 한글 읽기를 어렵지 않게 끝낸 레슨 뒤에는 추천이 없다", async () => {
+test("MM-L3. (ADR-0169) 한글 읽기를 어렵지 않게 끝낸 레슨 뒤에는 추천이 없다", async () => {
   await boot({ progress: upTo() });
   tapNode(u01, "S1");
   vi.useFakeTimers();
@@ -1095,9 +1095,9 @@ test("MM-L3. (ADR-0168) 한글 읽기를 어렵지 않게 끝낸 레슨 뒤에�
   expect(screen.queryByTestId("letters-recommend")).toBeNull();
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
-test("MM-L4. (ADR-0168 접근성 감사) 추천 대화상자가 선 동안 지도 · 바는 낭독에서 빠진다", async () => {
+test("MM-L4. (ADR-0169 접근성 감사) 추천 대화상자가 선 동안 지도 · 바는 낭독에서 빠진다", async () => {
   await boot({ progress: throughS9 });
   tapNode(u01, "S9");
   vi.useFakeTimers();

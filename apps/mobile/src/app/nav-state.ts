@@ -19,10 +19,10 @@ import type { PlanPlacement } from "../screens/plans/plans-model";
 
 // 탭 목록과 1:1입니다. 순서가 곧 바텀 네비게이션의 좌→우 순서입니다
 // (bottom-navigator.contract.ts).
-// 넷째 탭은 더보기(⋯)입니다(ADR-0168) — 루트가 메뉴에서 고른 화면(Letters · My words · Settings)으로 바뀝니다.
+// 넷째 탭은 더보기(⋯)입니다(ADR-0169) — 루트가 메뉴에서 고른 화면(Letters · My words · Settings)으로 바뀝니다.
 export type Tab = "journey" | "roleplay" | "messenger" | "more";
 
-/** 더보기 메뉴의 줄 셋 — more 스택의 루트 화면입니다(ADR-0168). */
+/** 더보기 메뉴의 줄 셋 — more 스택의 루트 화면입니다(ADR-0169). */
 export type MoreRoot = "letters" | "wordbook" | "settings";
 
 // **route 목록과 1:1입니다.** route가 늘면 이 union에 멤버를 더하고, `render-screen.tsx` switch의 exhaustiveness 검사가
@@ -35,7 +35,7 @@ export type Screen =
   | { name: "messenger-list"; notice?: MessengerListNotice }
   | { name: "messenger-chat"; roomId: string }
   | { name: "settings" }
-  // 더보기 메뉴의 화면들입니다(ADR-0168). `letters` · `wordbook`은 more 스택 루트(바 유지), 나머지는 그 위에 쌓입니다.
+  // 더보기 메뉴의 화면들입니다(ADR-0169). `letters` · `wordbook`은 more 스택 루트(바 유지), 나머지는 그 위에 쌓입니다.
   | { name: "letters" }
   | { name: "letters-compose" }
   | { name: "wordbook" }
@@ -147,7 +147,7 @@ export type NavAction =
   | { type: "replace"; screen: Screen }
   | { type: "backToRoot" }
   | { type: "switchTab"; tab: Tab }
-  // 더보기 메뉴의 줄 — more 탭으로 가며 그 스택을 고른 화면 하나로 다시 세웁니다(ADR-0168).
+  // 더보기 메뉴의 줄 — more 탭으로 가며 그 스택을 고른 화면 하나로 다시 세웁니다(ADR-0169).
   | { type: "openMore"; root: MoreRoot }
   // 메신저 탭 루트(목록)의 안내만 붙이거나 지웁니다(ADR-0127) — 활성 스택 · 진입 구간과 무관하게 그 루트 하나만 바꿉니다.
   | { type: "setListNotice"; notice: MessengerListNotice | null }

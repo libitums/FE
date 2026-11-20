@@ -83,7 +83,7 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
-    // 더보기 메뉴의 바깥 막(ADR-0168) — 투명한 면이라 띠를 칠하지 않는다(지도의 명암 그대로). 표지가 없다.
+    // 더보기 메뉴의 바깥 막(ADR-0169) — 투명한 면이라 띠를 칠하지 않는다(지도의 명암 그대로). 표지가 없다.
     "components/more-menu.css": {
       classification: "default-scrim",
       carriers: [],

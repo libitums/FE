@@ -9,7 +9,7 @@ import { lettersTestIds as ids, type LettersRecommendDialogProps } from "./lette
 
 import "./letters-recommend.css";
 
-// 여정맵 Letters 추천 대화상자입니다(ADR-0168, 시안 RecommendWrong · RecommendSyllable). ui-lynx `Dialog` 그대로(폭 화면−64 · 최대 320 ·
+// 여정맵 Letters 추천 대화상자입니다(ADR-0169, 시안 RecommendWrong · RecommendSyllable). ui-lynx `Dialog` 그대로(폭 화면−64 · 최대 320 ·
 // 스크림 · 단추 세로)에 제목 위 그림(ㄱ + ㅏ = 가 타일)을 얹습니다 — 그림은 장식이라 낭독에서 가립니다. 첫 액션(brand)이 「Learn the
 // letters」, 아래가 「Keep going」이고 시스템 뒤로는 닫기(`back`)입니다.
 export function LettersRecommendDialog({

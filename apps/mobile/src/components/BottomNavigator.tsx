@@ -29,7 +29,7 @@ export type BottomNavigatorProps = {
   onSelectTab: (tab: Tab) => void;
   /** 탭 NEW 배지(2026-11-13) — 글자 배지, 낭독은 탭 이름 뒤 「, new」. */
   badges?: Partial<Record<Tab, "new">>;
-  /** 더보기 메뉴가 열려 있는가(ADR-0168) — 열린 동안 ⋯는 ×(brand-strong)이고 이름이 「Close menu」입니다. */
+  /** 더보기 메뉴가 열려 있는가(ADR-0169) — 열린 동안 ⋯는 ×(brand-strong)이고 이름이 「Close menu」입니다. */
   moreOpen?: boolean;
 };
 
@@ -43,7 +43,7 @@ const tabs: readonly { readonly id: Tab; readonly icon: string }[] = [
   { id: "journey", icon: flag },
   { id: "roleplay", icon: friends },
   { id: "messenger", icon: message },
-  // 마지막은 늘 더보기 동그라미(ADR-0168) — 아이콘은 그릴 때 열림에 따라 ⋯ / ×. 새 탭(예: 랭킹)은 이 줄 앞에 한 줄 더하고
+  // 마지막은 늘 더보기 동그라미(ADR-0169) — 아이콘은 그릴 때 열림에 따라 ⋯ / ×. 새 탭(예: 랭킹)은 이 줄 앞에 한 줄 더하고
   // `Tab` · `initialNav.stacks` · 탭 이름표에 같은 id를 더합니다. 다섯이 되면 ui-lynx가 양끝 맞춤(항목 56)으로 놓습니다.
   { id: "more", icon: moreIcon },
 ];

@@ -74,7 +74,7 @@ export function accountWiring({
           clearCachedProgress(userId);
           clearPendingLearningDays(userId);
           clearLearnerProfileCache(userId);
-          clearWordbook(userId); // 단어장 칸(ADR-0168)
+          clearWordbook(userId); // 단어장 칸(ADR-0169)
           // 메신저 해금 기록도 그 계정 것만 지웁니다 — 같은 기기의 다음 계정에 열린 인물이 남지 않게(2026-11-17).
           forgetDeviceUnlocks(serverAccountKey(userId));
         }

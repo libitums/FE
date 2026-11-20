@@ -6,7 +6,7 @@ import { WordbookReviewScreen } from "./WordbookReviewScreen";
 import { wordbookTestIds as ids } from "./wordbook.contract";
 import { sampleEntries } from "./wordbook.test-support";
 
-// `ui` 계층: 오늘의 복습(ADR-0168) — 「What does this mean?」 보기 셋 · 맞음/틀림 표시 · 안내 · Next/Skip · 끝.
+// `ui` 계층: 오늘의 복습(ADR-0169) — 「What does this mean?」 보기 셋 · 맞음/틀림 표시 · 안내 · Next/Skip · 끝.
 
 afterEach(() => {
   cleanup();
@@ -90,7 +90,7 @@ test("WR5. Skip은 답 없이 다음 · × 닫기", () => {
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("WR6. 보기는 flatten false", () => {
   mount();

@@ -41,7 +41,7 @@ test("탭 셋에 각자 제 아이콘이 실린다", () => {
     "content",
     unselected(friends),
   );
-  // 더보기(ADR-0168)는 brand 동그라미 위 흰 ⋯ — 선택이 아니어도 흰 아이콘입니다.
+  // 더보기(ADR-0169)는 brand 동그라미 위 흰 ⋯ — 선택이 아니어도 흰 아이콘입니다.
   expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-more-default")).toHaveAttribute(
     "content",
     selected(moreIcon),
@@ -288,7 +288,7 @@ test("MG-UI1 badges로 NEW를 받으면 그 탭에 글자 배지가 서고 낭�
   ).toBe("Chats, new");
 });
 
-// ---------------------------------------------------------------------- 더보기(ADR-0168)
+// ---------------------------------------------------------------------- 더보기(ADR-0169)
 
 test("[MO-UI1] 메뉴가 열린 동안 ⋯는 ×가 되고 이름이 Close menu", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} moreOpen />);

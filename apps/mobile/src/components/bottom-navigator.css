@@ -38,7 +38,7 @@
   background-color: var(--libitum-color-brand-primary);
 }
 
-/* 더보기 메뉴가 열린 동안(ADR-0168) ⋯ 동그라미는 ×와 함께 brand-strong입니다(시안 MoreSheet). */
+/* 더보기 메뉴가 열린 동안(ADR-0169) ⋯ 동그라미는 ×와 함께 brand-strong입니다(시안 MoreSheet). */
 .app-navigator-more-open .ui-lynx-bottom-navigator-item-action .ui-lynx-bottom-navigator-surface {
   background-color: var(--libitum-color-brand-strong);
 }

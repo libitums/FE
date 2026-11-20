@@ -1,4 +1,4 @@
-// Letters(자모표) · 합치기 퀴즈 · Letters 추천 대화상자의 prop 계약과 testid입니다(ADR-0168). 타입만 둡니다.
+// Letters(자모표) · 합치기 퀴즈 · Letters 추천 대화상자의 prop 계약과 testid입니다(ADR-0169). 타입만 둡니다.
 
 import type { ChoiceRomanization } from "../../lib/session-options";
 import type { JamoGroupId } from "../../lib/letters/jamo";

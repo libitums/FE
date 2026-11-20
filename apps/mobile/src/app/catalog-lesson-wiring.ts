@@ -73,7 +73,7 @@ export type CatalogLessonWiringArgs = CatalogWiringValues & {
   readonly markCoinUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
   /** 엽전을 이미 받은 유닛입니다(ADR-0116). 끝냄 기록이 없어도 여기 있으면 처음 통과가 아닙니다. */
   readonly coinUnits?: CatalogProgress;
-  /** 레슨 자취(ADR-0168) — 나가기 · 판정이 Letters 추천 신호를 남깁니다. */
+  /** 레슨 자취(ADR-0169) — 나가기 · 판정이 Letters 추천 신호를 남깁니다. */
   readonly learningTrail?: LearningTrail;
 };
 

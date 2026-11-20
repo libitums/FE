@@ -5,7 +5,7 @@ import { WordbookScreen } from "./WordbookScreen";
 import { wordbookTestIds as ids } from "./wordbook.contract";
 import { sampleEntries } from "./wordbook.test-support";
 
-// `ui` 계층: My words 목록(ADR-0168) — 복습 CTA · 걸러보기 칩 · 줄(재생 · 한국어 · 로마자 · 뜻 · 에피소드 · 상태) · 빈 상태.
+// `ui` 계층: My words 목록(ADR-0169) — 복습 CTA · 걸러보기 칩 · 줄(재생 · 한국어 · 로마자 · 뜻 · 에피소드 · 상태) · 빈 상태.
 
 afterEach(() => {
   cleanup();
@@ -79,7 +79,7 @@ test("WS6. 단어가 없으면 빈 상태", () => {
   expect(screen.getByTestId(ids.empty).textContent).toContain("No words yet");
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("WS7. 재생 단추는 줄 단추 밖(형제)이고 이름에 단어가 붙는다 · 누르는 요소는 flatten false", () => {
   mount();

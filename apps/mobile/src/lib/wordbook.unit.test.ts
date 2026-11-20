@@ -20,7 +20,7 @@ import {
   type Wordbook,
 } from "./wordbook";
 
-// `unit` 계층: 단어장 기록 — 단어 카드로 만난 voca만, 답 기록, 상태, 간격 반복, 합치기, 저장 · 비회원 이관(ADR-0168).
+// `unit` 계층: 단어장 기록 — 단어 카드로 만난 voca만, 답 기록, 상태, 간격 반복, 합치기, 저장 · 비회원 이관(ADR-0169).
 
 const day = "2026-11-20";
 const seen = (refs: readonly string[], today = day, book: Wordbook = emptyWordbook) =>

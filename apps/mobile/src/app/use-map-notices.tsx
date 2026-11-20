@@ -1,5 +1,5 @@
 // 여정 맵 루트의 일회성 안내를 한 자리에서 잇습니다 — 엽전 출시 · 채팅 모달(ADR-0140)이 먼저, 그다음 끝낸 에피소드 업데이트
-// 안내(시안 G-A), 맨 뒤 Letters 추천(ADR-0168). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
+// 안내(시안 G-A), 맨 뒤 Letters 추천(ADR-0169). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
 
 import type { ReactNode } from "@lynx-js/react";
 import { useEffect, useRef } from "@lynx-js/react";
@@ -55,7 +55,7 @@ export function useMapNotices(input: MapNoticesInput): {
   useEffect(() => {
     updateOpen.current = updateNotice.open;
   }, [updateNotice.open]);
-  // Letters 추천(ADR-0168)은 줄 맨 뒤 — 엽전 · 업데이트 안내가 모두 닫힌 뒤에만.
+  // Letters 추천(ADR-0169)은 줄 맨 뒤 — 엽전 · 업데이트 안내가 모두 닫힌 뒤에만.
   const letters = useLettersRecommend({
     trail: input.wiring.learningTrail,
     more: input.wiring.more,

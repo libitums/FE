@@ -149,9 +149,9 @@ export type ScreenWiring = {
   accountState: AccountState;
   /** 메신저 탭 — 대화 출처와 이동 콜백(messenger-chat-ui spec §7.1). */
   messengerChat: MessengerChatWiring;
-  /** 더보기 메뉴 · Letters · My words(ADR-0168). */
+  /** 더보기 메뉴 · Letters · My words(ADR-0169). */
   more: MoreWiring;
-  /** 레슨 자취 — 지도의 Letters 추천이 끝난 레슨의 신호를 꺼냅니다(ADR-0168). */
+  /** 레슨 자취 — 지도의 Letters 추천이 끝난 레슨의 신호를 꺼냅니다(ADR-0169). */
   learningTrail: LearningTrail;
 } & GuestWiring &
   AccountWiring &

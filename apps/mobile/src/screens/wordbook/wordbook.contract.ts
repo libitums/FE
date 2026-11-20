@@ -1,4 +1,4 @@
-// My words(단어장) 화면 셋의 prop 계약과 testid입니다(ADR-0168). 타입만 둡니다.
+// My words(단어장) 화면 셋의 prop 계약과 testid입니다(ADR-0169). 타입만 둡니다.
 
 import type { WordbookEntry } from "../../app/wordbook-entries";
 

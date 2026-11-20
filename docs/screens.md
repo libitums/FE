@@ -615,7 +615,7 @@ VoiceOver 확인은 [수동 iOS E2E](e2e/visual-novel.md)에 남아 있고 아�
 
 결정과 키보드 규칙 · 높이 표는 [ADR-0113](adr/0113-messenger-chat-ui.md), 기기 확인은 [메신저 자유 대화 e2e](e2e/messenger-chat-ui.md) MC-E1 ~ E13. 1.5단계(아이콘 · 턴 · 엽전 · 해금)는 [ADR-0117](adr/0117-messenger-chat-turns-coins-new-friend.md) · [1.5 e2e](e2e/messenger-chat-1-5.md) MC2-E1 ~ E10. 학습 메신저(막간 문자, `catalog-story`)는 이 탭과 다른 화면이고 같은 공용 chat 부품을 쓴다([ADR-0088](adr/0088-interlude-story-unit.md) 적용 기록). ⚠ **사람 손 · 실기 미확인** — iOS SE 3 시뮬레이터 에이전트 회차만 있다.
 
-### 더보기 탭 ⟨2026-11-20 — [ADR-0168](adr/0168-more-menu-letters-wordbook.md)⟩
+### 더보기 탭 ⟨2026-11-20 — [ADR-0169](adr/0169-more-menu-letters-wordbook.md)⟩
 
 > 바 넷째 단추가 설정(톱니) 대신 **주황 동그라미 ⋯**다. 누르면 탭이 바뀌지 않고 바 위 8에 **메뉴 카드**(스크림 없음)가 올라온다 — 줄 `Letters`(NEW) · `My words`(「N words · M to review」) ·
 > `Settings`. 열린 동안 ×, 다시 누름 · 바깥 · 시스템 뒤로면 닫힘. 줄을 누르면 more 탭으로 가며 그 화면이 more 스택 루트가 되고, 그동안 ⋯에 고리(선택 C · 「More, selected」).
@@ -629,7 +629,7 @@ VoiceOver 확인은 [수동 iOS E2E](e2e/visual-novel.md)에 남아 있고 아�
 | 단어 자세히 | route `wordbook-word{episodeId, ref}` — Listen/Slow · 뜻 · From your story 예문 · 에피소드 · 처음 본 날 · 맞힌 수 · Practice this word |
 | 오늘의 복습 | route `wordbook-review{only}` — 「What does this mean?」 보기 셋, 맞으면 Got it · 틀리면 내일 다시, Skip / Next / Done |
 
-여정맵에는 레슨을 실패 · 나가기 · 어렵게 끝낸 뒤 한 번 **Letters 추천** 대화상자(Learn the letters · Keep going)가 다른 안내 뒤에 선다(ADR-0168 D5).
+여정맵에는 레슨을 실패 · 나가기 · 어렵게 끝낸 뒤 한 번 **Letters 추천** 대화상자(Learn the letters · Keep going)가 다른 안내 뒤에 선다(ADR-0169 D5).
 
 ### 설정 탭
 

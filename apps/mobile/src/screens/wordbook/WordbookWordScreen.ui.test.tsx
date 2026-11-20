@@ -6,7 +6,7 @@ import { WordbookWordScreen } from "./WordbookWordScreen";
 import { wordbookTestIds as ids } from "./wordbook.contract";
 import { sampleEntries } from "./wordbook.test-support";
 
-// `ui` 계층: 단어 자세히(ADR-0168) — 단어 · 로마자 · Listen/Slow · 뜻 · 이야기 예문 · 처음 본 날 · 맞힌 수 · Practice.
+// `ui` 계층: 단어 자세히(ADR-0169) — 단어 · 로마자 · Listen/Slow · 뜻 · 이야기 예문 · 처음 본 날 · 맞힌 수 · Practice.
 
 afterEach(() => {
   cleanup();
@@ -74,7 +74,7 @@ test("WW5. 카탈로그에서 사라진 단어면 뒤로만", () => {
   expect(onBack).toHaveBeenCalledTimes(1);
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("WW6. Listen · Slow는 flatten false", () => {
   mount();

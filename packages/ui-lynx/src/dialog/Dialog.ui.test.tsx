@@ -256,7 +256,7 @@ describe("Dialog motion 컨텍스트", () => {
   });
 });
 
-describe("그림 자리(children, FE ADR-0168)", () => {
+describe("그림 자리(children, FE ADR-0169)", () => {
   test("children을 주면 제목 위 media 자리에 그리고, 없으면 자리 자체가 없다", () => {
     const { rerender } = render(
       <Dialog title="Title" actions={[{ id: "ok", label: "OK" }]} bindaction={() => {}}>

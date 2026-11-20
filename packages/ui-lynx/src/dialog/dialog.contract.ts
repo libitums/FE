@@ -24,7 +24,7 @@ export type DialogProps = {
   readonly phase?: DialogPhase;
   readonly bindaction: (id: string) => void;
   readonly bindmotionend?: () => void;
-  /** 제목 위 그림 자리(FE ADR-0168) — 장식이면 부르는 쪽이 낭독에서 가립니다. 없으면 자리 자체가 없습니다. */
+  /** 제목 위 그림 자리(FE ADR-0169) — 장식이면 부르는 쪽이 낭독에서 가립니다. 없으면 자리 자체가 없습니다. */
   readonly children?: ReactNode;
 };
 

@@ -1,5 +1,5 @@
-// 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천 문구의 모양(ADR-0168)입니다. 타입만 둡니다 — 값은
-// `ui-copy-more.ts`(영어 · 스페인어 · 인도네시아어) · `ui-copy-more-asia.ts`(일본어 · 베트남어)가 집니다.
+// 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천 문구의 모양(ADR-0169)입니다. 타입만 둡니다 — 값은
+// `ui-copy-more.ts`(영어 · 스페인어 · 인도네시아어) · `ui-copy-more-asia.ts`(일본어 · 베트남어) · `ui-copy-more-th-my.ts`(태국어 · 미얀마어)가 집니다.
 
 export type MoreCopy = {
   readonly menu: {

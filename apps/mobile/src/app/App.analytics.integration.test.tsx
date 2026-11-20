@@ -124,7 +124,7 @@ function sessionApp(
   return <App {...session.sinks} />;
 }
 
-// 더보기 › Settings → 프로필 열기입니다(ADR-0168). 메뉴 열기 · 줄 누름 · 설정 · 프로필 넷이 나가야 합니다.
+// 더보기 › Settings → 프로필 열기입니다(ADR-0169). 메뉴 열기 · 줄 누름 · 설정 · 프로필 넷이 나가야 합니다.
 function openProfile(): void {
   openSettingsTab();
   fireEvent.tap(settingsCell("profile"), {});
@@ -220,7 +220,7 @@ test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키�
   openProfile();
   await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(4));
 
-  // 기기 첫 실행일은 영역 이벤트(더보기 메뉴, ADR-0168)의 날 수 칸이라 익명 ID가 아닙니다(ADR-0029 「D3 목적 구분」).
+  // 기기 첫 실행일은 영역 이벤트(더보기 메뉴, ADR-0169)의 날 수 칸이라 익명 ID가 아닙니다(ADR-0029 「D3 목적 구분」).
   expect(
     storageSets.filter(
       (key) =>

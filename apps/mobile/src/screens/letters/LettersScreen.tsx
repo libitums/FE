@@ -13,7 +13,7 @@ import { lettersTestIds as ids, type LettersScreenProps } from "./letters.contra
 
 import "./letters-screen.css";
 
-// Letters(자모표) 화면입니다(ADR-0168, 시안 JamoChart · 선택 C). 더보기 메뉴에서 들어오는 more 스택 루트라 뒤로 단추가 없고 바텀
+// Letters(자모표) 화면입니다(ADR-0169, 시안 JamoChart · 선택 C). 더보기 메뉴에서 들어오는 more 스택 루트라 뒤로 단추가 없고 바텀
 // 메뉴가 그대로 섭니다. 위(제목 · 리드 · 연습 단추)는 고정이고 아래 4열 격자 40칸만 스크롤합니다. 칸을 누르면 그 글자의 소리
 // (자음 + ㅏ, ㅇ + 모음)가 나고, 방금 누른 칸이 강조되며 들은 칸은 스피커가 brand 색이 됩니다. 소리 파일이 아직 없으면(음성 정보
 // 파일에 없음) 스피커가 비활성 모양이고 낭독 이름에 그 사실이 붙습니다 — 칸은 그대로 눌립니다(강조 · 이벤트).

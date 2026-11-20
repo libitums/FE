@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { emptyWordbook, wordbookKeyOf, type Wordbook } from "../lib/wordbook";
 import { createLearningTrail } from "./learning-trail";
 
-// `unit` 계층: 레슨 자취 — 단어장 기록과 Letters 추천 신호(ADR-0168).
+// `unit` 계층: 레슨 자취 — 단어장 기록과 Letters 추천 신호(ADR-0169).
 
 function trailWith(initial: Wordbook = emptyWordbook) {
   let book = initial;

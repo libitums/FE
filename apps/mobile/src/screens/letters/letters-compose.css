@@ -1,4 +1,4 @@
-/* 합치기 퀴즈(ADR-0168, 시안 JamoCompose) — 뼈대는 LearningShell, 칸 · 타일은 음절 조립 모양(syllable-build-tile ·
+/* 합치기 퀴즈(ADR-0169, 시안 JamoCompose) — 뼈대는 LearningShell, 칸 · 타일은 음절 조립 모양(syllable-build-tile ·
    syllable-build-word의 칸 값)을 빌리고 여기에는 카드 안 배치 · 칸 상태 · 힌트 칩만 둡니다. 토큰만 씁니다. */
 
 .letters-compose {

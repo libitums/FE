@@ -11,7 +11,7 @@ import {
   type ComposeState,
 } from "./compose-quiz";
 
-// `unit` 계층: 합치기 퀴즈의 라운드 · 칸 · 자동 판정 · Next / Try again(ADR-0168).
+// `unit` 계층: 합치기 퀴즈의 라운드 · 칸 · 자동 판정 · Next / Try again(ADR-0169).
 
 const run = (...actions: ComposeAction[]): ComposeState =>
   actions.reduce(composeReducer, initialComposeState);

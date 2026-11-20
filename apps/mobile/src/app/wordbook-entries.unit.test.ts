@@ -4,7 +4,7 @@ import type { CatalogEntry } from "../lib/episode-catalog";
 import { emptyWordbook, withAnswer, withCardsSeen } from "../lib/wordbook";
 import { meaningPoolOf, reviewChoicesOf, wordbookEntriesOf } from "./wordbook-entries";
 
-// `unit` 계층: 단어장 기록 → 화면 줄(UI 언어 카탈로그에서 글 · 뜻 · 예문 · 음성) · 복습 보기(ADR-0168).
+// `unit` 계층: 단어장 기록 → 화면 줄(UI 언어 카탈로그에서 글 · 뜻 · 예문 · 음성) · 복습 보기(ADR-0169).
 
 const water = {
   status: "ready",

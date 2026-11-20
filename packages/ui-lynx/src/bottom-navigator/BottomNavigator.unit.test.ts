@@ -358,7 +358,7 @@ describe("bottom-navigator.css", () => {
   });
 });
 
-// `unit` 계층: 동그라미 동작 항목(`variant: "action"`, FE ADR-0168) — 면 · 아이콘 색 · 선택 표시의 계약.
+// `unit` 계층: 동그라미 동작 항목(`variant: "action"`, FE ADR-0169) — 면 · 아이콘 색 · 선택 표시의 계약.
 
 const actionIcon = '<svg viewBox="0 0 24 24"><path fill="currentColor" /></svg>';
 const actionItems: readonly BottomNavigatorItem[] = [

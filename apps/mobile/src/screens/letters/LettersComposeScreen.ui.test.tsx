@@ -5,7 +5,7 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 import { LettersComposeScreen } from "./LettersComposeScreen";
 import { lettersTestIds as ids } from "./letters.contract";
 
-// `ui` 계층: 합치기 퀴즈(ADR-0168) — 음절 조립 형식 · 자동 판정 · 칸 색 · Next / Try again · Hint · 소리.
+// `ui` 계층: 합치기 퀴즈(ADR-0169) — 음절 조립 형식 · 자동 판정 · 칸 색 · Next / Try again · Hint · 소리.
 
 afterEach(() => {
   cleanup();
@@ -124,7 +124,7 @@ test("CS8. ×(머리 나가기)는 레슨과 같은 나가기 확인 뒤 onExit"
   expect(onExit).toHaveBeenCalledTimes(1);
 });
 
-// ---------------------------------------------------------------- 접근성 감사(ADR-0168 a11y)
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("CS9. 누르는 요소는 Android에서도 접근성 트리에 남는다(flatten false)", () => {
   mount();

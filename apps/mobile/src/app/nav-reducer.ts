@@ -32,7 +32,7 @@ export function tabRootActions(tab: Tab): readonly NavAction[] {
   return [{ type: "switchTab", tab }, { type: "backToRoot" }];
 }
 
-// 더보기 메뉴의 줄로 가는 동작 목록입니다(ADR-0168) — 설정으로 가는 모든 길(딥링크 · 다운로드 설정 바로가기)도 이것을 씁니다.
+// 더보기 메뉴의 줄로 가는 동작 목록입니다(ADR-0169) — 설정으로 가는 모든 길(딥링크 · 다운로드 설정 바로가기)도 이것을 씁니다.
 export function moreRootActions(root: MoreRoot): readonly NavAction[] {
   return [{ type: "openMore", root }];
 }

@@ -5,7 +5,7 @@ import { backHandlers } from "../../lib/back-handler";
 import { LettersRecommendDialog } from "./LettersRecommendDialog";
 import { lettersTestIds as ids } from "./letters.contract";
 
-// `ui` 계층: 여정맵 Letters 추천 대화상자(ADR-0168) — 문구 두 갈래 · ㄱ + ㅏ = 가 그림 · 단추 둘 · 시스템 뒤로.
+// `ui` 계층: 여정맵 Letters 추천 대화상자(ADR-0169) — 문구 두 갈래 · ㄱ + ㅏ = 가 그림 · 단추 둘 · 시스템 뒤로.
 
 afterEach(() => {
   cleanup();

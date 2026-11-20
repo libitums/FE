@@ -1,6 +1,6 @@
-/* My words 화면 셋(ADR-0168, 시안 WordbookList · WordbookDetail · WordbookReview) — 토큰만 씁니다(ADR-0014 D1).
+/* My words 화면 셋(ADR-0169, 시안 WordbookList · WordbookDetail · WordbookReview) — 토큰만 씁니다(ADR-0014 D1).
    시안의 파랑(복습)은 토큰이 없어 「복습 필요」를 feedback-warning(노란 면 · 짙은 글)로, 짙은 단추를 fg-neutral 면으로 사상합니다
-   (ADR-0168 디자인 절). 상태 칩: New = background-elevated · fg-brand, Review = warning, Got it = correct. */
+   (ADR-0169 디자인 절). 상태 칩: New = background-elevated · fg-brand, Review = warning, Got it = correct. */
 
 .wordbook-screen {
   flex: 1;

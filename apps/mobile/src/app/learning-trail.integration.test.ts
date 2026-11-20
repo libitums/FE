@@ -10,7 +10,7 @@ import { createLearningTrail } from "./learning-trail";
 import { deviceLearningTrailPort } from "./learning-trail-port";
 import type { NavAction } from "./nav-state";
 
-// `integration` 계층: 레슨 결선 ↔ 레슨 자취 ↔ 기기 단어장(ADR-0168). 활동 보고(단어 카드 끝 · 첫 판정) · 판정 · 다시 풀기가
+// `integration` 계층: 레슨 결선 ↔ 레슨 자취 ↔ 기기 단어장(ADR-0169). 활동 보고(단어 카드 끝 · 첫 판정) · 판정 · 다시 풀기가
 // 자취를 부르고, 자취가 저장소의 단어장 칸과 추천 신호를 남기는지 봅니다. 대역은 저장소(`NativeModules`)뿐입니다.
 
 afterEach(() => {

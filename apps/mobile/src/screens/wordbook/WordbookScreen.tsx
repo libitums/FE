@@ -18,7 +18,7 @@ import "./wordbook-screen.css";
 
 const filters: readonly WordbookFilter[] = ["all", "new", "review", "known"];
 
-// My words 목록입니다(ADR-0168, 시안 WordbookList). 더보기 메뉴의 more 스택 루트라 뒤로 단추 없이 바텀 메뉴가 섭니다. 위에서부터
+// My words 목록입니다(ADR-0169, 시안 WordbookList). 더보기 메뉴의 more 스택 루트라 뒤로 단추 없이 바텀 메뉴가 섭니다. 위에서부터
 // 제목(단어 수) · 「Review N words」 CTA(오늘 복습할 단어가 없으면 눌리지 않는 안내) · 걸러보기 칩 · 줄(재생 · 한국어 · 로마자 · 뜻 ·
 // 에피소드 · 상태 칩). 줄을 누르면 자세히, 재생 단추는 소리만 냅니다.
 export function WordbookScreen({

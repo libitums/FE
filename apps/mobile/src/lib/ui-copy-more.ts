@@ -1,9 +1,10 @@
-// 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천 문구(ADR-0168)입니다 — 언어마다 한 덩어리를 한 파일에 두고 각 언어 표가
-// 자기 몫을 꽂습니다(`ui-copy-streak-reward.ts`와 같은 방식). 태국어 · 미얀마어는 #522가 들어온 뒤 `th` · `my` 덩어리를
-// `ui-copy-more-asia.ts`에 더하고 그 표에 `more: moreCopy.th`를 꽂습니다(빠지면 `UiCopy` 타입이 멈춥니다).
+// 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천 문구(ADR-0169)입니다 — 언어마다 한 덩어리를 한 파일에 두고 각 언어 표가
+// 자기 몫을 꽂습니다(`ui-copy-streak-reward.ts`와 같은 방식). 일본어 · 베트남어는 `ui-copy-more-asia.ts`, 태국어 · 미얀마어는
+// `ui-copy-more-th-my.ts`가 집니다(표에 `more`가 빠지면 `UiCopy` 타입이 멈춥니다).
 
 import { n } from "./ui-copy-en-plural";
 import { moreCopyJa, moreCopyVi } from "./ui-copy-more-asia";
+import { moreCopyMy, moreCopyTh } from "./ui-copy-more-th-my";
 import type { MoreCopy } from "./ui-copy-more.contract";
 
 export type { MoreCopy };
@@ -274,10 +275,13 @@ const id: MoreCopy = {
   },
 };
 
-export const moreCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", MoreCopy>> = {
-  en,
-  es,
-  id,
-  ja: moreCopyJa,
-  vi: moreCopyVi,
-};
+export const moreCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my", MoreCopy>> =
+  {
+    en,
+    es,
+    id,
+    ja: moreCopyJa,
+    vi: moreCopyVi,
+    th: moreCopyTh,
+    my: moreCopyMy,
+  };

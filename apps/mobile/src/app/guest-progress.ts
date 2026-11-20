@@ -94,7 +94,7 @@ export function adoptGuestRecords(userId: string): void {
       mergedPendingDays(readPendingLearningDays(userId), readPendingLearningDays(guestProgressId)),
     );
     clearPendingLearningDays(guestProgressId);
-    // 비회원 단어장도 그 계정 칸으로 합칩니다(ADR-0168).
+    // 비회원 단어장도 그 계정 칸으로 합칩니다(ADR-0169).
     adoptGuestWordbook(userId);
   } catch {
     // 저장소 예외는 로그인을 막지 않습니다.

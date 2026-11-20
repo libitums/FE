@@ -1,4 +1,4 @@
-// 더보기 메뉴 카드의 prop 계약과 testid입니다(ADR-0168). 타입만 둡니다.
+// 더보기 메뉴 카드의 prop 계약과 testid입니다(ADR-0169). 타입만 둡니다.
 
 import type { MoreRoot } from "../app/nav-state";
 

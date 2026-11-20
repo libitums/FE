@@ -33,7 +33,7 @@ type BottomNavigatorItemBase = {
    */
   readonly timingFlag?: string;
   /**
-   * `action`은 바 끝의 동그라미 동작 단추입니다(FE ADR-0168 더보기) — 알약 대신 48 brand 동그라미 · 흰 아이콘이고, 선택되면
+   * `action`은 바 끝의 동그라미 동작 단추입니다(FE ADR-0169 더보기) — 알약 대신 48 brand 동그라미 · 흰 아이콘이고, 선택되면
    * 알약이 아니라 바탕색 틈 + brand 고리로 표시합니다. 없으면 보통 탭입니다.
    */
   readonly variant?: "action";

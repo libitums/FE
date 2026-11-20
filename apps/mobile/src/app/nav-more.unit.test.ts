@@ -12,7 +12,7 @@ import {
   tabRootActions,
 } from "./nav-reducer";
 
-// `unit` 계층: 더보기 탭(ADR-0168) — 메뉴 줄이 more 스택 루트를 바꾸고, 설정으로 가는 길이 그대로 닿는다.
+// `unit` 계층: 더보기 탭(ADR-0169) — 메뉴 줄이 more 스택 루트를 바꾸고, 설정으로 가는 길이 그대로 닿는다.
 
 const apply = (nav: Nav, actions: readonly NavAction[]) => actions.reduce(navReducer, nav);
 
