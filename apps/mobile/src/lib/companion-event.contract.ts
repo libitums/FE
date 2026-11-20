@@ -2,6 +2,8 @@
 // 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
 // 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
+import type { MoreEvent } from "./more-event.contract";
+
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
 export type EventSurface = "learning" | "chat";
 
@@ -206,6 +208,7 @@ export type GuestPromptEvent = Common & {
 };
 
 export type CompanionEvent =
+  | MoreEvent
   | LaunchEvent
   | GuestPromptEvent
   | StreakRewardEvent

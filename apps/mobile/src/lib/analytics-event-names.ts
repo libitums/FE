@@ -80,4 +80,14 @@ export type AnalyticsEventName =
   | "suggested_friend_opened"
   | "suggested_friend_added"
   | "early_access_tapped"
-  | "early_access_completed";
+  | "early_access_completed"
+  | "more_menu_opened"
+  | "more_menu_item_clicked"
+  | "letters_cell_tapped"
+  | "letters_quiz_answered"
+  | "letters_quiz_completed"
+  | "wordbook_opened"
+  | "wordbook_review_answered"
+  | "letters_recommend_shown"
+  | "letters_recommend_clicked"
+  | "letters_recommend_dismissed";

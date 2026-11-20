@@ -4,6 +4,7 @@
 // **학습 콘텐츠는 여기 없습니다.** 이 앱은 한국어를 배우는 앱이라 대사 · 예문 · 보기 ·
 // 받아쓰기 대상은 늘 한국어이고, 문구표는 그 둘레의 UI 문구만 집니다.
 
+import type { MoreCopy } from "./ui-copy-more.contract";
 import type { AssembledHintCopy } from "./ui-copy-assembled-hint";
 import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 import type { AuthFailureCopy } from "./auth-failure";
@@ -126,6 +127,8 @@ export type UiCopy = {
   readonly login: LoginCopy;
   readonly verificationCode: VerificationCodeCopy;
   readonly authFailure: AuthFailureCopy;
+  /** 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천(ADR-0168). */
+  readonly more: MoreCopy;
 };
 
 /**
