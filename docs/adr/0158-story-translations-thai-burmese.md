@@ -46,7 +46,7 @@
 ## 개정 ⟨2026-11-20⟩ — 화면 문구도 태국어 · 미얀마어로(사용자 결정 「B」)
 
 - **사용자 결정(2026-11-20)**: 「B — 화면 문구를 번들에 싣고 번들 천장을 올린다」. 버린 대안: 문구표를 버킷에서 받기(첫 실행 · 오프라인에서 영어가 섬, 받기 경로가 늘어남).
-- **D1 대체**: `uiCopyCatalog.th` · `.my`가 완전한 표(`ui-copy-th*.ts` · `ui-copy-my*.ts`, 언어마다 구획 파일 15개 — en · es · id · ja · vi와 같은 나눔)이고
+- **D1 대체**: `uiCopyCatalog.th` · `.my`가 완전한 표(`ui-copy-th*.ts` · `ui-copy-my*.ts`, 언어마다 vi와 같은 구획 14개 + 요금제 · 상점 · 고지 구획 `ui-copy-<lang>-plans.ts` 하나 — vi는 공용 `ui-copy-plans.ts` · `ui-copy-shop-asia.ts`를 씀)이고
   `uiCopyFor("th" | "my")`는 영어가 아니다. `isStoryOnlyLanguage`는 지웠다(이야기 번역 전용 언어가 없다). 언어 하나가 UI · 번역 · 채팅 l1을 함께 정하는 구조는 그대로다.
 - **함께 바뀐 자리**: 요금제 · 상점 · 고지(`ui-copy-<lang>-plans.ts`, 요금제 이름은 영어 — ADR-0144 · 0160), 연속 학습 보상 · 조립 힌트(구획 파일 안), 엽전 수 묶음 기호 `,`,
   학습자 프로필 미리보기 틀(`learner-profile.json`의 `preview.*.th` · `.my`), 나라 이름 표(`country-names/{th,my}.json` — 버킷, [ADR-0059](0059-learner-profile.md) 개정),
@@ -54,6 +54,6 @@
 - **D3 보탬 — 미얀마어 줄 간격**: iPhone 13 mini 시뮬레이터에서 미얀마어 여러 줄 글의 위아래 표시가 닿아, `.app-lang-my`가 줄 간격 토큰(본문 · 캡션 · 제목 · 라벨)을
   글자 크기의 약 1.75배로 다시 정의한다(`app-shell-class.ts` · `app.css`). 태국어는 닿지 않아 두지 않았다. 절차 · 기록은 [e2e](../e2e/ui-thai-burmese.md).
 - **번역**: 모두 초안 — 원어민 검수 전이다. 태국어는 성별 어미(ครับ · ค่ะ) 없는 중립 존댓말, 미얀마어는 유니코드(Zawgyi 아님 — 단위 테스트 TM-U9). 인물 이름은 vi처럼 로마자.
-- **번들**: `main.lynx.bundle` 5,324,085 → 5,673,880 B(+349,795). 천장 5,327,000 → 6,158,788 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정).
+- **번들**: `main.lynx.bundle` 5,324,085 → 5,674,045 B(+349,960). 천장 5,327,000 → 6,159,788 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정).
 - **대가 1(위) 갱신**: 화면 문구가 영어라 막히는 위험은 없어졌다. 대신 번역 품질 위험(초안)과 번들 +6.6%가 생겼다.
 - **남은 일(사람)**: 원어민 검수 · 버킷에 `country-names/{th,my}.json` 올리기 · 스토어 등록정보(App Store Connect에는 미얀마어 현지화가 없다 — Play만 가능).
