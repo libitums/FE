@@ -706,3 +706,38 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 
 `migrations/20261217120000_companion_age_floor_14.sql` — `companion.turn_gate_base`의 하한을 13 → 14로 올린다(한국 개인정보보호법 · 처리방침 7절).
 정의를 통째로 다시 쓰지 않고 지금 정의에서 하한 한 줄만 바꾼다(운영 정의가 저장소와 어긋난 적이 있어). 이미 14면 아무것도 하지 않는다. [CH2]
+
+## 주간 순위 (20261220, ADR-0170)
+
+`migrations/20261220120000_weekly_ranking.sql` — 회원 주간 순위(월 00:00 UTC 시즌). 스키마 `ranking`(RLS 켬, anon · authenticated는 스키마 · 표 권한
+없음 — 앱은 RPC만, 모든 사용자 열은 `auth.users` CASCADE).
+
+- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 25 · `group_max` 30) · `groups` · `members`(주 × 사용자) ·
+  `lesson_passes`(사용자 평생 한 번) · `chat_words`(주 1번) · `preferences`(숨기기) · `rewards`(정산 기록).
+- 배정 `ranking.join_week`: 그 주에 처음 점수를 얻을 때. 구간 = 가입 나이(<14일 · <60일 · 그 밖) × 지금까지 통과한 콘텐츠 유닛(0~9 · 10~39 · 40+),
+  같은 구간에서 숨기지 않은 인원이 목표 미만이고 전체가 상한 미만인 가장 오래된 그룹, 없으면 새 그룹(구간마다 advisory lock).
+- 레슨 점수: `public.learning_progress` AFTER INSERT/UPDATE 트리거 — 새 스냅숏의 catalogProgress에서 처음 보이는 (에피소드, 유닛) 가운데
+  `companion.content_units`에 있는 것만. 저장 RPC는 그대로다. **새 에피소드를 올릴 때 `content_units`를 채우지 않으면 그 유닛은 순위에도 안 센다.**
+- 채팅 단어 점수: `chat-send`가 피드백 카드의 `learnedUsed` 가운데 `voca:`를 `ranking_record_chat_words`(서버 키)로 센다
+  (`_shared/chat-send-chat-words.ts`). 교정이 짚은 단어는 pending. 결과는 SSE `correction`과 저장 카드의 `chatWords`. 입력 검사에 걸린 메시지는 세지 않는다.
+- 앱 RPC(authenticated): `ranking_board(p_board: 'lessons' | 'chat_words')` → `{ state: ranked · not_joined · hidden, board, endsAt, groupSize, reward,
+  rows[{rank, name, country, episode, score, me}], me, next }`(user id · 이메일 없음) · `ranking_preferences()` · `ranking_set_hidden(p_hidden)` → `{ hidden }`.
+- 서버 RPC(service_role만): `ranking_record_chat_words(…)` · `ranking_settle_week(p_week)`(보상이 꺼졌으면 0, 켜졌으면 그룹 · 보드마다 1~3위
+  (점수 > 0, 숨김 제외)에 `companion.grant_once(…, 'ranking', '주:보드:사용자')`).
+- 테스트: `migrations/weekly-ranking.integration.test.ts`(WR-D1 ~ D10) · `_shared/chat-send-chat-words.unit.test.ts`(CWS-U1 ~ U5) ·
+  `chat-send-handler.unit.test.ts`(CWS-H1 · H2).
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다)**
+
+1. 마이그레이션: `supabase db push`(연결된 프로젝트, 20261217 **뒤**) 또는 SQL 편집기에서 `20261220120000_weekly_ranking.sql` 전체를 한 번 실행.
+   한 번만 적용한다(`create schema ranking`이라 다시 실행하면 실패한다). 확인: `select * from ranking.settings;`(한 줄, reward_enabled false) ·
+   `select tgname from pg_trigger where tgname = 'ranking_lesson_passes';`.
+2. 함수: `supabase functions deploy chat-send`(계약 사본 `_shared/companion-contract` 포함). 함수를 먼저 올리면 RPC가 실패해 `chat_words_failed`
+   로그만 남고 카드에 `chatWords`가 없다(턴 영향 없음) — 그래도 순서는 마이그레이션 → 함수.
+3. 예약: SQL 편집기에서 `supabase/cron/ranking.sql`을 한 번 실행(pg_cron, 매주 월 00:05 UTC에 지난주 정산). 확인:
+   `select jobname, schedule from cron.job where jobname = 'ranking-settle-week';`.
+4. 앱(순위 탭)을 낸다.
+
+보상 켜기(사용자 결정 뒤): `update ranking.settings set reward_enabled = true, reward_amount = 30;`(액수는 결정값). 끄기: `reward_enabled = false`.
+지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
+그룹 크기: `update ranking.settings set group_target = 25, group_max = 30;`(이미 배정된 그룹은 그대로).

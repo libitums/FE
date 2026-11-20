@@ -49,6 +49,7 @@ export const shellId: ShellCopy = {
     journey: "Perjalanan",
     roleplay: "Bermain peran",
     messenger: "Obrolan",
+    ranking: "Peringkat",
     settings: "Pengaturan",
   },
   tabNew: { badge: "BARU", spoken: "baru" },

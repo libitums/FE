@@ -64,6 +64,7 @@ export const shellTh: ShellCopy = {
     journey: "การเดินทาง",
     roleplay: "บทบาทสมมติ",
     messenger: "แชท",
+    ranking: "อันดับ",
     settings: "ตั้งค่า",
   },
   tabNew: { badge: "ใหม่", spoken: "ใหม่" },

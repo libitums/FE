@@ -78,6 +78,7 @@ describe("defaultBackDecision", () => {
     journey: [{ name: "journey-map" }],
     roleplay: [{ name: "roleplay-list" }],
     messenger: [{ name: "messenger-list" }],
+    ranking: [{ name: "ranking", board: "lessons" }],
     more: [{ name: "settings" }],
   };
   const room: Screen = { name: "messenger-chat", roomId: "mina" };
@@ -102,11 +103,12 @@ describe("defaultBackDecision", () => {
     expect(back.stacks.messenger).toEqual([{ name: "messenger-list" }]);
   });
 
-  it("BD10. initialNav.stacks 는 키가 정확히 넷이다(MC-U27)", () => {
+  it("BD10. initialNav.stacks 는 키가 정확히 다섯이다(MC-U27 · ADR-0170)", () => {
     expect(Object.keys(initialNav.stacks).sort()).toEqual([
       "journey",
       "messenger",
       "more",
+      "ranking",
       "roleplay",
     ]);
   });

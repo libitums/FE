@@ -63,6 +63,7 @@ export const shellMy: ShellCopy = {
     journey: "ခရီးစဉ်",
     roleplay: "သရုပ်ဆောင်",
     messenger: "ချတ်",
+    ranking: "အဆင့်",
     settings: "ဆက်တင်",
   },
   tabNew: { badge: "အသစ်", spoken: "အသစ်" },

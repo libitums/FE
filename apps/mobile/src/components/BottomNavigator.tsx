@@ -11,6 +11,7 @@ import flag from "@libitums/icons/lynx/flag-03";
 import friends from "@libitums/icons/lynx/friends";
 import message from "@libitums/icons/lynx/message";
 import cross from "@libitums/icons/lynx/cross";
+import trophy from "@libitums/icons/lynx/trophy";
 
 import { BottomNavigator as UiBottomNavigator } from "@libitums/ui-lynx/bottom-navigator";
 import type { BottomNavigatorItem } from "@libitums/ui-lynx/bottom-navigator";
@@ -43,8 +44,9 @@ const tabs: readonly { readonly id: Tab; readonly icon: string }[] = [
   { id: "journey", icon: flag },
   { id: "roleplay", icon: friends },
   { id: "messenger", icon: message },
-  // 마지막은 늘 더보기 동그라미(ADR-0169) — 아이콘은 그릴 때 열림에 따라 ⋯ / ×. 새 탭(예: 랭킹)은 이 줄 앞에 한 줄 더하고
-  // `Tab` · `initialNav.stacks` · 탭 이름표에 같은 id를 더합니다. 다섯이 되면 ui-lynx가 양끝 맞춤(항목 56)으로 놓습니다.
+  { id: "ranking", icon: trophy },
+  // 마지막은 늘 더보기 동그라미(ADR-0169) — 아이콘은 그릴 때 열림에 따라 ⋯ / ×. 새 탭은 이 줄 앞에 한 줄 더하고
+  // `Tab` · `initialNav.stacks` · 탭 이름표에 같은 id를 더합니다. 다섯이면 ui-lynx가 양끝 맞춤(항목 56)으로 놓습니다.
   { id: "more", icon: moreIcon },
 ];
 
@@ -92,6 +94,7 @@ export function BottomNavigator({
     journey: copy.shell.tabs.journey,
     roleplay: copy.shell.tabs.roleplay,
     messenger: copy.shell.tabs.messenger,
+    ranking: copy.shell.tabs.ranking,
     more: moreOpen ? copy.more.menu.close : copy.more.menu.tab,
   };
   return (

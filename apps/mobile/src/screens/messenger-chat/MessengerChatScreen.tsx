@@ -4,6 +4,8 @@ import type { ReactNode } from "@lynx-js/react";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import { ChatRoomHeader } from "./ChatRoomHeader";
+import { ChatWordsStrip } from "./ChatWords";
+import { useChatWordsStrip, type ChatWordsProps } from "./use-chat-words-strip";
 import { ChatLog } from "../../components/chat/ChatLog";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { announce } from "../../lib/accessibility";
@@ -59,7 +61,8 @@ export function MessengerChatScreen({
   onOpenMyProfile,
   guideStore = deviceGuideStore,
   onSignInRequired = null,
-}: MessengerChatScreenProps & GuestGateProps): ReactNode {
+  chatWords = null,
+}: MessengerChatScreenProps & GuestGateProps & ChatWordsProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
@@ -132,6 +135,7 @@ export function MessengerChatScreen({
     server ? { busy } : null,
   );
 
+  const strip = useChatWordsStrip(chatWords, thread); // 이번 주 채팅 단어(ADR-0170)
   if (thread === null) return <view className="messenger-chat-screen" data-testid={ids.screen} />; // 지운 직후 — onExit이 곧 걷음
 
   const slotHeight = chatKeyboardSlotHeight({
@@ -167,6 +171,9 @@ export function MessengerChatScreen({
             onBack={exit}
             onMenu={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
           />
+          {strip === null || chatWords === null ? null : (
+            <ChatWordsStrip words={strip.words} rank={strip.rank} onOpen={chatWords.onOpen} />
+          )}
           <ChatLog
             testId={ids.log}
             followKey={slotHeight}

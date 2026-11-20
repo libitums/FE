@@ -2,6 +2,7 @@
 
 import { moreCopy } from "./ui-copy-more";
 import { authFailureEn } from "./auth-failure";
+import { rankingCopy } from "./ui-copy-ranking";
 import { assembledHintEn } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
@@ -125,4 +126,5 @@ export const uiCopyEn: UiCopy = {
   verificationCode: verificationCodeEn,
   authFailure: authFailureEn,
   more: moreCopy.en,
+  ranking: rankingCopy.en,
 };

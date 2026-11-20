@@ -47,6 +47,8 @@ test("[IT1] 설정 탭을 열면 학습 토글 둘(로마자 · 진동) · Chats
     "ui-lynx-settings-group-item-show-choice-romanization",
     "ui-lynx-settings-group-item-vibration",
     "ui-lynx-settings-group-item-chats",
+    // 회원의 「Hide me from ranking」(ADR-0170).
+    "ui-lynx-settings-group-item-ranking-hidden",
     "ui-lynx-settings-group-item-plans",
     "ui-lynx-settings-group-item-profile",
     "ui-lynx-settings-group-item-learner-profile",
@@ -81,7 +83,7 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
     "data-selected",
     "true",
   );
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5); // 탭 다섯(ADR-0170)
 });
 
 // ------------------------------------------------------------------------- IT3
@@ -218,7 +220,7 @@ test("[IT12] (가드) sink 없이 render(App) — 탭·항목 tap이 던지지 �
 test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면 탭이 다시 선다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openSettingsTab();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5); // 탭 다섯(ADR-0170)
 
   fireEvent.tap(settingsCell("profile"), {});
 
@@ -228,7 +230,7 @@ test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면
   fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5); // 탭 다섯(ADR-0170)
 });
 
 test("프로필은 갱신된 로그인 계정의 한글 이름·이메일·전화번호를 표시한다", async () => {

@@ -50,6 +50,7 @@ export const shellVi: ShellCopy = {
     journey: "Hành trình",
     roleplay: "Nhập vai",
     messenger: "Trò chuyện",
+    ranking: "Xếp hạng",
     settings: "Cài đặt",
   },
   tabNew: { badge: "MỚI", spoken: "mới" },

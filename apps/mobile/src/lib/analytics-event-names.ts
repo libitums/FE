@@ -90,4 +90,9 @@ export type AnalyticsEventName =
   | "wordbook_review_answered"
   | "letters_recommend_shown"
   | "letters_recommend_clicked"
-  | "letters_recommend_dismissed";
+  | "letters_recommend_dismissed"
+  | "ranking_opened"
+  | "ranking_board_switched"
+  | "ranking_own_row_viewed"
+  | "chat_words_earned"
+  | "ranking_hide_toggled";
