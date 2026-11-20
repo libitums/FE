@@ -18,6 +18,8 @@ const strip = (text: string) => text.replace(/[\s\p{P}\p{S}]/gu, "");
 /**
  * 두 글자 어간 「-다」 단어(맛있다 → 맛있)는 학습 판정 규칙(`expressionFragments`)이 한 글자 조각으로 줄여 버리므로 여기서만
  * 어간 전체로 한 번 더 찾는다(맛있어요 → 맛있다). 학습 기록 규칙은 바꾸지 않는다.
+ * 알려진 한계: 형태소 분석 없는 부분 문자열 찾기라, 어간이 다른 낱말 안에 들어 있으면 잘못 센다(마시멜로 → 마시다).
+ * 대상이 이 사용자가 카드로 배운 단어뿐이고 한 단어는 주 1번만 세므로 부풀림은 단어 하나 몫으로 묶인다. 고치려면 어절 경계 · 어미 목록을 본다.
  */
 export function shortStemWords(pool: readonly LearningExpression[], text: string): LearnedUse[] {
   const plain = strip(text);

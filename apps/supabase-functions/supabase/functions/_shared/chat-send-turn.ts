@@ -141,6 +141,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   try {
     input = await moderateInput(llm, body.text, history, ageBand, abort.signal, romanceTier);
   } catch {
+    // 입력 검사가 실패하면 채팅 단어를 세지 않는다 — 기다리던 피드백 사슬도 여기서 풀린다(리뷰).
+    inputPassed(false);
     return fail("upstream_unavailable", "failed");
   }
   moderation.push({ layer: "input", category: input.category, action: input.action });
