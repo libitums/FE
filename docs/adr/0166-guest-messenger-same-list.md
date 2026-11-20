@@ -1,6 +1,6 @@
 # ADR-0166: 비회원도 회원과 같은 메신저 목록 — 보내기는 로그인 권유
 
-- 상태: **채택 — 앱만**(서버 · 마이그레이션 변경 없음). (2026-11-19)
+- 상태: **채택 — 앱만**(서버 · 마이그레이션 변경 없음). (2026-11-19) · 확인 필요 1 · 2 **결정**(2026-11-20, D5)
 - 날짜: 2026-11-19
 - **사용자 결정** (2026-11-19, 앱 1.2.0 iOS 심사 전): 「비회원도 똑같이 뜨게하고 채팅 보내면 로그인 필요하다고 띄우고 로그인시켜」 · 새 문구는 다섯 UI 언어 모두
   실제 번역(영어 복사 금지), 가장 긴 언어로 iPhone 13 mini에 들어가야 한다.
@@ -46,6 +46,34 @@
 - 대화상자를 닫을 때 한 번(`choice`: sign_in · later). 뜬 수 = 이 이벤트 수, 로그인으로 넘어간 비율 = sign_in 비율. 로그인 성공은 기존
   `entry_login_method_selected`가 센다. 사전: [ADR-0029](0029-product-analytics-posthog.md). Airbridge 매핑 없음.
 
+### D5. 비회원 흐름 다듬기 ⟨2026-11-20 — 확인 필요 1 · 2 결정, 사용자 승인 「proceed」⟩
+
+iOS 1.2.0 시뮬레이터 QA(wiki 「QA-2026-11-20-iOS-1.2.0」)에서 나온 거친 곳 다섯을 고친다.
+
+1. **비회원은 생년을 묻지 않는다.** 방을 열 때의 생년 시트(ADR-0125)는 회원 · 아직 안 물음일 때만 선다(순수 함수 `asksBirthYearOnEntry`,
+   `use-entry-birth-year.ts`). 비회원은 첫 인사와 입력 줄을 바로 보고, 계정 동작은 대화상자다. 생년은 로그인 뒤 회원 방에서 회원과 같이 묻는다 —
+   비회원 답이 옮겨지지 않아 두 번 묻던 일(대가 1)이 사라진다.
+2. **대화상자 문구는 누른 자리에 맞춘다**(대화상자 하나, `trigger`로 고름 — 순수 함수 `signInPromptCopyOf`). 번들 천장(ADR-0149) 때문에 자리별 새 제목 대신
+   **누른 기능의 기존 이름**을 제목으로 쓴다:
+
+   | trigger | 제목(기존 키) | 본문 |
+   | --- | --- | --- |
+   | send · media | `access.promptTitle` 「Sign in to send messages」 | `promptBody` |
+   | coins | `album.getCoins` 「Get Yeopjeon」 | `promptKeepBody`(새) |
+   | menu(≡ · 더보기 창 · 👎) | `room.settings` 「Chat settings」 | `promptBody` |
+   | add_friend | `suggested.startChatting` 「Start chatting」 | `promptBody` |
+   | tickets | `tickets.getMore` 「Get more tickets」 | `promptKeepBody`(새) |
+
+   처음 판(자리별 새 제목 넷 + 두 문장 본문)은 천장을 2,096 B 넘었다(성능 보고서 guest-flow-polish-01).
+3. **비회원 방 머리에 무료 남은 수 줄(「20 of 20 free messages left」)이 없다** — 보낼 수 없으니 남은 수도 없다(`ChatRoomHeader.plan = null`).
+4. **티켓 모달 Get more tickets — 비회원은 대화상자(`trigger: tickets`)**. 「More ways to get tickets are coming soon」 막다른 안내 대신 같은 대화상자,
+   주 단추는 같은 로그인 길(`guest-login`). 대화상자는 모달의 형제로 서고(고정 안의 고정을 피함), 떠 있는 동안 모달은 낭독에서 숨는다. 회원 · 시험 계정은
+   지금 그대로(하루 한 장 지급 · 안내). 결선: `withLearningTickets`가 비회원이면 `ticketHeader.signIn`을 채운다.
+5. **비회원 방 전구(Reply ideas)는 보내기와 같은 대화상자(`send`)** — 보기가 없어 꺼져 있던 단추를 켜 두고(`ChatRoomDock.guest`) `open-ideas`를 관문으로
+   보낸다(`guestGateOf`).
+
+이벤트: `chat_sign_in_prompt_closed.trigger`에 `tickets` 하나를 더했다(ADR-0029 사전). 전구는 새 값 없이 `send`.
+
 ## 문구(다섯 언어, `messengerChat.access`)
 
 | 키 | en | es | id | ja | vi |
@@ -54,18 +82,30 @@
 | `promptBody` | Create a free account to chat with the people from your stories. Your progress so far comes with you. | Crea una cuenta gratis para chatear con las personas de tus historias. Tu progreso se conserva. | Buat akun gratis untuk mengobrol dengan orang-orang dari ceritamu. Progresmu tetap tersimpan. | 無料アカウントを作ると、ストーリーで出会った人たちとチャットできます。これまでの進み具合も引き継がれます。 | Tạo tài khoản miễn phí để trò chuyện với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ. |
 | `promptLater` | Not now | Ahora no | Nanti saja | 今はしない | Để sau |
 
+**⟨2026-11-20⟩ 더한 키 하나 — `promptKeepBody`**(엽전 · 티켓 자리의 본문):
+
+| 키 | en | es | id | ja | vi |
+| --- | --- | --- | --- | --- | --- |
+| `promptKeepBody` | Create a free account to keep your Yeopjeon and tickets. | Crea una cuenta gratis para guardar tus Yeopjeon y boletos. | Buat akun gratis untuk menyimpan Yeopjeon dan tiketmu. | 無料アカウントを作ると、Yeopjeonとチケットを保存できます。 | Tạo tài khoản miễn phí để giữ Yeopjeon và vé của bạn. |
+
+iPhone 13 mini 시뮬레이터에서 en · es(티켓 · 대화 설정) · vi(엽전) · ja(티켓) 대화상자가 넘치지 않는다(2026-11-20).
+
 주 단추는 기존 `signIn`(「Sign up or log in」 · 다섯 언어 있음)을 쓴다. 인물 이름은 한글 그대로(ui-copy 정책). iPhone 13 mini에서 es(제목 두 줄) · vi
 (본문 세 줄)가 대화상자 안에 들어간다(2026-11-19 시뮬레이터).
 
 ## 대가
 
-- 비회원의 생년 묻기(ADR-0125)는 회원과 같이 방을 처음 열 때 선다. 답은 비회원 키(`fixture`)로 기기에 남고 로그인 뒤 회원 키로 옮겨지지 않는다(회원 방에서
-  다시 묻는다).
-- 대화상자 제목은 「보내기」 기준 한 문장이다 — 엽전 칩 · 친구 추가에서 떠도 같은 제목이다.
+- ~~비회원의 생년 묻기(ADR-0125)는 회원과 같이 방을 처음 열 때 선다.~~ ⟨2026-11-20 D5-1⟩ 비회원은 묻지 않는다 — 로그인 뒤 회원 방에서 한 번.
+- ~~대화상자 제목은 「보내기」 기준 한 문장이다.~~ ⟨2026-11-20 D5-2⟩ 자리별 제목. 다만 새 문장이 아니라 누른 기능의 기존 이름이라 「로그인이 필요하다」는
+  말은 본문과 주 단추(「Sign up or log in」)가 진다.
+- ⟨2026-11-20⟩ 비회원 티켓 모달의 Get more tickets는 하루 한 장 지급(초기 이벤트)을 하지 않는다 — 대화상자만 선다. 로그인하면 회원 길로 받는다.
+- ⟨2026-11-20⟩ 번들 천장(ADR-0149) 여유가 186 B만 남았다.
 - 운영 스위치 `friends_mode`를 off로 내려도 비회원에게는 앱 표의 추천 친구가 보인다(비회원은 서버를 읽지 않는다). 다시 끄려면 앱 출시가 필요하다.
 
 ## 확인 필요(사용자 몫)
 
-1. 비회원 생년 묻기를 그대로 둘지(대가 1).
-2. 엽전 칩 · 친구 추가에서 뜰 때 제목을 따로 둘지(대가 2).
-3. 기기 회차 GM-E1 ~ E4([docs/e2e/guest-messenger.md](../e2e/guest-messenger.md)).
+1. ~~비회원 생년 묻기를 그대로 둘지(대가 1).~~ **결정 2026-11-20**: 묻지 않는다 — 로그인 뒤 회원 방에서(D5-1).
+2. ~~엽전 칩 · 친구 추가에서 뜰 때 제목을 따로 둘지(대가 2).~~ **결정 2026-11-20**: 자리별로 — 메시지 · 엽전/상점 · 대화 설정 · 친구 추가(+ 티켓)(D5-2).
+   번들 때문에 제목은 기존 이름으로 했다. 「Sign in to …」 꼴 새 제목을 원하면 천장 여유를 먼저 만들어야 한다(약 2.1 kB).
+3. 기기 회차 GM-E1 ~ E6([docs/e2e/guest-messenger.md](../e2e/guest-messenger.md)) — GM-E4(실제 Google 로그인) · GM-A1은 기기 몫.
+4. ⟨2026-11-20⟩ 티켓 없음 대화상자(E6m)의 Get more tickets는 비회원에게도 그대로다(이번 범위 밖) — 같은 권유로 바꿀지.
