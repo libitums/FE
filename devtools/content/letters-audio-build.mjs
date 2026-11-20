@@ -11,7 +11,7 @@
 // - 출력: `<out>/audio/letters/<로마자>.m4a` · `<out>/letters-audio-timings.json`(음성 정보 파일에 더할 항목) ·
 //   `<out>/files.json`(경로 · 바이트 · sha256 · 길이) · `<out>/SHA256SUMS` · `<out>/SOURCE.txt`(만든 방법).
 // - 필요한 도구: ffmpeg · ffprobe(say 엔진은 macOS `say`).
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -62,19 +62,16 @@ const runStderr = (command, args) => {
     throw new Error(`${command} 실패: ${String(error.stderr ?? error.message).slice(-400)}`);
   }
 };
-/** ffmpeg 분석 필터 로그(stderr)를 읽습니다. */
+/** ffmpeg 분석 필터 로그(stderr)를 읽습니다 — 셸 없이. */
 function analyze(input, filter) {
-  return execFileSync(
-    "sh",
-    [
-      "-c",
-      'ffmpeg -hide_banner -nostats -i "$1" -af "$2" -f null - 2>&1 >/dev/null',
-      "sh",
-      input,
-      filter,
-    ],
+  const result = spawnSync(
+    "ffmpeg",
+    ["-hide_banner", "-nostats", "-i", input, "-af", filter, "-f", "null", "-"],
     { encoding: "utf8" },
   );
+  if (result.status !== 0)
+    throw new Error(`ffmpeg 분석 실패: ${String(result.stderr).slice(-400)}`);
+  return result.stderr;
 }
 
 async function rawOf(entry, dir) {
@@ -107,54 +104,57 @@ async function rawOf(entry, dir) {
 function encode(raw, target) {
   // 1) 앞뒤 무음을 자르고 0.12 s씩 덧댄 모노 44.1 kHz WAV, 2) 최고점을 −1.5 dBFS로, 3) AAC 80 kbps m4a.
   const trimmed = `${target}.trim.wav`;
-  const trim = [
-    // 스테레오 입력(녹음 · 웹 파일)도 먼저 모노로 — adelay가 한 채널만 늦추지 않게.
-    "aformat=channel_layouts=mono",
-    `silenceremove=start_periods=1:start_threshold=${SILENCE}:start_silence=0.02`,
-    "areverse",
-    `silenceremove=start_periods=1:start_threshold=${SILENCE}:start_silence=0.02`,
-    "areverse",
-    `adelay=${Math.round(PAD_S * 1000)}:all=1`,
-    `apad=pad_dur=${PAD_S}`,
-  ].join(",");
-  runStderr("ffmpeg", [
-    "-hide_banner",
-    "-y",
-    "-i",
-    raw,
-    "-af",
-    trim,
-    "-ac",
-    "1",
-    "-ar",
-    "44100",
-    trimmed,
-  ]);
-  const peak = Number(/max_volume: (-?[0-9.]+) dB/.exec(analyze(trimmed, "volumedetect"))?.[1]);
-  if (!Number.isFinite(peak)) throw new Error(`최고점을 못 쟀습니다: ${raw}`);
-  const gain = (PEAK_DB - peak).toFixed(2);
-  runStderr("ffmpeg", [
-    "-hide_banner",
-    "-y",
-    "-i",
-    trimmed,
-    "-af",
-    `volume=${gain}dB`,
-    "-c:a",
-    "aac",
-    "-b:a",
-    "80k",
-    "-ac",
-    "1",
-    "-ar",
-    "44100",
-    "-movflags",
-    "+faststart",
-    "-map_metadata",
-    "-1",
-    target,
-  ]);
-  rmSync(trimmed);
+  try {
+    const trim = [
+      // 스테레오 입력(녹음 · 웹 파일)도 먼저 모노로 — adelay가 한 채널만 늦추지 않게.
+      "aformat=channel_layouts=mono",
+      `silenceremove=start_periods=1:start_threshold=${SILENCE}:start_silence=0.02`,
+      "areverse",
+      `silenceremove=start_periods=1:start_threshold=${SILENCE}:start_silence=0.02`,
+      "areverse",
+      `adelay=${Math.round(PAD_S * 1000)}:all=1`,
+      `apad=pad_dur=${PAD_S}`,
+    ].join(",");
+    runStderr("ffmpeg", [
+      "-hide_banner",
+      "-y",
+      "-i",
+      raw,
+      "-af",
+      trim,
+      "-ac",
+      "1",
+      "-ar",
+      "44100",
+      trimmed,
+    ]);
+    const peak = Number(/max_volume: (-?[0-9.]+) dB/.exec(analyze(trimmed, "volumedetect"))?.[1]);
+    if (!Number.isFinite(peak)) throw new Error(`최고점을 못 쟀습니다: ${raw}`);
+    const gain = (PEAK_DB - peak).toFixed(2);
+    runStderr("ffmpeg", [
+      "-hide_banner",
+      "-y",
+      "-i",
+      trimmed,
+      "-af",
+      `volume=${gain}dB`,
+      "-c:a",
+      "aac",
+      "-b:a",
+      "80k",
+      "-ac",
+      "1",
+      "-ar",
+      "44100",
+      "-movflags",
+      "+faststart",
+      "-map_metadata",
+      "-1",
+      target,
+    ]);
+  } finally {
+    rmSync(trimmed, { force: true });
+  }
 }
 
 function measure(path) {
