@@ -15,7 +15,6 @@ import type { ScreenWiring } from "./screen-wiring";
 
 const appDir = __dirname;
 const srcDir = join(appDir, "..");
-const mobileDir = join(srcDir, "..");
 
 function withoutComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
@@ -79,9 +78,6 @@ describe("DP-S 탐침 import는 dev 전용 모듈 하나에만 있다", () => {
     expect(guarded).toBe(calls);
   });
 
-  test("DP-S3. lynx.config.ts가 render-dev-probe.tsx를 부수 효과 없는 모듈로 표시한다", () => {
-    const config = withoutComments(readFileSync(join(mobileDir, "lynx.config.ts"), "utf8"));
-
-    expect(config).toMatch(/test:\s*\/[^/\n]*render-dev-probe[^/\n]*\/,\s*sideEffects:\s*false/);
-  });
+  // `lynx.config.ts`의 `sideEffects: false` 규칙은 소스 글자가 아니라 최종 rspack 설정에서 봅니다 —
+  // `lynx-build-config.integration.test.ts` DP-I1.
 });
