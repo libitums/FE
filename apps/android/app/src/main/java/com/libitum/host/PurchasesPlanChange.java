@@ -45,6 +45,7 @@ final class PurchasesPlanChange {
     String target = baseId(targetId);
     String replaced = null;
     for (String active : activePlayIds) {
+      if (active == null) continue;
       String id = baseId(active);
       if (target.equals(id)) return null;
       if (!isSubscription(id)) continue;

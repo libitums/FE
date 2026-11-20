@@ -177,9 +177,11 @@ public final class PurchasesModule extends LynxModule {
   /** 이 고객의 활성 Play 구독 상품 id(App Store 등 다른 스토어 구독은 Play가 바꿀 수 없어 뺀다). */
   private static List<String> activePlaySubscriptions(CustomerInfo info) {
     List<String> ids = new ArrayList<>();
-    for (Map.Entry<String, SubscriptionInfo> entry : info.getSubscriptionsByProductIdentifier().entrySet()) {
+    Map<String, SubscriptionInfo> subscriptions = info == null ? null : info.getSubscriptionsByProductIdentifier();
+    if (subscriptions == null) return ids;
+    for (Map.Entry<String, SubscriptionInfo> entry : subscriptions.entrySet()) {
       SubscriptionInfo subscription = entry.getValue();
-      if (subscription.isActive() && subscription.getStore() == Store.PLAY_STORE) ids.add(entry.getKey());
+      if (subscription != null && subscription.isActive() && subscription.getStore() == Store.PLAY_STORE) ids.add(entry.getKey());
     }
     return ids;
   }
