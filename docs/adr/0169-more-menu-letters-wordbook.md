@@ -1,13 +1,13 @@
 # ADR-0169: 바텀 메뉴 More — Letters(자모표 · 합치기 퀴즈) · My words(기기 단어장) · Letters 추천
 
-- 상태: **제안 — 구현됨, 번들 천장 결정 대기**(로컬 브랜치 `feat/more-menu-letters-wordbook`, push · PR 없음). (2026-11-20)
+- 상태: **제안 — 구현됨**(브랜치 `feat/more-menu-letters-wordbook`). 번들 천장은 사용자 결정으로 5,850,000 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 2). (2026-11-20)
 - 날짜: 2026-11-20
 - **사용자 결정** (2026-11-20, 캔버스 「이탈 많은 학습 화면」): 시안 MoreNav · MoreSheet · JamoChartSelC(선택 표시 **C** 채택) · JamoCompose · WordbookList ·
   WordbookDetail · WordbookReview · RecommendWrong · RecommendSyllable. 학습 중에는 추천을 띄우지 않는다 · 레슨 결과 화면에 단어장 입구를 넣지 않는다.
 - **조정자가 정한 기본값(사용자가 바꿀 수 있음)**: 설정을 더보기 메뉴로 옮기고 탭은 넷 · 추천 문턱 3번 틀림 · 2번 연속 · 총 2회 · 글자 소리는 자음 + ㅏ ·
   단어장은 기기 저장 + 비회원 이어받기.
 - 바꾸는 결정: [ADR-0007](0007-app-internals-state-routing-data-errors.md) D3의 탭 넷 중 넷째가 `settings` → `more`(루트가 메뉴에서 고른 화면). [ADR-0149](0149-bundle-size-ceiling-and-report.md) —
-  천장은 그대로, **이 변경은 천장을 52,693 B 넘는다**(아래 「대가」). 딥링크 `duru://settings`([ADR-0080](0080-airbridge-deeplink.md))는 더보기 › Settings로.
+  앞 천장(5,705,000 B)을 넘어 **사용자 결정으로 천장을 5,850,000 B로 올렸다**(개정 2, 아래 「대가」). 딥링크 `duru://settings`([ADR-0080](0080-airbridge-deeplink.md))는 더보기 › Settings로.
 
 ## 맥락
 
@@ -96,6 +96,8 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
 - **번들 천장 초과**: main 5,326,023 B(origin/main) → 5,480,476 B(기능, +154,453 B) → 5,377,543 B(`extractStr`) → 5,379,693 B(접근성 · 리뷰 반영 뒤 최종, +53,670 B).
   천장 5,327,000 B보다 **52,693 B 크다**. ui-lynx dist 566.6 → 570.0 kB(천장 622 kB 아래).
   천장은 올리지 않았다 — 바꿀지는 사용자 결정(ADR-0149). 더 줄일 길: 단어장 · Letters 화면을 lazy bundle로 떼기(호스트 로딩 확인 필요) · 문구 줄이기.
+- ⟨2026-11-20 main 리베이스 뒤⟩ th · my 화면 문구(#522)가 들어온 main 위에서 origin/main 5,679,379 B → 이 브랜치 5,749,897 B(+70,518 B, th · my 문구 포함).
+  앞 천장 5,705,000 B를 44,897 B 넘어 **사용자 결정(「a + b」)으로 천장을 5,850,000 B로 올렸다**(ADR-0149 개정 2). 화면 lazy 로딩은 따로 조사한다.
 - 단어장은 기기에만 있다 — 다른 기기 · 재설치에서 비어 보인다.
 - 「같은 문항 연속 틀림」은 첫 판정과 다시 풀기의 틀림으로 본다(첫 판정만 보고되는 측정 규칙 때문).
 - 설정이 한 번 더 누르는 자리로 갔다.
