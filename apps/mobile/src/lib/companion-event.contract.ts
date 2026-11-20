@@ -207,8 +207,39 @@ export type GuestPromptEvent = Common & {
   readonly choice: "sign_in" | "later";
 };
 
+/**
+ * 주간 순위(ADR-0170). `ranking_opened`: 순위 화면이 처음 그린 상태(`view`)와 연 자리(탭 · 방 줄). `ranking_own_row_viewed`: 내 줄이
+ * 보인 보드마다 한 번(순위 · 점수). `chat_words_earned`: 내 글로 새로 센 단어 수 · 짚혀 아직 안 센 수 · 이번 주 합. 이름 · 단어는 싣지 않는다.
+ */
+export type RankingEvent =
+  | (Common & {
+      readonly name: "ranking_opened";
+      readonly board: "lessons" | "chat_words";
+      readonly source: "tab" | "chat";
+      readonly view: "ready" | "not_joined" | "hidden" | "guest" | "error" | "offline";
+    })
+  | (Common & {
+      readonly name: "ranking_board_switched";
+      readonly from: "lessons" | "chat_words";
+      readonly to: "lessons" | "chat_words";
+    })
+  | (Common & {
+      readonly name: "ranking_own_row_viewed";
+      readonly board: "lessons" | "chat_words";
+      readonly rank: string;
+      readonly score: string;
+    })
+  | (Common & {
+      readonly name: "chat_words_earned";
+      readonly count: string;
+      readonly pending: string;
+      readonly weekTotal: string;
+    })
+  | (Common & { readonly name: "ranking_hide_toggled"; readonly hidden: boolean });
+
 export type CompanionEvent =
   | MoreEvent
+  | RankingEvent
   | LaunchEvent
   | GuestPromptEvent
   | StreakRewardEvent

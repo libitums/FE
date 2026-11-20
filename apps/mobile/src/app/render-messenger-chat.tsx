@@ -76,6 +76,15 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         onOpenMemories={chat.onOpenMemories}
         onOpenAlbum={chat.onOpenAlbum}
         onOpenMyProfile={chat.onOpenMyProfile}
+        chatWords={
+          access === "open" && wiring.ranking.signedIn
+            ? {
+                load: () => wiring.ranking.client.load("chat-words"),
+                onOpen: () => wiring.ranking.openRanking("chat-words"),
+                eventSink: wiring.ranking.eventSink,
+              }
+            : null
+        }
       />
     </ChatEventsContext.Provider>
   );

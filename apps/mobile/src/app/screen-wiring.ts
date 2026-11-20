@@ -63,6 +63,7 @@ import { pushTargetOpener } from "./push-routing";
 import type { PlansWiring } from "./use-plans";
 import type { LearningTrail } from "./learning-trail";
 import { moreWiring, type MoreWiring } from "./more-wiring";
+import { rankingWiring, type RankingWiring } from "./ranking-wiring";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
 //
@@ -153,6 +154,8 @@ export type ScreenWiring = {
   more: MoreWiring;
   /** 레슨 자취 — 지도의 Letters 추천이 끝난 레슨의 신호를 꺼냅니다(ADR-0169). */
   learningTrail: LearningTrail;
+  /** 주간 순위(ADR-0170) — 서버 포트 · 순위 탭 열기. */
+  ranking: RankingWiring;
 } & GuestWiring &
   AccountWiring &
   JourneyStats &
@@ -236,6 +239,11 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...messenger,
     ...guestWiring(args),
     accountState: args.accountState,
+    ranking: rankingWiring({
+      dispatch: args.dispatch,
+      accountState: args.accountState,
+      eventSink: args.episodeIntroEventSink,
+    }),
     ...accountWiring({
       analyticsUser: args.analyticsUser,
       entryEventSink: args.entryEventSink,

@@ -40,6 +40,7 @@ import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
 import type { FeedbackCopy } from "./feedback.contract";
+import type { RankingCopy } from "../screens/ranking/ranking.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
   AppUpdateCopy,
@@ -129,6 +130,8 @@ export type UiCopy = {
   readonly authFailure: AuthFailureCopy;
   /** 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천(ADR-0169). */
   readonly more: MoreCopy;
+  /** 주간 순위 · 채팅 단어(ADR-0170). */
+  readonly ranking: RankingCopy;
 };
 
 /**

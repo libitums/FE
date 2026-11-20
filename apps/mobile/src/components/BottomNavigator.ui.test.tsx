@@ -4,6 +4,7 @@ import flag from "@libitums/icons/lynx/flag-03";
 import friends from "@libitums/icons/lynx/friends";
 import message from "@libitums/icons/lynx/message";
 import cross from "@libitums/icons/lynx/cross";
+import trophy from "@libitums/icons/lynx/trophy";
 import { color } from "@libitums/design-tokens";
 
 import { UiCopyContext } from "../lib/ui-copy";
@@ -171,7 +172,7 @@ test("[SH1-E] 비선택 탭들도 각자 자기 라벨을 accessibility-label로
   );
 });
 
-test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·메신저·더보기이다", () => {
+test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·메신저·순위·더보기이다(ADR-0169 · ADR-0170)", () => {
   const { container } = render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
   const tabs = Array.from(
@@ -182,6 +183,7 @@ test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·�
     "ui-lynx-bottom-navigator-item-journey",
     "ui-lynx-bottom-navigator-item-roleplay",
     "ui-lynx-bottom-navigator-item-messenger",
+    "ui-lynx-bottom-navigator-item-ranking",
     "ui-lynx-bottom-navigator-item-more",
   ]);
 });
@@ -314,4 +316,17 @@ test("[MO-UI2] 더보기 화면(선택 C)에 있으면 「More, selected」, 다
     "accessibility-label",
     "More",
   );
+});
+
+test("[BN-UI] 순위 탭은 트로피 아이콘 · 「Ranking」 이름이고, 누르면 ranking으로 불린다(ADR-0170)", () => {
+  const onSelectTab = vi.fn<(tab: Tab) => void>();
+  render(<BottomNavigator tab="journey" onSelectTab={onSelectTab} />);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-ranking-default")).toHaveAttribute(
+    "content",
+    unselected(trophy),
+  );
+  const item = screen.getByTestId("ui-lynx-bottom-navigator-item-ranking");
+  expect(item).toHaveAttribute("accessibility-label", "Ranking");
+  fireEvent.tap(item, {});
+  expect(onSelectTab).toHaveBeenCalledWith("ranking");
 });

@@ -9,7 +9,7 @@ import { FeedbackScreen } from "../screens/feedback/FeedbackScreen";
 import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
-import { SettingsScreen } from "../screens/settings/SettingsScreen";
+import { RankingRoute, SettingsRoute } from "./render-ranking";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import type { Screen } from "./nav-state";
 import { renderCatalogFlow } from "./render-catalog";
@@ -85,7 +85,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     }
     case "settings":
       return (
-        <SettingsScreen
+        <SettingsRoute
+          ranking={wiring.ranking}
           onSelectNavTarget={wiring.onSelectNavTarget}
           learnerProfileSummary={learnerSettingsSummary(wiring)}
           languageSummary={entryLanguageLabel(wiring.entryLanguage)}
@@ -103,6 +104,15 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onOpenPlans={
             wiring.plans === undefined ? null : () => wiring.plans?.openPlans("settings", null)
           }
+        />
+      );
+    case "ranking":
+      return (
+        <RankingRoute
+          key={screen.board}
+          board={screen.board}
+          ranking={wiring.ranking}
+          onSignIn={wiring.onSignIn}
         />
       );
     case "plans":

@@ -617,7 +617,7 @@ VoiceOver 확인은 [수동 iOS E2E](e2e/visual-novel.md)에 남아 있고 아�
 
 ### 더보기 탭 ⟨2026-11-20 — [ADR-0169](adr/0169-more-menu-letters-wordbook.md)⟩
 
-> 바 넷째 단추가 설정(톱니) 대신 **주황 동그라미 ⋯**다. 누르면 탭이 바뀌지 않고 바 위 8에 **메뉴 카드**(스크림 없음)가 올라온다 — 줄 `Letters`(NEW) · `My words`(「N words · M to review」) ·
+> 바 마지막 단추가 설정(톱니) 대신 **주황 동그라미 ⋯**다(순위 탭이 생기면 다섯째 — ADR-0170). 누르면 탭이 바뀌지 않고 바 위 8에 **메뉴 카드**(스크림 없음)가 올라온다 — 줄 `Letters`(NEW) · `My words`(「N words · M to review」) ·
 > `Settings`. 열린 동안 ×, 다시 누름 · 바깥 · 시스템 뒤로면 닫힘. 줄을 누르면 more 탭으로 가며 그 화면이 more 스택 루트가 되고, 그동안 ⋯에 고리(선택 C · 「More, selected」).
 > 아래 「설정 탭」의 화면은 이제 **더보기 › Settings**로 연다(딥링크 `duru://settings` · 다운로드 시트 「Change setting」도). 기기 확인은 [더보기 e2e](e2e/more-menu-letters-wordbook.md)(미실행).
 
@@ -630,6 +630,13 @@ VoiceOver 확인은 [수동 iOS E2E](e2e/visual-novel.md)에 남아 있고 아�
 | 오늘의 복습 | route `wordbook-review{only}` — 「What does this mean?」 보기 셋, 맞으면 Got it · 틀리면 내일 다시, Skip / Next / Done |
 
 여정맵에는 레슨을 실패 · 나가기 · 어렵게 끝낸 뒤 한 번 **Letters 추천** 대화상자(Learn the letters · Keep going)가 다른 안내 뒤에 선다(ADR-0169 D5).
+### 순위 탭
+
+⟨2026-11-20⟩ ADR-0170. 하단 탭 넷째(트로피). 서버 RPC는 운영 미적용.
+
+| 화면 | 내용 |
+| --- | --- |
+| 주간 순위 | route `ranking { board }` — **탭 루트**, 전역 머리 없음. 고정 머리: 「Weekly ranking」 · 그룹 알약 「Your group · N learners」 · 「Ends in N days」(월 00:00 UTC) · 전환 Lessons(기본) / Chat words. 줄: 순위(1~3 메달) · 이니셜 아바타 + 국기 · 표시 이름 · 「Episode N」 · 점수와 단위. 맨 위 구역 줄(보상 꺼짐 「Top 3 this week」), 4위 앞 「Keep climbing」. 내 줄은 탭 바 위 고정(주황) · 「N more to pass NAME」 · 1위면 「You're #1!」. 상태: 불러오는 중 · 이번 주 그룹 없음 · 오류 · 오프라인 · 숨김(Show me) · 비회원(Sign in → 로그인 화면). 메신저 서버 방 머리 아래 「N chat words this week · #R in your group ›」가 Chat words 보드로 연다 |
 
 ### 설정 탭
 

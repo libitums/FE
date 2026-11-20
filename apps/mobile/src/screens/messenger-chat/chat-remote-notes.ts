@@ -4,6 +4,8 @@ import type { ChatCorrection } from "./chat-feedback.contract";
 import type { RoomState } from "./chat-fixture-room";
 import type { ChatMessage, ChatMyNotes } from "./chat-source.contract";
 import { bubblesOf } from "./companion-parse";
+import { withChatWords } from "./companion-chat-words";
+import type { RemoteHistory } from "./chat-remote.contract";
 import type { TurnState } from "./companion-turn";
 import { NO_NOTES } from "./chat-source.contract";
 
@@ -62,7 +64,22 @@ export function renderTurn(
   room.messages = [...mine, ...added];
   if (turn.correction !== null)
     room.notes = withCorrection(room.notes, turn.correction.userMessageId, turn.correction.card);
+  if (turn.chatWords !== null)
+    room.notes = withChatWords(room.notes, turn.chatWords.userMessageId, turn.chatWords.result);
   if (turn.ideas !== null) room.remoteIdeas = turn.ideas;
   if (turn.bubbles.length > 0) room.typing = false;
   return myId;
+}
+
+/** 서버 기록의 교정 카드 · 채팅 단어를 내 글 노트에 붙입니다(ADR-0129 · ADR-0170). */
+export function withHistoryNotes(
+  notes: Readonly<Record<string, ChatMyNotes>>,
+  history: RemoteHistory,
+): Readonly<Record<string, ChatMyNotes>> {
+  let next = notes;
+  for (const [id, card] of Object.entries(history.corrections))
+    next = withCorrection(next, id, card);
+  for (const [id, words] of Object.entries(history.chatWords ?? {}))
+    next = withChatWords(next, id, words);
+  return next;
 }

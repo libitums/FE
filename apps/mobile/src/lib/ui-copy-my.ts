@@ -4,6 +4,7 @@
 
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
+import { rankingCopy } from "./ui-copy-ranking";
 import {
   audioUnavailableMy,
   catalogCoverMy,
@@ -127,4 +128,5 @@ export const uiCopyMy: UiCopy = {
   verificationCode: verificationCodeMy,
   authFailure: authFailureMy,
   more: moreCopy.my,
+  ranking: rankingCopy.my,
 };
