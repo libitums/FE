@@ -615,6 +615,22 @@ VoiceOver 확인은 [수동 iOS E2E](e2e/visual-novel.md)에 남아 있고 아�
 
 결정과 키보드 규칙 · 높이 표는 [ADR-0113](adr/0113-messenger-chat-ui.md), 기기 확인은 [메신저 자유 대화 e2e](e2e/messenger-chat-ui.md) MC-E1 ~ E13. 1.5단계(아이콘 · 턴 · 엽전 · 해금)는 [ADR-0117](adr/0117-messenger-chat-turns-coins-new-friend.md) · [1.5 e2e](e2e/messenger-chat-1-5.md) MC2-E1 ~ E10. 학습 메신저(막간 문자, `catalog-story`)는 이 탭과 다른 화면이고 같은 공용 chat 부품을 쓴다([ADR-0088](adr/0088-interlude-story-unit.md) 적용 기록). ⚠ **사람 손 · 실기 미확인** — iOS SE 3 시뮬레이터 에이전트 회차만 있다.
 
+### 더보기 탭 ⟨2026-11-20 — [ADR-0168](adr/0168-more-menu-letters-wordbook.md)⟩
+
+> 바 넷째 단추가 설정(톱니) 대신 **주황 동그라미 ⋯**다. 누르면 탭이 바뀌지 않고 바 위 8에 **메뉴 카드**(스크림 없음)가 올라온다 — 줄 `Letters`(NEW) · `My words`(「N words · M to review」) ·
+> `Settings`. 열린 동안 ×, 다시 누름 · 바깥 · 시스템 뒤로면 닫힘. 줄을 누르면 more 탭으로 가며 그 화면이 more 스택 루트가 되고, 그동안 ⋯에 고리(선택 C · 「More, selected」).
+> 아래 「설정 탭」의 화면은 이제 **더보기 › Settings**로 연다(딥링크 `duru://settings` · 다운로드 시트 「Change setting」도). 기기 확인은 [더보기 e2e](e2e/more-menu-letters-wordbook.md)(미실행).
+
+| 화면 | 내용 |
+|---|---|
+| Letters | route `letters`(more 루트 · 바 유지 · 전역 머리 없음 · 뒤로 없음). 위 고정 「Hangul letters」 · 리드 · 「Practice: build sounds」, 아래 4열 40칸(자음 14 · 모음 10 · 쌍자음 5 · 겹모음 11) — 로마자 · 글자 · 스피커, 누르면 소리(자음 + ㅏ · ㅇ + 모음), 방금 칸 강조, 들은 칸 주황 스피커. 소리 파일이 버킷에 없으면 스피커가 흐림 |
+| 합치기 퀴즈 | route `letters-compose`(Letters 위 · 바 없음). 레슨 머리 「Letter building」 · ▶ 「Make “ga”」 · [ ] + [ ] = [ ] · 타일 여섯 · Hint, 두 칸이 차면 결과 + 소리 + 판정, Next / Try again, 가 · 너 · 도 |
+| My words | route `wordbook`(more 루트 · 바 유지). 단어 수 · 「Review N words」 · 칩 All/New/Review/Got it · 줄(재생 · 한국어 · 로마자 · 뜻 · Ep n · 상태). 기기 단어장 |
+| 단어 자세히 | route `wordbook-word{episodeId, ref}` — Listen/Slow · 뜻 · From your story 예문 · 에피소드 · 처음 본 날 · 맞힌 수 · Practice this word |
+| 오늘의 복습 | route `wordbook-review{only}` — 「What does this mean?」 보기 셋, 맞으면 Got it · 틀리면 내일 다시, Skip / Next / Done |
+
+여정맵에는 레슨을 실패 · 나가기 · 어렵게 끝낸 뒤 한 번 **Letters 추천** 대화상자(Learn the letters · Keep going)가 다른 안내 뒤에 선다(ADR-0168 D5).
+
 ### 설정 탭
 
 | 화면 | 내용 |
