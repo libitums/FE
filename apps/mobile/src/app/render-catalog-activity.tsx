@@ -113,8 +113,9 @@ function activityScreenOf(
           lessonAudio={lessonAudio}
           cast={cast}
           onItemAnswered={onItemAnswered}
-          // 레슨 끝 다시 풀기에서만 듣고 조립의 조각 로마자가 섭니다(ADR-0153).
+          // 듣고 조립의 조각 로마자는 보기 로마자 설정을 따르고, 다시 풀기에서는 늘 섭니다(ADR-0153 ⟨2026-11-20⟩).
           inReview={review !== undefined}
+          choiceRomanization={choiceRomanizationOf(wiring.sessionOptions)}
         />
       );
     case "word-choice":

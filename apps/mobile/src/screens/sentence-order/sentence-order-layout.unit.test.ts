@@ -14,6 +14,7 @@ import {
   sentenceOrderLayoutOf,
   sentenceOrderPlacedResultsOf,
   sentenceOrderReadingShown,
+  sentenceOrderRevealOf,
 } from "./sentence-order-layout";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
@@ -215,5 +216,44 @@ describe("dialogueChipAccessibilityLabel (SO6)", () => {
     expect(dialogueChipAccessibilityLabel("counterpart", "지금부터요!", undefined, uiCopyEn)).toBe(
       "Partner's line: 지금부터요!",
     );
+  });
+});
+
+// QA 2026-11-20(위키 QA-2026-11-20-iOS-1.2.0 3번): 듣고 조립은 틀린 뒤 로마자만 서고 정답 한글 · 뜻이 없었습니다.
+describe("sentenceOrderRevealOf (SO-R1 ~ SO-R3)", () => {
+  const listen: SentenceOrderQuestion = {
+    prompt: "Hello! Yes, it's my first time!",
+    meaning: "Hello! Yes, it's my first time!",
+    chips: ["안녕하세요!", "처음이에요!", "한국어", "네,", "감사합니다!"],
+    answerOrder: [0, 3, 1],
+    reading: { romanization: "annyeonghaseyo! ne, cheoeumieyo!", shown: "after-check" },
+    audio: {
+      kind: "listen",
+      source: "https://cdn/a.m4a",
+      ref: { itemId: "S2-02", itemType: "LISTEN_BUILD" },
+    },
+  };
+
+  test("SO-R1. 판정 뒤 듣고 조립은 정답 한글(정답 순서 조각) · 로마자 · 뜻을 낸다", () => {
+    expect(sentenceOrderRevealOf(listen, "checked", "shown")).toEqual({
+      korean: "안녕하세요! 네, 처음이에요!",
+      romanization: "annyeonghaseyo! ne, cheoeumieyo!",
+      meaning: "Hello! Yes, it's my first time!",
+    });
+  });
+
+  test("SO-R2. 보기 로마자 설정이 꺼지면 로마자만 빠지고, 뜻이 없으면 뜻은 null이다", () => {
+    const { meaning: _meaning, ...noMeaning } = listen;
+    expect(sentenceOrderRevealOf(noMeaning, "checked", "hidden")).toEqual({
+      korean: "안녕하세요! 네, 처음이에요!",
+      romanization: null,
+      meaning: null,
+    });
+  });
+
+  test("SO-R3. 판정 전이거나 듣기 문항이 아니면(문장 조립 · 대화) 공개가 없다", () => {
+    expect(sentenceOrderRevealOf(listen, "arranging", "shown")).toBeNull();
+    expect(sentenceOrderRevealOf(linesQuestion, "checked", "shown")).toBeNull();
+    expect(sentenceOrderRevealOf(dialogueQuestion, "checked", "shown")).toBeNull();
   });
 });

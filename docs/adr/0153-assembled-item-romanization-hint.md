@@ -40,3 +40,13 @@
 ## 적용 기록
 - 2026-11-17: 매핑(`tileReadingOf` · `assembledHintOf`) · 조각/타일 로마자 · 힌트 버튼/시트 · 흐린 정답 · compact 답 줄 · `hintUsed`. 테스트 AH1~AH4 · AHM1~AHM6 · IE9(unit), UH1~UH9 · SH1~SH7(ui), AI1 · AI2(integration).
 - 2026-11-17 리뷰 반영: 음절 조립 정답 보기의 낭독(칸 줄 이름 + 고른 순간 낭독) · 문장 조립 흐린 정답은 채점 뒤 없음 · 조각을 놓기 시작하면 낭독 제외 · 힌트 정답 소리는 문항이 바뀌거나 떠나면 멈추고 재생할 수 없으면 `listen`을 기록하지 않음 · 문장 조립 흐린 정답은 콘텐츠 첫 정답 문장(`answers[0].ko`) · 점검 스크립트 `devtools/assembled-item-sweep/sweep.py`.
+
+### ⟨2026-11-20⟩ 듣고 조립 — 조각 로마자는 보기 로마자 설정을 따르고, 판정 뒤 정답을 공개한다
+
+- **사용자 결정** (2026-11-20, 위키 QA-2026-11-20-iOS-1.2.0 3번 뒤): 듣고 조립 창고 조각에도 **첫 시도부터** 로마자를 싣는다 — 학습자의 보기 로마자 설정(`show-choice-romanization`, [ADR-0108](0108-choice-romanization.md) D3)이 켜졌을 때. 꺼졌으면 첫 시도에는 없고 레슨 끝 다시 풀기에서는 그대로 선다. 조각에 뜻은 싣지 않는다. D1의 「듣고 조립은 다시 풀기에서만」과 버린 대안 「듣고 조립도 처음부터 로마자」를 이 결정이 대신한다.
+  - 매핑 `shown: "review"` → `"setting"`. `tileRomanizationsShown(reading, inReview, choiceRomanization)` — `always`는 늘, `setting`은 설정 켬 또는 다시 풀기. 화면은 `render-catalog-activity`가 넘기는 설정을 받는다(기본 켬).
+  - 내장(78) · 수준 5(181) 듣고 조립의 조각은 모두 `roman`이 있다(빈 것 0, 2026-11-20 점검) — 코드가 로마자를 지어내지 않는다.
+  - 13 mini: 첫 시도도 D3의 compact 배치(답 줄 하나)를 받는다 — 다시 풀기 상태(최소 여유 52dp)와 같은 꼴이다. 시뮬레이터에서 창고 두 줄 · Check가 화면 안(성능 보고서 `lesson-culture-card-and-build-feedback-…-01`).
+- **판정 뒤 정답 공개** (QA 3번 — 틀려도 로마자만 서고 정답 한글 · 뜻이 없었다): 답 줄 아래 타자 입력 · 음절 조립과 같은 정답 상자(`AnswerReveal`, 「Answer: …」)에 정답 한글(정답 순서 조각을 띄어 이음), 그 아래 정답 로마자(보기 로마자 설정이 켜졌을 때) · 학습자 언어 뜻(매핑 `meaning`)이다. 맞아도 선다. 새 문구 없음(`typing.answerReveal`).
+  - 위 줄은 재생 · 다시 듣기 · 천천히만 남는다 — 판정 뒤 로마자가 재생 단추 옆에 두 줄로 몰렸다(QA s03-l2-2).
+- 테스트: AH4 · AHM5 · SO-R1~3(unit), SH2 · SH2b · SH5 · SO7 · SO-R4~6(ui), AI2 · AI3(integration).

@@ -250,3 +250,32 @@ describe("보기 로마자 매핑 — 듣기 (CR)", () => {
     },
   );
 });
+
+// QA 2026-11-20(위키 QA 2번): 빈칸 채우기 로마자 줄이 답 전에 빈칸 자리 정답을 보여 줬습니다. 숨김은 화면이 답 전
+// (`clozeRomanizationMasked`)에 합니다 — 매핑은 답 뒤에 쓸 채운 줄과 그 범위를 그대로 싣고, CLOZE_CHOICE는 콘텐츠 줄의
+// `___`를 채우지 않아 처음부터 빈칸입니다.
+describe("빈칸 로마자 — 매핑이 싣는 줄 (CZ1 · CZ2)", () => {
+  test("CZ1. CLOZE는 채운 줄과 정답 범위를 싣는다(여러 토큰 정답도 범위 하나)", () => {
+    const item = itemOf("CLOZE", {
+      context: t("저는 ___ 주세요.", "jeoneun ___ juseyo.", "Give me."),
+      tiles: [t("따뜻한 물", "ttatteuthan mul"), t("커피", "keopi")],
+      answers: [t("따뜻한 물", "ttatteuthan mul")],
+    });
+    const question = questionOf(clozeItemOf(item, lessonPort));
+    expect(question["romanization"]).toBe("jeoneun ttatteuthan mul juseyo.");
+    expect(question["romanizationEmphasis"]).toEqual({ start: 8, length: 15 });
+  });
+
+  test("CZ2. CLOZE_CHOICE는 콘텐츠 줄의 빈칸을 그대로 둔다(강조 범위 없음)", () => {
+    const item = itemOf("CLOZE_CHOICE", {
+      context: t("___ 할게요.", "___ halgeyo.", "I'll pay by ___."),
+      options: optionsOf([
+        ["카드로", "kadeuro"],
+        ["현금으로", "hyeongeumeuro"],
+      ]),
+    });
+    const question = questionOf(clozeChoiceItemOf(item, lessonPort));
+    expect(question["romanization"]).toBe("___ halgeyo.");
+    expect(question).not.toHaveProperty("romanizationEmphasis");
+  });
+});
