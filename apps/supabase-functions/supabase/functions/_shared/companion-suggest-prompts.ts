@@ -2,7 +2,7 @@
 // 의도가 서로 다른 것만 보입니다(`companion-suggest-select.ts`). `chat-send`(매 턴) · `companion-suggest`(다시 만들기) · `companion-greet`
 // (첫 인사) · `companion-eval`이 같은 글을 씁니다 — 여기를 고치면 평가 결과도 함께 바뀝니다.
 
-import type { FeedbackHistoryEntry, HistoryEntry } from "./chat-send.contract.ts";
+import type { FeedbackHistoryEntry, HistoryEntry, RomanceLine } from "./chat-send.contract.ts";
 import type { SpeechLevel } from "./companion-contract/index.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 import type { ChoiceSet, SuggestRequest } from "./companion-suggest.contract.ts";
@@ -45,13 +45,13 @@ There is no fixed combination, and two candidates may share an intent only if no
 Rules for each "text":
 1. A complete line the learner can send right now as is, written as the learner speaking to the character. Everyday dialogue in Korean only: no *actions*, emoji, quotes, romanization, notes or markup.
 2. Has real content: never only announces something ("할 말 있어요") without saying it, and never asks for what the conversation already told.
-3. Never states on the learner's behalf feelings, a relationship, consent, promises, personal information or real-world actions the learner has not stated (never e.g. "나는 이미 너를 사랑해", an address or phone number, "매일 연락할게"). Facts the learner already stated may be reused.
+3. Never states on the learner's behalf a relationship, consent, promises, personal information or real-world actions the learner has not stated (never e.g. an address or phone number, "매일 연락할게"), and never states feelings for the character except in the one romantic candidate the "Romance" line in the request allows (never e.g. "나는 이미 너를 사랑해" when it does not). Facts the learner already stated may be reused.
 4. Does not repeat the meaning of the past suggestions listed in the request or the learner's recent lines, and does not redo actions that are already finished in the conversation.
 5. Never pushes guilt, dependence or obsession, and never presses the character, especially after a refusal.
 6. Uses the relationship speech level given in the request.
 7. About 10–55 characters including spaces, never over 80: short, but a full sentence.
 8. Pitched one small step above the learner's own recent messages (i+1): reuse words and patterns they already use and add at most one small new thing (a word, an ending or a connector). If they write very simple Korean, keep it very simple.
-9. Never romantic, flirtatious or sexual, never profanity, insults or vulgar slang (even mild), never asks for or shares contact details, and safe for a teenager.
+9. Romance follows the "Romance" line in the request. When it allows romance, at most one of the 3 candidates is romantic, the other two are not, and the romantic one goes at most one small step beyond where the conversation already is. Never dirty talk or anything sexual beyond that line, never profanity, insults or vulgar slang (even mild), and never asks for or shares contact details.
 
 "meaning": the meaning of "text" in the language named in the request, natural and short. If the request says the language is Korean, "meaning" is null.`;
 
@@ -59,6 +59,17 @@ const suggestionSpeechRule: Record<SpeechLevel, string> = {
   polite: "polite 해요체 (존댓말) — never 반말",
   casual: "friendly 반말 (casual), the way close friends talk",
   slang: "very casual 반말 with light, common slang a Korean friend would use — never swearing",
+};
+
+// 칩의 로맨스 선(ADR-0168). 칩은 학습자 입에 넣는 말이라 답 · 검사보다 한 겹 더 조심한다 — 로맨스 후보는 셋 중 하나까지, hug · kiss · close는
+// 학습자가 먼저 분위기를 냈을 때만, open은 대화가 이미 로맨틱할 때(캐릭터가 먼저여도). 선이 없으면 none(옛 동작).
+const suggestionRomanceRule: Record<RomanceLine, string> = {
+  none: "none — never romantic, flirtatious or sexual, and safe for a teenager.",
+  hug: "only if the learner has already been flirting or affectionate in the recent conversation, one candidate may answer it with light, warm flirting (a compliment, missing them, asking for a date). Nothing physical beyond holding hands or a hug, nothing sexual. Otherwise no romantic candidate.",
+  kiss: "only if the learner has already started a romantic mood in the recent conversation, one candidate may be romantic: saying they like or love the character, asking to be a couple, or asking for a hug or a kiss. Nothing beyond a kiss and a hug, nothing sexual. Otherwise no romantic candidate.",
+  close:
+    "only if the learner has already started a romantic mood in the recent conversation, one candidate may be tender and a little suggestive (missing them, wanting to stay close, asking to cuddle or kiss). Nothing sexual or explicit. Otherwise no romantic candidate.",
+  open: 'if the conversation is already romantic (from the learner or the character), one candidate may be romantic and may carry light sexual tension (e.g. "오늘 밤 더 같이 있고 싶어", "오늘 너무 멋있다"). Never explicit, never dirty talk or crude sexual jokes. Otherwise no romantic candidate.',
 };
 
 /** 뜻 언어 — 학습자 언어가 한국어면 null(뜻을 비운다), 모르면 영어(피드백과 같은 기본값). */
@@ -85,6 +96,7 @@ function choiceSetLines(sets: readonly ChoiceSet[]): string {
 export function suggestionContent(request: SuggestRequest): string {
   const character = `Character: ${request.character.name}${request.character.role ? ` (${request.character.role})` : ""}`;
   const level = `Relationship speech level: ${suggestionSpeechRule[request.speechLevel ?? "polite"]}`;
+  const romance = `Romance: ${suggestionRomanceRule[request.romanceLine ?? "none"]}`;
   const language = suggestionMeaningLanguage(request.l1);
   const meaning =
     language === null
@@ -104,5 +116,5 @@ export function suggestionContent(request: SuggestRequest): string {
   const target = request.target
     ? `\n\nLearned expression to practise: make exactly one of the 3 candidates use "${request.target.surface}"${request.target.gloss ? ` (${request.target.gloss})` : ""} naturally (you may conjugate it or fill its blank). It must still follow every rule; if it cannot fit naturally, leave it out.`
     : "";
-  return `${character}\n${level}\n${meaning}${summary}${past}${target}\n\nRecent conversation (oldest first):\n${conversation}`;
+  return `${character}\n${level}\n${romance}\n${meaning}${summary}${past}${target}\n\nRecent conversation (oldest first):\n${conversation}`;
 }

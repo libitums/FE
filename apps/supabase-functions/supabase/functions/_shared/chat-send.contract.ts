@@ -23,8 +23,9 @@ import type {
 } from "./companion-steps.contract.ts";
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
 import type { FriendPersonaFields, RomanceTier } from "./companion-friends.contract.ts";
+import type { RomanceLine } from "./companion-friends.contract.ts";
 
-export type { RomanceTier } from "./companion-friends.contract.ts";
+export type { RomanceLine, RomanceTier } from "./companion-friends.contract.ts";
 
 // ------------------------------------------------------------------ 환경
 
@@ -137,8 +138,8 @@ export type ModerationRequest = {
    */
   readonly context: string | null;
   readonly ageBand: AgeBand;
-  /** 적용 수위. 없으면 standard. 성인이 아니면 open이어도 standard로 본다(`effectiveRomanceTier`). */
-  readonly romanceTier?: RomanceTier;
+  /** 적용 로맨스 선(ADR-0168, `romanceLine`). 없으면 성인 hug · 아니면 none(`defaultRomanceLine`). */
+  readonly romanceLine?: RomanceLine;
   readonly signal: AbortSignal;
 };
 

@@ -7,11 +7,13 @@ import type {
   CompanionLlm,
   GateResult,
   LearningContext,
+  RomanceLine,
 } from "./chat-send.contract.ts";
 import type { Choice } from "./chat-send-choice.ts";
 import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
 import type { ChatSendRequest } from "./companion-contract/index.ts";
+import { romanceLine } from "./companion-safety.ts";
 import type { UsageCollector } from "./companion-usage.ts";
 
 export type TurnContext = {
@@ -35,3 +37,12 @@ export type TurnContext = {
   /** 이 턴의 LLM 사용량 — `llm`이 기록하는 곳. 저장 meta의 `usage`가 된다. */
   usage: UsageCollector;
 };
+
+/** 이 턴의 적용 로맨스 선(ADR-0168) — 판정의 수위 · 연령대와 턴 시작의 페르소나 · 말투 단계로. */
+export const turnRomanceLine = (context: Pick<TurnContext, "gate" | "turn">): RomanceLine =>
+  romanceLine(
+    context.gate.ageBand,
+    context.gate.romanceTier,
+    context.turn.persona,
+    context.turn.speechLevel,
+  );

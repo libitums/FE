@@ -2,7 +2,7 @@
 // `blocked`로 저장합니다. `chat-send-turn.ts`가 입력 검사에 걸린 턴에서 부릅니다.
 
 import type { PersonaCard } from "./chat-send.contract.ts";
-import type { TurnContext } from "./chat-send-context.ts";
+import { type TurnContext, turnRomanceLine } from "./chat-send-context.ts";
 import type { ModerationRecord, turnFinisher } from "./chat-send-finish.ts";
 import { sendRefusal } from "./chat-send-refusal.ts";
 import { historyFrom } from "./chat-send-reply.ts";
@@ -34,12 +34,13 @@ export function turnRefuser(
         persona: input.persona,
         speechLevel: turn.speechLevel,
         ageBand: gate.ageBand,
-        romanceTier: gate.romanceTier,
+        romanceLine: turnRomanceLine(context),
         history: historyFrom(turn),
         assistantMessageId: context.assistantMessageId,
         meta: {
           model: llm.model,
           romanceTier: effectiveRomanceTier(gate.ageBand, gate.romanceTier),
+          romanceLine: turnRomanceLine(context),
           trial: turn.trial,
           playground: context.playground,
         },

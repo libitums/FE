@@ -29,7 +29,7 @@ import {
   timeOfDay,
 } from "./companion-prompt.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
-import { effectiveRomanceTier } from "./companion-safety.ts";
+import { effectiveRomanceTier, offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { openerBeat } from "./companion-story.ts";
 import { generateSuggestions, suggestionRecord } from "./companion-suggest-generate.ts";
 import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
@@ -100,6 +100,12 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     target.userId,
     deps.random ?? Math.random,
   );
+  const line = romanceLine(
+    context.ageBand,
+    context.romanceTier,
+    context.persona,
+    context.speechLevel,
+  );
   const prompt = companionSystemPrompt({
     persona: context.persona,
     speechLevel: context.speechLevel,
@@ -130,7 +136,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     history,
     userText: proactiveUserText,
     ageBand: context.ageBand,
-    romanceTier: context.romanceTier,
+    romanceLine: line,
     timeoutMs: deps.llmTimeoutMs ?? 45_000,
   });
   if (made.outcome !== "model") return { ...target, ...wouldSkip, result: made.outcome };
@@ -160,6 +166,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
           request: {
             character: { name: context.persona.name, role: context.persona.role ?? null },
             speechLevel: context.speechLevel,
+            romanceLine: offeredRomanceLine(line, context.persona),
             l1: context.l1,
             history: recentSuggestionHistory([...history, { role: "assistant", segments }]),
             summary: context.summary,
@@ -183,6 +190,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     p_meta: {
       model: llm.model,
       romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
+      romanceLine: line,
       forced: force,
       ...wouldSkip,
       ...(force ? { playground: true } : {}),

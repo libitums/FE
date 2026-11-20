@@ -24,6 +24,7 @@ import { generateSuggestions, saveSuggestions } from "./companion-suggest-genera
 import { recentSuggestionHistory, suggestionHistoryLimit } from "./companion-suggest-prompts.ts";
 import { defaultSuggestionDisplayMax } from "./companion-suggest-select.ts";
 import { authUserIdRequest, callRpc, isServiceKey, type RpcEnv } from "./companion-rpc.ts";
+import { offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
 export const defaultSuggestTimeoutMs = 8_000;
@@ -174,6 +175,10 @@ export function createSuggestHandler(
       request: {
         character: { name: context.persona?.name ?? "", role: context.persona?.role ?? null },
         speechLevel: context.speechLevel,
+        romanceLine: offeredRomanceLine(
+          romanceLine(context.ageBand, context.romanceTier, context.persona, context.speechLevel),
+          context.persona,
+        ),
         l1: context.l1,
         history: recentSuggestionHistory(historyFrom(context)),
         summary: context.summary ?? null,

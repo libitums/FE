@@ -6,7 +6,7 @@
 // 만들고(`chat-send-turn-recover.ts`, ADR-0151), 그것도 걸리면 `guardrail_blocked`로 끝냅니다.
 
 import type { AgeBand, Feedback, ModerationVerdict, PersonaCard } from "./chat-send.contract.ts";
-import type { TurnContext } from "./chat-send-context.ts";
+import { type TurnContext, turnRomanceLine } from "./chat-send-context.ts";
 import {
   type Finished,
   type ModerationRecord,
@@ -54,7 +54,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
   const ageBand: AgeBand = gate.ageBand;
   const romanceTier = effectiveRomanceTier(ageBand, gate.romanceTier); // 적용 수위(ADR-0164)
-  const checkOutput = outputCheckRequired(ageBand, romanceTier);
+  const line = turnRomanceLine(context); // 적용 로맨스 선(ADR-0168)
+  const checkOutput = outputCheckRequired(ageBand, line);
   const moderation: ModerationRecord[] = [];
   const persona: PersonaCard = turn.persona ?? { name: body.character_id };
   const topicState = topicStateFrom(turn.topicState);
@@ -129,7 +130,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   let input: ModerationVerdict;
   try {
-    input = await moderateInput(llm, body.text, history, ageBand, abort.signal, romanceTier);
+    input = await moderateInput(llm, body.text, history, ageBand, abort.signal, line);
   } catch {
     return fail("upstream_unavailable", "failed");
   }
@@ -234,6 +235,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           model: llm.model,
           ageBand,
           romanceTier,
+          romanceLine: line,
           firstDeltaMs: result.firstDeltaMs,
           totalMs: result.totalMs,
           branch: branch.action,

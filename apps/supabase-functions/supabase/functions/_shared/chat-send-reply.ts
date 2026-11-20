@@ -9,7 +9,7 @@ import type {
   Feedback,
   HistoryEntry,
   ModerationVerdict,
-  RomanceTier,
+  RomanceLine,
   TurnState,
 } from "./chat-send.contract.ts";
 import { emptyFeedback, recentFeedbackHistory } from "./companion-llm-prompts.ts";
@@ -30,11 +30,11 @@ export function moderateInput(
   history: readonly HistoryEntry[],
   ageBand: AgeBand,
   signal: AbortSignal,
-  romanceTier: RomanceTier = "standard",
+  romanceLine?: RomanceLine,
 ): Promise<ModerationVerdict> {
   const previous = [...history].reverse().find((entry) => entry.role === "assistant");
   const context = previous?.role === "assistant" ? segmentsToPlain(previous.segments) : null;
-  return llm.moderate({ layer: "input", text, context, ageBand, romanceTier, signal });
+  return llm.moderate({ layer: "input", text, context, ageBand, romanceLine, signal });
 }
 
 type FeedbackContext = ReplyContext & {

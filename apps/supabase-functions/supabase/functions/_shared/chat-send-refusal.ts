@@ -14,7 +14,7 @@ import type {
   CompanionLlm,
   HistoryEntry,
   PersonaCard,
-  RomanceTier,
+  RomanceLine,
   Segment,
 } from "./chat-send.contract.ts";
 import type { ModerationRecord, TurnStatus } from "./chat-send-finish.ts";
@@ -33,7 +33,7 @@ import {
   segmentsToPlain,
   type SegmentDelta,
 } from "./companion-segments.ts";
-import { effectiveRomanceTier, outputCheckRequired } from "./companion-safety.ts";
+import { defaultRomanceLine, outputCheckRequired } from "./companion-safety.ts";
 
 export const defaultRefusalTimeoutMs = 10_000;
 
@@ -93,8 +93,8 @@ export type RefusalInput = {
   readonly speechLevel: SpeechLevel;
   readonly stage: RefusalStage;
   readonly ageBand: AgeBand;
-  /** 판정의 적용 수위. open이면 거절 답도 보통 답처럼 출력 검사를 거친다. 없으면 standard. */
-  readonly romanceTier?: RomanceTier;
+  /** 적용 로맨스 선(ADR-0168). open이면 거절 답도 보통 답처럼 출력 검사를 거친다. 없으면 `defaultRomanceLine`. */
+  readonly romanceLine?: RomanceLine;
   readonly timeoutMs: number;
 };
 
@@ -140,8 +140,8 @@ export async function makeRefusal(input: RefusalInput): Promise<RefusalResult> {
     }),
   ]).finally(() => clearTimeout(timer));
   if (!segments.some((segment) => segment.kind === "speech")) return canned();
-  if (!outputCheckRequired(input.ageBand, input.romanceTier))
-    return { segments, source: "model", output: null };
+  const line = input.romanceLine ?? defaultRomanceLine(input.ageBand);
+  if (!outputCheckRequired(input.ageBand, line)) return { segments, source: "model", output: null };
 
   try {
     const verdict = await input.llm.moderate({
@@ -149,7 +149,7 @@ export async function makeRefusal(input: RefusalInput): Promise<RefusalResult> {
       text: segmentsToPlain(segments),
       context: null,
       ageBand: input.ageBand,
-      romanceTier: effectiveRomanceTier(input.ageBand, input.romanceTier),
+      romanceLine: line,
       signal: AbortSignal.timeout(input.timeoutMs),
     });
     const output = {
@@ -173,7 +173,7 @@ export type RefusalTurn = {
   readonly persona: PersonaCard;
   readonly speechLevel: SpeechLevel;
   readonly ageBand: AgeBand;
-  readonly romanceTier?: RomanceTier;
+  readonly romanceLine?: RomanceLine;
   readonly history: readonly HistoryEntry[];
   readonly assistantMessageId: string;
   /** 저장 meta에 함께 싣는 턴 값(모델 · 체험 · 플레이그라운드). */
@@ -200,7 +200,7 @@ export async function sendRefusal(
   category: string,
 ): Promise<string> {
   const { deps, sink } = turn;
-  const topic = refusalTopic(category, effectiveRomanceTier(turn.ageBand, turn.romanceTier));
+  const topic = refusalTopic(category, turn.romanceLine ?? defaultRomanceLine(turn.ageBand));
   const refusal = await makeRefusal({
     ...turn,
     system: hooks.systemWith(refusalDirective(stage, topic)),

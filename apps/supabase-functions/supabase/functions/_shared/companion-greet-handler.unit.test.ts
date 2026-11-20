@@ -376,7 +376,7 @@ test("GT11. 적용 수위가 open이면 모델 인사의 프롬프트 · 출력 
       yield* base.reply(request);
     },
     async moderate(request) {
-      seen.tiers.push(request.romanceTier);
+      seen.tiers.push(request.romanceLine);
       return base.moderate(request);
     },
   };

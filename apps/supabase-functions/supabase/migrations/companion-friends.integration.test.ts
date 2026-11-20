@@ -7,6 +7,8 @@ import { signIn, startTestDatabase } from "./postgres.test-support";
 const tester = "00000000-0000-4000-8000-000000000001";
 const member = "00000000-0000-4000-8000-000000000002";
 const migration = new URL("./20261216120000_companion_friends.sql", import.meta.url);
+// 20261218(ADR-0168): 다은 · 건우의 로맨스 태도를 고친다 — 친구 마이그레이션을 다시 적용하면 이것도 이어서 다시 적용해야 지금 상태다.
+const ladder = new URL("./20261218120000_companion_romance_ladder.sql", import.meta.url);
 const friendsJson = new URL("../../../../docs/content/companion-friends.json", import.meta.url);
 const year = new Date().getUTCFullYear();
 const adultYear = year - 30;
@@ -25,7 +27,7 @@ type Friend = {
   persona: Record<
     "history" | "values" | "people" | "goals" | "likes" | "dislikes" | "hooks",
     string[]
-  >;
+  > & { romance: string };
 };
 
 let db: Awaited<ReturnType<typeof startTestDatabase>>;
@@ -163,12 +165,19 @@ test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · �
       "hooks",
     ] as const)
       expect(row.persona[key], `${friend.id} ${key}`).toEqual(friend.persona[key]);
+    // 로맨스 태도(ADR-0168 — 다은 · 건우는 사다리에 맞춰 20261218에 고쳤다).
+    expect(row.persona.romance, `${friend.id} romance`).toBe(friend.persona.romance);
   }
   expect(byId.get("haejun")!.persona.dialect).toContain("Busan");
   for (const [id, value] of Object.entries(content.storyProfiles)) {
     if (typeof value === "string") continue;
     expect(byId.get(id)!.persona, id).toMatchObject({ mbti: value.mbti, romanceTier: "standard" });
   }
+  // 로맨스 대상이 아닌 인물(ADR-0168 D4) — 덕수쌤 · 윤경만.
+  for (const row of rows.rows)
+    expect(row.persona.romanceOff === true, row.id as string).toBe(
+      row.id === "duksu" || row.id === "yoonkyung",
+    );
 });
 
 test("FR2. companion_friends() — 스위치(off · testers · on) × 시험 계정 × 연령대", async () => {
@@ -404,6 +413,7 @@ test("FR9. 다시 적용해도 같은 결과 · 서버용 함수는 앱이 부�
     );
   const before = (await snapshot()).rows[0];
   await db.admin.query(await readFile(migration, "utf8"));
+  await db.admin.query(await readFile(ladder, "utf8"));
   expect((await snapshot()).rows[0]).toEqual(before);
   await signIn(app, member);
   await expect(

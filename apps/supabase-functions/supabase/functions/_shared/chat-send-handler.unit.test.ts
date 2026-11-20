@@ -1818,7 +1818,7 @@ describe("완화 수위(ADR-0164)", () => {
   };
   const watch = () => {
     const base = fakeCompanionLlm();
-    const moderations: { layer: string; romanceTier: string | undefined; ageBand: string }[] = [];
+    const moderations: { layer: string; romanceLine: string | undefined; ageBand: string }[] = [];
     const systems: string[] = [];
     const llm: CompanionLlm = {
       ...base,
@@ -1829,7 +1829,7 @@ describe("완화 수위(ADR-0164)", () => {
       async moderate(request) {
         moderations.push({
           layer: request.layer,
-          romanceTier: request.romanceTier,
+          romanceLine: request.romanceLine,
           ageBand: request.ageBand,
         });
         return base.moderate(request);
@@ -1837,11 +1837,15 @@ describe("완화 수위(ADR-0164)", () => {
     };
     return { llm, moderations, systems };
   };
-  const turn = async (gate: Record<string, unknown>, text: string) => {
+  const turn = async (
+    gate: Record<string, unknown>,
+    text: string,
+    begin: Record<string, unknown> = { persona: openPersona },
+  ) => {
     const watched = watch();
     const run = setup({
       gate: { ...okGate, notices: [], ...gate },
-      begin: { ...begun, persona: openPersona },
+      begin: { ...begun, ...begin },
       llm: watched.llm,
     });
     const list = await events(await run.handler(post(body({ text }))));
@@ -1856,14 +1860,21 @@ describe("완화 수위(ADR-0164)", () => {
     );
     expect(checkTurnOrder(list)).toEqual({ ok: true });
     expect(finish).toMatchObject({ p_status: "complete" });
-    expect(moderations.map((entry) => [entry.layer, entry.romanceTier])).toEqual([
+    expect(moderations.map((entry) => [entry.layer, entry.romanceLine])).toEqual([
       ["input", "open"],
       ["output_sync", "open"],
     ]);
     expect((finish["p_assistant"] as { meta: Record<string, unknown> }).meta).toMatchObject({
       romanceTier: "open",
+      romanceLine: "open",
     });
-    expect(systems[0]).toContain("You may be a couple, say 사랑해, kiss");
+    // 허용한 로맨스도 판정 기록에 romance로 남는다(ADR-0168 트래킹).
+    expect(finish["p_moderation"]).toContainEqual({
+      layer: "input",
+      category: "romance",
+      action: "allow",
+    });
+    expect(systems[0]).toContain("You may be a couple, say 사랑해, kiss deeply");
     expect(systems[0]).toContain("No explicit sexual content");
   });
 
@@ -1874,18 +1885,18 @@ describe("완화 수위(ADR-0164)", () => {
     );
     expect(finish).toMatchObject({ p_status: "blocked" });
     expect(list.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
-    expect(moderations[0]).toEqual({ layer: "input", romanceTier: "standard", ageBand: "unknown" });
+    expect(moderations[0]).toEqual({ layer: "input", romanceLine: "none", ageBand: "unknown" });
     expect(systems[0]).toContain("- Romance: none.");
   });
 
   test("CS42. 성인 standard(동의 없음 · 옛 DB) — 키스는 거절, 보통 답은 지금처럼 받는 대로(출력 검사 없음)", async () => {
     const blocked = await turn({ ageBand: "adult" }, "*볼에 키스한다*");
     expect(blocked.finish).toMatchObject({ p_status: "blocked" });
-    expect(blocked.moderations[0]!.romanceTier).toBe("standard");
+    expect(blocked.moderations[0]!.romanceLine).toBe("hug");
     const normal = await turn({ ageBand: "adult", romanceTier: "standard" }, "안녕하세요");
     expect(normal.finish).toMatchObject({ p_status: "complete" });
     expect(normal.moderations.map((entry) => entry.layer)).toEqual(["input"]);
-    expect(normal.systems[0]).toContain("never go past a hug");
+    expect(normal.systems[0]).toContain("Never go past a hug");
   });
 
   test("CS43. 성인 + open이어도 성적인 말은 거절 — 분류 말은 노골적 성 내용, 거절 답도 출력 검사", async () => {
@@ -1894,8 +1905,8 @@ describe("완화 수위(ADR-0164)", () => {
       "섹스하자",
     );
     expect(finish).toMatchObject({ p_status: "blocked" });
-    expect(systems.at(-1)).toContain("it was about explicit sexual content");
-    expect(moderations.map((entry) => [entry.layer, entry.romanceTier])).toEqual([
+    expect(systems.at(-1)).toContain("it was about explicit sexual content or dirty talk");
+    expect(moderations.map((entry) => [entry.layer, entry.romanceLine])).toEqual([
       ["input", "open"],
       ["output_sync", "open"],
     ]);
@@ -1914,5 +1925,44 @@ describe("완화 수위(ADR-0164)", () => {
     );
     const old = await turn({ ageBand: "adult" }, "안녕하세요");
     expect(old.list.at(-1)).toMatchObject({ event: "done", data: { romanceTier: "standard" } });
+  });
+
+  test("CS45. 추천 친구 standard는 말투 단계로 선이 오른다 — 반말이면 키스 통과(kiss), 출력 검사 없음, meta에 선", async () => {
+    const friend = {
+      name: "송다은",
+      kind: "friend",
+      romanceTier: "standard",
+      romance: "A friend first.",
+    };
+    const polite = await turn({ ageBand: "adult" }, "*볼에 키스한다*", {
+      persona: friend,
+      speechLevel: "polite",
+    });
+    expect(polite.finish).toMatchObject({ p_status: "blocked" });
+    expect(polite.moderations[0]!.romanceLine).toBe("hug");
+    const casual = await turn({ ageBand: "adult" }, "*볼에 키스한다*", {
+      persona: friend,
+      speechLevel: "casual",
+    });
+    expect(casual.finish).toMatchObject({ p_status: "complete" });
+    expect(casual.moderations.map((entry) => [entry.layer, entry.romanceLine])).toEqual([
+      ["input", "kiss"],
+    ]);
+    expect((casual.finish["p_assistant"] as { meta: Record<string, unknown> }).meta).toMatchObject({
+      romanceTier: "standard",
+      romanceLine: "kiss",
+    });
+    expect(casual.systems[0]).toContain("Never go past a kiss and an embrace");
+    const slang = await turn({ ageBand: "adult" }, "안녕", {
+      persona: friend,
+      speechLevel: "slang",
+    });
+    expect(slang.moderations[0]!.romanceLine).toBe("close");
+    // 미성년자는 말투와 상관없이 none.
+    const minor = await turn({ ageBand: "minor" }, "안녕", {
+      persona: friend,
+      speechLevel: "slang",
+    });
+    expect(minor.moderations[0]!.romanceLine).toBe("none");
   });
 });

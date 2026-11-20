@@ -242,7 +242,7 @@ test("PR6. 선톡도 적용 수위를 싣는다 — open이면 프롬프트 · �
       yield* base.reply(request);
     },
     async moderate(request) {
-      seen.tiers.push(request.romanceTier);
+      seen.tiers.push(request.romanceLine);
       return base.moderate(request);
     },
   };
