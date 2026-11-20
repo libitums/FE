@@ -37,7 +37,7 @@ test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", async ()
     "data-selected",
     "false",
   );
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5); // 탭 다섯(ADR-0170)
 });
 
 test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오고 설정 화면은 사라진다", async () => {
@@ -145,8 +145,9 @@ test("스텝을 누르면 시트가 열리고 셸이 그대로다", async () => 
     "true",
   );
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-ranking")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5); // 탭 다섯(ADR-0169 · ADR-0170)
 });
 
 test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대로다", async () => {
@@ -160,8 +161,9 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
   expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-ranking")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5); // 탭 다섯(ADR-0169 · ADR-0170)
 });
 
 // 시트 상태는 `Nav`가 아니라 화면 로컬 상태입니다(ADR-0007 D1) — 탭을 떠나면

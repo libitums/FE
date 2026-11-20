@@ -247,7 +247,8 @@ export function clearOutcomeFrom(bodyText: string | null): "cleared" | "busy" | 
 export function historyFrom(bodyText: string | null): RemoteHistory | null {
   const raw = recordOf(parse(bodyText));
   if (raw === null || !Array.isArray(raw.messages)) return null;
-  return { ...messagesOf(raw), chatWords: historyChatWordsOf(raw.messages) };
+  const chatWords = historyChatWordsOf(raw.messages); // 채팅 단어가 있는 기록만 칸을 둡니다(ADR-0170)
+  return Object.keys(chatWords).length === 0 ? messagesOf(raw) : { ...messagesOf(raw), chatWords };
 }
 
 export function greetingFrom(bodyText: string | null, now: number): RemoteGreeting | null {

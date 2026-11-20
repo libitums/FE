@@ -71,7 +71,7 @@ export const tapButtonIn = (wrapperTestId: string): void => {
   void fireEvent.tap(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"), {});
 };
 
-export type TabId = "journey" | "roleplay" | "messenger" | "more";
+export type TabId = "journey" | "roleplay" | "messenger" | "ranking" | "more";
 
 export const openTab = (tab: TabId): void => tapId(`ui-lynx-bottom-navigator-item-${tab}`);
 

@@ -44,10 +44,10 @@ afterEach(() => {
 
 // ------------------------------------------------------------------ MC-I1 · 탭
 
-test("MC-I1. 로그인 뒤 바 항목은 여정 · 롤플레이 · 메신저 · 설정 넷이 이 순서로 선다", async () => {
+test("MC-I1. 로그인 뒤 바 항목은 여정 · 롤플레이 · 메신저 · 순위 · 더보기 다섯이 이 순서로 선다(ADR-0169 · ADR-0170)", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
-  expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "more"]);
+  expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "ranking", "more"]);
 });
 
 test("MC-I1. 메신저 탭을 누르면 채팅 목록이 서고 탭 표시가 메신저로 옮겨 간다", async () => {
