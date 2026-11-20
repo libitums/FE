@@ -78,6 +78,7 @@ describe("defaultBackDecision", () => {
     journey: [{ name: "journey-map" }],
     roleplay: [{ name: "roleplay-list" }],
     messenger: [{ name: "messenger-list" }],
+    ranking: [{ name: "ranking", board: "lessons" }],
     more: [{ name: "settings" }],
   };
   const room: Screen = { name: "messenger-chat", roomId: "mina" };

@@ -83,17 +83,20 @@ describe("initialNav", () => {
     expect(activeStack(initialNav)).toEqual(initialNav.stacks.journey);
   });
 
-  it("I3. entry가 비어 있고 네 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
+  it("I3. entry가 비어 있고 다섯 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
     expect(initialNav.entry).toEqual([]);
     expect(initialNav.stacks.journey).toEqual([{ name: "journey-map" }]);
     expect(initialNav.stacks.roleplay).toEqual([{ name: "roleplay-list" }]);
     // MC-U26: 메신저 탭(셋째)의 루트는 대화 목록이다.
     expect(initialNav.stacks.messenger).toEqual([{ name: "messenger-list" }]);
+    // ADR-0170: 순위 탭(넷째)의 루트는 Lessons 보드다.
+    expect(initialNav.stacks.ranking).toEqual([{ name: "ranking", board: "lessons" }]);
     expect(initialNav.stacks.more).toEqual([{ name: "settings" }]);
     expect(Object.keys(initialNav.stacks).sort()).toEqual([
       "journey",
       "messenger",
       "more",
+      "ranking",
       "roleplay",
     ]);
   });

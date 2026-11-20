@@ -1,10 +1,11 @@
 // 턴 하나의 SSE 이벤트를 접는 리듀서입니다(ADR-0137) — 순수. 모르는 · 틀린 이벤트는 그대로 버립니다.
 // 서버 순서(API §4.3): start → notice* → delta* → correction · translation* · suggestions → state → done(또는 error · crisis).
 
-import type { ChatCorrection } from "./chat-feedback.contract";
+import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { RemoteSendFailure } from "./chat-remote.contract";
 import type { ChatCrisisResource, ChatNoticeKind, ChatReplyIdea } from "./chat-source.contract";
 import { correctionOf, crisisOf, ideasOf, noticeKindOf, segmentText } from "./companion-parse";
+import { chatWordsOf } from "./companion-chat-words";
 
 export type TurnBubble = { readonly ko: string; readonly en: string };
 /** 서버 말풍선 원본(말 · 행동 구분과 번역) — 보이는 값(`bubbles`)은 여기서 만듭니다. */
@@ -21,6 +22,8 @@ export type TurnState = {
   readonly bubbles: readonly TurnBubble[];
   readonly notices: readonly ChatNoticeKind[];
   readonly correction: { readonly userMessageId: string; readonly card: ChatCorrection } | null;
+  /** 이 글로 얻은 채팅 단어(ADR-0170) — `correction` 본문의 `chatWords`. */
+  readonly chatWords: { readonly userMessageId: string; readonly result: ChatWordsResult } | null;
   readonly ideas: readonly ChatReplyIdea[] | null;
   readonly crisis: readonly ChatCrisisResource[] | null;
   readonly finished: boolean;
@@ -38,6 +41,7 @@ export const initialTurnState: TurnState = {
   bubbles: [],
   notices: [],
   correction: null,
+  chatWords: null,
   ideas: null,
   crisis: null,
   finished: false,
@@ -113,11 +117,15 @@ export function applyTurnEvent(state: TurnState, event: string, data: string): T
     }
     case "correction": {
       const card = correctionOf(payload);
+      const result = chatWordsOf(payload);
       const userMessageId =
         typeof payload.userMessageId === "string" ? payload.userMessageId : null;
-      return card === null || userMessageId === null
-        ? state
-        : { ...state, correction: { userMessageId, card } };
+      if (userMessageId === null) return state;
+      return {
+        ...state,
+        ...(card === null ? {} : { correction: { userMessageId, card } }),
+        ...(result === null ? {} : { chatWords: { userMessageId, result } }),
+      };
     }
     case "suggestions": {
       if (payload.status !== "ok") return state;

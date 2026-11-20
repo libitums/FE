@@ -105,6 +105,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           }
         />
       );
+    case "ranking":
+      return null;
     case "plans":
       return renderPlans(screen, wiring);
     // 더보기 메뉴의 화면들(ADR-0169).

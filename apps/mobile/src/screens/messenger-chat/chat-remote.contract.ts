@@ -2,7 +2,7 @@
 // 출처(`chat-fixture-remote.ts`)는 이 포트만 압니다. 어떤 호출도 던지지 않습니다 — 실패는 null · onEnd로 옵니다.
 
 import type { EarlyAccessRemote } from "./early-access-parse";
-import type { ChatCorrection } from "./chat-feedback.contract";
+import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import type { VisibleFriend } from "./friend-catalog.contract";
@@ -12,6 +12,8 @@ export type RemoteHistory = {
   readonly messages: readonly ChatMessage[];
   /** 내 글 id → 서버 교정 카드(고칠 것이 있을 때만). */
   readonly corrections: Readonly<Record<string, ChatCorrection>>;
+  /** 내 글 id → 그 글로 얻은 채팅 단어(ADR-0170). 옛 서버 · 옛 테스트 원격이면 없음. */
+  readonly chatWords?: Readonly<Record<string, ChatWordsResult>>;
   /** 마지막 캐릭터 메시지에 저장된 추천 답변 — 없으면 null. */
   readonly ideas: readonly ChatReplyIdea[] | null;
 };
