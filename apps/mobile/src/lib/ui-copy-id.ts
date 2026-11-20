@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { moreCopy } from "./ui-copy-more";
+import { rankingCopy } from "./ui-copy-ranking";
 import { assembledHintId } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
@@ -126,4 +127,5 @@ export const uiCopyId: UiCopy = {
   verificationCode: verificationCodeId,
   authFailure: authFailureId,
   more: moreCopy.id,
+  ranking: rankingCopy.id,
 };

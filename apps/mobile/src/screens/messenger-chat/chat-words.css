@@ -1,0 +1,94 @@
+/* 채팅 단어(ADR-0170) — 방 머리 아래 이번 주 줄 · 내 말풍선 아래 얻은 단어. 토큰만(ADR-0014 D1). 새 키프레임 없음. */
+.chat-words-strip {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-40);
+  margin-top: var(--libitum-spacing-8);
+  margin-right: var(--libitum-spacing-16);
+  margin-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-12);
+  padding-left: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.chat-words-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.chat-words-count {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+}
+
+.chat-words-rank {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.chat-words-earned {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.chat-words-plus,
+.chat-words-chip,
+.chat-words-pending {
+  height: var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  padding-right: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+}
+
+.chat-words-plus {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.chat-words-chip {
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-white);
+}
+
+.chat-words-pending {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.chat-words-plus-text,
+.chat-words-chip-text,
+.chat-words-pending-text {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+}
+
+.chat-words-plus-text {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.chat-words-chip-text {
+  color: var(--libitum-color-fg-brand);
+}
+
+.chat-words-pending-text {
+  color: var(--libitum-color-fg-neutral-muted);
+}

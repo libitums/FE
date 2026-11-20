@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
+import type { ChatWordsResult } from "./chat-feedback.contract";
 import type { ChatMeaning } from "./chat-source.contract";
 import type { BubbleTool, BubbleToolRow, MyBubbleView } from "./my-message-state";
 
@@ -17,6 +18,8 @@ export type MyMessageRowProps = {
   readonly onToggle: (tool: BubbleTool) => void;
   /** 고친 문장으로 다시 보내기 — 마지막 내 글이 아니면 null(ADR-0129). */
   readonly onResend: (() => void) | null;
+  /** 이 글로 얻은 채팅 단어(ADR-0170) — 서버 방에서 센 결과가 없으면 없음. */
+  readonly chatWords?: ChatWordsResult | null;
 };
 export type MyMessageStackProps = { readonly children: ReactNode };
 export type MyMessageBubbleProps = {
