@@ -312,3 +312,11 @@ describe("CultureCardActivity — 접근성 · 움직임", () => {
     expect(id("culture-card-deck").getAttribute("class")).toBe("culture-card-activity-deck");
   });
 });
+
+// QA 2026-11-20(위키 QA 1번): 카드가 하한 높이에 머물러 큰 화면에 빈 띠가 남고 긴 뒷면이 잘렸습니다. 카드는 셸 무대가 주는
+// 남는 세로까지 자라고(fillStage), 그보다 길면 셸의 카드 스크롤이 집니다.
+test("CC-FILL1. 문화 카드는 셸 무대에 채우기를 청하고, 덱은 카드 스크롤 안에 선다", () => {
+  mount([full]);
+  expect(id("learning-shell-stage")).toHaveClass("learning-shell-stage-fill-scroll");
+  expect(within(id("learning-shell-scroll")).getByTestId("culture-card-deck")).toBeInTheDocument();
+});
