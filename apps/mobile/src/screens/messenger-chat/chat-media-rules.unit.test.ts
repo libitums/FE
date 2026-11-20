@@ -59,7 +59,6 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   path: null,
   aspect: null,
   failure: null,
-  previewPath: null,
   createdAt: 5,
   ...over,
 });
@@ -201,19 +200,6 @@ describe("로그 줄", () => {
       durationMs: 0,
       text: target.text,
       audioUrl: "https://s/v",
-    });
-    // pending 사진의 URL은 중간 그림 — 오면 자리표시자에 붙고, 없으면 스켈레톤(ADR-0146 「중간 그림」). 음성 pending은 붙지 않는다.
-    expect(mediaLineOf(media(), target, "https://s/p", 9)).toEqual({
-      id: mediaLineId(A1, "photo", M1),
-      at: 5,
-      kind: "photo-pending",
-      previewUrl: "https://s/p",
-    });
-    expect(mediaLineOf(media(), target, null, 9)).not.toHaveProperty("previewUrl");
-    expect(mediaLineOf(media({ kind: "voice" }), target, "https://s/p", 9)).toEqual({
-      id: mediaLineId(A1, "voice", M1),
-      at: 5,
-      kind: "voice-pending",
     });
     expect(
       mediaLineOf(media({ status: "blocked", failure: "check_failed" }), target, null, 9),

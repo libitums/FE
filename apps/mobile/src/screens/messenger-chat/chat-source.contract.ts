@@ -23,11 +23,7 @@ export type ChatMessage =
       readonly text: ChatText;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
-  | (ChatMessageBase & {
-      readonly kind: "photo-pending";
-      /** 서버 사진만: 만드는 중의 흐린 중간 그림(서명 URL). 없으면 스켈레톤입니다(ADR-0146 「중간 그림」). */
-      readonly previewUrl?: string;
-    })
+  | (ChatMessageBase & { readonly kind: "photo-pending" })
   | (ChatMessageBase & { readonly kind: "photo" } & ChatPhotoBody)
   | (ChatMessageBase & { readonly kind: "voice-pending" })
   | (ChatMessageBase & {

@@ -45,13 +45,8 @@ describe("결과 한 건 · 목록", () => {
       path: null,
       aspect: null,
       failure: null,
-      previewPath: null,
       createdAt: Date.parse("2026-11-15T10:19:00.000Z"),
     });
-    // 중간 그림(ADR-0146 「중간 그림」) — 서버가 pending에만 싣는다. 옛 서버(칸 없음)는 null.
-    expect(remoteMediaOf(row({ previewPath: `u/${M1}.preview.png` }))?.previewPath).toBe(
-      `u/${M1}.preview.png`,
-    );
     const done = remoteMediaOf(
       row({ status: "complete", path: `u/${M1}.png`, aspect: "3:2", kind: "snapshot" }),
     );

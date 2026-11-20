@@ -124,10 +124,7 @@ export function placeMediaLine(messages: readonly ChatMessage[], line: ChatMessa
   return [...messages.slice(0, at + 1), line, ...messages.slice(at + 1)];
 }
 
-/**
- * 서버 결과 → 로그 줄. `url`은 complete면 결과 파일, pending이면 중간 그림(사진만)의 서명 URL입니다. complete인데 URL이 없으면 사진은 빈 면,
- * 음성은 재생이 꺼진 말풍선, pending인데 없으면 스켈레톤입니다.
- */
+/** 서버 결과 → 로그 줄. complete인데 URL이 없으면 사진은 빈 면, 음성은 재생이 꺼진 말풍선입니다. */
 export function mediaLineOf(
   media: RemoteMedia,
   target: ChatMediaTarget,
@@ -139,9 +136,7 @@ export function mediaLineOf(
   const at = Number.isFinite(media.createdAt) ? media.createdAt : now;
   switch (media.status) {
     case "pending":
-      return kind === "photo"
-        ? { id, at, kind: "photo-pending", ...(url === null ? {} : { previewUrl: url }) }
-        : { id, at, kind: "voice-pending" };
+      return { id, at, kind: kind === "photo" ? "photo-pending" : "voice-pending" };
     case "complete":
       return kind === "photo"
         ? {

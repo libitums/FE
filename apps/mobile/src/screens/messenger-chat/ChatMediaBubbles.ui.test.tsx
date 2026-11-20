@@ -9,7 +9,6 @@ import {
   VoicePendingBubble,
 } from "./ChatMediaBubbles";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
-import { chatMediaTestIds as mediaIds } from "./chat-media.contract";
 import { advance, clearBackHandlers, imageUrlOf, mountChat } from "./chat-ui.test-support";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { realChildren } from "../../lib/dom.test-support";
@@ -45,23 +44,6 @@ test("MC-UI21. 사진 pending: 한 요소가 「… is sending a picture…」 �
   expect(el.getAttribute("accessibility-element")).toBe("true");
   expect(el.getAttribute("accessibility-label")).toBe("미나 is sending a picture…");
   expect(el.textContent).toContain("미나 is sending a picture…");
-  expect(screen.queryByTestId(mediaIds.preview)).toBeNull();
-});
-
-test("MC-UI21p. 사진 pending + 중간 그림: 스켈레톤 대신 흐린 그림, 낭독 · 상태 줄 · 반짝임은 그대로(ADR-0146 「중간 그림」)", () => {
-  const { container } = render(
-    <PhotoPendingBubble name="미나" testId="pp" previewSrc="https://signed/u/m.preview.png" />,
-  );
-
-  const preview = screen.getByTestId(mediaIds.preview);
-  expect(preview.getAttribute("src")).toBe("https://signed/u/m.preview.png");
-  expect(preview.getAttribute("blur-radius")).toBe("12px");
-  expect(preview.getAttribute("accessibility-element")).toBe("false");
-  expect(container.querySelector(".messenger-chat-photo-disc")).toBeNull();
-  expect(container.querySelector(".messenger-chat-shimmer")).not.toBeNull();
-  expect(screen.getByTestId("pp").getAttribute("accessibility-label")).toBe(
-    "미나 is sending a picture…",
-  );
 });
 
 test("MC-UI21. 음성 pending: 한 줄 낭독과 파형(막대 20)이 서고 도착 말풍선의 글 줄은 없다", () => {

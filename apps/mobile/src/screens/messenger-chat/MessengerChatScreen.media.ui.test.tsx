@@ -54,7 +54,6 @@ const row = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   path: null,
   aspect: null,
   failure: null,
-  previewPath: null,
   createdAt: 1_000,
   ...over,
 });

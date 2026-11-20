@@ -14,7 +14,6 @@ import type {
   RemoteMedia,
 } from "./chat-media.contract";
 import type { ChatRemakeResult } from "./chat-album.contract";
-import { mediaLines } from "./chat-remote-lines";
 import { mediaSender } from "./chat-remote-send";
 import {
   collapseMediaResults,
@@ -70,6 +69,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
   const { live, changed, now, isOpen, schedule, hooks } = deps;
   const port = deps.remote.media;
   const states = new WeakMap<RoomState, MediaRoom>();
+  const urls = new Map<string, string>(); // media id → 서명 URL(실패는 기억하지 않음 — 다음 resume에 다시)
   const roomIdOf = (room: RoomState) => room.seed.roomId;
   const stateOf = (room: RoomState): MediaRoom => {
     const known = states.get(room);
@@ -118,7 +118,14 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     });
   };
 
-  const { lineFor, showPreview } = mediaLines({ port, now, alive, put });
+  const lineFor = async (media: RemoteMedia, target: ChatMediaTarget): Promise<ChatMessage> => {
+    let url: string | null = null;
+    if (media.status === "complete" && media.path !== null && port !== undefined) {
+      url = urls.get(media.id) ?? (await port.sign(media.path));
+      if (url !== null) urls.set(media.id, url);
+    }
+    return mediaLineOf(media, target, url, now());
+  };
 
   const poll = (room: RoomState) => {
     const state = stateOf(room);
@@ -137,11 +144,8 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     const rows = await port.load({ ids: [...state.tracked.keys()] });
     if (!current()) return;
     let settled = false;
-    let previewed = false;
     for (const [id, tracked] of [...state.tracked]) {
       const row = rows?.find((media) => media.id === id);
-      if (row?.status === "pending" && (await showPreview(room, row, tracked))) previewed = true;
-      if (!alive(room)) return;
       if (row !== undefined && row.status !== "pending") {
         state.tracked.delete(id);
         const line = await lineFor(row, tracked.target);
@@ -163,8 +167,10 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
         settled = true;
       }
     }
-    if (settled || previewed) changed(room);
-    if (settled) readBalance();
+    if (settled) {
+      changed(room);
+      readBalance();
+    }
     if (state.tracked.size > 0 && current() && isOpen(roomIdOf(room))) {
       state.step += 1;
       schedule(room, mediaPollDelay(state.step), () => void tick(room, gen));
@@ -179,7 +185,6 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     path: null,
     aspect: null,
     failure: null,
-    previewPath: null,
     createdAt: now(),
   });
 

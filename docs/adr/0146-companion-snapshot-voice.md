@@ -177,19 +177,29 @@
 ## 개정 (2026-11-20) — 중간 그림을 흐리게 먼저 보여 준다
 
 - **사용자 결정**(2026-11-16 기획, 2026-11-20 「바로 적용 가능하게」): 사진을 만드는 동안 엔진이 주는 중간 그림 한 장을 흐리게 먼저 보이고, 완성되면 그 자리에서
-  결과로 바꾼다. 전체 시간은 그대로이고 첫 그림이 보이는 시간만 앞당긴다.
-- 서버는 2026-11-16에 이미 있다(스펙 [ai-companion-snapshot.md](../specs/ai-companion-snapshot.md) §9): 비밀 `COMPANION_SNAPSHOT_PARTIAL_IMAGES`(0 ~ 3, 기본 0)가 1 이상이면
-  이미지 엔진을 스트리밍으로 불러 중간 그림을 `<user>/<media>.preview.png`로 올리고, `companion_get_media`의 pending 결과에 `previewPath`를 싣는다.
-  끝나면 파일을 지우고 `previewPath`는 null. 한 장마다 출력 토큰 100개(약 $0.003).
-- **앱(이번 개정)**:
-  - `RemoteMedia.previewPath`를 읽는다(옛 서버 · 음성은 null).
-  - 다시 읽기(2초 간격)에서 만드는 중인 사진에 `previewPath`가 새로 보이면 서명 URL을 받아 자리표시자(`photo-pending`)에 `previewUrl`을 붙인다.
-    같은 경로는 다시 서명하지 않고, 서명에 실패하면 스켈레톤 그대로 두고 다음 읽기에서 다시 받는다. 방을 다시 열 때(`resume`)도 같다.
-  - 말풍선(`PhotoPendingBubble`)은 아이콘 · 줄 대신 그 그림을 상자에 꽉 채워 흐리게(`<image blur-radius="12px">`) 깐다. 상태 줄 · 낭독 · 반짝임은
-    그대로다(아직 만드는 중이다). 움직임 줄이기에서는 반짝임만 멈춘다.
-  - 완성 · 차단 · 실패는 지금처럼 같은 줄 자리에서 바뀐다.
-- **켜는 법**: 앱이 이 개정을 담은 뒤 Supabase 비밀 `COMPANION_SNAPSHOT_PARTIAL_IMAGES=1`(재배포 없음). 끄기는 `0`.
-- **확인 안 된 것**: 지금 엔진(`gpt-image-2.5-flare` · 편집 엔드포인트)이 중간 그림을 실제로 보내는지. 2026-11-16 실측은 2.6-flare 1회에서 0장이었고,
-  2.5-flare로는 켠 채 만든 기록이 없다. 안 오면 앱은 지금처럼 스켈레톤이다(손해는 없다). 대시보드 「서버로 스냅샷」(중간 그림을 흐리게 그림)과
-  운영 `meta.partials` · `meta.timings.firstPartial`로 확인한다.
-- 테스트: CM-U1a(파싱) · CM-U6(줄 규칙) · CM-U9p ~ U9r(다시 읽기 · 서명 실패 · 다시 열기) · MC-UI21p(말풍선).
+  결과로 바꾼다. 전체 시간은 그대로이고 첫 그림이 보이는 시간만 앞당긴다. **이 저장소의 이번 몫은 서버와 결정 기록이다 — 앱 화면은 메신저 담당이 아래
+  「앱 인계」대로 만든다.**
+- **API**(2026-11-20 확인): OpenAI 편집 레퍼런스(`POST /v1/images/edits`)가 `stream` · `partial_images`(0 ~ 3)를 모델 제한 없이 적고, 스트리밍 예시 모델이
+  `gpt-image-2.6-flare`다. 이벤트는 `image_edit.partial_image`(`b64_json` · `partial_image_index`) · `image_edit.completed`(`b64_json` · `usage`).
+  「다 그리기 전에 끝나면 요청보다 적게 올 수 있다」. 2026-11-16에는 문서 예시가 생성 엔드포인트 · Sunburst뿐이었다.
+- **서버**(2026-11-16에 이미 있음, 바꿀 것 없음 — 스펙 [ai-companion-snapshot.md](../specs/ai-companion-snapshot.md) §9):
+  - 비밀 `COMPANION_SNAPSHOT_PARTIAL_IMAGES`(0 ~ 3, 기본 0)가 1 이상이면 이미지 엔진을 스트리밍으로 불러, 중간 그림이 올 때마다
+    `companion-media/<user>/<media>.preview.png`로 올리고 행에 적는다(`companion_media_preview`, 마이그레이션 20261207). 위 이벤트 이름 그대로 읽는다.
+  - `companion_get_media` · `companion_list_media`의 pending 결과에 `previewPath`(만료 전 · pending일 때만). 끝나면(완성 · 차단 · 실패 · 만료) 파일을 지우고 null.
+  - 운영 meta: `partials`(받은 장수) · `partialImages`(요청 장수) · `timings.firstPartial`. 한 장마다 이미지 출력 토큰 100개(약 $0.003).
+  - 계약: `packages/companion-contract` `media.ts`의 `previewPath`(선택 · nullable), JSON Schema `companion-media-response` · `companion-media-page`.
+- **확인 안 된 것**: 지금 엔진(`gpt-image-2.5-flare` · 편집)이 중간 그림을 실제로 보내는지. 2026-11-16 실측은 2.6-flare 1회에서 0장이었고, 2.5-flare로는
+  스위치를 켠 채 만든 운영 기록이 없다(2026-11-20 조회). 대시보드 플레이그라운드 「스냅샷」이 같은 스트리밍을 붙였다(ops-dashboard #4 · dashboards-web #3,
+  설정 「중간 그림」 기본 1장) — 한 장 그리면 로그에 「n장 · 첫 x초」 또는 「0장 — 엔진이 보내지 않음」이 남는다. 오면 운영 비밀을 켠다.
+- **켜는 순서**: ① 플레이그라운드로 지금 엔진이 중간 그림을 보내는지 본다 → ② 앱이 아래를 담아 나간다 → ③ Supabase 비밀
+  `COMPANION_SNAPSHOT_PARTIAL_IMAGES=1`(재배포 없음, 끄기는 `0`). 앱보다 먼저 켜면 보이지 않는 그림에 장당 약 $0.003이 든다.
+
+### 앱 인계 (메신저 서버 모드)
+
+- `companion_get_media` 결과의 `previewPath`(string | null)를 읽는다. 옛 서버 · 음성은 null.
+- 다시 읽기(지금 2초 간격)에서 만드는 중인 사진에 `previewPath`가 새로 보이면, 결과 파일과 같은 방법(`POST /storage/v1/object/sign/companion-media/<path>`)으로
+  서명 URL을 받아 자리표시자에 붙인다. 같은 경로는 다시 서명하지 않고, 서명에 실패하면 스켈레톤 그대로 두고 다음 읽기에서 다시 받는다. 방을 다시 열 때도 같다.
+- 자리표시자는 아이콘 · 줄 대신 그 그림을 상자에 꽉 채워 흐리게 깐다(Lynx `<image blur-radius>`). 상태 줄 · 낭독 · 반짝임은 그대로(아직 만드는 중이다).
+  완성 · 차단 · 실패는 지금처럼 같은 줄 자리에서 바뀐다.
+- 참고 구현은 FE 브랜치 `feat/companion-snapshot-preview`의 커밋 e3dc46d7(이 PR에서 되돌림 — 그대로 쓰라는 것이 아니다). 대시보드 플레이그라운드가 같은
+  흐름(흐린 중간 그림 → 완성본)을 이미 보인다.

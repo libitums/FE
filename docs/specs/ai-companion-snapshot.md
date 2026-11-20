@@ -142,6 +142,9 @@
     `companion-media/<user>/<media>.preview.png`로 올리고 `companion_media_preview`로 행에 적는다(마이그레이션 20261207). 앱은 pending 결과의
     `previewPath`가 생기면 흐리게 먼저 보이고, 완성되면 `path`로 바꾼다. 끝나면(성공 · 차단 · 실패) 미리보기 파일을 지우고 `previewPath`는 null.
     한 장마다 이미지 출력 토큰 100개(약 $0.003). 첫 중간 그림까지의 시간은 `meta.timings.firstPartial`.
+    ⟨2026-11-20 [ADR-0146](../adr/0146-companion-snapshot-voice.md) 「중간 그림」⟩ OpenAI 편집 레퍼런스가 이제 `stream` · `partial_images`를 모델 제한 없이 적고 예시가
+    `gpt-image-2.6-flare`다(이벤트 `image_edit.partial_image` · `image_edit.completed`). 2.5-flare에서 실제로 오는지는 대시보드 플레이그라운드 「스냅샷」(중간 그림
+    기본 1장)으로 먼저 보고, 앱이 `previewPath`를 그린 뒤에 운영 비밀을 켠다.
   - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_REFS`: `sheet`면 표정 시트를 빼고 시트 한 장만 넣는다(기본 `all`). 실측 입력 이미지 토큰 2,600 ~ 3,072가
     사진 원가(약 $0.035 ~ 0.04)의 약 2/3라, 얼굴 일관성을 실험실에서 견준 뒤 정한다.
   - ⟨2026-11-16⟩ 엔진: 20261206에서 `gpt-image-2.6-flare`로 바꿨다가 20261208에서 `gpt-image-2.5-flare`로 되돌렸다 — 운영 실측에서 이미지

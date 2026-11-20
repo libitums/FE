@@ -42,11 +42,6 @@ export type RemoteMedia = {
   readonly path: string | null;
   readonly aspect: "3:2" | "1:1" | null;
   readonly failure: string | null;
-  /**
-   * 만드는 중의 흐린 중간 그림(`<user>/<media>.preview.png`, 서버 `COMPANION_SNAPSHOT_PARTIAL_IMAGES`) — pending이고 중간 그림이 왔을 때만,
-   * 끝나면 null(ADR-0146 「중간 그림」). 옛 서버 · 음성은 늘 null.
-   */
-  readonly previewPath: string | null;
   readonly createdAt: number;
 };
 
@@ -133,5 +128,4 @@ export type ChatMediaCopy = {
 export const chatMediaTestIds = {
   notice: "messenger-chat-media-notice",
   ai: "messenger-chat-media-ai",
-  preview: "messenger-chat-media-preview",
 } as const;

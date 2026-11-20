@@ -565,15 +565,6 @@
   background-color: var(--libitum-color-gray-300);
 }
 
-/* 중간 그림(ADR-0146 「중간 그림」) — 스켈레톤 상자를 꽉 채우고, 반짝임이 그 위를 지납니다. */
-.messenger-chat-photo-preview {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
 .messenger-chat-photo-disc {
   width: var(--libitum-spacing-48);
   height: var(--libitum-spacing-48);
