@@ -826,7 +826,7 @@ UI 언어가 영어가 아닐 때 콘텐츠의 영어(안내 · 뜻 풀이 · �
 ## 부록 H. 나라 이름 파일 `country-names/<언어>.json` ⟨2026-11-19⟩
 
 학습자 프로필 미리보기 뜻 줄 · 레슨 번역 줄의 `{나라}`에 서는 화면 언어별 나라 이름입니다([ADR-0059](../adr/0059-learner-profile.md) 개정 2026-11-19).
-번들 천장(5,327,000 B) 때문에 앱에 싣지 않고 버킷에 둡니다. 원본은 저장소의 `docs/content/country-names/{es,id,ja,vi}.json`이고 그대로 올립니다.
+번들 천장(당시 5,327,000 B) 때문에 앱에 싣지 않고 버킷에 둡니다. 원본은 저장소의 `docs/content/country-names/{es,id,ja,vi,th,my}.json`이고 그대로 올립니다(th · my는 2026-11-20 — ADR-0158 개정).
 
 ```jsonc
 // country-names/vi.json — 앱 나라 표(apps/mobile/content/learner-profile.json)의 코드 199개를 모두 덮습니다
@@ -835,8 +835,8 @@ UI 언어가 영어가 아닐 때 콘텐츠의 영어(안내 · 뜻 풀이 · �
 
 | 규칙 | 내용 |
 |---|---|
-| 파일 경로 | 버킷 `content`의 `country-names/<언어>.json`(es · id · ja · vi). en · th · my는 파일이 없습니다(영어 이름) |
-| 앱이 받는 범위 | 실행의 첫 받기 차례에 네 파일을 모두 분 단위 키(`?m=`)로 받아 새것 · 바뀐 것을 저장합니다(오프라인 언어 전환 대비). 그 뒤 차례(UI 언어를 바꿔 저장했을 때 · 호스트 신호)는 지금 언어의 파일이 기기에 없을 때만 그 하나를 받습니다. `app-policy.json`과 같은 규칙, 기다리지 않음 |
+| 파일 경로 | 버킷 `content`의 `country-names/<언어>.json`(es · id · ja · vi · th · my). en은 파일이 없습니다(영어 이름) |
+| 앱이 받는 범위 | 실행의 첫 받기 차례에 여섯 파일을 모두 분 단위 키(`?m=`)로 받아 새것 · 바뀐 것을 저장합니다(오프라인 언어 전환 대비). 그 뒤 차례(UI 언어를 바꿔 저장했을 때 · 호스트 신호)는 지금 언어의 파일이 기기에 없을 때만 그 하나를 받습니다. `app-policy.json`과 같은 규칙, 기다리지 않음 |
 | 검증 | `schema` = `country-names-1` · `language`가 그 언어 · 키는 대문자 두 글자 · 값은 빈 글자가 아님. 하나라도 어기면 통째로 버리고 저장본을 둡니다. 매니페스트 · sha256 항목은 없습니다 |
 | 없을 때 | 400 · 403 · 404 · 410이면 저장본을 지웁니다. 받기 전 · 실패 · 오프라인이면 영어 이름(영어 밖 문장에는 관사 없이) |
 | 고칠 때 | 원본 JSON을 고치고 같은 이름으로 덮어씁니다(`x-upsert: true`, `cache-control: max-age=60`). 나라 표에 나라가 늘면 네 파일에도 더합니다 |
@@ -844,14 +844,14 @@ UI 언어가 영어가 아닐 때 콘텐츠의 영어(안내 · 뜻 풀이 · �
 올리는 법(사람 — 서비스 키는 `supabase projects api-keys --project-ref wgwnitgyotyvixozwrzu -o json`의 `service_role`, 셸 변수에만 둡니다):
 
 ```sh
-for lang in es id ja vi; do
+for lang in es id ja vi th my; do
   curl -sf -X POST "$PUBLIC_SUPABASE_URL/storage/v1/object/content/country-names/$lang.json" \
     -H "Authorization: Bearer $SERVICE_ROLE" -H "apikey: $SERVICE_ROLE" \
     -H "Content-Type: application/json" -H "cache-control: max-age=60" -H "x-upsert: true" \
     --data-binary @docs/content/country-names/$lang.json
 done
 # 확인 — 공개 URL의 sha256이 원본과 같아야 합니다
-for lang in es id ja vi; do
+for lang in es id ja vi th my; do
   diff <(curl -s "$PUBLIC_SUPABASE_URL/storage/v1/object/public/content/country-names/$lang.json?m=$(date +%s)" | shasum -a 256 | cut -d' ' -f1) \
        <(shasum -a 256 docs/content/country-names/$lang.json | cut -d' ' -f1) && echo "$lang ok"
 done

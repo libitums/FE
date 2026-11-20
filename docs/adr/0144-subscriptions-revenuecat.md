@@ -152,7 +152,7 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
 
 - **구독 고지(App Store 심사 지침 3.1.2 · Play 구독 정책)**: 요금제 화면의 구매 단추 아래 `PlanTerms` — 고른 요금제 이름 · 가격과 기간(카드와 같은 글:
   스토어 가격, 없으면 임시 추천 가격 · 「스토어에서」) · 결제 계정(App Store · Google Play, 모르면 일반 이름) · 자동 갱신 · 24시간 전 해지 · 해지 자리,
-  이용약관 · 개인정보처리방침 링크(`LegalDocumentModule` — 설정과 같은 주소). 다섯 언어(`ui-copy-plans-terms.ts`), th · my는 영어(ADR-0158).
+  이용약관 · 개인정보처리방침 링크(`LegalDocumentModule` — 설정과 같은 주소). 다섯 언어(`ui-copy-plans-terms.ts`), th · my는 영어(ADR-0158) — ⟨2026-11-20⟩ th · my도 자기 문구(`ui-copy-<lang>-plans.ts`, ADR-0158 개정).
   무료 체험이 없어 체험 문장은 두지 않는다 — 생기면 더한다. 구독 구매가 시작되는 자리는 요금제 화면 하나다(맥락 카드는 이 화면을 연다).
   「Restore purchases」는 이미 요금제 화면에 있다.
 - **구독 관리**: 새 호스트 메서드 없이 `ExternalLinkModule`(https만)로 스토어 화면을 연다 — iOS `https://apps.apple.com/account/subscriptions`,
