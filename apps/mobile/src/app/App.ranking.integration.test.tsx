@@ -19,6 +19,7 @@ import {
   setMessengerChatStoresForTests,
 } from "./messenger-chat-wiring";
 import { setRankingClientForTests } from "./ranking-wiring";
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import {
   navigatorItemIds,
   openTab,
@@ -101,7 +102,7 @@ test("RK-I1. 탭은 다섯(순위는 넷째)이고, 순위 탭은 Lessons 보드
   await renderTesterApp(
     <App progressSeed={legacyPassedSeedWithCoins(0)} episodeIntroEventSink={sink} />,
   );
-  expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "ranking", "settings"]);
+  expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "ranking", "more"]);
   openTab("ranking");
   await flush();
   expect(client.loads).toEqual(["lessons"]);
@@ -144,7 +145,7 @@ test("RK-I3. 설정 「Hide me from ranking」을 켜면 저장되고 순위는 
   await renderTesterApp(
     <App progressSeed={legacyPassedSeedWithCoins(0)} episodeIntroEventSink={sink} />,
   );
-  openTab("settings");
+  openSettingsFromMore();
   await flush();
   const row = screen.getByTestId("ui-lynx-settings-group-item-ranking-hidden");
   fireEvent.tap(within(row).getByTestId("ui-lynx-settings-cell"), {});

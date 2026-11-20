@@ -75,9 +75,9 @@ async function boot(seedWords = false) {
 const named = (events: readonly EpisodeIntroEvent[], name: string) =>
   events.filter((event) => event.name === name);
 
-test("MI1. 넷째 탭은 More, 누르면 스크림 없이 메뉴 카드 · ×(Close menu), 다시 누르면 닫힘", async () => {
+test("MI1. 마지막(다섯째) 탭은 More, 누르면 스크림 없이 메뉴 카드 · ×(Close menu), 다시 누르면 닫힘", async () => {
   const { events } = await boot();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(5);
   expect(more()).toHaveAttribute("accessibility-label", "More");
   tapMore();
   expect(screen.getByTestId("more-menu")).toBeInTheDocument();

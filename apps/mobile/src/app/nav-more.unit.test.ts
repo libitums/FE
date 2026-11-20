@@ -17,8 +17,14 @@ import {
 const apply = (nav: Nav, actions: readonly NavAction[]) => actions.reduce(navReducer, nav);
 
 describe("openMore", () => {
-  test("NM1. 탭 넷 — 넷째는 more, 처음 루트는 설정", () => {
-    expect(Object.keys(initialNav.stacks)).toEqual(["journey", "roleplay", "messenger", "more"]);
+  test("NM1. 탭 다섯 — 마지막은 more(순위 다음, ADR-0170), 처음 루트는 설정", () => {
+    expect(Object.keys(initialNav.stacks)).toEqual([
+      "journey",
+      "roleplay",
+      "messenger",
+      "ranking",
+      "more",
+    ]);
     expect(initialNav.stacks.more).toEqual([{ name: "settings" }]);
   });
 

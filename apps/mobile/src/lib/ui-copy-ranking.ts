@@ -1,10 +1,13 @@
 // 주간 순위 · 채팅 단어 문구(ADR-0170)입니다 — 다섯 언어를 한 파일에 둡니다(각 언어 표가 자기 몫을 꽂습니다).
-// 엽전은 화면에서 「Yeopjeon」으로 적습니다(ADR-0116). th · my는 화면 문구가 영어라(ADR-0158) 영어 표를 씁니다.
+// 엽전은 화면에서 「Yeopjeon」으로 적습니다(ADR-0116). 태국어 · 미얀마어는 `ui-copy-ranking-th-my.ts`가 집니다.
 
 import type { RankingCopy } from "../screens/ranking/ranking.contract";
 import { n } from "./ui-copy-en-plural";
+import { rankingCopyMy, rankingCopyTh } from "./ui-copy-ranking-th-my";
 
-export const rankingCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", RankingCopy>> = {
+export const rankingCopy: Readonly<
+  Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my", RankingCopy>
+> = {
   en: {
     title: "Weekly ranking",
     group: (count) => `Your group · ${n(count, "learner", "learners")}`,
@@ -236,4 +239,6 @@ export const rankingCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", Rank
       hideBody: "Người khác sẽ không thấy bạn trên bảng xếp hạng tuần",
     },
   },
+  th: rankingCopyTh,
+  my: rankingCopyMy,
 };

@@ -10,8 +10,8 @@
 ## 결정
 
 ### D1. 하단 탭 다섯 — 순위는 넷째, 트로피
-- 순서 journey · roleplay · messenger · **ranking** · settings. 탭 배열에 한 줄, 5개 배치는 항목 수 클래스(`-items-5`)만 본다: 항목 56 · space-between · 좌우 16.
-  맨 오른쪽 탭이 More로 바뀌어도(병행 브랜치) 이 규칙은 그대로다.
+- 순서 journey · roleplay · messenger · **ranking** · ⋯ More(동그라미, 마지막 — [ADR-0169](0169-more-menu-letters-wordbook.md)). 설정은 More › Settings에 있다.
+  5개 배치는 ui-lynx의 항목 수 클래스(`-items-5`, ADR-0169)가 맡는다: 항목 56 · 양끝 맞춤. 앱 쪽에 같은 CSS를 따로 두지 않는다.
 - 순위 탭 루트(`{ name: "ranking", board }`)는 전역 머리가 없다(메신저 목록과 같은 규칙).
 
 ### D2. 규칙은 서버가 정본
@@ -43,6 +43,10 @@
 - 기능만으로 `.lynx.bundle` +73,857 B(5,399,880 B)라 천장(5,327,000 B)을 넘었다. 천장은 올리지 않고 ReactLynx `extractStr: true`(두 스레드의 같은 문자열을
   한 번만 싣기)를 켰다 — 앱 전체 -102,933 B, 결과 5,297,854 B(main 대비 -28,169 B, 접근성 · 리뷰 반영 뒤). **기기(iOS · Android) 확인이 남았다** — 문제가 있으면 이 줄만 되돌리고
   기능을 줄이거나 천장을 사용자가 정한다.
+- ⟨2026-11-20 개정⟩ ADR-0169 위에 쌓으며 `extractStr` 변경은 ADR-0169 쪽 하나만 남겼다(이 브랜치는 `lynx.config.ts`를 바꾸지 않는다).
+  th · my 문구가 든 main 위에서 ADR-0169 5,749,897 B → 이 브랜치 **5,835,141 B**(+85,244 B, `.env.local` 없는 설정).
+  앞 천장 5,705,000 B는 넘고, **사용자 결정(「a + b」)으로 올린 천장 5,850,000 B**([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 2) 안이다(14,859 B 남음).
+  화면 lazy 로딩은 따로 조사한다.
 
 ### D8. 분석
 - `ranking_opened{board, source, view}` · `ranking_board_switched{from, to}` · `ranking_own_row_viewed{board, rank, score}` ·
@@ -57,7 +61,7 @@
 ## 대가
 - 출시 초기에는 구간이 아홉이라 작은 그룹이 여럿 생길 수 있다. 새 계정 · 비회원 기록을 들인 첫 저장은 그 주 Lessons가 한 번에 크게 오를 수 있다.
 - 새 에피소드를 올릴 때 `companion.content_units`를 채우지 않으면 순위에도 들어가지 않는다.
-- th · my 화면 문구는 PR #522가 들어올 때 이 문구표에 더한다.
+- th · my 화면 문구는 `ui-copy-ranking-th-my.ts`(번역 초안 — 원어민 검수 필요).
 
 ## 열린 결정(사용자)
 - 보상 액수 · 켤지(D4), 주 시간대(UTC 월요일 — 지역 자정이 아님), 그룹 크기(25 · 30)와 구간, 다시 통과 규칙(평생 한 번), 유닛 범위(S · CULT · RP).
