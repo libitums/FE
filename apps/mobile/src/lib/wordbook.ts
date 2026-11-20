@@ -47,7 +47,8 @@ export function localDayOf(date: Date): LocalDay {
 export function addDays(day: LocalDay, days: number): LocalDay {
   const matched = dayPattern.exec(day);
   if (matched === null) return day;
-  const date = new Date(Number(matched[1]), Number(matched[2]) - 1, Number(matched[3]) + days);
+  // 정오로 만듭니다 — 자정에 일광 절약 시간이 바뀌는 시간대에서도 날짜가 밀리지 않게(리뷰).
+  const date = new Date(Number(matched[1]), Number(matched[2]) - 1, Number(matched[3]) + days, 12);
   return localDayOf(date);
 }
 
