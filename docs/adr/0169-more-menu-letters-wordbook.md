@@ -38,7 +38,8 @@
 ### D2. Letters — 자모표 40자, 소리는 버킷에서
 
 - more 스택 루트(뒤로 없음 · 바 유지 · 전역 머리 없음). 위 고정(제목 · 리드 · 「Practice: build sounds」), 아래 4열 격자만 스크롤: 기본 자음 14 · 기본 모음 10 · 쌍자음 5 · 겹모음 11.
-  칸 = 로마자(보드의 개정 로마자, 기존 보기 로마자 설정을 따름) · 글자 · 스피커. 방금 칸 강조, 들은 칸 스피커 brand-strong.
+  칸 = 로마자(보드의 개정 로마자, 기존 보기 로마자 설정을 따름) · 글자 · 스피커. ~~방금 칸 강조~~, 들은 칸 스피커 brand-strong.
+  ⟨2026-11-21 개정 — 아래 「칸 눌림 개정」⟩ 방금 칸 강조(선택 상태)를 없앴다. 칸은 누르는 동안만 눌림 면(gray-100)이고 움직이지 않으며 진동하지 않는다.
 - 소리: 자음 + ㅏ(가 · 까 …), 모음은 ㅇ + 모음(아 · 의 …). 파일은 앱에 싣지 않는다([ADR-0060](0060-episode-voice-remote-audio.md) D1) — 버킷 `audio/letters/<로마자>.m4a`,
   음성 정보 파일(`audio/manifest.json`)에 `letters/<로마자>` 항목이 있을 때만 소리가 있다고 본다. 없으면 스피커가 흐린 모양이고 낭독에 「sound not available yet」, 칸은 그대로 눌린다.
 - 한글 표는 학습 콘텐츠 선언(ui-copy-literals 정책)이다.
@@ -134,6 +135,19 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
   들은 칸 낭독 「heard」, 합치기 퀴즈 판정 · 힌트 · 완료 낭독.
 - 메뉴가 열린 동안 뒤 화면 · 전역 머리를 낭독에서 빼고 「Menu, 3 items」를 한 번 낭독, 업데이트 안내 · Letters 추천이 선 동안 뒤 화면 · 바를 낭독에서 뺀다.
 - 추천은 띄우기 직전에도 띄우지 않는 규칙을 다시 본다(기다리는 사이 Letters를 연 경우), 추천이 떠 있으면 엽전 · 업데이트 안내가 끼어들지 않는다, 바뀐 것이 없으면 단어장을 쓰지 않는다.
+
+## 칸 눌림 개정(2026-11-21)
+
+- **사용자 요청** (2026-11-21): 「letters 버튼도 하나 누를 때마다 진동 및 누른거 켜져있을 필요없음」.
+- **누른 칸이 켜진 채 남지 않는다.** 방금 칸 강조(`selected` 상태 · `letters-cell-selected` 면 · `data-selected`)를 지웠다. 들은 칸 스피커(brand-strong) ·
+  낭독 「heard」 · 이벤트 `letters_cell_tapped`는 그대로다. 선택 상태는 낭독(트레잇 · 이름)이나 이벤트에 쓰이지 않았다 — 접근성 쪽에서 빠진 것은 없다.
+- **칸은 누르는 동안만 눌림 면이고 움직이지 않는다.** 칸 경로(`LettersScreen` → `sound.play` · `onCellTapped`)에는 진동 호출이 원래 없었다 —
+  진동은 `SoundEffectsModule.haptic`(판정 · 키 입력, ADR-0109 · ADR-0112)에만 있고 Lynx 엔진(iOS · Android)도 누름에 진동을 내지 않는다.
+  누를 때마다 「떨리는」 것은 눌림 축소(`scale(motion-scale-pressed)` 0.96 → 1)와 켜짐 면 바뀜이 겹친 모양이라 보고, 축소를 보드의 눌림 색
+  (`:active` = gray-100, D7)으로 바꿨다. 움직임이 없으니 움직임 줄이기 갈래(`letters-cell-motion-reduced`) · `useMotion`도 지웠다.
+- 다른 타일(짝 맞추기 · 음절 조립 · 합치기 퀴즈 타일 · 문장 순서 칩)의 눌림 축소와 합치기 퀴즈의 답 고르기 선택은 그대로다 — 범위는 자모표 칸뿐이다.
+- 검사: unit LC-U1 ~ U3(`letters-screen.css.unit.test.ts`), ui LS4 · LS5(개정) · LS8(`LettersScreen.ui.test.tsx`), integration LAI5
+  (`App.letters-audio.integration.test.tsx`), e2e `docs/e2e/letters-tile-no-haptic.md`.
 
 ## 버린 대안
 

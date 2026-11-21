@@ -42,7 +42,11 @@ async function boot(manifest: string | null) {
   store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   if (manifest !== null) store.set(CONTENT_AUDIO_MANIFEST_KEY, manifest);
   const play = vi.fn<(source: string, done: (result: unknown) => void) => void>();
-  vi.stubGlobal("NativeModules", { AudioPlaybackModule: { play, stop: vi.fn<() => void>() } });
+  const haptic = vi.fn<(kind: string) => void>();
+  vi.stubGlobal("NativeModules", {
+    AudioPlaybackModule: { play, stop: vi.fn<() => void>() },
+    SoundEffectsModule: { play: vi.fn<(id: string) => void>(), stopRing: () => {}, haptic },
+  });
   const events: EpisodeIntroEvent[] = [];
   await renderSignedInApp(
     <App progressSeed={legacyPassedSeed} episodeIntroEventSink={(event) => events.push(event)} />,
@@ -54,7 +58,7 @@ async function boot(manifest: string | null) {
       },
     },
   );
-  return { play, events };
+  return { play, haptic, events };
 }
 
 const openLetters = () => {
@@ -87,6 +91,26 @@ test("LAI1. 업로드 뒤 — 자모 칸을 누르면 그 소리(ㄱ → 가 · 
     { letter: "ㅑ", audio: "played" },
     { letter: "ㄲ", audio: "played" },
   ]);
+});
+
+test("LAI5. 칸을 여러 번 눌러도 소리만 — 진동 모듈 호출 없음 · 누른 칸이 켜진 채 남지 않음(ADR-0169 D2 ⟨2026-11-21 개정⟩)", async () => {
+  const { play, haptic, events } = await boot(LETTERS_MANIFEST);
+  openLetters();
+  for (const index of [0, 15, 24, 0])
+    fireEvent.tap(screen.getByTestId(`letters-cell-${index}`), {});
+  expect(sources(play)).toEqual([
+    bucketAudio("letters/ga"),
+    bucketAudio("letters/ya"),
+    bucketAudio("letters/kka"),
+    bucketAudio("letters/ga"),
+  ]);
+  expect(haptic).not.toHaveBeenCalled();
+  expect(cellEvents(events)).toHaveLength(4);
+  for (const index of [0, 15, 24]) {
+    const tapped = screen.getByTestId(`letters-cell-${index}`);
+    expect(tapped).not.toHaveAttribute("data-selected");
+    expect(tapped.getAttribute("class") ?? "").not.toContain("selected");
+  }
 });
 
 test("LAI2. 업로드 뒤 — 합치기 퀴즈를 맞히면 효과음 틈 뒤 그 음절을 한 번, 틀리면 음절 소리 없음", async () => {
