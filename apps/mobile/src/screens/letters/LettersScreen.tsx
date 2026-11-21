@@ -77,8 +77,10 @@ export function LettersScreen({
                       heardLabel={copy.more.letters.heard}
                       onTap={(source) => {
                         if (source !== null) sound.play(source);
-                        if (source !== null && heard.indexOf(letter.letter) < 0)
-                          setHeard([...heard, letter.letter]);
+                        if (source !== null)
+                          setHeard((prev) =>
+                            prev.indexOf(letter.letter) >= 0 ? prev : [...prev, letter.letter],
+                          );
                         onCellTapped?.(
                           letter.letter,
                           group.id,
