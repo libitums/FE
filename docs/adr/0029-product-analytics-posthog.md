@@ -434,6 +434,9 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-20 — 비회원 흐름 다듬기(ADR-0166 확인 필요 결정). 적용 기록⟩ `chat_sign_in_prompt_closed`의 `trigger`에 **`tickets`** 값을 더한다 — 머리 티켓 모달의
     Get more tickets(비회원)에서 뜬 대화상자. `surface`는 그대로 `chat`(같은 대화상자 · 같은 이벤트), sink는 메신저와 같은 제품 이벤트 sink다. 이름 수는 그대로 75개.
     비회원 방 전구(Reply ideas)는 새 값 없이 `send`로 센다.
+  - ⟨2026-11-21 — 가입 보상(ADR-0174). 적용 기록⟩ **`signup_reward_card_shown`**(손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번) ·
+    **`signup_reward_card_tapped`**(카드를 눌러 로그인 화면으로 갈 때마다) · **`signup_reward_shown { amount }`**(서버 지급 뒤 보상 모달이 설 때 한 번). 공통 속성 둘 포함,
+    `surface: learning`, 제품 이벤트 sink(`app/use-signup-reward.tsx`). 카드 → 가입 전환 = `entry_login_method_selected` ÷ `signup_reward_card_tapped`. Airbridge 매핑 없음.
 
   #### D3 목적 구분 — 쓰는 법
 

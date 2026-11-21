@@ -3,6 +3,7 @@
 
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
+import { signupRewardCopy } from "./ui-copy-signup-reward";
 import { assembledHintVi } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
@@ -128,4 +129,5 @@ export const uiCopyVi: UiCopy = {
   authFailure: authFailureVi,
   more: moreCopy.vi,
   ranking: rankingCopy.vi,
+  signupReward: signupRewardCopy.vi,
 };

@@ -41,6 +41,7 @@ import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
 import type { FeedbackCopy } from "./feedback.contract";
 import type { RankingCopy } from "../screens/ranking/ranking.contract";
+import type { SignupRewardCopy } from "./ui-copy-signup-reward";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
   AppUpdateCopy,
@@ -132,6 +133,8 @@ export type UiCopy = {
   readonly more: MoreCopy;
   /** 주간 순위 · 채팅 단어(ADR-0170). */
   readonly ranking: RankingCopy;
+  /** 가입 보상 카드 · 모달(ADR-0174). */
+  readonly signupReward: SignupRewardCopy;
 };
 
 /**

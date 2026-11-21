@@ -128,6 +128,15 @@ export type StreakRewardEvent = Common & {
   readonly amount: string;
 };
 
+/**
+ * 가입 보상(ADR-0174). `signup_reward_card_shown`: 손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번. `signup_reward_card_tapped`: 카드를
+ * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수).
+ */
+export type SignupRewardEvent =
+  | (Common & { readonly name: "signup_reward_card_shown" })
+  | (Common & { readonly name: "signup_reward_card_tapped" })
+  | (Common & { readonly name: "signup_reward_shown"; readonly amount: string });
+
 /** 요금제가 보인 자리(ADR-0144 · 상점 입구 ADR-0160) — `PlanPlacement`와 같은 값입니다. */
 type PlanEventPlacement =
   | "settings"
@@ -243,6 +252,7 @@ export type CompanionEvent =
   | LaunchEvent
   | GuestPromptEvent
   | StreakRewardEvent
+  | SignupRewardEvent
   | PlanEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent

@@ -11,7 +11,9 @@ import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpda
 import type { ScreenWiring } from "./screen-wiring";
 import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { useLettersRecommend } from "./use-letters-recommend";
-import { useLaunchCoins } from "./use-launch-coins";
+import { useLaunchCoins, type LaunchCoins } from "./use-launch-coins";
+import { useSignupReward } from "./use-signup-reward";
+import { tutorialDone } from "./launch-coins";
 import { useMessengerMediaHooks } from "./use-messenger-media-hooks";
 import { useStreakReward } from "./use-streak-reward";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
@@ -39,18 +41,30 @@ export function useMapNotices(input: MapNoticesInput): {
   const updateOpen = useRef(false);
   // Letters 추천이 떠 있으면 엽전 · 업데이트 안내도 그 위로 끼어들지 않습니다(리뷰 m1) — 지난 그림의 값.
   const lettersOpen = useRef(false);
+  // 가입 보상(ADR-0174)이 엽전 출시보다 먼저 — 같은 그림에서 미룸을 알도록 먼저 부르고, 출시 결선의 칩 · 잔액은 지난 그림의 것을 씁니다.
+  const launchRef = useRef<LaunchCoins | null>(null);
+  const launchOpen = useRef(false);
+  const signup = useSignupReward({
+    wiring: input.wiring,
+    idle: input.idle && !launchOpen.current && !updateOpen.current && !lettersOpen.current,
+    tutorialDone: tutorialDone(input.progress, input.wiring.legacyTutorialPassed),
+    chip: () => launchRef.current?.coinCount ?? null,
+    acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
+  });
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
     localCoins: input.localCoins,
-    idle: input.idle && !updateOpen.current && !lettersOpen.current,
+    idle: input.idle && !updateOpen.current && !lettersOpen.current && !signup.holdsLaunch,
     onStartChatting: input.onStartChatting,
   });
+  launchRef.current = launch;
+  launchOpen.current = launch.open;
   const updateNotice = useCatalogUpdateNotice({
     catalog: input.catalog,
     sections: input.sections,
     progress: input.progress,
-    ready: input.idle && !launch.open && !lettersOpen.current,
+    ready: input.idle && !launch.open && !signup.open && !lettersOpen.current,
   });
   useEffect(() => {
     updateOpen.current = updateNotice.open;
@@ -59,7 +73,7 @@ export function useMapNotices(input: MapNoticesInput): {
   const letters = useLettersRecommend({
     trail: input.wiring.learningTrail,
     more: input.wiring.more,
-    ready: input.idle && !launch.open && !updateNotice.open && !updateOpen.current,
+    ready: input.idle && !launch.open && !signup.open && !updateNotice.open && !updateOpen.current,
   });
   useEffect(() => {
     lettersOpen.current = letters.open;
@@ -73,11 +87,14 @@ export function useMapNotices(input: MapNoticesInput): {
   // 서버 사진 · 음성의 예약 · 확정 잔액도 같은 서버 잔액으로(ADR-0146 「앱 연결」).
   useMessengerMediaHooks(launch.acceptServerBalance, input.wiring.messengerChat.eventSink);
   return {
-    coinCount: launch.coinCount === null ? null : Math.max(0, launch.coinCount - streak.held),
+    coinCount: ((count) => (count === null ? null : Math.max(0, count - streak.held)))(
+      signup.coinCount(launch.coinCount),
+    ),
     streakReward: streak.wiring,
-    blocking: updateNotice.open || letters.open,
+    blocking: updateNotice.open || letters.open || signup.open,
     layer: (
       <>
+        {signup.layer}
         {launch.layer}
         {updateNotice.open ? <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} /> : null}
         {letters.layer}

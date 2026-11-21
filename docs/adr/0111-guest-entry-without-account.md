@@ -136,6 +136,8 @@
 - 「서버와 합치기」를 새로 쓰지 않는다 — 옮긴 뒤 `createJourneyProgressSync(userId)`가 지금 규칙(ADR-0062: 기기 값 먼저 → 서버 불러와 `mergeJourneyProgress` → 덮이지 않은 것은 저장)으로 올린다.
   그 계정에 서버 기록이 있으면 **합쳐지고**, 학습일은 `record_learning_days`가 멱등 저장한다(ADR-0035 D6). `entry_returning_learner_entered`는 0이다.
 
+- ⟨2026-11-21⟩ 손님 지도 하단의 가입 권유 카드(ADR-0174)도 같은 `onSignIn` → `guest-login`을 연다(여정 탭 스택 — 성공하면 지도로). 새 계정이면 지도에서 가입 보상 모달이 선다.
+
 ### D7. 세션 저장은 **한 자리** — `storeSignedInSession`
 
 새 모듈 `app/store-session.ts`(지금 `entry-wiring.ts`의 `storeSession`을 떼어 낸 것 + 두 줄). 순서: `saveAuthSession(session)` → **`clearGuestSession()`** → `setAccountState("signed-in")` → `void syncProgress()` →
