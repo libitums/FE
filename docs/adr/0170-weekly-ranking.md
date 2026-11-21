@@ -54,6 +54,30 @@
 - `ranking_opened{board, source, view}` · `ranking_board_switched{from, to}` · `ranking_own_row_viewed{board, rank, score}` ·
   `chat_words_earned{count, pending, weekTotal}` · `ranking_hide_toggled{hidden}` — 이름 · 단어는 싣지 않는다.
 
+### D9. 바 높이만큼 아래를 비운다 ⟨2026-11-21 버그 수정⟩
+- 사용자 신고(iPhone 13 mini, main `9be02583`): 「랭킹 쪽 하단에 바텀네비게이션에 뭐 가려져있는거 같네」. 바 묶음(`.app-navigator`)은 셸 위에 절대 배치로
+  겹치고 그 높이 68pt만큼 비우는 일은 화면이 지는데(app.css), 순위 화면만 이 여백이 없어 **내 줄 고정 칸(「You」)이 통째로 바 밑에** 깔렸다. 비회원 안내 ·
+  자리 줄도 아래 68pt가 바 뒤였다. #530(More 메뉴)은 메뉴가 닫혀 있을 때 묶음 높이를 바꾸지 않아 원인이 아니다.
+- `.ranking-screen`의 `padding-bottom: calc(spacing-64 + spacing-4)` — 다른 탭 루트(메신저 목록 · Letters · My words · 설정)와 같은 값. 목록이 아니라
+  뿌리에 두는 것은 맨 아래가 스크롤이 아닌 고정 칸이라서다. unit `NC1`이 탭 루트 다섯의 이 여백을 지킨다(여정 지도는 `mapContentInsets` · IN2).
+
+### D10. 아바타 색 — 이름 해시로 고정한 아홉 색 · 흰 이니셜 ⟨2026-11-21 사용자 요청⟩
+- 사용자: 「랭킹 프로필 아바타도 배경 색 랜덤으로 알록달록하게 하고 아바타 속 텍스트는 흰색으로」. 매 렌더 난수가 아니라 `avatarToneOf(name)`(FNV-1a 32비트 % 9)로
+  사람마다 고정한다 — 줄에 user id가 없으므로(D2) 표시 이름을 쓴다. 고정 내 줄은 목록의 내 이름으로 골라 같은 색이다.
+- 색은 시안 Ranking 보드의 아홉 색상. 이니셜이 label-m(12px 700, 작은 글)이라 흰 글 대비 **4.5 이상**만 둔다: 토큰 셋(feedback-correct-text 7.00 ·
+  gray-800 6.62 · brand-strong 5.46)과 토큰에 없는 색상의 디자인 값 여섯(#3B6FE0 4.63 · #8E4FC8 5.12 · #C43C66 5.02 · #167A86 5.05 · #9E6200 5.00 ·
+  #4A7A33 5.09 — 시안 값을 어둡게 함). unit RK-U14가 CSS의 색을 읽어 대비를 잰다.
+- ui-lynx `Avatar`는 바꾸지 않는다 — 앱 CSS가 `.ranking-face-tone-N .ui-lynx-avatar-content-initials`만 덮는다. 이니셜을 못 만드는 이름(사람 모양 아이콘)은 회색 바탕 그대로.
+
+### D11. 그룹 전체 대신 상위 3 · 내 근처 ⟨2026-11-21 사용자 요청⟩
+- 사용자: 「랭킹도 전체 에피소드 별로 랭킹 나누지말고 특정 구역으로 짤라서 좀만 더하면 될 거 같게」. 서버(`ranking_board`)는 그대로 그룹 전체 행을 주고,
+  앱이 `nearMeItems(rows)`로 자른다 — **상위 3 · 생략(점 셋) · 내 위 2 · 나 · 내 아래 1**. 상위권이면 이어서 그리고(1위도 4위까지 — 쫓아오는 사람),
+  건너뛸 줄이 하나뿐이면 생략 대신 그 줄을 그린다. 내 줄이 없는 응답은 전부 그린다. 그룹 인원(「Your group · N learners」) · 배정 규칙(D2)은 그대로.
+- 차이 강조: 고정 내 줄의 「N more to pass NAME」(이미 있던 `morePass`)을 브랜드 글 · 굵게. 새 문구는 없다.
+- 줄의 「Episode N」 보조 줄을 뺐다. 이름 아래 에피소드가 줄마다 달려 **에피소드별로 나눈 순위처럼** 읽혔고(사용자 말 「에피소드 별로 나누지 말고」),
+  가까운 몇 줄에서는 점수 · 차이만이 「조금 더」를 말한다. 점수 맥락 문구로 바꾸는 것은 고정 줄의 차이 문구와 겹쳐 두지 않았다. 문구 키 `episode`는 일곱 언어에서 지웠다
+  (서버의 `episode` 값은 계약에 남긴다). 「See all」은 두지 않았다 — 전체 펼치기는 이 요청의 반대 방향이고, 그룹 인원 수가 전체 크기를 이미 말한다.
+
 ## 버린 대안
 1. **(나) More 메뉴 줄의 순위** — 시안 비교에서 (가)가 가장 잘 보여 사용자가 골랐다.
 2. **레슨 = 앱이 보낸 통과 수** — 앱이 임의 키를 저장해 부풀릴 수 있다. 서버의 콘텐츠 유닛 표와 트리거로 센다.
@@ -74,5 +98,5 @@
 - accessibility 에이전트: Critical 4(Android `flatten`) · 대비 · 얻은 단어 한 줄 낭독 · 내 줄 You를 고침(RK-UI10 · CW-UI4). 남김: 상태 안내 낭독(announce), 숨기기 저장 실패 안내, 머리 글 요소화.
 
 ## 테스트
-- unit RK-U1 ~ U11 · CW-U1 ~ U3 · 서버 CWS-U1 ~ U6 · CWS-H1 · H2, db WR-D1 ~ D11, ui RK-UI1 ~ UI10 · CW-UI1 ~ UI4 · ST-UI · BN-UI, integration RK-I1 ~ I5.
-- e2e: [수동 절차](../e2e/weekly-ranking.md) — 서버 적용 뒤. [성능 기록](../performance/reports/weekly-ranking-01.md).
+- unit RK-U1 ~ U19 · NC1 · CW-U1 ~ U3 · 서버 CWS-U1 ~ U6 · CWS-H1 · H2, db WR-D1 ~ D11, ui RK-UI1 ~ UI13 · CW-UI1 ~ UI4 · ST-UI · BN-UI, integration RK-I1 ~ I5.
+- e2e: [수동 절차](../e2e/weekly-ranking.md) — 서버 적용 뒤. [성능 기록](../performance/reports/weekly-ranking-01.md) · [02(D9 ~ D11)](../performance/reports/weekly-ranking-02.md).

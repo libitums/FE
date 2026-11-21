@@ -26,15 +26,14 @@ export type RankingCopy = {
   readonly selected: (label: string) => string;
   /** 점수 단위 — 수에 맞는 꼴. */
   readonly unit: (board: RankingBoardKind, score: number) => string;
-  readonly episode: (episode: number) => string;
   /** 보상이 꺼져 있으면 null. */
   readonly zoneTop: (reward: number | null) => string;
   readonly zoneClimb: string;
   readonly you: string;
   readonly morePass: (more: number, name: string) => string;
   readonly first: string;
-  /** 줄 낭독 — 순위 · 이름 · 에피소드(없으면 null) · 점수와 단위. */
-  readonly rowLabel: (rank: number, name: string, episode: string | null, score: string) => string;
+  /** 줄 낭독 — 순위 · 이름 · 보조(고정 내 줄의 차이, 목록 줄은 null — D11) · 점수와 단위. */
+  readonly rowLabel: (rank: number, name: string, sub: string | null, score: string) => string;
   readonly loading: string;
   readonly notices: {
     readonly guest: Notice;
@@ -67,6 +66,8 @@ export const rankingTestIds = {
   medal: (rank: number): string => id(`medal-${rank}`),
   zoneTop: id("zone-top"),
   zoneClimb: id("zone-climb"),
+  /** 상위 3과 내 근처 사이의 생략 표시(ADR-0170 D11). */
+  gap: id("gap"),
   me: id("me"),
   meGap: id("me-gap"),
   notice: id("notice"),
