@@ -37,6 +37,14 @@ public final class CrashReportPayload {
   // Main-thread errors arrive as "main-thread.js exception: TypeError: x " under a "backtrace:" line.
   private static final String MAIN_THREAD_PREFIX = "main-thread.js exception: ";
   private static final String BACKTRACE_HEADER = "backtrace:";
+  // A Java float as the host prints it: 0.0, -2244.0, 1.0E7.
+  private static final String NUMBER = "-?[0-9]+(?:\\.[0-9]+)?(?:E-?[0-9]+)?";
+  // A scroll-view UI method that landed on the nearest valid position (code 4) is not a failure:
+  // the view already sits there. Main-thread invoke rejects synchronously, so a JS catch cannot
+  // stop the runtime from reporting it (Sentry DURU-ANDROID-G · Q · X, docs/adr/0061 D1).
+  private static final Pattern SCROLL_CLAMP = Pattern.compile(
+      "^UI method invoke: \\{\"code\":4,\"data\":\"Target scroll position = " + NUMBER + " is beyond"
+          + " threshold\\. Clamped to position = " + NUMBER + "\"\\}\\s*$");
 
   public final Source source;
   public final String name;
@@ -79,6 +87,7 @@ public final class CrashReportPayload {
         name = split.group(1);
         message = split.group(2);
       }
+      if ("Error".equals(name) && SCROLL_CLAMP.matcher(message).matches()) return null;
       return new CrashReportPayload(
           source,
           cap(name, NAME_MAX),
