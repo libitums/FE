@@ -68,6 +68,8 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
   const [attempted, setAttempted] = useState(false);
   const [flight, setFlight] = useState<Flight | null>(null);
   const inFlight = useRef(false);
+  /** 계정이 바뀔 때마다 오릅니다 — 바뀌기 전에 나간 지급 응답은 새 계정에 적지 않습니다. */
+  const session = useRef(0);
   const balance = useRef<number | null>(null);
   const latest = useRef(input);
   latest.current = input;
@@ -76,11 +78,18 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
   if (account === "guest") wasGuest.current = true;
 
   // 계정의 기록은 background에서 읽습니다(저장소 · 로그인 읽기). 계정이 바뀌면 다시 읽고 이번 실행의 물음도 새로 셉니다.
+  // 제품 이벤트는 계정마다 한 번씩 — 로그아웃 뒤 손님 · 다른 계정이 되면 다시 셉니다.
+  const cardShown = useRef(false);
+  const modalShown = useRef(false);
   useEffect(() => {
+    session.current += 1;
     setRecord(signedIn ? store.read() : null);
     setAttempted(false);
     setFlight(null);
     balance.current = null;
+    inFlight.current = false;
+    cardShown.current = false;
+    modalShown.current = false;
   }, [signedIn]);
 
   useEffect(() => {
@@ -88,7 +97,10 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
     // 이 기기에서 이미 물었으면(받았든 아니든) 다시 묻지 않습니다 — 서버가 정본이지만 요청을 아낍니다.
     if (store.read() !== null) return;
     inFlight.current = true;
+    const asked = session.current;
+    // 지도가 잠깐 바빠져도(한가 → 아님) 응답은 버리지 않습니다 — 버리면 서버는 이미 줬는데 모달을 못 봅니다. 계정이 바뀌었을 때만 버립니다.
     void (input.claim ?? (() => signupRewardClient().claim()))().then((result) => {
+      if (asked !== session.current) return;
       inFlight.current = false;
       setAttempted(true);
       if (result === null) return;
@@ -109,8 +121,6 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
   latched.current = step === "modal";
 
   // 제품 이벤트(ADR-0029 · D3 목적 구분) — 카드는 세션에 처음 보일 때 한 번 · 누를 때마다, 모달은 설 때 한 번.
-  const cardShown = useRef(false);
-  const modalShown = useRef(false);
   useEffect(() => {
     if (step === "card" && !cardShown.current) {
       cardShown.current = true;

@@ -95,7 +95,8 @@ export const deviceSignupRewardStore: SignupRewardStore = {
     "background only";
     try {
       const userId = progressUserId();
-      if (userId !== null) setItem(signupRewardStorageKey(userId), JSON.stringify(record));
+      if (userId !== null && isStorageAvailable())
+        setItem(signupRewardStorageKey(userId), JSON.stringify(record));
     } catch {
       // 저장 실패가 화면을 막지 않습니다 — 다음 실행에 서버가 already_claimed로 답해 모달은 다시 서지 않습니다.
     }
