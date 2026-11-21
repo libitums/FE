@@ -17,3 +17,7 @@
 
 **2026-11-20: 미실행** — 서버 미적용이라 앱 흐름 확인은 적용 뒤. 이 브랜치의 `extractStr` 번들(ADR-0170 D7)도 이때 iOS · Android에서 첫 화면 ·
 문구가 그대로 보이는지 함께 본다.
+
+**2026-11-21: 기기 화면 확인(D9 ~ D11, WR-E2의 배치 부분만)** — 서버 미적용이라 실제 로그인 · RPC 대신 순위 화면을 앱 셸(같은 `.app` 여백 · `AppNavigator` · 호스트 safe area)에 고정 보드로 띄운 임시 번들로 봤다(커밋하지 않음).
+iOS 시뮬레이터 iPhone 13 mini · SE 3세대 · 17 Pro Max, Android 에뮬레이터 Pixel 8(제스처 · 3버튼, `assembleBundled`). main `9be02583`은 세 iOS 크기와 Android 제스처에서 내 줄 고정 칸이 바 밑에 깔렸고,
+이 브랜치는 모두 바 위에 선다. 비회원 · 불러오는 중 · 숨김 · 빈 안내도 바 위 가운데. 낭독(VoiceOver · TalkBack)은 아직 보지 않았다.

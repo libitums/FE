@@ -99,4 +99,4 @@
 
 ## 테스트
 - unit RK-U1 ~ U19 · NC1 · CW-U1 ~ U3 · 서버 CWS-U1 ~ U6 · CWS-H1 · H2, db WR-D1 ~ D11, ui RK-UI1 ~ UI13 · CW-UI1 ~ UI4 · ST-UI · BN-UI, integration RK-I1 ~ I5.
-- e2e: [수동 절차](../e2e/weekly-ranking.md) — 서버 적용 뒤. [성능 기록](../performance/reports/weekly-ranking-01.md).
+- e2e: [수동 절차](../e2e/weekly-ranking.md) — 서버 적용 뒤. [성능 기록](../performance/reports/weekly-ranking-01.md) · [02(D9 ~ D11)](../performance/reports/weekly-ranking-02.md).

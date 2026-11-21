@@ -33,7 +33,7 @@ export type RankingCopy = {
   readonly morePass: (more: number, name: string) => string;
   readonly first: string;
   /** 줄 낭독 — 순위 · 이름 · 보조(고정 내 줄의 차이, 목록 줄은 null — D11) · 점수와 단위. */
-  readonly rowLabel: (rank: number, name: string, episode: string | null, score: string) => string;
+  readonly rowLabel: (rank: number, name: string, sub: string | null, score: string) => string;
   readonly loading: string;
   readonly notices: {
     readonly guest: Notice;

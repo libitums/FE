@@ -42,7 +42,7 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
       >
         <view className="ranking-row-inner" accessibility-elements-hidden={true}>
           <RankBadge rank={board.me.rank} mine={true} />
-          <Face name={mine?.name ?? copy.you} countryCode={mine?.countryCode ?? null} />
+          <Face name={mine?.name ?? "you"} countryCode={mine?.countryCode ?? null} />
           <view className="ranking-name">
             <text className="ranking-name-text">{copy.you}</text>
             <text className="ranking-sub ranking-sub-gap" data-testid={ids.meGap}>

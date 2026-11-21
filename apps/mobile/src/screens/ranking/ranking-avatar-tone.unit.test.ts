@@ -49,6 +49,20 @@ const luminance = (hex: string): number => {
 };
 const contrastWithWhite = (hex: string): number => 1.05 / (luminance(hex) + 0.05);
 
+const contrast = (a: string, b: string): number => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05);
+};
+
+test("RK-U20. 고정 내 줄의 차이 글(fg-brand)과 바탕(background-elevated) 대비 4.5 이상, 생략 점(fg-neutral-subtle)은 화면 바탕 대비 3 이상", () => {
+  const require = createRequire(import.meta.url);
+  const tokens = readFileSync(require.resolve("@libitums/design-tokens/css/variables.css"), "utf8");
+  const hex = (name: string): string =>
+    new RegExp(`--libitum-color-${name}:\\s*(#[0-9A-Fa-f]{6})`).exec(tokens)?.[1] ?? "#FFFFFF";
+  expect(contrast(hex("fg-brand"), hex("background-elevated"))).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(hex("fg-neutral-subtle"), hex("background-primary"))).toBeGreaterThanOrEqual(3);
+});
+
 test("RK-U14. 색 아홉 모두 규칙이 있고, 흰 이니셜과 대비 4.5 이상이다", () => {
   const css = readFileSync(
     resolve(process.cwd(), "src/screens/ranking/ranking-screen.css"),

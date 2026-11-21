@@ -137,7 +137,7 @@
   padding-bottom: var(--libitum-spacing-8);
 }
 
-/* 상위 3과 내 근처 사이 생략(ADR-0170 D11) — 세로 점 셋. 글자가 아니라 점이라 문구 · 낭독이 없습니다. */
+/* 상위 3과 내 근처 사이 생략(ADR-0170 D11) — 세로 점 셋. 글자가 아니라 점이라 문구 · 낭독이 없습니다(순위 숫자가 건너뜀을 말함). 점은 fg-neutral-subtle — 바탕 대비 3.4(비텍스트 3 이상, 접근성 S1). */
 .ranking-gap {
   display: flex;
   flex-direction: column;
@@ -151,7 +151,7 @@
   width: var(--libitum-spacing-4);
   height: var(--libitum-spacing-4);
   border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-fg-neutral-subtlest);
+  background-color: var(--libitum-color-fg-neutral-subtle);
 }
 
 .ranking-zone {
