@@ -77,6 +77,12 @@
   line-height: var(--libitum-typography-body-s-line-height);
 }
 
+/* 바로 위 사람과의 차이(「N more to pass NAME」) — 고정 내 줄에서 브랜드 글 · 굵게(ADR-0170 D11). 내 줄 바탕(background-elevated) 위 대비 5.0. */
+.ranking-sub-gap {
+  color: var(--libitum-color-fg-brand);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+}
+
 /* 보드 전환 — 회색 바탕 위 흰 알약이 선택. 칸 높이 40 + hit-slop 위아래 2 = 44. */
 .ranking-boards {
   display: flex;
@@ -129,6 +135,23 @@
   display: flex;
   flex-direction: column;
   padding-bottom: var(--libitum-spacing-8);
+}
+
+/* 상위 3과 내 근처 사이 생략(ADR-0170 D11) — 세로 점 셋. 글자가 아니라 점이라 문구 · 낭독이 없습니다. */
+.ranking-gap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+}
+
+.ranking-gap-dot {
+  width: var(--libitum-spacing-4);
+  height: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-fg-neutral-subtlest);
 }
 
 .ranking-zone {

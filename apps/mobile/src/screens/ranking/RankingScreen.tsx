@@ -16,6 +16,7 @@ import {
   daysLeft,
   flagOf,
   medalOf,
+  nearMeItems,
   zoneBefore,
   type RankingView,
 } from "./ranking-rules";
@@ -26,6 +27,7 @@ const GROUP_ICON = trophy.replace(/currentColor/g, color.fg.brand);
 const BOARDS: readonly RankingBoardKind[] = ["lessons", "chat-words"];
 const SLOP = { top: "2px", bottom: "2px", left: "0px", right: "0px" } as const;
 const PLACEHOLDERS = [0, 1, 2, 3, 4] as const;
+const GAP_DOTS = [0, 1, 2] as const;
 
 function RankBadge({ rank, mine }: { readonly rank: number; readonly mine: boolean }): ReactNode {
   const medal = mine ? null : medalOf(rank);
@@ -60,7 +62,6 @@ function Face({
 
 function Row({ row, board }: { readonly row: RankingRow; readonly board: RankingBoard }) {
   const copy = useUiCopy().ranking;
-  const episode = row.episode === null ? null : copy.episode(row.episode);
   const unit = copy.unit(board.kind, row.score);
   return (
     <view
@@ -72,7 +73,7 @@ function Row({ row, board }: { readonly row: RankingRow; readonly board: Ranking
       accessibility-label={copy.rowLabel(
         row.rank,
         row.me ? `${row.name}, ${copy.you}` : row.name,
-        episode,
+        null,
         `${row.score} ${unit}`,
       )}
     >
@@ -81,7 +82,6 @@ function Row({ row, board }: { readonly row: RankingRow; readonly board: Ranking
         <Face name={row.name} countryCode={row.countryCode} />
         <view className="ranking-name">
           <text className="ranking-name-text">{row.name}</text>
-          {episode === null ? null : <text className="ranking-sub">{episode}</text>}
         </view>
         <view className="ranking-score">
           <text className="ranking-score-text">{String(row.score)}</text>
@@ -116,7 +116,7 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
           <Face name={mine?.name ?? copy.you} countryCode={mine?.countryCode ?? null} />
           <view className="ranking-name">
             <text className="ranking-name-text">{copy.you}</text>
-            <text className="ranking-sub" data-testid={ids.meGap}>
+            <text className="ranking-sub ranking-sub-gap" data-testid={ids.meGap}>
               {gap}
             </text>
           </view>
@@ -132,6 +132,9 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
 
 function List({ board }: { readonly board: RankingBoard }) {
   const copy = useUiCopy().ranking;
+  // 그룹 전체가 아니라 상위 3 · 내 근처만(ADR-0170 D11). 구역 줄은 그려지는 줄끼리 셉니다 — 생략 뒤 첫 줄 앞이 「Keep climbing」.
+  const items = nearMeItems(board.rows);
+  const shown = items.flatMap((item) => (item.kind === "row" ? [item.row] : []));
   return (
     <scroll-view
       className="ranking-scroll"
@@ -140,8 +143,22 @@ function List({ board }: { readonly board: RankingBoard }) {
       scroll-bar-enable={false}
     >
       <view className="ranking-list">
-        {board.rows.map((row, index) => {
-          const zone = zoneBefore(board.rows, index);
+        {items.map((item) => {
+          if (item.kind === "gap")
+            return (
+              <view
+                key="gap"
+                className="ranking-gap"
+                data-testid={ids.gap}
+                accessibility-elements-hidden={true}
+              >
+                {GAP_DOTS.map((dot) => (
+                  <view key={dot} className="ranking-gap-dot" />
+                ))}
+              </view>
+            );
+          const row = item.row;
+          const zone = zoneBefore(shown, shown.indexOf(row));
           return (
             <view key={`${row.rank}-${row.name}`} className="ranking-item">
               {zone === null ? null : (

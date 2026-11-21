@@ -72,6 +72,35 @@ export function rankingViewOf(input: RankingViewInput): RankingView {
   }
 }
 
+/** 목록에 그릴 것 — 줄 하나, 또는 건너뛴 줄 수를 뜻하는 생략 표시. */
+export type RankingListItem =
+  | { readonly kind: "row"; readonly row: RankingRow }
+  | { readonly kind: "gap"; readonly hidden: number };
+
+const TOP = 3;
+const ABOVE = 2;
+const BELOW = 1;
+const asRows = (rows: readonly RankingRow[]): RankingListItem[] =>
+  rows.map((row) => ({ kind: "row", row }));
+
+/**
+ * 그룹 전체 대신 상위 3 · 생략 · 내 위 2 · 나 · 내 아래 1만 고릅니다(ADR-0170 D11 — 「조금만 더 하면 올라간다」).
+ * 상위권이면 이어서(적어도 4위까지 — 쫓아오는 사람), 건너뛸 줄이 하나뿐이면 생략 대신 그 줄을 그립니다.
+ * 내 줄이 없는 응답은 전부를 그대로 둡니다.
+ */
+export function nearMeItems(rows: readonly RankingRow[]): readonly RankingListItem[] {
+  const mine = rows.findIndex((row) => row.me);
+  if (mine < 0) return asRows(rows);
+  const start = Math.max(0, mine - ABOVE);
+  const end = Math.min(rows.length, Math.max(mine + BELOW, TOP) + 1);
+  if (start - TOP < 2) return asRows(rows.slice(0, end));
+  return [
+    ...asRows(rows.slice(0, TOP)),
+    { kind: "gap", hidden: start - TOP },
+    ...asRows(rows.slice(start, end)),
+  ];
+}
+
 /** 아바타 바탕 색의 수 — `ranking-screen.css`의 `.ranking-face-tone-0` ~ `-8`. */
 export const AVATAR_TONES = 9;
 

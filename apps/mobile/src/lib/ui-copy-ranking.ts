@@ -16,7 +16,6 @@ export const rankingCopy: Readonly<
     selected: (label) => `${label}, selected`,
     unit: (board, score) =>
       board === "lessons" ? (score === 1 ? "lesson" : "lessons") : score === 1 ? "word" : "words",
-    episode: (episode) => `Episode ${episode}`,
     zoneTop: (reward) =>
       reward === null ? "Top 3 this week" : `Top 3 get a bonus ${reward} Yeopjeon`,
     zoneClimb: "Keep climbing",
@@ -64,7 +63,6 @@ export const rankingCopy: Readonly<
         : score === 1
           ? "palabra"
           : "palabras",
-    episode: (episode) => `Episodio ${episode}`,
     zoneTop: (reward) =>
       reward === null ? "Top 3 de la semana" : `El top 3 gana ${reward} Yeopjeon extra`,
     zoneClimb: "Sigue subiendo",
@@ -108,7 +106,6 @@ export const rankingCopy: Readonly<
     boards: { lessons: "Pelajaran", "chat-words": "Kata obrolan" },
     selected: (label) => `${label}, dipilih`,
     unit: (board) => (board === "lessons" ? "pelajaran" : "kata"),
-    episode: (episode) => `Episode ${episode}`,
     zoneTop: (reward) =>
       reward === null ? "3 teratas minggu ini" : `3 teratas dapat bonus ${reward} Yeopjeon`,
     zoneClimb: "Terus naik",
@@ -155,7 +152,6 @@ export const rankingCopy: Readonly<
     boards: { lessons: "レッスン", "chat-words": "チャット単語" },
     selected: (label) => `${label}、選択中`,
     unit: (board) => (board === "lessons" ? "レッスン" : "語"),
-    episode: (episode) => `エピソード${episode}`,
     zoneTop: (reward) =>
       reward === null ? "今週のトップ3" : `トップ3は${reward} Yeopjeonのボーナス`,
     zoneClimb: "まだまだ上を目指そう",
@@ -202,7 +198,6 @@ export const rankingCopy: Readonly<
     boards: { lessons: "Bài học", "chat-words": "Từ trò chuyện" },
     selected: (label) => `${label}, đang chọn`,
     unit: (board) => (board === "lessons" ? "bài" : "từ"),
-    episode: (episode) => `Tập ${episode}`,
     zoneTop: (reward) =>
       reward === null ? "Top 3 tuần này" : `Top 3 được thưởng ${reward} Yeopjeon`,
     zoneClimb: "Tiếp tục leo hạng",

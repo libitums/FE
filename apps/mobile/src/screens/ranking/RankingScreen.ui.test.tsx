@@ -71,15 +71,14 @@ test("RK-UI2. 보드 전환: Lessons가 선택(낭독 selected), Chat words를 �
   expect(handlers.onSelectBoard).toHaveBeenCalledWith("chat-words");
 });
 
-test("RK-UI3. 줄: 순위 · 이름 · 에피소드 · 점수 · 단위, 낭독은 줄 하나", () => {
+test("RK-UI3. 줄: 순위 · 이름 · 점수 · 단위, 낭독은 줄 하나 — 에피소드 보조 줄은 없다(ADR-0170 D11)", () => {
   mount({ kind: "ready", board });
   const first = screen.getByTestId(ids.row(1));
   expect(first).toHaveTextContent("Linh");
-  expect(first).toHaveTextContent("Episode 6");
+  expect(first).not.toHaveTextContent("Episode");
   expect(first).toHaveTextContent("14");
   expect(first).toHaveTextContent("lessons");
-  expect(first).toHaveAttribute("accessibility-label", "#1, Linh, Episode 6, 14 lessons");
-  // 에피소드를 모르면 그 칸 없이.
+  expect(first).toHaveAttribute("accessibility-label", "#1, Linh, 14 lessons");
   expect(screen.getByTestId(ids.row(4))).toHaveAttribute(
     "accessibility-label",
     "#4, Yuki, 8 lessons",
@@ -170,7 +169,7 @@ test("RK-UI10. Android 낭독 — 줄 · 내 줄 · 보드 칸 · 불러오는 �
   );
   expect(screen.getByTestId(ids.row(5))).toHaveAttribute(
     "accessibility-label",
-    "#5, Mai, You, Episode 2, 7 lessons",
+    "#5, Mai, You, 7 lessons",
   );
   cleanup();
   mount({ kind: "loading" });
@@ -186,4 +185,44 @@ test("RK-UI11. 아바타 색은 이름 해시 번호(tone) — 줄마다 그 번
       `ranking-face ranking-face-tone-${avatarToneOf(row.name)}`,
     );
   expect(faceClass(ids.me)).toBe(`ranking-face ranking-face-tone-${avatarToneOf("Mai")}`);
+});
+
+const bigGroup: RankingBoard = {
+  ...board,
+  groupSize: 25,
+  rows: Array.from({ length: 25 }, (_, index) => ({
+    rank: index + 1,
+    name: `P${index + 1}`,
+    countryCode: null,
+    episode: 3,
+    score: 60 - index * 2,
+    me: index + 1 === 12,
+  })),
+  me: { rank: 12, score: 38 },
+  next: { name: "P11", more: 3 },
+};
+
+test("RK-UI12. 큰 그룹은 상위 3 · 생략 · 내 위 2 · 나 · 내 아래 1만 그린다 — 생략은 낭독에서 숨김, 「Keep climbing」은 생략 뒤(ADR-0170 D11)", () => {
+  mount({ kind: "ready", board: bigGroup });
+  const list = within(screen.getByTestId(ids.list));
+  for (const rank of [1, 2, 3, 10, 11, 12, 13])
+    expect(list.getByTestId(ids.row(rank))).toBeTruthy();
+  for (const rank of [4, 9, 14, 25]) expect(list.queryByTestId(ids.row(rank))).toBeNull();
+  const gap = list.getByTestId(ids.gap);
+  expect(gap).toHaveAttribute("accessibility-elements-hidden", "true");
+  const order = Array.from(screen.getByTestId(ids.list).querySelectorAll("[data-testid]"))
+    .map((el) => el.getAttribute("data-testid"))
+    .filter(
+      (id) => id === ids.gap || id === ids.zoneClimb || id === ids.row(3) || id === ids.row(10),
+    );
+  expect(order).toEqual([ids.row(3), ids.gap, ids.zoneClimb, ids.row(10)]);
+  // 그룹 인원은 전체 그대로.
+  expect(text(ids.group)).toBe("Your group · 25 learners");
+});
+
+test("RK-UI13. 바로 위 사람과의 차이는 고정 내 줄에서 강조 글로 — 「3 more to pass P11」", () => {
+  mount({ kind: "ready", board: bigGroup });
+  const gapText = screen.getByTestId(ids.meGap);
+  expect(gapText).toHaveTextContent("3 more to pass P11");
+  expect(gapText.getAttribute("class")).toBe("ranking-sub ranking-sub-gap");
 });

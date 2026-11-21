@@ -11,7 +11,6 @@ export const rankingCopyTh: RankingCopy = {
   boards: { lessons: "บทเรียน", "chat-words": "คำในแชท" },
   selected: (label) => `${label}, เลือกอยู่`,
   unit: (board) => (board === "lessons" ? "บทเรียน" : "คำ"),
-  episode: (episode) => `ตอนที่ ${episode}`,
   zoneTop: (reward) =>
     reward === null ? "3 อันดับแรกของสัปดาห์นี้" : `3 อันดับแรกได้โบนัส ${reward} Yeopjeon`,
   zoneClimb: "ไต่อันดับต่อไป",
@@ -56,7 +55,6 @@ export const rankingCopyMy: RankingCopy = {
   boards: { lessons: "သင်ခန်းစာ", "chat-words": "ချတ် စကားလုံး" },
   selected: (label) => `${label}၊ ရွေးထားသည်`,
   unit: (board) => (board === "lessons" ? "သင်ခန်းစာ" : "စကားလုံး"),
-  episode: (episode) => `အပိုင်း ${episode}`,
   zoneTop: (reward) =>
     reward === null ? "ဒီအပတ် ထိပ်ဆုံး 3 ဦး" : `ထိပ်ဆုံး 3 ဦး ${reward} Yeopjeon ဆုကြေး ရမယ်`,
   zoneClimb: "ဆက်တက်ပါ",
