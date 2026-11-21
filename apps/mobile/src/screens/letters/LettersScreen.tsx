@@ -4,7 +4,6 @@ import type { ReactNode } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import volume from "@libitums/icons/lynx/volume";
 import { Button } from "@libitums/ui-lynx/button";
-import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { JAMO_GROUPS, jamoSoundOf } from "../../lib/letters/jamo";
 import type { JamoGroupId, JamoLetter } from "../../lib/letters/jamo";
@@ -15,8 +14,9 @@ import "./letters-screen.css";
 
 // Letters(자모표) 화면입니다(ADR-0169, 시안 JamoChart · 선택 C). 더보기 메뉴에서 들어오는 more 스택 루트라 뒤로 단추가 없고 바텀
 // 메뉴가 그대로 섭니다. 위(제목 · 리드 · 연습 단추)는 고정이고 아래 4열 격자 40칸만 스크롤합니다. 칸을 누르면 그 글자의 소리
-// (자음 + ㅏ, ㅇ + 모음)가 나고, 방금 누른 칸이 강조되며 들은 칸은 스피커가 brand 색이 됩니다. 소리 파일이 아직 없으면(음성 정보
-// 파일에 없음) 스피커가 비활성 모양이고 낭독 이름에 그 사실이 붙습니다 — 칸은 그대로 눌립니다(강조 · 이벤트).
+// (자음 + ㅏ, ㅇ + 모음)가 나고 들은 칸은 스피커가 brand 색이 됩니다. 칸은 누르는 동안만 눌림 면이고 누른 뒤 켜진 채 남지 않으며,
+// 진동하지 않습니다(⟨2026-11-21 개정⟩). 소리 파일이 아직 없으면(음성 정보 파일에 없음) 스피커가 비활성 모양이고 낭독 이름에 그
+// 사실이 붙습니다 — 칸은 그대로 눌립니다(이벤트).
 export function LettersScreen({
   romanization,
   sound,
@@ -24,8 +24,6 @@ export function LettersScreen({
   onCellTapped,
 }: LettersScreenProps): ReactNode {
   const copy = useUiCopy();
-  const motion = useMotion();
-  const [selected, setSelected] = useState<string | null>(null);
   const [heard, setHeard] = useState<readonly string[]>([]);
 
   const handlePractice = () => {
@@ -74,14 +72,11 @@ export function LettersScreen({
                       group={group.id}
                       source={sound.sourceOf(jamoSoundOf(letter.letter))}
                       showRoman={romanization === "shown"}
-                      selected={selected === letter.letter}
                       heard={heard.indexOf(letter.letter) >= 0}
-                      reduced={motion === "reduced"}
                       unavailableLabel={copy.more.letters.soundUnavailable}
                       heardLabel={copy.more.letters.heard}
                       onTap={(source) => {
                         if (source !== null) sound.play(source);
-                        setSelected(letter.letter);
                         if (source !== null && heard.indexOf(letter.letter) < 0)
                           setHeard([...heard, letter.letter]);
                         onCellTapped?.(
@@ -108,9 +103,7 @@ type LettersCellProps = {
   readonly group: JamoGroupId;
   readonly source: string | null;
   readonly showRoman: boolean;
-  readonly selected: boolean;
   readonly heard: boolean;
-  readonly reduced: boolean;
   readonly unavailableLabel: string;
   readonly heardLabel: string;
   readonly onTap: (source: string | null) => void;
@@ -122,9 +115,7 @@ function LettersCell({
   group,
   source,
   showRoman,
-  selected,
   heard,
-  reduced,
   unavailableLabel,
   heardLabel,
   onTap,
@@ -134,13 +125,6 @@ function LettersCell({
     onTap(source);
   };
   const vowel = group === "vowels" || group === "combined";
-  const className = [
-    "letters-cell",
-    selected ? "letters-cell-selected" : null,
-    reduced ? "letters-cell-motion-reduced" : null,
-  ]
-    .filter((part): part is string => part !== null)
-    .join(" ");
   const label = [
     letter.letter,
     letter.roman,
@@ -152,9 +136,8 @@ function LettersCell({
     source === null ? color.fg.disabled : heard ? color.brand.strong : color.gray["500"];
   return (
     <view
-      className={className}
+      className="letters-cell"
       data-testid={ids.cell(index)}
-      data-selected={selected ? "true" : "false"}
       data-heard={heard ? "true" : "false"}
       accessibility-element={true}
       accessibility-label={label}
