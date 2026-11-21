@@ -89,6 +89,22 @@ export function letterAudioIdOf(syllable: string): string | null {
   return `letters/${INITIAL_ROMAN[parts[0]] ?? ""}${MEDIAL_ROMAN[parts[1]] ?? ""}`;
 }
 
+/**
+ * 소리 파일이 있는 음절 전부(41, ADR-0173) — 자모표 소리를 보드 순서로(같은 소리 「아」는 한 번) 놓고 퀴즈 음절(너 · 도)을 뒤에 둡니다.
+ * 소리 파일 목록 · 업로드 도구(`devtools/content/letters-audio.mjs`)가 이 목록 하나를 읽습니다.
+ */
+export const LETTER_SOUND_SYLLABLES: readonly string[] = /* @__PURE__ */ ((): readonly string[] => {
+  const syllables: string[] = [];
+  for (const group of JAMO_GROUPS)
+    for (const letter of group.letters) {
+      const sound = jamoSoundOf(letter.letter);
+      if (syllables.indexOf(sound) < 0) syllables.push(sound);
+    }
+  for (const [initial, medial] of QUIZ_SOUNDS)
+    syllables.push(composeSyllable(INITIALS.charAt(initial), MEDIALS.charAt(medial)));
+  return syllables;
+})();
+
 /** 퀴즈 타일 · 칸의 짧은 로마자 — 자음은 첫소리(g · n · d), 모음은 그 모음(a · eo · o). */
 export function jamoTileRomanOf(letter: string): string {
   const initial = INITIALS.indexOf(letter);

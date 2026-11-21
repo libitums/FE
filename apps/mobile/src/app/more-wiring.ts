@@ -8,6 +8,7 @@ import { emitCompanionEvent } from "../lib/companion-events";
 import { contentAudioSourceOf } from "../lib/content-audio";
 import { loadLettersRecord, saveLettersRecord, withLettersOpened } from "../lib/letters-recommend";
 import { SLOW_PLAYBACK_RATE } from "../lib/listen-pace";
+import { autoPlayAudioOf, type AutoPlayAudio } from "../lib/question-audio";
 import type { CompanionEventInput } from "../lib/companion-event.contract";
 import type { MoreEvent } from "../lib/more-event.contract";
 import {
@@ -33,6 +34,8 @@ export type MoreEventInput = WithoutCommon<MoreEvent>;
 export type MoreWiring = {
   readonly romanization: ChoiceRomanization;
   readonly letterSound: LetterSoundPort;
+  /** 합치기 퀴즈의 정답 뒤 음절 소리를 저절로 낼지(설정 Auto-play — 레슨 정답 음성과 같은 값, ADR-0173). */
+  readonly autoPlay: AutoPlayAudio;
   readonly wordSound: WordSoundPort;
   readonly emit: (event: MoreEventInput) => void;
   /** 메뉴 줄 — more 탭으로 가며 그 화면을 루트로(설정이면 `settings_opened`, Letters면 열어 본 기록). */
@@ -80,6 +83,7 @@ export function moreWiring(args: MoreWiringArgs): MoreWiring {
       sourceOf: (syllable) => letterAudioSourceOf(syllable, episodeContent),
       play: (source) => void playAudio(source, noop),
     },
+    autoPlay: autoPlayAudioOf(args.sessionOptions),
     wordSound: {
       sourceOf: (entry) =>
         contentAudioSourceOf(entry.audioId ?? undefined, entry.ko, episodeContent.imageUrlOf),

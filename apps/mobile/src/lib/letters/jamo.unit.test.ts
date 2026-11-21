@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   JAMO_GROUPS,
+  LETTER_SOUND_SYLLABLES,
   composeSyllable,
   isJamoConsonant,
   jamoSoundOf,
@@ -105,5 +106,25 @@ describe("소리 파일 id", () => {
 
   test("JM10. 표에 없는 음절은 null", () => {
     expect(letterAudioIdOf("밥")).toBeNull();
+  });
+});
+
+describe("소리 파일 목록(ADR-0173)", () => {
+  test("JM11. 41개 · 겹침 없음 · 모두 소리 파일 id가 있다", () => {
+    expect(LETTER_SOUND_SYLLABLES).toHaveLength(41);
+    expect(new Set(LETTER_SOUND_SYLLABLES).size).toBe(41);
+    for (const syllable of LETTER_SOUND_SYLLABLES) expect(letterAudioIdOf(syllable)).not.toBeNull();
+    expect(new Set(LETTER_SOUND_SYLLABLES.map(letterAudioIdOf)).size).toBe(41);
+  });
+
+  test("JM12. 자모표 40자의 소리가 보드 순서로 먼저(아는 한 번), 퀴즈 너 · 도가 끝", () => {
+    const chart: string[] = [];
+    for (const group of JAMO_GROUPS)
+      for (const letter of group.letters) {
+        const sound = jamoSoundOf(letter.letter);
+        if (chart.indexOf(sound) < 0) chart.push(sound);
+      }
+    expect(LETTER_SOUND_SYLLABLES).toEqual([...chart, "너", "도"]);
+    expect(LETTER_SOUND_SYLLABLES.slice(0, 3)).toEqual(["가", "나", "다"]);
   });
 });

@@ -40,6 +40,7 @@ export function renderMoreScreen(screen: MoreScreen, wiring: ScreenWiring): Reac
         <LettersComposeScreen
           romanization={more.romanization}
           sound={more.letterSound}
+          autoPlay={more.autoPlay}
           onExit={more.onBack}
           onAnswered={(round, target, correct) =>
             more.emit({ name: "letters_quiz_answered", round: String(round), target, correct })

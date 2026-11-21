@@ -1,4 +1,4 @@
-import { useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
@@ -10,8 +10,10 @@ import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { LearningShell } from "../learning/LearningShell";
 import {
+  COMPOSE_ECHO_DELAY_MS,
   COMPOSE_ROUNDS,
   COMPOSE_TILES,
+  composeEchoOf,
   composeReducer,
   composeSlotStateOf,
   composeVerdictOf,
@@ -25,11 +27,13 @@ import "../syllable-build/syllable-build-tile.css";
 import "./letters-compose.css";
 
 // 합치기 퀴즈(ㄱ + ㅏ = 가)입니다(ADR-0169, 시안 JamoCompose). 뼈대는 레슨의 `LearningShell`(머리 캡션 · 판정 배지 · 아래 단추),
-// 칸 · 타일은 음절 조립의 모양(syllable-build-tile)을 씁니다. 두 칸이 차면 합친 글자가 결과 칸에 서고 소리가 나며 곧바로 판정합니다 —
-// 맞으면 Next(마지막은 완료), 틀리면 Try again. 레슨 기록 · 티켓과 무관한 연습입니다.
+// 칸 · 타일은 음절 조립의 모양(syllable-build-tile)을 씁니다. 두 칸이 차면 합친 글자가 결과 칸에 서고 곧바로 판정합니다 —
+// 맞으면 Next(마지막은 완료), 틀리면 Try again. 맞히면 정답 효과음이 끝난 뒤 그 음절 소리가 한 번 납니다(ADR-0173 —
+// Auto-play가 꺼져 있거나 소리 파일이 아직 없으면 조용히 넘어갑니다). 레슨 기록 · 티켓과 무관한 연습입니다.
 export function LettersComposeScreen({
   romanization,
   sound,
+  autoPlay = "on",
   onExit,
   onAnswered,
   onComplete,
@@ -52,6 +56,22 @@ export function LettersComposeScreen({
     if (source !== null) sound.play(source);
   };
 
+  // 맞힌 판정의 음절 소리 — 효과음과 겹치지 않게 틈을 두고 한 번. 라운드가 넘어가거나 화면을 떠나면 걷습니다.
+  // 결선은 그릴 때마다 포트를 새로 만들 수 있어 최신 포트를 ref로 읽습니다(틈이 다시 시작되지 않게).
+  const soundRef = useRef(sound);
+  useEffect(() => {
+    soundRef.current = sound;
+  });
+  const echo = autoPlay === "off" ? null : composeEchoOf(state);
+  useEffect(() => {
+    if (echo === null) return undefined;
+    const handle = setTimeout(() => {
+      const source = soundRef.current.sourceOf(echo);
+      if (source !== null) soundRef.current.play(source);
+    }, COMPOSE_ECHO_DELAY_MS);
+    return () => clearTimeout(handle);
+  }, [echo, state.round]);
+
   const dispatch = (action: ComposeAction) => {
     const next = composeReducer(state, action);
     if (next === state) return;
@@ -64,7 +84,6 @@ export function LettersComposeScreen({
       next.consonant !== null &&
       next.vowel !== null
     ) {
-      playSyllable(composeSyllable(next.consonant, next.vowel));
       onAnswered?.(next.round + 1, target, judged === "correct");
       announce(uiCopy.common.resultAnnouncement(judged));
     }
@@ -230,7 +249,7 @@ export function LettersComposeScreen({
                   data-testid={ids.composeSlot("r")}
                   accessibility-element={true}
                   flatten={false}
-                  accessibility-label={`${copy.resultSlot}, ${merged === "" ? copy.emptySlot : merged}`}
+                  accessibility-label={`${copy.resultSlot}, ${merged === "" ? copy.emptySlot : merged}${merged === "" ? "" : `, ${jamoTileRomanOf(state.consonant ?? "")}${jamoTileRomanOf(state.vowel ?? "")}`}`}
                 >
                   {merged === "" ? null : (
                     <>
