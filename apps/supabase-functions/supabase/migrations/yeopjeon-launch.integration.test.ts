@@ -46,7 +46,8 @@ beforeEach(async () => {
     "update companion.settings set message_cost = 3, testers_only = false, minor_daily_limit_seconds = null",
   );
   await db.admin.query(
-    `insert into auth.users (id, email, raw_app_meta_data) values ($1, 'a@libitum.test', '{}'), ($2, 'b@libitum.test', '{}')`,
+    // 출시 보너스는 가입 보상 도입 전 계정(기존 회원)만 받는다(ADR-0174) — 이 파일의 사용자는 기존 회원이다.
+    `insert into auth.users (id, email, raw_app_meta_data, created_at) values ($1, 'a@libitum.test', '{}', '2026-01-01'), ($2, 'b@libitum.test', '{}', '2026-01-01')`,
     [user, other],
   );
   await signIn(app, user);

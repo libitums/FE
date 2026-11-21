@@ -5,6 +5,7 @@
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
+import { signupRewardCopy } from "./ui-copy-signup-reward";
 import {
   audioUnavailableTh,
   catalogCoverTh,
@@ -129,4 +130,5 @@ export const uiCopyTh: UiCopy = {
   authFailure: authFailureTh,
   more: moreCopy.th,
   ranking: rankingCopy.th,
+  signupReward: signupRewardCopy.th,
 };

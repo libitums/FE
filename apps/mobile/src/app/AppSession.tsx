@@ -212,7 +212,8 @@ export function AppSession({
       atMapRoot &&
       tickets.outOfTickets === null &&
       progress.episodeSurvey === null &&
-      !progress.streakCelebration,
+      !progress.streakCelebration &&
+      !moreOpen,
     onStartChatting: () => dispatch({ type: "switchTab", tab: "messenger" }),
   });
   useMessengerWalletSync(notices.coinCount ?? screens.coinCount); // 메신저 지갑 = 머리 칩(ADR-0146)
