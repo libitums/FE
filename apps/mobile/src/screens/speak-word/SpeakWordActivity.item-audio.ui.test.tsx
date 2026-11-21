@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-
 import {
   echoAudioOf,
   ECHO_SOURCE,
+  passAnswerEchoDelay,
   lessonAudioStub,
   withAudio,
 } from "../../lib/question-audio.test-support";
@@ -73,7 +74,14 @@ afterEach(() => {
 });
 
 describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
-  test("EC6. 듣는 중에는 재생이 없고 heard 국면이 서는 순간 한 번 재생한다", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("EC6. 듣는 중에는 재생이 없고 heard 국면이 선 뒤 효과음 틈을 두고 한 번 재생한다", () => {
     const host = stubSpeechHost();
     const { lesson } = lessonAudioStub();
     mount([card], lesson);
@@ -82,6 +90,8 @@ describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
     expect(playAudio).not.toHaveBeenCalled();
 
     act(() => host.pending[0]?.({ status: "recognized", text: "카드", isFinal: true }));
+    expect(playAudio).not.toHaveBeenCalled();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     const call = playAudio.mock.calls[0];
@@ -97,6 +107,7 @@ describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
     tapAction("Speak");
 
     act(() => host.pending[0]?.({ status: "recognized", text: "여권", isFinal: true }));
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
   });
@@ -110,6 +121,7 @@ describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
     expect(playAudio).not.toHaveBeenCalled();
 
     tapAction("Skip");
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });
@@ -122,6 +134,7 @@ describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
     tapAction("Speak");
 
     act(() => host.pending[0]?.({ status: "recognized", text: "카드", isFinal: true }));
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });
@@ -134,6 +147,7 @@ describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
     tapAction("Speak");
 
     act(() => host.pending[0]?.({ status: "recognized", text: "카드", isFinal: true }));
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });

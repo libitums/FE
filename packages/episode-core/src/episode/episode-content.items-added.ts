@@ -1,6 +1,7 @@
 import type { DeliveryAddedItem } from "./episode-content.schema";
 import type { AddedLearningItem } from "./episode-content.model";
 import {
+  answerAudioOf,
   itemBaseOf,
   maybe,
   nonEmpty,
@@ -113,6 +114,7 @@ export function toAddedItem(item: DeliveryAddedItem): AddedLearningItem {
         ...maybe("context", optText(item.context)),
         tiles: toTexts(item.tiles),
         answers: toTexts(item.answers),
+        ...answerAudioOf(item.feedback),
       };
     case "SHADOW":
     case "SPEAK_WORD":
@@ -122,6 +124,7 @@ export function toAddedItem(item: DeliveryAddedItem): AddedLearningItem {
         prompt: toText(item.prompt),
         stimulus: toStimulus(item.stimulus),
         answers: toTexts(item.answers),
+        ...answerAudioOf(item.feedback),
       };
   }
 }
