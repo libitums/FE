@@ -34,7 +34,7 @@ export type MoreEventInput = WithoutCommon<MoreEvent>;
 export type MoreWiring = {
   readonly romanization: ChoiceRomanization;
   readonly letterSound: LetterSoundPort;
-  /** 합치기 퀴즈의 정답 뒤 음절 소리를 저절로 낼지(설정 Auto-play — 레슨 정답 음성과 같은 값, ADR-0172). */
+  /** 합치기 퀴즈의 정답 뒤 음절 소리를 저절로 낼지(설정 Auto-play — 레슨 정답 음성과 같은 값, ADR-0173). */
   readonly autoPlay: AutoPlayAudio;
   readonly wordSound: WordSoundPort;
   readonly emit: (event: MoreEventInput) => void;

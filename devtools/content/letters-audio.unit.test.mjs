@@ -1,4 +1,4 @@
-// `unit` 계층: 글자 소리 업로드 준비의 순수 함수(ADR-0172). `node --test devtools/content/*.test.mjs`.
+// `unit` 계층: 글자 소리 업로드 준비의 순수 함수(ADR-0173). `node --test devtools/content/*.test.mjs`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

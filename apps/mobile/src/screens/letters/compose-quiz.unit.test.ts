@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { LETTER_SOUND_SYLLABLES, composeSyllable } from "../../lib/letters/jamo";
+import { ANSWER_ECHO_DELAY_MS } from "../../lib/question-audio";
 import {
   COMPOSE_ECHO_DELAY_MS,
   COMPOSE_ROUNDS,
@@ -120,7 +121,7 @@ describe("판정", () => {
   });
 });
 
-describe("정답 뒤 음절 소리(ADR-0172)", () => {
+describe("정답 뒤 음절 소리(ADR-0173)", () => {
   const pick = (letter: string): ComposeAction => ({ type: "pick", letter });
 
   test("CQ14. 맞힌 판정이면 그 라운드의 음절, 판정 전 · 틀림은 null", () => {
@@ -153,8 +154,7 @@ describe("정답 뒤 음절 소리(ADR-0172)", () => {
       expect(LETTER_SOUND_SYLLABLES).toContain(composeSyllable(round.consonant, round.vowel));
   });
 
-  test("CQ17. 틈은 정답 효과음의 들리는 길이(0.89 s)보다 길고 1초를 넘지 않는다", () => {
-    expect(COMPOSE_ECHO_DELAY_MS).toBeGreaterThanOrEqual(890);
-    expect(COMPOSE_ECHO_DELAY_MS).toBeLessThanOrEqual(1000);
+  test("CQ17. 틈은 레슨 정답 음성과 같은 값(효과음 뒤 0.8 s, ADR-0172)", () => {
+    expect(COMPOSE_ECHO_DELAY_MS).toBe(ANSWER_ECHO_DELAY_MS);
   });
 });

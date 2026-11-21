@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 글자 소리 41개와 음성 정보 파일을 버킷에 올립니다(ADR-0172). **사람이 실행합니다** — 에이전트는 운영 버킷에 쓰지 않습니다.
+# 글자 소리 41개와 음성 정보 파일을 버킷에 올립니다(ADR-0173). **사람이 실행합니다** — 에이전트는 운영 버킷에 쓰지 않습니다.
 #
 #   bash devtools/content/letters-audio-upload.sh <letters-audio-build.mjs의 --out 폴더>
 #   DRY_RUN=1 bash devtools/content/letters-audio-upload.sh <폴더>      # 키 없이 검사 · 합친 정보 파일만 만듭니다

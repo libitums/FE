@@ -26,7 +26,7 @@ export type LettersComposeScreenProps = {
   readonly romanization: ChoiceRomanization;
   readonly sound: LetterSoundPort;
   /**
-   * 맞힌 뒤 음절을 저절로 들려 줄지(설정 Auto-play, ADR-0172) — `off`면 정답 뒤 소리만 쉬고 ▶는 그대로 납니다. 기본 `on`.
+   * 맞힌 뒤 음절을 저절로 들려 줄지(설정 Auto-play, ADR-0173) — `off`면 정답 뒤 소리만 쉬고 ▶는 그대로 납니다. 기본 `on`.
    */
   readonly autoPlay?: AutoPlayAudio;
   readonly onExit: () => void;

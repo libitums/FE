@@ -1,4 +1,4 @@
-// 버킷에서 받은 지금의 음성 정보 파일(`audio/manifest.json`)에 글자 소리 항목을 더한 새 원문을 씁니다(ADR-0172).
+// 버킷에서 받은 지금의 음성 정보 파일(`audio/manifest.json`)에 글자 소리 항목을 더한 새 원문을 씁니다(ADR-0173).
 // letters-audio-upload.sh가 올리기 직전에 부릅니다 — 다른 항목은 그대로 둡니다.
 //
 //   node devtools/content/letters-audio-merge.mjs --live <받은 manifest.json> --timings <letters-audio-timings.json> --out <새 파일>

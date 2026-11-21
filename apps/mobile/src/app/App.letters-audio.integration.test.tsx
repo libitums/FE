@@ -13,7 +13,7 @@ import { LETTER_SOUND_SYLLABLES, letterAudioIdOf } from "../lib/letters/jamo";
 import { COMPOSE_ECHO_DELAY_MS } from "../screens/letters/compose-quiz";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 
-// `integration` 계층: 글자 소리(ADR-0172) — 기기에 받아 둔 음성 정보 파일(letters 항목) → 콘텐츠 로더 → 더보기 결선 →
+// `integration` 계층: 글자 소리(ADR-0173) — 기기에 받아 둔 음성 정보 파일(letters 항목) → 콘텐츠 로더 → 더보기 결선 →
 // Letters 칸 · 합치기 퀴즈 → 재생 모듈. 경계 대역은 저장소 · 오디오 모듈 · env뿐입니다(주소는 실제 해석기가 만듭니다).
 
 const bucketAudio = (id: string) =>

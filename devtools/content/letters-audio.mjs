@@ -1,4 +1,4 @@
-// 글자 소리(ADR-0172) 업로드 준비의 순수 함수입니다 — 파일 목록 · 음성 정보 파일 합치기 · 길이 · sha256 목록 · TTS 요청.
+// 글자 소리(ADR-0173) 업로드 준비의 순수 함수입니다 — 파일 목록 · 음성 정보 파일 합치기 · 길이 · sha256 목록 · TTS 요청.
 // 파일을 만드는 쪽(letters-audio-build.mjs)과 올리는 쪽(letters-audio-upload.sh)이 부릅니다. 네트워크 · 파일을 건드리지 않습니다.
 
 const AUDIO_MANIFEST_SCHEMA = "audio-manifest-1";

@@ -1,4 +1,4 @@
-// 글자 소리 41개(ADR-0172)를 버킷 형식(m4a AAC · 모노 · 44.1 kHz · 앞뒤 무음 0.2 s 이내)으로 만들고 길이 · sha256 목록을 씁니다.
+// 글자 소리 41개(ADR-0173)를 버킷 형식(m4a AAC · 모노 · 44.1 kHz · 앞뒤 무음 0.2 s 이내)으로 만들고 길이 · sha256 목록을 씁니다.
 // 버킷에는 쓰지 않습니다 — 올리기는 letters-audio-upload.sh(사람이 실행).
 //
 //   node devtools/content/letters-audio-build.mjs --engine clips --from <받은 녹음 폴더> --out <출력 폴더>
@@ -178,7 +178,7 @@ const entries = letterSoundEntries(LETTER_SOUND_SYLLABLES, letterAudioIdOf).filt
   (entry) => only === null || only.has(entry.file.replace(/\.m4a$/, "")),
 );
 const out = values.out;
-// say 엔진 파일은 배포할 수 없습니다(ADR-0172 D3) — 커밋되지 않게 저장소 밖에만 씁니다.
+// say 엔진 파일은 배포할 수 없습니다(ADR-0173 D3) — 커밋되지 않게 저장소 밖에만 씁니다.
 const repoRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 if (engine === "say" && (resolve(out) + sep).startsWith(repoRoot + sep)) {
   console.error("--engine say는 저장소 밖 폴더에만 씁니다(배포 불가 음성, 커밋 금지)");

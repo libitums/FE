@@ -109,7 +109,7 @@ describe("소리 파일 id", () => {
   });
 });
 
-describe("소리 파일 목록(ADR-0172)", () => {
+describe("소리 파일 목록(ADR-0173)", () => {
   test("JM11. 41개 · 겹침 없음 · 모두 소리 파일 id가 있다", () => {
     expect(LETTER_SOUND_SYLLABLES).toHaveLength(41);
     expect(new Set(LETTER_SOUND_SYLLABLES).size).toBe(41);

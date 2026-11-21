@@ -90,7 +90,7 @@ export function letterAudioIdOf(syllable: string): string | null {
 }
 
 /**
- * 소리 파일이 있는 음절 전부(41, ADR-0172) — 자모표 소리를 보드 순서로(같은 소리 「아」는 한 번) 놓고 퀴즈 음절(너 · 도)을 뒤에 둡니다.
+ * 소리 파일이 있는 음절 전부(41, ADR-0173) — 자모표 소리를 보드 순서로(같은 소리 「아」는 한 번) 놓고 퀴즈 음절(너 · 도)을 뒤에 둡니다.
  * 소리 파일 목록 · 업로드 도구(`devtools/content/letters-audio.mjs`)가 이 목록 하나를 읽습니다.
  */
 export const LETTER_SOUND_SYLLABLES: readonly string[] = /* @__PURE__ */ ((): readonly string[] => {

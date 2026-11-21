@@ -28,7 +28,7 @@ import "./letters-compose.css";
 
 // 합치기 퀴즈(ㄱ + ㅏ = 가)입니다(ADR-0169, 시안 JamoCompose). 뼈대는 레슨의 `LearningShell`(머리 캡션 · 판정 배지 · 아래 단추),
 // 칸 · 타일은 음절 조립의 모양(syllable-build-tile)을 씁니다. 두 칸이 차면 합친 글자가 결과 칸에 서고 곧바로 판정합니다 —
-// 맞으면 Next(마지막은 완료), 틀리면 Try again. 맞히면 정답 효과음이 끝난 뒤 그 음절 소리가 한 번 납니다(ADR-0172 —
+// 맞으면 Next(마지막은 완료), 틀리면 Try again. 맞히면 정답 효과음이 끝난 뒤 그 음절 소리가 한 번 납니다(ADR-0173 —
 // Auto-play가 꺼져 있거나 소리 파일이 아직 없으면 조용히 넘어갑니다). 레슨 기록 · 티켓과 무관한 연습입니다.
 export function LettersComposeScreen({
   romanization,
