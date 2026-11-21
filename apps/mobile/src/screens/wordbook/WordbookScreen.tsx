@@ -39,7 +39,7 @@ export function WordbookScreen({
   const shown = entriesForFilter(entries, filter, kept);
   const toggleStar = (entry: WordbookEntry, starred: boolean) => {
     "background only";
-    if (filter === "starred" && !starred) setKept([...kept, entry.key]);
+    if (filter === "starred" && !starred) setKept((prev) => [...prev, entry.key]);
     onToggleStar(entry, starred);
   };
 

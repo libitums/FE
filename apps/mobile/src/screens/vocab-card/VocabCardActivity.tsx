@@ -55,7 +55,7 @@ export function VocabCardActivity({
   const starred = stars[cardIndex] ?? null;
   const toggleStar = (next: boolean): void => {
     "background only";
-    setStars(stars.map((value, index) => (index === cardIndex ? next : value)));
+    setStars((prev) => prev.map((value, index) => (index === cardIndex ? next : value)));
     star?.toggle(cardIndex, next);
   };
 
