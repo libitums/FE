@@ -51,6 +51,7 @@ public final class CrashScrollClampTest {
     assertNull(CrashReportPayload.fromLynxError(1101, "error", body(clamp("1000000.0", "5120.5"))));
     assertNull(CrashReportPayload.fromLynxError(201, "error", body(clamp("12.5", "0.0"))));
     assertNull(CrashReportPayload.fromLynxError(1101, "error", body(clamp("1.0E7", "8765.0"))));
+    assertNull(CrashReportPayload.fromLynxError(1101, "error", body(clamp("1.0e+07", "1e7"))));
   }
 
   @Test public void sc3_otherCodeFourFailureIsStillAccepted() {

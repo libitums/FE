@@ -70,7 +70,7 @@
   `UI method invoke: {"code":4,"data":"Target scroll position = <수> is beyond threshold. Clamped to position = <수>"}`이면 `REJECTED`(예산을 쓰지 않는다).
   Android 스크롤 상자가 범위 밖 목적지를 가장 가까운 자리로 옮겼다는 알림이라 화면은 이미 그 자리에 있다. 메인 스레드 `Element.invoke`는 그 콜백을
   동기로 불러 `.catch`가 붙기 전에 거부되고, 런타임이 그 순간 올리므로(logcat에는 `unhandled rejection`, 호스트가 받는 이름은 `Error`) JS 쪽에서는 막을 수 없다
-  (아래 「정정 기록」 2026-11-21). `<수>`는 호스트가 찍는 Java float 꼴(`0.0` · `-2244.0` · `1.0E7`)이다.
+  (아래 「정정 기록」 2026-11-21). `<수>`는 호스트가 찍는 소수 꼴(`0.0` · `-2244.0` · `1.0E7` — 지수는 `e`/`E` · 부호 모두)이다.
   다른 code 4 실패 · 다른 code의 같은 문구 · UI 메서드 결과가 아닌 같은 문구 · 이름이 `unhandled rejection`인 것 · 뒤에 글이 붙은 것 · `NaN` · `Infinity`는 그대로 받는다.
 
 ### D2. 에러 경계가 잡은 렌더 예외는 `reportCrash`가 같은 통로로 한 번 넘긴다
