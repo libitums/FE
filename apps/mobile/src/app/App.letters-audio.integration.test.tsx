@@ -59,7 +59,7 @@ async function boot(manifest: string | null) {
 
 const openLetters = () => {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-more"), {});
-  fireEvent.tap(screen.getByTestId("more-menu-row-letters"), {});
+  fireEvent.tap(screen.getByTestId("more-menu-row-letters"), { eventType: "catchEvent" });
 };
 const openCompose = () =>
   fireEvent.tap(within(screen.getByTestId("letters-practice")).getByTestId("ui-lynx-button"), {});
