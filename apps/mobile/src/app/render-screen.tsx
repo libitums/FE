@@ -1,7 +1,6 @@
 // `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never` 망라가 여기 섭니다 —
 // 값은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
-import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
 import { AccountProfileScreen } from "../screens/profile/AccountProfileScreen";
@@ -10,8 +9,8 @@ import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeS
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
 import { RankingRoute, SettingsRoute } from "./render-ranking";
-import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import type { Screen } from "./nav-state";
+import { renderDevProbe } from "./render-dev-probe";
 import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
 import { renderCatalogStory } from "./render-catalog-story";
@@ -178,12 +177,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return renderCatalogFlow(screen, wiring);
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은 props도
     // 콜백도 받지 않습니다. **아무 코드도 이 화면을 push하지 않습니다** — 닿으려면
-    // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav`)를 바꿔 끼웁니다.
+    // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav` · `speechProbeNav`)를 바꿔 끼웁니다.
+    // dev 빌드에서만 그립니다 — release는 `__DEV__`가 `false`라 이 호출과 탐침 코드가 번들에서
+    // 빠집니다(`render-dev-probe.tsx`, ADR-0171). `__DEV__ ?` 삼항을 풀지 않습니다(DP-S2).
     case "handwriting-probe":
-      return <HandwritingProbeScreen />;
-    // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**
     case "speech-probe":
-      return <SpeechProbeScreen />;
+      return __DEV__ ? renderDevProbe(screen.name) : null;
     case "roleplay-story":
     case "roleplay-story-complete":
       return renderRoleplayStory(screen, wiring);
