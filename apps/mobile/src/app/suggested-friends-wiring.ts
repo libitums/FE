@@ -97,7 +97,8 @@ async function visibleFriends() {
     list = null;
   }
   visibleMemory.remember(key, list);
-  return list;
+  // 기다리는 사이 계정이 바뀌었으면 앞 계정의 목록을 지금 화면에 넘기지 않습니다(기억에는 앞 계정 열쇠로 남김, 리뷰 #535).
+  return sourceKey() === key ? list : null;
 }
 
 /** 이 계정에서 마지막으로 읽은 보이는 친구 — 읽은 적이 없으면 null. */
