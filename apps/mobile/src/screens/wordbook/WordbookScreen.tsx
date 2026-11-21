@@ -6,8 +6,10 @@ import arrowRight from "@libitums/icons/lynx/arrow-right";
 import volume from "@libitums/icons/lynx/volume";
 
 import type { WordbookEntry } from "../../app/wordbook-entries";
+import { WordStarButton } from "../../components/WordStarButton";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
+import { entriesForFilter, wordbookFilters } from "./wordbook-filter";
 import {
   wordbookTestIds as ids,
   type WordbookFilter,
@@ -16,23 +18,30 @@ import {
 
 import "./wordbook-screen.css";
 
-const filters: readonly WordbookFilter[] = ["all", "new", "review", "known"];
-
 // My words 목록입니다(ADR-0169, 시안 WordbookList). 더보기 메뉴의 more 스택 루트라 뒤로 단추 없이 바텀 메뉴가 섭니다. 위에서부터
-// 제목(단어 수) · 「Review N words」 CTA(오늘 복습할 단어가 없으면 눌리지 않는 안내) · 걸러보기 칩 · 줄(재생 · 한국어 · 로마자 · 뜻 ·
-// 에피소드 · 상태 칩). 줄을 누르면 자세히, 재생 단추는 소리만 냅니다.
+// 제목(단어 수) · 「Review N words」 CTA(오늘 복습할 단어가 없으면 눌리지 않는 안내) · 걸러보기 칩(가로 스크롤) · 줄(재생 · 한국어 ·
+// 로마자 · 뜻 · 에피소드 · 상태 칩 · 별). 줄을 누르면 자세히, 재생 단추는 소리만, 별은 즐겨찾기만 바꿉니다(즐겨찾기 개정).
 export function WordbookScreen({
   entries,
   dueCount,
   sound,
   onOpenWord,
   onReview,
+  onToggleStar,
+  onFilterChange,
 }: WordbookScreenProps): ReactNode {
   const uiCopy = useUiCopy();
   const copy = uiCopy.more.wordbook;
   const selected = uiCopy.common.selected;
   const [filter, setFilter] = useState<WordbookFilter>("all");
-  const shown = filter === "all" ? entries : entries.filter((entry) => entry.status === filter);
+  // Starred에서 방금 별을 뗀 줄 — 칩을 바꿀 때까지 꺼진 별로 남깁니다(낭독 초점 유지, 접근성 점검 M1).
+  const [kept, setKept] = useState<readonly string[]>([]);
+  const shown = entriesForFilter(entries, filter, kept);
+  const toggleStar = (entry: WordbookEntry, starred: boolean) => {
+    "background only";
+    if (filter === "starred" && !starred) setKept((prev) => [...prev, entry.key]);
+    onToggleStar(entry, starred);
+  };
 
   const handleReview = () => {
     "background only";
@@ -77,30 +86,46 @@ export function WordbookScreen({
           <svg className="wordbook-cta-arrow" content={arrowRight} current-color={color.white} />
         )}
       </view>
-      <view className="wordbook-filters">
-        {filters.map((id) => (
-          <view
-            key={id}
-            className={filter === id ? "wordbook-filter wordbook-filter-on" : "wordbook-filter"}
-            data-testid={ids.filter(id)}
-            data-selected={filter === id ? "true" : "false"}
-            accessibility-element={true}
-            accessibility-label={filter === id ? selected(copy.filters[id]) : copy.filters[id]}
-            accessibility-traits="button"
-            flatten={false}
-            bindtap={() => {
-              "background only";
-              setFilter(id);
-            }}
-          >
-            <text className="wordbook-filter-label">{copy.filters[id]}</text>
-          </view>
-        ))}
-      </view>
+      <scroll-view
+        className="wordbook-filters-scroll"
+        scroll-orientation="horizontal"
+        scroll-bar-enable={false}
+      >
+        <view className="wordbook-filters">
+          {wordbookFilters.map((id) => (
+            <view
+              key={id}
+              className={filter === id ? "wordbook-filter wordbook-filter-on" : "wordbook-filter"}
+              data-testid={ids.filter(id)}
+              data-selected={filter === id ? "true" : "false"}
+              accessibility-element={true}
+              accessibility-label={filter === id ? selected(copy.filters[id]) : copy.filters[id]}
+              accessibility-traits="button"
+              flatten={false}
+              bindtap={() => {
+                "background only";
+                if (id === filter) return;
+                setFilter(id);
+                setKept([]);
+                onFilterChange(id);
+              }}
+            >
+              <text className="wordbook-filter-label">{copy.filters[id]}</text>
+            </view>
+          ))}
+        </view>
+      </scroll-view>
       {entries.length === 0 ? (
         <view className="wordbook-empty" data-testid={ids.empty}>
           <text className="wordbook-empty-title">{copy.empty}</text>
           <text className="wordbook-empty-body">{copy.emptyBody}</text>
+        </view>
+      ) : filter === "starred" && shown.length === 0 ? (
+        <view className="wordbook-empty" data-testid={ids.emptyStarred}>
+          <text className="wordbook-empty-title" accessibility-traits="header">
+            {copy.emptyStarred}
+          </text>
+          <text className="wordbook-empty-body">{copy.emptyStarredBody}</text>
         </view>
       ) : (
         <scroll-view
@@ -116,6 +141,7 @@ export function WordbookScreen({
                 entry={entry}
                 sound={sound}
                 onOpen={onOpenWord}
+                onToggleStar={toggleStar}
               />
             ))}
           </view>
@@ -130,11 +156,13 @@ function WordbookRow({
   entry,
   sound,
   onOpen,
+  onToggleStar,
 }: {
   readonly index: number;
   readonly entry: WordbookEntry;
   readonly sound: WordbookScreenProps["sound"];
   readonly onOpen: (entry: WordbookEntry) => void;
+  readonly onToggleStar: WordbookScreenProps["onToggleStar"];
 }): ReactNode {
   const copy = useUiCopy().more.wordbook;
   const source = sound.sourceOf(entry);
@@ -182,6 +210,15 @@ function WordbookRow({
         <view className={`wordbook-chip wordbook-chip-${entry.status}`}>
           <text className="wordbook-chip-label">{copy.status[entry.status]}</text>
         </view>
+      </view>
+      {/* 별은 재생 단추처럼 줄 단추 밖 형제입니다(접근성 감사 C2). 누르는 자리 44의 안쪽 여백만큼 줄 여백 · 간격에 겹칩니다. */}
+      <view className="wordbook-row-star">
+        <WordStarButton
+          word={entry.ko}
+          starred={entry.record.starred === true}
+          onToggle={(starred) => onToggleStar(entry, starred)}
+          testId={ids.rowStar(index)}
+        />
       </view>
     </view>
   );

@@ -5,7 +5,13 @@
 import type { AnswerResult } from "../lib/answer-result";
 import { isHangulReadingItem } from "../lib/letters-recommend";
 import type { LessonEnd, StruggleSignal } from "../lib/letters-recommend";
-import { withAnswer, withCardsSeen } from "../lib/wordbook";
+import {
+  isStarredIn,
+  isWordbookRef,
+  withAnswer,
+  withCardsSeen,
+  withStarred,
+} from "../lib/wordbook";
 import type { Wordbook } from "../lib/wordbook";
 import type { LocalDay } from "../lib/learning-progress.contract";
 
@@ -13,11 +19,20 @@ export type LearningTrailPort = {
   readonly today: () => LocalDay;
   /** 단어장을 읽고 고쳐 씁니다 — 지금 계정(비회원이면 guest)의 칸. */
   readonly updateWordbook: (update: (book: Wordbook) => Wordbook) => void;
+  /** 단어장을 읽기만 합니다(별 상태). */
+  readonly readWordbook: () => Wordbook;
 };
 
 export type LearningTrail = {
   /** 단어 카드 활동이 끝났을 때 — 보인 카드의 콘텐츠 ref. */
   readonly cardsSeen: (episodeId: string, refs: readonly (string | undefined)[]) => void;
+  /** 카드마다 별이 달렸는지 — 단어장에 둘 수 없는 카드(`voca:` 아님 · ref 없음)는 null. */
+  readonly starsOf: (
+    episodeId: string,
+    refs: readonly (string | undefined)[],
+  ) => readonly (boolean | null)[];
+  /** 단어 카드의 별을 달거나 뗌 — 단어장에 없으면 함께 적습니다. */
+  readonly setStar: (episodeId: string, ref: string, starred: boolean) => void;
   /** 채점 문항의 첫 판정. */
   readonly itemAnswered: (
     episodeId: string,
@@ -41,6 +56,16 @@ export function createLearningTrail(port: LearningTrailPort): LearningTrail {
       if (seen.length === 0) return;
       const today = port.today();
       port.updateWordbook((book) => withCardsSeen(book, episodeId, seen, today));
+    },
+    starsOf: (episodeId, refs) => {
+      const book = port.readWordbook();
+      return refs.map((ref) =>
+        ref === undefined || !isWordbookRef(ref) ? null : isStarredIn(book, episodeId, ref),
+      );
+    },
+    setStar: (episodeId, ref, starred) => {
+      const today = port.today();
+      port.updateWordbook((book) => withStarred(book, episodeId, ref, starred, today));
     },
     itemAnswered: (episodeId, item, outcome) => {
       if (outcome === "skipped") return;

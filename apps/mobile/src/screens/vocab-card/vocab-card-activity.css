@@ -135,6 +135,20 @@
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }
 
+/* 별 단추 자리(ADR-0169 즐겨찾기 개정) — 뜻 아래 가운데, 흐름 안입니다. VoiceOver는 DOM이 아니라 프레임 위치로 돌아서
+   (ADR-0016 · ADR-0023) 오른쪽 위 절대 배치였을 때는 별이 표제어보다 먼저 읽혔습니다(접근성 점검 C1). 흐름 안이면 보이는 순서 =
+   낭독 순서(표식 → 표제어 → 로마자 → 뜻 → 별)이고, 긴 표식과 겹칠 일도 없습니다. */
+.vocab-card-activity-star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 별 상태를 읽기 전의 빈 자리 — 별 단추와 같은 높이입니다. */
+.vocab-card-activity-star-slot {
+  height: 44px;
+}
+
 /* `Got it` 버튼 자리 — 버튼 행의 남는 폭을 다 받아 버튼(`width="fill"`)이 꽉 찹니다. */
 .vocab-card-activity-got-it {
   display: flex;

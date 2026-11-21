@@ -88,6 +88,8 @@ export type AnalyticsEventName =
   | "letters_quiz_completed"
   | "wordbook_opened"
   | "wordbook_review_answered"
+  | "wordbook_star_toggled"
+  | "wordbook_filter_switched"
   | "letters_recommend_shown"
   | "letters_recommend_clicked"
   | "letters_recommend_dismissed"

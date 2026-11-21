@@ -20,6 +20,8 @@ export type WordbookRecord = {
   /** 다음 복습 날. */
   readonly due: LocalDay;
   readonly last: WordAnswer | null;
+  /** 학습자가 별을 단 단어(즐겨찾기, ADR-0169 즐겨찾기 개정). 없으면 별 없음 — 이전 형식 기록도 그대로 읽힙니다. */
+  readonly starred?: true;
 };
 
 export type Wordbook = { readonly words: Readonly<Record<string, WordbookRecord>> };
@@ -63,7 +65,7 @@ export function withCardsSeen(
 ): Wordbook {
   let words = book.words;
   for (const ref of refs) {
-    if (ref.indexOf(VOCA) !== 0 || ref.length === VOCA.length) continue;
+    if (!isWordbookRef(ref)) continue;
     const key = wordbookKeyOf(episodeId, ref);
     if (words[key] !== undefined) continue;
     words = {
@@ -105,6 +107,43 @@ export function withAnswer(
   return { words: { ...book.words, [key]: next } };
 }
 
+/** 단어장에 둘 수 있는 ref인지 — `voca:` 뒤가 비지 않음. */
+export function isWordbookRef(ref: string): boolean {
+  return ref.indexOf(VOCA) === 0 && ref.length > VOCA.length;
+}
+
+export function isStarredIn(book: Wordbook, episodeId: string, ref: string): boolean {
+  return book.words[wordbookKeyOf(episodeId, ref)]?.starred === true;
+}
+
+/** 별 필드를 뗀 기록 — 떼면 필드 자체가 없어 이전 형식과 같습니다. */
+function unstarred(record: WordbookRecord): WordbookRecord {
+  const { starred: _starred, ...rest } = record;
+  return rest;
+}
+
+/** 별을 달거나 뗍니다. 단어장에 없는 단어에 달면 처음 본 단어로 함께 적습니다. 바뀔 것이 없으면 같은 객체. */
+export function withStarred(
+  book: Wordbook,
+  episodeId: string,
+  ref: string,
+  starred: boolean,
+  today: LocalDay,
+): Wordbook {
+  const key = wordbookKeyOf(episodeId, ref);
+  const record = book.words[key];
+  if (record === undefined) {
+    if (!starred || !isWordbookRef(ref)) return book;
+    const added = withCardsSeen(book, episodeId, [ref], today);
+    return {
+      words: { ...added.words, [key]: { ...(added.words[key] as WordbookRecord), starred: true } },
+    };
+  }
+  if ((record.starred === true) === starred) return book;
+  const next: WordbookRecord = starred ? { ...record, starred: true } : unstarred(record);
+  return { words: { ...book.words, [key]: next } };
+}
+
 export function wordStatusOf(record: WordbookRecord, today: LocalDay): WordStatus {
   if (record.due <= today || record.last === "incorrect") return "review";
   return record.correct + record.incorrect === 0 ? "new" : "known";
@@ -131,7 +170,7 @@ export function wordbookCountsOf(
   return { words: Object.keys(book.words).length, due: reviewQueueOf(book, today).length };
 }
 
-/** 비회원 기록을 계정 기록에 합칩니다 — 같은 단어는 수를 더하고, 처음 본 날은 이른 쪽, 상자 · 복습 날은 계정 쪽. */
+/** 비회원 기록을 계정 기록에 합칩니다 — 같은 단어는 수를 더하고, 처음 본 날은 이른 쪽, 상자 · 복습 날은 계정 쪽, 별은 어느 쪽이든. */
 export function mergeWordbooks(user: Wordbook, guest: Wordbook): Wordbook {
   const words: Record<string, WordbookRecord> = { ...user.words };
   for (const key of Object.keys(guest.words)) {
@@ -145,6 +184,7 @@ export function mergeWordbooks(user: Wordbook, guest: Wordbook): Wordbook {
             firstSeen: theirs.firstSeen < mine.firstSeen ? theirs.firstSeen : mine.firstSeen,
             correct: mine.correct + theirs.correct,
             incorrect: mine.incorrect + theirs.incorrect,
+            ...(theirs.starred === true ? { starred: true } : {}),
           };
   }
   return { words };
@@ -172,6 +212,8 @@ function recordFrom(raw: unknown): WordbookRecord | null {
     box: r["box"],
     due: r["due"],
     last,
+    // 별은 `true`만 살립니다 — 그 밖 값은 줄을 버리지 않고 별만 없음(이전 형식은 필드 자체가 없음).
+    ...(r["starred"] === true ? { starred: true as const } : {}),
   };
 }
 

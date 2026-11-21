@@ -1053,6 +1053,34 @@ test("MM-L1. (ADR-0169) 단어 카드로 만난 voca 단어가 기기 단어장�
   );
 });
 
+test("MM-L3. (ADR-0169 즐겨찾기 개정) 레슨 첫 단어 카드의 별 → wordbook_star_toggled(lesson_card), 레슨 뒤 My words Starred에 그 단어 하나", async () => {
+  const { events } = await boot({ progress: upTo() });
+  const plan = lessonPlan(u01, "S1");
+  expect(plan.activities[0]?.form).toBe("vocab-card");
+  const firstWord = (plan.activities[0] as { questions: readonly { word: string }[] }).questions[0]
+    ?.word;
+
+  tapNode(u01, "S1");
+  await flush();
+  const star = screen.getByTestId("vocab-card-star");
+  expect(star).toHaveAttribute("accessibility-label", `Star ${firstWord}`);
+  fireEvent.tap(star, {});
+  expect(screen.getByTestId("vocab-card-star")).toHaveAttribute("data-starred", "true");
+  expect(events.filter((event) => event.name === "wordbook_star_toggled")).toMatchObject([
+    { starred: true, source: "lesson_card" },
+  ]);
+  solveLesson(plan, true);
+  exitResult();
+  await flush();
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-more"), {});
+  fireEvent.tap(screen.getByTestId("more-menu-row-wordbook"), { eventType: "catchEvent" });
+  await flush();
+  fireEvent.tap(screen.getByTestId("wordbook-filter-starred"), {});
+  const rows = screen.queryAllByTestId(/^wordbook-row-\d+$/);
+  expect(rows).toHaveLength(1);
+  expect(rows[0]?.textContent).toContain(firstWord);
+});
+
 test("MM-L2. (ADR-0169) 레슨을 나가고 지도에 돌아오면 연출 지연 뒤 Letters 추천(실패 문구) — Learn → Letters · 선택 C", async () => {
   const { events } = await boot({ progress: throughS9 });
 

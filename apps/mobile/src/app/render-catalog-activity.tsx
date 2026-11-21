@@ -157,6 +157,18 @@ function activityScreenOf(
           onExit={onExit}
           onFinish={onCardsFinish}
           lesson={lesson}
+          // 카드 별(단어장 즐겨찾기, ADR-0169 즐겨찾기 개정) — 카드 순번은 `itemRefs` 순번과 같습니다.
+          star={
+            review === undefined
+              ? {
+                  initial: () => wiring.catalogCardStars(episodeId, itemRefs),
+                  toggle: (cardIndex, starred) => {
+                    const ref = itemRefs[cardIndex];
+                    if (ref !== undefined) wiring.onCatalogCardStar(episodeId, ref, starred);
+                  },
+                }
+              : undefined
+          }
         />
       );
     case "pair-match":

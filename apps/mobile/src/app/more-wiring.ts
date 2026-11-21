@@ -16,11 +16,11 @@ import {
   type ChoiceRomanization,
   type SessionOptions,
 } from "../lib/session-options";
-import { wordbookCountsOf, withAnswer } from "../lib/wordbook";
+import { wordbookCountsOf, withAnswer, withStarred, type Wordbook } from "../lib/wordbook";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { letterAudioSourceOf } from "../screens/letters/letters-audio";
 import type { LetterSoundPort } from "../screens/letters/letters.contract";
-import type { WordSoundPort } from "../screens/wordbook/wordbook.contract";
+import type { WordbookFilter, WordSoundPort } from "../screens/wordbook/wordbook.contract";
 import type { SettingsEventSink } from "../screens/settings/settings.contract";
 import type { EpisodeContent } from "./episode-content";
 import { loadCurrentWordbook, todayLocal, updateCurrentWordbook } from "./learning-trail-port";
@@ -47,6 +47,9 @@ export type MoreWiring = {
   readonly onOpenWord: (entry: WordbookEntry) => void;
   readonly onReview: (only: WordbookEntry | null) => void;
   readonly onReviewAnswer: (entry: WordbookEntry, correct: boolean) => void;
+  /** 단어장 줄의 별 — 기기 단어장에 쓰고 이벤트를 낸 뒤 새 단어장을 돌려줍니다(화면이 그것으로 다시 그림, 즐겨찾기 개정). */
+  readonly onToggleStar: (entry: WordbookEntry, starred: boolean) => Wordbook;
+  readonly onFilterChange: (filter: WordbookFilter) => void;
   /** Letters 추천 「Learn the letters」 — 더보기 › Letters(선택 C). */
   readonly onOpenLetters: () => void;
 };
@@ -130,6 +133,15 @@ export function moreWiring(args: MoreWiringArgs): MoreWiring {
       );
       emit({ name: "wordbook_review_answered", correct });
     },
+    onToggleStar: (entry, starred) => {
+      const today = todayLocal();
+      const book = updateCurrentWordbook((current) =>
+        withStarred(current, entry.record.episodeId, entry.record.ref, starred, today),
+      );
+      emit({ name: "wordbook_star_toggled", starred, source: "wordbook" });
+      return book;
+    },
+    onFilterChange: (filter) => emit({ name: "wordbook_filter_switched", filter }),
     onOpenLetters: () => {
       markLettersOpened();
       open("letters");

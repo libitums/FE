@@ -45,7 +45,7 @@ export type MoreCopy = {
     readonly review: (count: number) => string;
     readonly reviewTime: string;
     readonly nothingToReview: string;
-    readonly filters: Readonly<Record<"all" | "new" | "review" | "known", string>>;
+    readonly filters: Readonly<Record<"all" | "starred" | "new" | "review" | "known", string>>;
     readonly status: Readonly<Record<"new" | "review" | "known", string>>;
     readonly episodeShort: (order: number) => string;
     readonly episodeLong: (order: number, title: string) => string;
@@ -61,6 +61,11 @@ export type MoreCopy = {
     readonly practice: string;
     readonly empty: string;
     readonly emptyBody: string;
+    /** 별 단추의 이름 — 단어를 넣어 「Star 물」. 켜졌으면 `common.selected`가 꼬리를 붙입니다. */
+    readonly star: (word: string) => string;
+    /** Starred 칩이 비었을 때. */
+    readonly emptyStarred: string;
+    readonly emptyStarredBody: string;
   };
   readonly review: {
     readonly badge: string;
