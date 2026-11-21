@@ -4,7 +4,7 @@ import { privacyProvidersEn } from "./privacy-en-providers";
 import { legalMail as mail } from "./legal-contact";
 
 /** 개인정보 처리방침의 시행일입니다. 모든 언어판이 이 값을 씁니다. */
-export const privacyEffectiveIso = "2026-11-20";
+export const privacyEffectiveIso = "2026-11-21";
 
 // 개인정보 처리방침(영어 · 기준본)입니다. 내용을 바꾸면 `privacy-ko.ts`를 같은 PR에서 맞추고 시행일을 올립니다.
 export const privacyEn: LegalDocument = {
@@ -14,7 +14,7 @@ export const privacyEn: LegalDocument = {
   description:
     "How Duru, a Korean learning app, collects, uses, shares, and keeps personal information.",
   effectiveLabel: "Effective date",
-  effectiveDate: "November 20, 2026",
+  effectiveDate: "November 21, 2026",
   effectiveIso: privacyEffectiveIso,
   translationNote: "",
   intro: [
@@ -78,11 +78,12 @@ export const privacyEn: LegalDocument = {
             "Website visit information: kept for up to 14 months after it is collected.",
             "Text recognized in the web trial: deleted automatically 90 days after it is saved.",
             "Pre-registration email: until we send the launch notice and for up to 6 months after that, or until you ask us to delete it.",
+            "Sign-up reward check: to stop the same person from claiming the sign-up reward again by deleting an account and signing up again, we keep the identifiers used to sign up (sign-in provider ID, email address, phone number) only as a salted one-way hash, never in their original form. This hash is kept after you delete your account, and the original identifiers cannot be recovered from it.",
           ],
         },
         {
           kind: "paragraph",
-          text: "When you delete your account, we delete your account information without delay, unless we are required by law to keep it for a set period.",
+          text: "When you delete your account, we delete your account information without delay, unless we are required by law to keep it for a set period. The sign-up reward check hash described above is the only exception we keep after deletion.",
         },
       ],
     },

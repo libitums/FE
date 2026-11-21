@@ -7,6 +7,9 @@
 -- 3. 재가입 막기: 받은 계정의 신원 키(로그인 제공자 id · 이메일 · 전화)를 솔트 해시로 `companion.signup_reward_keys`에 남긴다. 사용자 FK가 없어
 --    탈퇴(auth.users 삭제 → 원장 cascade) 뒤에도 남고, 같은 신원으로 새로 만든 계정은 받지 못한다. 원문은 저장하지 않는다.
 --    못 막는 것: 다른 Google · Apple 계정 · 다른 이메일 · 다른 전화로 만든 새 계정(기기 식별자를 서버가 받지 않는다 — ADR-0174 「대가」).
+-- 4. 출시 보너스(ADR-0140 launch_bonus 100)는 기존 회원만(2026-11-21 사용자 결정): `companion_claim_coins()`가 같은 기준 시각
+--    `signup_reward_since` 뒤에 만든 계정에는 보너스를 주지 않는다 — 새 계정은 가입 보상 100만. 학습 보상(레슨당 5)은 그대로.
+--    응답에 `newAccount`(기준 시각 뒤 계정인가)를 더해 앱이 새 계정에 엽전 출시 모달을 띄우지 않게 한다.
 
 alter table companion.settings
   add column signup_reward integer not null default 100 check (signup_reward between 0 and 100000),
@@ -97,3 +100,56 @@ end;
 $$;
 revoke all on function public.companion_claim_signup_reward() from public, anon;
 grant execute on function public.companion_claim_signup_reward() to authenticated;
+
+-- 출시 보너스는 기존 회원만(위 4). 본문은 20261201(배포 콘텐츠 유닛만 학습 보상)과 같고, 보너스 조건과 `newAccount`만 더했다.
+create or replace function public.companion_claim_coins()
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user uuid := auth.uid();
+  s companion.settings;
+  v_progress jsonb;
+  v_unit record;
+  v_learning integer := 0;
+  v_bonus integer := 0;
+  v_created timestamptz;
+  v_new boolean;
+begin
+  if v_user is null then
+    raise exception 'not authenticated' using errcode = '28000';
+  end if;
+  select * into s from companion.settings;
+  select created_at into v_created from auth.users where id = v_user;
+  -- 가입 보상과 같은 기준 시각 — 그 뒤에 만든 계정이 새 계정이다.
+  v_new := s.signup_reward_since is not null and v_created is not null and v_created >= s.signup_reward_since;
+  select progress into v_progress from public.learning_progress where user_id = v_user;
+  for v_unit in
+    select distinct src.episode, src.unit from (
+      select e.key as episode, u.value as unit
+      from jsonb_each(coalesce(v_progress -> 'catalogProgress', '{}'::jsonb)) e
+      cross join lateral jsonb_array_elements_text(case when jsonb_typeof(e.value) = 'array' then e.value else '[]'::jsonb end) u
+      union all
+      select e.key, u.value
+      from jsonb_each(coalesce(v_progress -> 'coinUnits', '{}'::jsonb)) e
+      cross join lateral jsonb_array_elements_text(case when jsonb_typeof(e.value) = 'array' then e.value else '[]'::jsonb end) u
+    ) src
+    -- 배포 콘텐츠에 있는 유닛만(ADR-0148). 표의 check가 intro · INT · 길이를 이미 막지만 제외 규칙은 여기도 적어 둔다.
+    join companion.content_units cu on cu.episode_id = src.episode and cu.unit_key = src.unit
+    where src.unit not in ('intro', 'INT')
+  loop
+    if companion.grant_once(v_user, s.learning_reward, 'learning', v_user::text || ':' || v_unit.episode || ':' || v_unit.unit) then
+      v_learning := v_learning + s.learning_reward;
+    end if;
+  end loop;
+  if not v_new and companion.grant_once(v_user, s.launch_bonus, 'launch_bonus', v_user::text || ':2026-11') then
+    v_bonus := s.launch_bonus;
+  end if;
+  return jsonb_build_object('learning', v_learning, 'bonus', v_bonus, 'newAccount', v_new,
+    'wallet', companion.wallet_json(v_user, now()));
+end;
+$$;
+revoke all on function public.companion_claim_coins() from public, anon;
+grant execute on function public.companion_claim_coins() to authenticated;

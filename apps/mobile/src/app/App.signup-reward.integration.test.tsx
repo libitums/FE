@@ -29,10 +29,11 @@ const reward = vi.hoisted(() => ({
   result: { granted: 100, balance: 100 } as { granted: number; balance: number } | null,
 }));
 const coins = vi.hoisted(() => ({
-  result: { learning: 0, bonus: 100, balance: 200 } as {
+  result: { learning: 0, bonus: 100, balance: 200, newAccount: false } as {
     learning: number;
     bonus: number;
     balance: number;
+    newAccount: boolean;
   } | null,
 }));
 vi.mock("../lib/signup-reward-api", async (original) => ({
@@ -65,7 +66,7 @@ const tapGotIt = () =>
 beforeEach(async () => {
   calls.order = [];
   reward.result = { granted: 100, balance: 100 };
-  coins.result = { learning: 0, bonus: 100, balance: 200 };
+  coins.result = { learning: 0, bonus: 100, balance: 200, newAccount: false };
   await resetMessengerChatSource();
 });
 afterEach(() => {
@@ -194,4 +195,22 @@ test("SR-I4 가입 보상과 출시 보너스를 둘 다 받으면 가입 모달
   await flushRounds(4);
   expect(present(ids.modal)).toBe(false);
   expect(present(launch.coins)).toBe(true);
+});
+
+test("SR-I5 새 계정은 출시 보너스가 없어(ADR-0174) 가입 모달 뒤 엽전 출시 모달 없이 채팅 모달만", async () => {
+  coins.result = { learning: 10, bonus: 0, balance: 110, newAccount: true };
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, boot(memberStore()));
+  await flushRounds(4);
+  expect(present(ids.modal)).toBe(true);
+  vi.useFakeTimers();
+  tapGotIt();
+  act(() => {
+    vi.advanceTimersByTime(3_000);
+  });
+  vi.useRealTimers();
+  await flushRounds(4);
+  expect(calls.order).toContain("coins");
+  expect(present(ids.modal)).toBe(false);
+  expect(present(launch.coins)).toBe(false);
+  expect(present(launch.chat)).toBe(true);
 });

@@ -56,7 +56,9 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.admin.query("truncate auth.users cascade");
   await db.admin.query("truncate companion.signup_reward_keys");
-  await db.admin.query("update companion.settings set signup_reward = 100");
+  await db.admin.query(
+    "update companion.settings set signup_reward = 100, signup_reward_since = now() - interval '1 hour'",
+  );
   await addUser(user, { email: "Mina@Example.test", identities: [["google", "g-111"]] });
   await signIn(app, user);
 });
@@ -158,11 +160,52 @@ test("SW-S8. 키 표에는 원문이 없다 — 64자 16진 해시만, 신원마
   }
 });
 
-test("SW-S9. 출시 지급(companion_claim_coins)과 따로 — 둘 다 받으면 잔액은 합", async () => {
+test("SW-S9. 새 계정은 출시 보너스를 받지 않는다 — 가입 보상 100만, 학습 보상은 그대로 · newAccount 참", async () => {
+  await db.admin.query(`insert into public.learning_progress (user_id, progress) values ($1, $2)`, [
+    user,
+    JSON.stringify({ version: 1, catalogProgress: { "u01-water": ["S1", "S2"] }, coinUnits: {} }),
+  ]);
   await claim();
   const coins = (await app.query("select public.companion_claim_coins() as c")).rows[0].c as {
+    learning: number;
     bonus: number;
+    newAccount: boolean;
     wallet: { balance: number };
   };
-  expect(coins).toMatchObject({ bonus: 100, wallet: { balance: 200 } });
+  expect(coins).toMatchObject({
+    learning: 10,
+    bonus: 0,
+    newAccount: true,
+    wallet: { balance: 110 },
+  });
+  const bonusRows = await db.admin.query(
+    "select count(*)::int as n from companion.credit_ledger where user_id = $1 and reason = 'launch_bonus'",
+    [user],
+  );
+  expect(bonusRows.rows[0]).toEqual({ n: 0 });
+});
+
+test("SW-S10. 도입 전 계정(기존 회원)은 출시 보너스 100을 그대로 받고 가입 보상은 없다 · newAccount 거짓", async () => {
+  await addUser(other, { email: "old@example.test", createdAt: "2026-01-01T00:00:00Z" });
+  const b = await db.connect();
+  await signIn(b, other);
+  expect(await claim(b)).toMatchObject({ granted: 0, reason: "existing_account" });
+  const coins = (await b.query("select public.companion_claim_coins() as c")).rows[0].c as {
+    bonus: number;
+    newAccount: boolean;
+    wallet: { balance: number };
+  };
+  expect(coins).toMatchObject({ bonus: 100, newAccount: false, wallet: { balance: 100 } });
+});
+
+test("SW-S11. 두 함수는 같은 기준 시각을 쓴다 — 기준을 옮기면 출시 보너스 판정도 따라간다", async () => {
+  await db.admin.query(
+    "update companion.settings set signup_reward_since = now() + interval '1 day'",
+  );
+  const coins = (await app.query("select public.companion_claim_coins() as c")).rows[0].c as {
+    bonus: number;
+    newAccount: boolean;
+  };
+  expect(coins).toMatchObject({ bonus: 100, newAccount: false });
+  expect(await claim()).toMatchObject({ granted: 0, reason: "existing_account" });
 });
