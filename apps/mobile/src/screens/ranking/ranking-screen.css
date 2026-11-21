@@ -1,10 +1,15 @@
 /* 주간 순위 화면(ADR-0170). 토큰은 CSS 커스텀 프로퍼티로만 씁니다(ADR-0014 D1) — 시안 hex와의 대응은 디자인 기록에.
    전역 머리가 없는 탭 루트라(메신저 목록과 같은 규칙) 제목이 셸이 비운 안전 영역 바로 아래에서 시작합니다.
    shorthand에 calc가 섞이면 Lynx가 선언을 버리므로 longhand로 적습니다. */
+/* 아래 여백은 바텀 네비게이션 몫입니다 — 바 묶음이 셸 위에 겹치므로(app.css의 `.app-navigator`) 이 여백이 없으면
+   내 줄 고정 칸 · 안내 · 자리 줄이 바 밑에 깔립니다(fix/ranking-bottom-under-nav). 값은 바 높이 68pt(위 8 + 항목 48 +
+   아래 12)로 다른 탭 루트와 같습니다. 목록이 아니라 화면 뿌리에 두는 것은 맨 아래가 스크롤이 아닌 고정 칸이라서입니다 —
+   스크롤은 고정 칸 위에서 끝나고, 고정 칸 · 안내 · 자리 줄이 모두 바 위에서 끝나야 합니다. */
 .ranking-screen {
   display: flex;
   flex-direction: column;
   flex: 1;
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
   background-color: var(--libitum-color-background-primary);
 }
 
