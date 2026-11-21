@@ -96,6 +96,11 @@ export type SuggestedFriendsPort = {
    * 못 읽음(null)은 빈 목록과 같습니다. 없으면(가짜 출처 · 테스트) 카탈로그의 일반 인물이 그대로 섭니다.
    */
   readonly visibleFriends?: () => Promise<readonly VisibleFriend[] | null>;
+  /**
+   * 이 실행 · 이 계정에서 마지막으로 읽은 보이는 친구(없으면 null). 목록 화면이 다시 설 때 첫 프레임부터 이 값으로 그리고, 새로 읽은
+   * 값이 오면 바꿉니다 — 탭에 들어올 때마다 새 친구가 늦게 끼어 줄이 바뀌지 않게.
+   */
+  readonly lastVisibleFriends?: () => readonly VisibleFriend[] | null;
   /** 성인 확인(ADR-0164 D4) — 없으면 묻지 않습니다. */
   readonly adultAck?: AdultAckPort;
 };

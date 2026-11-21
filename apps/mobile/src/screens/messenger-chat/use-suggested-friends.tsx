@@ -81,7 +81,10 @@ export function useSuggestedFriends({
   const toastKey = useRef(0);
   const viewedSent = useRef(false);
   const [offers, setOffers] = useState<readonly EarlyAccessListing[]>([]);
-  const [visible, setVisible] = useState<readonly VisibleFriend[] | null>(null);
+  // 첫 값은 이 계정에서 마지막으로 읽은 목록 — 탭에 다시 들어올 때 새 친구가 늦게 끼어 줄이 바뀌지 않게(ADR-0164 D2 개정).
+  const [visible, setVisible] = useState<readonly VisibleFriend[] | null>(
+    () => port?.lastVisibleFriends?.() ?? null,
+  );
   const ack = useAdultAck(port?.adultAck);
 
   // 서버 제안(ADR-0162 D5)은 목록 마운트마다 한 번 읽어 카탈로그에 얹습니다 — 못 읽으면 제안 없음.
@@ -104,7 +107,8 @@ export function useSuggestedFriends({
     };
   }, [hasLoader]);
 
-  // 보이는 추천 친구(ADR-0164 D2)도 마운트마다 한 번 — 읽기 전 · 못 읽음은 일반 인물이 없습니다(서버 포트가 없으면 거르지 않음).
+  // 보이는 추천 친구(ADR-0164 D2)도 마운트마다 한 번 — 기억도 없이 읽기 전 · 못 읽음이면 일반 인물이 없습니다(서버 포트가 없으면
+  // 거르지 않음). 못 읽음(null)은 기억한 줄을 지우지 않습니다.
   const loadVisibleRef = useRef(port?.visibleFriends ?? null);
   loadVisibleRef.current = port?.visibleFriends ?? null;
   const filtersFriends = loadVisibleRef.current !== null;
@@ -114,7 +118,7 @@ export function useSuggestedFriends({
     let live = true;
     void loadVisible()
       .then((list) => {
-        if (live) setVisible(list);
+        if (live && list !== null) setVisible(list);
       })
       .catch(() => undefined);
     return () => {

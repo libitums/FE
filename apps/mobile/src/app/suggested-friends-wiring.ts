@@ -17,8 +17,10 @@ import type {
   EarlyAccessResult,
   FriendCatalog,
   SuggestedFriendsPort,
+  VisibleFriend,
 } from "../screens/messenger-chat/friend-catalog.contract";
 import type { EarlyAccessRemote } from "../screens/messenger-chat/early-access-parse";
+import { createVisibleFriendsMemory } from "../screens/messenger-chat/visible-friends-memory";
 import {
   currentMessengerChatSource,
   messengerUnlockStore,
@@ -33,11 +35,14 @@ export function setEarlyAccessRemote(factory: (() => ChatRemote) | null): void {
   earlyFactory = factory;
   earlyRemote = null;
   cachedPort = null;
+  visibleMemory = createVisibleFriendsMemory();
 }
 
 let earlyFactory: (() => ChatRemote) | null = null;
 let earlyRemote: ChatRemote | null = null;
 let askedOverride: AdultAckAskedStore | null = null;
+// 보이는 추천 친구의 실행 중 기억(계정마다) — 목록 화면이 다시 설 때 첫 프레임부터 같은 줄을 그립니다.
+let visibleMemory = createVisibleFriendsMemory();
 
 /** 서버 포트는 처음 쓸 때(배경 스레드 — 효과 · 이벤트) 한 번 만듭니다. */
 function serverRemote(): ChatRemote | null {
@@ -79,14 +84,24 @@ const adultAckPort: AdultAckPort = {
   markAsked: () => askedStore().markAsked(),
 };
 
-/** 보이는 추천 친구 — 원격에 추천 친구 포트가 없거나 못 읽으면 null(일반 인물이 서지 않음). */
+/**
+ * 보이는 추천 친구 — 원격에 추천 친구 포트가 없거나 못 읽으면 null(일반 인물이 서지 않음). 읽은 목록은 부른 때의 계정으로 기억합니다
+ * (못 읽음은 앞 기억을 지우지 않음).
+ */
 async function visibleFriends() {
+  const key = sourceKey();
+  let list: readonly VisibleFriend[] | null;
   try {
-    return (await serverRemote()?.friends?.visible()) ?? null;
+    list = (await serverRemote()?.friends?.visible()) ?? null;
   } catch {
-    return null;
+    list = null;
   }
+  visibleMemory.remember(key, list);
+  return list;
 }
+
+/** 이 계정에서 마지막으로 읽은 보이는 친구 — 읽은 적이 없으면 null. */
+const lastVisibleFriends = () => visibleMemory.recall(sourceKey());
 
 /** 열기 결과를 화면 결과로 옮기고, 돌려받은 서버 지갑 잔액을 머리 엽전 칩에 알립니다. */
 async function unlockEarly(characterId: string): Promise<EarlyAccessResult> {
@@ -129,7 +144,9 @@ export function suggestedFriendsPort(): SuggestedFriendsPort {
     earlyAccess: earlyFactory === null ? null : unlockEarly,
     offers: earlyFactory === null ? null : async () => (await earlyAccessRemote()?.offers()) ?? [],
     // 추천 친구(ADR-0164) — 서버 포트가 끼워진 앱에서만. 손님 · 시험 계정이 아닌 회원은 빈 목록이라 일반 인물이 없습니다.
-    ...(earlyFactory === null ? {} : { visibleFriends, adultAck: adultAckPort }),
+    ...(earlyFactory === null
+      ? {}
+      : { visibleFriends, lastVisibleFriends, adultAck: adultAckPort }),
   };
   return cachedPort;
 }
