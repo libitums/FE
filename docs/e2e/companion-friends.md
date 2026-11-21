@@ -28,9 +28,23 @@
 | CF-E13 | 무료 등급(체험 1 남음) | 아무 방에서 한 통 | 「Last free message」 띠 → 보낸 뒤 다 쓴 판(Keep chatting · Back to chats). 다른 인물 방으로 가면 판 없이 「3 coins per message」 · 엽전 보내기 |
 | CF-E14 | 무료 등급(체험 0, 엽전 0) | 친구 추가 | 첫 말은 그대로 온다(첫 인사는 무료, ADR-0164 D3). 보내기는 엽전 상점 |
 | CF-E15 | VoiceOver · TalkBack | CF-E5 시트 | 제목이 머리글(dialog), 회색 칸 두 줄이 각각 한 번 읽힘, 두 단추가 버튼. 시트가 떠 있는 동안 뒤 목록이 읽히지 않음 |
+| CF-E16 | A | 메신저 탭 → 여정 탭 → 메신저 탭(두 번째 입장부터), 화면 녹화 | 줄이 첫 프레임부터 친구 넷이 맨 앞인 같은 줄이다 — 이야기 인물 넷으로 그려졌다가 응답 뒤 새 친구 넷으로 바뀌지 않는다(ADR-0164 D2 개정, 2026-11-21). 앱을 켠 뒤 첫 입장은 응답 뒤에 선다 |
 
 PostHog: CF-E3에서 `suggested_friend_opened { characterId: daeun, kind: general, from: row }`, CF-E4에서 `suggested_friend_added`, 첫 보내기에서
 `chat_message_sent`(characterId) · 처음이면 `first_chat_message_sent`. 7일 내 재방문은 `chat_message_sent`의 사람 · 인물별 날짜로 본다(새 이벤트 없음).
 Airbridge로는 나가지 않는다.
 
 **미실행** — 이 브랜치(feat/companion-friends-app)는 vitest · 빌드까지만 확인했다. 시험 계정 · 서버 배포가 필요한 기기 확인이다.
+
+### CF-E16 실행 기록(2026-11-21, fix/chat-new-character-flash)
+
+iPhone 13 mini 시뮬레이터(iOS 26.5) · Android Pixel 8 AVD(`assembleBundled`, `-read-only -no-audio`), 비회원(Continue without an account). 비회원 포트는 서버를 읽지 않아 이 결함이
+나지 않으므로, **기기 확인용 임시 탐침**(커밋하지 않음)으로 비회원 포트에 `visibleFriends`를 700 ms 뒤 친구 넷을 주는 함수로
+끼워 시험 계정의 `companion_friends()` 지연을 흉내 냈다. 메신저 → 여정 → 메신저 입장을 20 fps로 녹화해 프레임을 봤다.
+
+- red(origin/main 9be02583 + 탐침): 입장마다 첫 약 0.7 초 동안 정윤경 · 미나 · 한도윤 · 서재민(회색 고리 · 자물쇠)이 줄에 서다가,
+  차서연 · 권해준 · 송다은 · 임건우(주황 고리 · +)로 한꺼번에 바뀐다. 두 번째 입장에서도 같다.
+- green(이 브랜치 + 같은 탐침): 앱을 켠 뒤 첫 입장은 red와 같고, 두 번째 입장부터 첫 프레임이 새 친구 넷으로 시작해 바뀌지 않는다.
+- 두 판 모두 화면이 설 때 아바타가 한두 프레임 이니셜(자리표시)로 섰다가 그림으로 바뀐다 — 덕수쌤 · 이야기 인물도 같고 red에도 있는 공통
+  아바타 동작(`Avatar`가 `bindload` 전에는 그림을 투명하게 둠)이라 이 수정의 범위 밖이다.
+- 두 기기 실행 로그에 JS 오류 없음. 탐침을 뺀 최종 번들(Android)에서 비회원 줄이 전과 같음(친구 넷 + 이야기 인물)도 확인했다.

@@ -2,10 +2,11 @@ import { afterEach, expect, test, vi } from "vitest";
 
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import type { RemoteEarlyUnlock } from "../screens/messenger-chat/early-access-parse";
+import type { VisibleFriend } from "../screens/messenger-chat/friend-catalog.contract";
 import { setMessengerMediaHooks } from "./messenger-chat-wiring";
 import { setEarlyAccessRemote, suggestedFriendsPort } from "./suggested-friends-wiring";
 
-// `unit` 계층(SW-U1 ~ SW-U3, ADR-0162 D5): 먼저 만나기 결선 — 서버 포트가 없으면 꺼짐, 있으면 제안 목록을 읽고, 열기 결과를
+// `unit` 계층(SW-U1 ~ SW-U6, ADR-0162 D5 · ADR-0164 D2): 먼저 만나기 결선 — 서버 포트가 없으면 꺼짐, 있으면 제안 목록을 읽고, 열기 결과를
 // 화면 결과로 옮기며 돌려받은 지갑 잔액을 머리 엽전 칩 알림으로 보낸다. 서버 포트는 처음 쓸 때 한 번만 만든다(배경 스레드).
 
 afterEach(() => {
@@ -63,6 +64,39 @@ test("SW-U3 열기 결과 — unlocked · already는 열림, short는 모자란 
     kind: "failed",
   });
   expect(await run(null)).toEqual({ kind: "failed" });
+});
+
+function friendsRemote(visible: () => Promise<readonly VisibleFriend[] | null>) {
+  setEarlyAccessRemote(
+    () => ({ friends: { visible, ackAdult: async () => true } }) as unknown as ChatRemote,
+  );
+}
+
+test("SW-U5 보이는 친구를 읽으면 이 계정 값으로 기억해, 다음 입장의 lastVisibleFriends가 같은 목록을 바로 준다", async () => {
+  friendsRemote(async () => [{ id: "seoyeon", romanceTier: "open" }]);
+  const port = suggestedFriendsPort();
+  expect(port.lastVisibleFriends?.() ?? null).toBeNull();
+  await port.visibleFriends?.();
+  expect(suggestedFriendsPort().lastVisibleFriends?.()).toEqual([
+    { id: "seoyeon", romanceTier: "open" },
+  ]);
+});
+
+test("SW-U6 새로 읽기가 실패(null · 던짐)해도 기억은 남고, 서버 포트를 새로 끼우면 앞 값이 남지 않는다", async () => {
+  const daeun = [{ id: "daeun", romanceTier: "standard" }] as const;
+  const visible = vi
+    .fn<() => Promise<readonly VisibleFriend[] | null>>()
+    .mockResolvedValueOnce(daeun)
+    .mockResolvedValueOnce(null)
+    .mockRejectedValueOnce(new Error("offline"));
+  friendsRemote(visible);
+  const port = suggestedFriendsPort();
+  expect(await port.visibleFriends?.()).toEqual(daeun);
+  expect(await port.visibleFriends?.()).toBeNull();
+  expect(await port.visibleFriends?.()).toBeNull();
+  expect(port.lastVisibleFriends?.()).toEqual(daeun);
+  friendsRemote(async () => null);
+  expect(suggestedFriendsPort().lastVisibleFriends?.() ?? null).toBeNull();
 });
 
 test("SW-U4 포트는 같은 설정이면 같은 객체 · 같은 함수다 — 렌더마다 새로 지어 제안을 다시 읽지 않게(리뷰 #503)", () => {

@@ -23,6 +23,7 @@ import { catalogOf, friend, general } from "./suggested-friends.test-support";
 
 // `ui` 계층(ML1 · ML2): 목록 화면 + 가짜 출처 + 가짜 포트. 줄이 목록 위에 서고, 시트의 Start chatting이 방을 열면 목록 맨 위
 // NEW 줄 · 줄에서 빠짐 · 토스트 · 이벤트(viewed · added)가 따라오며, See all이 친구 찾기를 엽니다. 손님은 줄이 없습니다.
+// ML4 · ML5(ADR-0164 D2 개정): 다시 선 목록은 기억한 보이는 친구로 첫 프레임을 그리고, 새로 읽기가 못 읽음이면 그대로 둡니다.
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -72,6 +73,7 @@ function portFor(
 function mount(
   access: "open" | "sign-in" = "open",
   early: SuggestedFriendsPort["earlyAccess"] = null,
+  extra: Partial<SuggestedFriendsPort> = {},
 ) {
   const source = makeSource(seed());
   const sink = vi.fn();
@@ -88,7 +90,7 @@ function mount(
         onNoticeShown={vi.fn()}
         access={access}
         onSignIn={vi.fn()}
-        friends={portFor(source, early)}
+        friends={{ ...portFor(source, early), ...extra }}
       />
     </ChatEventsContext.Provider>,
   );
@@ -185,4 +187,50 @@ test("ML3. 먼저 만나기에서 엽전이 모자라면 상점이 열리고, �
   expect(screen.queryByTestId(ids.sheet)).toBeNull();
   expect(screen.getByTestId(dir.screen).getAttribute("accessibility-elements-hidden")).toBe("true");
   expect(onLayerChange).toHaveBeenLastCalledWith(true);
+});
+
+const avatarOrder = (): (string | null)[] =>
+  Array.from(
+    screen.getByTestId(ids.row).querySelectorAll('[data-testid^="suggested-friends-avatar-"]'),
+  ).map((el) => el.getAttribute("data-testid"));
+
+test("ML4. 기억한 보이는 친구가 있으면 새로 읽기가 끝나기 전 첫 프레임부터 그 친구가 줄 맨 앞에 선다", () => {
+  const visibleFriends = vi.fn(() => new Promise<null>(() => undefined));
+  mount("open", null, {
+    visibleFriends,
+    lastVisibleFriends: () => [{ id: "clerk", romanceTier: "standard" }],
+  });
+  expect(visibleFriends).toHaveBeenCalledTimes(1);
+  expect(avatarOrder()).toEqual([ids.avatar("clerk"), ids.avatar("mina")]);
+});
+
+test("ML5. 새로 읽기가 못 읽음(null)이면 기억한 줄을 지우지 않고, 새 목록이 오면 그것으로 바꾼다", async () => {
+  let resolve: (list: readonly { id: string; romanceTier: "standard" }[] | null) => void = () =>
+    undefined;
+  mount("open", null, {
+    visibleFriends: () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+    lastVisibleFriends: () => [{ id: "clerk", romanceTier: "standard" }],
+  });
+  await act(async () => {
+    resolve(null);
+    await Promise.resolve();
+  });
+  expect(avatarOrder()).toEqual([ids.avatar("clerk"), ids.avatar("mina")]);
+  cleanup();
+
+  mount("open", null, {
+    visibleFriends: () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+    lastVisibleFriends: () => [{ id: "clerk", romanceTier: "standard" }],
+  });
+  await act(async () => {
+    resolve([]);
+    await Promise.resolve();
+  });
+  expect(avatarOrder()).toEqual([ids.avatar("mina")]);
 });

@@ -22,6 +22,7 @@ import { legacyPassedSeed } from "./test-helpers/progress-seed";
 // `integration` 계층(FI1 ~ FI5, ADR-0164 「앱 인계」): 실제 App · 메신저 탭 · 추천 친구 결선(`suggested-friends-wiring`) · 가짜 서버
 // 포트(`companion_friends` · `companion_load_profile` · `companion_ack_adult`). 친구 방은 서버 씨앗과 같은 에피소드 없는 잠긴 방이고,
 // 앱 인물 표(정본 JSON)의 소개 · 태그가 시트에 선다. FI5는 출처 + 서버 포트 경계 — 친구를 추가하면 `companion-greet` trigger unlock.
+// FI6(ADR-0164 D2 개정): 탭을 떠났다 돌아오면 다시 읽기가 끝나기 전에도 앞서 읽은 친구가 첫 프레임부터 줄 맨 앞에 선다.
 
 type Profile = { readonly birthYear: number | null; readonly adultAck: boolean };
 
@@ -169,4 +170,30 @@ test("FI5. 서버 방 출처에서 친구를 추가하면 companion-greet를 tri
   await settle();
   expect(greet).toHaveBeenCalledWith("geonwoo", "unlock");
   source.dispose();
+});
+
+test("FI6. 메신저 탭을 떠났다 돌아오면 다시 읽기가 끝나기 전에도 앞서 읽은 친구가 줄 맨 앞에 그대로 선다", async () => {
+  let calls = 0;
+  setEarlyAccessRemote(
+    () =>
+      ({
+        earlyAccess: { offers: async () => [], unlock: async () => null },
+        friends: {
+          visible: () => {
+            calls += 1;
+            return calls === 1 ? Promise.resolve(BOTH) : new Promise<never>(() => undefined);
+          },
+          ackAdult: async () => true,
+        },
+      }) as unknown as ChatRemote,
+  );
+  await openMessenger();
+  expect(rowAvatars().slice(0, 2)).toEqual([ids.avatar("seoyeon"), ids.avatar("daeun")]);
+  openTab("journey");
+  await settle();
+  openTab("messenger");
+  expect(rowAvatars().slice(0, 2)).toEqual([ids.avatar("seoyeon"), ids.avatar("daeun")]);
+  await settle();
+  expect(calls).toBe(2);
+  expect(rowAvatars().slice(0, 2)).toEqual([ids.avatar("seoyeon"), ids.avatar("daeun")]);
 });
