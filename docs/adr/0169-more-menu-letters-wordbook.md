@@ -149,6 +149,45 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
 - 검사: unit LC-U1 ~ U3(`letters-screen.css.unit.test.ts`), ui LS4 · LS5(개정) · LS8(`LettersScreen.ui.test.tsx`), integration LAI5
   (`App.letters-audio.integration.test.tsx`), e2e `docs/e2e/letters-tile-no-haptic.md`.
 
+## 즐겨찾기 개정(2026-11-21)
+
+- **사용자 결정** (2026-11-21, 「1번으로 진행」): 단어장은 단어 카드 활동이 끝나면 저절로 쌓이기만 했다(D4) — 학습자가 고른 단어를 따로 모을 길을 더한다.
+  레슨 단어 카드의 ☆ · 단어장 줄의 ☆ · 단어장 위 「Starred」 걸러보기.
+- **별 단추**(`components/WordStarButton.tsx`, 둘이 함께 씀): 누르는 자리 44 × 44 · 별 22. 켜짐 = `@libitums/icons` `five-pointed-star`(채움) brand-primary,
+  꺼짐 = 같은 path를 선으로만 그린 외곽선(`components/star-outline-icon.ts`, stroke 0.7) fg-neutral-muted — 새 그림 없이 모양 + 색이 함께 바뀐다(색만으로 상태를
+  전하지 않음, WCAG 1.4.1. 두 색의 밝기가 비슷해 색만으로는 가려지지 않는다). 이름은 단어를 넣은 `more.wordbook.star(word)`(en 「Star 물」), 켜짐이면
+  `common.selected` 꼬리(「Star 물, selected」 — [ADR-0016](0016-assistive-technology-semantics.md) D3, traits는 button). `flatten={false}`.
+- **레슨 단어 카드**: **뜻 아래 가운데, 흐름 안**. 처음에는 카드 오른쪽 위 절대 배치였는데, VoiceOver는 DOM이 아니라 프레임 위치로 돌아서
+  ([ADR-0016](0016-assistive-technology-semantics.md) · [ADR-0023](0023-scale-mismatch-in-flex-boxes.md)) 별이 표제어보다 먼저 읽힐 수 있었다(접근성 점검 C1) —
+  흐름 안이면 보이는 순서 = 낭독 순서(표식 → 표제어 → 로마자 → 뜻 → 별)이고 긴 표식과 겹칠 일도 없다(iOS 접근성 트리로 확인). 대가는 카드가 별 한 줄(44 + 간격 12)만큼 길어진 것.
+  처음 상태는 효과(배경 스레드)에서 한 번 읽고(`catalogCardStars`), 누르면 화면 상태가 곧바로 바뀌며 결선(`onCatalogCardStar`)이 기기 단어장에 쓴다.
+  **단어장에 없는 단어에 별을 달면 오늘 처음 본 단어로 함께 적는다**(상자 0 · 내일 복습 — 카드 활동이 끝나 적히는 것과 같은 처음 값). 떼도 기록은 남는다.
+  `voca:` ref가 아닌 카드(`expr:` · ref 없음)에는 별이 없다. 다시 풀기 화면에는 카드가 없다.
+- **단어장 줄**: 맨 오른쪽, 재생 단추처럼 줄 단추 **밖 형제**(접근성 감사 C2). 누르면 결선(`more.onToggleStar`)이 쓰고 새 단어장을 돌려줘 목록이 그것으로 다시 그린다.
+  별 둘레 여백만큼 줄 여백 · 간격에 −8씩 겹쳐 글 폭을 16 돌려받는다. 재생 단추를 40 → 44로 키워 별과 교차 크기를 맞췄다 — 가운데 정렬 줄에서 큰 쪽의 top이
+  위로 올라가 위치(낭독) 순서가 뒤집히지 않게(접근성 점검 M2, ADR-0023 규칙 3). 재생 단추의 권장 터치 미달(위 「대가」)도 함께 풀렸다.
+- **걸러보기**: 기존 칩 줄을 그대로 쓰고 칩 하나를 더한다 — All · **Starred** · New · Review · Got it. Starred가 둘째인 것은 긴 언어(my · th · vi)에서 칩 줄이 넘쳐
+  가로 스크롤(`scroll-view`, 막대 없음)이 될 때도 첫 화면에 보이게 하려는 것이다(Pixel 8 360dp에서는 영어도 넘친다). 스크롤 상자는 화면 끝까지 넓혀 넘칠 때 마지막 칩이
+  화면 끝에서 잘려 보이게 했다(화면 밖 칩의 단서, 접근성 점검 m6). 세그먼트(All / Starred 둘)를 따로 두는 안은 같은 줄에 걸러보기 두 벌이 생겨 버렸다.
+  Starred에 줄이 없으면 빈 안내 「No starred words yet · Tap the star on a word to keep it here.」(단어장이 통째로 빈 상태와 다른 문구, 제목은 머리).
+  **Starred에서 별을 떼면 그 줄은 꺼진 별로 남고, 칩을 바꾸면 빠진다** — 곧바로 빼면 그 별에 있던 낭독 초점이 사라지고 바뀐 것이 들리지 않는다(접근성 점검 M1).
+- **저장 형식**: 기록에 선택 필드 `starred?: true`를 더한다(`libitum.wordbook.<userId>` · `guest` 그대로, 키 · 버전 바꿈 없음). 뗀 기록에는 필드 자체가 없어 이전 형식과 같다.
+  - 이전 형식 읽기: 필드가 없으면 별 없음. 디코드는 `starred === true`만 살리고 그 밖 값은 줄을 버리지 않고 별만 없앤다.
+  - 이전 앱이 새 형식을 읽으면 모르는 필드를 버려 별만 잃는다(줄 · 기록은 그대로).
+  - 비회원 → 계정 합치기(`mergeWordbooks` · `adoptGuestWordbook`)는 별을 **합집합**으로 둔다 — 같은 단어는 어느 쪽에든 별이 있으면 남는다.
+  - 서버 동기화는 여전히 없다(D4).
+- **지표**: `wordbook_star_toggled{starred, source: lesson_card | wordbook}` · `wordbook_filter_switched{filter: all | starred | new | review | known}`(같은 칩을 다시 누르면 내지 않음).
+  공통 속성 surface learning · daysSinceFirstOpen(D6과 같은 길). 이름 90 → 92.
+- **문구**(`UiCopy.more.wordbook`, 7개 언어 실제 번역 — 원어민 검수 전): `star(word)` · `filters.starred` · `emptyStarred` · `emptyStarredBody`.
+  ja · my 별 이름은 상태 꼬리와 어울리게 명사형(「お気に入り 물」 · 「ကြယ်ပွင့် 물」), vi · th · my 칩은 「Đã gắn sao」 · 「ที่ติดดาว」 · 「ကြယ်ပွင့်」(접근성 점검 m1 · m2).
+- **번들**: `.env.local` 없는 빌드에서 origin/main 5,806,169 B → 5,817,759 B(+11,590 B). 천장 5,850,000 B는 올리지 않았다(남은 몫 32,241 B).
+- 켜짐 별 brand-primary는 흰 면 위 3.02 : 1로 WCAG 1.4.11 기준선에 붙어 있다 — **흰 줄 · 흰 카드 위에서만** 쓴다(background-primary 위는 2.97 : 1). 꺼짐 외곽선은 6.6 : 1.
+- **대가**: 단어 자세히(`WordbookWordScreen`)와 오늘의 복습에는 별이 없다(목록에서만 바꿈). 별은 단어장 순서 · 복습 줄에 영향이 없다(즐겨찾기만). 레슨 카드에서 단 별은
+  그 카드 활동 동안만 화면 상태로 들고 있어, 같은 활동 안에 같은 단어가 두 장이면 두 번째 카드는 처음 읽은 값으로 선다.
+- 검사: unit WB-S1 ~ S8(`wordbook-star.unit.test.ts`) · WF1 ~ WF3(`wordbook-filter.unit.test.ts`) · SO-U1 · U2(`wordbook-star-order.css.unit.test.ts`) · LT-S1 · S2 ·
+  EV-S1 · S2 · AN1, ui WSB1 ~ 3 · VC-S1 ~ 3 · WS-S1 ~ S6,
+  integration TI-S1 · MI-S1 · S2 · MM-L3, e2e [수동 절차](../e2e/wordbook-star.md) WST-E1 ~ E8.
+
 ## 버린 대안
 
 - 탭 다섯(설정 유지 + 더보기) — 375 · 390 화면에 64 항목 다섯이 들어가지 않는다(랭킹 탭이 오면 56 양끝 맞춤으로 간다).

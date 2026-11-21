@@ -171,6 +171,51 @@ test("MI7. 오늘의 복습 — 맞히면 단어장 기록이 Got it으로(맞�
   );
 });
 
+// ---------------------------------------------------------------- 즐겨찾기(ADR-0169 즐겨찾기 개정)
+
+const savedWords = (store: Map<string, string>) =>
+  Object.values(
+    (
+      JSON.parse(store.get("libitum.wordbook.guest") ?? "{}") as {
+        words: Record<string, { ref: string; starred?: boolean }>;
+      }
+    ).words,
+  );
+
+test("MI-S1. 단어장 줄의 별 → 기기 단어장에 별 · wordbook_star_toggled(wordbook) · 줄이 켜짐으로, Starred 칩 → 그 줄만 · wordbook_filter_switched", async () => {
+  const { events, store } = await boot(true);
+  tapMore();
+  fireEvent.tap(row("wordbook"), { eventType: "catchEvent" });
+  fireEvent.tap(screen.getByTestId("wordbook-row-1-star"), {});
+  expect(savedWords(store).filter((word) => word.starred === true)).toHaveLength(1);
+  expect(named(events, "wordbook_star_toggled")).toMatchObject([
+    { starred: true, source: "wordbook", surface: "learning" },
+  ]);
+  expect(screen.getByTestId("wordbook-row-1-star")).toHaveAttribute("data-starred", "true");
+  fireEvent.tap(screen.getByTestId("wordbook-filter-starred"), {});
+  expect(named(events, "wordbook_filter_switched")).toMatchObject([{ filter: "starred" }]);
+  expect(screen.queryAllByTestId(/^wordbook-row-\d+$/)).toHaveLength(1);
+  expect(screen.getByTestId("wordbook-row-1")).toBeInTheDocument();
+});
+
+test("MI-S2. Starred에서 별을 떼면 그 줄은 꺼진 별로 남고(초점 유지), 칩을 바꿔 돌아오면 빈 안내 · 기록은 단어장에 남는다", async () => {
+  const { events, store } = await boot(true);
+  tapMore();
+  fireEvent.tap(row("wordbook"), { eventType: "catchEvent" });
+  fireEvent.tap(screen.getByTestId("wordbook-row-0-star"), {});
+  fireEvent.tap(screen.getByTestId("wordbook-filter-starred"), {});
+  fireEvent.tap(screen.getByTestId("wordbook-row-0-star"), {});
+  expect(screen.getByTestId("wordbook-row-0-star")).toHaveAttribute("data-starred", "false");
+  fireEvent.tap(screen.getByTestId("wordbook-filter-all"), {});
+  fireEvent.tap(screen.getByTestId("wordbook-filter-starred"), {});
+  expect(screen.getByTestId("wordbook-empty-starred")).toBeInTheDocument();
+  expect(savedWords(store)).toHaveLength(2);
+  expect(savedWords(store).some((word) => word.starred === true)).toBe(false);
+  expect(
+    named(events, "wordbook_star_toggled").map((event) => "starred" in event && event.starred),
+  ).toEqual([true, false]);
+});
+
 // ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
 test("MI8. 메뉴가 열린 동안 뒤 화면 · 머리는 낭독에서 빠지고(바는 남음) 열림을 한 번 낭독한다", async () => {

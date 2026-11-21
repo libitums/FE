@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { emptyWordbook, wordbookKeyOf, type Wordbook } from "../lib/wordbook";
+import { emptyWordbook, isStarredIn, wordbookKeyOf, type Wordbook } from "../lib/wordbook";
 import { createLearningTrail } from "./learning-trail";
 
 // `unit` 계층: 레슨 자취 — 단어장 기록과 Letters 추천 신호(ADR-0169).
@@ -12,6 +12,7 @@ function trailWith(initial: Wordbook = emptyWordbook) {
     updateWordbook: (update) => {
       book = update(book);
     },
+    readWordbook: () => book,
   });
   return { trail, book: () => book };
 }
@@ -35,6 +36,32 @@ describe("단어장", () => {
     trail.itemAnswered("u01", syllable("i1", "voca:a1"), "correct");
     trail.itemAnswered("u01", syllable("i2", "voca:a1"), "skipped");
     expect(book().words[wordbookKeyOf("u01", "voca:a1")]?.correct).toBe(1);
+  });
+});
+
+describe("별(즐겨찾기)", () => {
+  test("LT-S1. 카드마다 별 상태 — 단어장에 둘 수 없는 카드(ref 없음 · voca 아님)는 null", () => {
+    const { trail } = trailWith();
+    trail.cardsSeen("u01", ["voca:a1"]);
+    trail.setStar("u01", "voca:a1", true);
+    expect(trail.starsOf("u01", ["voca:a1", "voca:b2", undefined, "expr:x"])).toEqual([
+      true,
+      false,
+      null,
+      null,
+    ]);
+  });
+
+  test("LT-S2. 단어장에 없는 단어에 별을 달면 오늘 날짜로 함께 적고, 떼면 기록은 남는다", () => {
+    const { trail, book } = trailWith();
+    trail.setStar("u01", "voca:b2", true);
+    expect(book().words[wordbookKeyOf("u01", "voca:b2")]).toMatchObject({
+      firstSeen: "2026-11-20",
+      starred: true,
+    });
+    trail.setStar("u01", "voca:b2", false);
+    expect(isStarredIn(book(), "u01", "voca:b2")).toBe(false);
+    expect(Object.keys(book().words)).toHaveLength(1);
   });
 });
 

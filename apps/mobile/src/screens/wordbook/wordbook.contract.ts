@@ -8,7 +8,7 @@ export type WordSoundPort = {
   readonly play: (source: string, slow: boolean) => void;
 };
 
-export type WordbookFilter = "all" | "new" | "review" | "known";
+export type WordbookFilter = "all" | "starred" | "new" | "review" | "known";
 
 export type WordbookScreenProps = {
   readonly entries: readonly WordbookEntry[];
@@ -17,6 +17,10 @@ export type WordbookScreenProps = {
   readonly sound: WordSoundPort;
   readonly onOpenWord: (entry: WordbookEntry) => void;
   readonly onReview: () => void;
+  /** 줄의 별을 누름 — 바뀐 뒤 값(ADR-0169 즐겨찾기 개정). */
+  readonly onToggleStar: (entry: WordbookEntry, starred: boolean) => void;
+  /** 걸러보기 칩을 바꿈(이벤트). */
+  readonly onFilterChange: (filter: WordbookFilter) => void;
 };
 
 export type WordbookWordScreenProps = {
@@ -42,7 +46,9 @@ export const wordbookTestIds = {
   filter: (filter: WordbookFilter) => `wordbook-filter-${filter}`,
   row: (index: number) => `wordbook-row-${index}`,
   rowPlay: (index: number) => `wordbook-row-${index}-play`,
+  rowStar: (index: number) => `wordbook-row-${index}-star`,
   empty: "wordbook-empty",
+  emptyStarred: "wordbook-empty-starred",
   word: "wordbook-word",
   listen: "wordbook-listen",
   slow: "wordbook-slow",

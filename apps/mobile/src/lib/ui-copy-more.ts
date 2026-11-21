@@ -58,7 +58,7 @@ const en: MoreCopy = {
     review: (count) => `Review ${n(count, "word", "words")}`,
     reviewTime: "About 1 minute",
     nothingToReview: "Nothing to review today",
-    filters: { all: "All", new: "New", review: "Review", known: "Got it" },
+    filters: { all: "All", starred: "Starred", new: "New", review: "Review", known: "Got it" },
     status: { new: "New", review: "Review", known: "Got it" },
     episodeShort: (order) => `Ep ${order}`,
     episodeLong: (order, title) => `Episode ${order} · ${title}`,
@@ -74,6 +74,9 @@ const en: MoreCopy = {
     practice: "Practice this word",
     empty: "No words yet",
     emptyBody: "New words from your lessons show up here.",
+    star: (word) => `Star ${word}`,
+    emptyStarred: "No starred words yet",
+    emptyStarredBody: "Tap the star on a word to keep it here.",
   },
   review: {
     badge: "Word review",
@@ -146,7 +149,13 @@ const es: MoreCopy = {
     review: (count) => `Repasar ${count} ${count === 1 ? "palabra" : "palabras"}`,
     reviewTime: "Alrededor de 1 minuto",
     nothingToReview: "Nada que repasar hoy",
-    filters: { all: "Todas", new: "Nuevas", review: "Repasar", known: "Aprendidas" },
+    filters: {
+      all: "Todas",
+      starred: "Destacadas",
+      new: "Nuevas",
+      review: "Repasar",
+      known: "Aprendidas",
+    },
     status: { new: "Nueva", review: "Repasar", known: "Aprendida" },
     episodeShort: (order) => `Ep. ${order}`,
     episodeLong: (order, title) => `Episodio ${order} · ${title}`,
@@ -162,6 +171,9 @@ const es: MoreCopy = {
     practice: "Practicar esta palabra",
     empty: "Aún no hay palabras",
     emptyBody: "Las palabras nuevas de tus lecciones aparecen aquí.",
+    star: (word) => `Destacar ${word}`,
+    emptyStarred: "Aún no hay palabras destacadas",
+    emptyStarredBody: "Toca la estrella de una palabra para guardarla aquí.",
   },
   review: {
     badge: "Repaso de palabras",
@@ -233,7 +245,7 @@ const id: MoreCopy = {
     review: (count) => `Ulangi ${count} kata`,
     reviewTime: "Sekitar 1 menit",
     nothingToReview: "Tidak ada yang perlu diulang hari ini",
-    filters: { all: "Semua", new: "Baru", review: "Ulangi", known: "Hafal" },
+    filters: { all: "Semua", starred: "Berbintang", new: "Baru", review: "Ulangi", known: "Hafal" },
     status: { new: "Baru", review: "Ulangi", known: "Hafal" },
     episodeShort: (order) => `Ep ${order}`,
     episodeLong: (order, title) => `Episode ${order} · ${title}`,
@@ -249,6 +261,9 @@ const id: MoreCopy = {
     practice: "Latih kata ini",
     empty: "Belum ada kata",
     emptyBody: "Kata baru dari pelajaranmu muncul di sini.",
+    star: (word) => `Beri bintang ${word}`,
+    emptyStarred: "Belum ada kata berbintang",
+    emptyStarredBody: "Ketuk bintang pada sebuah kata untuk menyimpannya di sini.",
   },
   review: {
     badge: "Ulang kata",
@@ -275,13 +290,6 @@ const id: MoreCopy = {
   },
 };
 
-export const moreCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my", MoreCopy>> =
-  {
-    en,
-    es,
-    id,
-    ja: moreCopyJa,
-    vi: moreCopyVi,
-    th: moreCopyTh,
-    my: moreCopyMy,
-  };
+type MoreLanguage = "en" | "es" | "id" | "ja" | "vi" | "th" | "my";
+const table = { en, es, id, ja: moreCopyJa, vi: moreCopyVi, th: moreCopyTh, my: moreCopyMy };
+export const moreCopy: Readonly<Record<MoreLanguage, MoreCopy>> = table;

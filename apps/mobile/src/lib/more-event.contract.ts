@@ -3,6 +3,7 @@
 // `emitCompanionEvent`입니다. 값은 문자열 · 불리언뿐입니다(수는 10진 문자열).
 
 import type { MoreRoot } from "../app/nav-state";
+import type { WordbookFilter } from "../screens/wordbook/wordbook.contract";
 
 type Common = {
   readonly surface: "learning";
@@ -11,6 +12,12 @@ type Common = {
 
 /** Letters 추천의 이유 — 어렵게 끝냄(hard) · 실패 또는 나가기(failed). */
 export type LettersRecommendReasonValue = "hard" | "failed";
+
+/** 별을 누른 자리. */
+export type WordStarSource = "lesson_card" | "wordbook";
+
+/** 단어장 걸러보기 칩. */
+export type WordbookFilterValue = WordbookFilter;
 
 export type MoreEvent =
   /** ⋯를 눌러 메뉴 카드를 열었을 때. */
@@ -41,6 +48,14 @@ export type MoreEvent =
   | (Common & { readonly name: "wordbook_opened"; readonly words: string; readonly due: string })
   /** 복습 한 문항의 답. */
   | (Common & { readonly name: "wordbook_review_answered"; readonly correct: boolean })
+  /** 단어의 별(즐겨찾기)을 달거나 뗌 — 레슨 단어 카드 · 단어장 줄(ADR-0169 즐겨찾기 개정). */
+  | (Common & {
+      readonly name: "wordbook_star_toggled";
+      readonly starred: boolean;
+      readonly source: WordStarSource;
+    })
+  /** 단어장 걸러보기 칩을 바꿈. */
+  | (Common & { readonly name: "wordbook_filter_switched"; readonly filter: WordbookFilterValue })
   /** 여정맵 Letters 추천 대화상자. */
   | (Common & {
       readonly name: "letters_recommend_shown";

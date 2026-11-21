@@ -83,10 +83,21 @@
   height: 18px;
 }
 
+/* 칩 다섯(All · Starred · New · Review · Got it, 즐겨찾기 개정)은 좁은 화면 · 긴 언어(my · th · vi)에서 한 줄을 넘어 가로로 스크롤합니다.
+   스크롤 상자는 화면 끝까지 넓히고(화면 여백 16을 음수 여백으로) 칩 줄에 같은 안쪽 여백을 줘, 넘칠 때 마지막 칩이 화면 끝에서 잘려 보이게
+   합니다 — 화면 밖 칩이 있다는 단서(접근성 점검 m6). */
+.wordbook-filters-scroll {
+  flex-shrink: 0;
+  margin-left: calc(-1 * var(--libitum-spacing-16));
+  margin-right: calc(-1 * var(--libitum-spacing-16));
+}
+
 .wordbook-filters {
   display: flex;
   flex-direction: row;
   column-gap: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
 }
 
 .wordbook-filter {
@@ -157,14 +168,23 @@
 }
 
 .wordbook-play {
-  width: var(--libitum-spacing-40);
-  height: var(--libitum-spacing-40);
+  /* 44 — 별 단추와 교차 크기가 같아야 가운데 정렬 줄에서 위치(낭독) 순서가 뒤집히지 않습니다(접근성 점검 M2). */
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--libitum-radius-full);
   background-color: var(--libitum-color-background-elevated);
+}
+
+/* 별 단추(44) — 별 22 둘레의 빈 여백 11을 줄 오른쪽 여백(14) · 칩과의 간격(12)에 8씩 겹쳐 글 폭을 16 돌려받습니다.
+   누르는 자리는 44 그대로이고, 별 그림은 줄 끝에서 17 안쪽(재생 단추 왼쪽 14와 비슷)에 섭니다. */
+.wordbook-row-star {
+  margin-left: calc(-1 * var(--libitum-spacing-8));
+  margin-right: calc(-1 * var(--libitum-spacing-8));
+  flex-shrink: 0;
 }
 
 .wordbook-play-off {

@@ -68,13 +68,13 @@ function routeKey(screen: MoreScreen): string {
   return screen.name;
 }
 
-/** 기기 단어장 칸 — 마운트 때(효과) 한 번 읽습니다. 첫 그림은 빈 단어장입니다. */
-function useStoredWordbook(): Wordbook {
+/** 기기 단어장 칸 — 마운트 때(효과) 한 번 읽습니다. 첫 그림은 빈 단어장입니다. 별을 누르면 결선이 돌려준 새 단어장으로 바꿉니다. */
+function useStoredWordbook(): readonly [Wordbook, (book: Wordbook) => void] {
   const [book, setBook] = useState<Wordbook>(emptyWordbook);
   useEffect(() => {
     setBook(loadCurrentWordbook());
   }, []);
-  return book;
+  return [book, setBook];
 }
 
 function WordbookRoute({
@@ -86,7 +86,7 @@ function WordbookRoute({
   readonly more: MoreWiring;
   readonly wiring: ScreenWiring;
 }): ReactNode {
-  const book = useStoredWordbook();
+  const [book, setBook] = useStoredWordbook();
   const catalog = wiring.episodeContent.catalog;
   const today = todayLocal();
   const entries = useMemo(() => wordbookEntriesOf(book, catalog, today), [book, catalog, today]);
@@ -108,6 +108,8 @@ function WordbookRoute({
         sound={more.wordSound}
         onOpenWord={more.onOpenWord}
         onReview={() => more.onReview(null)}
+        onToggleStar={(entry, starred) => setBook(more.onToggleStar(entry, starred))}
+        onFilterChange={more.onFilterChange}
       />
     );
   if (screen.name === "wordbook-word") {

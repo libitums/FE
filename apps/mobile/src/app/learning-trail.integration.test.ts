@@ -1,10 +1,17 @@
 import { afterEach, expect, test, vi } from "vitest";
 
 import type { AnswerResult } from "../lib/answer-result";
-import { loadWordbook, wordbookKeyOf } from "../lib/wordbook";
+import {
+  adoptGuestWordbook,
+  emptyWordbook,
+  isStarredIn,
+  loadWordbook,
+  saveWordbook,
+  wordbookKeyOf,
+} from "../lib/wordbook";
 import { catalogItemReportWiring } from "./catalog-item-report-wiring";
 import { catalogLessonFinish, type CatalogLessonFinishDeps } from "./catalog-lesson-finish";
-import type { CatalogLessonPlan } from "./catalog-lesson-types";
+import type { CatalogItemRef, CatalogLessonPlan } from "./catalog-lesson-types";
 import type { CatalogReview } from "./catalog-review";
 import { createLearningTrail } from "./learning-trail";
 import { deviceLearningTrailPort } from "./learning-trail-port";
@@ -51,6 +58,23 @@ test("TI1. 단어 카드 활동 끝 → 비회원 단어장에 voca가 들고, �
   const record = loadWordbook("guest").words[wordbookKeyOf("u01-water", "voca:a1")];
   expect(record).toMatchObject({ incorrect: 1, last: "incorrect" });
   expect(Object.keys(loadWordbook("guest").words)).toHaveLength(1);
+});
+
+test("TI-S1. (즐겨찾기 개정) 레슨 카드 별 → 비회원 단어장에 별과 함께 들고, 로그인 이관 뒤에도 계정 칸에 별이 남는다", () => {
+  installStorage();
+  const trail = createLearningTrail(deviceLearningTrailPort());
+  const report = catalogItemReportWiring({ episodeIntroEventSink: null, learningTrail: trail });
+  const cards: readonly CatalogItemRef[] = [
+    { itemId: "s1-01", itemType: "VOCAB_CARD", contentRef: "voca:a1" },
+    { itemId: "s1-02", itemType: "VOCAB_CARD", contentRef: "expr:b2" },
+  ];
+  expect(report.catalogCardStars("u01-water", cards)).toEqual([false, null]);
+  report.onCatalogCardStar("u01-water", cards[0]!, true);
+  expect(report.catalogCardStars("u01-water", cards)).toEqual([true, null]);
+  expect(loadWordbook("guest").words[wordbookKeyOf("u01-water", "voca:a1")]?.starred).toBe(true);
+  saveWordbook("u1", emptyWordbook);
+  adoptGuestWordbook("u1");
+  expect(isStarredIn(loadWordbook("u1"), "u01-water", "voca:a1")).toBe(true);
 });
 
 function finishWith(trail: ReturnType<typeof createLearningTrail>) {

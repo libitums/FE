@@ -36,7 +36,11 @@ export function todayLocal(): string {
 }
 
 export function deviceLearningTrailPort(): LearningTrailPort {
-  return { today: todayLocal, updateWordbook: (update) => void updateCurrentWordbook(update) };
+  return {
+    today: todayLocal,
+    updateWordbook: (update) => void updateCurrentWordbook(update),
+    readWordbook: loadCurrentWordbook,
+  };
 }
 
 /** 세션마다 하나인 레슨 자취(AppSession이 부름). */

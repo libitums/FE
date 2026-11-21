@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import { lettersStorageKey } from "../lib/letters-recommend";
+import { emptyWordbook } from "../lib/wordbook";
 import { createLearningTrail } from "./learning-trail";
 import type { MoreWiring } from "./more-wiring";
 import { useLettersRecommend } from "./use-letters-recommend";
@@ -38,7 +39,11 @@ function Host({
 
 function setup() {
   const store = installStorage();
-  const trail = createLearningTrail({ today: () => "2026-11-20", updateWordbook: () => {} });
+  const trail = createLearningTrail({
+    today: () => "2026-11-20",
+    updateWordbook: () => {},
+    readWordbook: () => emptyWordbook,
+  });
   trail.lessonEnded("exited");
   const emit = vi.fn();
   const more = { emit, onOpenLetters: vi.fn() } as unknown as MoreWiring;
