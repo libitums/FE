@@ -1,6 +1,7 @@
 // 2026-10-15에 더한 문항 11종의 와이어 스키마입니다.
 import { z } from "zod/mini";
 import {
+  answerAudioFeedbackSchema,
   choiceFeedbackSchema,
   correctFeedbackSchema,
   itemCommon,
@@ -43,12 +44,14 @@ const tilesBuild = {
   context: z.optional(textSchema),
   tiles: z.array(textSchema),
   answers: z.array(textSchema),
+  feedback: answerAudioFeedbackSchema,
 };
 const speech = {
   ...itemCommon,
   prompt: promptSchema,
   stimulus: stimulusSchema,
   answers: z.array(textSchema),
+  feedback: answerAudioFeedbackSchema,
 };
 
 export const addedItemSchemas = [

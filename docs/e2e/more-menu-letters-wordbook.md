@@ -1,6 +1,6 @@
 # 수동 e2e — 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천 (ADR-0169)
 
-**상태: 미실행.** 기기 · 시뮬레이터에서 아직 확인하지 않았다. 전제는 다음과 같다.
+**상태: 일부 실행.** ME-E1~E4 · E20 일부만 fix/more-menu-clipped에서 봤다(iOS 26.5 시뮬레이터 Debug 호스트 · Android 에뮬레이터 `assembleBundled`, 비회원, 소리 끔). 나머지는 미실행. 전제는 다음과 같다.
 - `.env.local` · 값 파일을 main 체크아웃에서 복사한 빌드(시뮬레이터 · 기기 확인 때만), 로그인 계정과 비회원 둘
 - 앱 설정에서 소리 끔(소리 재생 확인 항목만 켬), 끝나면 시뮬레이터 종료
 - 글자 소리 파일은 아직 버킷에 없다 — 소리 없음 상태(ME-E5)를 먼저 보고, 파일을 올린 뒤(ADR-0169 「소리 파일」) ME-E6을 본다
@@ -8,10 +8,10 @@
 
 | id | 확인 | 기대 | 결과 |
 |---|---|---|---|
-| ME-E1 | 여정 지도 바 | 탭 넷 — 여정 · 롤플레이 · 메신저 · 주황 동그라미 ⋯(48, 그림자). 선택 탭 알약과 구분됨 | 미실행 |
-| ME-E2 | ⋯ 누름 | 스크림 없이 바 위 8에 흰 카드가 0.2초 올라옴(움직임 줄이기면 바로 섬) · ⋯ → ×(짙은 주황) · 지도는 어두워지지 않음 · 줄 Letters(NEW) · My words(「N words · M to review」) · Settings | 미실행 |
-| ME-E3 | × 다시 누름 · 바깥 누름 · Android 뒤로 | 각각 카드만 닫힘, 지도 그대로 | 미실행 |
-| ME-E4 | Letters 줄 | 뒤로 없음 · 바 그대로 · ⋯ 동그라미에 틈 + 주황 고리(선택 C) · 위 제목 · 리드 · 「Practice: build sounds」 고정, 아래 40칸만 스크롤 · 마지막 줄이 바에 가리지 않음 | 미실행 |
+| ME-E1 | 여정 지도 바 | 탭 넷 — 여정 · 롤플레이 · 메신저 · 주황 동그라미 ⋯(48, 그림자). 선택 탭 알약과 구분됨 | 통과(iOS · Android) |
+| ME-E2 | ⋯ 누름 | 스크림 없이 바 위 8에 흰 카드가 0.2초 올라옴(움직임 줄이기면 바로 섬) · ⋯ → ×(짙은 주황) · 지도는 어두워지지 않음 · 줄 Letters(NEW) · My words(「N words · M to review」) · Settings | origin/main `703d7d65`에서 **실패** — ×만 바뀌고 카드가 화면 · 접근성 트리에 없음(바 묶음 밖에 그려져 잘림). fix/more-menu-clipped에서 통과(iOS · Android) — 카드 · 줄 셋이 접근성 요소로 나옴 |
+| ME-E3 | × 다시 누름 · 바깥 누름 · Android 뒤로 | 각각 카드만 닫힘, 지도 그대로 | 통과(iOS · Android) — × 다시 누름 · 바깥 · 카드 둘레(좌우 · 위 · 바와의 간격) 누름. Android 뒤로는 미실행 |
+| ME-E4 | Letters 줄 | 뒤로 없음 · 바 그대로 · ⋯ 동그라미에 틈 + 주황 고리(선택 C) · 위 제목 · 리드 · 「Practice: build sounds」 고정, 아래 40칸만 스크롤 · 마지막 줄이 바에 가리지 않음 | 부분 통과(iOS · Android) — Letters 화면 · 바 그대로 · 선택 C 고리. 스크롤 · 마지막 줄 가림은 미확인. My words · Settings 줄도 각 화면을 엶 |
 | ME-E5 | (소리 파일 없음) 칸 누름 | 칸 강조 · 스피커 흐림 · 소리 없음 · 멈춤 · 오류 없음 · VoiceOver 「ㄱ, g / k, sound not available yet」 | 미실행 |
 | ME-E6 | (소리 파일 · 음성 정보 파일 올린 뒤) 칸 누름 | ㄱ → 「가」, ㅑ → 「야」, ㄲ → 「까」, ㅢ → 「의」 · 들은 칸 스피커 주황 | 미실행 |
 | ME-E7 | 설정 › 로마자 끔 → Letters | 칸에 로마자 없음, 낭독에는 로마자 | 미실행 |
@@ -27,4 +27,4 @@
 | ME-E17 | 업데이트 안내 · 엽전 안내가 함께 뜰 때 | 추천은 그 뒤 · 겹치지 않음 | 미실행 |
 | ME-E18 | 설정 길 | `duru://settings` 딥링크 → 더보기 › Settings(선택 C) · 다운로드 시트 「설정 바꾸기」 → 설정 › 다운로드 · 설정 › 로그인(비회원) | 미실행 |
 | ME-E19 | 언어 es · id · ja · vi | 메뉴 · Letters · 퀴즈 · My words · 추천 문구가 그 언어(영어 섞임 없음) · 큰 글자에서 잘림 없음 | 미실행 |
-| ME-E20 | VoiceOver · TalkBack | ⋯ 「More」/「Close menu」/「More, selected」 · 메뉴 줄 하나가 한 요소 · 그림(ㄱ + ㅏ = 가) 낭독 안 함 | 미실행 |
+| ME-E20 | VoiceOver · TalkBack | ⋯ 「More」/「Close menu」/「More, selected」 · 메뉴 줄 하나가 한 요소 · 그림(ㄱ + ㅏ = 가) 낭독 안 함 · 열면 초점이 Letters 줄 | 부분 — TalkBack: 열면 초점이 Letters 줄, 줄 두 번 탭 → 화면 열림, 줄 하나가 한 요소. VoiceOver 미실행(idb 트리로 줄 셋 · traits button만 확인). 그림 낭독 미확인. Android에서 메뉴가 열린 동안 머리 「Notifications」가 트리에 남음(red에서도 같음 — 별건) |

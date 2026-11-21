@@ -13,5 +13,7 @@ export type MoreMenuProps = {
 export const moreMenuTestIds = {
   menu: "more-menu",
   catch: "more-menu-catch",
+  /** 카드 둘레 자리(좌우 16 · 위 16 · 바와의 간격 8) — 눌러도 닫힘. */
+  slot: "more-menu-slot",
   row: (root: MoreRoot) => `more-menu-row-${root}`,
 } as const;

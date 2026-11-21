@@ -5,6 +5,7 @@ import { listenButtonIn } from "../../components/listen-round-buttons.test-suppo
 import type { ItemAnswerReport } from "../../lib/item-answer";
 import {
   echoAudioOf,
+  passAnswerEchoDelay,
   lessonAudioStub,
   listenAudioOf,
   testIdOrder,
@@ -327,13 +328,20 @@ describe("WORD_ORDER — 줄 배치", () => {
     ).toHaveAttribute("data-result", "correct");
   });
 
-  test("SO9. 정답을 확인한 순간 정답 뒤 재생이 한 번 난다", () => {
+  test("SO9. 정답을 확인하면 효과음 틈 뒤에 정답 뒤 재생이 한 번 난다", () => {
     mount([wordOrder]);
     place([1, 2, 0]);
     expect(playAudio).not.toHaveBeenCalled();
 
-    tapAction("Check");
+    vi.useFakeTimers();
+    try {
+      tapAction("Check");
+      expect(playAudio).not.toHaveBeenCalled();
+      passAnswerEchoDelay();
 
-    expect(playAudio).toHaveBeenCalledTimes(1);
+      expect(playAudio).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

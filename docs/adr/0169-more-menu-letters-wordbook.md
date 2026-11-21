@@ -23,6 +23,12 @@
   하나로 다시 세운다(진입 구간에서는 무시). `moreRootActions` · `moreRootOf`.
 - ⋯는 탭을 바꾸지 않고 메뉴 카드를 열고 닫는다(`AppBottomBar`). 열린 동안 ×(brand-strong) · 이름 「Close menu」. 다시 누름 · 바깥 투명 막 · 시스템 뒤로면 닫힌다.
   다른 탭을 누르면 닫고 그 탭으로 간다(막이 바를 덮어 실제로는 닫힘만).
+- ⟨2026-11-20 수정 — fix/more-menu-clipped⟩ 카드는 바 묶음(`.app-navigator`) **안**, 바 앞 흐름 자식이다(`AppNavigator`가 `children`을 바 앞에 그림).
+  처음 구현은 카드를 묶음 밖(`bottom: calc(100% + 8)`)에 절대 배치했는데, iOS 시뮬레이터 · Android `assembleBundled` 둘 다 묶음 경계에서 잘려
+  카드가 화면에도 접근성 트리에도 없었다. 묶음 `overflow: visible`(Lynx 기본값은 `hidden`), 카드 `z-index`, 묶음 `z-index` 빼기로는 풀리지 않았고, 같은 카드를
+  묶음 안(`bottom: 0`)에 두면 그려졌다(Lynx SDK 4.0.1). 카드를 투명 자리(`more-menu-slot`, 안쪽 여백 16/16/8 — 시안의 좌우 16 · 바 위 8, 위 16은 그림자 s3 몫)로
+  감싸 그 둘레를 눌러도 닫히게 했다(묶음이 바깥 막보다 위라 막이 받지 못하는 곳). 줄 · 카드는 `catchtap`이라 그 탭이 자리까지 올라가지 않는다.
+  카드가 트리에서 바보다 앞이라 열면 접근성 초점을 첫 줄(Letters)로 옮긴다(`lib/accessibility.ts` `focusAccessibilityElement` — 메신저 「…」 메뉴의 `restoreAccessibilityFocus`도 이 함수를 부름).
 - ui-lynx `BottomNavigator` 항목에 `variant: "action"` — 48 brand 동그라미 · 흰 아이콘 · 선택이면 알약 대신 바탕색 틈 3 + brand 고리 2(선택 C), 낭독 「More, selected」.
 - 설정으로 가는 길: 메뉴 Settings 줄(`settings_opened`는 설정 루트가 아닐 때만) · 딥링크 settings → `moreRootActions("settings")` · 다운로드 시트 「Change setting」 ·
   비회원 로그인(설정 스택 그대로). 시스템 뒤로는 more 루트에서 여정으로(기존 규칙).
@@ -137,5 +143,5 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
 ## 확인
 
 - 테스트: unit · ui · integration(아래 증거) — mobile 10,249건 통과 · ui-lynx 통과.
-- e2e: [수동 절차](../e2e/more-menu-letters-wordbook.md) ME-E1~E20 미실행.
+- e2e: [수동 절차](../e2e/more-menu-letters-wordbook.md) — ⟨2026-11-20⟩ ME-E1~E4 · E20 일부 실행(메뉴 카드 잘림 수정 뒤 iOS · Android 통과), 나머지 미실행.
 - 성능: [보고서](../performance/reports/more-menu-letters-wordbook-01.md)(미측정, 번들만).
