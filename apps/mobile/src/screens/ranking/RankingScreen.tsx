@@ -11,7 +11,14 @@ import { Button } from "@libitums/ui-lynx/button";
 import type { RankingBoard, RankingBoardKind, RankingRow } from "../../lib/ranking.contract";
 import { useUiCopy } from "../../lib/ui-copy";
 import { rankingTestIds as ids, type RankingScreenProps } from "./ranking.contract";
-import { daysLeft, flagOf, medalOf, zoneBefore, type RankingView } from "./ranking-rules";
+import {
+  avatarToneOf,
+  daysLeft,
+  flagOf,
+  medalOf,
+  zoneBefore,
+  type RankingView,
+} from "./ranking-rules";
 
 import "./ranking-screen.css";
 
@@ -44,7 +51,7 @@ function Face({
 }) {
   const flag = flagOf(countryCode);
   return (
-    <view className="ranking-face">
+    <view className={`ranking-face ranking-face-tone-${avatarToneOf(name)}`}>
       <Avatar name={name} size="sm" accessibility="hidden" />
       {flag === "" ? null : <text className="ranking-flag">{flag}</text>}
     </view>

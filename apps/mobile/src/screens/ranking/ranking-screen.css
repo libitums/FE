@@ -221,6 +221,52 @@
   overflow: visible;
 }
 
+/* 아바타 색(ADR-0170 D10, 사용자 요청 「배경 색 랜덤으로 알록달록 · 글자는 흰색」) — 번호는 이름 해시(`avatarToneOf`)라 사람마다 고정.
+   이니셜(label-m 12px 700, 작은 글)이라 흰 글 대비 4.5 이상만 둡니다(unit RK-U14). 토큰에 있는 색은 토큰, 없는 색상(파랑 · 보라 ·
+   분홍 · 청록 · 황토 · 올리브)은 시안 Ranking 보드 값을 4.5가 넘게 어둡게 한 디자인 값입니다(시안 → 쓴 값 · 대비):
+   0 #3B6FE0 그대로 4.63 · 1 #2FA36B → feedback-correct-text 7.00 · 2 #9B59D0 → #8E4FC8 5.12 · 3 #E0507A → #C43C66 5.02 ·
+   4 #1F9AA8 → #167A86 5.05 · 5 #D98E04 → #9E6200 5.00 · 6 #6B7A8F → gray-800 6.62 · 7 #C2553A → brand-strong 5.46 · 8 #5A8F3E → #4A7A33 5.09.
+   이니셜이 없어 사람 모양이 그려지는 아바타(`-content-placeholder`)는 회색 바탕 그대로 둡니다 — 회색 아이콘이 색 바탕에 묻힙니다. */
+.ranking-face .ui-lynx-avatar-initials {
+  color: var(--libitum-color-white);
+}
+
+.ranking-face-tone-0 .ui-lynx-avatar-content-initials {
+  background-color: #3b6fe0;
+}
+
+.ranking-face-tone-1 .ui-lynx-avatar-content-initials {
+  background-color: var(--libitum-color-feedback-correct-text);
+}
+
+.ranking-face-tone-2 .ui-lynx-avatar-content-initials {
+  background-color: #8e4fc8;
+}
+
+.ranking-face-tone-3 .ui-lynx-avatar-content-initials {
+  background-color: #c43c66;
+}
+
+.ranking-face-tone-4 .ui-lynx-avatar-content-initials {
+  background-color: #167a86;
+}
+
+.ranking-face-tone-5 .ui-lynx-avatar-content-initials {
+  background-color: #9e6200;
+}
+
+.ranking-face-tone-6 .ui-lynx-avatar-content-initials {
+  background-color: var(--libitum-color-gray-800);
+}
+
+.ranking-face-tone-7 .ui-lynx-avatar-content-initials {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ranking-face-tone-8 .ui-lynx-avatar-content-initials {
+  background-color: #4a7a33;
+}
+
 .ranking-flag {
   position: absolute;
   right: calc(var(--libitum-spacing-4) * -1);

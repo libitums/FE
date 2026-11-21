@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testi
 
 import type { RankingBoard, RankingBoardKind } from "../../lib/ranking.contract";
 import { rankingTestIds as ids } from "./ranking.contract";
-import type { RankingView } from "./ranking-rules";
+import { avatarToneOf, type RankingView } from "./ranking-rules";
 import { RankingScreen } from "./RankingScreen";
 
 // `ui` 계층(ADR-0170 RK-UI1 ~ UI9): 순위 화면의 렌더와 상호작용.
@@ -175,4 +175,15 @@ test("RK-UI10. Android 낭독 — 줄 · 내 줄 · 보드 칸 · 불러오는 �
   cleanup();
   mount({ kind: "loading" });
   expect(screen.getByTestId(ids.loading)).toHaveAttribute("flatten", "false");
+});
+
+test("RK-UI11. 아바타 색은 이름 해시 번호(tone) — 줄마다 그 번호, 고정 내 줄은 목록의 내 줄과 같은 색(ADR-0170 D10)", () => {
+  mount({ kind: "ready", board });
+  const faceClass = (testId: string) =>
+    screen.getByTestId(testId).querySelector(".ranking-face")?.getAttribute("class") ?? "";
+  for (const row of board.rows)
+    expect(faceClass(ids.row(row.rank))).toBe(
+      `ranking-face ranking-face-tone-${avatarToneOf(row.name)}`,
+    );
+  expect(faceClass(ids.me)).toBe(`ranking-face ranking-face-tone-${avatarToneOf("Mai")}`);
 });

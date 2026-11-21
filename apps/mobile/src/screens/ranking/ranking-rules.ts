@@ -72,6 +72,22 @@ export function rankingViewOf(input: RankingViewInput): RankingView {
   }
 }
 
+/** 아바타 바탕 색의 수 — `ranking-screen.css`의 `.ranking-face-tone-0` ~ `-8`. */
+export const AVATAR_TONES = 9;
+
+/**
+ * 표시 이름 → 아바타 색 번호(0 ~ 8). 사람마다 고정 — 매 렌더 난수가 아닙니다. 줄에는 user id가 없어(D2) 이름으로 고릅니다.
+ * FNV-1a 32비트(글자 단위) — 31 곱 해시는 9로 나눈 나머지가 몇 색에 몰렸습니다.
+ */
+export function avatarToneOf(name: string): number {
+  const key = name.trim();
+  let hash = 2166136261;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = Math.imul(hash ^ key.charCodeAt(index), 16777619) >>> 0;
+  }
+  return hash % AVATAR_TONES;
+}
+
 /** 방 머리 아래 줄의 값 — 채팅 단어 보드가 준비됐을 때만. */
 export function chatStripOf(
   load: RankingLoad | null,
