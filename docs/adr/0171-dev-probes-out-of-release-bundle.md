@@ -7,7 +7,7 @@
 ## 맥락
 
 - 손글씨 탐침(`screens/handwriting-probe`)과 말하기 탐침(`screens/speech-probe`)은 기기에서 인식기를 확인하려고 만든 개발용 화면이다. **release 사용자는 닿을 수 없다** — 어느 코드도 이 route를 push하지 않고, 제품 부팅 상태(`initialNav` · `entryInitialNav`)에도 없다(`navigation.unit.test.ts` NP2). 닿는 길은 개발자가 `App.tsx`의 `useReducer(navReducer, entryInitialNav)`를 `handwritingProbeNav` · `speechProbeNav`로 잠깐 바꿔 dev 서버로 띄우는 것뿐이다(`dev-probe-nav.ts`).
-- 그런데 `render-screen.tsx`가 두 화면을 정적으로 import해서 release `main.lynx.bundle`에 화면 코드 · CSS가 그대로 실렸다(약 40 kB). 번들 천장(ADR-0149)에 남은 여유가 15 kB 안팎이다.
+- 그런데 `render-screen.tsx`가 두 화면을 정적으로 import해서 release `main.lynx.bundle`에 화면 코드 · CSS가 그대로 실렸다(약 40 kB). 번들 천장(ADR-0149)에 남은 여유가 8 kB 안팎이다.
 
 ## 결정
 
@@ -29,6 +29,6 @@
 
 ## 결과
 
-- release `main.lynx.bundle` 5,835,126 → 5,795,152 bytes(−39,974, .env.local 없는 설정). 번들에 탐침 문자열(`handwriting-probe-screen` · `speech-probe-screen`)이 0건이다. 천장 값(5,850,000)은 그대로다 — 천장은 사용자 결정이다(ADR-0149).
+- release `main.lynx.bundle` 5,842,348 → 5,802,380 bytes(−39,968, .env.local 없는 설정). 번들에 탐침 문자열(`handwriting-probe-screen` · `speech-probe-screen`)이 0건이다. 천장 값(5,850,000)은 그대로다 — 천장은 사용자 결정이다(ADR-0149).
 - dev 빌드는 그대로 탐침을 싣는다(`--mode development` 빌드에서 두 문자열 66 · 107건). 닿는 길(`App.tsx` 부팅 상태 바꿔 끼우기)도 그대로다.
 - 대가: release 설정으로 지은 번들(스토어 빌드 · 내장 번들)에서는 부팅 상태를 바꿔 끼워도 탐침 자리가 빈 화면이다. 탐침은 dev 번들로만 본다.
