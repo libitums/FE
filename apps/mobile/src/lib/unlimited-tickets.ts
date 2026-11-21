@@ -2,11 +2,12 @@
 // 잠금(유닛 열림)은 시험 계정만 풉니다 — 그쪽은 `isTesterAccessActive`를 그대로 읽습니다.
 
 import { planChatTier, planUnlimitedTickets } from "./plan-access";
+import { rewardTicketPassActive } from "./reward-ticket-pass";
 import { isTesterAccessActive } from "./tester-access";
 
-/** 레슨 티켓을 쓰지 않는가 — 시험 계정 · 티켓 무제한 구독(Unlimited Tickets · Premium). */
+/** 레슨 티켓을 쓰지 않는가 — 시험 계정 · 티켓 무제한 구독(Unlimited Tickets · Premium) · 푸시 보상 이용권(ADR-0175). */
 export function ticketsUnlimited(): boolean {
-  return isTesterAccessActive() || planUnlimitedTickets();
+  return isTesterAccessActive() || planUnlimitedTickets() || rewardTicketPassActive(Date.now());
 }
 
 /** 앱의 대화 관문을 여는 등급인가입니다 — 시험 계정이거나 대화 무제한 구독(Premium, ADR-0144 D6). Chat Plus의 하루 무료 수는 서버가 셉니다. */

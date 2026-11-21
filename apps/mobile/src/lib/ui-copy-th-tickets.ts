@@ -48,6 +48,8 @@ export const ticketsTh: TicketsCopy = {
     endsDate: (date) => `สิ้นสุด ${date}`,
     daysLeft: (days) => `เหลือ ${String(days)} วัน`,
     dayProgress: (left, total) => `${String(left)}/${String(total)} วัน`,
+    hoursLeft: (hours) => `เหลือ ${String(hours)} ชั่วโมง`,
+    hourProgress: (left, total) => `${String(left)}/${String(total)} ชั่วโมง`,
     activeMessage: "เริ่มทุกบทเรียนได้โดยไม่ต้องใช้ตั๋ว",
     endingMessage: "หลังจากนั้น บทเรียนจะกลับมาใช้ตั๋วอีกครั้ง\nความคืบหน้าของคุณยังอยู่ครบ",
     manage: "จัดการการสมัครสมาชิก",

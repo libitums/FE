@@ -5,6 +5,8 @@ export const signupRewardTestIds = {
   modal: "signup-reward-modal",
   amount: "signup-reward-amount",
   gotIt: "signup-reward-got-it",
+  /** 무제한 티켓 보상의 무대(ADR-0175) — 주황 무한 기호 · 티켓 톡. */
+  ticketStage: "reward-ticket-stage",
 } as const;
 
 /** 모달 금액 줄의 엽전 — 날기의 출발점입니다. */
@@ -30,4 +32,17 @@ export type SignupRewardModalProps = {
   readonly onFlightStart?: () => void;
   /** 마지막 엽전이 닿은 뒤(움직임 줄이기면 곧바로) — 닫기. */
   readonly onDone: () => void;
+};
+
+/** 보상 모달이 그리는 보상(ADR-0175) — 엽전은 금액이 오르고 칩으로 날고, 무제한 티켓은 시간을 보이고 곧바로 닫힙니다. */
+export type RewardModalReward =
+  | { readonly kind: "coins"; readonly amount: number }
+  | { readonly kind: "tickets"; readonly hours: number };
+
+/** 가입 보상 · 푸시 캠페인 보상이 함께 쓰는 틀(엽전 출시 모달과 같은 막 · 흰 상자 · 위 알약 · Got it). */
+export type RewardModalProps = Omit<SignupRewardModalProps, "amount" | "fromGuest"> & {
+  readonly tag: string;
+  readonly title: string;
+  readonly body: string;
+  readonly reward: RewardModalReward;
 };

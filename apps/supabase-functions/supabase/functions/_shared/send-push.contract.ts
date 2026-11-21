@@ -13,7 +13,8 @@ import type { FcmServiceAccount } from "./fcm.ts";
  * (`apps/mobile/src/lib/push-target.ts`). 두 앱이 같은 모양을 각자 적습니다(ADR-0004 D4).
  */
 export type PushTarget =
-  | { readonly kind: "journey-map" }
+  // 보상 캠페인이면 캠페인 id(ADR-0175) — 앱이 claim RPC에 싣고 서버가 수신자 표로 검증합니다.
+  | { readonly kind: "journey-map"; readonly campaignId?: string }
   | { readonly kind: "notifications" }
   | { readonly kind: "roleplay-list" }
   | { readonly kind: "messenger"; readonly unitId: string }

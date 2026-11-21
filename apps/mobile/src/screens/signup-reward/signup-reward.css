@@ -132,6 +132,11 @@
   animation-fill-mode: both;
 }
 
+/* 무제한 티켓 보상(ADR-0175) — 주머니 자리에 무제한 모달의 큰 무한 기호(128 × 64)를 같은 등장 움직임으로. */
+.reward-ticket-infinity {
+  height: 64px;
+}
+
 .signup-reward-pop-icon {
   width: var(--libitum-icon-size-md);
   height: var(--libitum-icon-size-md);

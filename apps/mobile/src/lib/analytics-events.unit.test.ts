@@ -221,10 +221,12 @@ describe("AN1 분석 계약의 크기", () => {
   // `ranking_hide_toggled`가 더해져 90이다.
   // ⟨ADR-0169 즐겨찾기 개정⟩ 단어 별 `wordbook_star_toggled` · 걸러보기 `wordbook_filter_switched`가 더해져 92다.
   // ⟨ADR-0174⟩ 가입 보상 `signup_reward_card_shown` · `signup_reward_card_tapped` · `signup_reward_shown`이 더해져 95다.
-  test("AN1. 이벤트 이름은 95개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0175⟩ 푸시 캠페인 보상 `push_reward_claimed` · `push_reward_failed`가 더해져 97이다.
+  test("AN1. 이벤트 이름은 97개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(95);
+    expect(names).toHaveLength(97);
+    expect(names).toContain("push_reward_claimed");
     expect(names).toContain("wordbook_star_toggled");
     expect(names).toContain("wordbook_filter_switched");
     expect(names).toContain("signup_reward_shown");
