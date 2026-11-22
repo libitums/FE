@@ -10,10 +10,18 @@ import { Button } from "@libitums/ui-lynx/button";
 import type { RankingBoard, RankingBoardKind } from "../../lib/ranking.contract";
 import { useUiCopy } from "../../lib/ui-copy";
 import { rankingTestIds as ids, type RankingScreenProps } from "./ranking.contract";
-import { daysLeft, nearMeItems, zoneBefore, type RankingView } from "./ranking-rules";
-import { Face, RankBadge, Row } from "./RankingRows";
+import {
+  daysLeft,
+  moreToTopThree,
+  nearMeItems,
+  zoneBefore,
+  type RankingView,
+} from "./ranking-rules";
+import { itemInClass, pulseClass, useReducedMotion, useRisingScore } from "./ranking-motion";
+import { Face, PulseRing, RankBadge, Row } from "./RankingRows";
 
 import "./ranking-screen.css";
+import "./ranking-motion.css";
 
 const GROUP_ICON = trophy.replace(/currentColor/g, color.fg.brand);
 const BOARDS: readonly RankingBoardKind[] = ["lessons", "chat-words"];
@@ -21,15 +29,23 @@ const SLOP = { top: "2px", bottom: "2px", left: "0px", right: "0px" } as const;
 const PLACEHOLDERS = [0, 1, 2, 3, 4] as const;
 const GAP_DOTS = [0, 1, 2] as const;
 
-function MyRow({ board }: { readonly board: RankingBoard }) {
+function MyRow({
+  board,
+  seenScore,
+}: {
+  readonly board: RankingBoard;
+  readonly seenScore: number | null;
+}) {
   const copy = useUiCopy().ranking;
+  const reduced = useReducedMotion();
+  const shownScore = useRisingScore(board.me.score, seenScore);
   const mine = board.rows.find((row) => row.me);
   const gap = board.next === null ? copy.first : copy.morePass(board.next.more, board.next.name);
   const unit = copy.unit(board.kind, board.me.score);
   return (
     <view className="ranking-pin">
       <view
-        className="ranking-row ranking-row-me"
+        className={`ranking-row ranking-row-me${pulseClass(reduced)}`}
         data-testid={ids.me}
         flatten={false}
         accessibility-element={true}
@@ -50,10 +66,13 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
             </text>
           </view>
           <view className="ranking-score">
-            <text className="ranking-score-text">{String(board.me.score)}</text>
+            <text className="ranking-score-text" data-testid={ids.meScore}>
+              {String(shownScore)}
+            </text>
             <text className="ranking-unit">{unit}</text>
           </view>
         </view>
+        <PulseRing />
       </view>
     </view>
   );
@@ -61,6 +80,7 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
 
 function List({ board }: { readonly board: RankingBoard }) {
   const copy = useUiCopy().ranking;
+  const reduced = useReducedMotion();
   // 그룹 전체가 아니라 상위 3 · 내 근처만(ADR-0170 D11). 구역 줄은 그려지는 줄끼리 셉니다 — 생략 뒤 첫 줄 앞이 「Keep climbing」.
   const items = nearMeItems(board.rows);
   const shown = items.flatMap((item) => (item.kind === "row" ? [item.row] : []));
@@ -71,13 +91,14 @@ function List({ board }: { readonly board: RankingBoard }) {
       scroll-orientation="vertical"
       scroll-bar-enable={false}
     >
-      <view className="ranking-list">
-        {items.map((item) => {
+      {/* 보드가 바뀌면 목록을 새로 세워 차례 등장이 다시 돕니다(D12). */}
+      <view key={board.kind} className="ranking-list">
+        {items.map((item, index) => {
           if (item.kind === "gap")
             return (
               <view
                 key="gap"
-                className="ranking-gap"
+                className={`ranking-gap${itemInClass(index, reduced)}`}
                 data-testid={ids.gap}
                 accessibility-elements-hidden={true}
               >
@@ -89,13 +110,18 @@ function List({ board }: { readonly board: RankingBoard }) {
           const row = item.row;
           const zone = zoneBefore(shown, shown.indexOf(row));
           return (
-            <view key={`${row.rank}-${row.name}`} className="ranking-item">
+            <view
+              key={`${row.rank}-${row.name}`}
+              className={`ranking-item${itemInClass(index, reduced)}`}
+            >
               {zone === null ? null : (
                 <text
                   className="ranking-zone"
                   data-testid={zone === "top" ? ids.zoneTop : ids.zoneClimb}
                 >
-                  {zone === "top" ? copy.zoneTop(board.reward) : copy.zoneClimb}
+                  {zone === "top"
+                    ? copy.zoneTop(board.reward)
+                    : copy.zoneClimb(moreToTopThree(board))}
                 </text>
               )}
               <Row row={row} board={board} />
@@ -230,7 +256,9 @@ export function RankingScreen(props: RankingScreenProps): ReactNode {
       {view.kind === "ready" ? <List board={view.board} /> : null}
       {view.kind === "loading" ? <Loading /> : null}
       <Notice view={view} props={props} />
-      {view.kind === "ready" ? <MyRow board={view.board} /> : null}
+      {view.kind === "ready" ? (
+        <MyRow key={view.board.kind} board={view.board} seenScore={props.seenScore ?? null} />
+      ) : null}
     </view>
   );
 }

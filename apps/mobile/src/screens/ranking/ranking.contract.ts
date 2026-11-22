@@ -14,6 +14,8 @@ export type RankingScreenProps = {
   readonly onSignIn: () => void;
   /** 숨김 상태의 「Show me」 — 숨김을 끕니다. */
   readonly onShowMe: () => void;
+  /** 이 보드에서 지난번에 본 내 점수(같은 주) — 올랐으면 거기서부터 셉니다(D12). 없으면 세지 않습니다. */
+  readonly seenScore?: number | null;
 };
 
 type Notice = { readonly title: string; readonly body: string };
@@ -28,7 +30,8 @@ export type RankingCopy = {
   readonly unit: (board: RankingBoardKind, score: number) => string;
   /** 보상이 꺼져 있으면 null. */
   readonly zoneTop: (reward: number | null) => string;
-  readonly zoneClimb: string;
+  /** 내 근처 구역 줄 — `more`는 3위 안에 들려면 더 필요한 점수(D13), 없으면 격려만. */
+  readonly zoneClimb: (more: number | null) => string;
   readonly you: string;
   readonly morePass: (more: number, name: string) => string;
   readonly first: string;
@@ -70,6 +73,9 @@ export const rankingTestIds = {
   gap: id("gap"),
   me: id("me"),
   meGap: id("me-gap"),
+  meScore: id("me-score"),
+  /** 내 줄 강조 고리(D12) — 움직임 줄이기면 서지 않습니다. */
+  ring: id("ring"),
   notice: id("notice"),
   noticeAction: id("notice-action"),
   loading: id("loading"),

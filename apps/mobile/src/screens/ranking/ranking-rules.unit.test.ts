@@ -1,7 +1,15 @@
 import { describe, expect, test } from "vitest";
 
 import type { RankingBoard, RankingRow } from "../../lib/ranking.contract";
-import { chatStripOf, daysLeft, flagOf, medalOf, rankingViewOf, zoneBefore } from "./ranking-rules";
+import {
+  chatStripOf,
+  daysLeft,
+  flagOf,
+  medalOf,
+  moreToTopThree,
+  rankingViewOf,
+  zoneBefore,
+} from "./ranking-rules";
 
 // `unit` 계층(ADR-0170 RK-U1 ~ U6): 순위 화면의 순수 규칙.
 
@@ -101,4 +109,16 @@ describe("ranking-rules", () => {
     expect(chatStripOf({ status: "hidden" })).toBeNull();
     expect(chatStripOf(null)).toBeNull();
   });
+});
+
+test("RK-U30. 3위까지 남은 점수(D13) — 3위 점수를 넘는 데 필요한 만큼(+1), 이미 3위 안이거나 3위가 없으면 null", () => {
+  const rows = [row(1), row(2), row(3), row(4), row(5, true)]; // 점수 39 · 38 · 37 · 36 · 35
+  const mine = { ...board, rows, me: { rank: 5, score: 35 } };
+  expect(moreToTopThree(mine)).toBe(3);
+  expect(moreToTopThree({ ...mine, me: { rank: 3, score: 37 } })).toBeNull();
+  expect(
+    moreToTopThree({ ...mine, rows: [row(1), row(2, true)], me: { rank: 2, score: 38 } }),
+  ).toBeNull();
+  // 서버가 3위 줄을 주지 않았으면(작은 그룹) 말하지 않는다.
+  expect(moreToTopThree({ ...mine, rows: [row(1), row(5, true)] })).toBeNull();
 });
