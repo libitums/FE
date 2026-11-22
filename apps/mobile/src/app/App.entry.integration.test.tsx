@@ -420,7 +420,7 @@ function continueLanguageSelect(): void {
 
 function startJourney(): void {
   fireEvent.tap(
-    within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button"),
     {},
   );
 }

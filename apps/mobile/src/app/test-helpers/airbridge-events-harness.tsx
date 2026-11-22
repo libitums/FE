@@ -137,7 +137,7 @@ export async function runEntryFlow(
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButton("language-select-screen-next");
   beforeStart();
-  tapButton("journey-entry-screen-start");
+  tapButton("journey-entry-screen-story");
   await advance(0);
   const reached = screen.queryByTestId("journey-map-screen") !== null;
   await act(async () => {

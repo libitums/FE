@@ -14,6 +14,9 @@ export type EntryScreenName =
   | "learner-country"
   | "language-select"
   | "journey-entry"
+  | "entry-basics-letters"
+  | "entry-basics-compose"
+  | "entry-basics-ready"
   | "update-required";
 
 // 스플래시와 강제 업데이트 화면은 `entry_screen_viewed`를 내지 않습니다 — 뒤엣것은 자기 이벤트
@@ -95,8 +98,29 @@ export type OnboardingStartedEvent = {
 };
 export type OnboardingEvent = OnboardingStepViewedEvent | OnboardingStartedEvent;
 
+/** 여정 입장의 두 길 — 기초부터 · 바로 입장(ADR-0176). */
+export type EntryPath = "basics" | "story";
+export type EntryBasicsStep = "letters" | "compose" | "ready";
+/** 준비 완료에는 Skip이 없습니다. */
+export type EntryBasicsSkippableStep = Exclude<EntryBasicsStep, "ready">;
+export type EntryPathSelectedEvent = {
+  readonly name: "entry_path_selected";
+  readonly path: EntryPath;
+};
+export type EntryBasicsStepCompletedEvent = {
+  readonly name: "entry_basics_step_completed";
+  readonly step: EntryBasicsStep;
+};
+export type EntryBasicsSkippedEvent = {
+  readonly name: "entry_basics_skipped";
+  readonly step: EntryBasicsSkippableStep;
+};
+
 export type EntryEvent =
   | EntryScreenViewedEvent
+  | EntryPathSelectedEvent
+  | EntryBasicsStepCompletedEvent
+  | EntryBasicsSkippedEvent
   | EntryLoginMethodSelectedEvent
   | EntryCompletedEvent
   // 서버에 기록이 있는 계정이 언어 선택 · 여정 입장을 건너뛰고 맵으로 들어간 로그인입니다.
@@ -126,6 +150,20 @@ export function entryLoginMethodSelectedEvent(
 // 허용하는 값이 이 하나뿐입니다 — "틀린 스텁"을 만들 여지가 타입 자체에 없습니다.
 export function entryCompletedEvent(): EntryCompletedEvent {
   return { name: "entry_completed" };
+}
+
+export function entryPathSelectedEvent(path: EntryPath): EntryPathSelectedEvent {
+  return { name: "entry_path_selected", path };
+}
+
+export function entryBasicsStepCompletedEvent(
+  step: EntryBasicsStep,
+): EntryBasicsStepCompletedEvent {
+  return { name: "entry_basics_step_completed", step };
+}
+
+export function entryBasicsSkippedEvent(step: EntryBasicsSkippableStep): EntryBasicsSkippedEvent {
+  return { name: "entry_basics_skipped", step };
 }
 
 export function entryReturningLearnerEnteredEvent(

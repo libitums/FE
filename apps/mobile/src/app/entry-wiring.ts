@@ -20,7 +20,6 @@ import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-docume
 import type { LegalDocument } from "../lib/legal-document.contract";
 import {
   appUpdateRequiredEvent,
-  entryCompletedEvent,
   entryLoginMethodSelectedEvent,
   entryReturningLearnerEnteredEvent,
   entryScreenViewedEvent,
@@ -41,6 +40,7 @@ import { oauthProviderFor, signInWithSocialProvider } from "../lib/social-sign-i
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
+import { forgetPushPrompt, markPushPromptPending } from "./push-prompt";
 import { syncPushDevice } from "./push-wiring";
 import { probeEntryRouteAfterLogin } from "./returning-learner-probe";
 import { entryScreenAfterLogin } from "./screen-routing";
@@ -96,10 +96,13 @@ export function entryWiring({
   // 로그인 직후 기존 회원인지 판정하고 갈래를 탑니다. 프로필 동기화는 판정 뒤에 시작해, 손님
   // 프로필 업로드가 판정 조회보다 먼저 서버 행을 만들어 신규 사용자를 오판하지 않게 합니다.
   const routeAfterLogin = async (method: EntryLoginMethod): Promise<void> => {
+    // 알림은 첫 스토리 뒤에(ADR-0176) — 판정을 기다리는 사이 · 입장 전에 꺼도 남게 먼저 적고, 기존 회원이면 지웁니다.
+    markPushPromptPending();
     const route = await probeEntryRouteAfterLogin();
     void syncLearnerProfile().catch(() => undefined);
     switch (route) {
       case "journey-map": {
+        forgetPushPrompt();
         const language = loadReturningUiLanguage();
         saveUiLanguage(language);
         setEntryLanguage(language);
@@ -288,13 +291,6 @@ export function entryWiring({
       entryEventSink?.(entryScreenViewedEvent("journey-entry"));
       dispatch({ type: "push", screen: { name: "journey-entry" } });
     },
-    // 여정 입장의 `여정 시작하기`입니다 — 완주 이벤트 → `enterApp`. 이 진입
-    // 구간을 비우는 순간이 바텀 네비게이션이 처음 보이는 순간입니다.
-    onEnterJourney: () => {
-      entryEventSink?.(entryCompletedEvent());
-      dispatch({ type: "enterApp" });
-      // 진입 흐름의 끝에서 알림을 묻습니다 — 다이얼로그는 맵 위에 뜨고, 답을 기다리지 않습니다(ADR-0034).
-      void syncPushDevice({ ask: true });
-    },
+    // 여정 입장의 두 길 · 완주는 `entry-path-wiring.ts`가 집니다(ADR-0176).
   };
 }

@@ -518,6 +518,10 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - ⟨2026-11-18 — ADR-0159⟩ 온보딩 이벤트 둘을 더한다(진입 sink): `onboarding_step_viewed { step, via }`(스텝이 그 방문에서 처음
   보일 때 1회) · `onboarding_started { step, autoAdvanced }`(「Get started」). 「Next」가 없어져 온보딩 → 로그인이 한 번의 탭이 됐다 —
   `entry_screen_viewed(onboarding)` → `(login)` 전환율의 해석이 이날 바뀐다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다.
+- ⟨2026-11-22 — [ADR-0176](0176-entry-basics-choice.md) D6⟩ 입장 선택 이벤트 셋을 더한다(진입 sink, 이름 97 → 100):
+  `entry_path_selected { path: basics | story }` · `entry_basics_step_completed { step: letters | compose | ready }` ·
+  `entry_basics_skipped { step: letters | compose }`. `entry_screen_viewed.screen`에 기초 세 화면이 더해진다. `entry_completed`는 실제
+  `enterApp` 때 한 번 그대로다 — 기초 도중 이탈만큼 여정 입장 열람 → 완주 전환율의 해석이 이날 바뀐다. GitHub wiki 사전은 따로 고친다.
 
 ## 재검토 조건
 

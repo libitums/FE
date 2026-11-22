@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { entryLanguageLabel } from "../../lib/entry-language";
 import { JourneyEntryScreen } from "./JourneyEntryScreen";
@@ -14,47 +14,106 @@ const LANGUAGE = "en";
 // 가려지는 가장자리는 호스트가 재서 넘기는 값이라 ui에서는 0입니다 — 이 계층이 보는 것은
 // 「받은 값을 자리에 쓰는가」이고, 실제 수치는 기기에서만 나옵니다.
 const NO_SAFE_AREA = { top: 0, bottom: 0 } as const;
-function startButton(): HTMLElement {
-  return within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button");
+function storyButton(): HTMLElement {
+  return within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button");
 }
 
 describe("JourneyEntryScreen", () => {
   // JE-U1 — 배경 그림은 장식이라 래퍼가 접근성 트리에서 가립니다. 그리기만 하고 가리지
   // 않으면 스크린리더가 배경 그림까지 읽습니다.
-  it("[JE-U1] 배경 그림 · 제목 · 큰 제목 · 안내 · AI 고지 · Start가 선다", () => {
-    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={vi.fn()} />);
+  it("[JE-U1] 배경 그림 · 제목 · 큰 제목 · 안내 · AI 고지 · 두 길이 선다", () => {
+    render(
+      <JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onSelectPath={vi.fn()} />,
+    );
 
     expect(screen.getByTestId("journey-entry-screen-title").textContent?.trim()).not.toBe("");
     expect(screen.getByTestId("journey-entry-screen-display").textContent?.trim()).not.toBe("");
-    expect(screen.getByTestId("journey-entry-screen-caption").textContent?.trim()).not.toBe("");
+    expect(screen.getByTestId("journey-entry-screen-caption")).toHaveTextContent(
+      "New to Hangul? Meet a few letters before you land in Seoul.",
+    );
     expect(screen.getByTestId("journey-entry-screen-notice")).toHaveTextContent(
       "Some images in this service are generated using AI technology",
     );
-    expect(startButton()).toHaveTextContent("Start");
+    const basics = screen.getByTestId("journey-entry-screen-basics");
+    expect(basics.textContent).toContain("Learn the basics first");
+    expect(basics.textContent).toContain("6 letters, 3 sounds, then the story");
+    expect(storyButton()).toHaveTextContent("Jump into the story");
+    expect(storyButton()).toHaveAttribute("data-variant", "brand");
 
     const background = screen.getByTestId("journey-entry-screen-background");
     expect(background.closest('[accessibility-elements-hidden="true"]')).not.toBeNull();
   });
 
   it("[JE-U2] 고른 언어의 라벨이 보인다", () => {
-    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={vi.fn()} />);
+    render(
+      <JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onSelectPath={vi.fn()} />,
+    );
 
     expect(screen.getByTestId("journey-entry-screen-language")).toHaveTextContent(
       entryLanguageLabel(LANGUAGE),
     );
   });
 
-  it("[JE-U3] 액션을 누르면 onEnter가 1회다", () => {
-    const onEnter = vi.fn();
-    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={onEnter} />);
+  it("[JE-U3] 바로 입장은 story 1회다", () => {
+    const onSelectPath = vi.fn();
+    render(
+      <JourneyEntryScreen
+        safeArea={NO_SAFE_AREA}
+        language={LANGUAGE}
+        onSelectPath={onSelectPath}
+      />,
+    );
 
-    fireEvent.tap(startButton(), {});
+    fireEvent.tap(storyButton(), {});
 
-    expect(onEnter).toHaveBeenCalledTimes(1);
+    expect(onSelectPath).toHaveBeenCalledExactlyOnceWith("story");
+  });
+
+  it("[JE-U3a] 기초부터는 basics 1회이고, 이름에 보조 줄이 함께 읽힌다", () => {
+    const onSelectPath = vi.fn();
+    render(
+      <JourneyEntryScreen
+        safeArea={NO_SAFE_AREA}
+        language={LANGUAGE}
+        onSelectPath={onSelectPath}
+      />,
+    );
+    const basics = screen.getByTestId("journey-entry-screen-basics");
+    expect(basics).toHaveAttribute(
+      "accessibility-label",
+      "Learn the basics first, 6 letters, 3 sounds, then the story",
+    );
+    expect(basics).toHaveAttribute("accessibility-traits", "button");
+    expect(basics).toHaveAttribute("flatten", "false");
+
+    fireEvent.tap(basics, {});
+
+    expect(onSelectPath).toHaveBeenCalledExactlyOnceWith("basics");
+  });
+
+  it("[JE-U3b] 빠르게 두 번 · 둘을 이어 눌러도 한 길만 고른다", () => {
+    const onSelectPath = vi.fn();
+    render(
+      <JourneyEntryScreen
+        safeArea={NO_SAFE_AREA}
+        language={LANGUAGE}
+        onSelectPath={onSelectPath}
+      />,
+    );
+
+    act(() => {
+      fireEvent.tap(storyButton(), {});
+      fireEvent.tap(storyButton(), {});
+      fireEvent.tap(screen.getByTestId("journey-entry-screen-basics"), {});
+    });
+
+    expect(onSelectPath).toHaveBeenCalledExactlyOnceWith("story");
   });
 
   it("[JE-U4] 제목이 header다", () => {
-    render(<JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onEnter={vi.fn()} />);
+    render(
+      <JourneyEntryScreen safeArea={NO_SAFE_AREA} language={LANGUAGE} onSelectPath={vi.fn()} />,
+    );
 
     expect(screen.getByTestId("journey-entry-screen-title")).toHaveAttribute(
       "accessibility-traits",
@@ -68,7 +127,7 @@ describe("JourneyEntryScreen", () => {
       <JourneyEntryScreen
         safeArea={NO_SAFE_AREA}
         language={LANGUAGE}
-        onEnter={vi.fn()}
+        onSelectPath={vi.fn()}
         onBack={onBack}
       />,
     );
@@ -92,7 +151,7 @@ describe("JourneyEntryScreen", () => {
       <JourneyEntryScreen
         safeArea={{ top: 59, bottom: 34 }}
         language={LANGUAGE}
-        onEnter={vi.fn()}
+        onSelectPath={vi.fn()}
       />,
     );
 

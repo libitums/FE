@@ -32,6 +32,8 @@ export const statusBarSurfaceRegistry = {
   /** route → 그 route에서 띠를 어둡게 칠하는 컴포넌트(채팅 · 통화 구간은 밝아 표지가 없다). */
   fullBleedRoutes: {
     "journey-entry": ["JourneyEntryScreen"],
+    // 준비 완료(ADR-0176) — 그림 바탕색(#FEFEFE)을 띠 밑까지 깔아 기본(어두운) 아이콘 그대로라 표지가 없습니다.
+    "entry-basics-ready": [],
     "catalog-cover": ["EpisodeIntroScreen", "CatalogCoverScreen", "EpisodeBannerScreen"],
     // 막간 이야기 — 시작 화면(Skip · Start), 컷 화면, 전화 화면, 끝의 「To be continued…」 배너가 짙습니다(ADR-0088).
     // 메신저는 밝은 면이라 표지가 없습니다.

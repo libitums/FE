@@ -30,6 +30,9 @@ const events: readonly AnalyticsEvent[] = [
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_completed" },
   { name: "entry_returning_learner_entered", method: "google" },
+  { name: "entry_path_selected", path: "basics" },
+  { name: "entry_basics_step_completed", step: "ready" },
+  { name: "entry_basics_skipped", step: "compose" },
   { name: "app_update_required_shown", platform: "android", build: "6", minBuild: "7" },
   { name: "notifications_opened" },
   { name: "notification_item_tapped", notificationId: "n-1", target: "roleplay-list" },
@@ -93,9 +96,9 @@ describe("episode_content_refreshed", () => {
 });
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 24개 · 모양 25개를 다 덮는다", () => {
-    expect(events).toHaveLength(25);
-    expect(new Set(events.map((e) => e.name)).size).toBe(24);
+  test("AE1: 표가 이름 27개 · 모양 28개를 다 덮는다", () => {
+    expect(events).toHaveLength(28);
+    expect(new Set(events.map((e) => e.name)).size).toBe(27);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -222,10 +225,14 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0169 즐겨찾기 개정⟩ 단어 별 `wordbook_star_toggled` · 걸러보기 `wordbook_filter_switched`가 더해져 92다.
   // ⟨ADR-0174⟩ 가입 보상 `signup_reward_card_shown` · `signup_reward_card_tapped` · `signup_reward_shown`이 더해져 95다.
   // ⟨ADR-0175⟩ 푸시 캠페인 보상 `push_reward_claimed` · `push_reward_failed`가 더해져 97이다.
-  test("AN1. 이벤트 이름은 97개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0176⟩ 입장 선택 `entry_path_selected` · `entry_basics_step_completed` · `entry_basics_skipped`가 더해져 100이다.
+  test("AN1. 이벤트 이름은 100개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(97);
+    expect(names).toHaveLength(100);
+    expect(names).toContain("entry_path_selected");
+    expect(names).toContain("entry_basics_step_completed");
+    expect(names).toContain("entry_basics_skipped");
     expect(names).toContain("push_reward_claimed");
     expect(names).toContain("wordbook_star_toggled");
     expect(names).toContain("wordbook_filter_switched");

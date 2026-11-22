@@ -236,7 +236,7 @@ export async function walkGuestEntryToMap(): Promise<void> {
   passLearnerSignup();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButtonIn("language-select-screen-next");
-  tapButtonIn("journey-entry-screen-start");
+  tapButtonIn("journey-entry-screen-story");
   await flush();
 }
 

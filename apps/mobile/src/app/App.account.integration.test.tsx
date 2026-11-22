@@ -263,6 +263,7 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
             "remove:libitum.learning-days.pending.user-1",
             "remove:libitum.learner-profile.user-1",
             "remove:libitum.wordbook.user-1",
+            "remove:libitum.push-prompt.user-1", // ADR-0176 — 첫 스토리 뒤 알림 질문 표식
           ]
         : []),
       `remove:${sessionKey}`,
@@ -346,7 +347,7 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 �
     {},
   );
   fireEvent.tap(
-    within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button"),
     {},
   );
 
