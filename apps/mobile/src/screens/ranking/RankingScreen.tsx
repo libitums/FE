@@ -32,17 +32,20 @@ const GAP_DOTS = [0, 1, 2] as const;
 function MyRow({
   board,
   seenScore,
+  onScoreCounted,
 }: {
   readonly board: RankingBoard;
   readonly seenScore: number | null;
+  readonly onScoreCounted: (() => void) | undefined;
 }) {
   const copy = useUiCopy().ranking;
   const reduced = useReducedMotion();
-  const shownScore = useRisingScore(board.me.score, seenScore);
+  const shownScore = useRisingScore(board.me.score, seenScore, onScoreCounted);
   const mine = board.rows.find((row) => row.me);
   const gap = board.next === null ? copy.first : copy.morePass(board.next.more, board.next.name);
-  // 세는 동안에도 수와 단위가 맞게 — 보이는 숫자로 고릅니다(리뷰 #549).
+  // 세는 동안에도 보이는 수와 단위가 맞게 — 보이는 숫자로 고릅니다(리뷰 #549). 낭독 줄은 줄곧 지금 점수 · 그 단위입니다(리뷰 #550).
   const unit = copy.unit(board.kind, shownScore);
+  const spokenUnit = copy.unit(board.kind, board.me.score);
   return (
     <view className="ranking-pin">
       <view
@@ -54,7 +57,7 @@ function MyRow({
           board.me.rank,
           copy.you,
           gap,
-          `${board.me.score} ${unit}`,
+          `${board.me.score} ${spokenUnit}`,
         )}
       >
         <view className="ranking-row-inner" accessibility-elements-hidden={true}>
@@ -258,7 +261,12 @@ export function RankingScreen(props: RankingScreenProps): ReactNode {
       {view.kind === "loading" ? <Loading /> : null}
       <Notice view={view} props={props} />
       {view.kind === "ready" ? (
-        <MyRow key={view.board.kind} board={view.board} seenScore={props.seenScore ?? null} />
+        <MyRow
+          key={view.board.kind}
+          board={view.board}
+          seenScore={props.seenScore ?? null}
+          onScoreCounted={props.onScoreCounted}
+        />
       ) : null}
     </view>
   );

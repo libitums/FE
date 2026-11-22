@@ -11,7 +11,7 @@ import type { RankingBoardKind, RankingClient, RankingLoad } from "../../lib/ran
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
 import {
   rankingViewOf,
-  seenAfterLeave,
+  seenAfterCounted,
   seenAfterLoad,
   type RankingView,
   type SeenByBoard,
@@ -30,6 +30,8 @@ export type RankingControls = {
   readonly board: RankingBoardKind;
   /** 이 보드에서 지난번에 본 내 점수(같은 주) — 숫자 오름의 출발 값(D12). 없으면 null. */
   readonly seenScore: number | null;
+  /** 내 점수의 숫자 오름이 돌았습니다 — 이 보드의 본 점수를 지워 다시 세지 않게 합니다. */
+  readonly scoreCounted: () => void;
   readonly select: (board: RankingBoardKind) => void;
   readonly retry: () => void;
   readonly showMe: () => void;
@@ -99,8 +101,6 @@ export function useRanking(input: UseRankingInput): RankingControls {
   }, [view.kind, board]);
 
   const reload = () => {
-    // 다시 읽으면 본 점수도 새로 꺼냅니다 — 저장된 값은 앞서 읽은 점수라 낡은 출발 값에서 세지 않습니다(리뷰 #549).
-    setSeen({});
     setLoads({});
     setAttempt((current) => current + 1);
   };
@@ -108,6 +108,8 @@ export function useRanking(input: UseRankingInput): RankingControls {
     view,
     board,
     seenScore: seen[board] ?? null,
+    // 실제로 센 뒤에만 지웁니다 — 세기 전에 보드를 바꾸거나 다시 읽어도 못 본 오름이 사라지지 않습니다(리뷰 #550).
+    scoreCounted: () => setSeen((current) => seenAfterCounted(current, board)),
     select: (next) => {
       if (next === board) return;
       emitCompanionEvent(eventSink, {
@@ -116,8 +118,6 @@ export function useRanking(input: UseRankingInput): RankingControls {
         from: eventBoard(board),
         to: eventBoard(next),
       });
-      // 떠나는 보드의 숫자 오름은 한 번으로 끝 — 돌아와도 다시 돌지 않습니다(리뷰 #549).
-      setSeen((current) => seenAfterLeave(current, board));
       setBoard(next);
     },
     retry: reload,

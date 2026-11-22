@@ -6,7 +6,7 @@
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)과 번들 크기 수치는 수집하지 않았다. 앞 변경(#549)의 리뷰 지적을 고친 변경이다
 - 기능 PR: `fix/ranking-motion-review`
 - 대상 commit: origin/main 6b6906a9 위의 변경
-- 기기: 측정 기기 없음 — vitest와 로컬 빌드만
+- 기기: 측정 기기 없음 — vitest만(로컬 빌드도 돌리지 않았다)
 - OS: 해당 없음(기기 측정 없음)
 - Lynx SDK: 4.0.1
 - 빌드: 로컬 빌드 없음 — CI의 「Build and bundle size」로 확인

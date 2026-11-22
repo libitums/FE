@@ -135,10 +135,10 @@ export function moreToTopThree(board: RankingBoard): number | null {
   return third === undefined ? null : Math.max(1, third.score - board.me.score + 1);
 }
 
-/** 보드별 「지난번에 본 내 점수」(D12) — 칸이 있으면 이미 꺼낸 보드, null이면 더 세지 않는 보드. */
+/** 보드별 「지난번에 본 내 점수」(D12) — 칸이 있으면 아직 세지 않은 출발 값, 없으면 꺼낸 적 없거나 이미 센 보드. */
 export type SeenByBoard = Partial<Record<RankingBoard["kind"], number | null>>;
 
-/** 보드를 처음 읽었을 때만 넣습니다 — 이미 칸이 있으면 그대로(같은 참조). */
+/** 보드를 읽었을 때 넣습니다 — 아직 세지 않은 칸이 있으면 그대로(같은 참조, 못 본 오름을 덮지 않는다). */
 export function seenAfterLoad(
   seen: SeenByBoard,
   board: RankingBoard["kind"],
@@ -147,7 +147,11 @@ export function seenAfterLoad(
   return board in seen ? seen : { ...seen, [board]: previous };
 }
 
-/** 보드를 떠나면 그 보드의 본 점수를 지웁니다 — 돌아와도 숫자 오름이 다시 돌지 않습니다. 읽은 적 없으면 그대로. */
-export function seenAfterLeave(seen: SeenByBoard, board: RankingBoard["kind"]): SeenByBoard {
-  return board in seen && seen[board] !== null ? { ...seen, [board]: null } : seen;
+/** 숫자 오름이 실제로 돈 뒤 그 보드의 칸을 지웁니다 — 돌아와도 다시 세지 않고, 다시 읽으면 새로 꺼냅니다. 없으면 그대로. */
+export function seenAfterCounted(seen: SeenByBoard, board: RankingBoard["kind"]): SeenByBoard {
+  if (!(board in seen)) return seen;
+  const next: SeenByBoard = {};
+  for (const kind of Object.keys(seen) as RankingBoard["kind"][])
+    if (kind !== board) next[kind] = seen[kind] ?? null;
+  return next;
 }

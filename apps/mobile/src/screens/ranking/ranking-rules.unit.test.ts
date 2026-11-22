@@ -7,7 +7,7 @@ import {
   flagOf,
   medalOf,
   moreToTopThree,
-  seenAfterLeave,
+  seenAfterCounted,
   seenAfterLoad,
   rankingViewOf,
   zoneBefore,
@@ -125,15 +125,16 @@ test("RK-U30. 3위까지 남은 점수(D13) — 3위 점수를 넘는 데 필요
   expect(moreToTopThree({ ...mine, rows: [row(1), row(5, true)] })).toBeNull();
 });
 
-test("RK-U31. 본 점수 — 보드를 처음 읽을 때 한 번만 넣고, 그 보드를 떠나면 지운다(돌아와도 다시 세지 않는다 — 리뷰 #549)", () => {
+test("RK-U31. 본 점수 — 보드를 읽을 때 한 번 넣고, 숫자 오름이 실제로 돈 뒤에야 지운다(리뷰 #549 · #550)", () => {
   const loaded = seenAfterLoad({}, "lessons", 4);
   expect(loaded).toEqual({ lessons: 4 });
-  // 같은 보드를 또 읽어도(겹친 응답) 처음 값 그대로.
+  // 아직 세지 않았으면 같은 보드를 또 읽어도 처음 값 그대로 — 못 본 오름이 사라지지 않는다.
   expect(seenAfterLoad(loaded, "lessons", 7)).toBe(loaded);
-  // 떠나면 null — 칸은 남아 다시 읽어도 채우지 않는다.
-  const left = seenAfterLeave(loaded, "lessons");
-  expect(left).toEqual({ lessons: null });
-  expect(seenAfterLoad(left, "lessons", 4)).toBe(left);
-  // 읽은 적 없는 보드를 떠나는 것은 아무 일도 아니다.
-  expect(seenAfterLeave({}, "chat-words")).toEqual({});
+  // 세고 나면 칸을 지운다 — 다른 보드의 칸은 그대로.
+  const both = seenAfterLoad(loaded, "chat-words", 2);
+  expect(seenAfterCounted(both, "lessons")).toEqual({ "chat-words": 2 });
+  // 센 적 없는 보드는 아무 일도 아니다(같은 참조).
+  expect(seenAfterCounted(loaded, "chat-words")).toBe(loaded);
+  // 지운 뒤 다시 읽으면(다시 시도) 새로 꺼낸 값이 들어간다.
+  expect(seenAfterLoad(seenAfterCounted(loaded, "lessons"), "lessons", 7)).toEqual({ lessons: 7 });
 });

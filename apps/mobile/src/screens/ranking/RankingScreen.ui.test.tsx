@@ -236,13 +236,14 @@ const classOf = (testId: string) => screen.getByTestId(testId).getAttribute("cla
 const itemClassOf = (rank: number) =>
   screen.getByTestId(ids.row(rank)).parentElement?.getAttribute("class") ?? "";
 
-function mountMotion(seenScore: number | null, reduced = false) {
+function mountMotion(seenScore: number | null, reduced = false, onScoreCounted?: () => void) {
   const node = (
     <RankingScreen
       view={{ kind: "ready", board }}
       board="lessons"
       nowMs={NOW}
       seenScore={seenScore}
+      {...(onScoreCounted === undefined ? {} : { onScoreCounted })}
       onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
       onRetry={vi.fn<() => void>()}
       onSignIn={vi.fn<() => void>()}
@@ -303,18 +304,83 @@ test("RK-UI23. 본 적이 없거나 오르지 않았으면 세지 않는다", ()
   expect(text(ids.meScore)).toBe("7");
 });
 
-test("RK-UI24. 세는 동안 단위는 보이는 숫자를 따른다 — 「1 lessons」가 아니라 「1 lesson」(리뷰 #549)", () => {
+test("RK-UI24. 세는 동안 보이는 단위는 보이는 숫자를 따르고, 낭독 줄은 줄곧 지금 점수 · 그 단위다(리뷰 #549 · #550)", () => {
   vi.useFakeTimers();
   try {
     mountMotion(1);
     expect(text(ids.meScore)).toBe("1");
     expect(text(ids.me)).toMatch(/1lesson$/);
+    expect(screen.getByTestId(ids.me).getAttribute("accessibility-label")).toContain("7 lessons");
     for (let tick = 0; tick < 20; tick += 1) {
       act(() => {
         vi.advanceTimersByTime(100);
       });
     }
     expect(text(ids.me)).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI25. 숫자 오름이 시작될 때 한 번 알린다 — 그 전에 화면을 떠나면 알리지 않고, 알린 뒤 본 점수가 지워져도 끝까지 센다", () => {
+  vi.useFakeTimers();
+  try {
+    const counted = vi.fn<() => void>();
+    mountMotion(4, false, counted);
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(counted).not.toHaveBeenCalled();
+    cleanup();
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(counted).not.toHaveBeenCalled();
+
+    const node = (seenScore: number | null) => (
+      <RankingScreen
+        view={{ kind: "ready", board }}
+        board="lessons"
+        nowMs={NOW}
+        seenScore={seenScore}
+        onScoreCounted={counted}
+        onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
+        onRetry={vi.fn<() => void>()}
+        onSignIn={vi.fn<() => void>()}
+        onShowMe={vi.fn<() => void>()}
+      />
+    );
+    const view = render(node(4));
+    act(() => {
+      vi.advanceTimersByTime(750);
+    });
+    expect(counted).toHaveBeenCalledTimes(1);
+    // 훅이 본 점수를 지워 prop이 null이 돼도 세던 것은 끊기지 않고 끝까지 간다.
+    view.rerender(node(null));
+    expect(text(ids.meScore)).not.toBe("7");
+    for (let tick = 0; tick < 20; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.meScore)).toBe("7");
+    expect(counted).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI26. 본 점수가 없거나 움직임 줄이기면 알리지 않는다", () => {
+  vi.useFakeTimers();
+  try {
+    const counted = vi.fn<() => void>();
+    mountMotion(null, false, counted);
+    cleanup();
+    mountMotion(4, true, counted);
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(counted).not.toHaveBeenCalled();
   } finally {
     vi.useRealTimers();
   }

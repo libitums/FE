@@ -38,6 +38,7 @@ export function RankingRoute({
       onSignIn={onSignIn}
       onShowMe={controls.showMe}
       seenScore={controls.seenScore}
+      onScoreCounted={controls.scoreCounted}
     />
   );
 }

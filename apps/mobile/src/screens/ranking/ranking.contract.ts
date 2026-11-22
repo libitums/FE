@@ -16,6 +16,8 @@ export type RankingScreenProps = {
   readonly onShowMe: () => void;
   /** 이 보드에서 지난번에 본 내 점수(같은 주) — 올랐으면 거기서부터 셉니다(D12). 없으면 세지 않습니다. */
   readonly seenScore?: number | null;
+  /** 내 점수의 숫자 오름이 시작됐습니다 — 본 점수를 지워 다시 세지 않게 합니다. */
+  readonly onScoreCounted?: () => void;
 };
 
 type Notice = { readonly title: string; readonly body: string };
