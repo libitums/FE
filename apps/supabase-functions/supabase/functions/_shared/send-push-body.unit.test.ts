@@ -17,6 +17,20 @@ describe("SP1 pushTargetFrom", () => {
 
   test("모르는 kind · 유닛 없는 유닛 목적지 · URL은 버린다", () => {
     expect(pushTargetFrom({ kind: "url", unitId: "https://x" })).toBeNull();
+  });
+
+  test("선톡 방(ADR-0127) — 인물 id 형식만 받고, 변형은 a · b만 남긴다", () => {
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", variant: "a" })).toEqual({
+      kind: "companion-chat",
+      characterId: "mina",
+      variant: "a",
+    });
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", variant: "z" })).toEqual({
+      kind: "companion-chat",
+      characterId: "mina",
+    });
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "Mina!" })).toBeNull();
+    expect(pushTargetFrom({ kind: "companion-chat" })).toBeNull();
     expect(pushTargetFrom({ kind: "phone-call" })).toBeNull();
     expect(pushTargetFrom({ kind: "visual-novel", unitId: "" })).toBeNull();
     expect(pushTargetFrom({ kind: "messenger", unitId: "x".repeat(101) })).toBeNull();
