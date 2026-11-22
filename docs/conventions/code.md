@@ -577,6 +577,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   복수형과 어순은 언어 표가 정한다.
 - 새 문구는 `ui-copy-sections.contract.ts`의 구획 타입에 키를 더하고 `ui-copy-en-*.ts`에 영어를 채운다.
   영어 밖 언어는 덮어쓰기라 빠진 키가 영어로 대체된다.
+- **메인 스레드에는 영어 표만 있다**(ADR-0031 D8). 언어별 표는 `uiCopyFor`로만 고른다 — 렌더 경로에서
+  `uiCopyVi` 같은 표나 `uiCopyCatalog`를 값 import하면 그 표가 메인 스레드 번들로 돌아온다. main-thread 함수에서
+  문구를 읽지 않는다.
 - **문구표 vs 데이터 곁 영어** — 콘텐츠 항목(유닛 · 스텝 · 문항 · 알림 · 약관 절)의 **id가 늘면 같이 느는
   텍스트**는 문구표가 아니라 그 데이터 곁의 영어 리터럴이다(이름 로마자 · 제목 · 뜻 풀이 보기 · 문화 노트 등).
 - **한글 리터럴 검사** — `pnpm lint:ui-copy`(`pnpm lint`의 잎)가 `apps/mobile/src`와 `packages/ui-lynx/src`에서
