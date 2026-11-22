@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import { emitCompanionEvent } from "../../lib/companion-events";
 import { readNetworkProperties } from "../../lib/network-status";
 import { saveRankingHidden } from "../../lib/ranking-hidden-cache";
+import { takeSeenScore } from "../../lib/ranking-seen-score";
 import type { RankingBoardKind, RankingClient, RankingLoad } from "../../lib/ranking.contract";
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
 import { rankingViewOf, type RankingView } from "./ranking-rules";
@@ -21,6 +22,8 @@ export type UseRankingInput = {
 export type RankingControls = {
   readonly view: RankingView;
   readonly board: RankingBoardKind;
+  /** 이 보드에서 지난번에 본 내 점수(같은 주) — 숫자 오름의 출발 값(D12). 없으면 null. */
+  readonly seenScore: number | null;
   readonly select: (board: RankingBoardKind) => void;
   readonly retry: () => void;
   readonly showMe: () => void;
@@ -28,11 +31,13 @@ export type RankingControls = {
 
 const eventBoard = (board: RankingBoardKind) => (board === "lessons" ? "lessons" : "chat_words");
 type Loads = Partial<Record<RankingBoardKind, RankingLoad>>;
+type Seen = Partial<Record<RankingBoardKind, number | null>>;
 
 export function useRanking(input: UseRankingInput): RankingControls {
   const { client, signedIn, eventSink } = input;
   const [board, setBoard] = useState<RankingBoardKind>(input.initialBoard);
   const [loads, setLoads] = useState<Loads>({});
+  const [seen, setSeen] = useState<Seen>({});
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const opened = useRef(false);
@@ -49,10 +54,15 @@ export function useRanking(input: UseRankingInput): RankingControls {
     setOffline(readNetworkProperties().network === "offline");
     void client.load(board).then((result) => {
       if (result.status !== "error") saveRankingHidden(result.status === "hidden");
-      if (latestAttempt.current === turn)
-        setLoads((current) =>
-          current[board] === undefined ? { ...current, [board]: result } : current,
-        );
+      if (latestAttempt.current !== turn) return;
+      // 지난번에 본 내 점수를 꺼내고 지금 점수로 바꿔 둡니다 — 보드를 그리기 전에 함께 넣어 첫 프레임부터 옛 점수가 섭니다.
+      if (result.status === "ready") {
+        const previous = takeSeenScore(board, result.board.endsAt, result.board.me.score);
+        setSeen((current) => (board in current ? current : { ...current, [board]: previous }));
+      }
+      setLoads((current) =>
+        current[board] === undefined ? { ...current, [board]: result } : current,
+      );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board, signedIn, attempt]);
@@ -90,6 +100,7 @@ export function useRanking(input: UseRankingInput): RankingControls {
   return {
     view,
     board,
+    seenScore: seen[board] ?? null,
     select: (next) => {
       if (next === board) return;
       emitCompanionEvent(eventSink, {

@@ -14,6 +14,8 @@ export type RankingScreenProps = {
   readonly onSignIn: () => void;
   /** 숨김 상태의 「Show me」 — 숨김을 끕니다. */
   readonly onShowMe: () => void;
+  /** 이 보드에서 지난번에 본 내 점수(같은 주) — 올랐으면 거기서부터 셉니다(D12). 없으면 세지 않습니다. */
+  readonly seenScore?: number | null;
 };
 
 type Notice = { readonly title: string; readonly body: string };
@@ -70,6 +72,9 @@ export const rankingTestIds = {
   gap: id("gap"),
   me: id("me"),
   meGap: id("me-gap"),
+  meScore: id("me-score"),
+  /** 내 줄 강조 고리(D12) — 움직임 줄이기면 서지 않습니다. */
+  ring: id("ring"),
   notice: id("notice"),
   noticeAction: id("notice-action"),
   loading: id("loading"),

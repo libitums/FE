@@ -1,0 +1,134 @@
+/* 순위 화면의 모션(ADR-0170 D12, 시안 「랭킹 모션」 2026-11-22). 길이 · 가속은 토큰, 지연은 d1(50ms) 배수입니다.
+   움직임 줄이기에서는 이 클래스들이 붙지 않습니다(`ranking-motion.ts`). 한 요소에 애니메이션은 하나만 겁니다 —
+   줄 상자(등장) · 메달(튀어나옴) · 내 줄(눌렸다 돌아옴) · 고리(번짐)가 서로 다른 요소입니다.
+   메달의 넘침 scale(1.18) · 시작 scale(0.3), 내 줄 scale(1.025), 고리 scale(1.06)은 시안의 연출 값입니다(모션 리터럴 allowlist). */
+
+/* 1. 줄이 차례로 올라옴 — d6 · enter, 줄마다 d1. */
+.ranking-in {
+  animation: ranking-rise var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter) both;
+}
+
+.ranking-in-1 {
+  animation-delay: var(--libitum-motion-duration-d1);
+}
+
+.ranking-in-2 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 2);
+}
+
+.ranking-in-3 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 3);
+}
+
+.ranking-in-4 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 4);
+}
+
+.ranking-in-5 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 5);
+}
+
+.ranking-in-6 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+}
+
+.ranking-in-7 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 7);
+}
+
+/* 3. 메달 — 자기 줄보다 d1 × 3 늦게 튀어나옵니다(1위 줄은 칸 0, 2위 1, 3위 2). */
+.ranking-medal-in {
+  animation: ranking-medal-pop var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.ranking-medal-in-1 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 3);
+}
+
+.ranking-medal-in-2 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 4);
+}
+
+.ranking-medal-in-3 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 5);
+}
+
+/* 2. 내 줄 강조 — 줄이 다 뜬 뒤(d1 × 14) 한 번. 줄은 살짝 커졌다 돌아오고, 고리는 줄 테두리에서 밖으로 번지며 사라집니다. */
+.ranking-row-pulse {
+  position: relative;
+  overflow: visible;
+  animation: ranking-pulse var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing)
+    both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 14);
+}
+
+.ranking-ring {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+  opacity: 0;
+  animation: ranking-ring var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 14);
+}
+
+@keyframes ranking-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ranking-medal-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ranking-pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.025);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes ranking-ring {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
