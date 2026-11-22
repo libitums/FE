@@ -1,6 +1,6 @@
 -- 운영 도구 에셋 수(ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`) — 「전체」 사용자 둘러보기를 사용자가 만든
--- 스냅샷(그림) · 음성 수로 정렬한다(많은 순 · 적은 순). 20261214 뒤에 적용한다. 공통 규칙(`p_actor` · 열람 기록 · `service_role`만)은
--- 20261212 그대로다.
+-- 스냅샷(그림) · 음성 수로 정렬한다(많은 순 · 적은 순). 20261213 뒤면 된다 — 20261214(정렬)를 건너뛴 DB에도 그대로 적용된다(이 함수가
+-- 20261214의 정렬을 모두 담고, 옛 인수 꼴을 지운다). 공통 규칙(`p_actor` · 열람 기록 · `service_role`만)은 20261212 그대로다.
 --
 -- 바뀌는 것: `ops_search_users`
 --   - 줄마다 `snapshots` · `voices` — 그 사용자의 `companion.media` 중 **완료(status = 'complete')** 인 스냅샷 · 음성 수(없으면 0).
@@ -8,11 +8,12 @@
 --   - `p_sort`에 `snapshots` · `voices`(`p_dir` asc · desc, 같은 수는 id 순).
 --   세는 범위: `companion.media` 전체를 묶어 세지 않는다. 보이는 줄(많아야 `p_limit`)만 사용자마다 세고, 에셋 수로 정렬할 때만
 --   조건에 맞은 사용자 모두를 센다 — 한 사람을 찾을 때 표 전체를 읽지 않게.
---   인수 꼴은 20261214 그대로라 함수만 바꾼다(`create or replace`). 이 파일의 첫 판(인수 13개, `p_min_snapshots` · `p_min_voices`)을
---   적용한 DB라면 그 함수를 지운다 — 남으면 호출이 겹친다.
+--   인수 꼴은 20261214 그대로다(11개). 다른 꼴이 남으면 호출이 겹치므로(PostgREST PGRST203) 둘 다 지운다: 20261213의 꼴(9개,
+--   `p_sort` · `p_dir` 없음 — 20261214를 적용하지 않은 DB)과 이 파일의 첫 판(13개, `p_min_snapshots` · `p_min_voices`).
 --
 -- 다시 적용해도 같은 결과다. 20261214를 다시 적용하면 옛 함수로 돌아가므로 이 파일도 다시 적용한다.
 
+drop function if exists public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer);
 drop function if exists public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text, integer, integer);
 
 -- 필터 찾기 · 둘러보기. 조건은 모두 AND, 정렬은 p_sort · p_dir(기본 가입 최신순). total은 limit · offset 전 수. 열람 기록 detail = 받은 필터.

@@ -165,25 +165,34 @@ describe("ops_search_users 에셋 수", () => {
     expect(rows[0].args).toMatch(/p_sort text, p_dir text$/);
   });
 
-  test("OM-6 첫 판(인수 13개)을 적용한 DB에 다시 적용하면 그 함수가 지워진다", async () => {
-    await db.admin.query(
-      `create function public.ops_search_users(p_actor text, p_query text, p_country text, p_tester boolean, p_tier text,
-         p_joined_after timestamptz, p_joined_before timestamptz, p_limit integer, p_offset integer, p_sort text, p_dir text,
-         p_min_snapshots integer, p_min_voices integer) returns jsonb language sql as $$ select '{}'::jsonb $$`,
-    );
+  test("OM-6 다른 인수 꼴이 남은 DB(20261214 전의 9개 · 첫 판의 13개)에 적용하면 그 함수들이 지워진다", async () => {
+    const base = `p_actor text, p_query text, p_country text, p_tester boolean, p_tier text,
+      p_joined_after timestamptz, p_joined_before timestamptz, p_limit integer, p_offset integer`;
+    for (const args of [
+      base,
+      `${base}, p_sort text, p_dir text, p_min_snapshots integer, p_min_voices integer`,
+    ]) {
+      await db.admin.query(
+        `create function public.ops_search_users(${args}) returns jsonb language sql as $$ select '{}'::jsonb $$`,
+      );
+    }
     await db.admin.query(
       await readFile(
         new URL("./20261227120000_ops_admin_media_counts.sql", import.meta.url),
         "utf8",
       ),
     );
-    const count = (
+    const rows = (
       await db.admin.query(
-        `select count(*)::int as n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        `select pg_get_function_identity_arguments(p.oid) as args
+         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
          where n.nspname = 'public' and p.proname = 'ops_search_users'`,
       )
-    ).rows[0].n;
-    expect(count).toBe(1);
+    ).rows;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].args).toMatch(/p_sort text, p_dir text$/);
+    // 인수를 적게 준 호출(ops_admin의 기본 목록)이 겹치지 않는다
+    expect(await ids({})).toEqual([d, c, b, a]);
     expect(await ids({ p_sort: "snapshots", p_dir: "desc" })).toEqual([a, b, c, d]);
   });
 });
