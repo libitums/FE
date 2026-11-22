@@ -131,7 +131,11 @@ function List({
                     : copy.zoneClimb(moreToTopThree(board))}
                 </text>
               )}
-              <Row row={row} board={board} {...(row.me ? { shownScore } : {})} />
+              <Row
+                row={row}
+                board={board}
+                {...(row.me && shownScore !== board.me.score ? { shownScore } : {})}
+              />
             </view>
           );
         })}

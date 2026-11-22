@@ -6,16 +6,10 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import { emitCompanionEvent } from "../../lib/companion-events";
 import { readNetworkProperties } from "../../lib/network-status";
 import { saveRankingHidden } from "../../lib/ranking-hidden-cache";
-import { takeSeenScore } from "../../lib/ranking-seen-score";
+import { readSeenScore, saveSeenScore } from "../../lib/ranking-seen-score";
 import type { RankingBoardKind, RankingClient, RankingLoad } from "../../lib/ranking.contract";
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
-import {
-  rankingViewOf,
-  seenAfterCounted,
-  seenAfterLoad,
-  type RankingView,
-  type SeenByBoard,
-} from "./ranking-rules";
+import { rankingViewOf, type RankingView } from "./ranking-rules";
 
 export type UseRankingInput = {
   readonly client: RankingClient;
@@ -28,9 +22,9 @@ export type UseRankingInput = {
 export type RankingControls = {
   readonly view: RankingView;
   readonly board: RankingBoardKind;
-  /** 이 보드에서 지난번에 본 내 점수(같은 주) — 숫자 오름의 출발 값(D12). 없으면 null. */
+  /** 이 보드에서 마지막으로 다 본 내 점수(같은 주) — 숫자 오름의 출발 값(D12). 없으면 null. */
   readonly seenScore: number | null;
-  /** 내 점수의 숫자 오름을 다 셌습니다 — 이 보드의 본 점수를 지워 다시 세지 않게 합니다. */
+  /** 지금 점수를 다 보여 줬습니다 — 본 점수로 적어 다시 세지 않게 합니다. */
   readonly scoreCounted: () => void;
   readonly select: (board: RankingBoardKind) => void;
   readonly retry: () => void;
@@ -39,12 +33,14 @@ export type RankingControls = {
 
 const eventBoard = (board: RankingBoardKind) => (board === "lessons" ? "lessons" : "chat_words");
 type Loads = Partial<Record<RankingBoardKind, RankingLoad>>;
+/** 보드별 「마지막으로 다 본 내 점수」 — 기기 저장을 읽은 값, 다 보여 준 뒤에는 지금 점수. */
+type Seen = Partial<Record<RankingBoardKind, number | null>>;
 
 export function useRanking(input: UseRankingInput): RankingControls {
   const { client, signedIn, eventSink } = input;
   const [board, setBoard] = useState<RankingBoardKind>(input.initialBoard);
   const [loads, setLoads] = useState<Loads>({});
-  const [seen, setSeen] = useState<SeenByBoard>({});
+  const [seen, setSeen] = useState<Seen>({});
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const opened = useRef(false);
@@ -62,10 +58,10 @@ export function useRanking(input: UseRankingInput): RankingControls {
     void client.load(board).then((result) => {
       if (result.status !== "error") saveRankingHidden(result.status === "hidden");
       if (latestAttempt.current !== turn) return;
-      // 지난번에 본 내 점수를 꺼내고 지금 점수로 바꿔 둡니다 — 보드를 그리기 전에 함께 넣어 첫 프레임부터 옛 점수가 섭니다.
+      // 마지막으로 다 본 내 점수를 꺼냅니다(저장은 건드리지 않음) — 보드와 함께 넣어 첫 프레임부터 그 점수가 섭니다.
       if (result.status === "ready") {
-        const previous = takeSeenScore(board, result.board.endsAt, result.board.me.score);
-        setSeen((current) => seenAfterLoad(current, board, previous, result.board.me.score));
+        const previous = readSeenScore(board, result.board.endsAt);
+        setSeen((current) => ({ ...current, [board]: previous }));
       }
       setLoads((current) =>
         current[board] === undefined ? { ...current, [board]: result } : current,
@@ -108,8 +104,15 @@ export function useRanking(input: UseRankingInput): RankingControls {
     view,
     board,
     seenScore: seen[board] ?? null,
-    // 다 센 뒤에만 지웁니다 — 세기 전 · 세는 도중에 보드를 바꾸거나 다시 읽어도 못 본 오름이 사라지지 않습니다(리뷰 #550).
-    scoreCounted: () => setSeen((current) => seenAfterCounted(current, board)),
+    // 지금 점수를 다 보여 준 뒤에만 저장을 고칩니다 — 세는 도중에 화면 · 탭을 떠나면 다음에 다시 셉니다(리뷰 #550).
+    scoreCounted: () => {
+      if (view.kind !== "ready") return;
+      const { endsAt, me } = view.board;
+      saveSeenScore(board, endsAt, me.score);
+      setSeen((current) =>
+        current[board] === me.score ? current : { ...current, [board]: me.score },
+      );
+    },
     select: (next) => {
       if (next === board) return;
       emitCompanionEvent(eventSink, {

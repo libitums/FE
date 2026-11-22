@@ -322,7 +322,7 @@ test("RK-UI24. 세는 동안 보이는 단위는 보이는 숫자를 따르고, 
   }
 });
 
-test("RK-UI25. 숫자 오름이 끝났을 때 한 번 알린다 — 세는 도중에 화면을 떠나면 알리지 않는다(다음에 다시 센다)", () => {
+test("RK-UI25. 지금 점수를 다 보여 준 때 한 번 알린다 — 세는 도중에 화면을 떠나면 알리지 않는다(다음에 다시 센다)", () => {
   vi.useFakeTimers();
   try {
     const counted = vi.fn<() => void>();
@@ -353,7 +353,21 @@ test("RK-UI25. 숫자 오름이 끝났을 때 한 번 알린다 — 세는 도�
   }
 });
 
-test("RK-UI27. 목록의 내 줄도 고정된 내 줄과 같은 숫자 · 단위로 센다 — 낭독 줄은 지금 점수", () => {
+test("RK-UI26. 셀 것이 없으면(본 적 없음 · 오르지 않음 · 움직임 줄이기) 곧바로 지금 점수를 보여 주고 한 번 알린다", () => {
+  for (const [seenScore, reduced] of [
+    [null, false],
+    [7, false],
+    [4, true],
+  ] as const) {
+    const counted = vi.fn<() => void>();
+    mountMotion(seenScore, reduced, counted);
+    expect(text(ids.meScore)).toBe("7");
+    expect(counted).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
+});
+
+test("RK-UI27. 목록의 내 줄도 세는 동안 고정된 내 줄과 같은 숫자 · 단위다 — 낭독 줄은 지금 점수, 다 세면 목록 줄의 제 점수", () => {
   vi.useFakeTimers();
   try {
     mountMotion(1);
@@ -367,55 +381,6 @@ test("RK-UI27. 목록의 내 줄도 고정된 내 줄과 같은 숫자 · 단위
       });
     }
     expect(text(ids.row(5))).toMatch(/7lessons$/);
-  } finally {
-    vi.useRealTimers();
-  }
-});
-
-test("RK-UI28. 본 점수가 화면이 선 뒤에 도착해도 센다", () => {
-  vi.useFakeTimers();
-  try {
-    const node = (seenScore: number | null) => (
-      <RankingScreen
-        view={{ kind: "ready", board }}
-        board="lessons"
-        nowMs={NOW}
-        seenScore={seenScore}
-        onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
-        onRetry={vi.fn<() => void>()}
-        onSignIn={vi.fn<() => void>()}
-        onShowMe={vi.fn<() => void>()}
-      />
-    );
-    const view = render(node(null));
-    expect(text(ids.meScore)).toBe("7");
-    view.rerender(node(4));
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    expect(text(ids.meScore)).toBe("4");
-    for (let tick = 0; tick < 25; tick += 1) {
-      act(() => {
-        vi.advanceTimersByTime(100);
-      });
-    }
-    expect(text(ids.meScore)).toBe("7");
-  } finally {
-    vi.useRealTimers();
-  }
-});
-
-test("RK-UI26. 본 점수가 없거나 움직임 줄이기면 알리지 않는다", () => {
-  vi.useFakeTimers();
-  try {
-    const counted = vi.fn<() => void>();
-    mountMotion(null, false, counted);
-    cleanup();
-    mountMotion(4, true, counted);
-    act(() => {
-      vi.advanceTimersByTime(3000);
-    });
-    expect(counted).not.toHaveBeenCalled();
   } finally {
     vi.useRealTimers();
   }

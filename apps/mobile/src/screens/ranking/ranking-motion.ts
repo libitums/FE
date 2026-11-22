@@ -25,35 +25,32 @@ export const medalInClass = (rank: number, reduced: boolean): string =>
 export const pulseClass = (reduced: boolean): string => (reduced ? "" : " ranking-row-pulse");
 
 /**
- * 내 점수 — 지난번에 본 점수(`seen`)보다 올랐으면 줄이 다 뜬 뒤 거기서부터 셉니다. 그 밖에는 곧바로 지금 점수.
- * 다 세면 `onCounted`로 한 번 알립니다 — 세는 도중에 화면을 떠나면 알리지 않아 다음에 다시 셉니다.
+ * 내 점수 — 마지막으로 다 본 점수(`seen`)보다 올랐으면 줄이 다 뜬 뒤 거기서부터 셉니다. 그 밖에는 곧바로 지금 점수.
+ * 지금 점수를 다 보여 준 때 `onShown`으로 알립니다(셀 것이 없으면 곧바로) — 세는 도중에 화면을 떠나면 알리지 않습니다.
  */
-export function useRisingScore(score: number, seen: number | null, onCounted?: () => void): number {
+export function useRisingScore(score: number, seen: number | null, onShown?: () => void): number {
   const reduced = useReducedMotion();
   const rises = !reduced && seen !== null && seen < score;
-  const [value, setValue] = useState(rises ? seen : score);
-  const notify = useRef(onCounted);
-  notify.current = onCounted;
+  // 줄이 다 떠서 세기 시작했는가.
+  const [armed, setArmed] = useState(false);
+  const notify = useRef(onShown);
+  notify.current = onShown;
   useEffect(() => {
-    if (!rises) {
-      setValue(score);
-      return undefined;
-    }
-    // 본 점수가 화면이 선 뒤에 도착해도 거기서부터 셉니다.
-    setValue(seen);
+    setArmed(false);
+    if (!rises) return undefined;
     const timer = setTimeout(
-      () => setValue(score),
+      () => setArmed(true),
       motionDurationMs(motionTokens.duration.d1) * AFTER_LIST_STEPS,
     );
     // Lynx의 clearTimeout은 인자 하나만 받습니다(Android).
     return () => {
       clearTimeout(timer);
     };
-  }, [score, seen, rises]);
-  const counted = useCountUp(rises ? value : score);
-  const done = rises && value === score && counted === score;
+  }, [score, rises]);
+  const counted = useCountUp(rises && !armed ? seen : score);
+  const done = !rises || (armed && counted === score);
   useEffect(() => {
     if (done) notify.current?.();
-  }, [done]);
+  }, [done, score]);
   return rises ? counted : score;
 }

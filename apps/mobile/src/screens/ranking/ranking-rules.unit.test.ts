@@ -7,8 +7,6 @@ import {
   flagOf,
   medalOf,
   moreToTopThree,
-  seenAfterCounted,
-  seenAfterLoad,
   rankingViewOf,
   zoneBefore,
 } from "./ranking-rules";
@@ -123,22 +121,4 @@ test("RK-U30. 3위까지 남은 점수(D13) — 3위 점수를 넘는 데 필요
   ).toBeNull();
   // 서버가 3위 줄을 주지 않았으면(작은 그룹) 말하지 않는다.
   expect(moreToTopThree({ ...mine, rows: [row(1), row(5, true)] })).toBeNull();
-});
-
-test("RK-U31. 본 점수 — 셀 것이 있을 때만 칸을 두고(지난 점수 < 지금 점수), 다 센 뒤에 지운다(리뷰 #549 · #550)", () => {
-  // 본 적 없음 · 오르지 않음은 칸을 만들지 않는다 — 다음에 읽을 때 새로 판단한다.
-  expect(seenAfterLoad({}, "lessons", null, 7)).toEqual({});
-  expect(seenAfterLoad({}, "lessons", 7, 7)).toEqual({});
-  const loaded = seenAfterLoad({}, "lessons", 4, 7);
-  expect(loaded).toEqual({ lessons: 4 });
-  // 아직 세지 않은 칸은 다시 읽어도 처음 값 그대로 — 못 본 오름을 덮지 않는다.
-  expect(seenAfterLoad(loaded, "lessons", 7, 9)).toBe(loaded);
-  // 첫 진입에는 셀 것이 없었어도, 다시 읽어 올랐으면 그때 칸이 선다.
-  expect(seenAfterLoad(seenAfterLoad({}, "lessons", null, 5), "lessons", 5, 8)).toEqual({
-    lessons: 5,
-  });
-  // 다 세면 그 보드의 칸만 지운다. 없는 칸은 그대로(같은 참조).
-  const both = seenAfterLoad(loaded, "chat-words", 2, 9);
-  expect(seenAfterCounted(both, "lessons")).toEqual({ "chat-words": 2 });
-  expect(seenAfterCounted(loaded, "chat-words")).toBe(loaded);
 });

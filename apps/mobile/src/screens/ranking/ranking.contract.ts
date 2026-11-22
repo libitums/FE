@@ -14,9 +14,9 @@ export type RankingScreenProps = {
   readonly onSignIn: () => void;
   /** 숨김 상태의 「Show me」 — 숨김을 끕니다. */
   readonly onShowMe: () => void;
-  /** 이 보드에서 지난번에 본 내 점수(같은 주) — 올랐으면 거기서부터 셉니다(D12). 없으면 세지 않습니다. */
+  /** 이 보드에서 마지막으로 다 본 내 점수(같은 주) — 올랐으면 거기서부터 셉니다(D12). 없으면 세지 않습니다. */
   readonly seenScore?: number | null;
-  /** 내 점수의 숫자 오름을 다 셌습니다 — 본 점수를 지워 다시 세지 않게 합니다. */
+  /** 지금 점수를 다 보여 줬습니다(셀 것이 없으면 곧바로) — 본 점수로 적습니다. */
   readonly onScoreCounted?: () => void;
 };
 

@@ -63,7 +63,7 @@ export function Row({
 }: {
   readonly row: RankingRow;
   readonly board: RankingBoard;
-  /** 내 줄이 세는 중에 보일 숫자(D12) — 고정된 내 줄과 같은 값. 없으면 점수 그대로. 낭독 줄은 늘 점수입니다. */
+  /** 내 줄이 세는 **동안에만** 보일 숫자(D12) — 고정된 내 줄과 같은 값. 없으면 이 줄의 점수 그대로. 낭독 줄은 늘 점수입니다. */
   readonly shownScore?: number;
 }): ReactNode {
   const copy = useUiCopy().ranking;
@@ -92,7 +92,9 @@ export function Row({
         </view>
         <view className="ranking-score">
           <text className="ranking-score-text">{String(shown)}</text>
-          <text className="ranking-unit">{copy.unit(board.kind, shown)}</text>
+          <text className="ranking-unit">
+            {shownScore === undefined ? unit : copy.unit(board.kind, shown)}
+          </text>
         </view>
       </view>
       {row.me ? <PulseRing /> : null}
