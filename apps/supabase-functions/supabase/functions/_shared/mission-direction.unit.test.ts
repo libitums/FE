@@ -33,6 +33,12 @@ describe("연출 지시 — missionDirection", () => {
     const stuck = missionDirection({ mission: waterMission, progress: at([], 2, 2) });
     expect(stuck).toMatchObject({ beat: "stuck", goalId: "bag" });
     expect(stuck?.text).toContain("open pay instead");
+    // 학습자가 꺼낼 목표만 남았으면 막혀도 묻지 않는다(room)
+    const onlyLearner = missionDirection({
+      mission: waterMission,
+      progress: at(["bag", "pay", "receipt"], 6, 3),
+    });
+    expect(onlyLearner).toMatchObject({ beat: "room", goalId: null });
     const hurry = missionDirection({ mission: cafeMission, progress: at(["order"], 8, 0) });
     expect(hurry).toMatchObject({ beat: "hurry", goalId: "pay" });
     expect(hurry?.text).toContain("open stay instead");

@@ -83,7 +83,7 @@ export function mostlyForeign(text: string): boolean {
 }
 
 /** 거른 까닭 — `same`: 고친 문장이 원문과 같음, `foreign_input`: 외국어로만 말함(교정이 곧 정답 문장 — 공짜 힌트가 됨). */
-export type FeedbackDrop = "same" | "foreign_input";
+export type FeedbackDrop = "same" | "foreign_input" | "bogus_l1";
 
 /**
  * 미션 턴 교정 거르기(교정 없음 `none`으로) — ① 고친 문장 · 고친 표현 · 더 나은 표현에 원문에 없는 비한글 글자, ② 고친 문장이 원문과
@@ -96,6 +96,9 @@ export function guardMissionFeedback(
   if (feedback.status !== "ok") return { feedback, dropped: [] };
   if (mostlyForeign(original))
     return { feedback: emptyFeedback("none", original), dropped: [], reason: "foreign_input" };
+  // 「한국어로 바꾸기」(l1_to_ko)인데 원문에 한글 아닌 글자가 없다 — 한국어 문장을 조금 바꾼 것을 번역처럼 낸 것(QA: 「한국어로 카드 어떻게 말해요?」)
+  if (feedback.kind === "l1_to_ko" && !/(?!\p{Script=Hangul})\p{L}/u.test(original))
+    return { feedback: emptyFeedback("none", original), dropped: [], reason: "bogus_l1" };
   if (feedback.better === null && bare(feedback.corrected ?? original) === bare(original))
     return { feedback: emptyFeedback("none", original), dropped: [], reason: "same" };
   const texts = [

@@ -26,7 +26,7 @@ export const directionTemplates = {
     "Only {{turns_left}} learner turns are left: go straight to the required goal {{goal_id}} ({{criteria}}){{cue_part}}. If the learner's message already does it, {{then}}.",
   advance:
     "Next beat: after reacting briefly, open goal {{goal_id}} ({{criteria}}) yourself{{cue_part}}. If the learner's message already does it, {{then}}.",
-  room: "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal.",
+  room: "Every goal you can open is done, but the scene is not over. Answer what the learner said in one short sentence (for example 「네, 알겠습니다.」 or 「천천히 보세요.」) and stop there: the next move is the learner's, so add no question and no offer. Do not close the scene unless the learner's message completes every open goal.",
   learnerGoals:
     "Goals the learner must raise themselves: {{goals}}. Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words.",
   cuePart: ", for example 「{{cue}}」",
@@ -78,7 +78,8 @@ function primary(input: MissionDirectionInput, open: readonly MissionGoal[]) {
   const stall = progress.stall ?? 0;
   const turnsLeft = Math.max(0, mission.turnLimit - progress.learnerTurns);
   const counterpartOpen = open.filter(opensItself);
-  if (stall >= stuckAfter)
+  // 학습자가 꺼낼 목표만 남았으면 막혀도 묻지 않는다(room) — 「다시 물어라」와 「묻지 마라」가 부딪혀 혼잣말이 나왔다(조율자 QA).
+  if (stall >= stuckAfter && counterpartOpen.length > 0)
     return {
       beat: "stuck" as const,
       goalId: (counterpartOpen[0] ?? open[0])?.id ?? null,

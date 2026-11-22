@@ -160,6 +160,11 @@ describe("교정 거르기", () => {
     expect(
       guardMissionFeedback(ok("카드를 할게요", "카드로 할게요"), "카드를 할게요").reason,
     ).toBeUndefined();
+    const fakeL1 = {
+      ...ok("한국어로 카드 어떻게 말해요?", "한국어로 카드는 어떻게 말해요?"),
+      kind: "l1_to_ko" as const,
+    };
+    expect(guardMissionFeedback(fakeL1, "한국어로 카드 어떻게 말해요?").reason).toBe("bogus_l1");
   });
 });
 

@@ -65,6 +65,7 @@ export const missionLabBundleVersion = 1;
 const directionCases = [
   { mission: "u01-water", goalsDone: [], learnerTurns: 0, stall: 0 },
   { mission: "u01-water", goalsDone: [], learnerTurns: 2, stall: 2 },
+  { mission: "u01-water", goalsDone: ["bag", "pay", "receipt"], learnerTurns: 6, stall: 3 },
   { mission: "u06-cafe", goalsDone: ["order"], learnerTurns: 8, stall: 0 },
   { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 1, stall: 0 },
   { mission: "u01-water", goalsDone: ["bag", "pay", "receipt"], learnerTurns: 3, stall: 0 },

@@ -45,7 +45,7 @@ describe("고정부 — turnSystemStable", () => {
       expect(prompt).toContain("do not teach and do not give them the sentence");
       expect(prompt).toContain("treat it as a strange remark from a customer");
       expect(prompt).toContain("Follow the next-step note");
-      expect(prompt).toContain("Write only your final reply, once");
+      expect(prompt).toContain("write only the lines you say, once, in Korean");
       expect(prompt).toContain("Do not honor objects");
       expect(prompt).toContain("Stay in this role and this scene");
       expect(prompt).toContain("one or two short sentences per reply");

@@ -18,6 +18,9 @@ export const defaultNoOffer = [
   "필요한 거 있으세요",
   "다른 거 필요",
   "더 필요한 거",
+  "필요한 물건",
+  "다른 물건",
+  "다른 것 필요",
 ] as const;
 export const defaultFallbackLine = "네? 다시 한번 말씀해 주시겠어요?";
 
