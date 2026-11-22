@@ -53,7 +53,7 @@ describe("PR-U1 응답 읽기", () => {
   });
 
   test("받을 것이 없는 판정은 보상 null · 지갑이 없으면 잔액 null", () => {
-    for (const status of ["not_recipient", "expired", "unknown", "none"]) {
+    for (const status of ["not_recipient", "expired", "unknown"]) {
       expect(pushRewardClaimFrom(body({ status, campaignId: null, kind: null }))).toEqual({
         status,
         campaignId: null,
@@ -84,7 +84,7 @@ describe("PR-U1 응답 읽기", () => {
 });
 
 describe("PR-U2 클라이언트", () => {
-  test("RPC에 캠페인 id(없으면 null)를 싣고 응답을 읽는다", async () => {
+  test("RPC에 캠페인 id를 싣고 응답을 읽는다", async () => {
     const post = vi.fn(
       async (build: (c: SupabaseConfig) => { url: string; init: HttpRequestInit }) => {
         const request = build(config);
@@ -92,30 +92,30 @@ describe("PR-U2 클라이언트", () => {
         return {
           ok: true as const,
           status: 200,
-          bodyText: body({ status: "none", campaignId: null, kind: null }),
+          bodyText: body({ status: "unknown", campaignId: null, kind: null }),
         };
       },
     );
     const client = createPushRewardClient({ token: async () => "t", post });
-    await expect(client.claim("c9")).resolves.toMatchObject({ status: "none" });
-    await client.claim(null);
+    await expect(client.claim("c9")).resolves.toMatchObject({ status: "unknown" });
     const bodies = post.mock.calls.map(([build]) => (build(config).init as { body: string }).body);
-    expect(bodies.map((text) => JSON.parse(text))).toEqual([
-      { p_campaign_id: "c9" },
-      { p_campaign_id: null },
-    ]);
+    expect(bodies.map((text) => JSON.parse(text))).toEqual([{ p_campaign_id: "c9" }]);
   });
 
   test("로그인 없음 · 실패 응답 · 던짐은 null", async () => {
-    const ok = async () => ({ ok: true as const, status: 200, bodyText: body({ status: "none" }) });
+    const ok = async () => ({
+      ok: true as const,
+      status: 200,
+      bodyText: body({ status: "unknown" }),
+    });
     await expect(
-      createPushRewardClient({ token: async () => null, post: ok }).claim(null),
+      createPushRewardClient({ token: async () => null, post: ok }).claim("c1"),
     ).resolves.toBeNull();
     await expect(
       createPushRewardClient({
         token: async () => "t",
         post: async () => ({ ok: true as const, status: 404, bodyText: "{}" }),
-      }).claim(null),
+      }).claim("c1"),
     ).resolves.toBeNull();
     await expect(
       createPushRewardClient({

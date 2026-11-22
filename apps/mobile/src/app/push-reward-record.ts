@@ -109,14 +109,10 @@ export function pushRewardHoldsLater(input: {
   return input.claiming || input.flying || input.record.modal !== null;
 }
 
-/** 실패 이유(이벤트) — 받았거나, id 없이 물어 보상이 없으면 null. 응답이 없으면 error. */
-export function pushRewardFailure(
-  claim: PushRewardClaim | null,
-  askedCampaignId: string | null,
-): string | null {
+/** 실패 이유(이벤트) — 받았으면 null, 응답이 없으면 error. */
+export function pushRewardFailure(claim: PushRewardClaim | null): string | null {
   if (claim === null) return "error";
   if (claim.status === "granted") return null;
-  if (claim.status === "none" && askedCampaignId === null) return null;
   return claim.status;
 }
 

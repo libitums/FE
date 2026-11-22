@@ -1,8 +1,8 @@
 // 푸시 캠페인 보상 결선(ADR-0175) — 보상 알림을 눌러 들어오면 claim을 묻고, 받았으면 지도가 한가할 때 보상 모달 → 엽전 날기 또는
 // 무제한 티켓 칩을 보입니다.
 //
-// - 누름 신호(`push-reward-open`)는 `use-opened-push`가 여정 맵 목적지를 열 때 냅니다. 로그인 계정이면 그 캠페인 id(없으면 null —
-//   서버가 기한 안의 가장 최근 보상을 고름)로 곧바로 묻습니다. 지급은 탭 즉시, 모달은 한가할 때 — 그 사이 기록은 계정별 기기 저장소.
+// - 누름 신호(`push-reward-open`)는 캠페인 id가 실린 알림을 눌렀을 때만 옵니다. 로그인 계정이면 그 id로 곧바로 묻습니다 — id 없는
+//   알림은 묻지 않습니다. 지급은 탭 즉시, 모달은 한가할 때 — 그 사이 기록은 계정별 기기 저장소.
 // - 손님이면 묻지 않습니다(ADR-0175 P4) — 실패 이유 guest만 남깁니다.
 // - 실패(기한 지남 · 이미 받음 · 대상 아님)는 화면에 아무것도 띄우지 않고 이벤트만(P5).
 // - 무제한 티켓은 끝 시각까지 `ticketsUnlimited()`가 참이고(`reward-ticket-pass`), 머리 칩 · 무제한 모달은 `ticketPass`(timed)를 그립니다.
@@ -45,7 +45,7 @@ export type PushRewardInput = {
   /** 날기가 끝나면 지급 응답의 지갑 잔액을 칩의 서버 잔액으로. */
   readonly acceptBalance: (balance: number) => void;
   /** 테스트 주입 — 기본은 앱 서버 · 기기 저장소. */
-  readonly claim?: (campaignId: string | null) => Promise<PushRewardClaim | null>;
+  readonly claim?: (campaignId: string) => Promise<PushRewardClaim | null>;
   readonly store?: PushRewardStore;
 };
 
@@ -87,15 +87,18 @@ export function usePushReward(input: PushRewardInput): PushReward {
     setClaiming(false);
     setFlight(null);
     balance.current = null;
+    return () => setRewardTicketPass(0);
   }, [signedIn]);
 
   // 누름 신호 — 훅이 서기 전에 온 누름도 처음 구독 때 꺼냅니다.
   useEffect(() => {
-    const ask = () => {
-      // 묻는 중에 다시 누르면 다음 누름은 버립니다 — 같은 캠페인을 두 번 묻지 않게(응답이 오면 다시 받을 수 있음).
-      if (asking.current) return void takePushRewardOpen();
+    let mounted = true;
+    // `answered`는 방금 답을 받은 id — 묻는 사이 같은 알림을 또 눌렀으면 다시 묻지 않습니다.
+    const ask = (answered?: string) => {
+      // 묻는 중의 누름은 남겨 두었다가 응답 뒤에 묻습니다 — 누른 알림의 보상을 잃지 않게.
+      if (asking.current) return;
       const opened = takePushRewardOpen();
-      if (opened === null) return;
+      if (opened === null || opened.campaignId === answered) return;
       const { wiring, claim } = latest.current.input;
       const sink = wiring.messengerChat.eventSink;
       if (wiring.accountState !== "signed-in") {
@@ -111,9 +114,14 @@ export function usePushReward(input: PushRewardInput): PushReward {
       setClaiming(true);
       void (claim ?? ((id) => pushRewardClient().claim(id)))(opened.campaignId).then((result) => {
         asking.current = false;
-        if (asked !== session.current) return;
+        // 로그아웃은 셸을 key로 다시 세웁니다 — 내려간 뒤 온 응답은 다음 세션의 저장 · 이용권에 손대지 않습니다.
+        if (!mounted) return;
+        if (asked === session.current) settle(result);
+        ask(opened.campaignId);
+      });
+      const settle = (result: PushRewardClaim | null) => {
         setClaiming(false);
-        const reason = pushRewardFailure(result, opened.campaignId);
+        const reason = pushRewardFailure(result);
         if (reason !== null)
           emitCompanionEvent(sink, { name: "push_reward_failed", surface: "learning", reason });
         if (result === null) return;
@@ -124,7 +132,6 @@ export function usePushReward(input: PushRewardInput): PushReward {
             surface: "learning",
             kind: reward.kind,
             amount: String(reward.kind === "coins" ? reward.amount : reward.hours),
-            via: opened.campaignId === null ? "fallback" : "id",
           });
           if (reward.kind === "coins") balance.current = result.balance;
         }
@@ -133,11 +140,16 @@ export function usePushReward(input: PushRewardInput): PushReward {
         if (next === before) return;
         latest.current.store.write(next);
         setRewardTicketPass(next.pass?.untilMs ?? 0);
+        latest.current.record = next;
         setRecord(next);
-      });
+      };
     };
     ask();
-    return onPushRewardOpen(ask);
+    const off = onPushRewardOpen(() => ask());
+    return () => {
+      mounted = false;
+      off();
+    };
   }, []);
 
   // 무제한 티켓이 끝나는 순간 다시 그립니다 — 칩이 숫자로, 레슨이 티켓을 쓰게.
@@ -148,7 +160,6 @@ export function usePushReward(input: PushRewardInput): PushReward {
     const handle = setTimeout(() => setExpired((n) => n + 1), Math.min(left + 1000, MAX_TIMER_MS));
     return () => clearTimeout(handle);
   }, [untilMs]);
-  setRewardTicketPass(untilMs);
 
   const latched = useRef(false);
   const step = pushRewardStep({

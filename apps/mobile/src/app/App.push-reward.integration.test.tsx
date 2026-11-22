@@ -29,14 +29,14 @@ import { renderSignedInApp, signedInBootSession } from "./test-helpers/signed-in
 // 무제한 티켓 칩. 경계만 대역입니다: `PushNotificationModule` · claim · 가입 보상 · 엽전 출시 RPC.
 
 const HOUR = 3_600_000;
-const calls = vi.hoisted(() => ({ order: [] as string[], asked: [] as (string | null)[] }));
+const calls = vi.hoisted(() => ({ order: [] as string[], asked: [] as string[] }));
 const push = vi.hoisted(() => ({ result: null as PushRewardClaim | null }));
 const coins = vi.hoisted(() => ({ bonus: 0 }));
 const signup = vi.hoisted(() => ({ granted: 0 }));
 vi.mock("../lib/push-reward-api", async (original) => ({
   ...(await original<typeof import("../lib/push-reward-api")>()),
   pushRewardClient: () => ({
-    claim: async (campaignId: string | null) => {
+    claim: async (campaignId: string) => {
       calls.order.push("push");
       calls.asked.push(campaignId);
       return push.result;
@@ -147,12 +147,12 @@ test("PR-I1 엽전 보상 알림을 눌러 켜면 그 캠페인을 묻고, 보�
   expect(calls.asked).toEqual(["c1"]);
   const modal = screen.getByTestId(ids.modal);
   expect(modal.textContent).toContain("Your gift is here!");
+  expect(rewardEvents(events)[0]).not.toHaveProperty("via");
   expect(rewardEvents(events)).toEqual([
     expect.objectContaining({
       name: "push_reward_claimed",
       kind: "coins",
       amount: "100",
-      via: "id",
       surface: "learning",
     }),
   ]);
@@ -194,14 +194,22 @@ test("PR-I3 대조군 · 기한 지남은 모달 없이 실패 이유만 남긴�
   ]);
 });
 
-test("PR-I4 캠페인 id 없는 알림(옛 호스트 · 보상 없는 알림)도 묻고, 받을 것이 없으면 아무 일도 없다", async () => {
-  push.result = { status: "none", campaignId: null, reward: null, balance: null };
-  stubOpenedPush({});
-  const { events } = await renderMember();
-  expect(calls.asked).toEqual([null]);
-  expect(present(ids.modal)).toBe(false);
-  expect(rewardEvents(events)).toEqual([]);
-});
+test.each([
+  ["목적지 없음", {}],
+  ["id 없는 여정 맵", { kind: "journey-map" }],
+  ["형식이 틀린 id", { kind: "journey-map", campaignId: "../x" }],
+])(
+  "PR-I4 보상 알림이 아니면(%s) 받을 보상이 있어도 묻지 않고, 뒤 안내도 미루지 않는다",
+  async (_name, target) => {
+    coins.bonus = 100;
+    stubOpenedPush(target);
+    const { events } = await renderMember();
+    expect(calls.asked).toEqual([]);
+    expect(present(ids.modal)).toBe(false);
+    expect(rewardEvents(events)).toEqual([]);
+    expect(present(launch.coins)).toBe(true);
+  },
+);
 
 test("PR-I5 엽전 출시 모달보다 푸시 보상이 먼저 — 닫은 뒤 출시 모달", async () => {
   coins.bonus = 100;
@@ -279,3 +287,27 @@ function stubOpenedPushOnHost(target: unknown): void {
     },
   });
 }
+
+test("PR-I13 손님이 보통 알림을 누르면 보상 실패 이벤트도 없다", async () => {
+  const host = installGuestHost({
+    store: new Map([
+      [guestMarkerKey, "1"],
+      [learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue],
+    ]),
+  });
+  const events: Event[] = [];
+  await renderGuestApp(host, {
+    platform: "ios",
+    appProps: {
+      progressSeed: legacyPassedSeed,
+      episodeIntroEventSink: (event) => void events.push(event as never),
+    },
+  });
+  await flush();
+  act(() => {
+    stubOpenedPushOnHost({ kind: "journey-map" });
+    lynx.getJSModule("GlobalEventEmitter").emit(pushOpenedEventName, []);
+  });
+  await flushRounds(2);
+  expect(rewardEvents(events)).toEqual([]);
+});

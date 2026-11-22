@@ -16,9 +16,9 @@
 |---|---|
 | P1 | 기한 = 발송 시각 + 48h(콘솔 1 ~ 336h). 티켓 기간 = 받은 시각부터 H시간(1 ~ 168). 이미 보상 이용권이 살아 있으면 그 끝에서 이어 붙인다. |
 | P2 | 서버 수신자 표에는 보낸 그룹만 적는다 — 대조군은 `not_recipient`. |
-| P3 | 캠페인 id는 `target.campaignId`(journey-map)로 온다. 없으면(옛 Android 호스트 · send-push 배포 전) 서버가 「기한 안 · 안 받은 · 수신자인 가장 최근 보상 캠페인」을 고른다. 어느 쪽이든 수신자 표로 검증한다. |
+| P3 | 캠페인 id는 `target.campaignId`(journey-map)로 온다. **그 알림을 눌렀을 때만** 받는다 — id가 없으면 앱은 claim을 부르지 않고 서버는 지급 0. id가 있어도 수신자 표로 검증한다. |
 | P4 | 손님(비로그인)으로 탔으면 받지 않는다 — 기기 대기 저장 없음, `push_reward_failed { reason: "guest" }`. |
-| P5 | 실패(기한 지남 · 이미 받음 · 대상 아님 · 모름)는 화면에 아무것도 띄우지 않고 이벤트만 남긴다. 캠페인 id 없이 물었는데 보상이 없으면(`none`) 이벤트도 없다. |
+| P5 | 실패(기한 지남 · 이미 받음 · 대상 아님 · 모름)는 화면에 아무것도 띄우지 않고 이벤트만 남긴다. 캠페인 id가 없는 알림은 묻지도 남기지도 않는다. |
 | P6 | 지도 안내 순서: 가입 보상 → 푸시 보상 → 엽전 출시 → 업데이트 안내 → Letters. |
 | P7 | 지급은 탭 즉시. 모달은 지도가 한가하고 첫 유닛 안내가 꺼졌을 때(활동이 하나라도 있음) 선다. |
 | P8 | 무제한 티켓은 `UnlimitedPass` kind `timed` — 머리 무제한 칩 · 무제한 모달의 기간 카드(남은 시간 · N/M시간 · 막대) · Got it. 구독 판이 있으면 구독이 앞선다. |
@@ -28,15 +28,15 @@
 
 ## 3. 계약
 
-### 서버 — `20261223120000_push_campaign_reward.sql`
+### 서버 — `20261224120000_push_campaign_reward.sql`
 
 - `public.push_campaign_rewards(campaign_id pk, kind 'coins'|'unlimited_tickets', amount, hours, sent_at, claim_until)`
 - `public.push_campaign_reward_recipients(campaign_id, user_id)` — 보낸 그룹만.
 - `public.push_campaign_reward_claims(campaign_id, user_id, kind, amount, hours, pass_until, claimed_at)` — (캠페인, 사용자) 한 줄.
 - `companion.ticket_passes(user_id, source, ref_id, starts_at, expires_at)` — 시간 한정 무제한 티켓 권한.
 - 네 표 모두 RLS 켬 · 앱 역할 권한 없음. 콘솔(service_role)은 보상 · 수신자를 넣고 받은 수를 읽는다.
-- `public.push_campaign_claim_reward(p_campaign_id text default null) → jsonb`
-  `{ status, campaignId, kind, amount, hours, passUntil, wallet }`. status: `granted` · `already_claimed` · `not_recipient` · `expired` · `unknown` · `none`. 비로그인은 28000.
+- `public.push_campaign_claim_reward(p_campaign_id text) → jsonb`
+  `{ status, campaignId, kind, amount, hours, passUntil, wallet }`. status: `granted` · `already_claimed` · `not_recipient` · `expired` · `unknown`(id 없음 포함). 비로그인은 28000.
   엽전은 `companion.grant_once(uid, amount, 'push_campaign', '<uid>:<campaign>')`.
 - `public.push_campaign_reward_claim_counts(p_campaign_ids text[])` — service_role만, 캠페인별 받은 수.
 
@@ -51,7 +51,7 @@
 ### 앱
 
 - `app/push-target.ts` — journey-map에 `campaignId`(형식이 틀리면 버림).
-- `lib/push-reward-api.ts` — `pushRewardClaimFrom(text)` · `createPushRewardClient(deps).claim(campaignId | null)`(던지지 않음, 실패 null).
+- `lib/push-reward-api.ts` — `pushRewardClaimFrom(text)` · `createPushRewardClient(deps).claim(campaignId)`(던지지 않음, 실패 null).
 - `lib/push-reward-open.ts` — 누른 알림 신호: `notePushRewardOpen(target)` · `takePushRewardOpen()` · `onPushRewardOpen(listener)`.
 - `app/push-reward-record.ts` — 기록 파싱 · `pushRewardRecordAfter` · `pushRewardStep` · `pushRewardHoldsLater` · `pushRewardFailure` · 기기 저장소 `libitum.push-reward.<uid>`.
 - `lib/reward-ticket-pass.ts` — `setRewardTicketPass(untilMs)` · `rewardTicketPassActive(nowMs)`; `ticketsUnlimited()`가 읽는다.

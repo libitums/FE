@@ -6,14 +6,13 @@ import { bearerHeaders } from "./auth-request";
 import { currentAccessToken } from "./progress-api";
 import { isSuccessStatus, send, type AuthRequestOutcome } from "./supabase-transport";
 
-/** 서버 판정 — granted만 이번에 받은 것입니다. `none`은 캠페인 id 없이 물었는데 받을 보상이 없음. */
+/** 서버 판정 — granted만 이번에 받은 것입니다. */
 export type PushRewardStatus =
   | "granted"
   | "already_claimed"
   | "not_recipient"
   | "expired"
-  | "unknown"
-  | "none";
+  | "unknown";
 
 /** 받은(또는 이미 받은) 보상 — 무제한 티켓은 끝 시각까지. */
 export type PushReward =
@@ -41,7 +40,6 @@ const statuses: readonly PushRewardStatus[] = [
   "not_recipient",
   "expired",
   "unknown",
-  "none",
 ];
 
 const positive = (value: unknown): number | null =>
@@ -86,7 +84,7 @@ export function pushRewardClaimFrom(bodyText: string | null): PushRewardClaim | 
 }
 
 export function createPushRewardClient(deps: PushRewardClientDeps): {
-  readonly claim: (campaignId: string | null) => Promise<PushRewardClaim | null>;
+  readonly claim: (campaignId: string) => Promise<PushRewardClaim | null>;
 } {
   return {
     claim: async (campaignId) => {

@@ -122,7 +122,6 @@ describe("PR-U6 응답 뒤 기록", () => {
       nothing("not_recipient"),
       nothing("expired"),
       nothing("unknown"),
-      nothing("none"),
     ]) {
       expect(pushRewardRecordAfter(before, claim, NOW)).toBe(before);
     }
@@ -166,17 +165,12 @@ describe("PR-U8 뒤 안내 미루기", () => {
 
 describe("PR-U9 실패 이유", () => {
   test("받음은 null, 판정은 그대로, 응답 없음은 error", () => {
-    expect(pushRewardFailure(coins(), "c1")).toBeNull();
-    expect(pushRewardFailure(nothing("expired"), "c1")).toBe("expired");
-    expect(pushRewardFailure(nothing("not_recipient"), "c1")).toBe("not_recipient");
-    expect(pushRewardFailure(coins("already_claimed"), "c1")).toBe("already_claimed");
-    expect(pushRewardFailure(nothing("unknown"), "c1")).toBe("unknown");
-    expect(pushRewardFailure(null, null)).toBe("error");
-  });
-
-  test("캠페인 id 없이 물어 보상이 없으면(보상 없는 알림) 이벤트가 없다", () => {
-    expect(pushRewardFailure(nothing("none"), null)).toBeNull();
-    expect(pushRewardFailure(nothing("none"), "c1")).toBe("none");
+    expect(pushRewardFailure(coins())).toBeNull();
+    expect(pushRewardFailure(nothing("expired"))).toBe("expired");
+    expect(pushRewardFailure(nothing("not_recipient"))).toBe("not_recipient");
+    expect(pushRewardFailure(coins("already_claimed"))).toBe("already_claimed");
+    expect(pushRewardFailure(nothing("unknown"))).toBe("unknown");
+    expect(pushRewardFailure(null)).toBe("error");
   });
 });
 

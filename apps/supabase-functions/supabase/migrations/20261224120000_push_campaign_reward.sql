@@ -5,7 +5,7 @@
 --    적는다. 대조군은 적지 않는다 — 대조군이 받으면 A/B 지표가 깨진다. 기록이 실패하면 콘솔은 보내지 않는다.
 -- 2. `public.push_campaign_claim_reward(p_campaign_id)`(앱이 부름, 로그인 필수, 멱등): 앱이 보낸 캠페인 id를 믿지 않고 수신자 표로
 --    검증한다. 판정: 모름(unknown) → 수신자 아님(not_recipient) → 이미 받음(already_claimed) → 기한 지남(expired) → 지급(granted).
---    id가 없으면(옛 Android 호스트 · send-push 배포 전) 「기한 안 · 안 받은 · 수신자인 가장 최근 보상」을 고르고, 없으면 none.
+--    id는 필수다 — null · 빈 글 · 틀린 형식은 unknown(지급 0). 「그 알림」을 가리키지 못하는 누름에 다른 보상을 골라 주지 않는다.
 -- 3. 엽전은 grant 버킷(`grant_once`, reason `push_campaign`, ref `<uid>:<campaign>`). 무제한 티켓은 시간 한정 권한
 --    `companion.ticket_passes`(지금부터 H시간, 살아 있는 보상 이용권이 있으면 그 끝에서 이어 붙임). `companion.has_unlimited_tickets`(구독
 --    의미 — 앱의 요금제 칩 · Go unlimited가 읽음)는 바꾸지 않는다. 앱의 레슨 티켓은 기기 원장(ADR-0075)이라 앱이 응답의 끝 시각을 쓴다.
@@ -68,7 +68,7 @@ grant select, insert on table public.push_campaign_rewards, public.push_campaign
 grant delete on table public.push_campaign_rewards to service_role;
 grant select on table public.push_campaign_reward_claims, companion.ticket_passes to service_role;
 
-create function public.push_campaign_claim_reward(p_campaign_id text default null)
+create function public.push_campaign_claim_reward(p_campaign_id text)
 returns jsonb
 language plpgsql
 security definer
@@ -89,30 +89,17 @@ begin
   -- 같은 사람의 겹친 누름(두 기기 · 빠른 두 번)을 줄 세운다.
   perform pg_advisory_xact_lock(hashtext('push_campaign_reward:' || v_user::text));
 
-  if p_campaign_id is null then
-    select w.* into r
-    from public.push_campaign_rewards w
-    join public.push_campaign_reward_recipients x on x.campaign_id = w.campaign_id and x.user_id = v_user
-    where v_now <= w.claim_until
-      and not exists (
-        select 1 from public.push_campaign_reward_claims k where k.campaign_id = w.campaign_id and k.user_id = v_user
-      )
-    order by w.sent_at desc
-    limit 1;
-    v_status := case when found then 'granted' else 'none' end;
+  select * into r from public.push_campaign_rewards
+  where p_campaign_id ~ '^[A-Za-z0-9_-]{1,80}$' and campaign_id = p_campaign_id;
+  if not found then
+    v_status := 'unknown';
+  elsif not exists (
+    select 1 from public.push_campaign_reward_recipients where campaign_id = r.campaign_id and user_id = v_user
+  ) then
+    v_status := 'not_recipient';
   else
-    select * into r from public.push_campaign_rewards
-    where p_campaign_id ~ '^[A-Za-z0-9_-]{1,80}$' and campaign_id = p_campaign_id;
-    if not found then
-      v_status := 'unknown';
-    elsif not exists (
-      select 1 from public.push_campaign_reward_recipients where campaign_id = r.campaign_id and user_id = v_user
-    ) then
-      v_status := 'not_recipient';
-    else
-      select * into c from public.push_campaign_reward_claims where campaign_id = r.campaign_id and user_id = v_user;
-      v_status := case when found then 'already_claimed' when v_now > r.claim_until then 'expired' else 'granted' end;
-    end if;
+    select * into c from public.push_campaign_reward_claims where campaign_id = r.campaign_id and user_id = v_user;
+    v_status := case when found then 'already_claimed' when v_now > r.claim_until then 'expired' else 'granted' end;
   end if;
 
   if v_status = 'granted' then

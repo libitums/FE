@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 푸시 캠페인 보상(20261223, ADR-0175): 콘솔(service_role)이 보상 · 보낸 그룹 수신자를 적고, 알림을 눌러 들어온 수신자가
+// 푸시 캠페인 보상(20261224, ADR-0175): 콘솔(service_role)이 보상 · 보낸 그룹 수신자를 적고, 알림을 눌러 들어온 수신자가
 // 기한 안에 한 번 받는다. 대조군 · 다른 사람은 받지 못한다. 엽전은 grant 버킷, 무제한 티켓은 시간 한정 권한(ticket_passes).
 const user = "00000000-0000-4000-8000-0000000000a1";
 const control = "00000000-0000-4000-8000-0000000000a2";
@@ -145,19 +145,26 @@ test("PCR-S5. 무제한 티켓 — 지금부터 H시간 권한, 이미 살아 �
   });
 });
 
-test("PCR-S6. 캠페인 id 없이 물으면 기한 안 · 안 받은 · 수신자인 가장 최근 보상, 없으면 none", async () => {
-  await addReward("c-a", { kind: "coins", amount: 30 }, { sentAgo: "3 hours" });
-  await addReward("c-b", { kind: "coins", amount: 50 }, { sentAgo: "1 hour" });
-  await addReward("c-other", { kind: "coins", amount: 70 }, { recipients: [control] });
-  expect(await claim(null)).toMatchObject({ status: "granted", campaignId: "c-b", amount: 50 });
-  expect(await claim(null)).toMatchObject({ status: "granted", campaignId: "c-a", amount: 30 });
-  expect(await claim(null)).toMatchObject({ status: "none", campaignId: null });
+test("PCR-S6. 캠페인 id가 없으면 받을 보상이 있어도 지급 0 — null은 unknown, 인자 없는 호출은 함수가 없다", async () => {
+  await addReward("c-coins", { kind: "coins", amount: 30 });
+  await addReward("c-tickets", { kind: "unlimited_tickets", hours: 24 });
+  for (const id of [null, ""])
+    expect(await claim(id)).toMatchObject({ status: "unknown", campaignId: null, wallet: null });
+  await expect(app.query("select public.push_campaign_claim_reward()")).rejects.toMatchObject({
+    code: "42883",
+  });
+  for (const table of [
+    "public.push_campaign_reward_claims",
+    "companion.ticket_passes",
+    "companion.credit_ledger",
+  ])
+    expect((await db.admin.query(`select count(*)::int as n from ${table}`)).rows[0].n).toBe(0);
 });
 
 test("PCR-S7. 로그인이 없으면 28000, 앱 역할은 표를 읽거나 쓰지 못한다", async () => {
   const anon = await db.connect();
   await anon.query("set role anon");
-  await expect(claim(null, anon)).rejects.toThrow(/./);
+  await expect(claim("c-coins", anon)).rejects.toThrow(/./);
   await expect(app.query("select * from public.push_campaign_rewards")).rejects.toThrow(/./);
   await expect(
     app.query("insert into public.push_campaign_reward_recipients values ('c', $1)", [user]),

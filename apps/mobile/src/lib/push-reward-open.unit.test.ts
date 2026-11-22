@@ -11,7 +11,7 @@ afterEach(() => {
   setRewardTicketPass(0);
 });
 
-test("PR-U3. 여정 맵 목적지만 신호가 되고, 꺼내면 비며, 구독자에게 알린다", () => {
+test("PR-U3. 캠페인 id가 실린 여정 맵 목적지만 신호가 되고, 꺼내면 비며, 구독자에게 알린다", () => {
   const listener = vi.fn();
   const off = onPushRewardOpen(listener);
   notePushRewardOpen({ kind: "companion-chat", characterId: "minseo", variant: null });
@@ -20,16 +20,22 @@ test("PR-U3. 여정 맵 목적지만 신호가 되고, 꺼내면 비며, 구독�
   expect(takePushRewardOpen()).toBeNull();
 
   notePushRewardOpen({ kind: "journey-map" });
+  expect(listener).not.toHaveBeenCalled();
+  expect(takePushRewardOpen()).toBeNull();
+
+  notePushRewardOpen({ kind: "journey-map", campaignId: "c0" });
   notePushRewardOpen({ kind: "journey-map", campaignId: "c1" });
   expect(listener).toHaveBeenCalledTimes(2);
   // 마지막 누름이 남습니다.
   expect(takePushRewardOpen()).toEqual({ campaignId: "c1" });
   expect(takePushRewardOpen()).toBeNull();
 
+  // 보상 알림 뒤에 누른 보통 알림은 남은 신호를 바꾸지 않습니다.
   off();
+  notePushRewardOpen({ kind: "journey-map", campaignId: "c2" });
   notePushRewardOpen({ kind: "journey-map" });
   expect(listener).toHaveBeenCalledTimes(2);
-  expect(takePushRewardOpen()).toEqual({ campaignId: null });
+  expect(takePushRewardOpen()).toEqual({ campaignId: "c2" });
 });
 
 test("PR-U4. 보상 이용권은 끝 시각 전까지만 살아 있고 ticketsUnlimited가 읽는다", () => {
