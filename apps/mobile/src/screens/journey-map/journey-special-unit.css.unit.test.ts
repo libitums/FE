@@ -122,6 +122,27 @@ describe("first-unit-guide.css", () => {
     const veiled = compositeOver(scrim, tokenRgb("var(--libitum-color-background-primary)"));
     expect(contrastRatio(tokenRgb(label ?? ""), veiled)).toBeGreaterThanOrEqual(4.5);
   });
+
+  // Android는 들린 상자(래퍼 · 노드 묶음)마다 네이티브 View라 그 밖에 선 글에는 TalkBack 초점이 가지 않습니다
+  // (GL10t, 2026-11-22 기기 red). 두 상자가 글 몫만큼 아래로 커지고, 같은 만큼의 음수 여백으로 배치는 그대로입니다.
+  test("SC11. 들린 두 상자는 안내 글을 품고, 배치 · 글 자리는 그대로다", () => {
+    const px = (selector: string, property: string): number =>
+      Number.parseFloat(cssDeclaration(bodyOf(guideCss, selector), property) ?? "NaN");
+    const wrapper = ".catalog-cover-illustrated-guided";
+    const item = ".catalog-cover-illustrated-guided .journey-special-unit-guided";
+    const room = px(wrapper, "padding-bottom");
+
+    // 글 위 24 + 상하 안쪽 24 · 24 + 글 네 줄(줄 60 — 미얀마어 · 큰 글자)
+    expect(room).toBeGreaterThanOrEqual(24 + 24 + 24 + 4 * 60);
+    expect(px(wrapper, "margin-bottom")).toBe(-room);
+    expect(px(item, "padding-bottom")).toBe(room);
+    expect(px(item, "margin-bottom")).toBe(-room);
+    // 노드 묶음이 124 폭이면 초점이 글 가운데만 잡습니다.
+    expect(px(item, "width")).toBe(px(".first-unit-map-tooltip", "width"));
+    expect(px(".catalog-cover-illustrated-guided .first-unit-map-tooltip", "margin-top")).toBe(
+      24 - room,
+    );
+  });
 });
 
 describe("앱 진입점", () => {
