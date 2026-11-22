@@ -1,0 +1,72 @@
+/* 글자 여섯 만나기(ADR-0176, 시안 Letters) — 토큰만 씁니다. */
+
+.entry-basics-lead {
+  flex-shrink: 0;
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.entry-basics-group {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-24);
+}
+
+.entry-basics-group-title {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.entry-basics-row {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.entry-basics-cell {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  row-gap: var(--libitum-spacing-4);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+}
+
+.entry-basics-cell-playable:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.entry-basics-cell-roman {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.entry-basics-cell-glyph {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-typography-display-font-size);
+  font-weight: var(--libitum-typography-display-font-weight);
+  line-height: var(--libitum-typography-display-line-height);
+}
+
+.entry-basics-cell-vowel {
+  color: var(--libitum-color-brand-strong);
+}
+
+.entry-basics-cell-speaker {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}

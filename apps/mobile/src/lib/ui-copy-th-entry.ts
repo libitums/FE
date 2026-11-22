@@ -55,9 +55,22 @@ export const languageSelectTh: LanguageSelectCopy = {
 export const journeyEntryTh: JourneyEntryCopy = {
   title: "การเดินทางรอคุณอยู่",
   display: "เริ่มเรื่องราว",
-  caption: "สำรวจโซล ทำความรู้จักเพื่อนใหม่ และเรียนภาษาเกาหลีไประหว่างทาง",
+  caption: "เพิ่งรู้จักฮันกึลเหรอ มารู้จักตัวอักษรสักหน่อยก่อนถึงโซล",
   notice: "รูปภาพบางส่วนในบริการนี้สร้างขึ้นด้วยเทคโนโลยี AI",
-  start: "เริ่ม",
+  basics: "เรียนพื้นฐานก่อน",
+  basicsDetail: "6 ตัวอักษร 3 เสียง แล้วเข้าเรื่อง",
+  story: "เข้าเรื่องเลย",
+  firstSteps: {
+    progress: (current, total) => `ขั้นที่ ${current} จาก ${total}`,
+    lettersTitle: "รู้จักตัวอักษรแรกของคุณ",
+    lettersLead: "พยัญชนะกับสระรวมกันเป็นเสียงหนึ่งพยางค์",
+    lettersHear: "แตะตัวอักษรเพื่อฟังเสียง",
+    lettersNext: "ลองประกอบดู",
+    readyTitle: "คุณอ่านภาษาเกาหลีได้แล้ว!",
+    readyMeaning: "“เธอก็ไปเหรอ”",
+    readyBody: "เรื่องราวของคุณในโซลกำลังจะเริ่มขึ้น",
+    readyGo: "อื้ม ไปกัน!",
+  },
 };
 
 export const loginTh: LoginCopy = {

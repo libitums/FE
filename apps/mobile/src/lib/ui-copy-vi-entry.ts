@@ -55,9 +55,22 @@ export const languageSelectVi: LanguageSelectCopy = {
 export const journeyEntryVi: JourneyEntryCopy = {
   title: "Hành trình đang chờ bạn",
   display: "Bắt đầu câu chuyện",
-  caption: "Khám phá Seoul, làm quen bạn mới và học tiếng Hàn trên đường đi.",
+  caption: "Mới biết Hangul? Làm quen vài chữ cái trước khi đặt chân đến Seoul.",
   notice: "Một số hình ảnh trong dịch vụ này được tạo bằng công nghệ AI",
-  start: "Bắt đầu",
+  basics: "Học cơ bản trước",
+  basicsDetail: "6 chữ cái, 3 âm, rồi vào truyện",
+  story: "Vào truyện luôn",
+  firstSteps: {
+    progress: (current, total) => `Bước ${current} trên ${total}`,
+    lettersTitle: "Làm quen những chữ cái đầu tiên",
+    lettersLead: "Một phụ âm và một nguyên âm ghép thành một khối âm.",
+    lettersHear: "Chạm vào chữ để nghe.",
+    lettersNext: "Ghép thử nào",
+    readyTitle: "Bạn vừa đọc được tiếng Hàn!",
+    readyMeaning: "“Cậu cũng đi à?”",
+    readyBody: "Câu chuyện của bạn ở Seoul sắp bắt đầu.",
+    readyGo: "Ừ, đi thôi!",
+  },
 };
 
 export const loginVi: LoginCopy = {

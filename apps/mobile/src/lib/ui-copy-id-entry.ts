@@ -56,9 +56,22 @@ export const languageSelectId: LanguageSelectCopy = {
 export const journeyEntryId: JourneyEntryCopy = {
   title: "Perjalananmu menanti",
   display: "Mulai ceritamu",
-  caption: "Jelajahi Seoul, temui orang baru, dan belajar bahasa Korea sambil jalan.",
+  caption: "Belum kenal Hangul? Kenali beberapa huruf sebelum mendarat di Seoul.",
   notice: "Beberapa gambar dalam layanan ini dibuat menggunakan teknologi AI",
-  start: "Mulai",
+  basics: "Belajar dasarnya dulu",
+  basicsDetail: "6 huruf, 3 bunyi, lalu cerita",
+  story: "Langsung ke cerita",
+  firstSteps: {
+    progress: (current, total) => `Langkah ${current} dari ${total}`,
+    lettersTitle: "Kenali huruf pertamamu",
+    lettersLead: "Satu konsonan dan satu vokal membentuk satu blok bunyi.",
+    lettersHear: "Ketuk huruf untuk mendengarnya.",
+    lettersNext: "Ayo gabungkan",
+    readyTitle: "Kamu baru saja membaca bahasa Korea!",
+    readyMeaning: "“Kamu pergi juga?”",
+    readyBody: "Ceritamu di Seoul akan segera dimulai.",
+    readyGo: "Iya, ayo!",
+  },
 };
 
 export const loginId: LoginCopy = {

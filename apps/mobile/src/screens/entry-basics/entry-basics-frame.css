@@ -1,0 +1,105 @@
+/* 입장 전 기초(ADR-0176, 시안 Letters · Compose)의 틀 — 토큰만 씁니다. 머리 · 아래는 고정, 가운데만 스크롤합니다. */
+
+.entry-basics-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background-color: var(--libitum-color-background-primary);
+}
+
+.entry-basics-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+}
+
+.entry-basics-back,
+.entry-basics-skip {
+  flex-shrink: 0;
+}
+
+.entry-basics-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* 이름 · 나라 화면의 막대는 오른쪽에 뒤로 단추만큼 비웁니다 — 여기는 Skip이 그 자리에 섭니다. */
+.entry-basics-progress .entry-step-bar {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Skip — text 단추의 색만 fg-neutral-muted로(시안, 6.5:1). */
+.entry-basics-skip .ui-lynx-button-label {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.entry-basics-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+/* `<scroll-view>`의 직계 자식 하나가 간격을 집니다(ADR-0022 D4). 남는 높이는 가운데 묶음이 받습니다. */
+.entry-basics-content {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--libitum-spacing-24);
+  padding-bottom: var(--libitum-spacing-16);
+}
+
+.entry-basics-title {
+  flex-shrink: 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.entry-basics-middle {
+  flex-grow: 1;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-24);
+}
+
+.entry-basics-footer {
+  flex-shrink: 0;
+  padding-top: var(--libitum-spacing-8);
+}
+
+.entry-basics-next {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.entry-basics-next .ui-lynx-button-label {
+  flex-shrink: 1;
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+/* 흰 글자 19px bold — brand.primary 위 3.02:1이라 큰 글자(14pt bold = 18.67px) 기준을 넘겨야 합니다(ADR-0176).
+   맞는 글자 토큰(18 · 22)이 없어 크기만 값을 적습니다. */
+.entry-basics-next .ui-lynx-button-surface {
+  box-sizing: border-box;
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+}
+
+.entry-basics-next .ui-lynx-button-brand .ui-lynx-button-label {
+  font-size: 19px;
+}

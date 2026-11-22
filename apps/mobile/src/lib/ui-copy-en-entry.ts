@@ -54,9 +54,22 @@ export const languageSelectEn: LanguageSelectCopy = {
 export const journeyEntryEn: JourneyEntryCopy = {
   title: "Your journey awaits",
   display: "Start your story",
-  caption: "Explore Seoul, meet new people, and learn Korean along the way.",
+  caption: "New to Hangul? Meet a few letters before you land in Seoul.",
   notice: "Some images in this service are generated using AI technology",
-  start: "Start",
+  basics: "Learn the basics first",
+  basicsDetail: "6 letters, 3 sounds, then the story",
+  story: "Jump into the story",
+  firstSteps: {
+    progress: (current, total) => `Step ${current} of ${total}`,
+    lettersTitle: "Meet your first letters",
+    lettersLead: "A consonant and a vowel make one sound block.",
+    lettersHear: "Tap a letter to hear it.",
+    lettersNext: "Put them together",
+    readyTitle: "You just read Korean!",
+    readyMeaning: "“Are you going, too?”",
+    readyBody: "Your story in Seoul is about to begin.",
+    readyGo: "Yes, let’s go",
+  },
 };
 
 export const loginEn: LoginCopy = {

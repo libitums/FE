@@ -1,0 +1,48 @@
+/* 합치기 세 문제(ADR-0176, 시안 Compose) — 문제 줄 · 칸은 공용 부품이 지고, 여기에는 배치만 둡니다. */
+
+.entry-basics-compose-count {
+  flex-shrink: 0;
+  margin-bottom: var(--libitum-spacing-8);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.entry-basics-compose-verdict {
+  flex-shrink: 0;
+  min-height: var(--libitum-spacing-48);
+  margin-top: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.entry-basics-compose-bank {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* 시안의 세 칸 두 줄 — 칸 폭은 (줄 폭 − 간격 2 × 8) / 3입니다. */
+.entry-basics-compose-bank .letters-compose-bank {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-8);
+  padding-top: 0;
+}
+
+.entry-basics-compose-bank .syllable-tile {
+  box-sizing: border-box;
+  width: calc((100% - 2 * var(--libitum-spacing-8)) / 3);
+  min-height: var(--libitum-spacing-64);
+}
+
+.entry-basics-compose-action {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  display: flex;
+  flex-direction: column;
+}

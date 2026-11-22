@@ -1,35 +1,23 @@
-import { useEffect, useRef, useState } from "@lynx-js/react";
+import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { color } from "@libitums/design-tokens";
-import play from "@libitums/icons/lynx/play";
-
-import { announce, announceCompletion } from "../../lib/accessibility";
-import { composeSyllable, jamoTileRomanOf } from "../../lib/letters/jamo";
+import { ComposeQuizBank, ComposeQuizCard } from "../../components/ComposeQuizParts";
+import { useComposeQuiz } from "../../components/use-compose-quiz";
+import type { ComposeQuiz } from "../../components/use-compose-quiz";
+import { announce } from "../../lib/accessibility";
+import { COMPOSE_ROUNDS } from "../../lib/letters/compose-quiz";
+import { jamoTileRomanOf } from "../../lib/letters/jamo";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { LearningShell } from "../learning/LearningShell";
-import {
-  COMPOSE_ECHO_DELAY_MS,
-  COMPOSE_ROUNDS,
-  COMPOSE_TILES,
-  composeEchoOf,
-  composeReducer,
-  composeSlotStateOf,
-  composeVerdictOf,
-  initialComposeState,
-  type ComposeAction,
-  type ComposeState,
-} from "./compose-quiz";
 import { lettersTestIds as ids, type LettersComposeScreenProps } from "./letters.contract";
 
-import "../syllable-build/syllable-build-tile.css";
 import "./letters-compose.css";
 
 // 합치기 퀴즈(ㄱ + ㅏ = 가)입니다(ADR-0169, 시안 JamoCompose). 뼈대는 레슨의 `LearningShell`(머리 캡션 · 판정 배지 · 아래 단추),
-// 칸 · 타일은 음절 조립의 모양(syllable-build-tile)을 씁니다. 두 칸이 차면 합친 글자가 결과 칸에 서고 곧바로 판정합니다 —
-// 맞으면 Next(마지막은 완료), 틀리면 Try again. 맞히면 정답 효과음이 끝난 뒤 그 음절 소리가 한 번 납니다(ADR-0173 —
-// Auto-play가 꺼져 있거나 소리 파일이 아직 없으면 조용히 넘어갑니다). 레슨 기록 · 티켓과 무관한 연습입니다.
+// 문제 줄 · 타일 · 판정 · 소리는 입장 전 기초와 같은 부품(`ComposeQuizParts` · `useComposeQuiz`, ADR-0176)입니다. 두 칸이 차면 합친
+// 글자가 결과 칸에 서고 곧바로 판정합니다 — 맞으면 Next(마지막은 완료), 틀리면 Try again. 맞히면 정답 효과음이 끝난 뒤 그 음절
+// 소리가 한 번 납니다(ADR-0173 — Auto-play가 꺼져 있거나 소리 파일이 아직 없으면 조용히 넘어갑니다). 레슨 기록 · 티켓과 무관한 연습입니다.
 export function LettersComposeScreen({
   romanization,
   sound,
@@ -40,104 +28,32 @@ export function LettersComposeScreen({
 }: LettersComposeScreenProps): ReactNode {
   const uiCopy = useUiCopy();
   const copy = uiCopy.more.compose;
-  const [state, setState] = useState<ComposeState>(initialComposeState);
+  const base = useComposeQuiz({ sound, autoPlay, onAnswered, onComplete });
   const [hint, setHint] = useState(false);
-  const round = COMPOSE_ROUNDS[state.round] ?? COMPOSE_ROUNDS[0]!;
-  const target = composeSyllable(round.consonant, round.vowel);
-  const verdict = state.done ? null : composeVerdictOf(state);
-  const merged =
-    state.consonant !== null && state.vowel !== null
-      ? composeSyllable(state.consonant, state.vowel)
-      : "";
-  const showRoman = romanization === "shown";
-
-  const playSyllable = (syllable: string) => {
-    const source = sound.sourceOf(syllable);
-    if (source !== null) sound.play(source);
+  // 안내는 이 문제의 첫소리입니다 — 고르기 밖의 동작(비우기 · 다음 · 다시)이면 걷습니다.
+  const quiz: ComposeQuiz = {
+    ...base,
+    dispatch: (next) => {
+      if (next.type !== "pick") setHint(false);
+      base.dispatch(next);
+    },
   };
-
-  // 맞힌 판정의 음절 소리 — 효과음과 겹치지 않게 틈을 두고 한 번. 라운드가 넘어가거나 화면을 떠나면 걷습니다.
-  // 결선은 그릴 때마다 포트를 새로 만들 수 있어 최신 포트를 ref로 읽습니다(틈이 다시 시작되지 않게).
-  const soundRef = useRef(sound);
-  useEffect(() => {
-    soundRef.current = sound;
-  });
-  const echo = autoPlay === "off" ? null : composeEchoOf(state);
-  useEffect(() => {
-    if (echo === null) return undefined;
-    const handle = setTimeout(() => {
-      const source = soundRef.current.sourceOf(echo);
-      if (source !== null) soundRef.current.play(source);
-    }, COMPOSE_ECHO_DELAY_MS);
-    return () => clearTimeout(handle);
-  }, [echo, state.round]);
-
-  const dispatch = (action: ComposeAction) => {
-    const next = composeReducer(state, action);
-    if (next === state) return;
-    setState(next);
-    if (action.type !== "pick") setHint(false);
-    const judged = composeVerdictOf(next);
-    if (
-      action.type === "pick" &&
-      judged !== null &&
-      next.consonant !== null &&
-      next.vowel !== null
-    ) {
-      onAnswered?.(next.round + 1, target, judged === "correct");
-      announce(uiCopy.common.resultAnnouncement(judged));
-    }
-    if (action.type === "next" && next.done) {
-      onComplete?.(COMPOSE_ROUNDS.length, next.firstTry);
-      announceCompletion(copy.complete);
-    }
-  };
+  const { state, round, verdict } = quiz;
 
   const action = state.done
     ? { label: copy.done, run: onExit }
     : verdict === "correct"
-      ? { label: uiCopy.common.next, run: () => dispatch({ type: "next" }) }
+      ? { label: uiCopy.common.next, run: () => quiz.dispatch({ type: "next" }) }
       : verdict === "incorrect"
-        ? { label: copy.tryAgain, run: () => dispatch({ type: "retry" }) }
+        ? { label: copy.tryAgain, run: () => quiz.dispatch({ type: "retry" }) }
         : undefined;
 
-  const handlePlay = () => {
-    "background only";
-    playSyllable(target);
-  };
   const handleHint = () => {
     "background only";
     playSound("button");
     setHint(true);
     announce(copy.hintText(jamoTileRomanOf(round.consonant)));
   };
-
-  const slot = (which: "consonant" | "vowel") => {
-    const value = which === "consonant" ? state.consonant : state.vowel;
-    const slotState = state.done ? "empty" : composeSlotStateOf(state, which);
-    const name = which === "consonant" ? copy.consonantSlot : copy.vowelSlot;
-    return (
-      <view
-        className={`syllable-build-slot letters-compose-slot letters-compose-slot-${slotState}`}
-        data-testid={ids.composeSlot(which === "consonant" ? "c" : "v")}
-        data-state={slotState}
-        accessibility-element={true}
-        flatten={false}
-        accessibility-label={`${name}, ${value ?? copy.emptySlot}`}
-        accessibility-traits={value !== null && verdict === null ? "button" : "none"}
-        bindtap={() => {
-          "background only";
-          if (value !== null) dispatch({ type: "clear", slot: which });
-        }}
-      >
-        {value !== null && showRoman ? (
-          <text className="tile-romanization">{jamoTileRomanOf(value)}</text>
-        ) : null}
-        <text className="syllable-tile-label">{value ?? ""}</text>
-      </view>
-    );
-  };
-
   return (
     <view className="letters-compose" data-testid={ids.compose}>
       <LearningShell
@@ -170,45 +86,7 @@ export function LettersComposeScreen({
                   {copy.hintText(jamoTileRomanOf(round.consonant))}
                 </text>
               ) : null}
-              <view className="syllable-build-screen-bank letters-compose-bank">
-                {COMPOSE_TILES.map((letter, index) => {
-                  const used = letter === state.consonant || letter === state.vowel;
-                  return (
-                    <view
-                      key={letter}
-                      className={
-                        used
-                          ? "syllable-tile syllable-tile-placeholder syllable-tile-with-reading"
-                          : "syllable-tile syllable-tile-bank syllable-tile-with-reading"
-                      }
-                      data-testid={ids.composeTile(index)}
-                      accessibility-element={true}
-                      flatten={false}
-                      accessibility-label={`${letter}, ${jamoTileRomanOf(letter)}`}
-                      accessibility-traits={used || verdict !== null ? "disabled" : "button"}
-                      bindtap={() => {
-                        "background only";
-                        if (used) return;
-                        playSound("button");
-                        dispatch({ type: "pick", letter });
-                      }}
-                    >
-                      {showRoman ? (
-                        <text
-                          className={
-                            used
-                              ? "tile-romanization syllable-tile-romanization-used"
-                              : "tile-romanization"
-                          }
-                        >
-                          {jamoTileRomanOf(letter)}
-                        </text>
-                      ) : null}
-                      <text className="syllable-tile-label">{letter}</text>
-                    </view>
-                  );
-                })}
-              </view>
+              <ComposeQuizBank quiz={quiz} romanization={romanization} />
             </view>
           )
         }
@@ -216,54 +94,7 @@ export function LettersComposeScreen({
           state.done ? (
             <text className="letters-compose-complete">{copy.complete}</text>
           ) : (
-            <view className="letters-compose-card">
-              <view className="letters-compose-target">
-                <view
-                  className="letters-compose-play"
-                  data-testid={ids.composePlay}
-                  accessibility-element={true}
-                  flatten={false}
-                  accessibility-label={copy.play}
-                  accessibility-traits="button"
-                  bindtap={handlePlay}
-                >
-                  <svg
-                    className="letters-compose-play-icon"
-                    content={play}
-                    current-color={color.brand.primary}
-                  />
-                </view>
-                <text className="letters-compose-make">{copy.make(round.roman)}</text>
-              </view>
-              <view className="letters-compose-slots">
-                {slot("consonant")}
-                <text className="letters-compose-op" accessibility-element={false}>
-                  +
-                </text>
-                {slot("vowel")}
-                <text className="letters-compose-op" accessibility-element={false}>
-                  =
-                </text>
-                <view
-                  className={`syllable-build-slot letters-compose-result${verdict === null ? "" : ` syllable-build-slot-${verdict}`}`}
-                  data-testid={ids.composeSlot("r")}
-                  accessibility-element={true}
-                  flatten={false}
-                  accessibility-label={`${copy.resultSlot}, ${merged === "" ? copy.emptySlot : merged}${merged === "" ? "" : `, ${jamoTileRomanOf(state.consonant ?? "")}${jamoTileRomanOf(state.vowel ?? "")}`}`}
-                >
-                  {merged === "" ? null : (
-                    <>
-                      {showRoman ? (
-                        <text className="tile-romanization">
-                          {`${jamoTileRomanOf(state.consonant ?? "")}${jamoTileRomanOf(state.vowel ?? "")}`}
-                        </text>
-                      ) : null}
-                      <text className="syllable-tile-label letters-compose-merged">{merged}</text>
-                    </>
-                  )}
-                </view>
-              </view>
-            </view>
+            <ComposeQuizCard quiz={quiz} romanization={romanization} />
           )
         }
       />

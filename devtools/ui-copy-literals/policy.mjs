@@ -46,6 +46,10 @@ export const uiCopyLiteralPolicy = {
     "jamo.ts#RECOMMEND_ART",
     "compose-quiz.ts#COMPOSE_ROUNDS",
     "compose-quiz.ts#COMPOSE_TILES",
+    // 입장 전 기초의 글자 여섯 · 문장 「너도 가?」 — 배우는 한국어입니다(ADR-0176).
+    "entry-basics.ts#FIRST_LETTERS",
+    "entry-basics.ts#SENTENCE_SYLLABLES",
+    "entry-basics.ts#ENTRY_BASICS_SENTENCE",
   ],
   // 아직 옮기지 않은 파일 — 줄어들기만 합니다(위반이 0이 되면 `check.mjs`가 지우라고 실패합니다).
   // `node devtools/ui-copy-literals/check.mjs --print-pending`이 지금 남은 파일을 찍습니다.

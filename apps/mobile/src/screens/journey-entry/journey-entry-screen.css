@@ -2,16 +2,16 @@
 
    2026-09-21 디자인 반영: 그림을 화면 전체(안쪽 여백 무시)에 깔고, 위 · 아래
    Fog(dark)로 글자 자리를 어둡게 합니다. 글자는 그 위에 겹칩니다. CSS 상속이
-   꺼져 있어 글자마다 색과 타이포를 적습니다. */
+   꺼져 있어 글자마다 색과 타이포를 적습니다.
+
+   2026-11-22(ADR-0176): 아래가 단추 둘로 길어져 글자 묶음 둘을 스크롤에 담습니다 —
+   자리가 남으면 위 · 아래로 벌어지고, 모자라면 스크롤합니다. */
 
 .journey-entry-screen {
   position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
-  justify-content: space-between;
-  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-gray-950);
 }
 
@@ -32,7 +32,7 @@
 }
 
 /* Fog 크기는 s(40) · m(80) · full뿐이라, 칸 높이를 여기서 정하고 그 안을 full로
-   채웁니다. */
+   채웁니다. 아래 칸은 단추 둘까지 덮도록 60%입니다(시안 520 / 874). */
 .journey-entry-screen-fog-top {
   position: absolute;
   top: 0;
@@ -46,16 +46,30 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 55%;
+  height: 60%;
+}
+
+.journey-entry-screen-scroll {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+}
+
+/* `<scroll-view>`의 직계 자식 하나가 여백 · 간격을 집니다(ADR-0022 D4). */
+.journey-entry-screen-content {
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
 }
 
 .journey-entry-screen-top,
 .journey-entry-screen-bottom {
-  position: relative;
-  z-index: 1;
-}
-
-.journey-entry-screen-top {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-8);
@@ -90,9 +104,7 @@
 }
 
 .journey-entry-screen-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-24);
 }
 
 .journey-entry-screen-display {
@@ -109,6 +121,7 @@
   display: flex;
   flex-direction: column;
   align-self: flex-start;
+  max-width: 100%;
 }
 
 /* 큰 제목 아래 brand.primary 구분선(두께 4)입니다 — 묶음 폭이 큰 제목 글자
@@ -123,35 +136,83 @@
 
 .journey-entry-screen-caption {
   color: var(--libitum-color-gray-500);
-  font-family: var(--libitum-typography-caption-font-family);
-  font-weight: var(--libitum-typography-caption-font-weight);
-  font-size: var(--libitum-typography-caption-font-size);
-  line-height: var(--libitum-typography-caption-line-height);
-  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
 }
 
-/* ⚠ gray.800 글자는 어두운 Fog 위에서 대비가 낮습니다 — 피그마 값을 따릅니다. */
-.journey-entry-screen-notice {
-  margin-top: var(--libitum-spacing-16);
-  text-align: center;
-  color: var(--libitum-color-gray-800);
-  font-family: var(--libitum-typography-caption-font-family);
-  font-weight: var(--libitum-typography-caption-font-weight);
-  font-size: var(--libitum-typography-caption-font-size);
-  line-height: var(--libitum-typography-caption-line-height);
-  letter-spacing: var(--libitum-typography-caption-letter-spacing);
-}
-
-/* 흰 Start 버튼 — FE override(2026-09-21 디자인 반영): Button에 흰 면 variant가
-   없어 neutral의 면을 흰색, 글자를 gray.900으로 바꿉니다. */
-.journey-entry-screen-start {
+/* 「기초부터」 — 흰 면 · 어두운 글자 두 줄입니다. */
+.journey-entry-screen-basics {
+  box-sizing: border-box;
+  flex-shrink: 0;
   width: 100%;
-}
-
-.journey-entry-screen-start .ui-lynx-button-surface {
+  min-height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+  margin-top: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  row-gap: var(--libitum-spacing-2);
+  border-radius: var(--libitum-radius-lg);
   background-color: var(--libitum-color-white);
 }
 
-.journey-entry-screen-start .ui-lynx-button-label {
-  color: var(--libitum-color-gray-900);
+.journey-entry-screen-basics:active {
+  background-color: var(--libitum-color-gray-300);
+}
+
+.journey-entry-screen-basics-label {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
+}
+
+.journey-entry-screen-basics-detail {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 「바로 입장」 — brand.primary 면 · 흰 글자(사용자 결정 2026-11-22). 3.02:1이라 큰 글자 기준(14pt bold = 18.67px)을
+   넘겨야 합니다. 맞는 글자 토큰(18 · 22)이 없어 크기만 19px로 적습니다. */
+.journey-entry-screen-story {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.journey-entry-screen-story .ui-lynx-button-surface {
+  box-sizing: border-box;
+  min-height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+.journey-entry-screen-story .ui-lynx-button-brand .ui-lynx-button-label {
+  flex-shrink: 1;
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: 19px;
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+/* AI 고지 — 어두운 Fog 위에서 읽히는 gray.600(gray.950 대비 8:1)입니다. */
+.journey-entry-screen-notice {
+  margin-top: var(--libitum-spacing-4);
+  text-align: center;
+  color: var(--libitum-color-gray-600);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
 }
