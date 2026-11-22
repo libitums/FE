@@ -19,6 +19,11 @@ export type SignupRewardCopy = {
   /** 처음부터 가입한 경우의 보조문. */
   readonly bodyNew: string;
   readonly gotIt: string;
+  /** 푸시 캠페인 보상 모달(ADR-0175) — 위 알약 · 제목. */
+  readonly pushTag: string;
+  readonly pushTitle: string;
+  /** 무제한 티켓 보상의 금액 줄 — `24h`. */
+  readonly hoursShort: (hours: number) => string;
 };
 
 const en: SignupRewardCopy = {
@@ -31,6 +36,9 @@ const en: SignupRewardCopy = {
   bodyGuest: "Your guest progress is saved to your account.",
   bodyNew: "Use Yeopjeon to chat with the friends you meet.",
   gotIt: "Got it",
+  pushTag: "GIFT",
+  pushTitle: "Your gift is here!",
+  hoursShort: (hours) => `${hours}h`,
 };
 
 const es: SignupRewardCopy = {
@@ -43,6 +51,9 @@ const es: SignupRewardCopy = {
   bodyGuest: "Tu progreso como invitado se guardó en tu cuenta.",
   bodyNew: "Usa los Yeopjeon para chatear con los amigos que conozcas.",
   gotIt: "Entendido",
+  pushTag: "REGALO",
+  pushTitle: "¡Aquí está tu regalo!",
+  hoursShort: (hours) => `${hours} h`,
 };
 
 const id: SignupRewardCopy = {
@@ -55,6 +66,9 @@ const id: SignupRewardCopy = {
   bodyGuest: "Progresmu sebagai tamu sudah tersimpan di akunmu.",
   bodyNew: "Pakai Yeopjeon untuk mengobrol dengan teman yang kamu temui.",
   gotIt: "Mengerti",
+  pushTag: "HADIAH",
+  pushTitle: "Hadiahmu sudah datang!",
+  hoursShort: (hours) => `${hours} jam`,
 };
 
 const ja: SignupRewardCopy = {
@@ -67,6 +81,9 @@ const ja: SignupRewardCopy = {
   bodyGuest: "ゲストでの学習記録はアカウントに保存されました。",
   bodyNew: "Yeopjeonを使って、出会った友だちとチャットしましょう。",
   gotIt: "わかりました",
+  pushTag: "ギフト",
+  pushTitle: "ギフトが届きました！",
+  hoursShort: (hours) => `${hours}時間`,
 };
 
 const vi: SignupRewardCopy = {
@@ -79,6 +96,9 @@ const vi: SignupRewardCopy = {
   bodyGuest: "Tiến độ học khi dùng với tư cách khách đã được lưu vào tài khoản của bạn.",
   bodyNew: "Dùng Yeopjeon để trò chuyện với những người bạn đã gặp.",
   gotIt: "Đã hiểu",
+  pushTag: "QUÀ TẶNG",
+  pushTitle: "Quà của bạn đây!",
+  hoursShort: (hours) => `${hours} giờ`,
 };
 
 const th: SignupRewardCopy = {
@@ -91,6 +111,9 @@ const th: SignupRewardCopy = {
   bodyGuest: "ความคืบหน้าตอนใช้งานแบบผู้เยี่ยมชมถูกบันทึกไว้ในบัญชีของคุณแล้ว",
   bodyNew: "ใช้ Yeopjeon แชทกับเพื่อนๆ ที่คุณได้พบ",
   gotIt: "เข้าใจแล้ว",
+  pushTag: "ของขวัญ",
+  pushTitle: "ของขวัญของคุณมาแล้ว!",
+  hoursShort: (hours) => `${hours} ชม.`,
 };
 
 const my: SignupRewardCopy = {
@@ -103,6 +126,9 @@ const my: SignupRewardCopy = {
   bodyGuest: "ဧည့်သည်အဖြစ် လေ့လာခဲ့သမျှကို သင့်အကောင့်တွင် သိမ်းဆည်းပြီးပါပြီ။",
   bodyNew: "တွေ့ဆုံခဲ့သော သူငယ်ချင်းများနှင့် ချတ်ရန် Yeopjeon ကို အသုံးပြုပါ။",
   gotIt: "နားလည်ပြီ",
+  pushTag: "လက်ဆောင်",
+  pushTitle: "သင့်လက်ဆောင် ရောက်ပါပြီ!",
+  hoursShort: (hours) => `${hours} နာရီ`,
 };
 
 export const signupRewardCopy: Readonly<Record<EntryLanguage, SignupRewardCopy>> = {

@@ -18,6 +18,8 @@ export const ticketsJa: TicketsCopy = {
     endsDate: (date) => `${date}に終了`,
     daysLeft: (days) => `残り${String(days)}日`,
     dayProgress: (left, total) => `${String(total)}日中${String(left)}日`,
+    hoursLeft: (hours) => `残り${String(hours)}時間`,
+    hourProgress: (left, total) => `${String(total)}時間中${String(left)}時間`,
     activeMessage: "チケットなしでどのレッスンも始められます。",
     endingMessage: "その後は、レッスンにまたチケットを使います。\n学習の記録はそのまま残ります。",
     manage: "サブスクリプションを管理",

@@ -18,6 +18,8 @@ export const ticketsVi: TicketsCopy = {
     endsDate: (date) => `Kết thúc ${date}`,
     daysLeft: (days) => `Còn ${String(days)} ngày`,
     dayProgress: (left, total) => `${String(left)}/${String(total)} ngày`,
+    hoursLeft: (hours) => `Còn ${String(hours)} giờ`,
+    hourProgress: (left, total) => `${String(left)}/${String(total)} giờ`,
     activeMessage: "Bắt đầu mọi bài học mà không cần vé.",
     endingMessage: "Sau đó, bài học sẽ dùng vé trở lại.\nTiến độ của bạn vẫn được giữ nguyên.",
     manage: "Quản lý gói đăng ký",

@@ -13,7 +13,6 @@ import { useSessionOptions } from "./use-session-options";
 import type { NotificationItem } from "../screens/notifications/notifications.contract";
 import { productPhoneSignIn } from "../screens/login/login";
 import { AppHeader } from "./AppHeader";
-import { guestUnlimitedPass } from "../lib/unlimited-pass";
 import { AppBottomBar } from "./AppBottomBar";
 import { useMessengerTabBadge } from "./use-messenger-tab-badge";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
@@ -44,7 +43,7 @@ import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
 import { OutOfTicketsLayer } from "./out-of-tickets-layer";
-import { useMapNotices } from "./use-map-notices";
+import { headerUnlimitedPass, useMapNotices } from "./use-map-notices";
 import { withLearningTickets } from "./ticket-wiring";
 import { downloadCatalogOf, downloadSettingsNav } from "./download-settings-nav";
 import { useDownloadGate, withDownloadGate } from "./use-download-gate";
@@ -266,7 +265,7 @@ export function AppSession({
               onStreakCelebrated={progress.onStreakCelebrated}
               statBump={progress.wiring}
               tickets={wiring.ticketHeader}
-              unlimitedPass={testerAccess ? guestUnlimitedPass : plans?.unlimitedPass}
+              unlimitedPass={headerUnlimitedPass(testerAccess, plans, notices)}
               episodeSurvey={progress.episodeSurvey}
               {...episodeSurveyWiring({
                 episodeIntroEventSink,

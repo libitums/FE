@@ -10,6 +10,7 @@ import "./unlimited-ticket-modal.css";
 // - renews: 「Renews on」 · 「Member since <날짜>」 줄 + 큰 갱신 날짜
 // - ends: 「Ends on」 줄 + 큰 끝 날짜
 // - ending-soon: 「Ends <날짜>」 · 「N of M days」 줄 + 노랑 「N days left」 + 남은 비율 막대(장식)
+// - timed(보상 이용권): 같은 카드에 날 대신 시간 — 「N of M hours」 · 「N hours left」
 //
 // 카드 전체를 한 문장으로 낭독합니다 — 막대는 장식이고 남은 날은 문장에 들어 있습니다.
 
@@ -20,14 +21,19 @@ export type UnlimitedPassPeriodProps = {
 export function UnlimitedPassPeriod({ view }: UnlimitedPassPeriodProps): ReactNode {
   const m = useUiCopy().tickets.unlimitedModal;
 
-  if (view.kind === "ending-soon") {
+  // 곧 끝남과 보상 이용권(ADR-0175 — 날 대신 시간)은 같은 노랑 카드입니다.
+  if (view.kind === "ending-soon" || view.kind === "timed") {
     const ends = m.endsDate(m.shortDate(view.on));
-    const days = m.daysLeft(view.daysLeft);
-    const progress = m.dayProgress(view.daysLeft, view.totalDays);
+    const days = view.kind === "timed" ? m.hoursLeft(view.hoursLeft) : m.daysLeft(view.daysLeft);
+    const progress =
+      view.kind === "timed"
+        ? m.hourProgress(view.hoursLeft, view.totalHours)
+        : m.dayProgress(view.daysLeft, view.totalDays);
     return (
       <view
         className="unlimited-pass-period unlimited-pass-period-warn"
         data-testid="unlimited-ticket-modal-period"
+        flatten={false}
         accessibility-element={true}
         accessibility-label={`${days}. ${ends}. ${progress}`}
       >
@@ -69,6 +75,7 @@ export function UnlimitedPassPeriod({ view }: UnlimitedPassPeriodProps): ReactNo
     <view
       className="unlimited-pass-period"
       data-testid="unlimited-ticket-modal-period"
+      flatten={false}
       accessibility-element={true}
       accessibility-label={since === null ? `${label} ${date}` : `${label} ${date}. ${since}`}
     >

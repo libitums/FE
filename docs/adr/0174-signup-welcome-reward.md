@@ -126,3 +126,8 @@
 - 서버 SW-S1 ~ S11(`signup-welcome-reward.integration.test.ts`, 임베디드 Postgres).
 - unit SR-U1 ~ U10, ui SR-UI1 ~ UI6, integration SR-I1 ~ I5. 기존 YL · CV 서버 테스트의 사용자는 기존 회원(2026-01-01 생성)으로 바꿨다.
 - e2e [수동](../e2e/signup-welcome-reward.md).
+
+## 개정 — 보상 모달 틀 공유 (2026-11-21, ADR-0175)
+
+- 가입 보상 모달을 `RewardModal`(알약 · 제목 · 보조문 · 보상을 받음)로 일반화했다 — 가입 보상은 그 위의 얇은 감쌈이고 보이는 것은 같다. 푸시 캠페인 보상이 같은 틀을 쓴다.
+- 지도 안내 순서에 푸시 보상이 가입 보상 다음 · 엽전 출시 앞으로 들어왔다. 푸시 보상 모달은 튜토리얼 뒤가 아니라 「첫 유닛 안내가 꺼진 뒤」에 선다(ADR-0175 D7).

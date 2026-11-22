@@ -81,7 +81,19 @@ export default defineConfig(({ command }): Config => {
           // release에서는 호출이 죽은 코드가 되지만, 패키지에 `sideEffects` 표시가 없으면 번들러가 쓰이지
           // 않는 import라도 모듈을 남깁니다(탐침 CSS · 모듈 본문 약 27 kB). 이 파일 하나만 부수 효과
           // 없음으로 표시해 import를 통째로 버리게 합니다 — release 번들 약 −40 kB(ADR-0171).
-          rules: [{ test: /render-dev-probe\.tsx$/, sideEffects: false }],
+          rules: [
+            { test: /render-dev-probe\.tsx$/, sideEffects: false },
+            // 디자인 토큰 JS는 묶음마다 최상위 `deepFreeze(...)`를 불러, 앱이 쓰는 color · motion · opacity
+            // 말고도 typography · font · elevation 등 열두 묶음이 두 스레드에 다 실립니다. 최상위 호출만
+            // 순수로 표시해 쓰이지 않는 묶음을 버립니다 — release 번들 약 −14 kB.
+            {
+              test: /@libitums[\\/]design-tokens[\\/]dist[\\/]index\.js$/,
+              loader: path.resolve(
+                import.meta.dirname,
+                "devtools/bundle-size/pure-token-exports-loader.cjs",
+              ),
+            },
+          ],
         },
       },
     },

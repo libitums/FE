@@ -137,6 +137,19 @@ export type SignupRewardEvent =
   | (Common & { readonly name: "signup_reward_card_tapped" })
   | (Common & { readonly name: "signup_reward_shown"; readonly amount: string });
 
+/**
+ * 푸시 캠페인 보상(ADR-0175). `push_reward_claimed`: 알림을 눌러 들어와 서버가 지급했을 때 한 번 — `amount`는 엽전 수 또는 무제한 티켓
+ * 시간. `push_reward_failed`: 받지 못했을 때 — `reason`은 서버 판정(already_claimed · not_recipient · expired · unknown), 손님 guest,
+ * 응답 없음 error. 캠페인 id가 없는 알림은 묻지도 남기지도 않는다.
+ */
+export type PushRewardEvent =
+  | (Common & {
+      readonly name: "push_reward_claimed";
+      readonly kind: "coins" | "tickets";
+      readonly amount: string;
+    })
+  | (Common & { readonly name: "push_reward_failed"; readonly reason: string });
+
 /** 요금제가 보인 자리(ADR-0144 · 상점 입구 ADR-0160) — `PlanPlacement`와 같은 값입니다. */
 type PlanEventPlacement =
   | "settings"
@@ -253,6 +266,7 @@ export type CompanionEvent =
   | GuestPromptEvent
   | StreakRewardEvent
   | SignupRewardEvent
+  | PushRewardEvent
   | PlanEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent

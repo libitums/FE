@@ -91,3 +91,34 @@ describe("SP3 reengagementMessageFor", () => {
     expect(three.title).not.toBe(seven.title);
   });
 });
+
+describe("SP4 보상 캠페인 id(ADR-0175)", () => {
+  test("여정 맵의 캠페인 id는 남기고, 형식이 틀리면 칸만 버린다", () => {
+    expect(
+      pushTargetFrom({ kind: "journey-map", campaignId: "202611211930-story-next-ab12" }),
+    ).toEqual({ kind: "journey-map", campaignId: "202611211930-story-next-ab12" });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: "a b" })).toEqual({
+      kind: "journey-map",
+    });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: "x".repeat(81) })).toEqual({
+      kind: "journey-map",
+    });
+    expect(pushTargetFrom({ kind: "notifications", campaignId: "c1" })).toEqual({
+      kind: "notifications",
+    });
+  });
+
+  test("공지 본문에 실린 캠페인 id가 목적지에 남는다", () => {
+    expect(
+      sendPushBodyFrom(
+        JSON.stringify({
+          kind: "announcement",
+          audience: { userIds: [userId] },
+          title: "t",
+          body: "b",
+          target: { kind: "journey-map", campaignId: "c1" },
+        }),
+      ),
+    ).toMatchObject({ target: { kind: "journey-map", campaignId: "c1" } });
+  });
+});

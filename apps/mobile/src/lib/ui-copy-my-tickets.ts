@@ -34,6 +34,8 @@ export const ticketsMy: TicketsCopy = {
     endsDate: (date) => `${date} တွင် ကုန်ဆုံးမည်`,
     daysLeft: (days) => `${String(days)} ရက် ကျန်`,
     dayProgress: (left, total) => `${String(left)}/${String(total)} ရက်`,
+    hoursLeft: (hours) => `${String(hours)} နာရီ ကျန်`,
+    hourProgress: (left, total) => `${String(left)}/${String(total)} နာရီ`,
     activeMessage: "မည်သည့်သင်ခန်းစာကိုမဆို လက်မှတ်မပါဘဲ စတင်ပါ။",
     endingMessage: "ထို့နောက် သင်ခန်းစာများတွင် လက်မှတ် ပြန်သုံးပါမည်။\nတိုးတက်မှု အားလုံးကို ဆက်ထိန်းထားပါမည်။",
     manage: "စာရင်းသွင်းမှု စီမံရန်",
