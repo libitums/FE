@@ -116,7 +116,7 @@ alter table companion.conversations
   add column mission_id text,
   add column mission_version integer,
   add column status text check (status is null or status in ('active', 'finished', 'abandoned')),
-  -- { goalsDone: [목표 id, 파일 순서], turns, hints, hintGoals: [힌트를 준 목표 id], offTask, gradingFailed? }
+  -- { goalsDone: [목표 id, 파일 순서], turns, hints, hintGoals: [힌트를 준 목표 id], offTask, stall(새 목표 없이 이어진 턴), gradingFailed? }
   add column mission_state jsonb check (mission_state is null or jsonb_typeof(mission_state) = 'object'),
   add column ended_at timestamptz,
   -- goals(모든 목표) · turn_limit(턴 상한) · finish(필수를 이룬 뒤 학습자가 끝냄): 판이 끝남(채점 대상). user · stale: 그만둠 · 새 판 · 방치(채점 없음).
@@ -512,6 +512,8 @@ returns jsonb language sql stable as $$
     'hintLimit', s.mission_hint_limit,
     'hintsLeft', greatest(0, s.mission_hint_limit - coalesce((c.mission_state->>'hints')::integer, 0)),
     'offTask', coalesce((c.mission_state->>'offTask')::integer, 0),
+    -- 새 목표 없이 이어진 학습자 턴 수 — 연출 지시의 「막힘」(mission-direction.ts).
+    'stall', coalesce((c.mission_state->>'stall')::integer, 0),
     'gradingFailed', coalesce((c.mission_state->>'gradingFailed')::boolean, false),
     -- 필수 목표를 모두 이뤘는가. 판이 끝나지 않았는데 참이면 앱은 「미션 성공 — 계속하기 / 끝내기」를 띄운다.
     'requiredDone', companion.mission_required_done(c.mission_state, d)
@@ -787,7 +789,7 @@ begin
   select id into v_character from companion.characters where id = v_def->'counterpart'->>'characterId';
   insert into companion.conversations (user_id, character_id, kind, mission_id, mission_version, status, mission_state, last_message_at)
   values (p_user_id, v_character, 'mission', v_mission.id, v_mission.version, 'active',
-    jsonb_build_object('goalsDone', '[]'::jsonb, 'turns', 0, 'hints', 0, 'hintGoals', '[]'::jsonb, 'offTask', 0), p_now)
+    jsonb_build_object('goalsDone', '[]'::jsonb, 'turns', 0, 'hints', 0, 'hintGoals', '[]'::jsonb, 'offTask', 0, 'stall', 0), p_now)
   returning * into v_conv;
 
   v_bill := companion.mission_bill(p_user_id, v_conv.id, p_now, false);
@@ -1055,7 +1057,9 @@ begin
         'goalsDone', v_done,
         'turns', v_turns,
         'offTask', coalesce((mission_state->>'offTask')::integer, 0)
-          + case when coalesce((p_mission->>'off_task')::boolean, false) then 1 else 0 end
+          + case when coalesce((p_mission->>'off_task')::boolean, false) then 1 else 0 end,
+        'stall', case when jsonb_array_length(v_done) > jsonb_array_length(v_before) then 0
+          else coalesce((mission_state->>'stall')::integer, 0) + 1 end
       ),
       end_reason = v_end,
       ended_at = case when v_end is not null then p_now end

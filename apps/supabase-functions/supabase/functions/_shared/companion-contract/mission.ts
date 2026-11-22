@@ -40,6 +40,13 @@ export const missionGoalSchema = z.object({
   label: missionLabelSchema,
   /** 채점자 · 상대역 모델에게 주는 판정 기준(한국어 한 문장). 학습자에게는 보이지 않는다. */
   criteria: text(300),
+  /**
+   * 누가 이 목표를 꺼내는가(연출 지시 `mission-direction.ts`). `counterpart`(기본) — 상대역이 자연스럽게 물어 기회를 연다(예: 「영수증
+   * 드릴까요?」). `learner` — 학습자가 먼저 꺼내야 한다(예: 가격 묻기): 상대역은 묻지도, 그 내용을 먼저 말하지도 않고 여지만 둔다.
+   */
+  opener: z.optional(z.enum(["counterpart", "learner"])),
+  /** `counterpart` 목표에서 상대역이 기회를 열 때 쓸 수 있는 한국어 한 줄(예: 「결제는 어떻게 하시겠어요?」). 학습자 쪽 말이 아니다. */
+  cue: z.optional(text(120)),
 });
 
 export const missionTargetExpressionSchema = z.object({
@@ -95,6 +102,11 @@ export const missionDefinitionSchema = z
   .check(
     z.refine((mission) => unique(mission.goals.map((goal) => goal.id)), "goal-ids-unique"),
     z.refine((mission) => mission.goals.some((goal) => goal.required), "required-goal-missing"),
+    z.refine(
+      (mission) =>
+        mission.goals.every((goal) => goal.opener !== "learner" || goal.cue === undefined),
+      "learner-goal-has-no-cue",
+    ),
     z.refine(
       (mission) => unique(mission.targetExpressions.map((entry) => entry.id)),
       "expression-ids-unique",

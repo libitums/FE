@@ -2,7 +2,8 @@
 //
 // 1단계 턴(`chat-send-turn.ts`)의 부품을 그대로 씁니다 — 입력 검사(`moderateInput`) · 답 생성(`startReply`) · 출력 검사와 다시 만들기
 // (`outputChecker` · `recoverReply`) · 번역(`startTranslation`). 시스템 프롬프트는 미션 전용(`missionSystemPrompt`)이고, 상태 줄은 미션
-// 모양(`parseMissionState`)으로 읽습니다. 추천 답변 칩 · 기억 추출 · 이야기 · 학습 삽입 지시 · 친밀도는 없습니다.
+// 모양(`parseMissionState`)으로 읽습니다. 목표는 답과 병렬로 부르는 판정(`startMissionJudge`)이 정하고, 판정이 실패하면 답의 상태 줄로
+// 돌아갑니다(`missionTurnPayload`). 추천 답변 칩 · 기억 추출 · 이야기 · 학습 삽입 지시 · 친밀도는 없습니다.
 // 출력 검사는 지금의 나이 규칙 그대로 — 성인은 받는 대로, 미성년자 · 나이 모름은 검사 뒤에 한꺼번에.
 // 저장(`companion_mission_finish_turn`)이 돌려준 판 상태가 진실이고 `mission` 이벤트는 그 값으로 씁니다. 코어 `advanceMission`은 대조용입니다.
 // 이벤트: start → notice* → delta* → correction → translation* → mission → done(creditsSpent 0). 위기면 crisis → done.
@@ -26,7 +27,13 @@ import { missionCounterpartBase } from "./mission-definition.ts";
 import type { DbMissionState } from "./mission-http.ts";
 import { missionSystemPrompt } from "./mission-prompt.ts";
 import { advanceMission, parseMissionState } from "./mission-state.ts";
-import { callRpcFinish, startMissionFeedback, type FinishRow } from "./mission-turn-parts.ts";
+import {
+  callRpcFinish,
+  missionTurnPayload,
+  startMissionFeedback,
+  startMissionJudge,
+  type FinishRow,
+} from "./mission-turn-parts.ts";
 import type { MissionTurnContext } from "./mission-turn-row.ts";
 
 export type { MissionTurnContext };
@@ -101,6 +108,7 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
   const system = `${prompt.stable}${systemSplit}${prompt.dynamic}`;
   let reply = startReply(context, history, system, abort);
   const feedback = startMissionFeedback(context, abort);
+  const judge = startMissionJudge(context, abort);
   let correctionSent = false;
   const sendCorrection = (value: Feedback) => {
     if (correctionSent) return;
@@ -196,12 +204,19 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
     reply.goLive(sendDelta);
   }
 
-  const [feedbackResult, translated] = await Promise.all([feedback, translation]);
+  const [feedbackResult, translated, judged] = await Promise.all([feedback, translation, judge]);
   sendCorrection(feedbackResult);
   const segments = applyTranslation(sink, deps.log, result.segments, translated);
   const turnState = result.stateText === null ? null : parseMissionState(result.stateText);
   const stateLine = result.stateText === null ? "missing" : turnState === null ? "broken" : "ok";
-  const expected = advanceMission(mission, context.progress, turnState);
+  const payload = missionTurnPayload(context.progress.goalsDone, turnState, judged);
+  const expected = advanceMission(
+    mission,
+    context.progress,
+    payload === null
+      ? null
+      : { goalsDone: payload.goals_done, offTask: payload.off_task, closing: payload.closing },
+  );
   let saved: FinishRow;
   try {
     saved = await finish(
@@ -216,6 +231,7 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
           totalMs: result.totalMs,
           missionState: turnState,
           stateLine,
+          judge: judged === null ? "unavailable" : { goals: judged.goals, offTask: judged.offTask },
           translation: translated.status,
           playground: context.playground,
           ...(recovered === null ? {} : { guardrailRecovered: { category: recovered } }),
@@ -223,14 +239,7 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
       }),
       {
         feedback: feedbackResult,
-        mission:
-          turnState === null
-            ? null
-            : {
-                goals_done: turnState.goalsDone,
-                off_task: turnState.offTask,
-                closing: turnState.closing,
-              },
+        mission: payload,
       },
     );
   } catch {

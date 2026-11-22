@@ -50,9 +50,10 @@ test("SC4. 반올림은 0.5에서 올리고 부동소수 오차를 먼저 정리
   expect(roundHalfUp(0)).toBe(0);
 });
 
-test("SC5. 모델 이름 — 미션 전용 값만 읽고 기본은 답 · 채점 Sonnet, 교정 · 힌트 Haiku(자세한 것은 companion-llm-mission.unit.test)", () => {
+test("SC5. 모델 이름 — 미션 전용 값만 읽고 기본은 채점만 Sonnet, 답 · 판정 · 교정 · 힌트 Haiku(자세한 것은 companion-llm-mission.unit.test)", () => {
   expect(missionModelsFrom(() => undefined)).toEqual({
-    turnModel: "claude-sonnet-5-5",
+    turnModel: "claude-haiku-5-5",
+    judgeModel: "claude-haiku-5-5",
     feedbackModel: "claude-haiku-5-5",
     hintModel: "claude-haiku-5-5",
     graderModel: "claude-sonnet-5-5",
@@ -62,7 +63,7 @@ test("SC5. 모델 이름 — 미션 전용 값만 읽고 기본은 답 · 채점
     [missionGraderModelEnv]: "m-big",
   };
   expect(missionModelsFrom((name) => env[name])).toMatchObject({
-    turnModel: "claude-sonnet-5-5",
+    turnModel: "claude-haiku-5-5",
     graderModel: "m-big",
   });
 });

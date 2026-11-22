@@ -1,7 +1,8 @@
 // 미션 LLM 계층(ADR-0177) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고, 가짜 계층에는 미션 답(상태 줄)을
 // 더합니다. 기존 메서드는 그대로 넘깁니다 — 컴패니언 턴은 이 계층을 써도 같은 호출이 됩니다(가짜 답은 미션 시스템 프롬프트일 때만 갈린다).
-// 모델(`missionModelsFrom` — 컴패니언 설정을 물려받지 않음): 답 `COMPANION_MISSION_MODEL` · 채점 `COMPANION_MISSION_GRADER_MODEL`(기본 Sonnet),
-// 교정 `COMPANION_MISSION_FEEDBACK_MODEL` · 힌트 `COMPANION_MISSION_HINT_MODEL`(기본 Haiku). 미션 턴은 `missionTurn` 계층을 쓴다.
+// 모델(`missionModelsFrom` — 컴패니언 설정을 물려받지 않음): 답 `COMPANION_MISSION_MODEL`(기본 Haiku) · 채점 `COMPANION_MISSION_GRADER_MODEL`(기본 Sonnet),
+// 교정 `COMPANION_MISSION_FEEDBACK_MODEL` · 힌트 `COMPANION_MISSION_HINT_MODEL` · 판정 `COMPANION_MISSION_JUDGE_MODEL`(기본 Haiku, 답도 Haiku).
+// 미션 턴은 `missionTurn` 계층을 쓴다.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -18,12 +19,23 @@ import { anthropicCompanionLlm, companionLlmFor } from "./companion-llm.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import { graderSchema, graderSystem, type GraderDraft } from "./mission-grader.ts";
 import { hintSchema, hintSystem, type HintDraft } from "./mission-hint.ts";
-import { missionModelsFrom, missionGraderMaxTokens, type MissionModels } from "./mission-env.ts";
-import type { MissionGraderDraft, MissionHintDraft } from "./mission-llm.contract.ts";
+import { judgeSchema, judgeSystem, type JudgeDraft } from "./mission-judge.ts";
+import {
+  missionModelsFrom,
+  missionGraderMaxTokens,
+  missionJudgeMaxTokens,
+  type MissionModels,
+} from "./mission-env.ts";
+import type {
+  MissionGraderDraft,
+  MissionHintDraft,
+  MissionJudgeDraft,
+} from "./mission-llm.contract.ts";
 
 // 계약의 결과 모양과 코어 스키마가 같은지 컴파일로 확인한다.
 const sameGrader = (draft: GraderDraft): MissionGraderDraft => draft;
 const sameHint = (draft: HintDraft): MissionHintDraft => draft;
+const sameJudge = (draft: JudgeDraft): MissionJudgeDraft => draft;
 
 export class MissionLlmUnavailable extends Error {}
 
@@ -42,11 +54,12 @@ export function anthropicMissionLlm(
     system: string,
     user: string,
     signal: AbortSignal,
+    maxTokens: number = missionGraderMaxTokens,
   ): Promise<T> {
     const response = await client.messages.parse(
       {
         model,
-        max_tokens: missionGraderMaxTokens,
+        max_tokens: maxTokens,
         output_config: { effort: "low", format: zodOutputFormat(schema) },
         system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
         messages: [{ role: "user", content: user }],
@@ -98,6 +111,18 @@ export function anthropicMissionLlm(
           hintSystem,
           request.user,
           request.signal,
+        ),
+      ),
+    judgeMission: async (request) =>
+      sameJudge(
+        await parse(
+          "mission_judge",
+          models.judgeModel,
+          judgeSchema,
+          judgeSystem,
+          request.user,
+          request.signal,
+          missionJudgeMaxTokens,
         ),
       ),
     withUsage: (record) =>
@@ -198,6 +223,25 @@ export function fakeHint(user: string): MissionHintDraft {
   return { ko: `${goal} 할게요.`, roman: `${goal} halgeyo.`, meaning: `(fake) do ${goal}` };
 }
 
+/**
+ * 가짜 판정: 학습자 말(`# Learner's latest message`)의 「[goal:<id>]」 · 「[all-goals]」로 남은 목표를 고른다(가짜 답과 같은 낱말).
+ * 「[judge-fail]」이면 던져 답의 상태 줄로 돌아가는 길을, 「[judge-none]」이면 빈 판정(답은 보고해도 판정이 이긴다)을 시험한다.
+ */
+export function fakeJudge(user: string): MissionJudgeDraft {
+  const text = section(user, "Learner's latest message");
+  if (text.includes("[judge-fail]")) throw new MissionLlmUnavailable("fake judge failure");
+  const open = jsonSection(user, "Open goals (JSON)") as { id: string }[];
+  if (text.includes("[judge-none]")) return { goals: [], off_task: false };
+  const ids = new Set([...text.matchAll(/\[goal:([a-z][a-z0-9_]*)\]/g)].map((match) => match[1]));
+  const all = text.includes("[all-goals]");
+  return {
+    goals: open
+      .filter((goal) => all || ids.has(goal.id))
+      .map((goal) => ({ id: goal.id, quote: text })),
+    off_task: text.includes("[off-task]"),
+  };
+}
+
 /** 가짜 계층(`fakeCompanionLlm`)에 미션 답 · 채점 · 힌트를 더한 것. 컴패니언 답은 그대로 넘긴다. */
 export function fakeMissionLlm(base: CompanionLlm = fakeCompanionLlm()): CompanionLlm {
   return {
@@ -207,6 +251,7 @@ export function fakeMissionLlm(base: CompanionLlm = fakeCompanionLlm()): Compani
     graderModel: "fake",
     gradeMission: async (request) => fakeGrade(request.user),
     missionHint: async (request) => fakeHint(request.user),
+    judgeMission: async (request) => fakeJudge(request.user),
   };
 }
 

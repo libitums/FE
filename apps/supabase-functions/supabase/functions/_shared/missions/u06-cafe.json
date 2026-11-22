@@ -28,25 +28,32 @@
       "id": "order",
       "required": true,
       "label": { "en": "Order a drink" },
-      "criteria": "학습자가 음료 하나를 주문했다(종류가 분명하다)."
+      "criteria": "학습자가 음료 하나를 주문했다(종류가 분명하다).",
+      "opener": "counterpart",
+      "cue": "뭐 드릴까요?"
     },
     {
       "id": "pay",
       "required": true,
       "label": { "en": "Say how you'll pay" },
-      "criteria": "학습자가 결제 수단(카드 · 현금 등)을 말했다."
+      "criteria": "학습자가 결제 수단(카드 · 현금 등)을 말했다.",
+      "opener": "counterpart",
+      "cue": "결제는 어떻게 하시겠어요?"
     },
     {
       "id": "stay",
       "required": false,
       "label": { "en": "Say for here or to go" },
-      "criteria": "학습자가 매장에서 마실지 가져갈지 밝혔다."
+      "criteria": "학습자가 매장에서 마실지 가져갈지 밝혔다.",
+      "opener": "counterpart",
+      "cue": "드시고 가세요?"
     },
     {
       "id": "price",
       "required": false,
       "label": { "en": "Ask how much it is" },
-      "criteria": "학습자가 가격을 물었다."
+      "criteria": "학습자가 가격을 물었다.",
+      "opener": "learner"
     }
   ],
   "targetExpressions": [

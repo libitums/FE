@@ -9,16 +9,18 @@ import {
   missionFeedbackModelEnv,
   missionGraderModelEnv,
   missionHintModelEnv,
+  missionJudgeModelEnv,
   missionModelsFrom,
   missionTurnModelEnv,
 } from "./mission-env.ts";
 
-// 미션의 모델(2026-11-19 사용자 결정): 무거운 일(답 · 채점)은 Sonnet, 가벼운 일(교정 · 힌트)은 Haiku가 기본이고, 미션 전용 환경 값으로만
+// 미션의 모델(2026-11-19 사용자 결정, 2026-11-23 답도 Haiku): 채점은 Sonnet, 턴마다 부르는 것(답 · 판정 · 교정 · 힌트)은 Haiku가 기본이고, 미션 전용 환경 값으로만
 // 바꾼다 — 컴패니언의 모델 설정(기본 Opus)을 물려받지 않는다. SDK 클라이언트를 바꿔 끼워 실제로 보내는 모델만 본다(네트워크 없음).
 
-test("LM1. 기본값 — 답 · 채점 Sonnet, 교정 · 힌트 Haiku", () => {
+test("LM1. 기본값 — 채점 Sonnet, 답 · 판정 · 교정 · 힌트 Haiku", () => {
   expect(missionModelsFrom(() => undefined)).toEqual({
-    turnModel: "claude-sonnet-5-5",
+    turnModel: "claude-haiku-5-5",
+    judgeModel: "claude-haiku-5-5",
     graderModel: "claude-sonnet-5-5",
     feedbackModel: "claude-haiku-5-5",
     hintModel: "claude-haiku-5-5",
@@ -39,9 +41,11 @@ test("LM2. 미션 환경 값이 이긴다 · 빈 글은 없는 것 · 컴패니�
     [missionGraderModelEnv]: "m-grader",
     [missionFeedbackModelEnv]: " ",
     [missionHintModelEnv]: "m-hint",
+    [missionJudgeModelEnv]: "m-judge",
   };
   expect(missionModelsFrom((name) => mission[name])).toEqual({
     turnModel: "m-turn",
+    judgeModel: "m-judge",
     graderModel: "m-grader",
     feedbackModel: "claude-haiku-5-5",
     hintModel: "m-hint",
@@ -137,33 +141,38 @@ test("LM3. 미션 턴의 답 · 교정은 미션 모델, 검사 · 번역은 컴
   await turn.translate({ segments: [{ kind: "speech", text: "네" }], l1: "en", signal } as never);
   await llm.gradeMission?.({ user: "g", signal });
   await llm.missionHint?.({ user: "h", signal });
+  await llm.judgeMission?.({ user: "j", signal });
   for await (const _ of llm.reply({ system: "s", history: [], userText: "u", signal })) void _;
   expect(sent.map(({ model }) => model)).toEqual([
-    "claude-sonnet-5-5", // 미션 답
+    "claude-haiku-5-5", // 미션 답
     "claude-haiku-5-5", // 미션 교정
     "c-moderation", // 입력 검사 — 컴패니언 설정
     "c-translation", // 번역 — 컴패니언 설정
     "claude-sonnet-5-5", // 채점
     "claude-haiku-5-5", // 힌트
+    "claude-haiku-5-5", // 판정
     "claude-opus-5-5", // 컴패니언 답 — 바뀌지 않음
   ]);
-  // Sonnet 답은 서버 쪽 대체 모델을 싣고, 생각 깊이는 컴패니언과 같은 low.
-  expect(sent[0]).toMatchObject({ betas: ["server-side-fallback-2026-07-01"], effort: "low" });
+  // Haiku 답은 대체 모델 옵션을 싣지 않고(Haiku 분기), 생각 깊이는 컴패니언과 같은 low.
+  expect(sent[0]).toMatchObject({ betas: undefined, effort: "low" });
   expect(llm.graderModel).toBe("claude-sonnet-5-5");
-  expect(turn.model).toBe("claude-sonnet-5-5");
+  expect(turn.model).toBe("claude-haiku-5-5");
 });
 
-test("LM4. 답 모델을 Haiku로 바꾸면 대체 모델 옵션을 싣지 않는다(기존 Haiku 분기)", async () => {
+test("LM4. 답 모델을 Sonnet으로 바꾸면 서버 쪽 대체 모델 옵션을 싣는다", async () => {
   const { client, sent } = fakeClient();
   const llm = anthropicMissionLlm(
     anthropicCompanionLlm(config, () => {}, client),
     config,
-    missionModelsFrom((name) => (name === missionTurnModelEnv ? "claude-haiku-5-5" : undefined)),
+    missionModelsFrom((name) => (name === missionTurnModelEnv ? "claude-sonnet-5-5" : undefined)),
     () => {},
     client,
   );
   const signal = new AbortController().signal;
   for await (const _ of llm.missionTurn!.reply({ system: "s", history: [], userText: "u", signal }))
     void _;
-  expect(sent[0]).toMatchObject({ model: "claude-haiku-5-5", betas: undefined });
+  expect(sent[0]).toMatchObject({
+    model: "claude-sonnet-5-5",
+    betas: ["server-side-fallback-2026-07-01"],
+  });
 });

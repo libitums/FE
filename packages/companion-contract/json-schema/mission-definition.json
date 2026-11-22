@@ -177,6 +177,15 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 300
+          },
+          "opener": {
+            "type": "string",
+            "enum": ["counterpart", "learner"]
+          },
+          "cue": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
           }
         },
         "required": ["id", "required", "label", "criteria"],

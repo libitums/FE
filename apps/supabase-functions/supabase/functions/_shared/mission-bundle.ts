@@ -19,10 +19,19 @@ import {
 } from "./mission-context.ts";
 import { missionCounterpartBase, type MissionDefinition } from "./mission-definition.ts";
 import {
+  directionTemplates,
+  hurryTurnsLeft,
+  missionDirection,
+  stuckAfter,
+} from "./mission-direction.ts";
+import {
   missionGraderMaxTokens,
   missionFeedbackModelEnv,
   missionGraderModelEnv,
   missionHintModelEnv,
+  missionJudgeMaxTokens,
+  missionJudgeModelEnv,
+  missionJudgeTimeoutMs,
   missionTurnModelEnv,
   missionModelsFrom,
   missionTurnMaxTokens,
@@ -35,7 +44,9 @@ import {
 } from "./mission-fixtures.ts";
 import { graderSchema, graderSystem, graderUserTemplate } from "./mission-grader.ts";
 import { hintSchema, hintSystem, hintUserTemplate } from "./mission-hint.ts";
+import { judgeContextLimit, judgeSchema, judgeSystem, judgeUserTemplate } from "./mission-judge.ts";
 import {
+  directionNone,
   goalLineTemplate,
   learnedLineBareTemplate,
   learnedLineTemplate,
@@ -48,6 +59,33 @@ import {
 import { defaultMissionScoring, missionHintLimit } from "./mission-score.ts";
 
 export const missionLabBundleVersion = 1;
+
+/** 연출 지시의 포팅 검증 사례 — (미션, 목표, 턴, 막힘) → 서버 `missionDirection`의 결과. 미션이 번들에 없으면 뺀다. */
+const directionCases = [
+  { mission: "u01-water", goalsDone: [], learnerTurns: 0, stall: 0 },
+  { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 1, stall: 0 },
+  { mission: "u01-water", goalsDone: ["bag", "pay", "receipt"], learnerTurns: 3, stall: 0 },
+  { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 3, stall: 2 },
+  { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 6, stall: 1 },
+  { mission: "u06-cafe", goalsDone: [], learnerTurns: 0, stall: 0 },
+  { mission: "u06-cafe", goalsDone: ["order", "pay"], learnerTurns: 2, stall: 0 },
+  { mission: "u06-cafe", goalsDone: ["order", "pay", "stay"], learnerTurns: 3, stall: 0 },
+] as const;
+
+function directionFixtures(missions: readonly MissionDefinition[]) {
+  return directionCases.flatMap((entry) => {
+    const mission = missions.find((candidate) => candidate.id === entry.mission);
+    if (mission === undefined) return [];
+    const progress = {
+      goalsDone: [...entry.goalsDone],
+      learnerTurns: entry.learnerTurns,
+      hintsUsed: 0,
+      stall: entry.stall,
+    };
+    const direction = missionDirection({ mission, progress });
+    return [{ ...entry, expected: direction ?? { beat: null, goalId: null, text: directionNone } }];
+  });
+}
 
 const contextSentinel = "\u0000context\u0000";
 
@@ -122,6 +160,11 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
     source: { repo: "libitums/FE", commit: input.commit },
     defaults: {
       turnModel: models.turnModel,
+      judgeModel: models.judgeModel,
+      // 답 호출의 생각 깊이(서버 `replyEffort` 기본값) — Haiku 5.5는 지정하지 않으면 medium으로 생각해 느리다. 더한 칸.
+      turnEffort: "low",
+      judgeMaxTokens: missionJudgeMaxTokens,
+      judgeTimeoutMs: missionJudgeTimeoutMs,
       feedbackModel: models.feedbackModel,
       hintModel: models.hintModel,
       graderModel: models.graderModel,
@@ -130,6 +173,7 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       // 서버가 이 값을 읽는 환경 변수(운영 값은 여기 없다 — 코드의 기본값만).
       env: {
         turnModel: missionTurnModelEnv,
+        judgeModel: missionJudgeModelEnv,
         feedbackModel: missionFeedbackModelEnv,
         hintModel: missionHintModelEnv,
         graderModel: missionGraderModelEnv,
@@ -168,6 +212,26 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       learnedNone,
       feedback: feedbackPrompt(sample),
       hint: { system: hintSystem, user: hintUserTemplate, schema: z.toJSONSchema(hintSchema) },
+      // 목표 판정(턴마다, 답 · 교정과 병렬) — 더한 칸. `{{context}}`는 이번 메시지 앞의 대화 마지막 contextLimit줄(transcriptLine 모양),
+      // `{{open_goals_json}}`은 아직 못 이룬 목표의 [{id, criteria}](파일 순서). 결과의 goals 중 인용(quote)이 빈 것 · 이미 이룬 것 ·
+      // 미션에 없는 id는 버린다. 판정이 실패하면 답 모델의 상태 줄 goals_done으로 돌아간다(goalSource).
+      judge: {
+        system: judgeSystem,
+        user: judgeUserTemplate,
+        schema: z.toJSONSchema(judgeSchema),
+        contextLimit: judgeContextLimit,
+        goalSource:
+          "판정 성공: 목표 = 지난 달성 ∪ 판정. 판정 실패(오류 · 시간 초과): 목표 = 지난 달성 ∪ 상태 줄 goals_done. closing · off_task는 상태 줄(판정의 off_task는 기록만).",
+      },
+      // 연출 지시(턴마다 turnDynamic의 {{direction}}) — 더한 칸. 규칙은 서버 mission-direction.ts 머리말, 사례는 fixtures.
+      // stall = 새 목표 없이 이어진 학습자 턴 수(새 목표가 생긴 턴에 0으로).
+      direction: {
+        templates: directionTemplates,
+        stuckAfter,
+        hurryTurnsLeft,
+        none: directionNone,
+        fixtures: directionFixtures(input.missions),
+      },
       grader: {
         system: graderSystem,
         user: graderUserTemplate,

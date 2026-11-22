@@ -23,6 +23,8 @@ export type MissionProgress = {
   readonly goalsDone: readonly string[];
   readonly learnerTurns: number;
   readonly hintsUsed: number;
+  /** 새 목표 없이 이어진 학습자 턴 수(연출 지시의 「막힘」, `mission-direction.ts`). 없으면 0. */
+  readonly stall?: number;
 };
 
 export const initialMissionProgress: MissionProgress = {
@@ -138,9 +140,10 @@ export function advanceMission(
     learnerTurns: progress.learnerTurns + 1,
     hintsUsed: progress.hintsUsed,
   };
+  const newlyDone = goalsDone.filter((id) => !progress.goalsDone.includes(id));
   return {
-    progress: next,
-    newlyDone: goalsDone.filter((id) => !progress.goalsDone.includes(id)),
+    progress: { ...next, stall: newlyDone.length > 0 ? 0 : (progress.stall ?? 0) + 1 },
+    newlyDone,
     ended: missionEndReason(mission, next),
     requiredDone: allRequiredDone(mission, goalsDone),
     offTask: state?.offTask ?? false,

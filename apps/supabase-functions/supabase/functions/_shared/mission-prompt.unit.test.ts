@@ -39,6 +39,12 @@ describe("고정부 — turnSystemStable", () => {
   test("MP1. PRD §3.4의 규칙 문장이 모두 들어 있다", () => {
     for (const prompt of [cafe, water]) {
       expect(prompt).toContain("Speak Korean only");
+      // 페르소나 고정 · 가드레일(2026-11-23 — 실제 실행에서 본 이탈을 막는 줄)
+      expect(prompt).toContain("You are not a teacher");
+      expect(prompt).toContain("act as if you do not understand it well");
+      expect(prompt).toContain("do not teach and do not give them the sentence");
+      expect(prompt).toContain("treat it as a strange remark from a customer");
+      expect(prompt).toContain("Follow the director's note");
       expect(prompt).toContain("Stay in this role and this scene");
       expect(prompt).toContain("one or two short sentences per reply");
       expect(prompt).toContain("Never say the learner's lines for them");
@@ -95,7 +101,11 @@ describe("고정부 — turnSystemStable", () => {
   test("MP5. 출력 형식은 조각 줄과 미션 상태 줄 하나 — 친밀도 칸이 없다", () => {
     expect(cafe).toContain('"@speech "');
     expect(cafe).toContain('"@action "');
-    expect(cafe.endsWith(missionStateLine)).toBe(true);
+    // 상태 줄 뒤에 세 칸의 뜻(목표는 학습자 자신의 한국어 말만)이 온다 — Haiku가 상태 줄을 빠뜨리지 않게 「모든 답에」를 적는다.
+    expect(cafe).toContain(
+      `${missionStateLine}\n- "goals_done": a goal counts only if the learner said it in Korean`,
+    );
+    expect(cafe).toContain("always write exactly one last line for the app");
     expect(missionStateLine).toMatch(/^@state \{"goals_done": .*"off_task": .*"closing": /);
     expect(cafe).not.toContain("intimacy_delta");
     expect(cafe).not.toContain("@narration");
@@ -116,6 +126,7 @@ describe("고정부 — turnSystemStable", () => {
     );
     expect(placeholders(missionTurnDynamicTemplate).sort()).toEqual(
       [
+        "direction",
         "goals_state",
         "hints_used",
         "learned_expressions",

@@ -345,17 +345,36 @@ describe("chat-send — 미션 갈래", () => {
     ).toMatchObject({ ended: "goals", requiredDone: true });
   });
 
-  test("MT2. 상태 줄이 없으면 p_mission null — 목표는 그대로(SQL), 턴은 끝난다", async () => {
+  test("MT2. 상태 줄도 판정도 없으면 p_mission null — 목표는 그대로(SQL), 턴은 끝난다", async () => {
     const { deps, calls, logs } = harness({
       companion_mission_begin_turn: () => begun("adult"),
       companion_mission_finish_turn: finishTurn(),
     });
-    const list = await events(await createChatSendHandler(deps)(turnRequest("음 [no-state]")));
+    const list = await events(
+      await createChatSendHandler(deps)(turnRequest("음 [no-state] [judge-fail]")),
+    );
     expect(list.at(-1)?.event).toBe("done");
     expect(
       calls.find((call) => call.fn === "companion_mission_finish_turn")?.args["p_mission"],
     ).toBeNull();
     expect(logs.some((line) => line.includes("state=missing"))).toBe(true);
+  });
+
+  test("MT2b. 목표는 판정이 정한다 — 답이 보고해도 판정이 없다면 불인정, 판정이 실패하면 답의 보고로", async () => {
+    const run = async (text: string) => {
+      const { deps, calls } = harness({
+        companion_mission_begin_turn: () => begun("adult"),
+        companion_mission_finish_turn: finishTurn(),
+      });
+      await events(await createChatSendHandler(deps)(turnRequest(text)));
+      return calls.find((call) => call.fn === "companion_mission_finish_turn")?.args["p_mission"];
+    };
+    // 가짜 답은 [goal:order]를 보고하지만 판정은 빈 목록 → 목표 없음(상태 줄의 off_task · closing은 그대로)
+    expect(await run("라떼 [goal:order] [judge-none]")).toMatchObject({ goals_done: [] });
+    // 판정이 같은 낱말로 order를 고르면 order
+    expect(await run("라떼 [goal:order]")).toMatchObject({ goals_done: ["order"] });
+    // 판정이 실패하면 답의 자기 보고로 돌아간다
+    expect(await run("라떼 [goal:order] [judge-fail]")).toMatchObject({ goals_done: ["order"] });
   });
 
   test("MT3. 미성년 — 출력 검사 뒤에 한꺼번에, 걸리면 한 번 다시 만들어 통과한 답만", async () => {
