@@ -113,7 +113,10 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 ├─ LoginScreen            { onSelectSocialMethod, onSubmitPhoneNumber }     ← 요청 상태는 화면 로컬
 ├─ VerificationCodeScreen { phoneNumber, onVerifyCode, onResendCode, onExit } ← 〃
 ├─ LanguageSelectScreen   { selected, onSelect, onContinue }
-└─ JourneyEntryScreen     { language, onEnter }
+├─ JourneyEntryScreen     { language, onSelectPath }                       ← ⟨2026-11-22⟩ 길 둘(ADR-0176)
+├─ EntryBasicsLettersScreen { sound, onNext, onBack, onSkip }
+├─ EntryBasicsComposeScreen { romanization, sound, autoPlay, onNext, onBack, onSkip }
+└─ EntryBasicsReadyScreen   { safeArea, planeUrl, onNext, onBack }
 ```
 
 - **화면은 스택도 `dispatch`도 저장소도 모른다.** 화면이 받는 것은 값과 콜백뿐이고 전이 · 저장 ·
@@ -209,7 +212,11 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 코드 `Resend` | — | 전이 없음. 요청이 성공해야 카운트다운 · 입력이 되돌아간다 |
 | 코드 `로그인으로` | **`back`** | 한 겹 위 = 로그인 |
 | 언어 `다음` | `push` | `[…, 여정 입장]` |
-| `여정 시작하기` | `enterApp` | `[]` → 여정 맵 |
+| ~~`여정 시작하기`~~ ⟨2026-11-22⟩ 「바로 입장」 | `enterApp` | `[]` → 여정 맵 · 첫 유닛 안내. 알림은 묻지 않는다(`ask: false` — [ADR-0176](../adr/0176-entry-basics-choice.md) D5) |
+| ⟨2026-11-22⟩ 「기초부터」 | `push` | `[…, 여정 입장, 글자]` |
+| ⟨2026-11-22⟩ 글자의 다음 · 합치기의 마지막 Continue | `push` | `[…, 글자, 합치기]` · `[…, 합치기, 준비 완료]` |
+| ⟨2026-11-22⟩ 글자 · 합치기의 Skip, 준비 완료의 단추 | `enterApp` | `[]` → 여정 맵 · 첫 유닛 안내 |
+| ⟨2026-11-22⟩ 기초 세 화면의 뒤로 · 시스템 뒤로 | `back` | 한 겹 위 |
 | ⟨2026-11-06⟩ 로그인 「비회원으로 계속」(`login-screen-method-guest`) | `push` | `[…, ① 이름]` — 세션 · 기존 회원 판정 없음, 기기 표식 `libitum.auth.guest` 저장 · `entry_login_method_selected { method: "guest" }` · `entry_screen_viewed { screen: "learner-name" }`. 그 뒤 ② 나라 → 언어 선택 → 여정 입장 → `enterApp`은 위 표 그대로(② 나라는 손님 칸에 저장, 여정 입장의 알림 다이얼로그는 세션이 없어 뜨지 않는다). 소셜 요청 중에는 무동작 |
 | ⟨2026-11-06⟩ 고정 시간 종료 · **세션 없음 + 비회원 표식** | `enterApp` | `[]` → 여정 맵 — 갱신 요청 0 · `entry_*` 0 · 알림 · 프로필 동기화 0. 세션이 있으면 표식과 무관하게 위 「세션 있음」 행이다. 강제 업데이트 판정은 이 분기 앞 |
 | ⟨2026-11-06⟩ **앱 구간** · 설정 「Sign in」 → `guest-login`(설정 스택) → 소셜 성공 | `push` / `backToRoot`(`entry` 스택 아님) | 설정 스택 `[설정, guest-login]` → `[설정]`. 비회원 칸 이관(세션 저장 전) → 세션 저장 · 표식 삭제 · 식별 → 프로필 동기화 → 설정 루트 → 알림 질문. 기존 회원 판정 · 언어 선택 · 여정 입장 없음. 뒤로는 `back`(설정), 취소 · 실패는 전이 없음. 비회원 버튼 · 전화번호 수단은 이 화면에 없다 |
@@ -309,6 +316,9 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | `entry_screen_viewed` | `screen`(**스플래시를 뺀 다섯**) | 그 화면을 여는 전이의 `dispatch` 직전 1회 | **스플래시** · 코드 검증에서 `로그인으로`로 돌아갈 때 · 온보딩 `step` 전환(같은 화면이다) |
 | `entry_login_method_selected` | `method`(넷) | ~~소셜: 수단 tap → 토큰 저장·전이 직전 1회.~~ **소셜: 교환이 성공해 세션을 저장한 뒤 · 전이 직전 1회**(2026-09-29). **전화번호: OTP 요청이 성공한 순간 1회**(2026-09-29) | 전화번호를 입력만 할 때 · **OTP 요청이 실패할 때**(실패한 시도를 세지 않는다 — 두 번째에 성공해도 1회다) · 재전송 · **소셜 버튼을 누르기만 했을 때 · 인증 창을 닫았을 때 · 소셜 실패** |
 | `entry_completed` | 없음 | **여정 입장**의 진행 tap → `enterApp` 직전 1회 | **토큰 분기로 바로 들어가는 재방문**(완주가 아니다) · ⟨2026-10-18⟩ **기존 회원의 바로 맵 진입**(여정 입장을 지나지 않는다) |
+| ⟨2026-11-22⟩ `entry_path_selected` | `path`(basics · story) | 여정 입장의 두 단추 tap 1회([ADR-0176](../adr/0176-entry-basics-choice.md)). `entry_completed`는 이때가 아니라 실제 `enterApp` 직전 | 뒤로 |
+| ⟨2026-11-22⟩ `entry_basics_step_completed` | `step`(letters · compose · ready) | 그 걸음의 다음 단추 1회 | Skip · 뒤로 |
+| ⟨2026-11-22⟩ `entry_basics_skipped` | `step`(letters · compose) | Skip tap → `entry_completed` 직전 1회 | 준비 완료(Skip이 없다) |
 | ⟨2026-11-18⟩ `onboarding_step_viewed` | `step`(1 · 2 · 3) · `via`(start · auto · swipe · back) | 스텝이 그 방문에서 처음 보일 때 1회(ADR-0159) | 이미 본 스텝으로 돌아올 때 |
 | ⟨2026-11-18⟩ `onboarding_started` | `step` · `autoAdvanced` | 「Get started」 tap → 로그인 열람 직전 1회 | 시스템 뒤로가기로 떠날 때 |
 | ⟨2026-10-18⟩ `entry_returning_learner_entered` | `method`(넷) | 기존 회원 판정이 맵으로 끝난 로그인에서 UI 언어 저장 뒤 · `enterApp` 직전 1회 | 신규 흐름(판정 실패 · 시간 초과 포함) · 세션 갱신 부팅 · 로그인 실패 · 취소 |

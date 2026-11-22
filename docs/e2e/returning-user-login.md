@@ -5,6 +5,8 @@
 결정은 [ADR-0069](../adr/0069-returning-learner-login.md), 전이 표는 [진입 흐름 계약](../specs/entry-flow.md) §3, 화면은 [화면 명세](../screens.md) 「진입 흐름」이 진다.
 진입 흐름 전체의 절차는 [진입 흐름 e2e](entry-flow.md)이고 여기서 되풀이하지 않는다.
 
+⟨2026-11-22⟩ 새 계정(RUE2)의 `Start`는 「Jump into the story」로 읽고, 알림 다이얼로그는 첫 스토리 뒤에 기대한다([ADR-0176](../adr/0176-entry-basics-choice.md)). 기존 회원(RUE1)은 그대로다.
+
 | 이미 지는 층 | 무엇을 |
 |---|---|
 | unit | 판정 순수(신호 · 경로 · 학습 기록 정의 — RJ) · 조회 경주 상태 기계(가짜 타이머 · 한 번 resolve · 예외는 `unknown` — RP) · 기존 회원 UI 언어 규칙(UL5 ~ UL7) · 이벤트 팩토리(EF7) · 분석 · Airbridge 표 · 소셜 스피너 덮어쓰기 없음(CSS 문자열 — LC1 ~ LC3) |
