@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { cleanup, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { CatalogCoverMapItem } from "./CatalogCoverMapItem";
 import type { CatalogCoverIllustration } from "./catalog-cover-illustration";
@@ -21,10 +21,12 @@ const url = "https://x.supabase.co/storage/v1/object/public/content/images/cover
 type MountOptions = {
   /** 없으면 기본 일러스트(왼쪽). `"omit"`은 prop 자체를 넘기지 않습니다. */
   readonly illustration?: CatalogCoverIllustration | null | "omit";
+  readonly layer?: "map" | "guide";
 };
 
 function mount(status: JourneyMapNodeStatus, options: MountOptions = {}) {
   const onSelect = vi.fn<(episodeId: string) => void>();
+  const onTapBackdrop = vi.fn<() => void>();
   const illustration =
     options.illustration === undefined ? { url, side: "left" as const } : options.illustration;
   render(
@@ -33,10 +35,12 @@ function mount(status: JourneyMapNodeStatus, options: MountOptions = {}) {
       ordinal={2}
       status={status}
       onSelect={onSelect}
+      layer={options.layer ?? "map"}
+      onTapBackdrop={onTapBackdrop}
       {...(illustration === "omit" ? {} : { illustration })}
     />,
   );
-  return { onSelect };
+  return { onSelect, onTapBackdrop };
 }
 
 describe("CatalogCoverMapItem 일러스트", () => {
@@ -88,6 +92,31 @@ describe("CatalogCoverMapItem 일러스트", () => {
     expect(screen.getByTestId(`journey-special-unit-label-catalog-cover-${episodeId}`)).toHaveClass(
       "journey-special-unit-label-brand",
     );
+  });
+
+  test("CCM5. 안내 겹이면 일러스트 · 노드 · 라벨을 담은 래퍼가 통째로 들리고, 안내가 아니면 들리지 않는다", () => {
+    mount("available", { layer: "guide" });
+
+    const wrapper = screen.getByTestId(wrapperTestId);
+    expect(wrapper).toHaveClass("catalog-cover-illustrated-guided");
+    expect(wrapper.contains(screen.getByTestId(imageTestId))).toBe(true);
+    expect(wrapper.contains(screen.getByTestId(unitTestId))).toBe(true);
+
+    cleanup();
+    mount("available");
+    expect(screen.getByTestId(wrapperTestId)).not.toHaveClass("catalog-cover-illustrated-guided");
+  });
+
+  test("CCM6. 들린 일러스트 자리를 누르면 바깥 탭으로 올리고 표지는 고르지 않는다 — 안내가 아니면 아무것도 없다", () => {
+    const guided = mount("available", { layer: "guide" });
+    fireEvent.tap(screen.getByTestId(wrapperTestId), {});
+    expect(guided.onTapBackdrop).toHaveBeenCalledTimes(1);
+    expect(guided.onSelect).not.toHaveBeenCalled();
+
+    cleanup();
+    const plain = mount("available");
+    fireEvent.tap(screen.getByTestId(wrapperTestId), {});
+    expect(plain.onTapBackdrop).not.toHaveBeenCalled();
   });
 
   test.each([["없음", "omit"] as const, ["null", null] as const])(

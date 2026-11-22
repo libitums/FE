@@ -214,7 +214,7 @@ test("[II11] iOS · 여정 맵: 셸 위 여백 0px, 칩은 안전 영역 아래(
 
   expect(screen.getByTestId("app-shell").style.paddingTop).toBe("0px");
   expect(styleOf("app-header")).toMatch(/top:\s*71px/);
-  expect(styleOf("journey-map-screen-map")).toMatch(/padding-top:\s*271px/);
+  expect(styleOf("journey-map-screen-map")).toMatch(/padding-top:\s*123px/);
 });
 
 test("[II12] iOS · 다른 탭 루트는 셸이 위 여백을 그대로 잡고 칩은 기본 자리다", async () => {

@@ -80,6 +80,12 @@
   z-index: var(--libitum-elevation-z-dialog);
 }
 
+/* 일러스트가 있는 표지는 래퍼째 올립니다(사용자 결정 2026-11-22) — 겹침은 가림막 < 그림 < 노드 · 라벨 · 안내 글.
+   그림에 z-index를 따로 주지 않습니다: 스크롤 상자 안에서 그림과 노드가 각자 뜨면 순서가 어긋납니다(ADR-0099). */
+.catalog-cover-illustrated-guided {
+  z-index: var(--libitum-elevation-z-dialog);
+}
+
 /* 톤 규칙(클래스 둘)보다 구체도가 높아야 스크림 위에서 제목이 흰색입니다. */
 .journey-special-unit-guided .journey-special-unit-label .journey-special-unit-title {
   color: var(--libitum-color-white);

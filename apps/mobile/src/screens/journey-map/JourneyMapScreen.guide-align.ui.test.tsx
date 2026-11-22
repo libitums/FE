@@ -147,6 +147,55 @@ describe("첫 유닛 가이드와 지도 위치", () => {
   });
 });
 
+test("GA7. 가이드 동안 표지 그림까지 들리고, 그림 자리를 눌러도 안내만 닫히고 원래대로 돌아간다", () => {
+  stubHost({ rects: asRects() });
+  const base = u00Catalog();
+  const onStartCover = vi.fn<(episodeId: string) => void>();
+  const catalog = {
+    ...base,
+    onStartCover,
+    sections: base.sections.map((section) =>
+      section.kind === "catalog-ready"
+        ? { ...section, cover: `images/covers/${section.episodeId}.webp` }
+        : section,
+    ),
+    coverImageUrlOf: (path: string) => `/static/fixture/${path}`,
+  };
+  mount(<FirstUnitGuideProvider enabled>{u00Screen(catalog)}</FirstUnitGuideProvider>);
+
+  const lifted = () => screen.getByTestId("catalog-cover-illustrated-u00-tutorial");
+  expect(lifted().classList.contains("catalog-cover-illustrated-guided")).toBe(true);
+  expect(
+    screen
+      .getByTestId("catalog-cover-illustrated-u01-water")
+      .classList.contains("catalog-cover-illustrated-guided"),
+  ).toBe(false);
+
+  act(() => {
+    fireEvent.tap(lifted(), {});
+  });
+
+  expect(scrimShown()).toBe(false);
+  expect(onStartCover).not.toHaveBeenCalled();
+  expect(lifted().classList.contains("catalog-cover-illustrated-guided")).toBe(false);
+});
+
+// 그림은 노드보다 낮고 가림막보다 높아야 합니다: 래퍼가 대화 층에 서고, 그 안에서는 그림 → 노드(안내 겹) 순입니다.
+test("GA8. 들린 표지 래퍼는 가림막(시트 층) 위 대화 층이고 그림에는 따로 z-index가 없다", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { resolve } = await import("node:path");
+  const read = (path: string) =>
+    readFileSync(resolve(process.cwd(), path), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const guide = read("src/components/first-unit-guide.css");
+  expect(guide).toMatch(
+    /\.catalog-cover-illustrated-guided\s*\{[^}]*z-index: var\(--libitum-elevation-z-dialog\)/,
+  );
+  expect(guide).toMatch(
+    /\.first-unit-map-scrim\s*\{[^}]*z-index: var\(--libitum-elevation-z-sheet\)/,
+  );
+  expect(read("src/screens/journey-map/catalog-cover-illustration.css")).not.toMatch(/z-index/);
+});
+
 test("GA5. 오버레이 위 가이드 문구(말풍선 메시지)는 흰색이다", async () => {
   const { readFileSync } = await import("node:fs");
   const { resolve } = await import("node:path");
