@@ -101,7 +101,7 @@ test("RK-H2. 숫자 오름이 돌면 그 보드의 본 점수만 지운다 — �
   expect(seen()).toBe("null");
 });
 
-test("RK-H3. 다시 시도 — 이미 센 보드는 새로 꺼낸 값(지금 점수와 같아 세지 않음), 아직 못 센 보드는 그대로", async () => {
+test("RK-H3. 다시 시도 — 이미 센 보드는 새로 꺼낸 값이 지금 점수와 같아 셀 것이 없고, 아직 못 센 보드는 그대로", async () => {
   render(<Harness client={client} />);
   await settle();
   taken.next = 2;
@@ -115,8 +115,19 @@ test("RK-H3. 다시 시도 — 이미 센 보드는 새로 꺼낸 값(지금 점
   taken.next = 7;
   tap("retry");
   await settle();
-  expect(seen()).toBe("7");
+  expect(seen()).toBe("null");
   tap("to-words");
   await settle();
   expect(seen()).toBe("2");
+});
+
+test("RK-H4. 첫 진입에 본 적이 없었어도(null) 다시 읽어 점수가 올랐으면 그때 센다(리뷰 #550)", async () => {
+  taken.next = null;
+  render(<Harness client={client} />);
+  await settle();
+  expect(seen()).toBe("null");
+  taken.next = 5;
+  tap("retry");
+  await settle();
+  expect(seen()).toBe("5");
 });

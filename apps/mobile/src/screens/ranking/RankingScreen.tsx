@@ -31,16 +31,13 @@ const GAP_DOTS = [0, 1, 2] as const;
 
 function MyRow({
   board,
-  seenScore,
-  onScoreCounted,
+  shownScore,
 }: {
   readonly board: RankingBoard;
-  readonly seenScore: number | null;
-  readonly onScoreCounted: (() => void) | undefined;
+  readonly shownScore: number;
 }) {
   const copy = useUiCopy().ranking;
   const reduced = useReducedMotion();
-  const shownScore = useRisingScore(board.me.score, seenScore, onScoreCounted);
   const mine = board.rows.find((row) => row.me);
   const gap = board.next === null ? copy.first : copy.morePass(board.next.more, board.next.name);
   // 세는 동안에도 보이는 수와 단위가 맞게 — 보이는 숫자로 고릅니다(리뷰 #549). 낭독 줄은 줄곧 지금 점수 · 그 단위입니다(리뷰 #550).
@@ -82,7 +79,13 @@ function MyRow({
   );
 }
 
-function List({ board }: { readonly board: RankingBoard }) {
+function List({
+  board,
+  shownScore,
+}: {
+  readonly board: RankingBoard;
+  readonly shownScore: number;
+}) {
   const copy = useUiCopy().ranking;
   const reduced = useReducedMotion();
   // 그룹 전체가 아니라 상위 3 · 내 근처만(ADR-0170 D11). 구역 줄은 그려지는 줄끼리 셉니다 — 생략 뒤 첫 줄 앞이 「Keep climbing」.
@@ -128,12 +131,31 @@ function List({ board }: { readonly board: RankingBoard }) {
                     : copy.zoneClimb(moreToTopThree(board))}
                 </text>
               )}
-              <Row row={row} board={board} />
+              <Row row={row} board={board} {...(row.me ? { shownScore } : {})} />
             </view>
           );
         })}
       </view>
     </scroll-view>
+  );
+}
+
+/** 목록 + 고정된 내 줄 — 내 점수의 숫자 오름을 한 번 세어 두 줄에 같은 값을 줍니다(D12). 보드마다 새로 섭니다. */
+function ReadyBoard({
+  board,
+  seenScore,
+  onScoreCounted,
+}: {
+  readonly board: RankingBoard;
+  readonly seenScore: number | null;
+  readonly onScoreCounted: (() => void) | undefined;
+}) {
+  const shownScore = useRisingScore(board.me.score, seenScore, onScoreCounted);
+  return (
+    <>
+      <List board={board} shownScore={shownScore} />
+      <MyRow board={board} shownScore={shownScore} />
+    </>
   );
 }
 
@@ -257,17 +279,16 @@ export function RankingScreen(props: RankingScreenProps): ReactNode {
           </view>
         ) : null}
       </view>
-      {view.kind === "ready" ? <List board={view.board} /> : null}
-      {view.kind === "loading" ? <Loading /> : null}
-      <Notice view={view} props={props} />
       {view.kind === "ready" ? (
-        <MyRow
+        <ReadyBoard
           key={view.board.kind}
           board={view.board}
           seenScore={props.seenScore ?? null}
           onScoreCounted={props.onScoreCounted}
         />
       ) : null}
+      {view.kind === "loading" ? <Loading /> : null}
+      <Notice view={view} props={props} />
     </view>
   );
 }

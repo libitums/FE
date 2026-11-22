@@ -59,13 +59,17 @@ export function Face({
 export function Row({
   row,
   board,
+  shownScore,
 }: {
   readonly row: RankingRow;
   readonly board: RankingBoard;
+  /** 내 줄이 세는 중에 보일 숫자(D12) — 고정된 내 줄과 같은 값. 없으면 점수 그대로. 낭독 줄은 늘 점수입니다. */
+  readonly shownScore?: number;
 }): ReactNode {
   const copy = useUiCopy().ranking;
   const reduced = useReducedMotion();
   const unit = copy.unit(board.kind, row.score);
+  const shown = shownScore ?? row.score;
   return (
     <view
       className={row.me ? `ranking-row ranking-row-me${pulseClass(reduced)}` : "ranking-row"}
@@ -87,8 +91,8 @@ export function Row({
           <text className="ranking-name-text">{row.name}</text>
         </view>
         <view className="ranking-score">
-          <text className="ranking-score-text">{String(row.score)}</text>
-          <text className="ranking-unit">{unit}</text>
+          <text className="ranking-score-text">{String(shown)}</text>
+          <text className="ranking-unit">{copy.unit(board.kind, shown)}</text>
         </view>
       </view>
       {row.me ? <PulseRing /> : null}

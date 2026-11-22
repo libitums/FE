@@ -322,49 +322,84 @@ test("RK-UI24. 세는 동안 보이는 단위는 보이는 숫자를 따르고, 
   }
 });
 
-test("RK-UI25. 숫자 오름이 시작될 때 한 번 알린다 — 그 전에 화면을 떠나면 알리지 않고, 알린 뒤 본 점수가 지워져도 끝까지 센다", () => {
+test("RK-UI25. 숫자 오름이 끝났을 때 한 번 알린다 — 세는 도중에 화면을 떠나면 알리지 않는다(다음에 다시 센다)", () => {
   vi.useFakeTimers();
   try {
     const counted = vi.fn<() => void>();
     mountMotion(4, false, counted);
-    act(() => {
-      vi.advanceTimersByTime(600);
-    });
+    // 세기 시작(700ms) 직후 — 아직 끝나지 않았다.
+    for (let tick = 0; tick < 8; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
     expect(counted).not.toHaveBeenCalled();
     cleanup();
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(3000);
     });
     expect(counted).not.toHaveBeenCalled();
 
-    const node = (seenScore: number | null) => (
-      <RankingScreen
-        view={{ kind: "ready", board }}
-        board="lessons"
-        nowMs={NOW}
-        seenScore={seenScore}
-        onScoreCounted={counted}
-        onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
-        onRetry={vi.fn<() => void>()}
-        onSignIn={vi.fn<() => void>()}
-        onShowMe={vi.fn<() => void>()}
-      />
-    );
-    const view = render(node(4));
-    act(() => {
-      vi.advanceTimersByTime(750);
-    });
-    expect(counted).toHaveBeenCalledTimes(1);
-    // 훅이 본 점수를 지워 prop이 null이 돼도 세던 것은 끊기지 않고 끝까지 간다.
-    view.rerender(node(null));
-    expect(text(ids.meScore)).not.toBe("7");
-    for (let tick = 0; tick < 20; tick += 1) {
+    mountMotion(4, false, counted);
+    for (let tick = 0; tick < 25; tick += 1) {
       act(() => {
         vi.advanceTimersByTime(100);
       });
     }
     expect(text(ids.meScore)).toBe("7");
     expect(counted).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI27. 목록의 내 줄도 고정된 내 줄과 같은 숫자 · 단위로 센다 — 낭독 줄은 지금 점수", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(1);
+    expect(text(ids.row(5))).toMatch(/1lesson$/);
+    expect(screen.getByTestId(ids.row(5)).getAttribute("accessibility-label")).toContain(
+      "7 lessons",
+    );
+    for (let tick = 0; tick < 25; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.row(5))).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI28. 본 점수가 화면이 선 뒤에 도착해도 센다", () => {
+  vi.useFakeTimers();
+  try {
+    const node = (seenScore: number | null) => (
+      <RankingScreen
+        view={{ kind: "ready", board }}
+        board="lessons"
+        nowMs={NOW}
+        seenScore={seenScore}
+        onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
+        onRetry={vi.fn<() => void>()}
+        onSignIn={vi.fn<() => void>()}
+        onShowMe={vi.fn<() => void>()}
+      />
+    );
+    const view = render(node(null));
+    expect(text(ids.meScore)).toBe("7");
+    view.rerender(node(4));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(text(ids.meScore)).toBe("4");
+    for (let tick = 0; tick < 25; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.meScore)).toBe("7");
   } finally {
     vi.useRealTimers();
   }

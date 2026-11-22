@@ -26,32 +26,34 @@ export const pulseClass = (reduced: boolean): string => (reduced ? "" : " rankin
 
 /**
  * 내 점수 — 지난번에 본 점수(`seen`)보다 올랐으면 줄이 다 뜬 뒤 거기서부터 셉니다. 그 밖에는 곧바로 지금 점수.
- * 출발 값은 처음 선 때의 것으로 고정합니다 — 세기 시작하며 `onStarted`로 알린 뒤 `seen`이 지워져도 끝까지 셉니다.
+ * 다 세면 `onCounted`로 한 번 알립니다 — 세는 도중에 화면을 떠나면 알리지 않아 다음에 다시 셉니다.
  */
-export function useRisingScore(score: number, seen: number | null, onStarted?: () => void): number {
+export function useRisingScore(score: number, seen: number | null, onCounted?: () => void): number {
   const reduced = useReducedMotion();
-  const [from] = useState(seen);
-  const started = useRef(onStarted);
-  started.current = onStarted;
-  const rises = !reduced && from !== null && from < score;
-  const [value, setValue] = useState(rises ? from : score);
+  const rises = !reduced && seen !== null && seen < score;
+  const [value, setValue] = useState(rises ? seen : score);
+  const notify = useRef(onCounted);
+  notify.current = onCounted;
   useEffect(() => {
     if (!rises) {
       setValue(score);
       return undefined;
     }
+    // 본 점수가 화면이 선 뒤에 도착해도 거기서부터 셉니다.
+    setValue(seen);
     const timer = setTimeout(
-      () => {
-        setValue(score);
-        started.current?.();
-      },
+      () => setValue(score),
       motionDurationMs(motionTokens.duration.d1) * AFTER_LIST_STEPS,
     );
     // Lynx의 clearTimeout은 인자 하나만 받습니다(Android).
     return () => {
       clearTimeout(timer);
     };
-  }, [score, rises]);
+  }, [score, seen, rises]);
   const counted = useCountUp(rises ? value : score);
+  const done = rises && value === score && counted === score;
+  useEffect(() => {
+    if (done) notify.current?.();
+  }, [done]);
   return rises ? counted : score;
 }
