@@ -80,14 +80,16 @@ test("MC-UI22. 사진 pending: 시작 시각(기기 시계)을 받으면 그만�
   expect(text()).toContain("Almost there…");
 });
 
-test("MC-UI22. 사진 pending: 선 채로 시작 시각이 바뀌면 그 시각으로 다시 센다(새 요청)", () => {
+test("MC-UI22. 사진 pending: 시작 시각이 바뀌면(새 요청 — 부르는 쪽이 key로 다시 세움) 그 시각으로 다시 센다", () => {
   const first = Date.now();
-  const view = render(<PhotoPendingBubble name="미나" testId="pp" startedAt={first} />);
+  const view = render(<PhotoPendingBubble key={first} name="미나" testId="pp" startedAt={first} />);
   // 단계마다 다시 그린 뒤 다음 타이머가 걸리므로 나눠 돌립니다.
   advance(6000);
   advance(6000);
   expect(screen.getByTestId("pp").textContent).toContain("미나 is choosing the best shot…");
-  view.rerender(<PhotoPendingBubble name="미나" testId="pp" startedAt={first + 12_000} />);
+  view.rerender(
+    <PhotoPendingBubble key={first + 12_000} name="미나" testId="pp" startedAt={first + 12_000} />,
+  );
   expect(screen.getByTestId("pp").textContent).toContain("미나 is picking a moment…");
   advance(5100);
   expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
@@ -98,6 +100,11 @@ test("MC-UI22. 사진 pending: 기기 시계가 뒤로 가 시작 시각이 앞�
   expect(screen.getByTestId("pp").textContent).toContain("미나 is picking a moment…");
   advance(5100);
   expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
+  // 뒤 단계도 말풍선이 선 때부터 11 · 17초 — 늦어지는 것이 쌓이지 않는다.
+  advance(6000);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is choosing the best shot…");
+  advance(6000);
+  expect(screen.getByTestId("pp").textContent).toContain("Almost there…");
 });
 
 test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {

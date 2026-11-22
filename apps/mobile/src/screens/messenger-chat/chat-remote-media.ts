@@ -21,7 +21,7 @@ import {
   mediaAvailabilityOf,
   mediaLineId,
   mediaLineOf,
-  pendingStartedAt,
+  pendingStartOfMedia,
   mediaPollDelay,
   mediaTargetOf,
   placeMediaLine,
@@ -202,8 +202,8 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     result: { readonly media: RemoteMedia; readonly cached: boolean },
   ) => {
     // 자리표시자가 실은 요청 시각(기기 시계)을 서버 줄로 넘깁니다 — 줄 id가 바뀌어도 대기 문구의 단계가 이어집니다.
-    const since = pendingStartedAt(room.messages, reqId) ?? now();
-    const line = await lineFor(result.media, target, since);
+    const placed = pendingStartOfMedia(room.messages, target.messageId, media, result.media.id);
+    const line = await lineFor(result.media, target, placed ?? now());
     if (!alive(room)) return;
     replace(room, reqId, line);
     if (result.media.status === "pending") {
@@ -274,8 +274,8 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
         if (target === null) continue;
         const media = kindOf(row);
         const tracked = state.tracked.get(row.id);
-        const lineId = mediaLineId(target.messageId, media, row.id);
-        const since = pendingStartedAt(room.messages, lineId) ?? tracked?.since ?? now();
+        const placed = pendingStartOfMedia(room.messages, target.messageId, media, row.id);
+        const since = placed ?? tracked?.since ?? now();
         if (row.status === "pending" && tracked === undefined)
           state.tracked.set(row.id, { target, media, since: now() });
         if (row.status !== "pending" && tracked !== undefined) {

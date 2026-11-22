@@ -202,3 +202,19 @@ export function pendingStartedAt(messages: readonly ChatMessage[], id: string): 
     return null;
   return line.startedAt ?? null;
 }
+
+/**
+ * 그 매체의 대기 줄이 실은 시작 시각 — 서버 줄(`mediaId`)이 먼저, 없으면 같은 대상의 자리표시자(`~req`, 요청 응답이 아직 안 온 때).
+ * 둘 다 없으면 null.
+ */
+export function pendingStartOfMedia(
+  messages: readonly ChatMessage[],
+  targetId: string,
+  media: ChatMediaKind,
+  mediaId: string,
+): number | null {
+  return (
+    pendingStartedAt(messages, mediaLineId(targetId, media, mediaId)) ??
+    pendingStartedAt(messages, mediaLineId(targetId, media, "req"))
+  );
+}

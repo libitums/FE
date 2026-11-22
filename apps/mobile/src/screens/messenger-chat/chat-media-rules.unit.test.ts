@@ -7,6 +7,7 @@ import {
   mediaLineId,
   mediaLineKey,
   mediaLineOf,
+  pendingStartOfMedia,
   mediaPollDelay,
   mediaTargetOf,
   nextUtcMidnight,
@@ -288,4 +289,23 @@ describe("다시 읽기 간격", () => {
       Date.parse("2026-11-16T00:00:00.000Z"),
     );
   });
+});
+
+test("CM-U6c 대기 줄의 시작 시각 찾기 — 서버 줄이 먼저, 없으면 같은 대상의 자리표시자(~req), 둘 다 없으면 null(리뷰 #541)", () => {
+  const req: ChatMessage = {
+    id: mediaLineId(A1, "photo", "req"),
+    at: 1,
+    kind: "photo-pending",
+    startedAt: 100,
+  };
+  const server: ChatMessage = {
+    id: mediaLineId(A1, "photo", M1),
+    at: 5,
+    kind: "photo-pending",
+    startedAt: 40,
+  };
+  expect(pendingStartOfMedia([req], A1, "photo", M1)).toBe(100);
+  expect(pendingStartOfMedia([req, server], A1, "photo", M1)).toBe(40);
+  expect(pendingStartOfMedia([req], A1, "voice", M1)).toBeNull();
+  expect(pendingStartOfMedia([], A1, "photo", M1)).toBeNull();
 });
