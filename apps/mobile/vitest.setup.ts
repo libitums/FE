@@ -36,6 +36,25 @@ afterEach(() => {
   forgetMapScroll();
 });
 
+// ReactLynx는 지운 노드를 실제 10초 뒤에 id로 찾아 정리합니다(`lifecycle/patch/commit.js`). 시험 환경은 시험마다 id를 0부터
+// 다시 세므로, 한 파일이 10초를 넘기면 앞 시험이 남긴 정리가 지금 시험의 같은 id 노드를 지우고 그 노드의 누름이 조용히
+// 사라집니다(느린 CI 러너에서만 실패). 앱에서는 id를 되감지 않아 생기지 않습니다. 시험을 시작할 때 앞 시험이 남긴 그
+// 길이의 타이머를 거둡니다 — 지키는 시험: `src/app/test-helpers/snapshot-teardown.ui.test.tsx`(TD1).
+const snapshotTeardownDelayMs = 10_000;
+const scheduleTimer = globalThis.setTimeout;
+const cancelTimer = globalThis.clearTimeout;
+const teardownTimers = new Set<ReturnType<typeof setTimeout>>();
+globalThis.setTimeout = Object.assign((...args: Parameters<typeof setTimeout>) => {
+  const timer = scheduleTimer(...args);
+  if (args[1] === snapshotTeardownDelayMs) teardownTimers.add(timer);
+  return timer;
+}, scheduleTimer) as typeof setTimeout;
+
+beforeEach(() => {
+  for (const timer of teardownTimers) cancelTimer(timer);
+  teardownTimers.clear();
+});
+
 // 시험 환경은 렌더 · 이벤트마다 스레드를 바꾸면서 전역 `SystemInfo`를 스레드 쪽 객체로 덮어씁니다. 그러면 시험이 창
 // 크기를 바꿔 둔 값(작은 기기 흉내)이 렌더에 닿기 전에 사라집니다. 스레드 쪽 `SystemInfo`를 「지금 전역 값(없으면
 // 처음 객체)」을 돌려주는 접근자로 바꿔, 덮어쓰기가 시험이 둔 값을 그대로 다시 쓰게 합니다.
