@@ -139,10 +139,15 @@ export function EntryBasicsReadyScreen({
             >
               {copy.readyMeaning}
             </text>
-            <view className="entry-basics-plane-box" accessibility-elements-hidden={true}>
+            {/* 움직임은 상자가 집니다 — Android는 opacity · transform을 움직인 `<image>`를 끝까지 그리지 않았습니다. */}
+            <view
+              className={`entry-basics-plane-box${planeReveal}`}
+              flatten={false}
+              accessibility-elements-hidden={true}
+            >
               {planeUrl === null ? null : (
                 <image
-                  className={`entry-basics-plane${planeReveal}`}
+                  className="entry-basics-plane"
                   data-testid={ids.plane}
                   src={planeUrl}
                   mode="aspectFit"

@@ -110,6 +110,15 @@ test("BR6. 움직이는 사이 떠나면 낭독하지 않는다", () => {
   expect(announced).toEqual([]);
 });
 
+test("BR8. 나타나는 움직임은 그림이 아니라 펴지 않은 상자가 진다 — Android는 움직이는 image를 그리지 않았다", () => {
+  mount();
+  advance(READY_SETTLE_MS);
+  const plane = screen.getByTestId(ids.plane);
+  expect(plane.getAttribute("class")).toBe("entry-basics-plane");
+  expect(plane.parentElement?.getAttribute("class")).toContain("entry-basics-plane-entering");
+  expect(plane.parentElement).toHaveAttribute("flatten", "false");
+});
+
 test("BR7. 그림은 장식이고, 주소가 없으면 그림 없이 선다", () => {
   mount();
   const plane = screen.getByTestId(ids.plane);
