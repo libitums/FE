@@ -21,6 +21,7 @@ import { callRpc } from "./companion-rpc.ts";
 import { missionBrief, missionTranscript, transcriptFromHistory } from "./mission-context.ts";
 import { validateMission, type MissionDefinition } from "./mission-definition.ts";
 import {
+  focusCorrections,
   graderSchema,
   graderUser,
   normalizeGrade,
@@ -55,6 +56,7 @@ export type GradeMaterial = {
     original?: string;
     corrected?: string | null;
     kind?: MissionCorrection["kind"];
+    items?: readonly { reason?: string }[] | null;
   }[];
   readonly weights: { task: number; accuracy: number; expression: number; hintPenalty: number };
   readonly profile: { readonly l1: string | null; readonly ageBand: string };
@@ -70,6 +72,12 @@ export function graderRequest(material: GradeMaterial, mission: MissionDefinitio
       original: entry.original as string,
       corrected: entry.corrected as string,
       kind: entry.kind ?? null,
+      // 턴 교정의 까닭(학습자 언어)을 채점자에게 함께 준다 — 채점자는 새로 고치지 않고 번호로 고른다.
+      reason:
+        (entry.items ?? [])
+          .map((item) => item.reason?.trim() ?? "")
+          .filter((reason) => reason !== "")
+          .join(" ") || null,
     }));
   const history = historyFrom({ history: material.transcript });
   const progress = progressFromDb(mission, material.state);
@@ -89,7 +97,7 @@ export function graderRequest(material: GradeMaterial, mission: MissionDefinitio
     },
     hintPenalty: Number(material.weights.hintPenalty),
   };
-  return { user, progress, scoring };
+  return { user, progress, scoring, corrections };
 }
 
 /** SQL 리포트 → 계약의 리포트(모르는 칸은 버린다). 모양이 어긋나면 null. */
@@ -153,7 +161,7 @@ export function createMissionFinishHandler(
     if (llm.gradeMission === undefined)
       return respond(missionErrorResponse("server_misconfigured"), "no_grader");
 
-    const { user, progress, scoring } = graderRequest(material, mission);
+    const { user, progress, scoring, corrections } = graderRequest(material, mission);
     let draft;
     try {
       const signal = AbortSignal.timeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs);
@@ -184,6 +192,7 @@ export function createMissionFinishHandler(
       turnGoalsDone: progress.goalsDone,
       hintsUsed: progress.hintsUsed,
       scoring,
+      correctionCount: corrections.length,
     });
     // 채점자의 판정만 보낸다 — 턴에서 쌓인 것과의 합집합은 SQL이 한다(byTurn · byGrader를 따로 남긴다).
     const verdicts = new Map(draft.goals.map((goal) => [goal.id.trim(), goal]));
@@ -197,10 +206,19 @@ export function createMissionFinishHandler(
           evidence: achieved ? verdict?.evidence?.trim() || null : null,
         };
       }),
+      // 못 이룬 목표의 한 줄(합집합 뒤에도 못 이룬 것만 — SQL이 다시 거른다).
+      tips: Object.fromEntries(
+        grade.goals.flatMap((goal) => (goal.tip ? [[goal.id, goal.tip]] : [])),
+      ),
       accuracy: grade.score.accuracy,
       expressions: grade.expressions.map(({ id, used }) => ({ id, used })),
       retry: grade.retry,
       summary: grade.summary,
+      headline: grade.headline,
+      nextStep: grade.nextStep,
+      strengths: grade.strengths,
+      focus: focusCorrections(grade.focus, corrections),
+      accuracyNotes: grade.accuracyNotes,
       graderModel: llm.graderModel ?? llm.model,
     };
     let saved: Graded | Rejection;

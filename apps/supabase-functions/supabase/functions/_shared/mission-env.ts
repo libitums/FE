@@ -35,8 +35,8 @@ export const missionTurnMaxTokens = 2000;
 export const missionJudgeMaxTokens = 600;
 /** 판정의 제한 시간 — 넘으면 답 모델의 자기 보고로 돌아간다(답과 병렬이라 보통 답보다 먼저 끝난다). */
 export const missionJudgeTimeoutMs = 6000;
-/** 채점 호출의 출력 토큰 상한 — 구조화 호출과 같다(`companion-llm.ts`의 `structured`). */
-export const missionGraderMaxTokens = 2000;
+/** 채점 호출의 출력 토큰 상한 — 리포트 칸(tip · focus · strengths · 메모)을 더해 3000(2026-11-23, QA 실측 출력 약 600 ~ 900). */
+export const missionGraderMaxTokens = 3000;
 
 /** 환경 값 → 미션의 모델 이름. 빈 글은 없는 것으로 본다. 미션 전용 값만 읽는다(컴패니언 값은 보지 않는다). */
 export function missionModelsFrom(read: (name: string) => string | undefined): MissionModels {

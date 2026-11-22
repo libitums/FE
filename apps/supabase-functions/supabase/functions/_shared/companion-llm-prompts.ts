@@ -78,7 +78,7 @@ Never give feedback on chat conventions: ㅋㅋ, ㅎㅎ, ㅇㅇ, ~ endings, emoj
 Reasons and explanations state the rule plainly. No comments about the learner, the character or the conversation.`;
   const dynamic = `# This message
 - Learner's language: the language with BCP 47 tag "${language}" — write reasons, explanations and meanings in it.
-- Speech-level rule: ${speechLevelRule(request)}`;
+- Speech-level rule: ${speechLevelRule(request)}${request.extraRules ? `\n${request.extraRules}` : ""}`;
   return { stable, dynamic };
 }
 

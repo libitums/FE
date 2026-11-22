@@ -197,7 +197,18 @@ export function fakeGrade(user: string): MissionGraderDraft {
   const goals = jsonSection(user, "Goals (JSON)") as { id: string }[];
   const expressions = jsonSection(user, "Target expressions (JSON)") as { id: string }[];
   if (transcript.includes("[grade-empty]"))
-    return { goals: [], accuracy: 80, expressions: [], retry: [], summary: "가짜 채점" };
+    return {
+      goals: [],
+      accuracyNotes: "none",
+      accuracy: 80,
+      expressions: [],
+      focus: [],
+      strengths: [],
+      retry: [],
+      headline: "",
+      summary: "가짜 채점",
+      nextStep: "",
+    };
   const turnDone = jsonSection(user, "Goals the app marked done during the conversation (JSON)");
   const marked = new Set(Array.isArray(turnDone) ? (turnDone as string[]) : []);
   const lines = transcript.split("\n");
@@ -205,12 +216,24 @@ export function fakeGrade(user: string): MissionGraderDraft {
     goals: goals.map(({ id }) => {
       const line = lines.find((entry) => entry.includes(`[grader:${id}]`));
       const learnerLine = line?.startsWith("Learner: ") ? line.slice("Learner: ".length) : null;
-      return { id, done: marked.has(id) || learnerLine !== null, evidence: learnerLine };
+      const done = marked.has(id) || learnerLine !== null;
+      const tip = done ? null : { ko: `${id} 할게요.`, meaning: `(fake) do ${id}` };
+      return { id, evidence: learnerLine, done, tip };
     }),
+    accuracyNotes: "none",
     accuracy: 80,
-    expressions: expressions.map(({ id }) => ({ id, used: transcript.includes(`[expr:${id}]`) })),
+    expressions: expressions.map(({ id }) => ({
+      id,
+      evidence: null,
+      used: transcript.includes(`[expr:${id}]`),
+    })),
+    // 교정이 있으면 첫 교정을 고른다(번호 1).
+    focus: user.includes('"n":1') ? [{ refs: [1], reason: "(fake) the first correction" }] : [],
+    strengths: [],
     retry: [{ ko: "아메리카노 얼마예요?", meaning: "How much is an americano?" }],
+    headline: "가짜 채점",
     summary: "가짜 채점 — 잘했어요.",
+    nextStep: "가짜 다음 도전",
   };
 }
 

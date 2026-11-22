@@ -70,5 +70,10 @@ export type FeedbackRequest = {
   } | null;
   /** 산출을 판정할 배운 표현. 없거나 비면 판정하지 않는다(`learned_used`는 빈 배열). */
   readonly targets?: readonly LearnedTarget[];
+  /**
+   * 요청마다 다른 시스템 글 뒤에 붙이는 추가 규칙(영어 글). 미션 턴만 쓴다(음성 입력 · 초급 수준 — `missionFeedbackRules`).
+   * 없으면 컴패니언과 같은 글 그대로다.
+   */
+  readonly extraRules?: string;
   readonly signal: AbortSignal;
 };

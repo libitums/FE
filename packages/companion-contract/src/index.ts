@@ -180,6 +180,7 @@ export {
   missionReportSchema,
   missionResultsSchema,
   missionWeightsSchema,
+  missionScorePartsSchema,
   type MissionFinishRequest,
   type MissionFinishResponse,
   type MissionList,
@@ -188,4 +189,5 @@ export {
   type MissionReport,
   type MissionResults,
   type MissionWeights,
+  type MissionScoreParts,
 } from "./mission-report";
