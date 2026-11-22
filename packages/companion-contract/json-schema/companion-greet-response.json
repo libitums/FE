@@ -4,7 +4,11 @@
   "properties": {
     "status": {
       "type": "string",
-      "enum": ["ok", "none", "unavailable"]
+      "enum": [
+        "ok",
+        "none",
+        "unavailable"
+      ]
     },
     "messageId": {
       "anyOf": [
@@ -25,7 +29,11 @@
         "properties": {
           "kind": {
             "type": "string",
-            "enum": ["speech", "action", "narration"]
+            "enum": [
+              "speech",
+              "action",
+              "narration"
+            ]
           },
           "text": {
             "type": "string"
@@ -34,13 +42,20 @@
             "type": "string"
           }
         },
-        "required": ["kind", "text"],
+        "required": [
+          "kind",
+          "text"
+        ],
         "additionalProperties": false
       }
     },
     "source": {
       "type": "string",
-      "enum": ["model", "canned", "scripted"]
+      "enum": [
+        "model",
+        "canned",
+        "scripted"
+      ]
     },
     "suggestions": {
       "anyOf": [
@@ -54,7 +69,10 @@
             },
             "status": {
               "type": "string",
-              "enum": ["ok", "unavailable"]
+              "enum": [
+                "ok",
+                "unavailable"
+              ]
             },
             "items": {
               "maxItems": 3,
@@ -67,23 +85,45 @@
                     "minLength": 1
                   },
                   "meaning": {
-                    "type": ["string", "null"]
+                    "type": [
+                      "string",
+                      "null"
+                    ]
                   },
                   "intent": {
                     "type": "string",
-                    "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
+                    "enum": [
+                      "elaborate",
+                      "ask",
+                      "reflect",
+                      "redirect",
+                      "boundary",
+                      "progress"
+                    ]
                   }
                 },
-                "required": ["text", "meaning", "intent"],
+                "required": [
+                  "text",
+                  "meaning",
+                  "intent"
+                ],
                 "additionalProperties": false
               }
             },
             "reason": {
               "type": "string",
-              "enum": ["generation_failed", "blocked", "no_valid_candidates"]
+              "enum": [
+                "generation_failed",
+                "blocked",
+                "no_valid_candidates"
+              ]
             }
           },
-          "required": ["messageId", "status", "items"],
+          "required": [
+            "messageId",
+            "status",
+            "items"
+          ],
           "additionalProperties": false
         },
         {
@@ -103,6 +143,11 @@
       ]
     }
   },
-  "required": ["status", "messageId", "segments", "suggestions"],
+  "required": [
+    "status",
+    "messageId",
+    "segments",
+    "suggestions"
+  ],
   "additionalProperties": false
 }

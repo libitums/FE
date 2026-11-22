@@ -71,6 +71,8 @@ export const missionCounterpartSchema = z.object({
   relation: text(300),
   register: text(300),
   samples: z.array(text(120)).check(z.minLength(1), z.maxLength(8)),
+  /** 작별 인사(문장에 들어 있으면 인사로 본다). 판이 열려 있는 턴의 답에서 서버가 이 문장을 뺀다(`mission-guards.ts`). 없으면 기본 목록. */
+  farewells: z.optional(z.array(text(40)).check(z.minLength(1), z.maxLength(8))),
   base: z.optional(missionCounterpartBaseSchema),
 });
 

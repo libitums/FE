@@ -41,11 +41,18 @@
           },
           "outcome": {
             "type": "string",
-            "enum": ["success", "fail"]
+            "enum": [
+              "success",
+              "fail"
+            ]
           },
           "endReason": {
             "type": "string",
-            "enum": ["goals", "turn_limit", "finish"]
+            "enum": [
+              "goals",
+              "turn_limit",
+              "finish"
+            ]
           },
           "totalScore": {
             "type": "integer",
@@ -88,7 +95,12 @@
                 "type": "number"
               }
             },
-            "required": ["task", "accuracy", "expression", "hintPenalty"],
+            "required": [
+              "task",
+              "accuracy",
+              "expression",
+              "hintPenalty"
+            ],
             "additionalProperties": false
           },
           "scoreParts": {
@@ -107,7 +119,12 @@
                 "type": "number"
               }
             },
-            "required": ["task", "accuracy", "expression", "hintPenalty"],
+            "required": [
+              "task",
+              "accuracy",
+              "expression",
+              "hintPenalty"
+            ],
             "additionalProperties": false
           },
           "headline": {
@@ -139,7 +156,9 @@
                       "maxLength": 120
                     }
                   },
-                  "required": ["en"],
+                  "required": [
+                    "en"
+                  ],
                   "additionalProperties": {
                     "type": "string",
                     "minLength": 1,
@@ -150,7 +169,10 @@
                   "type": "boolean"
                 },
                 "evidence": {
-                  "type": ["string", "null"]
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "tip": {
                   "anyOf": [
@@ -164,7 +186,10 @@
                           "type": "string"
                         }
                       },
-                      "required": ["ko", "meaning"],
+                      "required": [
+                        "ko",
+                        "meaning"
+                      ],
                       "additionalProperties": false
                     },
                     {
@@ -173,7 +198,13 @@
                   ]
                 }
               },
-              "required": ["id", "required", "label", "done", "evidence"],
+              "required": [
+                "id",
+                "required",
+                "label",
+                "done",
+                "evidence"
+              ],
               "additionalProperties": false
             }
           },
@@ -196,7 +227,12 @@
                   "type": "boolean"
                 }
               },
-              "required": ["id", "ko", "meaning", "used"],
+              "required": [
+                "id",
+                "ko",
+                "meaning",
+                "used"
+              ],
               "additionalProperties": false
             }
           },
@@ -215,7 +251,11 @@
                   "anyOf": [
                     {
                       "type": "string",
-                      "enum": ["correction", "better", "l1_to_ko"]
+                      "enum": [
+                        "correction",
+                        "better",
+                        "l1_to_ko"
+                      ]
                     },
                     {
                       "type": "null"
@@ -237,12 +277,20 @@
                         "type": "string"
                       }
                     },
-                    "required": ["original", "corrected", "reason"],
+                    "required": [
+                      "original",
+                      "corrected",
+                      "reason"
+                    ],
                     "additionalProperties": false
                   }
                 }
               },
-              "required": ["original", "corrected", "kind"],
+              "required": [
+                "original",
+                "corrected",
+                "kind"
+              ],
               "additionalProperties": false
             }
           },
@@ -264,7 +312,10 @@
                         "type": "string"
                       }
                     },
-                    "required": ["original", "corrected"],
+                    "required": [
+                      "original",
+                      "corrected"
+                    ],
                     "additionalProperties": false
                   }
                 },
@@ -272,7 +323,10 @@
                   "type": "string"
                 }
               },
-              "required": ["examples", "reason"],
+              "required": [
+                "examples",
+                "reason"
+              ],
               "additionalProperties": false
             }
           },
@@ -289,7 +343,10 @@
                   "type": "string"
                 }
               },
-              "required": ["quote", "note"],
+              "required": [
+                "quote",
+                "note"
+              ],
               "additionalProperties": false
             }
           },
@@ -306,7 +363,10 @@
                   "type": "string"
                 }
               },
-              "required": ["ko", "meaning"],
+              "required": [
+                "ko",
+                "meaning"
+              ],
               "additionalProperties": false
             }
           },
@@ -360,6 +420,10 @@
       }
     }
   },
-  "required": ["missionId", "bestScore", "results"],
+  "required": [
+    "missionId",
+    "bestScore",
+    "results"
+  ],
   "additionalProperties": false
 }

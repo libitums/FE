@@ -31,7 +31,9 @@
           "maxLength": 120
         }
       },
-      "required": ["en"],
+      "required": [
+        "en"
+      ],
       "additionalProperties": {
         "type": "string",
         "minLength": 1,
@@ -48,10 +50,16 @@
           "type": "string"
         },
         "characterId": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
-      "required": ["label", "characterId"],
+      "required": [
+        "label",
+        "characterId"
+      ],
       "additionalProperties": false
     },
     "opening": {
@@ -72,10 +80,19 @@
           "type": "string"
         },
         "translation": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
-      "required": ["messageId", "ko", "roman", "en", "translation"],
+      "required": [
+        "messageId",
+        "ko",
+        "roman",
+        "en",
+        "translation"
+      ],
       "additionalProperties": false
     },
     "goals": {
@@ -104,7 +121,9 @@
                 "maxLength": 120
               }
             },
-            "required": ["en"],
+            "required": [
+              "en"
+            ],
             "additionalProperties": {
               "type": "string",
               "minLength": 1,
@@ -115,12 +134,20 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "required", "label", "done"],
+        "required": [
+          "id",
+          "required",
+          "label",
+          "done"
+        ],
         "additionalProperties": false
       }
     },
     "l1": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "turnLimit": {
       "type": "integer",
@@ -142,7 +169,10 @@
       "properties": {
         "source": {
           "type": "string",
-          "enum": ["free", "credits"]
+          "enum": [
+            "free",
+            "credits"
+          ]
         },
         "credits": {
           "type": "integer",
@@ -150,7 +180,10 @@
           "maximum": 9007199254740991
         }
       },
-      "required": ["source", "credits"],
+      "required": [
+        "source",
+        "credits"
+      ],
       "additionalProperties": false
     }
   },

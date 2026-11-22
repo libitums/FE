@@ -8,6 +8,9 @@ import { callRpc } from "./companion-rpc.ts";
 import { missionBrief, missionFeedbackRequest, transcriptFromHistory } from "./mission-context.ts";
 import { missionJudgeTimeoutMs } from "./mission-env.ts";
 import { judgedGoals, judgeUser } from "./mission-judge.ts";
+import { farewellsOf, guardMissionFeedback, stripFarewells } from "./mission-guards.ts";
+import { allGoalsDone, parseMissionState } from "./mission-state.ts";
+import type { Segment } from "./chat-send.contract.ts";
 import type { DbMissionState } from "./mission-http.ts";
 import type { MissionTurnContext } from "./mission-turn-row.ts";
 
@@ -36,7 +39,52 @@ export function startMissionFeedback(context: MissionTurnContext, abort: AbortCo
     new Promise<Feedback>((resolve) => {
       timer = setTimeout(() => resolve(unavailable), timeoutMs);
     }),
-  ]).finally(() => clearTimeout(timer));
+  ])
+    .then((value) => {
+      // 원문에 없는 한자 · 가나 등이 든 교정은 버린다(ADR-0177 D13 — 「마실게요」 → 「마实 할게요」).
+      const guarded = guardMissionFeedback(value, body.text);
+      if (guarded.dropped.length > 0)
+        deps.log({
+          event: "chat_send",
+          status: "stream",
+          outcome: "mission_feedback_foreign_script",
+        });
+      return guarded.feedback;
+    })
+    .finally(() => clearTimeout(timer));
+}
+
+type ReplyResult = {
+  readonly segments: Segment[];
+  readonly stateText: string | null;
+  readonly firstDeltaMs: number | null;
+  readonly totalMs: number;
+};
+
+/**
+ * 판이 열려 있는 턴의 작별 인사 거르기(ADR-0177 D13). 장면을 닫는 답(`closing`)이거나 판정으로 모든 목표가 끝나는 턴이면 그대로.
+ * 인사 문장을 빼고, 말이 하나도 안 남으면 `again()`으로 한 번만 다시 만들어 같은 거르기를 한다 — 그래도 말이 안 남으면 처음 답 그대로.
+ */
+export async function settleFarewell<T extends ReplyResult>(
+  context: MissionTurnContext,
+  result: T,
+  judged: JudgeOutcome,
+  again: () => Promise<T | null>,
+): Promise<{ result: T; outcome: "kept" | "stripped" | "retried" | "unchanged" }> {
+  const { mission, progress } = context;
+  const closing = (result.stateText === null ? null : parseMissionState(result.stateText))?.closing;
+  const endsNow =
+    judged !== null && allGoalsDone(mission, [...progress.goalsDone, ...judged.goals]);
+  if (closing === true || endsNow) return { result, outcome: "unchanged" };
+  const first = stripFarewells(result.segments, farewellsOf(mission));
+  if (!first.stripped) return { result, outcome: "unchanged" };
+  if (first.speechLeft)
+    return { result: { ...result, segments: first.segments }, outcome: "stripped" };
+  const retry = await again().catch(() => null);
+  if (retry === null) return { result, outcome: "kept" };
+  const second = stripFarewells(retry.segments, farewellsOf(mission));
+  if (!second.speechLeft) return { result, outcome: "kept" };
+  return { result: { ...retry, segments: second.segments }, outcome: "retried" };
 }
 
 export async function callRpcFinish(

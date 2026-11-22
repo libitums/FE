@@ -16,6 +16,9 @@
       "type": "boolean"
     }
   },
-  "required": ["contract_version", "conversation_id"],
+  "required": [
+    "contract_version",
+    "conversation_id"
+  ],
   "additionalProperties": false
 }

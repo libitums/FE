@@ -22,15 +22,27 @@
           },
           "kind": {
             "type": "string",
-            "enum": ["snapshot", "voice"]
+            "enum": [
+              "snapshot",
+              "voice"
+            ]
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "complete", "blocked", "failed"]
+            "enum": [
+              "pending",
+              "complete",
+              "blocked",
+              "failed"
+            ]
           },
           "charge": {
             "type": "string",
-            "enum": ["photo", "photo_redraw", "voice"]
+            "enum": [
+              "photo",
+              "photo_redraw",
+              "voice"
+            ]
           },
           "cost": {
             "type": "integer",
@@ -38,16 +50,25 @@
             "maximum": 9007199254740991
           },
           "path": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "mime": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "aspect": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": ["3:2", "1:1"]
+                "enum": [
+                  "3:2",
+                  "1:1"
+                ]
               },
               {
                 "type": "null"
@@ -55,22 +76,34 @@
             ]
           },
           "failure": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "aiGenerated": {
             "type": "boolean"
           },
           "engine": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "model": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string"
           },
           "finishedAt": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "line": {
             "type": "object",
@@ -82,14 +115,20 @@
                 "type": "string"
               }
             },
-            "required": ["ko", "en"],
+            "required": [
+              "ko",
+              "en"
+            ],
             "additionalProperties": false
           },
           "fromPastChat": {
             "type": "boolean"
           },
           "previewPath": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -117,6 +156,9 @@
       "type": "boolean"
     }
   },
-  "required": ["items", "hasMore"],
+  "required": [
+    "items",
+    "hasMore"
+  ],
   "additionalProperties": false
 }

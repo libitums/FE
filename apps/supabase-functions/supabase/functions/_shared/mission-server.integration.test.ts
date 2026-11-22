@@ -469,7 +469,7 @@ describe("진입 대사 · 목표 글의 학습자 언어 — 번역 캐시", ()
     await app.query("reset role");
 
     await server.query("select public.companion_upsert_mission($1::jsonb)", [
-      JSON.stringify({ ...water, version: 2 }),
+      JSON.stringify({ ...water, version: water.version + 1 }),
     ]);
     await start();
     expect(translated).toEqual(["vi", "vi"]);
@@ -480,9 +480,9 @@ describe("진입 대사 · 목표 글의 학습자 언어 — 번역 캐시", ()
       "select mission_version, language from companion.mission_translations where mission_id = 'u01-water' order by 1, 2",
     );
     expect(rows.rows).toEqual([
-      { mission_version: 1, language: "vi" },
-      { mission_version: 2, language: "ja" },
-      { mission_version: 2, language: "vi" },
+      { mission_version: water.version, language: "vi" },
+      { mission_version: water.version + 1, language: "ja" },
+      { mission_version: water.version + 1, language: "vi" },
     ]);
   });
 });

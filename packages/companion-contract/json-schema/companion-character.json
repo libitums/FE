@@ -12,7 +12,11 @@
       "anyOf": [
         {
           "type": "string",
-          "enum": ["trial_exhausted", "not_available", "age_restricted"]
+          "enum": [
+            "trial_exhausted",
+            "not_available",
+            "age_restricted"
+          ]
         },
         {
           "type": "null"
@@ -21,7 +25,11 @@
     },
     "speechLevel": {
       "type": "string",
-      "enum": ["polite", "casual", "slang"]
+      "enum": [
+        "polite",
+        "casual",
+        "slang"
+      ]
     },
     "lastMessageAt": {
       "anyOf": [
@@ -36,6 +44,12 @@
       ]
     }
   },
-  "required": ["id", "available", "unavailableReason", "speechLevel", "lastMessageAt"],
+  "required": [
+    "id",
+    "available",
+    "unavailableReason",
+    "speechLevel",
+    "lastMessageAt"
+  ],
   "additionalProperties": false
 }

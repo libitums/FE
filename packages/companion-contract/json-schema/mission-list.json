@@ -36,7 +36,9 @@
                 "maxLength": 120
               }
             },
-            "required": ["en"],
+            "required": [
+              "en"
+            ],
             "additionalProperties": {
               "type": "string",
               "minLength": 1,
@@ -47,7 +49,10 @@
             "type": "string"
           },
           "characterId": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "goals": {
             "type": "array",
@@ -75,7 +80,9 @@
                       "maxLength": 120
                     }
                   },
-                  "required": ["en"],
+                  "required": [
+                    "en"
+                  ],
                   "additionalProperties": {
                     "type": "string",
                     "minLength": 1,
@@ -83,7 +90,11 @@
                   }
                 }
               },
-              "required": ["id", "required", "label"],
+              "required": [
+                "id",
+                "required",
+                "label"
+              ],
               "additionalProperties": false
             }
           },
@@ -107,13 +118,20 @@
                   },
                   "outcome": {
                     "type": "string",
-                    "enum": ["success", "fail"]
+                    "enum": [
+                      "success",
+                      "fail"
+                    ]
                   },
                   "createdAt": {
                     "type": "string"
                   }
                 },
-                "required": ["totalScore", "outcome", "createdAt"],
+                "required": [
+                  "totalScore",
+                  "outcome",
+                  "createdAt"
+                ],
                 "additionalProperties": false
               },
               {
@@ -163,13 +181,23 @@
           ]
         }
       },
-      "required": ["freeLeft", "cost", "balance"],
+      "required": [
+        "freeLeft",
+        "cost",
+        "balance"
+      ],
       "additionalProperties": false
     },
     "l1": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
-  "required": ["missions", "price"],
+  "required": [
+    "missions",
+    "price"
+  ],
   "additionalProperties": false
 }

@@ -25,12 +25,14 @@ import type { SegmentDelta } from "./companion-segments.ts";
 import { withUsageMeta } from "./companion-usage.ts";
 import { missionCounterpartBase } from "./mission-definition.ts";
 import type { DbMissionState } from "./mission-http.ts";
+import { farewellRisk } from "./mission-guards.ts";
 import { missionSystemPrompt } from "./mission-prompt.ts";
 import { advanceMission, parseMissionState } from "./mission-state.ts";
 import {
   callRpcFinish,
   missionTurnPayload,
   startMissionFeedback,
+  settleFarewell,
   startMissionJudge,
   type FinishRow,
 } from "./mission-turn-parts.ts";
@@ -146,8 +148,10 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
   }
 
   const sendDelta = (delta: SegmentDelta) => sink.send({ event: "delta", data: delta });
+  // 작별 인사가 나올 수 있는 상태면 성인도 답을 모았다가 거른 뒤 보낸다(ADR-0177 D13).
+  const hold = farewellRisk(mission, context.progress.goalsDone);
   if (ageBand === "adult") {
-    reply.goLive(sendDelta);
+    if (!hold) reply.goLive(sendDelta);
     void feedback.then(sendCorrection);
   }
   let result: Awaited<typeof reply.done>;
@@ -201,7 +205,20 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
       recovered = output.category;
       translation = translate(result.segments);
     }
-    reply.goLive(sendDelta);
+    if (!hold) reply.goLive(sendDelta);
+  }
+  let farewell: string | null = null;
+  if (hold) {
+    const settled = await settleFarewell(context, result, await judge, async () => {
+      const retry = startReply(context, history, system, abort);
+      return retry.done;
+    });
+    farewell = settled.outcome;
+    if (settled.result !== result) translation = translate(settled.result.segments);
+    result = settled.result;
+    result.segments.forEach((segment, index) =>
+      sendDelta({ segment: index, kind: segment.kind, text: segment.text }),
+    );
   }
 
   const [feedbackResult, translated, judged] = await Promise.all([feedback, translation, judge]);
@@ -232,6 +249,7 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
           missionState: turnState,
           stateLine,
           judge: judged === null ? "unavailable" : { goals: judged.goals, offTask: judged.offTask },
+          ...(farewell === null ? {} : { farewell }),
           translation: translated.status,
           playground: context.playground,
           ...(recovered === null ? {} : { guardrailRecovered: { category: recovered } }),
