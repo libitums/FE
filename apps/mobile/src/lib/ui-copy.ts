@@ -74,17 +74,20 @@ function buildTable(language: UiLanguage): UiCopy {
   }
 }
 
+// PURE 표시가 있어야 쓰지 않는 스레드의 번들에서 영어 밖 표가 빠집니다(ADR-0031 D8).
 const tables: Readonly<Record<UiLanguage, UiCopy>> = {
-  en: buildTable("en"),
-  vi: buildTable("vi"),
-  id: buildTable("id"),
-  es: buildTable("es"),
-  ja: buildTable("ja"),
-  th: buildTable("th"),
-  my: buildTable("my"),
+  en: /*#__PURE__*/ buildTable("en"),
+  vi: /*#__PURE__*/ buildTable("vi"),
+  id: /*#__PURE__*/ buildTable("id"),
+  es: /*#__PURE__*/ buildTable("es"),
+  ja: /*#__PURE__*/ buildTable("ja"),
+  th: /*#__PURE__*/ buildTable("th"),
+  my: /*#__PURE__*/ buildTable("my"),
 };
 
-export const uiCopyFor: UiCopyFor = (language) => tables[language];
+// 메인 스레드에는 `NativeModules`가 없어 저장된 언어를 못 읽으므로 첫 프레임은 늘 영어입니다. 그래서 영어 표만
+// 싣고, 실제 언어는 background 렌더가 냅니다. 메인 스레드에서 언어를 알게 되면 이 줄부터 고칩니다(ADR-0031 D8).
+export const uiCopyFor: UiCopyFor = (language) => (__MAIN_THREAD__ ? uiCopyEn : tables[language]);
 
 // Provider 없이 그린 컴포넌트도 영어를 받습니다.
 export const UiCopyContext = createContext<UiCopy>(uiCopyEn);
