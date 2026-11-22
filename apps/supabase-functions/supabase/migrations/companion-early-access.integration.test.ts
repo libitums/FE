@@ -3,6 +3,7 @@ import { signIn, startTestDatabase } from "./postgres.test-support";
 
 // 엽전 먼저 만나기(20261213, ADR-0162 D5): 제안 목록 · 한 번만 차감(구독분 → 지급분 → 구매분, 원장 'spend') · 이미 연 인물은 다시
 // 빼지 않음 · 모자라면 모자란 양 · 제안 없는 인물은 no_offer · anon은 부를 수 없음.
+// 구독자(20261223): 「모든 인물」 요금제(Chat Plus · Premium)가 살아 있으면 엽전을 빼지 않고 연다.
 const user = "00000000-0000-4000-8000-0000000000f1";
 
 let db: Awaited<ReturnType<typeof startTestDatabase>>;
@@ -115,4 +116,50 @@ test("EA6. anon은 두 RPC를 부를 수 없고, 표는 직접 읽을 수 없다
     code: "42501",
   });
   await anon.end();
+});
+
+async function subscribe(
+  entitlement: string,
+  status = "active",
+  expires = "now() + interval '20 days'",
+) {
+  await db.admin.query(
+    `insert into companion.plan_entitlements
+       (user_id, entitlement, product_id, status, expires_at, source_event_id, last_event_at)
+     values ($1, $2, 'duru.' || $2 || '.monthly.v1', $3, ${expires}, 'evt-' || $2, now())
+     on conflict (user_id, entitlement) do update set status = $3, expires_at = ${expires}`,
+    [user, entitlement, status],
+  );
+}
+const unlockRows = async () =>
+  (
+    await db.admin.query(
+      "select character_id, price from companion.early_access_unlocks where user_id = $1 order by character_id",
+      [user],
+    )
+  ).rows as { character_id: string; price: number }[];
+
+test("EA7. 구독자(Chat Plus · Premium)는 엽전을 빼지 않고 연다 — 잔액이 0이어도, 기록은 값 0", async () => {
+  await subscribe("chat_plus");
+  expect(await unlock("mina")).toMatchObject({ result: "unlocked", wallet: { balance: 0 } });
+  await wallet(0, 300, 0);
+  expect(await unlock("jaemin")).toMatchObject({ result: "unlocked", wallet: { balance: 300 } });
+  expect(await unlock("jaemin")).toMatchObject({ result: "already", wallet: { balance: 300 } });
+  expect(await spends()).toEqual([]);
+  expect(await unlockRows()).toEqual([
+    { character_id: "jaemin", price: 0 },
+    { character_id: "mina", price: 0 },
+  ]);
+  // 제안이 없는 인물은 구독자도 no_offer(앱이 이 길로 부르지 않는 인물).
+  expect(await unlock("duksu")).toEqual({ result: "no_offer" });
+});
+
+test("EA8. 학습 전용(티켓 무제한) · 끝난 구독은 지금처럼 엽전을 낸다", async () => {
+  await wallet(0, 150, 0);
+  await subscribe("unlimited_tickets");
+  expect(await unlock("mina")).toMatchObject({ result: "unlocked", wallet: { balance: 50 } });
+  await subscribe("premium", "expired", "now() - interval '1 day'");
+  expect(await unlock("doyun")).toMatchObject({ result: "short", shortBy: 50 });
+  await subscribe("premium", "cancelled", "now() + interval '3 days'");
+  expect(await unlock("doyun")).toMatchObject({ result: "unlocked", wallet: { balance: 50 } });
 });

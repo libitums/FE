@@ -47,7 +47,7 @@ const ORDER: Readonly<Record<DirectoryAction, number>> = { chat: 0, early: 1, lo
 function rowOf(character: FriendProfile, input: SuggestInput): DirectoryRow | null {
   const room = roomOfFriend(input.rooms, character.id);
   if (room === undefined) return null;
-  const status = friendStatusOf(character, room, input.metEpisode);
+  const status = friendStatusOf(character, room, input.metEpisode, input.allStory);
   if (status === "added") return { character, room, action: "added", offer: null };
   if (status === "addable") return { character, room, action: "chat", offer: null };
   const offer = offerOf(character, input.earlyAccess, input.now);

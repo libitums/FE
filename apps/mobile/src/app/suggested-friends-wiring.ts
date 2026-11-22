@@ -4,6 +4,7 @@
 // (`companion_friends` · `companion_ack_adult`, 20261216, ADR-0164)이고, 물었는지 표시는 계정마다 기기에 둡니다.
 // 배경 전용 라이브러리를 값으로 가져오지 않습니다.
 
+import { planAllCharacters } from "../lib/plan-access";
 import {
   deviceAdultAckAskedStore,
   type AdultAckAskedStore,
@@ -141,6 +142,8 @@ export function suggestedFriendsPort(): SuggestedFriendsPort {
   cachedPort = {
     catalog: () => catalogOverride ?? COMPANION_CATALOG,
     add: addSuggestedFriend,
+    // 구독자(Chat Plus · Premium)는 못 만난 이야기 인물도 값 없이 엽니다 — 부를 때마다 지금 요금제를 읽습니다.
+    allStory: planAllCharacters,
     // 먼저 만나기(ADR-0162 D5, 2026-11-19 적용) — 서버 포트가 끼워진 앱(진입점)에서만 켜집니다. 손님은 제안 목록이 비어 단추가 없습니다.
     earlyAccess: earlyFactory === null ? null : unlockEarly,
     offers: earlyFactory === null ? null : async () => (await earlyAccessRemote()?.offers()) ?? [],

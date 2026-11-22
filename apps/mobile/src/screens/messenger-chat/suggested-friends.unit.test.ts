@@ -169,6 +169,49 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
   });
 });
 
+describe("SF-U8 구독자(모든 인물)", () => {
+  test("이야기 인물은 에피소드를 못 끝냈어도 추가할 수 있고, 먼저 만나기 값은 붙지 않는다", () => {
+    const catalog = catalogOf([
+      friend("early", { earlyAccess: { price: 100, endsAt: null } }),
+      friend("locked"),
+      general("g1"),
+      friend("open"),
+    ]);
+    const rooms = [
+      room("early", false),
+      room("locked", false),
+      room("g1", false),
+      room("open", true),
+    ];
+    const list = suggestedFriendsOf({
+      catalog,
+      rooms,
+      earlyAccess: true,
+      now: NOW,
+      allStory: true,
+    });
+    expect(list.map((s) => [s.character.id, s.status, s.offer])).toEqual([
+      ["g1", "addable", null],
+      ["early", "addable", null],
+      ["locked", "addable", null],
+    ]);
+  });
+
+  test("구독이 없으면 지금처럼 잠김이다", () => {
+    const [only] = suggestedFriendsOf({
+      catalog: catalogOf([friend("locked")]),
+      rooms: [room("locked", false)],
+      earlyAccess: false,
+      now: NOW,
+      allStory: false,
+    });
+    expect(only?.status).toBe("locked");
+    expect(friendStatusOf(friend("locked"), room("locked", false), undefined, true)).toBe(
+      "addable",
+    );
+  });
+});
+
 test("CS-U1 서버 씨앗은 일반 인물을 잠긴 방(unlockEpisode 0)으로 심는다 — 목록에 없고 추가로 연다", () => {
   const seed = companionSeed([...COMPANION_CHARACTERS, { ...general("g1"), firstLine: null }]);
   const g1 = seed.rooms.find((r) => r.roomId === "g1");

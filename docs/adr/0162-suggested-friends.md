@@ -102,3 +102,16 @@
   없어 카탈로그 그대로.
 - 프로필 시트 태그 = 직업 · 나이 · MBTI(친구), MBTI 하나(이야기 다섯, `storyProfiles`). 시트를 열면 `suggested_friend_opened`(PostHog만).
 - 수위 open 친구의 `Start chatting`은 「Get closer」 시트를 먼저 물을 수 있다(ADR-0164 D4 · 앱 인계).
+
+## 추가 ⟨2026-11-22, 구독자는 이야기 인물을 모두 연다⟩
+
+- **사용자 결정 2026-11-22**: 요금제 카드의 「Chat with every character」(ADR-0144, `companion.plans.all_characters` — Chat Plus · Premium)가 약속한 대로,
+  구독자는 아직 못 만난 이야기 인물도 값 없이 연다. 그전에는 이 값이 혜택 문구만 띄웠고 방은 이야기 진행 · 엽전 100으로만 열렸다.
+- **앱**: 포트에 `allStory`(`plan-access.ts`의 `planAllCharacters()` — 대화 등급이 free가 아님)가 더해졌다. 참이면 `friendStatusOf`가 잠긴 이야기 인물을
+  addable로 봐 줄 · 친구 찾기 · 시트가 「Start chatting」을 그린다(먼저 만나기 제안은 붙지 않고, 추가는 D5의 기존 길 · `via: free`). 손님 포트에는 없다.
+- **서버(이미 나간 앱 — iOS 1.2.0)**: 옛 앱은 구독자에게도 엽전 100 단추를 그린다. `companion_unlock_early`가 「모든 인물」 요금제가 살아 있는 사람이면
+  엽전을 빼지 않고 연다(`20261223120000_companion_early_access_subscriber.sql`, `companion.has_all_characters`, 기록 값 0 · 원장 줄 없음).
+  단추의 「100」 글자는 옛 앱에 남는다 — 누르면 빠지지 않는다. **운영 적용 2026-11-22**(그때 살아 있는 구독자 0명).
+- 구독이 끝나도 이미 연 방은 그대로다(되잠그지 않는다). 권한을 읽기 전(앱 시작 직후)에는 잠김으로 보이다가 목록이 다시 설 때 열린다.
+- 테스트: `suggested-friends.unit.test.ts` SF-U8 · `friend-directory.unit.test.ts` FD-U4 · `plan-access.unit.test.ts` PA5 · `suggested-friends-wiring.unit.test.ts` SW-U7 ·
+  `MessengerListScreen.suggested.ui.test.tsx` ML6 · `companion-early-access.integration.test.ts` EA7 · EA8.

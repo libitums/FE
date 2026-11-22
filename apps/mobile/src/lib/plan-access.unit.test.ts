@@ -6,6 +6,7 @@ import {
   MAX_TIMER_MS,
   currentPlanIds,
   entitlementsRefreshDelay,
+  planAllCharacters,
   planChatTier,
   planUnlimitedTickets,
   setPlanAccess,
@@ -127,4 +128,14 @@ describe("PA5 만료 경계에서 다시 읽기(2026-11-19 내림 뒤 칩이 PRE
       MAX_TIMER_MS,
     );
   });
+});
+
+test("PA5 모든 인물 — 대화 요금제(Chat Plus · Premium)만, 권한이 없거나 학습 전용이면 아니다", () => {
+  expect(planAllCharacters()).toBe(false);
+  setPlanAccess({ tier: "free", unlimitedTickets: true, entitlements: [] });
+  expect(planAllCharacters()).toBe(false);
+  setPlanAccess(chatPlus);
+  expect(planAllCharacters()).toBe(true);
+  setPlanAccess(premium);
+  expect(planAllCharacters()).toBe(true);
 });

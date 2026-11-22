@@ -136,6 +136,7 @@ export function useSuggestedFriends({
     earlyAccess: (port?.earlyAccess ?? null) !== null,
     now,
     ...(port?.metEpisode === undefined ? {} : { metEpisode: port.metEpisode }),
+    allStory: port?.allStory?.() === true,
   };
   const row = suggestedRowOf(suggestedFriendsOf(input));
   const layerOpen = sheet !== null || directoryOpen || ack.open;
