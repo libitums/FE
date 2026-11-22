@@ -19,7 +19,9 @@ export type PushTarget =
   | { readonly kind: "roleplay-list" }
   | { readonly kind: "messenger"; readonly unitId: string }
   | { readonly kind: "phone-call"; readonly unitId: string }
-  | { readonly kind: "visual-novel"; readonly unitId: string };
+  | { readonly kind: "visual-novel"; readonly unitId: string }
+  // 선톡 방(ADR-0127) — 앱이 인물 id 형식을 다시 검증합니다. `variant`는 미리보기 A/B의 칸입니다.
+  | { readonly kind: "companion-chat"; readonly characterId: string; readonly variant?: "a" | "b" };
 
 // ------------------------------------------------------------------ HTTP 계약
 

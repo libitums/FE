@@ -6,7 +6,7 @@
 // 본문 { batch: n } — 후보(`companion_proactive_candidates`)를 n개까지. { mode: "memory_flush", batch?: n } — 쉬는 대화의 기억 마저 뽑기.
 // 선톡은 유저 없이 나가므로 연령과 상관없이 출력 검사(적용 로맨스 수위의 선)를 지난 것만 저장한다. 크레딧을 차감하지 않는다. 지시에는 지난 대화
 // 뒤 며칠 · 현지 시간대 · 마지막 화제 · 최근 선톡 글 · 답 없는 선톡 수를 싣고, 칩 스위치가 켜져 있으면 칩도 붙인다(20261123).
-// ⚠ 푸시는 아직 보내지 않는다 — `send-push`에 컴패니언 목적지가 없다(API §2.3, M3 남은 일). 앱은 다음 조회 때 메시지 목록에서 본다.
+// 저장한 선톡에는 푸시를 붙인다(`companion-proactive-push.ts` — 스위치 off · testers · on, 결과는 outcome의 `push`). 푸시가 실패해도 선톡은 남는다.
 
 import type { ChatSendDeps, HistoryEntry, Segment } from "./chat-send.contract.ts";
 import { startTranslation, translationContext, withTranslations } from "./chat-send-translate.ts";
@@ -15,6 +15,7 @@ import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { flushIdleMemories } from "./companion-memory-flush.ts";
 import type { ProactiveContext } from "./companion-proactive-context.ts";
+import { pushProactive } from "./companion-proactive-push.ts";
 import {
   generateOpener,
   openerLearning,
@@ -46,6 +47,8 @@ type Outcome = {
   result: string;
   /** `force`로 건너뛴 빈도 판정의 까닭(막히지 않았으면 없음). */
   wouldSkip?: string;
+  /** 저장한 선톡의 푸시 결과(sent · control · off · not_tester · no_device · record_failed · send_failed). */
+  push?: string;
   messageId?: string;
   segments?: Segment[];
   suggestions?: ReplySuggestion[];
@@ -214,10 +217,18 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
       : {}),
   });
   await recordOpener(deps.outbound, env, target.userId, learned.events, now);
+  const push = await pushProactive(deps.outbound, env, {
+    userId: target.userId,
+    characterId: target.characterId,
+    name: context.persona.name,
+    segments,
+    now,
+  });
   return {
     ...target,
     ...wouldSkip,
     result: "sent",
+    push,
     messageId,
     segments: stored,
     ...(chips?.status === "ok" ? { suggestions: chips.items } : {}),
