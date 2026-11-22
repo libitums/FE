@@ -102,6 +102,14 @@ describe("ops_search_users 에셋 수", () => {
     expect(page.total).toBe(4);
     expect(page.items[3]).toMatchObject({ email: "a@example.com", balance: 0, tester: false });
     expect(await ids({ p_sort: "email", p_dir: "asc" })).toEqual([a, b, c, d]);
+    // 한 사람만 찾아도, 다른 열로 정렬해도 줄의 수는 같다
+    const one = await search({ p_query: b });
+    expect(one.items.map((u: Json) => [u.id, u.snapshots, u.voices])).toEqual([[b, 1, 4]]);
+    const byEmail = await search({ p_sort: "email", p_dir: "desc", p_limit: 2, p_offset: 2 });
+    expect(byEmail.items.map((u: Json) => [u.id, u.snapshots, u.voices])).toEqual([
+      [b, 1, 4],
+      [a, 3, 1],
+    ]);
   });
 
   test("OM-2 p_sort snapshots · voices: 오름 · 내림, 같은 수는 id 순, 다른 필터 · 쪽 넘기기와 함께", async () => {
@@ -111,6 +119,17 @@ describe("ops_search_users 에셋 수", () => {
     expect(await ids({ p_sort: "voices", p_dir: "asc" })).toEqual([c, d, a, b]);
     expect(await ids({ p_sort: "voices", p_dir: "desc", p_limit: 1, p_offset: 1 })).toEqual([a]);
     expect(await ids({ p_sort: "snapshots", p_dir: "desc", p_tester: false })).toEqual([a, c, d]);
+    const top = await search({
+      p_sort: "voices",
+      p_dir: "desc",
+      p_query: "example.com",
+      p_limit: 2,
+    });
+    expect(top.items.map((u: Json) => [u.id, u.snapshots, u.voices])).toEqual([
+      [b, 1, 4],
+      [a, 3, 1],
+    ]);
+    expect(top.total).toBe(4);
   });
 
   test("OM-3 목록 밖 정렬은 invalid_sort", async () => {

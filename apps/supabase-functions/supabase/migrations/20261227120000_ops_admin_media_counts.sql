@@ -6,6 +6,8 @@
 --   - 줄마다 `snapshots` · `voices` — 그 사용자의 `companion.media` 중 **완료(status = 'complete')** 인 스냅샷 · 음성 수(없으면 0).
 --     막힘 · 실패 · 만드는 중은 세지 않는다(파일이 없다).
 --   - `p_sort`에 `snapshots` · `voices`(`p_dir` asc · desc, 같은 수는 id 순).
+--   세는 범위: `companion.media` 전체를 묶어 세지 않는다. 보이는 줄(많아야 `p_limit`)만 사용자마다 세고, 에셋 수로 정렬할 때만
+--   조건에 맞은 사용자 모두를 센다 — 한 사람을 찾을 때 표 전체를 읽지 않게.
 --   인수 꼴은 20261214 그대로라 함수만 바꾼다(`create or replace`). 이 파일의 첫 판(인수 13개, `p_min_snapshots` · `p_min_voices`)을
 --   적용한 DB라면 그 함수를 지운다 — 남으면 호출이 겹친다.
 --
@@ -39,6 +41,7 @@ declare
   v_sort text := coalesce(p_sort, 'created_at');
   v_dir text := coalesce(p_dir, 'desc');
   v_default boolean;
+  v_by_media boolean;
   v_uuid uuid;
   v_pattern text;
   v_total integer;
@@ -66,22 +69,14 @@ begin
     raise exception 'invalid_dir' using errcode = '22023';
   end if;
   v_default := v_sort = 'created_at' and v_dir = 'desc';
+  v_by_media := v_sort in ('snapshots', 'voices');
   if v_query ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
     v_uuid := v_query::uuid;
   elsif v_query is not null then
     v_pattern := '%' || replace(replace(replace(v_query, '\', '\\'), '%', '\%'), '_', '\_') || '%';
   end if;
 
-  with media_counts as (
-    select
-      md.user_id,
-      (count(*) filter (where md.kind = 'snapshot'))::integer as snapshots,
-      (count(*) filter (where md.kind = 'voice'))::integer as voices
-    from companion.media md
-    where md.status = 'complete'
-    group by md.user_id
-  ),
-  matched as (
+  with matched as (
     select
       u.id,
       u.created_at,
@@ -89,13 +84,21 @@ begin
       lower(u.email) as email,
       w.sub_balance + w.grant_balance + w.paid_balance as balance_raw,
       coalesce(lp.country_code, cp.last_region) as country,
-      coalesce(mc.snapshots, 0) as snapshots,
-      coalesce(mc.voices, 0) as voices
+      mc.snapshots,
+      mc.voices
     from auth.users u
     left join public.learner_profiles lp on lp.user_id = u.id
     left join companion.profiles cp on cp.user_id = u.id
     left join companion.credit_wallets w on w.user_id = u.id
-    left join media_counts mc on mc.user_id = u.id
+    -- 정렬 키로만 쓴다: 에셋 수로 정렬할 때만 맞은 사용자마다 센다(`media_album_idx`의 user_id로 그 사용자 것만 읽는다).
+    -- 다른 정렬에서는 세지 않는다 — 보이는 줄의 수는 아래에서 그 쪽의 줄만 센다.
+    left join lateral (
+      select
+        (count(*) filter (where md.kind = 'snapshot'))::integer as snapshots,
+        (count(*) filter (where md.kind = 'voice'))::integer as voices
+      from companion.media md
+      where v_by_media and md.user_id = u.id and md.status = 'complete'
+    ) mc on true
     where (v_query is null or (v_uuid is not null and u.id = v_uuid)
         or (v_pattern is not null and (u.email ilike v_pattern or lp.name ilike v_pattern)))
       and (p_country is null or coalesce(lp.country_code, cp.last_region) = p_country)
@@ -106,7 +109,7 @@ begin
   ),
   -- 잔액은 UserRow처럼 지갑이 없으면 0(빈 값이 아니다).
   ranked as (
-    select m.id, m.snapshots, m.voices, row_number() over (order by
+    select m.id, row_number() over (order by
       case when v_sort = 'created_at' and v_dir = 'asc' then m.created_at end asc nulls last,
       case when v_sort = 'created_at' and v_dir = 'desc' then m.created_at end desc nulls last,
       case when v_sort = 'last_sign_in_at' and v_dir = 'asc' then m.last_sign_in_at end asc nulls last,
@@ -127,8 +130,16 @@ begin
   select
     (select count(*)::integer from ranked),
     coalesce((
-      select jsonb_agg(ops.user_row(x.id) || jsonb_build_object('snapshots', x.snapshots, 'voices', x.voices) order by x.rn)
-      from (select id, snapshots, voices, rn from ranked order by rn limit p_limit offset p_offset) x
+      select jsonb_agg(ops.user_row(x.id) || jsonb_build_object('snapshots', c.snapshots, 'voices', c.voices) order by x.rn)
+      from (select id, rn from ranked order by rn limit p_limit offset p_offset) x
+      -- 이 쪽에 보이는 줄(많아야 p_limit)의 수만 센다.
+      cross join lateral (
+        select
+          (count(*) filter (where md.kind = 'snapshot'))::integer as snapshots,
+          (count(*) filter (where md.kind = 'voice'))::integer as voices
+        from companion.media md
+        where md.user_id = x.id and md.status = 'complete'
+      ) c
     ), '[]'::jsonb)
   into v_total, v_items;
 
