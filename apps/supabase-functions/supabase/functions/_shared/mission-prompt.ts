@@ -2,12 +2,13 @@
 //
 // 컴패니언 프롬프트(`companion-prompt.ts`)와 방향이 반대라(「이어 가라」가 아니라 「목표로 이끌고 끝내라」) 따로 둡니다. 친밀도 ·
 // 기억 · 화제 · 로맨스 줄이 없습니다. 캐시를 위해 판 내내 같은 앞부분(`turnSystemStable` — 장면 · 역할 카드 · 바탕 네 칸 · 규칙 ·
-// 출력 형식)과 턴마다 바뀌는 뒷부분(`turnDynamic` — 목표 상태 · 남은 턴 · 힌트 수 · 학습자 언어 · 배운 표현)으로 나눕니다.
+// 출력 형식)과 턴마다 바뀌는 뒷부분(`turnDynamic` — 목표 상태 · 필수 달성 여부 · 남은 턴 · 힌트 수 · 학습자 언어 · 배운 표현)으로 나눕니다.
+// 판은 모든 목표에서 닫힌다 — 필수만 이뤘으면 장면을 이어 가 선택 목표의 기회를 준다(규칙은 앞부분, 지금 그 상태인지는 뒷부분).
 // 모든 글은 「틀 + 채우기」(`mission-template.ts`)라 실험실 번들이 같은 틀을 그대로 씁니다.
 
 import type { LearningExpression } from "./chat-send.contract.ts";
 import type { MissionCounterpartBase, MissionDefinition } from "./mission-definition.ts";
-import type { MissionProgress } from "./mission-state.ts";
+import { allRequiredDone, type MissionProgress } from "./mission-state.ts";
 import { fillTemplate } from "./mission-template.ts";
 
 /** 답 끝의 앱용 줄. 학습자에게 보이지 않는다. 조각 형식은 컴패니언과 같고 이 줄만 다르다. */
@@ -36,7 +37,8 @@ export const missionTurnStableTemplate = `You are playing {{counterpart_label}} 
 - If the learner goes off topic, answer very briefly and bring them back with a line that belongs in the scene.
 - No romance: no flirting, dating talk or affection, whatever the learner says. Stay friendly and professional. No sexual content, profanity, graphic violence or questions about personal information.
 - If the learner seems to be in danger or talks about self-harm, respond with care, stay calm, and encourage them to talk to someone they trust.
-- When every required goal is done (including by the learner's latest message), close the scene in this reply: wrap it up naturally in one or two sentences (for example hand over the order and say goodbye) and set "closing" to true.
+- When every goal, required and optional, is done (including by the learner's latest message), close the scene in this reply: wrap it up naturally in one or two sentences (for example hand over the order and say goodbye) and set "closing" to true.
+- When the required goals are done but optional goals remain, do not close the scene: keep it going naturally so the learner gets a chance at the optional goals (for example ask the next question a real {{counterpart_label}} would ask, such as whether they want a receipt). If an optional goal is something the learner has to bring up themselves (such as asking for something), never hint at it or ask about it for them.
 
 # Output format (strict)
 Write one line per message bubble. Start every line with a tag:
@@ -57,6 +59,7 @@ export const missionBaseTemplate = `
 export const missionTurnDynamicTemplate = `# Mission state
 Goals ([x] = already done):
 {{goals_state}}
+- Required goals: {{required_status}}
 - Learner turns left, including the message you are answering: {{turns_left}}
 - Hints the learner has used: {{hints_used}}
 - Learner's language (BCP 47): {{learner_l1}}. Use it only to understand them; always answer in Korean.
@@ -67,6 +70,12 @@ Goals ([x] = already done):
 /** `goals_state`의 한 줄. 목표마다 채워 줄바꿈으로 잇는다. `mark`는 달성이면 "x", 아니면 " ". */
 export const goalLineTemplate = "- [{{mark}}] {{id}} ({{requirement}}): {{criteria}}";
 export const requirementWords = { required: "required", optional: "optional" } as const;
+
+/** `required_status`의 글 — 이번 메시지 앞의 판 상태로 고른다. 필수를 다 이뤘으면 판이 이어지는 중이다(선택 목표가 남음). */
+export const requiredStatusWords = {
+  pending: "not all done yet",
+  done: "all done; the learner may keep going for the optional goals or end the mission at any time",
+} as const;
 
 /** `learned_expressions`의 한 줄(뜻이 있을 때 · 없을 때)과 빈 목록 글. */
 export const learnedLineTemplate = "- {{surface}} ({{gloss}})";
@@ -148,6 +157,9 @@ export const turnsLeftBefore = (mission: MissionDefinition, progress: MissionPro
 export function turnDynamic(input: MissionDynamicInput): string {
   return fillTemplate(missionTurnDynamicTemplate, {
     goals_state: goalsState(input.mission, input.progress.goalsDone),
+    required_status: allRequiredDone(input.mission, input.progress.goalsDone)
+      ? requiredStatusWords.done
+      : requiredStatusWords.pending,
     turns_left: turnsLeftBefore(input.mission, input.progress),
     hints_used: input.progress.hintsUsed,
     learner_l1: input.l1 ?? "en",

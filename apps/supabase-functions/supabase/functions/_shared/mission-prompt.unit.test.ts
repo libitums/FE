@@ -8,6 +8,7 @@ import {
   missionSystemPrompt,
   missionTurnDynamicTemplate,
   missionTurnStableTemplate,
+  requiredStatusWords,
   turnDynamic,
   turnSystemStable,
 } from "./mission-prompt.ts";
@@ -44,8 +45,11 @@ describe("고정부 — turnSystemStable", () => {
       expect(prompt).toContain("If the learner goes off topic");
       expect(prompt).toContain("bring them back with a line that belongs in the scene");
       expect(prompt).toContain("No romance");
-      expect(prompt).toContain("When every required goal is done");
+      expect(prompt).toContain("When every goal, required and optional, is done");
       expect(prompt).toContain("close the scene in this reply");
+      // 필수만 이뤘으면 닫지 않고 선택 목표의 기회를 준다 — 학습자가 꺼낼 목표는 대신 묻지 않는다.
+      expect(prompt).toContain("When the required goals are done but optional goals remain");
+      expect(prompt).toContain("never hint at it or ask about it for them");
     }
   });
 
@@ -111,7 +115,14 @@ describe("고정부 — turnSystemStable", () => {
       ].sort(),
     );
     expect(placeholders(missionTurnDynamicTemplate).sort()).toEqual(
-      ["goals_state", "hints_used", "learned_expressions", "learner_l1", "turns_left"].sort(),
+      [
+        "goals_state",
+        "hints_used",
+        "learned_expressions",
+        "learner_l1",
+        "required_status",
+        "turns_left",
+      ].sort(),
     );
     expect(cafe).not.toMatch(/\{\{[a-z][a-z0-9_]*\}\}/);
   });
@@ -139,6 +150,7 @@ describe("가변부 — turnDynamic", () => {
     );
     expect(dynamic).toContain("- [ ] pay (required):");
     expect(dynamic).toContain("- [ ] stay (optional):");
+    expect(dynamic).toContain("- Required goals: not all done yet");
     expect(dynamic).toContain("including the message you are answering: 7");
     expect(dynamic).toContain("Hints the learner has used: 1");
     expect(dynamic).toContain("(BCP 47): th.");
@@ -156,6 +168,18 @@ describe("가변부 — turnDynamic", () => {
     expect(dynamic).toContain("(BCP 47): en.");
     expect(dynamic).toContain("none yet");
     expect(dynamic).toContain(`including the message you are answering: ${waterMission.turnLimit}`);
+  });
+
+  test("MP8b. 필수를 다 이뤘으면 required_status가 done — 고정 앞부분은 그대로", () => {
+    const input = { mission: cafeMission, l1: "en", expressions: [], base: null } as const;
+    const before = missionSystemPrompt({ ...input, progress: initialMissionProgress });
+    const after = missionSystemPrompt({
+      ...input,
+      progress: { goalsDone: ["order", "pay"], learnerTurns: 4, hintsUsed: 0 },
+    });
+    expect(after.dynamic).toContain(`- Required goals: ${requiredStatusWords.done}`);
+    expect(before.dynamic).toContain(`- Required goals: ${requiredStatusWords.pending}`);
+    expect(after.stable).toBe(before.stable);
   });
 
   test("MP9. goalsState는 파일 순서, missionSystemPrompt는 두 부분을 함께 돌려준다", () => {

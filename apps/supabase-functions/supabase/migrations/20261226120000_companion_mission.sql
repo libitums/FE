@@ -119,8 +119,9 @@ alter table companion.conversations
   -- { goalsDone: [목표 id, 파일 순서], turns, hints, hintGoals: [힌트를 준 목표 id], offTask, gradingFailed? }
   add column mission_state jsonb check (mission_state is null or jsonb_typeof(mission_state) = 'object'),
   add column ended_at timestamptz,
-  -- goals · turn_limit: 판이 끝남(채점 대상). user · stale: 그만둠 · 새 판 · 방치(채점 없음).
-  add column end_reason text check (end_reason is null or end_reason in ('goals', 'turn_limit', 'user', 'stale'));
+  -- goals(모든 목표) · turn_limit(턴 상한) · finish(필수를 이룬 뒤 학습자가 끝냄): 판이 끝남(채점 대상). user · stale: 그만둠 · 새 판 · 방치(채점 없음).
+  -- 필수만 이룬 판은 끝나지 않는다(end_reason null — 「성공 확정」, 대화는 이어진다). 성공 · 실패는 끝난 까닭이 아니라 필수 목표로 정한다.
+  add column end_reason text check (end_reason is null or end_reason in ('goals', 'turn_limit', 'finish', 'user', 'stale'));
 alter table companion.conversations
   add constraint conversations_mission_version_fkey foreign key (mission_id, mission_version)
     references companion.mission_versions (mission_id, version),
@@ -145,7 +146,7 @@ create table companion.mission_results (
   mission_id text not null,
   mission_version integer not null,
   outcome text not null check (outcome in ('success', 'fail')),
-  end_reason text not null check (end_reason in ('goals', 'turn_limit')),
+  end_reason text not null check (end_reason in ('goals', 'turn_limit', 'finish')),
   -- [{ id, achieved, byTurn, byGrader, evidence }] — 정의의 목표 순서.
   goals jsonb not null check (jsonb_typeof(goals) = 'array'),
   -- [{ id, used }] — 정의의 목표 표현 순서.
@@ -475,6 +476,22 @@ begin
 end;
 $$;
 
+-- 필수 목표를 모두 이뤘는가 · 모든 목표를 이뤘는가(판 상태 mission_state의 goalsDone 기준).
+create function companion.mission_required_done(p_state jsonb, d jsonb)
+returns boolean language sql immutable as $$
+  select not exists (
+    select 1 from jsonb_array_elements(d->'goals') g
+    where (g.value->>'required')::boolean and not coalesce(p_state->'goalsDone', '[]'::jsonb) ? (g.value->>'id')
+  )
+$$;
+create function companion.mission_all_done(p_state jsonb, d jsonb)
+returns boolean language sql immutable as $$
+  select not exists (
+    select 1 from jsonb_array_elements(d->'goals') g
+    where not coalesce(p_state->'goalsDone', '[]'::jsonb) ? (g.value->>'id')
+  )
+$$;
+
 -- 목표 진척 · 남은 턴 · 남은 힌트(앱 · 서버가 함께 쓰는 모양).
 create function companion.mission_progress_json(c companion.conversations, d jsonb)
 returns jsonb language sql stable as $$
@@ -495,7 +512,9 @@ returns jsonb language sql stable as $$
     'hintLimit', s.mission_hint_limit,
     'hintsLeft', greatest(0, s.mission_hint_limit - coalesce((c.mission_state->>'hints')::integer, 0)),
     'offTask', coalesce((c.mission_state->>'offTask')::integer, 0),
-    'gradingFailed', coalesce((c.mission_state->>'gradingFailed')::boolean, false)
+    'gradingFailed', coalesce((c.mission_state->>'gradingFailed')::boolean, false),
+    -- 필수 목표를 모두 이뤘는가. 판이 끝나지 않았는데 참이면 앱은 「미션 성공 — 계속하기 / 끝내기」를 띄운다.
+    'requiredDone', companion.mission_required_done(c.mission_state, d)
   )
   from companion.settings s
 $$;
@@ -641,6 +660,8 @@ revoke all on function companion.mission_gate(uuid, text, timestamptz) from publ
 revoke all on function companion.mission_bill(uuid, uuid, timestamptz, boolean) from public;
 revoke all on function companion.mission_live_hold(uuid) from public;
 revoke all on function companion.mission_abandon(uuid, text, timestamptz) from public;
+revoke all on function companion.mission_required_done(jsonb, jsonb) from public;
+revoke all on function companion.mission_all_done(jsonb, jsonb) from public;
 revoke all on function companion.mission_progress_json(companion.conversations, jsonb) from public;
 revoke all on function companion.mission_history(uuid, uuid) from public;
 revoke all on function companion.mission_corrections(uuid) from public;
@@ -915,7 +936,8 @@ end;
 $$;
 
 -- ② 턴의 끝. 상대역 답 · 고지 · 교정 · 검사 기록 저장, 목표 진척 합치기(되돌리지 않음), 학습자 턴 수 +1, 끝 판정.
--- 끝(필수 목표 모두 → goals, 턴 상한 → turn_limit)은 end_reason · ended_at에 적고 status는 active로 둔다 — 닫기는 mission-finish(close)가 한다.
+-- 끝(모든 목표 → goals, 턴 상한 → turn_limit)은 end_reason · ended_at에 적고 status는 active로 둔다 — 닫기는 mission-finish(close)가 한다.
+-- 필수 목표만 이뤘으면 끝이 아니다(성공 확정 · 판은 이어진다 — state.requiredDone). 그 뒤 학습자의 끝내기는 close가 finish로 적는다.
 -- p_assistant: { id, segments, meta } | null. p_moderation: [{ layer, category, action }]. p_feedback: 1단계 finish와 같은 교정 카드 | null.
 -- p_mission: 상태 줄 { goals_done: [id], off_task: bool, closing: bool } | null. 실패 · 차단 · 위기 턴은 턴 수 · 진척에 세지 않는다.
 create function public.companion_mission_finish_turn(
@@ -1023,10 +1045,7 @@ begin
     where v_before ? (g.value->>'id')
       or (jsonb_typeof(p_mission->'goals_done') = 'array' and (p_mission->'goals_done') ? (g.value->>'id'));
     v_turns := coalesce((c.mission_state->>'turns')::integer, 0) + 1;
-    if not exists (
-      select 1 from jsonb_array_elements(v_def->'goals') g
-      where (g.value->>'required')::boolean and not v_done ? (g.value->>'id')
-    ) then
+    if companion.mission_all_done(jsonb_build_object('goalsDone', v_done), v_def) then
       v_end := 'goals';
     elsif v_turns >= (v_def->>'turnLimit')::integer then
       v_end := 'turn_limit';
@@ -1134,7 +1153,8 @@ $$;
 -- ③ 닫기(mission-finish). 몇 번 불러도 같은 결과.
 --   결과가 이미 있으면 { result: 'graded', report }. 그만둔 판이면 { result: 'abandoned' }.
 --   p_abandon이면 그만둠(예약 확정, 환불 없음) → { result: 'abandoned' }.
---   아니면 끝난 판(end_reason goals · turn_limit)이어야 하고 채점 재료 { result: 'grade', … }를 돌려준다. 끝나지 않았으면 not_ended.
+--   아니면 끝난 판(end_reason goals · turn_limit · finish)이어야 하고 채점 재료 { result: 'grade', … }를 돌려준다.
+--   끝나지 않았어도 필수 목표를 모두 이뤘으면 학습자의 끝내기다 — end_reason finish로 적고 채점 재료를 준다. 필수를 못 이뤘으면 not_ended.
 create function public.companion_mission_close(p_user_id uuid, p_conversation_id uuid, p_abandon boolean, p_now timestamptz)
 returns jsonb
 language plpgsql
@@ -1163,10 +1183,13 @@ begin
     return jsonb_build_object('result', 'abandoned', 'endReason', 'user',
       'balance', (select sub_balance + grant_balance + paid_balance from companion.credit_wallets where user_id = p_user_id));
   end if;
-  if c.end_reason is null or c.end_reason not in ('goals', 'turn_limit') then
-    return jsonb_build_object('result', 'not_ended', 'state', companion.mission_progress_json(c, companion.mission_definition_of(c)));
-  end if;
   v_def := companion.mission_definition_of(c);
+  if c.end_reason is null and companion.mission_required_done(c.mission_state, v_def) then
+    update companion.conversations set end_reason = 'finish', ended_at = p_now where id = c.id returning * into c;
+  end if;
+  if c.end_reason is null or c.end_reason not in ('goals', 'turn_limit', 'finish') then
+    return jsonb_build_object('result', 'not_ended', 'state', companion.mission_progress_json(c, v_def));
+  end if;
   select * into v_profile from companion.profiles where user_id = p_user_id;
   return jsonb_build_object(
     'result', 'grade',
@@ -1241,7 +1264,7 @@ begin
   if c.status = 'abandoned' then
     return jsonb_build_object('result', 'abandoned', 'endReason', c.end_reason);
   end if;
-  if c.end_reason is null or c.end_reason not in ('goals', 'turn_limit') then
+  if c.end_reason is null or c.end_reason not in ('goals', 'turn_limit', 'finish') then
     return jsonb_build_object('result', 'not_ended');
   end if;
   v_def := companion.mission_definition_of(c);
@@ -1370,7 +1393,7 @@ begin
   if c.status = 'abandoned' then
     return jsonb_build_object('result', 'abandoned', 'endReason', c.end_reason);
   end if;
-  if c.end_reason is null or c.end_reason not in ('goals', 'turn_limit') then
+  if c.end_reason is null or c.end_reason not in ('goals', 'turn_limit', 'finish') then
     return jsonb_build_object('result', 'not_ended');
   end if;
   v_hold := companion.mission_live_hold(c.id);
@@ -1420,6 +1443,7 @@ $$;
 
 -- 방치된 판 닫기(pg_cron). 마지막 메시지 뒤 settings.mission_stale_after가 지난 진행 중인 판 → abandoned · stale, 예약 확정.
 -- 채점이 실패해 값을 이미 돌려준 판(gradingFailed)은 그대로 둔다 — 채점만 다시 부를 수 있다. 닫은 판 수.
+-- 필수 목표를 이룬 채 이어 가다(requiredDone) 방치된 판도 같다 — 리포트 없이 stale(채점은 LLM이라 여기서 못 한다). 앱은 나갈 때 끝내기를 부른다.
 create function public.companion_close_stale_missions(p_now timestamptz)
 returns integer
 language plpgsql

@@ -109,6 +109,8 @@ export type DbMissionState = {
   readonly hintsLeft: number;
   readonly offTask: number;
   readonly gradingFailed: boolean;
+  /** 필수 목표를 모두 이뤘는가 — 판이 닫히지 않았으면 「성공 확정 · 계속 가능」. */
+  readonly requiredDone: boolean;
 };
 
 /** DB 상태 → 코어의 판 상태(`{ goalsDone, learnerTurns, hintsUsed }`). 목표는 미션 파일의 순서. */

@@ -111,13 +111,13 @@ const evidence: Record<string, string> = {
   stay: "가지고 가요.",
 };
 
-/** PRD 부록 B의 리포트 — 과업 75 · 정확도 85 · 목표 표현 50 · 힌트 0 → 73점, 성공. */
+/** PRD 부록 B의 리포트 — 과업 75 · 정확도 85 · 목표 표현 50 · 힌트 0 → 73점, 성공(필수를 이룬 뒤 학습자가 끝냄). */
 export const missionReportFixture: MissionReport = {
   conversationId: ids.conversation,
   missionId: "u06-cafe",
   missionVersion: 1,
   outcome: "success",
-  endReason: "goals",
+  endReason: "finish",
   totalScore: 73,
   taskScore: 75,
   accuracyScore: 85,

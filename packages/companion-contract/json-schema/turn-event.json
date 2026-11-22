@@ -451,15 +451,18 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "enum": ["goals", "turn_limit"]
+                  "enum": ["goals", "turn_limit", "finish"]
                 },
                 {
                   "type": "null"
                 }
               ]
+            },
+            "requiredDone": {
+              "type": "boolean"
             }
           },
-          "required": ["conversationId", "goals", "turnsLeft", "ended"],
+          "required": ["conversationId", "goals", "turnsLeft", "ended", "requiredDone"],
           "additionalProperties": false
         }
       },

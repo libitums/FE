@@ -6,6 +6,7 @@
 // 출력 검사는 지금의 나이 규칙 그대로 — 성인은 받는 대로, 미성년자 · 나이 모름은 검사 뒤에 한꺼번에.
 // 저장(`companion_mission_finish_turn`)이 돌려준 판 상태가 진실이고 `mission` 이벤트는 그 값으로 씁니다. 코어 `advanceMission`은 대조용입니다.
 // 이벤트: start → notice* → delta* → correction → translation* → mission → done(creditsSpent 0). 위기면 crisis → done.
+// 판은 모든 목표 · 턴 상한에서만 닫힌다 — 필수만 이뤘으면 `mission.requiredDone`이 참이고 판은 이어진다(끝내기는 mission-finish).
 
 import type { Feedback, ModerationVerdict, Segment } from "./chat-send.contract.ts";
 import type { ModerationRecord, TurnStatusName } from "./chat-send-finish.ts";
@@ -61,6 +62,7 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
         goals: state.goals.map(({ id, done }) => ({ id, done })),
         turnsLeft: state.turnsLeft,
         ended,
+        requiredDone: state.requiredDone,
       },
     });
   const done = () =>
@@ -239,6 +241,7 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
   const savedDone = saved.state.goals.filter((goal) => goal.done).map((goal) => goal.id);
   if (
     saved.ended !== expected.ended ||
+    saved.state.requiredDone !== expected.requiredDone ||
     savedDone.join(",") !== expected.progress.goalsDone.join(",")
   )
     deps.log({ event: "chat_send", status: "stream", outcome: "mission_state_mismatch" });

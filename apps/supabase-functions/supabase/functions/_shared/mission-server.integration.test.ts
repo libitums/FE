@@ -165,7 +165,7 @@ describe("미션 파일 → 표", () => {
 });
 
 describe("한 판 — 핸들러 + 실제 SQL", () => {
-  test("MI2. start → 턴(목표 · 힌트 · 끝) → 끝난 판의 턴은 409 → finish(채점 · 리포트) → 다시 finish는 같은 리포트 → 목록 · 지난 리포트", async () => {
+  test("MI2. start → 턴(목표 · 힌트 · 필수 달성) → 계속 한 턴 → finish(끝내기 · 채점 · 리포트) → 닫힌 판의 턴은 409 → 다시 finish는 같은 리포트 → 목록 · 지난 리포트", async () => {
     const started = await createMissionStartHandler(deps())(
       post("mission-start", { mission_id: "u06-cafe" }),
     );
@@ -197,6 +197,7 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
       ],
       turnsLeft: 9,
       ended: null,
+      requiredDone: false,
     });
     expect(first.at(-1)).toMatchObject({ event: "done", data: { creditsSpent: 0 } });
 
@@ -218,15 +219,20 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
       ended: null,
     });
 
-    // 턴 3 — 결제로 필수 목표가 모두 끝나 이 턴이 마지막.
+    // 턴 3 — 결제로 필수 목표가 모두 끝났다. 선택(stay · price)이 남아 판은 이어진다(성공 확정 · 계속 가능).
     const last = await events(await turn(game.conversationId, "카드로 할게요 [goal:pay]"));
     expect(last.find((event) => event.event === "mission")?.data).toMatchObject({
       turnsLeft: 7,
-      ended: "goals",
+      ended: null,
+      requiredDone: true,
     });
-    const after = await turn(game.conversationId, "하나 더요");
-    expect(after.status).toBe(409);
-    expect(await after.json()).toMatchObject({ error: "mission_ended" });
+    // 턴 4 — 계속하기. 목표 없이 한 턴 더.
+    const more = await events(await turn(game.conversationId, "하나 더요"));
+    expect(more.find((event) => event.event === "mission")?.data).toMatchObject({
+      turnsLeft: 6,
+      ended: null,
+      requiredDone: true,
+    });
 
     const finish = () =>
       createMissionFinishHandler(deps())(
@@ -237,7 +243,7 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
     // 과업 2/4 = 50 · 정확도 80(가짜) · 표현 1/2 = 50 · 힌트 1 → round(25 + 24 + 10) − 5 = 54.
     expect(graded.report).toMatchObject({
       outcome: "success",
-      endReason: "goals",
+      endReason: "finish",
       taskScore: 50,
       accuracyScore: 80,
       expressionScore: 50,
@@ -266,6 +272,9 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
     expect(graded.report.corrections.length).toBeGreaterThanOrEqual(0);
     expect(logs.some((line) => line.includes("score_mismatch"))).toBe(false);
     expect(logs.some((line) => line.includes("mission_state_mismatch"))).toBe(false);
+    const after = await turn(game.conversationId, "안녕히 계세요");
+    expect(after.status).toBe(409);
+    expect(await after.json()).toMatchObject({ error: "mission_closed" });
     // 몇 번 불러도 같은 결과.
     const again = missionFinishResponseSchema.parse(await (await finish()).json());
     expect(again).toEqual(graded);

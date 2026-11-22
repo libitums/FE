@@ -108,8 +108,13 @@ export type MissionCounterpartBase = z.infer<typeof missionCounterpartBaseSchema
 
 // ------------------------------------------------------------------ 판의 값
 
-/** 판이 끝난 까닭 — 필수 목표를 모두 이룸(성공) · 학습자 턴이 상한에 닿음(실패). */
-export const missionEndReasonSchema = z.enum(["goals", "turn_limit"]);
+/**
+ * 판이 끝난 까닭(채점하는 판). 성공 · 실패는 이것이 아니라 필수 목표의 달성으로 정한다(`missionOutcomeSchema`).
+ * - `goals`: 모든 목표(필수 + 선택)를 이룸 — 자동으로 닫힌다. 선택 목표가 없는 미션은 필수를 이루는 순간이다.
+ * - `turn_limit`: 학습자 턴이 상한에 닿음 — 필수를 이뤘으면 성공, 아니면 실패.
+ * - `finish`: 필수를 모두 이룬 뒤 학습자가 끝내기를 누름(`mission-finish`, `abandon` 없이) — 늘 성공.
+ */
+export const missionEndReasonSchema = z.enum(["goals", "turn_limit", "finish"]);
 export const missionOutcomeSchema = z.enum(["success", "fail"]);
 
 /** 화면의 목표 한 줄 — 글과 지금의 달성. */
@@ -191,8 +196,8 @@ export const missionHintResponseSchema = z.object({
  * 미션 함수(`mission-start` · `mission-hint` · `mission-finish`)와 미션 턴의 `chat-send`가 스트림 전에 내는 미션 전용 오류입니다.
  * 계정 단위 거절(`not_available` · `insufficient_credits` · `age_restricted` …)은 1단계 표(`PRE_STREAM_ERRORS`)를 그대로 씁니다.
  * - `mission_not_found`: 판이 없음 · 남의 판 · 컴패니언 대화 · 없는 미션.
- * - `mission_closed`: 이미 닫힌 판(그만둠 · 채점 끝). `mission_ended`: 끝난 판(목표 · 턴 상한) — 앱은 `mission-finish`를 부른다.
- * - `mission_not_ended`: 끝나지 않은 판을 채점하려 함(그만두려면 `abandon: true`).
+ * - `mission_closed`: 이미 닫힌 판(그만둠 · 채점 끝). `mission_ended`: 끝난 판(모든 목표 · 턴 상한 · 끝내기) — 앱은 `mission-finish`를 부른다.
+ * - `mission_not_ended`: 필수 목표를 아직 못 이룬 판을 채점하려 함(그만두려면 `abandon: true`). 필수를 이룬 판은 끝내기로 닫혀 채점된다.
  * - `hint_limit` · `no_goal_left`: 힌트를 줄 수 없음. `hint_unavailable`: 힌트 문장 만들기가 실패(힌트 수는 이미 셌다).
  */
 export const MISSION_ERRORS = {

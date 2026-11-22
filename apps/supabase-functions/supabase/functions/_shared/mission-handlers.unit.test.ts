@@ -56,6 +56,7 @@ const state = (done: readonly string[] = [], turns = 0, hints = 0) => ({
   hintsLeft: 3 - hints,
   offTask: 0,
   gradingFailed: false,
+  requiredDone: ["order", "pay"].every((id) => done.includes(id)),
 });
 const mission = { id: "u06-cafe", version: 1, definition: cafe };
 const report = {
@@ -63,7 +64,7 @@ const report = {
   missionId: "u06-cafe",
   missionVersion: 1,
   outcome: "success",
-  endReason: "goals",
+  endReason: "finish",
   totalScore: 73,
   taskScore: 75,
   accuracyScore: 85,
@@ -271,7 +272,7 @@ const begun = (ageBand: "adult" | "minor" | "unknown", done: string[] = []) => (
     { role: "assistant", text: null, segments: [{ kind: "speech", text: cafe.opening.ko }] },
   ],
 });
-/** finish_turn은 받은 상태 줄을 합쳐 돌려준다(필수 둘이 끝나면 goals). */
+/** finish_turn은 받은 상태 줄을 합쳐 돌려준다(목표 넷을 다 이루면 goals — 필수 둘만이면 requiredDone 참 · 판은 이어짐). */
 const finishTurn =
   (prior: string[] = []) =>
   (args: Record<string, unknown>) => {
@@ -279,7 +280,9 @@ const finishTurn =
       []) as string[];
     const done = args["p_status"] === "complete" ? [...new Set([...prior, ...reported])] : prior;
     const turns = args["p_status"] === "complete" ? 1 : 0;
-    const ended = ["order", "pay"].every((id) => done.includes(id)) ? "goals" : null;
+    const ended = ["order", "pay", "stay", "price"].every((id) => done.includes(id))
+      ? "goals"
+      : null;
     return { result: "ok", state: state(done, turns), newlyDone: reported, ended };
   };
 const turnRequest = (text: string, extra: object = {}) =>
@@ -312,6 +315,7 @@ describe("chat-send — 미션 갈래", () => {
     expect(list.find((event) => event.event === "mission")?.data).toMatchObject({
       turnsLeft: 9,
       ended: null,
+      requiredDone: false,
     });
     expect(list.at(-1)).toMatchObject({ data: { creditsSpent: 0 } });
     const finish = calls.find((call) => call.fn === "companion_mission_finish_turn");
@@ -320,6 +324,25 @@ describe("chat-send — 미션 갈래", () => {
       p_mission: { goals_done: ["order"], off_task: false, closing: false },
     });
     expect(calls.map((call) => call.fn)).not.toContain("companion_begin_turn");
+  });
+
+  test("MT1b. 필수를 다 이뤄도 선택이 남으면 ended null · requiredDone 참(계속 가능), 모든 목표면 goals", async () => {
+    const run = async (prior: string[], text: string) => {
+      const { deps, logs } = harness({
+        companion_mission_begin_turn: () => begun("adult", prior),
+        companion_mission_finish_turn: finishTurn(prior),
+      });
+      const list = await events(await createChatSendHandler(deps)(turnRequest(text)));
+      expect(logs.some((line) => line.includes("mission_state_mismatch"))).toBe(false);
+      return list.find((event) => event.event === "mission")?.data;
+    };
+    expect(await run(["order"], "카드로 할게요 [goal:pay]")).toMatchObject({
+      ended: null,
+      requiredDone: true,
+    });
+    expect(
+      await run(["order", "pay"], "여기서요, 얼마예요? [goal:stay] [goal:price]"),
+    ).toMatchObject({ ended: "goals", requiredDone: true });
   });
 
   test("MT2. 상태 줄이 없으면 p_mission null — 목표는 그대로(SQL), 턴은 끝난다", async () => {
@@ -468,7 +491,7 @@ describe("mission-finish", () => {
     const material = {
       result: "grade",
       conversationId: conversation,
-      endReason: "goals",
+      endReason: "finish",
       mission,
       state: state(["order", "pay"], 2),
       transcript: [],

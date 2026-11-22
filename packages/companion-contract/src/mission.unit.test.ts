@@ -166,14 +166,24 @@ describe("미션 fixture", () => {
     );
   });
 
-  test("MC10. mission 이벤트 — 끝 까닭은 goals · turn_limit · null만", () => {
-    const event = (ended: unknown) => ({
+  test("MC10. mission 이벤트 — 끝 까닭은 goals · turn_limit · finish · null만, requiredDone은 필수", () => {
+    const event = (ended: unknown, requiredDone: unknown = true) => ({
       event: "mission",
       id: 3,
-      data: { conversationId, goals: [{ id: "order", done: true }], turnsLeft: 0, ended },
+      data: {
+        conversationId,
+        goals: [{ id: "order", done: true }],
+        turnsLeft: 0,
+        ended,
+        requiredDone,
+      },
     });
     expect(turnEventSchema.safeParse(event("goals")).success).toBe(true);
+    expect(turnEventSchema.safeParse(event("turn_limit", false)).success).toBe(true);
+    expect(turnEventSchema.safeParse(event("finish")).success).toBe(true);
+    // 필수를 이뤘지만 판은 이어진다 — 앱은 「계속하기 / 끝내기」를 띄운다.
     expect(turnEventSchema.safeParse(event(null)).success).toBe(true);
     expect(turnEventSchema.safeParse(event("abandoned")).success).toBe(false);
+    expect(turnEventSchema.safeParse(event(null, "yes")).success).toBe(false);
   });
 });

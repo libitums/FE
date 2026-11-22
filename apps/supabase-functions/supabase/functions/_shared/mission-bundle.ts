@@ -27,7 +27,12 @@ import {
   missionModelsFrom,
   missionTurnMaxTokens,
 } from "./mission-env.ts";
-import { outputFixtures, scoringFixtures, transitionFixtures } from "./mission-fixtures.ts";
+import {
+  finishFixtures,
+  outputFixtures,
+  scoringFixtures,
+  transitionFixtures,
+} from "./mission-fixtures.ts";
 import { graderSchema, graderSystem, graderUserTemplate } from "./mission-grader.ts";
 import { hintSchema, hintSystem, hintUserTemplate } from "./mission-hint.ts";
 import {
@@ -37,6 +42,7 @@ import {
   learnedNone,
   missionTurnDynamicTemplate,
   requirementWords,
+  requiredStatusWords,
   turnSystemStable,
 } from "./mission-prompt.ts";
 import { defaultMissionScoring, missionHintLimit } from "./mission-score.ts";
@@ -142,13 +148,20 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       fixtures: outputFixtures.map(({ raw, expected }) => ({ raw, expected })),
     },
     // 학습자 턴 하나의 전이(목표 합치기 · 끝 판정) — 포팅 검증용으로 더한 칸.
+    // 판은 모든 목표(goals) · 턴 상한(turn_limit) · 학습자의 끝내기(finish — 필수를 이룬 뒤에만)로 닫힌다.
     transitions: {
+      endRule:
+        "턴 뒤: 모든 목표(필수 + 선택)를 이뤘으면 goals, 아니고 학습자 턴 ≥ turnLimit이면 turn_limit, 아니면 null(필수만 이뤘으면 required_done 참 · 판은 이어짐). 끝내기: 끝나지 않았고 필수를 모두 이뤘으면 finish, 필수를 못 이뤘으면 닫지 않음. 성공 = 필수 목표를 모두 이룸(끝난 까닭과 무관).",
       fixtures: transitionFixtures.map(({ name: _name, ...fixture }) => fixture),
+      // 끝내기(mission-finish, abandon 없이) — 더한 칸.
+      finishFixtures: finishFixtures.map(({ name: _name, ...fixture }) => fixture),
     },
     prompts: {
       turnDynamic: missionTurnDynamicTemplate,
       goalLine: goalLineTemplate,
       requirementWords,
+      // `{{required_status}}`의 글 — 이번 메시지 앞의 판 상태로 필수를 다 이뤘으면 done, 아니면 pending. 더한 칸.
+      requiredStatusWords,
       // `{{learned_expressions}}`의 한 줄(뜻이 있으면 learnedLine, 없으면 learnedLineBare)과 빈 목록 글 — 규격에 더한 칸.
       learnedLine: learnedLineTemplate,
       learnedLineBare: learnedLineBareTemplate,

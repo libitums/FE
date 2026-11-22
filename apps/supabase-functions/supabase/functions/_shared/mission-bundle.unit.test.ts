@@ -78,7 +78,7 @@ describe("미션 실험실 번들", () => {
       counterpart: "{{label}}: {{text}}",
       learner: "Learner: {{text}}",
     });
-    for (const name of ["goals_state", "turns_left", "hints_used", "learner_l1"])
+    for (const name of ["goals_state", "required_status", "turns_left", "hints_used", "learner_l1"])
       expect(placeholders(bundle.prompts.turnDynamic)).toContain(name);
     for (const name of ["mission_brief", "goal_id", "goal_criteria", "transcript"])
       expect(placeholders(bundle.prompts.hint.user)).toContain(name);

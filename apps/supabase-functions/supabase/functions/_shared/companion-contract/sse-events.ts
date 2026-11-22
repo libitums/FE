@@ -151,14 +151,17 @@ export const doneDataSchema = z.object({
  * 미션 턴(ADR-0177)의 목표 진척입니다 — 미션 턴에만, `state` 자리(답 · 번역 · 교정 뒤, `done` 바로 앞)에 한 번 옵니다. 미션 턴에는
  * `state` · `suggestions`가 오지 않습니다. 목표는 한 번 달성하면 되돌아가지 않습니다.
  * - `goals`: 미션 정의의 순서대로 목표마다 달성 여부.
- * - `turnsLeft`: 남은 학습자 턴. `ended`: 이 턴이 마지막이면 그 까닭(`goals` 성공 · `turn_limit` 실패), 아니면 null —
+ * - `turnsLeft`: 남은 학습자 턴. `ended`: 이 턴으로 판이 닫혔으면 그 까닭(`goals` 모든 목표 · `turn_limit` 턴 상한), 아니면 null —
  *   null이 아니면 앱은 `mission-finish`를 부른다.
+ * - `requiredDone`: 필수 목표를 모두 이뤘는가(성공 확정). `ended`가 null인데 참이면 판은 이어진다 — 앱은 「미션 성공 — 계속하기 /
+ *   끝내기」를 띄우고, 끝내기는 `mission-finish`(`abandon` 없이)로 닫아 채점한다(끝난 까닭 `finish`).
  */
 export const missionDataSchema = z.object({
   conversationId: z.uuid(),
   goals: z.array(z.object({ id: missionGoalIdSchema, done: z.boolean() })),
   turnsLeft: nonNegativeInt,
   ended: z.nullable(missionEndReasonSchema),
+  requiredDone: z.boolean(),
 });
 
 const eventOf = <Name extends string, Data extends z.ZodMiniType>(event: Name, data: Data) =>

@@ -253,6 +253,7 @@ export const turnFixtureEvents = {
         ],
         turnsLeft: 9,
         ended: null,
+        requiredDone: false,
       },
     },
     done(0),

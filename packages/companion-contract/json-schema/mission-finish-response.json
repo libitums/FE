@@ -32,7 +32,7 @@
             },
             "endReason": {
               "type": "string",
-              "enum": ["goals", "turn_limit"]
+              "enum": ["goals", "turn_limit", "finish"]
             },
             "totalScore": {
               "type": "integer",

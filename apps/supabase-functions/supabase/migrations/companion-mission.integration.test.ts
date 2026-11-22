@@ -205,8 +205,11 @@ async function endedGame(user: string, mission = "u06-cafe") {
   const game = await start(user, mission);
   expect(game["result"]).toBe("ok");
   const id = game["conversationId"] as string;
-  if (mission === "u06-cafe") await turn(user, id, ["order", "pay"]);
-  else for (let i = 0; i < 3; i += 1) await turn(user, id, []);
+  // 카페: 필수 둘을 이루고(판은 이어짐) 학습자가 끝낸다(finish). 편의점: 아무것도 못 이룬 채 턴 상한.
+  if (mission === "u06-cafe") {
+    await turn(user, id, ["order", "pay"]);
+    expect(await close(user, id)).toMatchObject({ result: "grade", endReason: "finish" });
+  } else for (let i = 0; i < 3; i += 1) await turn(user, id, []);
   expect((await row(id))["end_reason"]).not.toBeNull();
   return id;
 }
@@ -250,7 +253,7 @@ afterEach(async () => {
   await assertLedgerInvariant();
 });
 
-test("MS1. 한 판의 정상 흐름 — 무료 판 시작 → 턴 둘 → 닫기 → 결과 저장(점수 SQL 계산) → 확정 · 몇 번 불러도 같은 결과", async () => {
+test("MS1. 한 판의 정상 흐름 — 무료 판 시작 → 턴 둘(필수 달성 · 계속 가능) → 끝내기(finish) → 결과 저장(점수 SQL 계산) → 확정 · 몇 번 불러도 같은 결과", async () => {
   const game = await start(learner, "u06-cafe");
   expect(game).toMatchObject({
     result: "ok",
@@ -267,6 +270,7 @@ test("MS1. 한 판의 정상 흐름 — 무료 판 시작 → 턴 둘 → 닫기
     hintsLeft: 3,
     status: "active",
     endReason: null,
+    requiredDone: false,
   });
   const id = game["conversationId"] as string;
   expect(await row(id)).toMatchObject({ kind: "mission", character_id: "doyun", status: "active" });
@@ -294,12 +298,15 @@ test("MS1. 한 판의 정상 흐름 — 무료 판 시작 → 턴 둘 → 닫기
   expect(done1).toMatchObject({ result: "ok", newlyDone: ["order"], ended: null });
   expect(done1["state"]).toMatchObject({ turnsUsed: 1, turnsLeft: 9, offTask: 1 });
 
+  // 필수 둘을 이뤘지만 선택(stay · price)이 남아 판은 닫히지 않는다 — 성공 확정 · 계속 가능.
   const done2 = await turn(learner, id, ["pay"]);
-  expect(done2).toMatchObject({ newlyDone: ["pay"], ended: "goals" });
-  expect(await begin(learner, id)).toMatchObject({ result: "mission_ended" });
+  expect(done2).toMatchObject({ newlyDone: ["pay"], ended: null, state: { requiredDone: true } });
+  expect(await row(id)).toMatchObject({ status: "active", end_reason: null });
 
+  // 학습자가 끝내기를 누름 → finish로 닫고 채점 재료.
   const material = await close(learner, id);
-  expect(material).toMatchObject({ result: "grade", endReason: "goals" });
+  expect(material).toMatchObject({ result: "grade", endReason: "finish" });
+  expect(await begin(learner, id)).toMatchObject({ result: "mission_ended" });
   expect((material["transcript"] as Json[]).map((m) => m["role"])).toEqual([
     "assistant",
     "user",
@@ -321,6 +328,7 @@ test("MS1. 한 판의 정상 흐름 — 무료 판 시작 → 턴 둘 → 닫기
   // 과업 3/4 = 75 · 정확도 85 · 목표 표현 1/2 = 50 · 힌트 0 → round(37.5 + 25.5 + 10) = 73(부록 B).
   expect(report).toMatchObject({
     outcome: "success",
+    endReason: "finish",
     taskScore: 75,
     accuracyScore: 85,
     expressionScore: 50,
@@ -536,6 +544,89 @@ test("MS5. 힌트 — 필수 먼저 · 파일 순서, 판당 3번, 1회 −5점,
   });
 });
 
+test("MS5b. 필수 뒤 계속 — 선택을 다 이루면 goals로 닫힘 · 필수 뒤 턴 상한도 성공 · 필수 전 끝내기는 not_ended", async () => {
+  // 필수 뒤 계속 → 남은 선택 목표 달성으로 닫힘(goals). 그 사이 힌트는 남은 선택 목표를 준다.
+  const go = (await start(learner, "u01-water"))["conversationId"] as string;
+  expect(await close(learner, go)).toMatchObject({
+    result: "not_ended",
+    state: { requiredDone: false },
+  });
+  expect(await turn(learner, go, ["bag", "pay"])).toMatchObject({
+    ended: null,
+    state: { requiredDone: true, turnsLeft: 2 },
+  });
+  expect(await hint(learner, go)).toMatchObject({ result: "ok", goalId: "receipt" });
+  expect(await turn(learner, go, ["receipt"])).toMatchObject({
+    ended: "goals",
+    newlyDone: ["receipt"],
+    state: { requiredDone: true },
+  });
+  expect(await close(learner, go)).toMatchObject({ result: "grade", endReason: "goals" });
+  expect(
+    (await save(learner, go, { goals: [], accuracy: 90, expressions: [] }))["report"],
+  ).toMatchObject({
+    outcome: "success",
+    endReason: "goals",
+    taskScore: 100,
+    hintsUsed: 1,
+  });
+  expect(await holds(go)).toEqual([{ status: "settled", amount: 0, plan_free: true }]);
+
+  // 필수 뒤 턴 상한 → turn_limit이지만 성공. 판 단위 예약 하나가 그대로 확정된다(턴이 늘어도 더 받지 않는다).
+  await grant(learner, 10);
+  const limit = (await start(learner, "u01-water"))["conversationId"] as string;
+  await turn(learner, limit, ["bag"]);
+  await turn(learner, limit, ["pay"]);
+  expect(await balance(learner)).toBe(0);
+  expect(await turn(learner, limit, [])).toMatchObject({
+    ended: "turn_limit",
+    state: { requiredDone: true, turnsLeft: 0 },
+  });
+  expect(await close(learner, limit)).toMatchObject({ result: "grade", endReason: "turn_limit" });
+  expect(
+    (await save(learner, limit, { goals: [], accuracy: 80, expressions: [] }))["report"],
+  ).toMatchObject({
+    outcome: "success",
+    endReason: "turn_limit",
+    payment: "coins",
+    creditsSpent: 10,
+  });
+  expect(await holds(limit)).toEqual([{ status: "settled", amount: 10, plan_free: false }]);
+  expect(await balance(learner)).toBe(0);
+});
+
+test("MS5c. 선택 목표가 없는 미션은 필수를 이루는 순간 goals로 닫힌다", async () => {
+  const solo = {
+    ...water,
+    id: "u02-solo",
+    episodeId: "u02-solo",
+    goals: water.goals.filter((goal) => goal.required),
+  };
+  await server.query("select public.companion_upsert_mission($1::jsonb)", [JSON.stringify(solo)]);
+  try {
+    await db.admin.query(
+      `update public.learning_progress set progress = jsonb_set(progress, '{catalogProgress,u02-solo}', '["RP"]')
+       where user_id = $1`,
+      [learner],
+    );
+    const id = (await start(learner, "u02-solo"))["conversationId"] as string;
+    expect(await turn(learner, id, ["bag"])).toMatchObject({
+      ended: null,
+      state: { requiredDone: false },
+    });
+    expect(await turn(learner, id, ["pay"])).toMatchObject({
+      ended: "goals",
+      state: { requiredDone: true },
+    });
+    expect(await begin(learner, id)).toMatchObject({ result: "mission_ended" });
+    expect(await close(learner, id)).toMatchObject({ result: "grade", endReason: "goals" });
+  } finally {
+    await db.admin.query("delete from companion.conversations where mission_id = 'u02-solo'");
+    await db.admin.query("delete from companion.mission_versions where mission_id = 'u02-solo'");
+    await db.admin.query("delete from companion.missions where id = 'u02-solo'");
+  }
+});
+
 test("MS6. 그만둠 — 리포트 없이 abandoned · 예약 확정(환불 없음) · 무료 횟수도 돌려주지 않음", async () => {
   await grant(learner, 10);
   const freeGame = (await start(learner, "u06-cafe"))["conversationId"] as string;
@@ -632,7 +723,7 @@ test("MS8. 방치 판 정리 — 30분 지난 진행 중 판만 stale(확정) ·
   expect(await call("public.companion_close_stale_missions($1)", [now])).toBe(1);
   expect(await row(stale)).toMatchObject({ status: "abandoned", end_reason: "stale" });
   expect(await holds(stale)).toEqual([{ status: "settled", amount: 0, plan_free: true }]);
-  expect(await row(failedGame)).toMatchObject({ status: "active", end_reason: "goals" });
+  expect(await row(failedGame)).toMatchObject({ status: "active", end_reason: "finish" });
 
   const fresh = (await start(learner, "u06-cafe"))["conversationId"] as string;
   expect(await call("public.companion_close_stale_missions($1)", [now])).toBe(0);

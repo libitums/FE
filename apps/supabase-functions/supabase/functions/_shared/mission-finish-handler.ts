@@ -1,7 +1,8 @@
 // `POST /functions/v1/mission-finish` — 판을 닫고 채점해 리포트를 돌려줍니다(ADR-0177, PRD §3.3 ③ · §3.6 · §3.7).
 //
 // 흐름: 인증 → 본문(`missionFinishRequestSchema`) → `companion_mission_close`의 네 결과:
-//   graded(이미 채점됨) → 그대로 · abandoned(그만둠) → 그대로 · not_ended → 409 `mission_not_ended` ·
+//   (close는 필수 목표를 모두 이룬 진행 중인 판을 학습자의 끝내기로 보고 `finish`로 닫은 뒤 채점 재료를 준다)
+//   graded(이미 채점됨) → 그대로 · abandoned(그만둠) → 그대로 · not_ended(필수를 못 이룸) → 409 `mission_not_ended` ·
 //   grade(채점 재료) → 채점 호출(`graderSystem` · `graderUser`) → `normalizeGrade` → `companion_mission_save_result`(점수는 SQL이 계산).
 // 채점 호출이 실패(시간 초과 · 거절 · 깨진 출력)하면 `companion_mission_grading_failed`로 값을 돌려주고 `grading_failed`(다시 시도할 수
 // 있음)로 답합니다. 같은 요청을 다시 보내면 채점만 다시 돕니다 — 몇 번 불러도 같은 결과(채점이 있으면 그대로)입니다.
@@ -12,6 +13,7 @@ import { defaultLlmTimeoutMs, historyFrom } from "./chat-send-reply.ts";
 import {
   missionFinishRequestSchema,
   missionReportSchema,
+  type MissionEndReason,
   type MissionFinishResponse,
   type MissionReport,
 } from "./companion-contract/index.ts";
@@ -41,7 +43,7 @@ type Rejection = { readonly result: string; readonly detail?: Record<string, unk
 export type GradeMaterial = {
   readonly result: "grade";
   readonly conversationId: string;
-  readonly endReason: "goals" | "turn_limit";
+  readonly endReason: MissionEndReason;
   readonly mission: { readonly id: string; readonly version: number; readonly definition: unknown };
   readonly state: DbMissionState;
   readonly transcript: readonly {

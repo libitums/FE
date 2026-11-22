@@ -656,13 +656,18 @@ supabase functions serve --no-verify-jwt                                        
 | `mission-definition.ts` | `validateMission` · `parseMission`(계약 `missionDefinitionSchema`), 캐스트의 바탕 네 칸 `missionCounterpartBase` |
 | `mission-template.ts` | 「틀 + 채우기」 `fillTemplate` — `{{이름}}` 자리표, 값이 없으면 던진다 |
 | `mission-prompt.ts` | 턴의 시스템 프롬프트 — 고정부 `turnSystemStable` · 가변부 `turnDynamic` · 상태 줄 `missionStateLine` |
-| `mission-state.ts` | 상태 줄 해석 `parseMissionState` · `parseMissionReply`, 전이 `advanceMission`(되돌리지 않는 합치기 · 끝 판정), SSE 값 `missionEventData`, `mission_state jsonb` 왕복 |
+| `mission-state.ts` | 상태 줄 해석 `parseMissionState` · `parseMissionReply`, 전이 `advanceMission`(되돌리지 않는 합치기 · 끝 판정 `missionEndReason` · 필수 달성 `requiredDone`), 끝내기 `missionFinishReason`, SSE 값 `missionEventData`, `mission_state jsonb` 왕복 |
 | `mission-score.ts` | 점수식 `scoreMission`(가중치 · 감점은 인자, 반올림 half up) · 기본값 · 힌트 상한 |
 | `mission-grader.ts` | 채점 프롬프트 · `graderSchema` · `normalizeGrade`(턴 ∪ 채점자) · `buildMissionReport` |
 | `mission-hint.ts` | 힌트 목표 고르기 `pickHintGoal` · `hintAvailability` · 프롬프트 · `hintSchema` |
 | `mission-context.ts` | 미션 요약 `missionBrief` · 대화 전문 `missionTranscript` · 교정 요청 `missionFeedbackRequest` |
 | `mission-env.ts` | 모델 이름 `missionModelsFrom` · 출력 토큰 상한 |
-| `mission-bundle.ts` · `mission-fixtures.ts` | 실험실 번들 만들기와 그 사례(단위 테스트와 같은 것) |
+| `mission-bundle.ts` · `mission-fixtures.ts` · `mission-transition-fixtures.ts` | 실험실 번들 만들기와 그 사례(단위 테스트와 같은 것) |
+
+**판이 끝나는 규칙**(2026-11-23 바뀜 — ADR-0177 D6): 판은 **모든 목표**(필수 + 선택)를 이루면 `goals`, 학습자 턴이 상한에 닿으면 `turn_limit`,
+필수를 모두 이룬 뒤 학습자가 끝내기(`mission-finish`, `abandon` 없이)를 누르면 `finish`로 닫힌다. 필수만 이룬 판은 닫히지 않는다 — 「성공 확정」
+(`mission` 이벤트 · 상태의 `requiredDone: true`)이고 대화가 이어진다. 선택 목표가 없는 미션은 필수를 이루는 순간 `goals`. 성공 = 필수 목표 모두
+(끝난 까닭과 무관 — 필수 뒤 턴 상한도 성공). 필수를 못 이룬 끝내기는 지금처럼 `mission_not_ended`(그만두기는 `abandon: true`).
 
 계약은 `packages/companion-contract/src/mission.ts` · `mission-report.ts`(정의 · 시작 · 미션 턴 요청 · 힌트 · 끝 · 리포트 · 목록)와
 SSE `mission` 이벤트다. `chat-send` 요청에는 `conversation_id`(선택)가 더해졌고 `character_id`의 뜻은 그대로다.
@@ -803,7 +808,7 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 
 - 표: `companion.missions`(최신 정의 · 켜짐) · `mission_versions`(정의의 판마다 — 판은 시작한 판의 정의로 채점) · `mission_results`(세부 점수 ·
   그때의 가중치 · 받은 값) · `mission_usage`(하루 무료 횟수, UTC 날짜). 기존 표에 더함: `conversations`의 `mission_id` · `mission_version` ·
-  `status`(active · finished · abandoned) · `mission_state` · `ended_at` · `end_reason`(goals · turn_limit · user · stale) — 미션 행은 `character_id`를
+  `status`(active · finished · abandoned) · `mission_state` · `ended_at` · `end_reason`(goals · turn_limit · finish · user · stale) — 미션 행은 `character_id`를
   비울 수 있다(단역). `credit_holds`의 reason `mission` · `conversation_id`. `messages.origin` `mission`(상대역 메시지 — 컴패니언 평가 · 미디어 대상이
   아니다). `plans.daily_free_missions`(free 1, 나머지는 임시 — M1). `settings`의 `missions_enabled`(기본 false) · `missions_testers_only`(기본 true) ·
   `mission_cost`(임시 10) · 가중치 셋(0.5 · 0.3 · 0.2) · `mission_hint_penalty`(5) · `mission_hint_limit`(3) · `mission_stale_after`(30분).
@@ -819,8 +824,11 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
   (기존 함수 가운데 이것만 다시 정의 — `reason <> 'mission'` 한 줄).
 - 점수는 `companion_mission_save_result`가 계산한다: 과업 = 달성 목표 ÷ 전체(턴 ∪ 채점자) · 목표 표현 = 쓴 것 ÷ 목표 표현(없으면 100) ·
   최종 = max(0, round(가중치 합) − 감점 × 힌트). 성공 = 필수 목표 모두.
+- 끝: `companion_mission_finish_turn`은 모든 목표면 `goals`, 턴 상한이면 `turn_limit`을 적는다(필수만이면 적지 않고 상태의 `requiredDone`만 참).
+  `companion_mission_close`(abandon 없이)는 끝나지 않은 판이라도 필수를 모두 이뤘으면 `finish`로 적고 채점 재료를 준다. 판이 길어져도 값은
+  판 단위 예약 하나 그대로다(턴마다 빼지 않는다). 필수를 이룬 채 방치된 판도 `stale`(리포트 없음)로 닫힌다.
 - 예약 작업: `cron/companion-mission.sql`(방치 판 닫기, 5분마다).
-- 테스트: `migrations/companion-mission.integration.test.ts`(정상 흐름 · 과금 · 열림 · 턴 상한 · 힌트 · 그만둠 · 채점 실패와 다시 시도 · 방치 정리 ·
+- 테스트: `migrations/companion-mission.integration.test.ts`(정상 흐름(필수 뒤 끝내기) · 과금 · 열림 · 턴 상한 · 힌트 · 필수 뒤 계속(선택으로 닫힘 · 필수 뒤 턴 상한) · 선택 없는 미션 · 그만둠 · 채점 실패와 다시 시도 · 방치 정리 ·
   새 판 · 남의 판 · 계정 삭제 · 권한 · 정의 올리기 · 격리 · 운영 조회, 테스트마다 「지갑 잔액의 합 = 원장 delta의 합」).
 
 **운영 적용은 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 운영 DB에는 적용하지 않는다(PRD §0.9).** 정리된 뒤의 순서:
@@ -866,6 +874,8 @@ LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionL
 - 오류: 계정 단위 거절은 1단계 표(`PRE_STREAM_ERRORS`), 미션 전용은 계약의 `MISSION_ERRORS` — `mission_not_found` 404 · `mission_closed` ·
   `mission_ended` · `mission_not_ended` · `hint_limit` · `no_goal_left` 409 · `hint_unavailable` 503. **힌트 수는 SQL이 문장을 만들기 전에 센다** —
   만들기가 실패하면 503(`detail.hintsLeft`)으로 알리지만 그 힌트는 이미 쓴 것이다.
+- `mission` 이벤트의 `requiredDone`이 참이고 `ended`가 null이면 판은 이어진다 — 앱은 「미션 성공 — 계속하기 / 끝내기」를 띄우고, 끝내기는
+  `mission-finish`(abandon 없이)로 `finish` 채점을 받는다. 프롬프트는 그동안 장면을 이어 가 남은 선택 목표의 기회를 준다(가변부 `required_status`).
 - `mission-finish`는 몇 번 불러도 같은 결과다(채점이 있으면 그대로). 채점 호출이 실패(시간 초과 · 거절 · 깨진 출력)하면 값을 돌려주고
   `grading_failed`(`retryable: true`)로 답한다 — 같은 요청을 다시 보내면 채점만 다시 돈다.
 - 모델(2026-11-19 사용자 결정): 미션은 컴패니언의 모델 설정을 물려받지 않는다 — `COMPANION_MISSION_MODEL=`(상대역 답, 비우면 `claude-sonnet-5-5`) ·

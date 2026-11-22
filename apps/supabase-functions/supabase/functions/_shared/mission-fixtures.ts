@@ -1,4 +1,5 @@
-// 미션 코어의 고정 사례 — 단위 테스트와 실험실 번들(`scoring.fixtures` · `output.fixtures` · `transitions.fixtures`)이 같은 것을 씁니다.
+// 미션 코어의 고정 사례 — 단위 테스트와 실험실 번들(`scoring.fixtures` · `output.fixtures` · `transitions.fixtures` ·
+// `transitions.finishFixtures`)이 같은 것을 씁니다.
 // 대시보드(Python)가 이 사례로 포팅을 검증하므로, 사례를 고치면 번들을 다시 만듭니다(`pnpm mission:bundle`).
 
 const goals = (done: readonly boolean[]) =>
@@ -141,53 +142,9 @@ export const outputFixtures: readonly OutputFixture[] = [
   },
 ];
 
-export type TransitionFixture = {
-  readonly name: string;
-  readonly mission: string;
-  readonly before: { goals_done: string[]; learner_turns: number; hints_used: number };
-  readonly state: { goals_done: string[]; off_task: boolean; closing: boolean } | null;
-  readonly expected: {
-    readonly goals_done: string[];
-    readonly learner_turns: number;
-    readonly ended: "goals" | "turn_limit" | null;
-  };
-};
-
-/** 학습자 턴 하나의 전이 — 미션 파일(`u06-cafe`: 필수 order · pay, 턴 상한 10) 위에서. */
-export const transitionFixtures: readonly TransitionFixture[] = [
-  {
-    name: "모르는 id는 버리고 파일 순서로 합친다",
-    mission: "u06-cafe",
-    before: { goals_done: [], learner_turns: 0, hints_used: 0 },
-    state: { goals_done: ["stay", "dance", "order"], off_task: false, closing: false },
-    expected: { goals_done: ["order", "stay"], learner_turns: 1, ended: null },
-  },
-  {
-    name: "한 번 이룬 목표는 모델이 빠뜨려도 남는다 — 필수를 다 이루면 goals",
-    mission: "u06-cafe",
-    before: { goals_done: ["order"], learner_turns: 3, hints_used: 1 },
-    state: { goals_done: ["pay"], off_task: false, closing: true },
-    expected: { goals_done: ["order", "pay"], learner_turns: 4, ended: "goals" },
-  },
-  {
-    name: "상태 줄이 없으면 진척은 그대로, 턴만 센다",
-    mission: "u06-cafe",
-    before: { goals_done: ["order"], learner_turns: 4, hints_used: 0 },
-    state: null,
-    expected: { goals_done: ["order"], learner_turns: 5, ended: null },
-  },
-  {
-    name: "상한에 닿으면 turn_limit",
-    mission: "u06-cafe",
-    before: { goals_done: ["order", "stay"], learner_turns: 9, hints_used: 0 },
-    state: { goals_done: ["order", "stay", "price"], off_task: false, closing: false },
-    expected: { goals_done: ["order", "stay", "price"], learner_turns: 10, ended: "turn_limit" },
-  },
-  {
-    name: "마지막 턴에 필수를 다 이루면 turn_limit가 아니라 goals",
-    mission: "u06-cafe",
-    before: { goals_done: ["order"], learner_turns: 9, hints_used: 0 },
-    state: { goals_done: ["order", "pay"], off_task: false, closing: true },
-    expected: { goals_done: ["order", "pay"], learner_turns: 10, ended: "goals" },
-  },
-];
+export {
+  finishFixtures,
+  transitionFixtures,
+  type FinishFixture,
+  type TransitionFixture,
+} from "./mission-transition-fixtures.ts";
