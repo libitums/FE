@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
 import {
+  elapsedStep,
   nextStageDelay,
   PHOTO_STAGE_MARKS,
   stageAt,
@@ -39,4 +40,13 @@ test("MPS-U4 문구 고르기 — 단계가 문구 수를 넘으면 마지막 �
   expect(stageLine(["a", "b"], 0)).toBe("a");
   expect(stageLine(["a", "b"], 5)).toBe("b");
   expect(stageLine([], 0)).toBe("");
+});
+
+test("MPS-U5 흐른 시간 한 칸 — 기기 시계의 차이를 쓰되, 시계가 뒤로 갔으면(음수) 타이머가 기다린 만큼으로 친다(리뷰 #541)", () => {
+  expect(elapsedStep(5000, 5000)).toBe(5000);
+  // 화면이 가려져 타이머가 늦게 불렸으면 실제로 흐른 만큼.
+  expect(elapsedStep(40_000, 5000)).toBe(40_000);
+  // 시계가 1시간 뒤로 — 멈추지 않고 기다린 만큼 나아간다.
+  expect(elapsedStep(-3_600_000, 5000)).toBe(5000);
+  expect(elapsedStep(0, 5000)).toBe(0);
 });

@@ -31,3 +31,11 @@ export function nextStageDelay(
 export function stageLine(lines: readonly string[], stage: number): string {
   return lines[Math.min(stage, lines.length - 1)] ?? "";
 }
+
+/**
+ * 타이머 한 번 사이에 흐른 시간 — 기기 시계의 차이(`deltaMs`)를 씁니다(화면이 가려져 타이머가 늦게 불리면 실제로 흐른 만큼).
+ * 시계가 뒤로 갔으면(음수) 타이머가 기다린 만큼(`waitedMs`)으로 쳐, 단계가 멈추지 않습니다.
+ */
+export function elapsedStep(deltaMs: number, waitedMs: number): number {
+  return deltaMs < 0 ? waitedMs : deltaMs;
+}

@@ -107,6 +107,16 @@ test("MC-UI22. 사진 pending: 기기 시계가 뒤로 가 시작 시각이 앞�
   expect(screen.getByTestId("pp").textContent).toContain("Almost there…");
 });
 
+test("MC-UI22. 사진 pending: 기다리는 중에 기기 시계가 뒤로 가도 단계가 멈추지 않는다(리뷰 #541)", () => {
+  render(<PhotoPendingBubble name="미나" testId="pp" startedAt={Date.now()} />);
+  advance(2000);
+  vi.setSystemTime(Date.now() - 3_600_000);
+  advance(3100);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
+  advance(6000);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is choosing the best shot…");
+});
+
 test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {
   render(<VoicePendingBubble name="미나" testId="vp" />);
   const text = () => screen.getByTestId("vp").textContent ?? "";

@@ -9,7 +9,7 @@ import type {
   ChatMediaTarget,
   RemoteMedia,
 } from "./chat-media.contract";
-import { mediaLineId, remoteKindOf } from "./chat-media-rules";
+import { mediaLineId, pendingStartedAt, remoteKindOf } from "./chat-media-rules";
 import type { ChatMediaKind, ChatMessage } from "./chat-source.contract";
 
 export type MediaSenderDeps = {
@@ -57,7 +57,8 @@ export function mediaSender(deps: MediaSenderDeps) {
       id: reqId,
       at: requestedAt,
       kind: media === "photo" ? "photo-pending" : "voice-pending",
-      startedAt: requestedAt,
+      // 응답 전에 같은 대상에 다시 요청해도 처음 요청한 때부터 셉니다 — 대기 문구의 단계가 처음으로 돌아가지 않게.
+      startedAt: pendingStartedAt(room.messages, reqId) ?? requestedAt,
     });
     changed(room);
     const kind = remoteKindOf(media);
