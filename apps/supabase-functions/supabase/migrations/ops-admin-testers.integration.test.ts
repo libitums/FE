@@ -1033,6 +1033,8 @@ describe("구독 표가 없는 DB(20261129 운영 적용 전)", () => {
       "20261212120000_ops_admin.sql",
       "20261213120000_ops_admin_testers.sql",
       "20261214120000_ops_admin_sort.sql",
+      // 20261214를 다시 적용하면 옛 인수 꼴(11개)이 돌아와 겹친다 — 그 뒤 것까지 다시 적용한다.
+      "20261227120000_ops_admin_media_counts.sql",
     ]) {
       await db.admin.query(await readFile(new URL(`./${file}`, import.meta.url), "utf8"));
     }
