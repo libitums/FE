@@ -146,7 +146,8 @@ function RowBody({
           <PhotoPendingBubble
             name={counterpart.name}
             testId={ids.photoPending}
-            startedAt={message.at}
+            pendingId={message.id}
+            pendingGroup={`${counterpart.id}:photo`}
           />
         </ChatIncomingRow>
       );
@@ -169,7 +170,8 @@ function RowBody({
           <VoicePendingBubble
             name={counterpart.name}
             testId={ids.voicePending}
-            startedAt={message.at}
+            pendingId={message.id}
+            pendingGroup={`${counterpart.id}:voice`}
           />
         </ChatIncomingRow>
       );

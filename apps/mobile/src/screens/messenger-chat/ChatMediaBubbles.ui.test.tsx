@@ -8,6 +8,7 @@ import {
   VoiceBubble,
   VoicePendingBubble,
 } from "./ChatMediaBubbles";
+import { resetPendingClockForTests } from "./use-pending-stage";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { advance, clearBackHandlers, imageUrlOf, mountChat } from "./chat-ui.test-support";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
@@ -23,6 +24,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  resetPendingClockForTests();
   clearBackHandlers();
   vi.useRealTimers();
 });
@@ -65,21 +67,40 @@ test("MC-UI22. 사진 pending: 보이는 글이 5 · 11 · 17초에 다음 단�
   );
 });
 
-test("MC-UI22. 사진 pending: 시작 시각을 받으면 그만큼 지난 단계에서 선다(방을 나갔다 들어옴)", () => {
-  render(<PhotoPendingBubble name="미나" testId="pp" startedAt={Date.now() - 12_000} />);
+test("MC-UI22. 사진 pending: 같은 메시지가 다시 서면 그만큼 지난 단계에서 선다(방을 나갔다 들어옴) — 기기 시계만 본다", () => {
+  const view = render(
+    <PhotoPendingBubble name="미나" testId="pp" pendingId="m1" pendingGroup="mina:photo" />,
+  );
+  advance(12_000);
+  view.unmount();
+  advance(3000);
+  render(<PhotoPendingBubble name="미나" testId="pp" pendingId="m1" pendingGroup="mina:photo" />);
   const text = () => screen.getByTestId("pp").textContent ?? "";
 
   expect(text()).toContain("미나 is choosing the best shot…");
-  advance(5100);
+  advance(2100);
   expect(text()).toContain("Almost there…");
 });
 
-test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {
+test("MC-UI22. 사진 pending: 자리표시자가 서버 줄로 바뀌어 다시 서도 단계가 처음으로 돌아가지 않는다(리뷰 #541)", () => {
+  const view = render(
+    <PhotoPendingBubble name="미나" testId="pp" pendingId="m~req" pendingGroup="mina:photo" />,
+  );
+  advance(6000);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
+  view.unmount();
+  render(
+    <PhotoPendingBubble name="미나" testId="pp" pendingId="m~srv" pendingGroup="mina:photo" />,
+  );
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
+});
+
+test("MC-UI22. 음성 pending: 1.5초 뒤 「… is sending it…」로 넘어간다", () => {
   render(<VoicePendingBubble name="미나" testId="vp" />);
   const text = () => screen.getByTestId("vp").textContent ?? "";
 
   expect(text()).toContain("미나 is recording a voice message…");
-  advance(2600);
+  advance(1600);
   expect(text()).toContain("미나 is sending it…");
   expect(screen.getByTestId("vp").getAttribute("accessibility-label")).toBe(
     "미나 is recording a voice message…",
