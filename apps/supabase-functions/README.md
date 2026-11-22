@@ -375,7 +375,7 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 표기 메모)를 `Names`로 넘긴다 — 시스템 글은 그대로라 캐시된다. 실패 · 개수 틀림이면 제한 시간의 1/3 이상 남았을 때 한 번 다시 시도한다.
 
 **선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
-판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
+판정은 `companion.proactive_skip_reason` 하나(이유 off · no_timezone · quiet_hours · hour · daily_cap · gap · spacing):
 
 | | 하루 횟수 | 마지막 메시지 뒤 | 직전 선톡 뒤 | 선호 시각 |
 |---|---|---|---|---|

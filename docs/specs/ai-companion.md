@@ -397,7 +397,7 @@ duru-curation 정렬이 끝난 뒤 붙인다(위키 06 「curation 정렬」).
 | 조용한 시간 | 현지 22:00 ~ 08:00에는 보내지 않는다 |
 | 전체 하루 상한 | 2(`settings.proactive_daily_cap`) — 유저 설정보다 앞선다 |
 | 예약 작업 | 매시간. 한 번 돌 때 유저마다 후보 하나(가장 오래 조용한 대화) |
-| 건너뛴 이유 | `companion.proactive_skip_reason`이 `off` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` 중 하나를 낸다 |
+| 건너뛴 이유 | `companion.proactive_skip_reason`이 `off` · `no_timezone` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` 중 하나를 낸다. 현지 시각은 프로필 시간대 → 지역 → 학습 프로필의 나라 순으로 찾고, 저녁 창(`settings.proactive_evening_from` · `_to`, 운영 19 ~ 21시)이 켜져 있으면 시각을 정하지 않은 사람에게는 그 시각대에만 보낸다(20261226) |
 | 플레이그라운드 `force` | 빈도 규칙을 모두 건너뛴다. **연령 · 지역 규칙은 건너뛰지 않는다** |
 
 - 저장한 선톡에는 푸시를 붙인다(2026-11-22, ADR-0127 「서버 쪽」) — 스위치 `settings.proactive_push`(off 기본 · testers · on), 대조군 30% · 미리보기 A/B. 푸시가 꺼져 있거나 기기가 없으면 앱은 다음 조회 때 본다.
