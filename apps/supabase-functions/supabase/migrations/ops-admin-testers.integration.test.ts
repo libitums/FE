@@ -1017,7 +1017,8 @@ describe("구독 표가 없는 DB(20261129 운영 적용 전)", () => {
 
   beforeAll(async () => {
     db = await startTestDatabase();
-    // ops-admin.integration.test.ts와 같이 20261129 전 모양으로 되돌린 뒤 20261212 · 20261213을 다시 적용한다.
+    // ops-admin.integration.test.ts와 같이 20261129 전 모양으로 되돌린 뒤 20261212 · 20261213 · 20261214를 다시 적용한다
+    // (20261213만 다시 적용하면 옛 인수 꼴 ops_search_users가 20261214 것과 함께 남는다).
     await db.admin.query(`
       drop table companion.store_events, companion.plan_entitlements, companion.store_products, companion.plans cascade;
       create or replace function companion.tier_of(p_user_id uuid, p_now timestamptz)
@@ -1028,7 +1029,11 @@ describe("구독 표가 없는 DB(20261129 운영 적용 전)", () => {
         ), 'free')
       $$;
     `);
-    for (const file of ["20261212120000_ops_admin.sql", "20261213120000_ops_admin_testers.sql"]) {
+    for (const file of [
+      "20261212120000_ops_admin.sql",
+      "20261213120000_ops_admin_testers.sql",
+      "20261214120000_ops_admin_sort.sql",
+    ]) {
       await db.admin.query(await readFile(new URL(`./${file}`, import.meta.url), "utf8"));
     }
     server = await db.connect();
