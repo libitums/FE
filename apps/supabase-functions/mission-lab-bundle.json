@@ -1,6 +1,6 @@
 {
   "bundleVersion": 1,
-  "generatedAt": "2026-11-22T20:27:51.746Z",
+  "generatedAt": "2026-11-22T20:34:56.831Z",
   "source": {
     "repo": "libitums/FE",
     "commit": "working-tree"
@@ -756,7 +756,7 @@
         "hurry": "Only {{turns_left}} learner turns are left: go straight to the required goal {{goal_id}} ({{criteria}}){{cue_part}}.",
         "advance": "Next beat: after reacting briefly, open goal {{goal_id}} ({{criteria}}) yourself{{cue_part}}. If the learner's message already does it, {{then}}.",
         "room": "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal.",
-        "learnerGoals": "Goals the learner must raise themselves: {{goals}}. Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words.",
+        "learnerGoals": "Goals the learner must raise themselves: {{goals}}. Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words.",
         "cuePart": ", for example 「{{cue}}」",
         "thenNext": "open {{goal_id}} instead{{cue_part}}",
         "thenRoom": "just react and wait (do not say goodbye: the scene is not over)",
@@ -775,7 +775,7 @@
           "expected": {
             "beat": "advance",
             "goalId": "bag",
-            "text": "Next beat: after reacting briefly, open goal bag (학습자가 봉투가 필요한지 아닌지 답했다.) yourself, for example 「봉투 드릴까요?」. If the learner's message already does it, open pay instead, for example 「삼천 원입니다. 결제는 어떻게 하시겠어요?」. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Next beat: after reacting briefly, open goal bag (학습자가 봉투가 필요한지 아닌지 답했다.) yourself, for example 「봉투 드릴까요?」. If the learner's message already does it, open pay instead, for example 「삼천 원입니다. 결제는 어떻게 하시겠어요?」. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -786,7 +786,7 @@
           "expected": {
             "beat": "advance",
             "goalId": "pay",
-            "text": "Next beat: after reacting briefly, open goal pay (학습자가 결제 수단(카드 · 현금 등)을 말했다.) yourself, for example 「삼천 원입니다. 결제는 어떻게 하시겠어요?」. If the learner's message already does it, open receipt instead, for example 「영수증 드릴까요?」. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Next beat: after reacting briefly, open goal pay (학습자가 결제 수단(카드 · 현금 등)을 말했다.) yourself, for example 「삼천 원입니다. 결제는 어떻게 하시겠어요?」. If the learner's message already does it, open receipt instead, for example 「영수증 드릴까요?」. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -797,7 +797,7 @@
           "expected": {
             "beat": "room",
             "goalId": null,
-            "text": "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -808,7 +808,7 @@
           "expected": {
             "beat": "stuck",
             "goalId": "pay",
-            "text": "The learner seems stuck (no progress for 2 turns). Ask your current question again in fewer, easier words; you may offer two short choices. Do not explain grammar or answer for them. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "The learner seems stuck (no progress for 2 turns). Ask your current question again in fewer, easier words; you may offer two short choices. Do not explain grammar or answer for them. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -819,7 +819,7 @@
           "expected": {
             "beat": "hurry",
             "goalId": "pay",
-            "text": "Only 2 learner turns are left: go straight to the required goal pay (학습자가 결제 수단(카드 · 현금 등)을 말했다.), for example 「삼천 원입니다. 결제는 어떻게 하시겠어요?」. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Only 2 learner turns are left: go straight to the required goal pay (학습자가 결제 수단(카드 · 현금 등)을 말했다.), for example 「삼천 원입니다. 결제는 어떻게 하시겠어요?」. Goals the learner must raise themselves: ask (학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -830,7 +830,7 @@
           "expected": {
             "beat": "advance",
             "goalId": "order",
-            "text": "Next beat: after reacting briefly, open goal order (학습자가 음료 하나를 주문했다(종류가 분명하다).) yourself, for example 「뭐 드릴까요?」. If the learner's message already does it, open pay instead, for example 「결제는 어떻게 하시겠어요?」. Goals the learner must raise themselves: price (학습자가 가격을 물었다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Next beat: after reacting briefly, open goal order (학습자가 음료 하나를 주문했다(종류가 분명하다).) yourself, for example 「뭐 드릴까요?」. If the learner's message already does it, open pay instead, for example 「결제는 어떻게 하시겠어요?」. Goals the learner must raise themselves: price (학습자가 가격을 물었다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -841,7 +841,7 @@
           "expected": {
             "beat": "advance",
             "goalId": "stay",
-            "text": "Next beat: after reacting briefly, open goal stay (학습자가 매장에서 마실지 가져갈지 밝혔다.) yourself, for example 「드시고 가세요?」. If the learner's message already does it, just react and wait (do not say goodbye: the scene is not over). Goals the learner must raise themselves: price (학습자가 가격을 물었다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Next beat: after reacting briefly, open goal stay (학습자가 매장에서 마실지 가져갈지 밝혔다.) yourself, for example 「드시고 가세요?」. If the learner's message already does it, just react and wait (do not say goodbye: the scene is not over). Goals the learner must raise themselves: price (학습자가 가격을 물었다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         },
         {
@@ -852,7 +852,7 @@
           "expected": {
             "beat": "room",
             "goalId": null,
-            "text": "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal. Goals the learner must raise themselves: price (학습자가 가격을 물었다.). Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words."
+            "text": "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal. Goals the learner must raise themselves: price (학습자가 가격을 물었다.). Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words."
           }
         }
       ]

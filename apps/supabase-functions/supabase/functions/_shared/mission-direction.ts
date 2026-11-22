@@ -28,7 +28,7 @@ export const directionTemplates = {
     "Next beat: after reacting briefly, open goal {{goal_id}} ({{criteria}}) yourself{{cue_part}}. If the learner's message already does it, {{then}}.",
   room: "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal.",
   learnerGoals:
-    "Goals the learner must raise themselves: {{goals}}. Never ask about them, never give that information first (if the goal is to ask a question, do not tell the answer before they ask), and never hint at the exact words.",
+    "Goals the learner must raise themselves: {{goals}}. Never ask about them, never give that information first, even though you know it from the scene (if the goal is to ask a question, such as the price, do not say the answer until they ask — not even when you take the order or the payment), and never hint at the exact words.",
   cuePart: ", for example 「{{cue}}」",
   thenNext: "open {{goal_id}} instead{{cue_part}}",
   thenRoom: "just react and wait (do not say goodbye: the scene is not over)",
