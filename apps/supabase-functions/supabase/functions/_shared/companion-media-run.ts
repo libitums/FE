@@ -131,7 +131,7 @@ export async function runSnapshot(
 
     // 2. 이미지 엔진 — 한 번. 엔진 오류만, 예산이 남으면 한 번 다시. 중간 그림은 미리보기로 올린다(덤 — 실패해도 계속).
     let png: Uint8Array;
-    preview.start();
+    preview.start(aspect);
     const imageTimeouts: number[] = [];
     timeouts["image"] = imageTimeouts;
     try {

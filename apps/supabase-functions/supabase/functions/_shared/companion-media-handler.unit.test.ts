@@ -66,6 +66,8 @@ let work: Promise<unknown>[];
 let snapshotCheck: boolean;
 /** 스트리밍 · 기준 그림 스위치 등 이 테스트만의 환경. */
 let envOverrides: Partial<MediaEnv>;
+/** 단계 적기(`companion_media_stage`)가 실패하는 테스트만 참. */
+let stageFails: boolean;
 
 const pendingMedia = (kind: MediaKind, charge = kind === "voice" ? "voice" : "photo") => ({
   id: MEDIA,
@@ -157,6 +159,10 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     return respond({ status: 200, body: { result: "ok" } });
   if (url === `${SUPA}/rest/v1/rpc/companion_media_preview`)
     return respond({ status: 200, body: { result: "ok" } });
+  if (url === `${SUPA}/rest/v1/rpc/companion_media_stage`)
+    return stageFails
+      ? respond({ status: 500, body: { message: "db down" } })
+      : respond({ status: 200, body: { result: "ok" } });
   if (url === `${SUPA}/storage/v1/object/companion-media` && method === "DELETE")
     return respond({ status: 200, body: [] });
   if (url.startsWith(`${SUPA}/storage/v1/object/companion-refs/`))
@@ -238,6 +244,7 @@ beforeEach(() => {
   work = [];
   snapshotCheck = false;
   envOverrides = {};
+  stageFails = false;
   begin = okBegin("snapshot", snapshotJob());
   promptInput = {
     scene: "A cheerful teacher holds a sketchbook in a palace courtyard on a sunny day.",
@@ -1068,4 +1075,45 @@ test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 
   expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "off" })!.snapshotComplexity).toBeNull();
   expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "max" })!.snapshotComplexity).toBeNull();
   expect(formOf(openaiCalls()[0]!).get("complexity")).toBeNull();
+});
+
+test("MH23. 진행 단계 — 장면 구상이 끝나면 이미지 엔진 전에 단계 drawing과 고른 비율을 적고, 차단이면 적지 않으며, 적기가 실패해도 그림은 만든다", async () => {
+  begin = okBegin("snapshot", snapshotJob({ aspect: "auto" }));
+  await run("snapshot");
+  const stage = callsTo(`${SUPA}/rest/v1/rpc/companion_media_stage`);
+  expect(stage).toHaveLength(1);
+  expect(stage[0]!.body).toEqual({ p_media_id: MEDIA, p_stage: "drawing", p_aspect: "1:1" });
+  const urls = calls.map((call) => call.url);
+  expect(urls.indexOf(`${SUPA}/rest/v1/rpc/companion_media_stage`)).toBeLessThan(
+    urls.findIndex((url) => url.startsWith("https://api.openai.com/")),
+  );
+  expect(finished()).toMatchObject({ p_status: "complete" });
+
+  // 설정이 비율을 고정하면 그 비율.
+  calls = [];
+  work = [];
+  openai = [{ status: 200, body: { data: [{ b64_json: base64FromBytes(PNG) }] } }];
+  begin = okBegin("snapshot", snapshotJob({ aspect: "3:2" }));
+  await run("snapshot");
+  expect(callsTo(`${SUPA}/rest/v1/rpc/companion_media_stage`)[0]!.body).toMatchObject({
+    p_aspect: "3:2",
+  });
+
+  // 프롬프트 노드 차단 — 그리지 않으니 단계도 없다.
+  calls = [];
+  work = [];
+  openai = [{ status: 200, body: { data: [{ b64_json: base64FromBytes(PNG) }] } }];
+  promptInput = { ...promptInput, safety: "block", reason: "no" };
+  await run("snapshot");
+  expect(callsTo(`${SUPA}/rest/v1/rpc/companion_media_stage`)).toHaveLength(0);
+
+  // 단계 적기 실패는 덤 — 그림은 그대로 완성된다.
+  calls = [];
+  work = [];
+  openai = [{ status: 200, body: { data: [{ b64_json: base64FromBytes(PNG) }] } }];
+  promptInput = { ...promptInput, safety: "allow" };
+  stageFails = true;
+  await run("snapshot");
+  expect(openaiCalls()).toHaveLength(1);
+  expect(finished()).toMatchObject({ p_status: "complete" });
 });

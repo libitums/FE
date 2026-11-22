@@ -217,3 +217,29 @@
 - **앱**: 단계 `voice`, 기기 기록 `voice`. 사진 알약을 누르면 사진을 받는 동안 안내가 음성 단계로 넘어가고, 음성 알약에 고리 · FREE가 선다. 누르면 결제 확인 없이 음성 대기 줄 → 음성 말풍선 → 「이번 것은 무료」 줄. 사진 · 음성은 따로 제안 · 따로 기록이라, 음성을 써 본 계정에는 사진 단계만, 사진을 이미 본 기기에는 음성 단계만 「New」로 뜬다. 처음 온 사용자는 4단계(chat → ideas → 사진 → 음성).
 - **테스트**: 서버 `companion-media-sample.integration.test.ts` MS9 ~ MS11. 앱 `messenger-guide.unit.test.ts` MG-U10, `companion-media-parse.unit.test.ts` CM-U4a, `companion-media-api.unit.test.ts` CM-U8s, `chat-remote-media.unit.test.ts` CM-U34, `MessengerGuide.sample.ui.test.tsx` MG-UI15 · UI16.
 - **한계**: 일곱 언어 문구는 원어민 검수 전. 기기 확인 전(음성 알약을 가리키는 꼬리 위치 포함). 첫 인사 문장이 바뀌면 예시 음성 파일과 표의 글도 함께 바꿔야 한다.
+
+## 개정 (2026-11-23) — 진행 단계 · 비율을 먼저 알린다
+
+- **사용자 결정**(2026-11-23): 사진을 기다리는 동안의 UX 가운데 「단계 표시 · 예상 시간」과 「자리표시자 비율 맞추기」만 넣는다(캐릭터의 먼저 한마디 ·
+  장면 한 줄 미리 보기는 넣지 않음). 중간 그림은 지금 엔진(2.5-flare 편집)이 보내지 않아(2026-11-21 플레이그라운드 실측 0장) 이것으로 대신한다.
+  **이 저장소의 몫은 서버와 결정 기록이다 — 앱 화면은 아래 「앱 인계」.**
+- 실측(2026-11-16 ~ 20 운영): 기준 그림 약 0.5초 · 장면 구상(프롬프트 노드) 약 3초 — 둘은 동시 — → 그리기 약 13 ~ 17초 → 저장 약 0.4초.
+- **서버**(마이그레이션 `20270104120000_companion_media_stage.sql` ⟨2026-11-24 번호 바꿈 — 20261228120000은 친구 스토리가 씀⟩):
+  - `companion.media`에 `stage`(null | `drawing`) · `stage_at`. 서버 전용 `companion_media_stage(p_media_id, p_stage, p_aspect)` — pending일 때만,
+    단계는 `drawing`만, 비율은 3:2 · 1:1. `{result: ok | not_pending}`.
+  - Edge Function은 장면 구상이 끝나고 이미지 엔진을 부르기 직전에 단계 `drawing`과 고른 비율을 적는다(`companion-media-preview.ts` `start`).
+    기다리지 않는다 — 그리기를 늦추지 않고, 실패해도 그림은 계속 만든다. 프롬프트 노드가 막으면(blocked) 적지 않는다.
+  - `media_json`(= `companion_get_media` · `companion_list_media`): pending이면 `stage`(`preparing` → `drawing`) · `stageAt`(그 단계가 시작된 시각,
+    `preparing`은 만든 시각), 끝나면 둘 다 null. 비율 `aspect`는 이제 `drawing`부터 적혀 있다(전에는 완성 때). 음성은 늘 `preparing`이다.
+  - 계약: `packages/companion-contract` `media.ts`의 `stage` · `stageAt`(선택 · nullable), JSON Schema 두 개. 옛 서버에는 칸이 없다.
+
+### 앱 인계 (메신저 서버 모드 — 진행 단계 · 비율) — ⟨2026-11-24⟩ 앱은 #552로 이미 반영
+
+- 앱은 위 「추가 ⟨2026-11-23⟩ — 앱의 기준은 기다린 시간, 서버 단계는 문구를 앞으로만 당긴다」대로 만들었다(#552 머지). 아래는 처음 인계안 —
+  진행 막대 · 서버 단계 전용 문구 · `stageAt`은 그 결정에서 넣지 않았다. 이 서버 개정이 배포되면 앱은 `drawing`에서 문구를 앞당기고 `aspect`로 상자를 맞춘다.
+
+- 만드는 중인 사진의 상태 줄을 `stage`로 바꾼다: `preparing` → 「장면을 구상하는 중…」, `drawing` → 「그리는 중…」. 칸이 없으면(옛 서버) 지금 문구.
+- 진행 막대(선택): `stageAt`부터 단계별 보통 시간(구상 약 3초 · 그리기 약 15초)으로 채우고, 끝에 닿으면 멈춰 기다린다(거꾸로 가거나 100%를 넘지 않는다).
+  시간은 서버가 주지 않는다 — 실측이 바뀌면 앱 상수를 고친다.
+- 자리표시자 상자: pending 결과에 `aspect`가 있으면 그 비율(3:2 · 1:1)로, 없으면 지금 상자. 완성 사진과 같은 상자라 도착할 때 목록이 튀지 않는다.
+- 다시 읽기는 지금 간격(2초)으로 충분하다 — 단계는 시작 3초쯤 한 번 바뀐다.
