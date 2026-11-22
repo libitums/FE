@@ -37,13 +37,53 @@ function spokenNear(testId: string): string {
   return el.querySelector("[accessibility-label]")?.getAttribute("accessibility-label") ?? "";
 }
 
-test("MC-UI21. 사진 pending: 한 요소가 「… is sending a picture…」 한 줄로 읽힌다", () => {
+test("MC-UI21. 사진 pending: 한 요소가 「… is sending a picture…」 한 줄로 읽히고, 보이는 글은 첫 단계다", () => {
   render(<PhotoPendingBubble name="미나" testId="pp" />);
 
   const el = screen.getByTestId("pp");
   expect(el.getAttribute("accessibility-element")).toBe("true");
   expect(el.getAttribute("accessibility-label")).toBe("미나 is sending a picture…");
-  expect(el.textContent).toContain("미나 is sending a picture…");
+  expect(el.textContent).toContain("미나 is picking a moment…");
+});
+
+test("MC-UI22. 사진 pending: 보이는 글이 5 · 11 · 17초에 다음 단계로 넘어가고 마지막 단계는 남는다 — 낭독 줄은 그대로", () => {
+  render(<PhotoPendingBubble name="미나" testId="pp" />);
+  const text = () => screen.getByTestId("pp").textContent ?? "";
+
+  advance(4900);
+  expect(text()).toContain("미나 is picking a moment…");
+  advance(200);
+  expect(text()).toContain("미나 is taking the picture…");
+  advance(6000);
+  expect(text()).toContain("미나 is choosing the best shot…");
+  advance(6000);
+  expect(text()).toContain("Almost there…");
+  advance(60_000);
+  expect(text()).toContain("Almost there…");
+  expect(screen.getByTestId("pp").getAttribute("accessibility-label")).toBe(
+    "미나 is sending a picture…",
+  );
+});
+
+test("MC-UI22. 사진 pending: 시작 시각을 받으면 그만큼 지난 단계에서 선다(방을 나갔다 들어옴)", () => {
+  render(<PhotoPendingBubble name="미나" testId="pp" startedAt={Date.now() - 12_000} />);
+  const text = () => screen.getByTestId("pp").textContent ?? "";
+
+  expect(text()).toContain("미나 is choosing the best shot…");
+  advance(5100);
+  expect(text()).toContain("Almost there…");
+});
+
+test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {
+  render(<VoicePendingBubble name="미나" testId="vp" />);
+  const text = () => screen.getByTestId("vp").textContent ?? "";
+
+  expect(text()).toContain("미나 is recording a voice message…");
+  advance(2600);
+  expect(text()).toContain("미나 is sending it…");
+  expect(screen.getByTestId("vp").getAttribute("accessibility-label")).toBe(
+    "미나 is recording a voice message…",
+  );
 });
 
 test("MC-UI21. 음성 pending: 한 줄 낭독과 파형(막대 20)이 서고 도착 말풍선의 글 줄은 없다", () => {

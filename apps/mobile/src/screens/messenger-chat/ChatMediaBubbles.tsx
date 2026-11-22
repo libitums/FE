@@ -16,12 +16,23 @@ import { voiceDurationLabel } from "./chat-rules";
 import { SLOP_SMALL } from "./hit-slop";
 import type { ChatText } from "./chat-source.contract";
 import { chatMediaTestIds as mediaIds } from "./chat-media.contract";
+import {
+  nextStageDelay,
+  PHOTO_STAGE_MARKS,
+  stageAt,
+  VOICE_STAGE_MARKS,
+} from "./media-pending-stage";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./messenger-chat.css";
 import "./chat-media.css";
 
-export type PhotoPendingBubbleProps = { readonly name: string; readonly testId: string };
+export type PhotoPendingBubbleProps = {
+  readonly name: string;
+  readonly testId: string;
+  /** 요청한 시각(메시지의 `at`) — 방을 나갔다 들어와도 그만큼 지난 단계에서 섭니다. 없으면 말풍선이 선 때. */
+  readonly startedAt?: number;
+};
 export type PhotoBubbleProps = {
   readonly src: string | null;
   /** 서버 사진의 비율 · AI 표시(ADR-0146 「앱 연결」) — 없으면 3:4 · 표시 없음. */
@@ -32,7 +43,34 @@ export type PhotoBubbleProps = {
   /** 누르면 사진 보기를 엽니다(ADR-0150 2026-11-17 추가). 그림이 없으면(src null) 누를 수 없습니다. */
   readonly onOpen?: () => void;
 };
-export type VoicePendingBubbleProps = { readonly name: string; readonly testId: string };
+export type VoicePendingBubbleProps = {
+  readonly name: string;
+  readonly testId: string;
+  readonly startedAt?: number;
+};
+
+/**
+ * 대기 문구의 단계 — 기다린 시간으로 넘어가고 마지막 단계에서 멈춥니다(`media-pending-stage.ts`). 타이머가 조금 일찍 불려도
+ * 멈추지 않게 한 단계는 꼭 넘깁니다.
+ */
+function usePendingStage(marks: readonly number[], startedAt: number | undefined): number {
+  const [mountedAt] = useState(Date.now);
+  const start = startedAt ?? mountedAt;
+  const [stage, setStage] = useState(() => stageAt(marks, Date.now() - start));
+  useEffect(() => {
+    const wait = nextStageDelay(marks, stage, Date.now() - start);
+    if (wait === null) return undefined;
+    const timer = setTimeout(() => {
+      setStage((current) =>
+        Math.min(marks.length - 1, Math.max(current + 1, stageAt(marks, Date.now() - start))),
+      );
+    }, wait);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [marks, stage, start]);
+  return stage;
+}
 export type VoiceBubbleProps = {
   /** 0이면 모름 — 길이 글자를 그리지 않습니다. */
   readonly durationMs: number;
@@ -58,10 +96,16 @@ function WaveBars(): ReactNode {
 }
 
 // 사진 pending — 도착할 3:4 사진과 같은 180 × 240 상자. 묶음 전체가 상태 한 줄로 읽히고, 반짝임은 움직임 줄이기에서 멈춥니다.
-export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): ReactNode {
-  const copy = useUiCopy().messengerChat.room;
+export function PhotoPendingBubble({
+  name,
+  testId,
+  startedAt,
+}: PhotoPendingBubbleProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const label = copy.sendingPhoto(name);
+  // 낭독 줄은 단계가 바뀌어도 그대로 — 스크린리더가 5초마다 다시 읽지 않게 합니다.
+  const label = chat.list.sendingPhoto(name);
+  const stage = usePendingStage(PHOTO_STAGE_MARKS, startedAt);
   return (
     <view
       className={`messenger-chat-photo-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
@@ -84,7 +128,7 @@ export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): R
         <view className="messenger-chat-shimmer" />
       </view>
       <text className="messenger-chat-status" accessibility-element={false}>
-        {label}
+        {chat.room.photoPending(name)[stage]}
       </text>
     </view>
   );
@@ -148,10 +192,15 @@ export function PhotoBubble({
 }
 
 // 음성 pending — 재생 자리 원 · 회색 파형 · 아래 상태 한 줄. 도착과 같은 폭 220입니다.
-export function VoicePendingBubble({ name, testId }: VoicePendingBubbleProps): ReactNode {
-  const copy = useUiCopy().messengerChat.room;
+export function VoicePendingBubble({
+  name,
+  testId,
+  startedAt,
+}: VoicePendingBubbleProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const label = copy.recordingVoice(name);
+  const label = chat.list.recordingVoice(name);
+  const stage = usePendingStage(VOICE_STAGE_MARKS, startedAt);
   return (
     <view
       className={`messenger-chat-voice-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
@@ -164,7 +213,7 @@ export function VoicePendingBubble({ name, testId }: VoicePendingBubbleProps): R
         <WaveBars />
       </view>
       <text className="messenger-chat-status" accessibility-element={false}>
-        {label}
+        {chat.room.voicePending(name)[stage]}
       </text>
       <view className="messenger-chat-shimmer" />
     </view>
