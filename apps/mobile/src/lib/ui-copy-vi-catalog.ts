@@ -57,6 +57,10 @@ export const catalogMapVi: CatalogMapCopy = {
     staleBody: "Kết nối internet để kiểm tra tập mới.",
     checkNew: "Kiểm tra câu chuyện mới",
   },
+  coverDownload: {
+    gettingReady: (percent) => `Đang chuẩn bị · ${percent}%`,
+    tapToDownload: (size) => (size === null ? "Chạm để tải xuống" : `Chạm để tải xuống · ${size}`),
+  },
 };
 
 export const catalogCoverVi: CatalogCoverCopy = {

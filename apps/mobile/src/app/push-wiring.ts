@@ -18,7 +18,7 @@ import {
 const registeredTokens = new Set<string>();
 
 /**
- * 로그인한 사용자의 이 기기를 등록합니다. `ask`면 미요청일 때 시스템 다이얼로그를 띄웁니다(진입 흐름 끝 ·
+ * 로그인한 사용자의 이 기기를 등록합니다. `ask`면 미요청일 때 시스템 다이얼로그를 띄웁니다(첫 스토리 뒤 · 기존 회원 로그인 ·
  * 설정 항목). 아니면 이미 허용된 경우에만 조용히 토큰을 받습니다(부팅 때 — 마지막 활동 시각도 갱신됩니다).
  */
 export async function syncPushDevice({ ask }: { readonly ask: boolean }): Promise<void> {

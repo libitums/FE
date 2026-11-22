@@ -134,8 +134,54 @@ export function supabaseClient({ projectRef, key, fetchImpl = fetch }) {
       }
     },
 
-    /** `send-push` announcement 한 번(같은 문구 · 최대 1,000명)입니다. */
-    async sendAnnouncement({ userIds, title, body }) {
+    /**
+     * 캠페인 보상(ADR-0175) — 보상 한 줄, 그다음 보낸 그룹 수신자를 1,000행씩 적습니다. 하나라도 실패하면 던집니다(콘솔은 보내지 않음).
+     * `rows`는 `reward.mjs`의 `rewardRows`.
+     */
+    async saveReward(rows) {
+      const insert = async (table, payload) => {
+        const response = await fetchImpl(`${base}/rest/v1/${table}`, {
+          method: "POST",
+          headers: { ...headers, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok)
+          throw new Error(
+            `보상 기록 실패 ${response.status}: ${(await response.text()).slice(0, 200)}`,
+          );
+      };
+      await insert("push_campaign_rewards", rows.reward);
+      try {
+        for (let start = 0; start < rows.recipients.length; start += 1000)
+          await insert(
+            "push_campaign_reward_recipients",
+            rows.recipients.slice(start, start + 1000),
+          );
+      } catch (error) {
+        // 수신자를 다 적지 못하면 보상 줄을 지웁니다(수신자는 cascade) — 받지 않은 알림의 보상이 남지 않게.
+        await fetchImpl(
+          `${base}/rest/v1/push_campaign_rewards?campaign_id=eq.${encodeURIComponent(rows.reward.campaign_id)}`,
+          { method: "DELETE", headers },
+        ).catch(() => undefined);
+        throw error;
+      }
+    },
+
+    /** 캠페인별 「보상 받음」 수 — 표가 없으면(마이그레이션 전) 빈 Map. */
+    async rewardClaimCounts(campaignIds) {
+      if (campaignIds.length === 0) return new Map();
+      const response = await fetchImpl(`${base}/rest/v1/rpc/push_campaign_reward_claim_counts`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_campaign_ids: campaignIds }),
+      });
+      if (!response.ok) return new Map();
+      const rows = await response.json();
+      return new Map(rows.map((row) => [row.campaign_id, row.claimed]));
+    },
+
+    /** `send-push` announcement 한 번(같은 문구 · 최대 1,000명)입니다. 보상 캠페인이면 목적지에 캠페인 id(ADR-0175). */
+    async sendAnnouncement({ userIds, title, body, target = null }) {
       const response = await fetchImpl(`${base}/functions/v1/send-push`, {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
@@ -144,7 +190,7 @@ export function supabaseClient({ projectRef, key, fetchImpl = fetch }) {
           audience: { userIds },
           title,
           body,
-          target: null,
+          target,
         }),
       });
       const text = await response.text();

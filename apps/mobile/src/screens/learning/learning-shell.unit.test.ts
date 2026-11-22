@@ -393,4 +393,24 @@ describe("껍데기 장면 (LSN)", () => {
       flow: [],
     });
   });
+
+  it("LSN7. 무대 채우기를 청한 문항 장면은 배치마다 남는 세로를 받는다 — 가운데 정렬은 완료 장면만이다", () => {
+    // 문화 카드(QA 2026-11-20): 카드가 남는 높이까지 자라야 큰 화면에 빈 띠가 남지 않습니다.
+    expect(learningShellSceneClasses("card-scroll", "question", "in-flow", true)).toEqual({
+      stage: ["learning-shell-stage-fill-scroll"],
+      flow: [],
+    });
+    expect(learningShellSceneClasses("merged", "question", "in-flow", true)).toEqual({
+      stage: ["learning-shell-stage-fill-flow"],
+      flow: ["learning-shell-flow-fill-scroll"],
+    });
+    expect(learningShellSceneClasses("split", "question", "floating", true)).toEqual({
+      stage: ["learning-shell-stage-fill-rest"],
+      flow: [],
+    });
+    expect(learningShellSceneClasses("card-scroll", "complete", "in-flow", true).stage).toEqual([
+      "learning-shell-stage-scene-complete",
+      "learning-shell-stage-fill-scroll",
+    ]);
+  });
 });

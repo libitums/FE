@@ -1,5 +1,7 @@
 // 개발용 탐침 화면 둘의 부팅 상태를 소유합니다. **제품 경로가 읽지 않습니다** —
 // `App.tsx`에 이 이름이 한 자리도 없다는 것이 도달 경로 0건의 증거입니다.
+// 탐침 화면은 dev 번들에만 실립니다 — release 번들에서는 이 부팅 상태로 바꿔 끼워도 빈 화면입니다
+// (`render-dev-probe.tsx`, ADR-0171). 확인은 `pnpm dev`(rspeedy dev)로 합니다.
 
 import type { Nav } from "./nav-state";
 import { initialNav } from "./nav-state";

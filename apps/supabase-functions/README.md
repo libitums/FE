@@ -375,7 +375,7 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 표기 메모)를 `Names`로 넘긴다 — 시스템 글은 그대로라 캐시된다. 실패 · 개수 틀림이면 제한 시간의 1/3 이상 남았을 때 한 번 다시 시도한다.
 
 **선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
-판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
+판정은 `companion.proactive_skip_reason` 하나(이유 off · no_timezone · quiet_hours · hour · daily_cap · gap · spacing):
 
 | | 하루 횟수 | 마지막 메시지 뒤 | 직전 선톡 뒤 | 선호 시각 |
 |---|---|---|---|---|
@@ -753,3 +753,75 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 **운영은 2026-11-23에 SQL 편집기로 적용했다**(20261214 없이 20261213 위에). `supabase migration repair --status applied 20261227130000`으로 기록한다.
 다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
 번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
+
+## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
+
+`migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
+`companion.settings.friends_mode`(`off` · `testers` 기본 · `on`), 무료 체험을 모든 인물 합산으로, 완화 수위(open — 인물 open + 생년상 성인 + 성인 확인 동의
+`profiles.adult_ack_at`). 앱 RPC `companion_friends()` · `companion_ack_adult()`, 프로필 `adultAck`. 판정 · 맥락이 적용 수위 `romanceTier`를 싣는다.
+
+- 함수: `companion-safety.ts`(`effectiveRomanceTier` · `outputCheckRequired` · open 검사 선) · `companion-prompt.ts`(친구 소개 · 스토리 밖 · 배경 · 성격 · 사투리 ·
+  open 수위선) — open 턴은 답을 출력 검사한 뒤 내보낸다. 스냅샷 그림 규칙은 수위로 넓히지 않는다(추천 답변 칩은 ADR-0168에서 선을 따르게 됐다).
+- 평가: `companion-eval`의 `GET ?docs=1`이 `evalSets`(친구 페르소나 유지 · 로맨스 수위 경계, `_shared/companion-eval-sets*.ts`)를 더 준다.
+- 플레이그라운드(운영자, 서버 키 · 시험 계정만): `companion_operator_set_adult_ack(p_user_id, p_ack)` → `{ result: ok · not_adult, adultAck, ageBand }`
+  (켜기는 생년상 성인만). 생년은 기존 `companion_operator_set_profile`. `companion_inspect_testers().adultAck`, `companion_inspect_memory(…).access`
+  (`friendsMode` · `tester` · `ageBand` · `adultAck` · `kind` · `personaTier` · `romanceTier` · `romanceReason` · `visible` · `hiddenReason`).
+  `companion_operator_reset`은 동의를 지우지 않는다. SSE `done`과 저장 meta(첫 인사 · 선톡 · 거절)가 적용 수위 `romanceTier`를 싣는다.
+- 운영에서 친구를 모두에게 열기: `update companion.settings set friends_mode = 'on'`. 끄기: `'off'`(대화 중이던 친구도 `not_available`).
+- 테스트: `migrations/companion-friends.integration.test.ts`(FR1 ~ FR9) · `_shared/companion-friends.unit.test.ts`(FT1 ~ FT12).
+
+## 로맨스 선 사다리 (20261218, ADR-0168)
+
+적용 로맨스 선 `none < hug < kiss < close < open`을 `romanceLine(ageBand, romanceTier, persona, speechLevel)`(`companion-safety.ts`)이 정한다 —
+스토리 인물 · 동의 없는 open 인물은 hug, 추천 친구 standard(다은 · 건우)는 말투 단계로 hug(존댓말) · kiss(반말) · close(slang), open 인물 + 성인 + 동의는
+open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 차단). 검사 · 시스템 프롬프트 · 추천 답변 칩 · 평가 채점이 같은 선을 따른다. 출력 검사는 그대로
+성인이 아니거나 open일 때만.
+
+- 트래킹: 검사가 허용한 로맨스를 `allow` + `romance`, open의 성적 긴장을 `allow` + `sexual`로 남긴다(`companion.moderation_events`). 턴 · 첫 인사 · 선톡 ·
+  거절의 저장 meta에 `romanceLine`.
+- `migrations/20261218120000_companion_romance_ladder.sql` — 다은 · 건우의 `persona.romance`만 고친다(정본 `docs/content/companion-friends.json`).
+- 평가: 검사 세트 `romance-line-moderation`(TL1 ~ TL15), 케이스 칸 `romanceLine`(검사 · 칩).
+
+**배포 순서**: 이 마이그레이션(20261212 **뒤**, 다시 적용해도 같다) → `chat-send` · `companion-greet` · `companion-proactive` · `companion-suggest` · `companion-eval` ·
+`companion-snapshot` → 앱. 함수를 먼저 올리면 판정에 `romanceTier`가 없어 모두 standard로 돈다(안전한 쪽). 에셋(기준 그림 `seoyeon-ref.png` 등 · 목소리
+`voiceId`)은 아직 없어 친구의 스냅샷 · 음성은 `not_configured`다 — 에셋을 올린 뒤 `companion.characters.media`를 채운다.
+
+## AI 대화 나이 하한 만 14세 (20261217)
+
+`migrations/20261217120000_companion_age_floor_14.sql` — `companion.turn_gate_base`의 하한을 13 → 14로 올린다(한국 개인정보보호법 · 처리방침 7절).
+정의를 통째로 다시 쓰지 않고 지금 정의에서 하한 한 줄만 바꾼다(운영 정의가 저장소와 어긋난 적이 있어). 이미 14면 아무것도 하지 않는다. [CH2]
+
+## 주간 순위 (20261220, ADR-0170)
+
+`migrations/20261220120000_weekly_ranking.sql` — 회원 주간 순위(월 00:00 UTC 시즌). 스키마 `ranking`(RLS 켬, anon · authenticated는 스키마 · 표 권한
+없음 — 앱은 RPC만, 모든 사용자 열은 `auth.users` CASCADE).
+
+- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 15 · `group_max` 18 — 20261227, 처음은 25 · 30) · `groups` · `members`(주 × 사용자) ·
+  `lesson_passes`(사용자 평생 한 번) · `chat_words`(주 1번) · `preferences`(숨기기) · `rewards`(정산 기록).
+- 배정 `ranking.join_week`: 그 주에 처음 점수를 얻을 때. 구간 = 가입 나이(<14일 · <60일 · 그 밖) × 지금까지 통과한 콘텐츠 유닛(0~9 · 10~39 · 40+),
+  같은 구간에서 숨기지 않은 인원이 목표 미만이고 전체가 상한 미만인 가장 오래된 그룹, 없으면 새 그룹(구간마다 advisory lock).
+- 레슨 점수: `public.learning_progress` AFTER INSERT/UPDATE 트리거 — 새 스냅숏의 catalogProgress에서 처음 보이는 (에피소드, 유닛) 가운데
+  `companion.content_units`에 있는 것만. 저장 RPC는 그대로다. **새 에피소드를 올릴 때 `content_units`를 채우지 않으면 그 유닛은 순위에도 안 센다.**
+- 채팅 단어 점수: `chat-send`가 피드백 카드의 `learnedUsed` 가운데 `voca:`를 `ranking_record_chat_words`(서버 키)로 센다
+  (`_shared/chat-send-chat-words.ts`). 교정이 짚은 단어는 pending. 결과는 SSE `correction`과 저장 카드의 `chatWords`. 입력 검사에 걸린 메시지는 세지 않는다.
+- 앱 RPC(authenticated): `ranking_board(p_board: 'lessons' | 'chat_words')` → `{ state: ranked · not_joined · hidden, board, endsAt, groupSize, reward,
+  rows[{rank, name, country, episode, score, me}], me, next }`(user id · 이메일 없음) · `ranking_preferences()` · `ranking_set_hidden(p_hidden)` → `{ hidden }`.
+- 서버 RPC(service_role만): `ranking_record_chat_words(…)` · `ranking_settle_week(p_week)`(보상이 꺼졌으면 0, 켜졌으면 그룹 · 보드마다 1~3위
+  (점수 > 0, 숨김 제외)에 `companion.grant_once(…, 'ranking', '주:보드:사용자')`).
+- 테스트: `migrations/weekly-ranking.integration.test.ts`(WR-D1 ~ D10) · `_shared/chat-send-chat-words.unit.test.ts`(CWS-U1 ~ U5) ·
+  `chat-send-handler.unit.test.ts`(CWS-H1 · H2).
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다)**
+
+1. 마이그레이션: `supabase db push`(연결된 프로젝트, 20261217 **뒤**) 또는 SQL 편집기에서 `20261220120000_weekly_ranking.sql` 전체를 한 번 실행.
+   한 번만 적용한다(`create schema ranking`이라 다시 실행하면 실패한다). 확인: `select * from ranking.settings;`(한 줄, reward_enabled false) ·
+   `select tgname from pg_trigger where tgname = 'ranking_lesson_passes';`.
+2. 함수: `supabase functions deploy chat-send`(계약 사본 `_shared/companion-contract` 포함). 함수를 먼저 올리면 RPC가 실패해 `chat_words_failed`
+   로그만 남고 카드에 `chatWords`가 없다(턴 영향 없음) — 그래도 순서는 마이그레이션 → 함수.
+3. 예약: SQL 편집기에서 `supabase/cron/ranking.sql`을 한 번 실행(pg_cron, 매주 월 00:05 UTC에 지난주 정산). 확인:
+   `select jobname, schedule from cron.job where jobname = 'ranking-settle-week';`.
+4. 앱(순위 탭)을 낸다.
+
+보상 켜기(사용자 결정 뒤): `update ranking.settings set reward_enabled = true, reward_amount = 30;`(액수는 결정값). 끄기: `reward_enabled = false`.
+지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
+그룹 크기(지금 15 · 18, ADR-0170 D13): `update ranking.settings set group_target = 15, group_max = 18;`(이미 배정된 그룹은 그대로). 주 중간에 목표를 내리면 그 주의 남은 참가자는 작은 새 그룹에 들어가므로 주 경계(월 00:00 UTC) 직전에 바꾼다. 그룹이 작아지면 그룹 수가 늘어 상위 3 보상 지급 총량도 는다(25 → 15명이면 약 1.7배) — 보상을 켜기 전에 액수를 다시 본다.

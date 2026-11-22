@@ -35,6 +35,8 @@ export type SpecialUnitMapItemProps = {
   readonly icon?: string;
   /** 표식 상자의 DOM id(`MapUnitStage`) — 발자국이 노드 중심을 잽니다. */
   readonly markId?: string;
+  /** 표식 둘레에 겹치는 장식(받기 진행 고리, ADR-0165). 탭 · 낭독을 받지 않습니다. */
+  readonly ring?: ReactNode;
 };
 
 export type SpecialUnitMapTestId =

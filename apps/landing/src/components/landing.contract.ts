@@ -2,6 +2,7 @@
 // 각 `.astro` 파일의 `Props`가 여기 타입을 그대로 씁니다(`type Props = FaqProps`).
 
 import type { Copy } from "../i18n/copy";
+import type { LegalDocumentId, LegalLanguage, LegalText } from "../legal/legal.contract";
 import type { FaqEntry, SiteUrl } from "../seo/seo.contract";
 import type { Language } from "../site";
 
@@ -38,10 +39,22 @@ export interface NotFoundProps {
   language: Language;
 }
 
+/** `components/LegalPage.astro` — 법률 문서 한 편의 한 언어판입니다(ADR-0167). */
+export interface LegalPageProps {
+  id: LegalDocumentId;
+  /** 본문이 있는 언어입니다. 사이트 언어 코드와 같아 머리 · 꼬리 문구도 이 언어로 섭니다. */
+  language: LegalLanguage;
+}
+
+/** `components/LegalText.astro` — 링크가 섞인 한 줄을 그립니다. */
+export interface LegalTextProps {
+  text: LegalText;
+}
+
 /**
  * 머리 · 꼬리가 놓이는 페이지의 종류입니다.
  * - `"landing"`: 히어로와 섹션이 있는 랜딩. 머리는 히어로 위에서 투명하고 섹션 메뉴 · 언어 메뉴를 냅니다.
- * - `"page"`: 히어로가 없는 페이지(404). 머리는 처음부터 배경을 갖고 로고와 받기 버튼만 내며, 링크는 그 언어의 홈으로 갑니다.
+ * - `"page"`: 히어로가 없는 페이지(404 · 법률 문서). 머리는 처음부터 배경을 갖고 로고와 받기 버튼만 내며, 링크는 그 언어의 홈으로 갑니다.
  */
 export type ChromeVariant = "landing" | "page";
 

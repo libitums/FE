@@ -60,7 +60,42 @@ export default defineConfig(({ command }): Config => {
       // `useGlobalProps`가 받아 다시 그리게 합니다. 기본값('reactive')에서는 갱신이 와도
       // 다시 그려지지 않고 다음 상태 변경에야 새 값이 보였습니다(기기 확인, N9).
       // 앱의 globalProps 읽기는 전부 `useGlobalProps`입니다(`lynx.__globalProps` 직접 읽기 없음).
+      //
+      // `extractStr`는 켜지 않습니다(ADR-0169 D8 개정). 설치된 ReactLynx에서 이 옵션은 `__EXTRACT_STR__`만
+      // 정의하고, 런타임 main-thread `processData`가 읽는 `__EXTRACT_STR_IDENT_FLAG__`는 어떤 플러그인도
+      // 정의하지 않아 실행마다 ReferenceError가 났습니다. 문자열을 실제로 뽑는 단계도 오픈소스 빌드에는 없습니다.
       pluginReactLynx({ globalPropsMode: "event" }),
     ],
+    tools: {
+      // `extractStr`가 번들을 약 103 kB 줄이던 몫은 이 한 가지였습니다: `.json`을 `JSON.parse('…')` 문자열이
+      // 아니라 객체 리터럴로 내는 플러그인 규칙(`react:json-parse`, `JSONParse: false`)을 main-thread에만이
+      // 아니라 background에도 겁니다. 플러그인이 `extractStr`일 때 하던 일과 같습니다
+      // (`@lynx-js/react-rsbuild-plugin` `applyGenerator`). 플러그인을 올릴 때 규칙 이름이 그대로인지 확인합니다 —
+      // `src/app/lynx-build-config.integration.test.ts`가 최종 설정에서 이 규칙을 검사합니다.
+      bundlerChain(chain) {
+        chain.module.rule("react:json-parse").delete("issuerLayer");
+      },
+      rspack: {
+        module: {
+          // 개발용 탐침 화면(손글씨 · 말하기)은 `__DEV__`가 참일 때만 `render-dev-probe.tsx`로 그립니다.
+          // release에서는 호출이 죽은 코드가 되지만, 패키지에 `sideEffects` 표시가 없으면 번들러가 쓰이지
+          // 않는 import라도 모듈을 남깁니다(탐침 CSS · 모듈 본문 약 27 kB). 이 파일 하나만 부수 효과
+          // 없음으로 표시해 import를 통째로 버리게 합니다 — release 번들 약 −40 kB(ADR-0171).
+          rules: [
+            { test: /render-dev-probe\.tsx$/, sideEffects: false },
+            // 디자인 토큰 JS는 묶음마다 최상위 `deepFreeze(...)`를 불러, 앱이 쓰는 color · motion · opacity
+            // 말고도 typography · font · elevation 등 열두 묶음이 두 스레드에 다 실립니다. 최상위 호출만
+            // 순수로 표시해 쓰이지 않는 묶음을 버립니다 — release 번들 약 −14 kB.
+            {
+              test: /@libitums[\\/]design-tokens[\\/]dist[\\/]index\.js$/,
+              loader: path.resolve(
+                import.meta.dirname,
+                "devtools/bundle-size/pure-token-exports-loader.cjs",
+              ),
+            },
+          ],
+        },
+      },
+    },
   };
 });

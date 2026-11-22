@@ -6,7 +6,7 @@ import { LearningShell } from "./LearningShell";
 // `ui` 계층: 껍데기의 무대 변형(`stage`). 기본(`card`)은 무대를 ui-lynx `Card`로 감싸고, `bare`는 활동이 준
 // 내용을 무대 상자에 그대로 놓는다 — 문화 카드 덱처럼 면 · 그림자를 스스로 그리는 활동의 자리다.
 
-function renderShell(stage?: "card" | "bare") {
+function renderShell(stage?: "card" | "bare", fillStage?: boolean) {
   render(
     <LearningShell
       form="culture-card"
@@ -19,6 +19,7 @@ function renderShell(stage?: "card" | "bare") {
       onAction={() => {}}
       scrollCard
       {...(stage === undefined ? {} : { stage })}
+      {...(fillStage === undefined ? {} : { fillStage })}
     />,
   );
 }
@@ -45,4 +46,12 @@ test("LSS3. stage=card를 밝혀 적어도 기본과 같다", () => {
   renderShell("card");
 
   expect(within(stage()).getByTestId("ui-lynx-card")).toBeInTheDocument();
+});
+
+test("LSS4. fillStage면 문항 장면에서도 무대가 카드 스크롤 높이를 하한으로 받는다(가운데 정렬 없음)", () => {
+  // 문화 카드(QA 2026-11-20): 큰 화면에서 카드 아래에 빈 띠가 남았습니다.
+  renderShell("bare", true);
+
+  expect(stage()).toHaveAttribute("class", "learning-shell-stage learning-shell-stage-fill-scroll");
+  expect(stage()).not.toHaveAttribute("data-scene");
 });

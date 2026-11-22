@@ -127,4 +127,77 @@ describe("useAudioCue", () => {
 
     expect(stopAudio).toHaveBeenCalledTimes(2);
   });
+
+  test("UA-D1. delayMs가 있으면 그 시간이 지나야 한 번 재생한다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<Probe cue={{ key: "a", source: "s1", delayMs: 800 }} />);
+      expect(playAudio).toHaveBeenCalledTimes(0);
+
+      vi.advanceTimersByTime(799);
+      expect(playAudio).toHaveBeenCalledTimes(0);
+
+      vi.advanceTimersByTime(1);
+      expect(playAudio).toHaveBeenCalledTimes(1);
+      expect(playAudio).toHaveBeenCalledWith("s1", expect.any(Function));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("UA-D2. 기다리는 중에 cue가 사라지거나 key가 바뀌면 재생 · 정지를 부르지 않는다", () => {
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(<Probe cue={{ key: "a", source: "s1", delayMs: 800 }} />);
+      rerender(<Probe cue={null} />);
+      vi.advanceTimersByTime(2000);
+
+      expect(playAudio).toHaveBeenCalledTimes(0);
+      expect(stopAudio).toHaveBeenCalledTimes(0);
+
+      rerender(<Probe cue={{ key: "b", source: "s2", delayMs: 800 }} />);
+      rerender(<Probe cue={{ key: "c", source: "s3", delayMs: 800 }} />);
+      vi.advanceTimersByTime(800);
+
+      expect(playAudio).toHaveBeenCalledTimes(1);
+      expect(playAudio).toHaveBeenCalledWith("s3", expect.any(Function));
+      expect(stopAudio).toHaveBeenCalledTimes(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("UA-D3. 기다리는 중에 언마운트하면 재생하지 않고, 재생이 시작된 뒤 언마운트하면 멈춘다", () => {
+    vi.useFakeTimers();
+    try {
+      const first = render(<Probe cue={{ key: "a", source: "s1", delayMs: 800 }} />);
+      first.unmount();
+      vi.advanceTimersByTime(2000);
+      expect(playAudio).toHaveBeenCalledTimes(0);
+      expect(stopAudio).toHaveBeenCalledTimes(0);
+
+      const second = render(<Probe cue={{ key: "b", source: "s2", delayMs: 800 }} />);
+      vi.advanceTimersByTime(800);
+      second.unmount();
+      expect(playAudio).toHaveBeenCalledTimes(1);
+      expect(stopAudio).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("UA-D4. 기다리는 중에 stop()을 부르면 그 소리는 나중에도 나지 않고, 나지 않은 소리라 정지도 부르지 않는다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<Probe cue={{ key: "a", source: "s1", delayMs: 800 }} />);
+
+      stopOf()();
+      vi.advanceTimersByTime(2000);
+
+      expect(playAudio).toHaveBeenCalledTimes(0);
+      expect(stopAudio).toHaveBeenCalledTimes(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

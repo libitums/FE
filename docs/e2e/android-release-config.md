@@ -345,7 +345,7 @@ A shell wm size reset; A shell wm density reset                                 
 ```
 
 **스크린샷 골든(`e2e/screenshots/*.png`)은 환경에 묶인다.** 화면 가장자리(상태 표시줄 높이 · 내비게이션 바)가 한 픽셀이라도 달라지면 임계(94 ~ 99.5%)를 못 맞춘다. 골든은 Pixel_8 AVD(API 37) · 3버튼 모드 · `390x844`/`160`(`small` · `signed-in`은 `320x640`/`160`) · 글자 배율 1.0(`signed-in`은 1.0 · 1.3)에서 찍은 것이다. 이 환경이 아니면(제스처 모드 · 다른 AVD) 실패해도 제품 회귀가 아니다. 가장자리나 레이아웃을 일부러 바꾼 작업(edge-to-edge · 탭 바 · 젬 칩 숨김 등)은 골든을 다시 찍어야 한다 — 방법은 아래 「골든 다시 찍기」.
-**Chrome Custom Tab 주소창은 도메인만 보인다**(최신 Chrome). `legal`은 도메인(`gregarious-pharaoh-bb6.notion.site`)과 문서 제목(`DURU Term of Use` · `DURU Privacy Policy`)으로, `social`은 도메인(`example.invalid`)과 logcat `capturedLink`로 판정한다. URL 쿼리 · 경로를 주소창 문구로 읽는 단언을 새로 만들지 않는다.
+**Chrome Custom Tab 주소창은 도메인만 보인다**(최신 Chrome). `legal`은 도메인(`k-duru.com`, ⟨2026-11-20⟩ Notion에서 바뀜 — ADR-0167)과 문서 제목(`Duru Terms of Use` · `Duru Privacy Policy`)으로, `social`은 도메인(`example.invalid`)과 logcat `capturedLink`로 판정한다. URL 쿼리 · 경로를 주소창 문구로 읽는 단언을 새로 만들지 않는다.
 **실패하면 `e2e/screenshots/<이름>_diff.png`가 저장소에 생긴다.** 증거로 옮기고 지워서 `git status`를 깨끗하게 둔다.
 
 **`speech`는 Google Play 이미지에서 돌지 않는다.** 스크립트가 시작 전에 「AOSP emulator without a recognition service」를 요구해 중단한다. 이 절차의 에뮬레이터(Google Play 이미지 — R3 FCM이 요구)로는 `speech`를 **미실행**으로 두고 이유를 적는다. 돌리려면 AOSP(`google_apis`가 아닌 `default`) 이미지의 별도 AVD가 필요하다.

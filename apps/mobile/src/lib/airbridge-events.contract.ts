@@ -1,5 +1,5 @@
 // 제품 이벤트 일부를 Airbridge(MMP) 이벤트로 전달하는 계약입니다(ADR-0063). 타입만 둡니다.
-// 이벤트를 **새로 만들지 않습니다** — `analytics.contract.ts`가 모은 기존 이벤트 가운데 둘만 고릅니다.
+// 이벤트를 **새로 만들지 않습니다** — `analytics.contract.ts`가 모은 기존 이벤트 가운데 셋만 고릅니다(가입 · 최종 통과 · 엽전 팩 결제).
 //
 // 모듈 셋이 이 타입을 나눠 가집니다.
 //   - `lib/airbridge-events.ts`         — 순수. 이벤트 → Airbridge 이벤트 매핑 · sink 합성. 어느 스레드든 안전
@@ -11,7 +11,10 @@ import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./
 // ------------------------------------------------------------------ 고르는 이벤트
 
 /** Airbridge로 전달을 검토하는 기존 이벤트 이름 전부입니다. 이 밖의 이벤트는 매핑이 `null`입니다. */
-export type AirbridgeSourceEventName = "entry_completed" | "episode_final_passed";
+export type AirbridgeSourceEventName =
+  | "entry_completed"
+  | "episode_final_passed"
+  | "pack_purchased";
 
 // ------------------------------------------------------------------ Airbridge 이벤트
 
@@ -21,7 +24,25 @@ export type AirbridgeSignUpCategory = "airbridge.user.signup";
 /** Airbridge 표준 이벤트 `AirbridgeCategory.ACHIEVE_LEVEL`의 와이어 값입니다 — 에피소드 최종 통과에 씁니다. */
 export type AirbridgeAchieveLevelCategory = "airbridge.achieveLevel";
 
-export type AirbridgeEventCategory = AirbridgeSignUpCategory | AirbridgeAchieveLevelCategory;
+/**
+ * Airbridge 표준 이벤트 `AirbridgeCategory.ORDER_COMPLETED`의 와이어 값입니다(iOS · Android SDK 4.12.0에서 확인) — 엽전 팩 결제에 씁니다.
+ * 구독은 RevenueCat → Airbridge 서버 연동이 보내므로 여기 없습니다(두 번 세지 않게). 엽전 팩(NON_RENEWING_PURCHASE)은 그 연동으로 오지 않습니다.
+ */
+export type AirbridgeOrderCompletedCategory = "airbridge.ecommerce.order.completed";
+
+export type AirbridgeEventCategory =
+  | AirbridgeSignUpCategory
+  | AirbridgeAchieveLevelCategory
+  | AirbridgeOrderCompletedCategory;
+
+/** Order Complete의 상품 한 줄 — 키는 `AirbridgeAttribute.PRODUCT_ID` · `PRODUCT_NAME` · `PRODUCT_PRICE` · `PRODUCT_QUANTITY` · `PRODUCT_CURRENCY`. */
+export type AirbridgeOrderProduct = {
+  readonly productID: string;
+  readonly name: string;
+  readonly price: number;
+  readonly quantity: number;
+  readonly currency: string;
+};
 
 /** 완료한 것의 종류입니다. 시맨틱 속성 `label`(`AirbridgeAttribute.LABEL`)의 값입니다. */
 export type AirbridgeLessonContentType = "episode_final";
@@ -44,12 +65,23 @@ export type AirbridgeEvent =
         readonly level: AirbridgeLevelId;
         readonly label: AirbridgeLessonContentType;
       };
+    }
+  | {
+      readonly category: AirbridgeOrderCompletedCategory;
+      /** `AirbridgeAttribute.VALUE` · `CURRENCY` · `TRANSACTION_ID`(있을 때만) · `PRODUCTS`. 금액은 스토어 상품 금액(10진 수). */
+      readonly semanticAttributes: {
+        readonly value: number;
+        readonly currency: string;
+        readonly transactionID?: string;
+        readonly products: readonly AirbridgeOrderProduct[];
+      };
     };
 
 /**
  * 순수 매핑입니다. 입력을 고치지 않고, 던지지 않습니다.
  *   - `entry_completed`                                   → `airbridge.user.signup`, 속성 없음
  *   - `episode_final_passed`                              → `airbridge.achieveLevel`, level = 에피소드 id, `episode_final`
+ *   - `pack_purchased`(스토어 금액 · 통화가 있을 때)       → `airbridge.ecommerce.order.completed`, 상품 한 줄(수량 1)
  *   - 그 밖 전부                                          → `null`
  */
 export type AirbridgeEventFrom = (event: AnalyticsEvent) => AirbridgeEvent | null;
@@ -58,8 +90,13 @@ export type AirbridgeEventFrom = (event: AnalyticsEvent) => AirbridgeEvent | nul
 
 export type AirbridgeEventsModuleName = "AirbridgeEventsModule";
 
-/** 호스트 경계를 넘는 시맨틱 속성입니다. 값은 문자열뿐입니다. */
-export type AirbridgeSemanticAttributes = { readonly [key: string]: string };
+/**
+ * 호스트 경계를 넘는 시맨틱 속성입니다. 값은 문자열 · 수 · 상품 줄 배열(Order Complete)입니다. 옛 호스트(2026-11-19 전)는 문자열만
+ * 넘기고 나머지를 버립니다 — 그때 Order Complete는 금액 없이 갑니다.
+ */
+export type AirbridgeSemanticAttributes = {
+  readonly [key: string]: string | number | readonly AirbridgeOrderProduct[] | undefined;
+};
 
 /**
  * 호스트 네이티브 모듈입니다(iOS · Android 같은 이름 · 같은 메서드). **Airbridge 설정이 있어 SDK가
@@ -142,7 +179,7 @@ type Assert<T extends true> = T;
 /**
  * 값이 없는 검사 묶음입니다.
  *   ① 고르는 이벤트 이름이 전부 기존 이벤트 이름이다(화면 계약에서 사라지면 섬)
- *   ② 모든 Airbridge 이벤트의 시맨틱 속성이 호스트 경계(`string` 값)를 그대로 넘는다
+ *   ② 모든 Airbridge 이벤트의 시맨틱 속성이 호스트 경계(문자열 · 수 · 상품 줄)를 그대로 넘는다
  *   ③ 덧붙는 sink 키가 전부 sink 묶음 안에 있다
  */
 export type AirbridgeEventsContractChecks = [

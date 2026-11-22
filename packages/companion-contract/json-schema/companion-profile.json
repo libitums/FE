@@ -64,6 +64,9 @@
     "snapshotSelf": {
       "type": "string",
       "enum": ["female", "male", "hidden"]
+    },
+    "adultAck": {
+      "type": "boolean"
     }
   },
   "required": [

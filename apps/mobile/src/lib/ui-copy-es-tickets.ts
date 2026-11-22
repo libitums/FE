@@ -34,6 +34,8 @@ export const ticketsEs: TicketsCopy = {
     endsDate: (date) => `Termina el ${date}`,
     daysLeft: (days) => (days === 1 ? "Queda 1 día" : `Quedan ${String(days)} días`),
     dayProgress: (left, total) => `${String(left)} de ${String(total)} días`,
+    hoursLeft: (hours) => (hours === 1 ? "Queda 1 hora" : `Quedan ${String(hours)} horas`),
+    hourProgress: (left, total) => `${String(left)} de ${String(total)} horas`,
     activeMessage: "Empieza cualquier lección sin boleto.",
     endingMessage: "Después, las lecciones vuelven a usar boletos.\nConservas todo tu progreso.",
     manage: "Gestionar suscripción",

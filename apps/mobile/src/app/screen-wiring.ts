@@ -7,6 +7,7 @@ import {
   visibleSocialLoginMethodsFor,
 } from "../screens/login/login";
 import type { CatalogFreshness } from "../lib/manifest-check";
+import type { CoverDownloads } from "../screens/journey-map/catalog-map.contract";
 import { downloadSettingsWiring } from "./download-wiring";
 import type { DownloadCatalogInput } from "./download-progress";
 import type { DownloadControls, DownloadSettingsWiring } from "./download-wiring";
@@ -34,7 +35,7 @@ import type { JourneyStats, ProgressWiringArgs, StatBumpWiring } from "./learnin
 import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
-import type { EntryEventSink } from "../lib/entry-flow";
+import type { EntryEventSink, OnboardingEvent } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
@@ -53,6 +54,7 @@ import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
 import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
+import { entryPathWiring, type EntryPathWiring } from "./entry-path-wiring";
 import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
@@ -60,6 +62,9 @@ import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-
 import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
 import type { PlansWiring } from "./use-plans";
+import type { LearningTrail } from "./learning-trail";
+import { moreWiring, type MoreWiring } from "./more-wiring";
+import { rankingWiring, type RankingWiring } from "./ranking-wiring";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
 //
@@ -75,6 +80,8 @@ export type ScreenWiring = {
   onTapPendingEpisode: (episodeId: string) => void;
   /** 맨 끝 카드의 목록 확인 신선도 · 「새 이야기 확인」(ADR-0095 D9) — 받기 문지기가 채웁니다. */
   catalogFreshness?: CatalogFreshness;
+  /** 사용자 차례인 편의 표지 받기 표시(ADR-0165) — 받기 문지기가 채웁니다. */
+  catalogCoverDownloads?: CoverDownloads;
   onCheckNewStories?: () => void;
   journeyMapProgressLoad: JourneyMapProgressLoad;
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
@@ -123,6 +130,7 @@ export type ScreenWiring = {
   readonly visibleSocialMethods: () => readonly SocialLoginMethod[];
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
+  onOnboardingEvent: (event: OnboardingEvent) => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
   onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
@@ -138,12 +146,18 @@ export type ScreenWiring = {
   onSelectEntryLanguage: (language: EntryLanguage) => void;
   onChangeUiLanguage: (language: EntryLanguage) => void;
   onContinueLanguageSelect: () => void;
-  onEnterJourney: () => void;
   /** 설정이 행 구성을 고르는 값(ADR-0111). */
   accountState: AccountState;
   /** 메신저 탭 — 대화 출처와 이동 콜백(messenger-chat-ui spec §7.1). */
   messengerChat: MessengerChatWiring;
+  /** 더보기 메뉴 · Letters · My words(ADR-0169). */
+  more: MoreWiring;
+  /** 레슨 자취 — 지도의 Letters 추천이 끝난 레슨의 신호를 꺼냅니다(ADR-0169). */
+  learningTrail: LearningTrail;
+  /** 주간 순위(ADR-0170) — 서버 포트 · 순위 탭 열기. */
+  ranking: RankingWiring;
 } & GuestWiring &
+  EntryPathWiring &
   AccountWiring &
   JourneyStats &
   StatBumpWiring &
@@ -174,6 +188,7 @@ export type ScreenWiringArgs = {
   readonly downloadCatalog: () => DownloadCatalogInput;
   readonly accountState: AccountState;
   readonly setAccountState: (state: AccountState) => void;
+  readonly learningTrail: LearningTrail;
 } & ProgressWiringArgs &
   LearnerProfileControls &
   Omit<CatalogWiringArgs, "dispatch">;
@@ -222,9 +237,15 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...entryPathWiring(args),
     ...messenger,
     ...guestWiring(args),
     accountState: args.accountState,
+    ranking: rankingWiring({
+      dispatch: args.dispatch,
+      accountState: args.accountState,
+      eventSink: args.episodeIntroEventSink,
+    }),
     ...accountWiring({
       analyticsUser: args.analyticsUser,
       entryEventSink: args.entryEventSink,
@@ -232,5 +253,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     }),
     ...catalogWiring(args),
     ...learnerProfileWiring(args),
+    more: moreWiring(args),
+    learningTrail: args.learningTrail,
   };
 }

@@ -1,102 +1,193 @@
-import { useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
+import type { TouchEvent } from "@lynx-js/types";
 
-import arrowLeft from "@libitums/icons/lynx/arrow-left-03";
 import arrowRight from "@libitums/icons/lynx/arrow-right";
 import { Button } from "@libitums/ui-lynx/button";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
-import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
+import { layoutHeightFrom } from "../learning/learning-shell.contract";
 
 import {
-  nextOnboardingStep,
-  onboardingActionLabel,
+  onboardingAutoAdvanceMs,
+  onboardingAutoAdvanceStep,
   onboardingCopy,
+  onboardingStageHeight,
+  onboardingStartedEvent,
+  onboardingStepViewedEvent,
   onboardingSteps,
+  onboardingSwipeStep,
   previousOnboardingStep,
 } from "./onboarding";
+import { onboardingScrollId, onboardingTextId } from "./onboarding.contract";
 import { OnboardingQuizCards } from "./OnboardingQuizCards";
 import { OnboardingStoryCards } from "./OnboardingStoryCards";
 import { OnboardingUnitCard } from "./OnboardingUnitCard";
-import type { OnboardingScreenProps, OnboardingStep } from "./onboarding.contract";
+import type {
+  OnboardingScreenProps,
+  OnboardingStep,
+  OnboardingStepVia,
+  OnboardingSwipePoint,
+} from "./onboarding.contract";
 
 import "./onboarding-screen.css";
 
+// 타입은 `touches`를 반드시 준다고 적지만 런타임에는 빠질 수 있습니다(알림 줄 밀기와 같은 가드).
+function touchPoint(event: TouchEvent): OnboardingSwipePoint | undefined {
+  const touch = event.touches?.[0];
+  return touch === undefined ? undefined : { x: touch.pageX, y: touch.pageY };
+}
+
 /**
- * 온보딩 스텝을 소유하고 머리·스크롤 골격·진행 점·제목/본문·다음 버튼을
- * 그립니다. `step`은 화면 로컬 상태입니다 — 전이 없이 이 컴포넌트 안에서만
- * 돕니다. 마지막 스텝에서 `nextOnboardingStep`이 `null`을 주면 `onComplete`를
- * 부릅니다. 이름 · 나라는 여기서 묻지 않습니다 — 가입 직후 화면이 묻습니다.
+ * 온보딩 스텝을 소유하고 머리·스크롤 골격·진행 점·제목/본문·시작 버튼을 그립니다(ADR-0159).
+ * 스텝은 카드 영역을 밀거나, 손대지 않고 `onboardingAutoAdvanceMs`가 지나면 넘어갑니다(마지막에서
+ * 멈춤). 아래 「Get started」는 어느 스텝에서든 곧바로 `onComplete`(로그인)입니다.
  */
-export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNode {
+export function OnboardingScreen({ onComplete, onEvent }: OnboardingScreenProps): ReactNode {
   const [step, setStep] = useState<OnboardingStep>(0);
+  // 손이 닿을 때마다 올려 자동 넘김 시계를 처음부터 다시 셉니다.
+  const [touchCount, setTouchCount] = useState(0);
   const uiCopy = useUiCopy();
+  const reducedMotion = resolveReducedMotion(undefined, useMotion());
   const copy = onboardingCopy(step, uiCopy.onboarding);
-  const actionLabel = onboardingActionLabel(step, uiCopy.onboarding);
   const previous = previousOnboardingStep(step);
+  const viewed = useRef(new Set<OnboardingStep>());
+  const autoAdvanced = useRef(false);
+  const swipeStart = useRef<OnboardingSwipePoint | undefined>(undefined);
+  const swiped = useRef(false);
+
+  // 스크롤 영역과 묶음(페이지 표시 · 제목 · 본문)의 잰 높이입니다 — 카드 영역 높이의 입력입니다.
+  // 스텝마다 문구 높이가 달라 카드 영역도 스텝마다 다시 맞춥니다(카드가 스텝마다 통째로 갈립니다).
+  const [viewport, setViewport] = useState<number | undefined>(undefined);
+  const [textHeight, setTextHeight] = useState<number | undefined>(undefined);
+  const stageHeight = onboardingStageHeight({ viewport, text: textHeight });
+
+  const handleViewportLayout = (event: unknown) => {
+    "background only";
+    const height = layoutHeightFrom(event);
+    if (height !== undefined) setViewport(height);
+  };
+
+  const handleTextLayout = (event: unknown) => {
+    "background only";
+    const height = layoutHeightFrom(event);
+    if (height !== undefined) setTextHeight(height);
+  };
+
+  // 다음에 보일 스텝이 어떤 길로 왔는지입니다 — 열람 이벤트가 읽습니다.
+  const arrivedVia = useRef<OnboardingStepVia>("start");
+
+  function show(target: OnboardingStep, via: OnboardingStepVia) {
+    // oxlint-disable-next-line react/immutability
+    arrivedVia.current = via;
+    setStep(target);
+  }
+
+  // 스텝은 그 방문에서 처음 보일 때 한 번만 열람으로 셉니다(첫 렌더의 0도 여기서 셉니다).
+  useEffect(() => {
+    if (!onEvent || viewed.current.has(step)) return;
+    viewed.current.add(step);
+    onEvent(onboardingStepViewedEvent(step, arrivedVia.current));
+  }, [step, onEvent]);
+
+  // 손대지 않은 채 서 있으면 다음 스텝으로 갑니다. 스텝이 바뀌거나 손이 닿으면 다시 셉니다.
+  useEffect(() => {
+    const target = onboardingAutoAdvanceStep(step, reducedMotion);
+    if (target === null) return undefined;
+    const timer = setTimeout(() => {
+      autoAdvanced.current = true;
+      arrivedVia.current = "auto";
+      setStep(target);
+    }, onboardingAutoAdvanceMs);
+    return () => clearTimeout(timer);
+  }, [step, touchCount, reducedMotion]);
 
   function handleBack() {
     if (previous !== null) {
       playSound("button");
-      setStep(previous);
+      show(previous, "back");
     }
   }
 
   // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(첫 스텝에는 버튼이 없어 등록하지 않습니다).
   useScreenBack(previous === null ? null : handleBack);
 
-  function handleNext() {
+  const handleTouchStart = (event: TouchEvent) => {
+    "background only";
+    // oxlint-disable-next-line react/immutability
+    swipeStart.current = touchPoint(event);
+    // oxlint-disable-next-line react/immutability
+    swiped.current = false;
+    setTouchCount((count) => count + 1);
+  };
+
+  const handleTouchMove = (event: TouchEvent) => {
+    "background only";
+    const current = touchPoint(event);
+    if (swipeStart.current === undefined || current === undefined || swiped.current) return;
+    const target = onboardingSwipeStep(step, swipeStart.current, current);
+    if (target === null) return;
+    // 한 번 민 손가락은 떼기 전까지 더 넘기지 않습니다.
+    // oxlint-disable-next-line react/immutability
+    swiped.current = true;
+    show(target, target < step ? "back" : "swipe");
+  };
+
+  function handleStart() {
     playSound("button");
-    const next = nextOnboardingStep(step);
-    if (next === null) {
-      onComplete();
-      return;
-    }
-    setStep(next);
+    onEvent?.(onboardingStartedEvent(step, autoAdvanced.current));
+    onComplete();
   }
 
   return (
     <view className="onboarding-screen" data-testid="onboarding-screen" data-step={step}>
-      {/* 2026-09-21 디자인 반영: 좌상단 뒤로가기(RoundButton · neutral)입니다. 첫
-          스텝에는 돌아갈 곳이 없어 버튼을 두지 않지만, 행 높이는 남겨 스텝 사이에
-          레이아웃이 튀지 않게 합니다. */}
-      <view className="onboarding-screen-header" data-testid="onboarding-screen-header">
-        {previous === null ? null : (
-          <RoundButton
-            accessibilityLabel={uiCopy.common.back}
-            icon={arrowLeft}
-            variant="neutral"
-            size="xl"
-            bindtap={handleBack}
-          />
-        )}
-      </view>
+      {/* 좌상단 뒤로 버튼은 두지 않습니다(사용자 결정 2026-11-19 — 밀기 · 자동 넘김으로 충분). 돌아가기는
+          오른쪽으로 밀기와 시스템 뒤로가기가 맡습니다. 행 높이는 위 여백으로 남겨 레이아웃을 바꾸지 않습니다. */}
+      <view className="onboarding-screen-header" data-testid="onboarding-screen-header" />
 
       <scroll-view
+        id={onboardingScrollId}
         className="onboarding-screen-scroll"
         data-testid="onboarding-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={false}
+        bindlayoutchange={handleViewportLayout}
       >
-        <view className="onboarding-screen-content">
+        <view
+          className="onboarding-screen-content"
+          data-testid="onboarding-screen-pager"
+          bindtouchstart={handleTouchStart}
+          bindtouchmove={handleTouchMove}
+        >
           {/* 2026-09-21 디자인 반영: 스텝마다 400 높이 카드 영역이 갈립니다 — 첫 스텝은
               그림 카드와 대화 카드, 둘째는 겹쳐 쌓인 듣기 카드, 셋째는 학습 유닛 카드
               하나입니다. 카드가 스텝을 떠나며 언마운트되면 재생·칠하기·완료 표시
               상태도 함께 사라집니다 — 되돌아왔을 때 처음부터 다시 보이는 것은 이
               언마운트 때문입니다. */}
-          {step === 2 ? (
-            <OnboardingUnitCard />
-          ) : step === 1 ? (
-            <OnboardingQuizCards />
-          ) : (
-            <OnboardingStoryCards />
-          )}
+          <view
+            className="onboarding-screen-stage"
+            data-testid="onboarding-screen-stage"
+            style={{ height: `${stageHeight}px` }}
+          >
+            {step === 2 ? (
+              <OnboardingUnitCard />
+            ) : step === 1 ? (
+              <OnboardingQuizCards />
+            ) : (
+              <OnboardingStoryCards />
+            )}
+          </view>
 
           {/* 페이지 표시 · 제목 · 본문 묶음입니다. 카드와의 간격(32)은 content의 gap이
               집니다. */}
-          <view className="onboarding-screen-text">
+          <view
+            id={onboardingTextId}
+            className="onboarding-screen-text"
+            bindlayoutchange={handleTextLayout}
+          >
             {/* 진행 래퍼가 보조기술 이름을 집니다. 안의 PageIndicator는 그림만
                 맡습니다. */}
             <view
@@ -138,15 +229,15 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
         </view>
       </scroll-view>
 
-      <view className="onboarding-screen-next" data-testid="onboarding-screen-next">
+      <view className="onboarding-screen-start" data-testid="onboarding-screen-start">
         <Button
-          label={actionLabel}
+          label={uiCopy.onboarding.getStarted}
           variant="neutral"
           size="xl"
           width="hug"
           icon={arrowRight}
           iconPosition="trailing"
-          bindtap={handleNext}
+          bindtap={handleStart}
         />
       </view>
     </view>

@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@lynx-js/react/testing-library";
 
@@ -48,7 +49,7 @@ const lines = (): HTMLElement[] =>
   screen.queryAllByTestId(/^ui-lynx-option-selector-romanization-/);
 const cell = (id = itemId): HTMLElement =>
   within(screen.getByTestId(id)).getByTestId("ui-lynx-settings-cell");
-const openTab = (tab: "journey" | "settings"): void =>
+const openTab = (tab: "journey"): void =>
   void fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
 const tapToggle = (): void => void fireEvent.tap(cell(), {});
 const leaveLesson = (): void => {
@@ -103,7 +104,7 @@ test("IT-CR2. 저장값이 off인 설치에서는 같은 문항에 줄이 없고
 
 test("IT-CR3. 설정 셀을 탭하면 이벤트 1건(value false) · 저장 off · 셀 꺼짐, 다시 탭하면 on · true다", async () => {
   const booted = await startReply();
-  openTab("settings");
+  openSettingsFromMore();
   expect(cell()).toHaveAttribute("data-checked", "true");
   expect(optionEvents(booted.settings)).toHaveLength(0);
 
@@ -127,14 +128,14 @@ test("IT-CR3. 설정 셀을 탭하면 이벤트 1건(value false) · 저장 off 
 
 test("IT-CR4. 설정에서 끄면 다음 문항에 줄이 없고, 다시 켜면 줄이 돌아온다", async () => {
   await startReply();
-  openTab("settings");
+  openSettingsFromMore();
   tapToggle();
   openTab("journey");
   tapNode(u00, "S9");
   expectNoLines(3);
 
   leaveLesson();
-  openTab("settings");
+  openSettingsFromMore();
   tapToggle();
   openTab("journey");
   tapNode(u00, "S9");
@@ -145,12 +146,12 @@ test("IT-CR4. 설정에서 끄면 다음 문항에 줄이 없고, 다시 켜면 
 
 test("IT-CR5. 끈 뒤 앱을 다시 세우면 설정 셀은 꺼짐이고 문항에 줄이 없다", async () => {
   const booted = await startReply();
-  openTab("settings");
+  openSettingsFromMore();
   tapToggle();
 
   await booted.restart();
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(cell()).toHaveAttribute("data-checked", "false");
   openTab("journey");
   tapNode(u00, "S9");
@@ -159,7 +160,7 @@ test("IT-CR5. 끈 뒤 앱을 다시 세우면 설정 셀은 꺼짐이고 문항�
 
 test("IT-CR6. 끈 뒤 로그아웃해도 키는 off로 남고 다시 들어오면 설정은 꺼짐이다", async () => {
   const booted = await startReply();
-  openTab("settings");
+  openSettingsFromMore();
   tapToggle();
 
   fireEvent.tap(cell("ui-lynx-settings-group-item-sign-out"), {});
@@ -172,7 +173,7 @@ test("IT-CR6. 끈 뒤 로그아웃해도 키는 off로 남고 다시 들어오�
     serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
   );
   await booted.restart();
-  openTab("settings");
+  openSettingsFromMore();
   expect(cell()).toHaveAttribute("data-checked", "false");
 });
 

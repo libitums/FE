@@ -68,3 +68,22 @@ describe("CP-U1 ~ U3 companion-chat 목적지(ADR-0127)", () => {
     }
   });
 });
+
+describe("PR-U12 보상 캠페인 id(ADR-0175)", () => {
+  test("여정 맵 목적지의 캠페인 id를 읽고, 형식이 틀리면 칸만 버린다", () => {
+    expect(
+      pushTargetFrom({ kind: "journey-map", campaignId: "202611211930-tutorial-lesson1-ab12" }),
+    ).toEqual({ kind: "journey-map", campaignId: "202611211930-tutorial-lesson1-ab12" });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: "../x" })).toEqual({
+      kind: "journey-map",
+    });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: "a".repeat(81) })).toEqual({
+      kind: "journey-map",
+    });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: 7 })).toEqual({ kind: "journey-map" });
+    // 다른 목적지에 실린 id는 읽지 않습니다.
+    expect(pushTargetFrom({ kind: "notifications", campaignId: "c1" })).toEqual({
+      kind: "notifications",
+    });
+  });
+});

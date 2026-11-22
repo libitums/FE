@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import { uiCopyFor } from "../../lib/ui-copy";
 import {
   coinPacks,
   findCoinPack,
@@ -30,6 +31,17 @@ describe("formatCoinCount · formatPrice", () => {
     expect(formatCoinCount(1240)).toBe("1,240");
     expect(formatCoinCount(-3)).toBe("0");
     expect(formatCoinCount(9.9)).toBe("9");
+  });
+
+  // CS3b — 묶음 기호는 화면 언어의 것(2026-11-19 l10n 점검: es · id · vi에서 「1,200」은 1.2로 읽힌다).
+  test("[CS3b] 묶음 기호를 받으면 그것으로 — 문구표 en · ja 「,」, es · id · vi 「.」", () => {
+    expect(formatCoinCount(1200, ".")).toBe("1.200");
+    expect(formatCoinCount(1234567, ".")).toBe("1.234.567");
+    expect(formatCoinCount(500, ".")).toBe("500");
+    const separators = (["en", "es", "id", "ja", "vi"] as const).map(
+      (language) => uiCopyFor(language).coinShop.digitSeparator,
+    );
+    expect(separators).toEqual([",", ".", ".", ",", "."]);
   });
 
   test("[CS4] 센트를 달러 두 자리로", () => {

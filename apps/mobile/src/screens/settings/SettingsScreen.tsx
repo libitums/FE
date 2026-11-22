@@ -34,6 +34,7 @@ export function SettingsScreen({
   onToggleSessionOption,
   onOpenChatSettings,
   onOpenPlans,
+  rankingHidden,
 }: SettingsScreenProps): ReactNode {
   const copy = useUiCopy();
   // 학습 묶음은 목록 맨 위입니다 — 켬/끔 줄은 셀 전체가 탭 대상이고 바뀐 뒤 값을 알립니다.
@@ -73,6 +74,20 @@ export function SettingsScreen({
             title: copy.plans.settingsRow,
             description: copy.plans.settingsRowDescription,
             onNavigate: onOpenPlans,
+          },
+        ];
+  // 「Hide me from ranking」(ADR-0170) — 회원이고 서버 값을 읽었을 때만.
+  const rankingItems: readonly SettingsGroupItem[] =
+    rankingHidden === undefined || rankingHidden === null
+      ? []
+      : [
+          {
+            id: "ranking-hidden",
+            trailing: "toggle",
+            title: copy.ranking.settings.hideTitle,
+            description: copy.ranking.settings.hideBody,
+            checked: rankingHidden.hidden,
+            onChange: rankingHidden.onChange,
           },
         ];
   const account = useAccountActions({ onSignIn, onSignOut, onDeleteAccount, onLayerChange });
@@ -128,7 +143,7 @@ export function SettingsScreen({
         <view className="settings-screen-list" data-testid="settings-screen-list">
           <SettingsGroup
             accessibilityLabel={copy.settings.group.learning}
-            items={[...learningItems, ...chatItems, ...planItems]}
+            items={[...learningItems, ...chatItems, ...rankingItems, ...planItems]}
           />
           <SettingsGroup accessibilityLabel={copy.settings.group.account} items={accountItems} />
           <SettingsGroup

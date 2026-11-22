@@ -1,6 +1,7 @@
 // 문장 순서 화면의 배치 · 아래 버튼 · 읽기 줄 · 줄 위 판정을 정하는 순수 함수입니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import { canCheckArrangement, canPlaceChip } from "./sentence-order";
 import type { SentenceOrderPhase, SentenceOrderSessionState } from "./sentence-order";
@@ -102,4 +103,28 @@ export function dialogueChipInteractionOf(
   chipIndex: number,
 ): SentenceOrderInteraction {
   return canPlaceDialogueChip(question, state, chipIndex) ? "tappable" : "locked";
+}
+
+/** 듣고 조립의 판정 뒤 정답 공개 — 정답 한글 문장 · 로마자(보기 로마자 설정이 켜졌을 때) · 학습자 언어 뜻입니다. */
+export type SentenceOrderReveal = {
+  readonly korean: string;
+  readonly romanization: string | null;
+  readonly meaning: string | null;
+};
+
+/**
+ * 판정 뒤의 정답 공개입니다(QA 2026-11-20 — 틀려도 로마자만 서고 정답 한글 · 뜻이 없었습니다). 듣고 조립에만 서고, 맞아도
+ * 섭니다(타자 입력 · 음절 조립의 정답 상자와 같은 규칙). 판정 전이거나 다른 줄 배치 · 대화면 `null`입니다.
+ */
+export function sentenceOrderRevealOf(
+  question: SentenceOrderQuestion,
+  phase: SentenceOrderPhase,
+  romanization: ChoiceRomanization,
+): SentenceOrderReveal | null {
+  if (phase !== "checked" || question.audio?.kind !== "listen") return null;
+  return {
+    korean: question.answerOrder.map((index) => question.chips[index] ?? "").join(" "),
+    romanization: romanization === "shown" ? (question.reading?.romanization ?? null) : null,
+    meaning: question.meaning ?? null,
+  };
 }

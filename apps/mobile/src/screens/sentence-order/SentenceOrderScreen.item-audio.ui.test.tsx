@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-libra
 import {
   echoAudioOf,
   ECHO_SOURCE,
+  passAnswerEchoDelay,
   lessonAudioStub,
   listenAudioOf,
   LISTEN_SOURCE,
@@ -17,7 +18,7 @@ import { bottomAction, tapCheck } from "./sentence-order-check.test-support";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // `ui` 계층: 문장 순서 활동의 문항 음성 — LISTEN_BUILD(듣기 갈래)는 상대 말풍선 자리의 3열과 자동 재생,
-// WORD_ORDER(정답 뒤 재생 갈래)는 확인한 순간 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
+// WORD_ORDER(정답 뒤 재생 갈래)는 확인 뒤 효과음 틈을 두고 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void, rate?: number) => string>(),
@@ -169,13 +170,22 @@ describe("LISTEN_BUILD — 듣기 갈래", () => {
 });
 
 describe("WORD_ORDER — 정답 뒤 재생 갈래", () => {
-  test("EC4. 확인 전에는 재생이 없고 확인한 순간 한 번 재생하며 줄은 없다", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("EC4. 확인 전에는 재생이 없고 확인 뒤 효과음 틈을 두고 한 번 재생하며 줄은 없다", () => {
     const { lesson } = lessonAudioStub();
     mount([wordOrder], lesson);
     place(wordOrder);
     expect(playAudio).not.toHaveBeenCalled();
 
     check();
+    expect(playAudio).not.toHaveBeenCalled();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     const call = playAudio.mock.calls[0];
@@ -190,6 +200,7 @@ describe("WORD_ORDER — 정답 뒤 재생 갈래", () => {
     place(wordOrder, [...wordOrder.answerOrder].reverse());
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     expect(onListenItemAnswered).not.toHaveBeenCalled();
@@ -201,6 +212,7 @@ describe("WORD_ORDER — 정답 뒤 재생 갈래", () => {
     place(wordOrder);
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });
@@ -210,6 +222,7 @@ describe("WORD_ORDER — 정답 뒤 재생 갈래", () => {
     mount([wordOrder, wordOrderBase], lesson);
     place(wordOrder);
     check();
+    passAnswerEchoDelay();
     stopAudio.mockClear();
 
     fireEvent.tap(bottomAction(), {});

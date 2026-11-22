@@ -145,6 +145,7 @@ export const profileJa: ProfileCopy = {
 };
 
 export const coinShopJa: CoinShopCopy = {
+  digitSeparator: ",",
   title: "Yeopjeon",
   subtitle: "朝鮮の昔の真鍮の銭",
   balanceLabel: "所持",
@@ -162,6 +163,14 @@ export const coinShopJa: CoinShopCopy = {
   notice: {
     title: "お支払いは近日公開",
     description: "コインの購入はまだご利用いただけません。もうしばらくお待ちください。",
+  },
+  purchaseFailed: "購入を完了できませんでした。もう一度お試しください。",
+  purchaseWait: {
+    confirming: "購入を確認しています…",
+    late: "購入は完了しています。まもなく反映されます。",
+    added: (_count, display) => `コイン${display}枚を追加しました`,
+    adding: "ウォレットに追加中",
+    updating: "更新中",
   },
 };
 

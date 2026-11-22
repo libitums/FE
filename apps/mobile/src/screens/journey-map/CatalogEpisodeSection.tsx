@@ -34,6 +34,7 @@ export function CatalogEpisodeSection({
   onSelectUnit,
   coverImageUrlOf,
   clearedUnit = null,
+  coverDownload = { kind: "none" },
 }: CatalogEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   const guided = guide !== null;
@@ -80,6 +81,7 @@ export function CatalogEpisodeSection({
               onSelect={startCover}
               layer={guided ? "guide" : "map"}
               illustration={illustration}
+              download={coverDownload}
             >
               {guided ? (
                 <FirstUnitMapTooltip

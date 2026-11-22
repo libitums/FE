@@ -6,7 +6,7 @@
 // 만들고(`chat-send-turn-recover.ts`, ADR-0151), 그것도 걸리면 `guardrail_blocked`로 끝냅니다.
 
 import type { AgeBand, Feedback, ModerationVerdict, PersonaCard } from "./chat-send.contract.ts";
-import type { TurnContext } from "./chat-send-context.ts";
+import { type TurnContext, turnRomance } from "./chat-send-context.ts";
 import {
   type Finished,
   type ModerationRecord,
@@ -32,6 +32,7 @@ import {
   resolveLearning,
   withLearnedUse,
 } from "./chat-send-learning.ts";
+import { withChatWords } from "./chat-send-chat-words.ts";
 import { sendSuggestions, suggestionSettings, suggestionsMeta } from "./chat-send-suggest.ts";
 import { applyTranslation } from "./chat-send-translate.ts";
 import { outputChecker, recoverReply, startFollowUps } from "./chat-send-turn-recover.ts";
@@ -40,7 +41,7 @@ import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { eligibleBeats, pickStory } from "./companion-story.ts";
-import { crisisResourcesFor } from "./companion-safety.ts";
+import { crisisResourcesFor, outputCheckRequired } from "./companion-safety.ts";
 import type { SegmentDelta } from "./companion-segments.ts";
 import { withUsageMeta } from "./companion-usage.ts";
 
@@ -49,6 +50,8 @@ export type { TurnContext };
 export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
   const ageBand: AgeBand = gate.ageBand;
+  const { tier: romanceTier, line } = turnRomance(context); // 적용 수위(ADR-0164) · 로맨스 선(ADR-0168)
+  const checkOutput = outputCheckRequired(ageBand, line);
   const moderation: ModerationRecord[] = [];
   const persona: PersonaCard = turn.persona ?? { name: body.character_id };
   const topicState = topicStateFrom(turn.topicState);
@@ -83,6 +86,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     // 이번 턴 지시는 시스템 프롬프트가 아니라 답 요청의 `directive`로 — 시스템 · 지난 대화의 캐시를 깨지 않는다.
     directive: null,
     story: story.text,
+    romanceTier,
   };
   const prompt = companionSystemPrompt(promptInput);
   const withUsage = (assistant: Record<string, unknown>) => withUsageMeta(assistant, context.usage);
@@ -108,11 +112,20 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const system = `${prompt.stable}${systemSplit}${prompt.dynamic}`;
   let reply = startReply(context, history, system, abort, branch.directive);
   // 추천 답변 칩을 그대로 보냈으면 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장). 고쳐 보냈거나 직접 입력 · 지난 칩이면 보통처럼.
+  // 주간 순위 단어(`chat-send-chat-words.ts`)는 입력 검사를 지난 메시지만 센다 — 같은 카드 · 같은 `correction`에 실린다.
+  let inputPassed: (allowed: boolean) => void = () => {};
+  const passed = new Promise<boolean>((resolve) => (inputPassed = resolve));
   const feedback = (
     context.choice.inputSource === "suggestion"
       ? Promise.resolve(skippedFeedback(body.text))
       : startFeedback(context, abort, learnedTargets(pool, topicState))
-  ).then((card) => withLearnedUse(card, pool, body.text, context.choice));
+  )
+    .then((card) => withLearnedUse(card, pool, body.text, context.choice))
+    .then(async (card) =>
+      (await passed)
+        ? withChatWords(deps, env, context.userId, turn.userMessageId, card, pool)
+        : card,
+    );
   let correctionSent = false;
   const sendCorrection = (value: Feedback) => {
     if (correctionSent) return;
@@ -122,11 +135,14 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   let input: ModerationVerdict;
   try {
-    input = await moderateInput(llm, body.text, history, ageBand, abort.signal);
+    input = await moderateInput(llm, body.text, history, ageBand, abort.signal, line);
   } catch {
+    // 입력 검사가 실패하면 채팅 단어를 세지 않는다 — 기다리던 피드백 사슬도 여기서 풀린다(리뷰).
+    inputPassed(false);
     return fail("upstream_unavailable", "failed");
   }
   moderation.push({ layer: "input", category: input.category, action: input.action });
+  inputPassed(input.action === "allow");
 
   if (input.action === "crisis") {
     abort.abort();
@@ -152,8 +168,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   }
 
   const sendDelta = (delta: SegmentDelta) => sink.send({ event: "delta", data: delta });
-  // 성인은 받는 대로(사후 검사 작업은 아직 없다), 미성년자 · 나이 모름은 출력 검사 뒤에.
-  if (ageBand === "adult") {
+  // 성인 standard는 받는 대로(사후 검사 작업은 아직 없다), 미성년자 · 나이 모름 · 완화 수위(open)는 출력 검사 뒤에.
+  if (!checkOutput) {
     reply.goLive(sendDelta);
     void feedback.then(sendCorrection);
   }
@@ -170,7 +186,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   let follow = startFollowUps(context, followInput, result.segments);
   let recovered: string | null = null;
 
-  if (ageBand !== "adult") {
+  if (checkOutput) {
     const check = outputChecker(context, moderation);
     let output: ModerationVerdict;
     try {
@@ -226,6 +242,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
         meta: {
           model: llm.model,
           ageBand,
+          romanceTier,
+          romanceLine: line,
           firstDeltaMs: result.firstDeltaMs,
           totalMs: result.totalMs,
           branch: branch.action,

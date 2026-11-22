@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup, screen } from "@lynx-js/react/testing-library";
 
@@ -43,10 +44,10 @@ afterEach(() => {
 
 // ------------------------------------------------------------------ MC-I1 · 탭
 
-test("MC-I1. 로그인 뒤 바 항목은 여정 · 롤플레이 · 메신저 · 설정 넷이 이 순서로 선다", async () => {
+test("MC-I1. 로그인 뒤 바 항목은 여정 · 롤플레이 · 메신저 · 순위 · 더보기 다섯이 이 순서로 선다(ADR-0169 · ADR-0170)", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
-  expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "settings"]);
+  expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "ranking", "more"]);
 });
 
 test("MC-I1. 메신저 탭을 누르면 채팅 목록이 서고 탭 표시가 메신저로 옮겨 간다", async () => {
@@ -77,7 +78,7 @@ test("MC-I1. 다른 탭에 갔다 메신저 탭으로 돌아오면 목록이 다
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(present(listScreen)).toBe(false);
 
@@ -317,7 +318,7 @@ test("EV-I7. 학습 ↔ 채팅 영역을 옮길 때마다 머문 초로 surface_
   vi.setSystemTime(start + 95_400);
   openTab("messenger");
   vi.setSystemTime(start + 95_400 + 30_000);
-  openTab("settings");
+  openSettingsFromMore();
   openTab("messenger");
 
   const ended = events.filter((event) => event.name === "surface_session_ended");

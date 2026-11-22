@@ -102,7 +102,7 @@ Accept: text/event-stream
 | 7 | 단계 제재 — 일시 차단 중(M3) | 403 `temporarily_blocked` |
 | 8 | 이용 시간 상한 | 403 `usage_time_limit` |
 | 9 | 멱등 · 동시성 — 같은 `client_message_id`가 이미 있음 · 같은 대화에 진행 중인 턴 | 409 `duplicate_message` · `turn_in_progress` |
-| 10 | 덕수쌤 체험 한도(M4) | 402 `trial_exhausted` |
+| 10 | 체험 한도(M4 · 20261216부터 모든 인물 합산) | 402 `trial_exhausted` |
 | 11 | 크레딧 예약(M4) | 402 `insufficient_credits` |
 | 12 | 유저 메시지 저장 → **200, SSE 시작** | — |
 | 13 | 입력 검사 | 스트림 안 `error`(`guardrail_blocked`) 또는 `crisis` |
@@ -172,7 +172,7 @@ Accept: text/event-stream
 | `{ user_id, character_id, force? }` | 한 대화(플레이그라운드). `force`는 빈도 규칙만 건너뛴다 — 연령 · 지역은 건너뛰지 않는다 |
 
 - 빈도 규칙은 `companion.proactive_skip_reason` 하나가 판정한다(PRD §3.8 표). 응답 `outcomes[].result`가 `sent` 또는 건너뛴 이유
-  (`off` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` · `not_allowed_for_age` · `no_conversation` · `blocked` · `failed` 등)다.
+  (`off` · `no_timezone` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` · `not_allowed_for_age` · `no_conversation` · `blocked` · `failed` 등)다.
 - 연령 · 지역: 성인, 또는 지역을 알고 미국이 아닌 미성년자만 후보다. 나이 모름은 후보가 아니다.
 - 선톡은 유저 입력 없이 나가므로 **연령과 상관없이 동기 출력 검사를 지난 것만** 저장한다. L1 번역을 붙여 저장한다. 차감하지 않는다.
 
@@ -194,7 +194,7 @@ Accept: text/event-stream
 | 미국 12 ~ 17세 | 푸시 없음. 후보 단계에서 이미 빠지지만 푸시 쪽에서도 연령 규칙을 다시 지킨다 |
 | 조용한 시간 | 현지 22:00 ~ 08:00 금지. 후보 판정이 이미 지키지만 재시도 · 지연 발송이 이 시간에 떨어지지 않게 한다 |
 | 유저 설정 | `proactive_pref = off`면 선톡도 푸시도 없다. 앱의 알림 권한 · 기기 등록(`push_devices`)이 없으면 보내지 않는다 |
-| 실패 | 푸시 실패가 **저장된 메시지를 되돌리지 않는다.** 결과는 `outcomes`에 따로 적는다(예 `push: "sent" \| "no_device" \| "failed"`) |
+| 실패 | 푸시 실패가 **저장된 메시지를 되돌리지 않는다.** 결과는 `outcomes`에 따로 적는다(예 `push: "sent" \| "no_device" \| "no_room" \| "failed"`) |
 
 **걸 자리**
 
@@ -257,6 +257,9 @@ state 앞). 첫 인사(`companion-greet`) · 선톡(20261123)에도 붙는다. �
 - `POST { kind: "moderation" | "feedback" | "translation" | "suggestions" | "learning" | "reply", model?, judgeModel?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
 - `reply`(2026-11-14): 운영 페르소나 카드로 만든 답장 + 채점 노드의 축 판정(페르소나 · 말투 · 스포일러 · 학습자 수준 · 자연스러움 · 안전 · 지시가 있으면 학습 표현). 채점 모델 기본 `claude-opus-5-5`, 스포일러 메모는 채점자에게만. 모양은 함수 README 「companion-eval」.
 - `?docs=1`의 `prompts`에 `refusal { deflect, warn, userText }` · `suggestions`, `models`에 `suggest`가 있다.
+- ⟨2026-11-19 ADR-0164⟩ 케이스에 `romanceTier`(`open` · `standard`, 기본 standard — 성인이 아니면 open이어도 standard로 돈다)가 있다(검사 · 답장). `?docs=1`에
+  `prompts.moderationOpen { input, output_sync }`와 고정 평가 세트 `evalSets: [{ id, title, kind, cases, expect? }]`(추천 친구 넷의 페르소나 유지 10개씩 ·
+  로맨스 수위 경계 — 검사 세트는 케이스마다 기대 판정 `expect`)가 더 있다. 대시보드가 세트마다 `POST`로 돌린다.
 
 ### 2.8 답변 평가 · 고쳐서 다시 보내기 · 학습 연결 [구현 2026-11-10 — 학습 연결은 `feat/companion-learning`]
 
@@ -340,7 +343,9 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_list_memories(p_character_id text)` | M3 | `null`이면 공유 프로필 메모리 | `[{ id, characterId, kind, content, createdAt }]` | `28000` |
 | `companion_update_memory(p_memory_id uuid, p_content text)` | M3 | 1 ~ 500자 [제안] | `void` | `28000` · `22023` · `P0002` |
 | `companion_delete_memory(p_memory_id uuid)` | M3 | — | `void`(지운 표시 `deleted_at`) | `28000` · `P0002` |
-| `companion_get_wallet()` | M4 | — | `{ sub, subExpiresAt, grant, paid, trialRemaining }` | `28000` |
+| `companion_get_wallet()` | M4 | — | `{ sub, subExpiresAt, grant, paid, trialRemaining }` — `trialRemaining`은 20261216부터 합산 체험의 남은 수 | `28000` |
+| `companion_friends()` | 2026-11-19 | — | `{ friends: [{ id, romanceTier }] }` — 이 학습자에게 보이는 추천 친구만, 순서대로(`romanceTier`는 인물의 수위 `open` · `standard`) | `28000` |
+| `companion_ack_adult()` | 2026-11-19 | — | `{ ok, adultAck }` — 생년상 성인일 때만 동의를 남기고 참. 나이 모름 · 미성년자 · 프로필 없음은 `{ ok: false, adultAck: false }` | `28000` |
 | `companion_list_media(p_character_id text, p_kind text, p_before timestamptz, p_limit int)` | 2026-11-13 | 앨범 — complete만, 최신부터. null이면 전부, `p_limit` 1 ~ 50 | `{ items: Media[], hasMore }` | `28000` · `22023` |
 | `companion_get_media(p_ids uuid[], p_message_ids uuid[])` | 2026-11-13 | 내 media id 또는 메시지 id로, 모든 상태, 합 100개까지 | `Media[]`(최신부터) | `28000` · `22023` |
 
@@ -353,8 +358,16 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
   (PRD §3.9). 계약 `companionMemoryListSchema` · `json-schema/companion-memories.json`. `companion_update_memory`가 `user_edited`를 켠다.
 - ⟨2026-11-13⟩ 학습자 모습: `companion_save_profile`에 `p_snapshot_self`(`female` · `male` · `hidden`, 기본값 `null` — 옛 호출은 그대로).
   `companion_load_profile`이 `snapshotSelf`(기본 `female`)를 더 돌려준다. 운영자 `companion_operator_set_profile`도 같은 인수, `companion_inspect_testers`가 보여 준다.
+- ⟨2026-11-19 ADR-0164⟩ 추천 친구 · 완화 수위: `companion_load_profile`이 `adultAck`(성인 확인 동의가 있고 지금 생년상 성인일 때만 참)를 더 돌려준다.
+  `companion_friends()`는 출시 스위치 `settings.friends_mode`(`off` 빈 목록 · `testers` 시험 계정만(기본) · `on` 모두)와 연령(생년으로 미성년자면 open 친구 없음)을
+  따르고, 앱 전체가 시험 계정 전용(`testers_only`)인데 시험 계정이 아니면 빈 목록이다. 보이지 않는 친구는 `chat-send` · `companion-greet` · `companion-suggest` ·
+  스냅샷 · 음성에서 `not_available`이고 `companion_list_characters`에 오지 않는다. 친구 추가는 무료 · 무제한이고 추가한 상태는 앱이 쥔다.
+  추가하자마자 첫 말은 `companion-greet` `trigger: "unlock"`(페르소나 `unlockLines` = `companion-friends.json`의 `firstMessage.ko`). 첫 인사는 무료라 체험 · 엽전이
+  없어도 온다(맥락이 `insufficient_credits`를 통과시킨다). 생년을 성인이 아니게 바꾸면 서버가 동의를 지운다. 계약 `companionFriendsResponseSchema` ·
+  `companionAckAdultResponseSchema` · JSON Schema `companion-friends` · `companion-ack-adult`.
 - 친밀도 수치는 어느 함수도 돌려주지 않는다.
-- `unavailableReason`: `trial_exhausted` · `not_available`(M4 전 비시험 계정 · 아직 열리지 않은 캐릭터) · `age_restricted`.
+- `unavailableReason`: `trial_exhausted`(무료 등급이 합산 체험을 다 쓰고 잔액이 한 턴 값 미만) · `not_available`(비시험 계정 · 아직 열리지 않은 캐릭터 — 20261216부터
+  무료 등급도 모든 인물이 열린다) · `age_restricted`.
 - `l1`은 앱의 언어 선택 값을 앱이 넣는다(BCP 47 언어 태그, 예 `en` · `tl` · `hi`). `feedback_mode`: `separate` · `natural` · `prefix`.
   `age_source`: `self` · `social` · `store_signal`.
 - **Message**(목록 한 줄)
@@ -379,7 +392,7 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 
 | 함수 | 마일스톤 | 하는 일 |
 |---|---|---|
-| `companion_turn_gate(p_user_id, p_character_id, p_client_message_id, p_now)` | M1 | §2.1 판정 5 ~ 9를 한 번에 보고 결과 코드 · 대화 id · 연령대 · 지역 규칙을 돌려준다 |
+| `companion_turn_gate(p_user_id, p_character_id, p_client_message_id, p_now)` | M1 | §2.1 판정 5 ~ 9를 한 번에 보고 결과 코드 · 대화 id · 연령대 · 지역 규칙을 돌려준다. ⟨20261216⟩ 숨긴 추천 친구는 `not_available`, 적용 로맨스 수위 `romanceTier`(`open` · `standard`)를 더 싣고, 엽전 판정(`insufficient_credits`)은 연령 · 이용 시간 판정 뒤다 |
 | `companion_begin_turn(…)` | M1 | 대화가 없으면 만들고, 유저 메시지를 `status = 'pending'`으로 저장한다(멱등) |
 | `companion_finish_turn(…)` | M1 | 캐릭터 메시지 · 상태 JSON 결과(친밀도 · 화제 상태)를 저장하고 유저 메시지 상태를 닫는다 |
 | `companion_record_usage(p_user_id, p_now, p_seconds)` | M1 | 이용 시간 누적(§7 `usage_daily`) |
@@ -406,14 +419,23 @@ ops-dashboard 컴패니언 탭이 부른다. ops-dashboard는 서버에서 돌�
 
 | 함수 | 마일스톤 | 돌려주는 것 |
 |---|---|---|
-| `companion_inspect_testers()` | M1 | 시험 계정 목록(`userId` · `email` · `ageBand` · `l1`) — 플레이그라운드가 고를 계정 |
+| `companion_inspect_testers()` | M1 | 시험 계정 목록(`userId` · `email` · `ageBand` · `l1`) — 플레이그라운드가 고를 계정. ⟨20261216⟩ `adultAck`(성인 확인 동의가 있고 지금 생년상 성인일 때만 참) |
 | `companion_inspect_conversation(p_user_id, p_character_id, p_before, p_limit)` | M1 | 메시지(최신부터) · 각 턴의 판정 기록 · 신고 · 보낸 고지. 커서는 앱용 `companion_list_messages`와 같다 |
 | `companion_inspect_moderation(p_since, p_outcome, p_limit)` | M1 | 기간 안의 판정(차단 · 위기 · 비동기 검사 실패)을 최신부터. `p_outcome`이 null이면 전부 |
 | `companion_inspect_reports(p_since, p_limit)` | M1 | 메시지 신고와 신고된 메시지 앞뒤 턴 |
-| `companion_inspect_memory(p_user_id, p_character_id)` | M3 | 장기 메모리 항목(지운 항목 제외)과 요약 · 용량 `capacity { character, shared }`(2026-11-09) |
+| `companion_inspect_memory(p_user_id, p_character_id)` | M3 | 장기 메모리 항목(지운 항목 제외)과 요약 · 용량 `capacity { character, shared }`(2026-11-09). ⟨20261216⟩ `access { friendsMode, tester, ageBand, adultAck, kind (friend · story · 없는 인물 null), personaTier, romanceTier (적용 수위), romanceReason (open이 아니면 persona_standard → not_adult → no_ack 순의 첫 까닭, open이면 null), visible, hiddenReason (보이지 않으면 friends_off · not_tester · minor_open) }` — 관문과 같은 도우미로 계산 |
 | `companion_inspect_wallet(p_user_id, p_limit)` | M4 | 지갑 잔액 · 최근 원장 · 열린 예약 |
 | `companion_inspect_media(p_user_id, p_limit)` | 2026-11-13 | 스냅샷 · 음성 행 전부(프롬프트 · 판정 · 메타 · 오류 · 예약 상태) · 오늘 수 · 설정. `p_user_id` null이면 모든 유저 |
 | `companion_media_orphans(p_limit)` | 2026-11-13 | 행이 없는 `companion-media` 파일 이름(계정 삭제의 Storage 지우기가 실패한 경우 등) |
+
+⟨20261216 ADR-0164⟩ 운영자 함수(쓰기, service_role 전용 · 시험 계정만 — 아니면 `P0002 not a tester`, `companion_operator_reset`과 같다):
+
+| 함수 | 돌려주는 것 |
+|---|---|
+| `companion_operator_set_adult_ack(p_user_id uuid, p_ack boolean)` | `{ result: ok · not_adult, adultAck, ageBand }`. 켜기(`true`)는 생년상 성인일 때만 지금 시각으로 남기고, 나이 모름 · 미성년자 · 프로필 없음이면 바꾸지 않고 `not_adult`. 끄기(`false`)는 늘 `ok`. `p_ack` null은 `22023`. 앱의 `companion_ack_adult()`는 authenticated라 서버 키로 못 불러 따로 둔다 |
+
+- 생년은 따로 함수를 두지 않는다 — 기존 `companion_operator_set_profile(p_birth_year, p_clear_age …)`로 바꾸고, 성인이 아니게 바뀌면 트리거가 동의도 지운다.
+- `companion_operator_reset`은 동의를 지우지 않는다(그 인물의 대화 · 관계와 계정의 공유 기억 · 제재 · 고지 · 체험 사용량만 — 프로필은 그대로).
 
 - 미성년자 대화도 보인다. 조회 기록을 남길지(누가 언제 어느 유저를 봤나)는 M1 구현 때 정한다 — [제안] `companion.inspect_log`에 남긴다.
 - 반환 모양은 계약 패키지의 `json-schema/`에 함께 싣는다(§8.2).
@@ -445,7 +467,7 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `state` | M1 | `{ speechLevel, speechLevelChanged, memoryFull }` — `memoryFull`은 턴 시작 때 이 캐릭터 층이 가득 찼는지(PRD §3.9) | 정상 턴에서 정확히 1, `done` 바로 앞 |
 | `crisis` | M1 | `{ resources: [{ name, phone?, url?, hours? }], region }` — 안내 글은 O15 | 위기 턴에서 1, 그 뒤 `done` |
 | `error` | M1 | `{ code, retryable }` | 0 ~ 1, **마지막**(뒤에 `done` 없음) |
-| `done` | M1 | `{ assistantMessageId, creditsSpent, balance }` — `balance`는 M4 전 `null` | 정상 · 위기 턴에서 정확히 1, 마지막 |
+| `done` | M1 | `{ assistantMessageId, creditsSpent, balance }` — `balance`는 M4 전 `null`. ⟨20261216⟩ 선택 칸 `romanceTier`(이번 턴의 적용 수위 `open` · `standard`, 옛 서버는 없음 — 없으면 standard). 저장 meta(턴 · 거절 · 첫 인사 · 선톡)에도 `romanceTier` | 정상 · 위기 턴에서 정확히 1, 마지막 |
 
 **`correction` data**
 
@@ -512,7 +534,7 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `duplicate_message` | 사전 | 409 | 아니오 | `{ messageId, messageStatus }` | 이미 처리된 메시지 |
 | `turn_in_progress` | 사전 | 409 | 예(잠시 뒤) | — | 같은 대화에 진행 중인 턴 |
 | `not_latest_message` | 사전 | 409 | 아니오 | — | 고쳐서 다시 보내기(`replaces_message_id`)의 메시지가 마지막 유저 메시지가 아님 — 그 뒤에 다른 메시지(선톡 등)가 왔다(2026-11-10, §2.8) |
-| `trial_exhausted` | 사전 | 402 | 아니오 | `{ characterId }` | 덕수쌤 체험 한도(M4) |
+| `trial_exhausted` | 사전 | 402 | 아니오 | `{ characterId }` | 체험 한도(M4) — 20261216부터 모든 인물 합산. 관문은 같은 경우를 `insufficient_credits`로 낸다 |
 | `insufficient_credits` | 사전 | 402 | 아니오 | `{ required, balance }` | 크레딧 부족(M4) |
 | `rate_limited` | 사전 | 429 | 예 | `{ retryAfterSeconds }` | 짧은 시간에 너무 많은 요청 [제안 — 값은 설정] |
 | `server_misconfigured` | 사전 | 500 | 아니오 | — | 서버 설정 누락 |
@@ -601,15 +623,15 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 | `credit_wallets` | M4 | `user_id` PK · `sub_balance` · `sub_expires_at` · `grant_balance` · `paid_balance` · `updated_at` | 잔액은 0 이상 CHECK |
 | `credit_ledger` | M4 | `id` · `user_id` · `delta` · `bucket` · `kind`(`grant` · `reserve` · `settle` · `release` · `expire`) · `reason` · `ref_id` · `created_at` | 추가만 |
 | `credit_holds` | M4 | `id` · `user_id` · `client_message_id`(고유: `user_id`와 함께) · `amount` · `buckets` jsonb · `status`(`open` · `settled` · `released`) · `created_at` · `closed_at` | |
-| `trial_usage` | M4 | PK(`user_id`, `character_id`) · `used` | |
+| `trial_usage` | M4 | PK(`user_id`, `character_id`) · `used` | 20261216부터 사용자의 합(모든 인물)으로 한도를 본다 |
 | `entitlements` | M4 | `user_id` PK · `tier` · `expires_at` · `source` | 결제 작업이 채운다(§2.4) |
 
 **2026-11-09 구현에서 바뀐 칸**
 
 | 표 | 바뀐 것 |
 |---|---|
-| `settings`(새 표, 한 행) | 단가 · 체험 수 · 문턱 · 상한 같은 설정 값(구현 메모). 선톡 `proactive_daily_cap` 2 · `proactive_gap` · `proactive_gap_daily2` · `proactive_spacing`. `memory_cap`(50, 유저 × 캐릭터) · `shared_memory_cap`(30, 유저) |
-| `profiles` | `proactive_pref`(기본 `daily1`) · `proactive_hour` · `timezone` · `reply_suggestions`(기본 `true`) |
+| `settings`(새 표, 한 행) | 단가 · 체험 수 · 문턱 · 상한 같은 설정 값(구현 메모). ⟨20261216⟩ `friends_mode`(추천 친구 출시 스위치) · `trial_character`는 쓰지 않음. 선톡 `proactive_daily_cap` 2 · `proactive_gap` · `proactive_gap_daily2` · `proactive_spacing`. `memory_cap`(50, 유저 × 캐릭터) · `shared_memory_cap`(30, 유저) |
+| `profiles` | `proactive_pref`(기본 `daily1`) · `proactive_hour` · `timezone` · `reply_suggestions`(기본 `true`) · `adult_ack_at`(성인 확인 동의, 20261216 — 생년이 성인이 아니게 바뀌면 트리거가 지운다) |
 | `corrections` | `card` jsonb — 고정 카드 전체(§4.2). 옛 열(`status` · `kind` · `items` · `better`)은 찾아보기용으로 함께 쓴다 |
 | `messages` | `segments[].translation`(L1 번역) · `meta.translation`(번역 결과 이유) · `suggestions` jsonb(추천 답변 캐시) · 거절 답 `meta.refusal` · `refusalStage` · `refusalCategory` · `refusalSource` |
 | `memories` | `embedding` 열 없음(pgvector 미룸) · `user_edited`(유저가 고침 — 용량 밀어내기에서 지킴) |
@@ -716,9 +738,9 @@ FE가 네트워크 없이 재생한다. **파일이 아니라 TS 모듈**이다(
 | 판정 10 · 11 → 12(저장) | 체험 · 크레딧 예약과 유저 메시지 저장을 `companion_begin_turn` 한 트랜잭션에. 확정 · 해제도 `companion_finish_turn` 안에서 | RPC 왕복을 줄이고, 예약만 남고 메시지가 없는 상태를 없앤다 |
 | 후처리는 pgmq 큐 + `companion-job-worker` | 턴이 끝난 뒤 같은 요청에서 `waitUntil`로 기억 추출 · 요약 | MVP. 재시도가 필요해지면 큐로 옮긴다. 성인 사후 출력 검사는 아직 없다 — **2026-11-09 결정: 미룸**(PRD §3.11 · O21) |
 | 장기 메모리 의미 검색은 pgvector | 최근 기억 N개(`memory_prompt_limit`)를 넣는다 | 임베딩 모델 미정(C). `embedding` 열은 모델을 고른 뒤 더한다 — **2026-11-09 결정: 미룸**. 용량 상한 `memory_cap` · `shared_memory_cap`(PRD §3.9) |
-| 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 | O2 · O3 전 초안 |
+| 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 → 20261127 엽전이 있으면 모든 인물, 20261216 체험도 모든 인물 합산(ADR-0164) | O2 · O3 전 초안 |
 | 말투 단계 상한 | 페르소나의 `maxSpeechLevel`(bible.yaml register에서): 윤경 · 재민 · 덕수쌤 polite, 도윤 casual, 미나 slang | bible이 「끝까지 존댓말」을 정한 인물이 있다 |
-| 선톡 푸시 | 메시지만 저장. 푸시는 `send-push` 목적지 추가 뒤 | §2.3 그대로 M3 남은 일 — 세현님 인계(§2.3.1) |
+| 선톡 푸시 | 저장 뒤 푸시(`companion-proactive-push.ts`, 스위치 `settings.proactive_push` off · testers · on — 2026-11-22) | [ADR-0127](../adr/0127-companion-push-target.md) 「서버 쪽」 |
 | 반복 위반 단계(회피 → 경고 → 차단) | 입력 차단만 세어 창(24시간) 안 3회면 30분 차단. 경고 이벤트는 없다(회피는 페르소나 프롬프트) | 계약에 경고 이벤트가 없다. 회피 · 경고는 **페르소나 거절**로 만들었다(§2.1 · `done.refusal`) |
 | 모델 하나(설정 값) | 단계별 환경 변수 — 답변 · 피드백 Sonnet, 검사 · 기억 · 요약 · 번역 Haiku. Haiku 호출에는 서버 쪽 대체 모델을 싣지 않는다 | 원가 · 지연(PRD §3.14, ADR-0135 초안) |
 | `translation` 미정(O9) | 턴마다 답 뒤 따로 호출, 6초 · 실패해도 턴은 정상 | PRD §3.4 · §2.1 |

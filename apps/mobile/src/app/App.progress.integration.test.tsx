@@ -121,8 +121,12 @@ test("[IPG1] 부팅 뒤 서버 진행을 불러와 맵에 그리고, 연속 칩�
   // 이 파일의 갱신 토큰은 `sub`를 든 JWT 모양이라 프로필 동기화도 돌아 `load_learner_profile`이 낍니다 -
   // 진행 RPC 둘만 걸러 견줍니다(프로필 조회는 이 파일의 대역이 모르는 RPC라 204로 답받습니다).
   // 요금제 미리보기(ADR-0144 추가 2026-11-17)가 로그인 뒤 요금제 표(`companion_plans`)도 한 번 읽어 함께 거릅니다.
+  // 가입 보상(ADR-0174)도 지도가 한가해지면 이 기기에서 한 번 묻습니다(`companion_claim_signup_reward`) — 함께 거릅니다.
   const progressRpcs = rpcs.filter(
-    (rpc) => !rpc.name.endsWith("_learner_profile") && rpc.name !== "companion_plans",
+    (rpc) =>
+      !rpc.name.endsWith("_learner_profile") &&
+      rpc.name !== "companion_plans" &&
+      rpc.name !== "companion_claim_signup_reward",
   );
   expect(progressRpcs.map((rpc) => rpc.name)).toEqual([
     "load_learning_progress",

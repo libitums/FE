@@ -1,7 +1,7 @@
 // 번역 · 기억 · 요약 · 답장 채점(평가 전용) 단계의 LLM 요청 · 결과 타입. `chat-send.contract.ts`가 다시 내보냅니다(`CompanionLlm`이 씁니다).
 
 import type { FeedbackHistoryEntry } from "./companion-feedback.contract.ts";
-import type { HistoryEntry, PersonaCard, Segment } from "./chat-send.contract.ts";
+import type { HistoryEntry, PersonaCard, RomanceLine, Segment } from "./chat-send.contract.ts";
 import type { SpeechLevel } from "./companion-contract/index.ts";
 
 export type TranslationRequest = {
@@ -77,6 +77,8 @@ export type ReplyJudgeRequest = {
   readonly persona: PersonaCard;
   readonly speechLevel: SpeechLevel;
   readonly ageBand: "adult" | "minor" | "unknown";
+  /** 답장 프롬프트에 실은 적용 로맨스 선(ADR-0168) — safety 축이 이 선으로 본다. 없으면 연령대의 기본(`defaultRomanceLine`). */
+  readonly romanceLine?: RomanceLine;
   /** 학습자가 아는 이야기 범위 · 아직 모르는 것(채점자에게만 보인다 — 답장 프롬프트에는 없다). */
   readonly spoilerNote: string | null;
   /** 학습자가 앱에서 배운 표현(답장 프롬프트에 실은 것과 같다). */

@@ -61,6 +61,16 @@ test("EW1. 온보딩 완료는 값 없이 로그인으로 간다", () => {
   expect(actions).toEqual([{ type: "push", screen: { name: "login" } }]);
 });
 
+test("EW1b. 온보딩 스텝 열람 · 시작 이벤트는 진입 sink로 그대로 가고 전이는 없다(ADR-0159)", () => {
+  const { log, actions, wiring } = harness(null);
+
+  wiring.onOnboardingEvent({ name: "onboarding_step_viewed", step: "2", via: "swipe" });
+  wiring.onOnboardingEvent({ name: "onboarding_started", step: "2", autoAdvanced: false });
+
+  expect(log).toEqual(["event:onboarding_step_viewed", "event:onboarding_started"]);
+  expect(actions).toEqual([]);
+});
+
 test("EW2. ① 이름의 Continue는 친 이름을 route에 남기고 ② 나라로 간다", () => {
   const { log, actions, wiring } = harness(null);
 

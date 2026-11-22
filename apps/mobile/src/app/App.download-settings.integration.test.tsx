@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { cleanup } from "@lynx-js/react/testing-library";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@lynx-js/react/testing-library";
@@ -48,7 +49,7 @@ test("[DL1] 설정 › Downloads를 열면 download_settings_opened 하나를 �
     <App progressSeed={legacyPassedSeed} settingsEventSink={settingsEventSink} />,
     { storageModule: module },
   );
-  tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"));
+  openSettingsFromMore();
   expect(screen.getByTestId("ui-lynx-settings-group-item-download")).toHaveTextContent("Downloads");
   tap(downloadsCell());
 
@@ -62,7 +63,7 @@ test("[DL1] 설정 › Downloads를 열면 download_settings_opened 하나를 �
 test("[DL2] 정책을 고르면 저장소에 남고, 뒤로 갔다 다시 열면 그 값이 골라져 있다", async () => {
   const { store, module } = storage();
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, { storageModule: module });
-  tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"));
+  openSettingsFromMore();
   tap(downloadsCell());
 
   tap(screen.getByTestId("ui-lynx-option-selector-item-wifi-only"));
@@ -78,7 +79,7 @@ test("[DL2] 정책을 고르면 저장소에 남고, 뒤로 갔다 다시 열면
 });
 
 const openDownloads = () => {
-  tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"));
+  openSettingsFromMore();
   tap(downloadsCell());
 };
 const rowText = (id: string) => screen.getByTestId(`download-settings-episode-${id}`);

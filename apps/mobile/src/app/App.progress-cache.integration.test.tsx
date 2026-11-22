@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -215,8 +216,7 @@ const cachedOf = (u: string) => {
   const raw = env.store.get(cachedKey(u));
   return raw === undefined ? undefined : (JSON.parse(raw) as Record<string, unknown>);
 };
-const openSettings = () =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+const openSettings = () => openSettingsFromMore();
 const openJourney = () =>
   void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 const cell = (id: string) =>

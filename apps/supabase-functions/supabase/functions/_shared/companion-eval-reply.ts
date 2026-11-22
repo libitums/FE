@@ -20,12 +20,15 @@ import {
   offerDirective,
 } from "./companion-learning.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
+import { offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { storyCardFor } from "./companion-story.ts";
 import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
 
 export type ReplyEvalCase = {
   readonly text: string;
   readonly ageBand?: "adult" | "minor" | "unknown";
+  /** 적용 로맨스 수위(ADR-0164). 생략하면 standard. */
+  readonly romanceTier?: "open" | "standard";
   readonly l1?: string | null;
   readonly speechLevel?: SpeechLevel | null;
   readonly characterId?: string;
@@ -88,6 +91,7 @@ export async function evalReply(input: {
     : null;
   const speechLevel = item.speechLevel ?? "polite";
   const ageBand = item.ageBand ?? "adult";
+  const line = romanceLine(ageBand, item.romanceTier, persona, speechLevel);
   const expressions = (item.expressions ?? []).map((entry, index) => ({
     id: `x${index + 1}`,
     kind: "expr",
@@ -111,6 +115,7 @@ export async function evalReply(input: {
     persona,
     speechLevel,
     ageBand,
+    romanceTier: item.romanceTier ?? "standard",
     l1: item.l1 ?? null,
     expressions,
     summary: item.summary ?? null,
@@ -161,6 +166,7 @@ export async function evalReply(input: {
         persona,
         speechLevel,
         ageBand,
+        romanceLine: offeredRomanceLine(line, persona),
         spoilerNote: item.spoilerNote ?? null,
         story,
         expressions: expressions

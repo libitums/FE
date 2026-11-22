@@ -130,14 +130,14 @@ export async function runEntryFlow(
   render(<App phoneSignIn="visible" {...sinks} />);
   await passSplash();
   // 온보딩은 세 스텝이고, 가입 직후 ① 이름 · ② 나라를 지나 언어 선택에 섭니다(ADR-0059 D7 2026-10-20).
-  for (let step = 0; step < 3; step++) tapButton("onboarding-screen-next");
+  tapButton("onboarding-screen-start");
   tapButton("login-screen-method-apple");
   await advance(0);
   passLearnerSignup();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButton("language-select-screen-next");
   beforeStart();
-  tapButton("journey-entry-screen-start");
+  tapButton("journey-entry-screen-story");
   await advance(0);
   const reached = screen.queryByTestId("journey-map-screen") !== null;
   await act(async () => {

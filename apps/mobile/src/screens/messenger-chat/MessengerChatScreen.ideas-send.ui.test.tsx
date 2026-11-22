@@ -104,7 +104,7 @@ test("IS-UI4. 엽전이 모자라면 보내지 않고 엽전 상점이 열린다
     roomId,
     seed: seedOf(fixtureRoom(roomId)),
     wallet: createCoinWallet({ earned: 2 }),
-    trial: createTrialStore(20),
+    trial: createTrialStore(0),
     tier: "free",
   });
   tapId(ids.ideasButton);

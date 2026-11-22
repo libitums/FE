@@ -1,3 +1,4 @@
+import { goToTabRoot, openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
@@ -14,7 +15,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
+const openTab = (tab: "journey" | "roleplay"): void =>
   void fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
 const mapBox = () => screen.getByTestId("app-tab-map");
 
@@ -35,7 +36,7 @@ test("TK2. 롤플레이 · 설정 탭에 있는 동안 지도는 숨김 · 터�
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   for (const tab of ["roleplay", "settings"] as const) {
-    openTab(tab);
+    goToTabRoot(tab);
     expect(mapBox().getAttribute("class")).toContain("app-tab-map-hidden");
     expect(mapBox()).toHaveAttribute("accessibility-elements-hidden", "true");
     expect(mapBox()).toHaveAttribute("user-interaction-enabled", "false");
@@ -48,7 +49,7 @@ test("TK2. 롤플레이 · 설정 탭에 있는 동안 지도는 숨김 · 터�
 
 test("TK3. 탭 루트가 아닌 화면(설정 › 다운로드)으로 들어가면 지도는 지운다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   fireEvent.tap(

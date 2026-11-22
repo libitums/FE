@@ -27,14 +27,13 @@ export const onboardingId: OnboardingScreenCopy = {
       body: "Unit harian yang singkat cocok dengan harimu.\nSelesaikan satu unit hanya dalam lima menit.",
     },
   },
-  next: "Berikutnya",
   getStarted: "Mulai",
   progress: (ordinal, total) => `Langkah ${ordinal} dari ${total}`,
   storyChat: {
-    staff: "Staf",
-    welcome: "Selamat datang! Sedang mencari sesuatu?",
-    sunscreen: "Apakah ada tabir surya?",
-    thisWay: "Ada, lewat sini.",
+    friend: "Doyun",
+    atStore: "Aku lagi di depan minimarket. Mau minum apa?",
+    water: "Tolong belikan sebotol air!",
+    onMyWay: "Oke. Aku segera ke sana!",
   },
   quiz: { replay: "Putar ulang", stop: "Berhenti", play: "Putar" },
   unit: {
@@ -57,9 +56,22 @@ export const languageSelectId: LanguageSelectCopy = {
 export const journeyEntryId: JourneyEntryCopy = {
   title: "Perjalananmu menanti",
   display: "Mulai ceritamu",
-  caption: "Jelajahi Seoul, temui orang baru, dan belajar bahasa Korea sambil jalan.",
+  caption: "Belum kenal Hangul? Kenali beberapa huruf sebelum mendarat di Seoul.",
   notice: "Beberapa gambar dalam layanan ini dibuat menggunakan teknologi AI",
-  start: "Mulai",
+  basics: "Belajar dasarnya dulu",
+  basicsDetail: "6 huruf, 3 bunyi, lalu cerita",
+  story: "Langsung ke cerita",
+  firstSteps: {
+    progress: (current, total) => `Langkah ${current} dari ${total}`,
+    lettersTitle: "Kenali huruf pertamamu",
+    lettersLead: "Satu konsonan dan satu vokal membentuk satu blok bunyi.",
+    lettersHear: "Ketuk huruf untuk mendengarnya.",
+    lettersNext: "Ayo gabungkan",
+    readyTitle: "Kamu baru saja membaca bahasa Korea!",
+    readyMeaning: "“Kamu pergi juga?”",
+    readyBody: "Ceritamu di Seoul akan segera dimulai.",
+    readyGo: "Iya, ayo!",
+  },
 };
 
 export const loginId: LoginCopy = {

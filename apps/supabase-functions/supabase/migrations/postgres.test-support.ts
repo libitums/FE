@@ -78,7 +78,17 @@ export async function startTestDatabase() {
         raw_app_meta_data jsonb not null default '{}'::jsonb,
         raw_user_meta_data jsonb not null default '{}'::jsonb,
         created_at timestamptz not null default now(),
-        last_sign_in_at timestamptz
+        last_sign_in_at timestamptz,
+        phone text,
+        is_anonymous boolean not null default false
+      );
+      -- 로그인 제공자 신원(가입 보상의 재가입 막기 — 20261222가 읽는다). 실제 표의 열 중 쓰는 것만.
+      create table auth.identities (
+        id uuid primary key default gen_random_uuid(),
+        user_id uuid not null references auth.users (id) on delete cascade,
+        provider text not null,
+        provider_id text not null,
+        unique (provider_id, provider)
       );
       create function auth.uid() returns uuid language sql stable as $$
         select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;

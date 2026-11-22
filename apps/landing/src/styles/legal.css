@@ -1,0 +1,137 @@
+/* 법률 문서(개인정보 처리방침 · 이용약관) — `components/LegalPage.astro`만 씁니다(ADR-0167). */
+.legal {
+  margin-top: var(--header-height);
+  padding-block: clamp(48px, 7vw, 96px);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.legal__languages,
+.legal__siblings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-16);
+  color: var(--fg-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.legal__languages a,
+.legal__siblings a,
+.legal__section a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.legal__languages a[aria-current="page"] {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.legal__title {
+  margin-top: var(--libitum-spacing-24);
+  font-family: var(--font-accent);
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.24;
+  letter-spacing: -0.02em;
+}
+
+.legal__effective {
+  margin-top: var(--libitum-spacing-8);
+  color: var(--fg-muted);
+}
+
+.legal__note {
+  margin-top: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--fg-muted);
+  font-size: 0.9375rem;
+}
+
+.legal__section {
+  margin-top: var(--libitum-spacing-40);
+}
+
+.legal__section h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.legal__section h3 {
+  margin-top: var(--libitum-spacing-24);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.legal__section p,
+.legal__section ul,
+.legal__table {
+  margin-top: var(--libitum-spacing-16);
+}
+
+.legal__section ul {
+  padding-left: 1.25em;
+  list-style: disc;
+}
+
+.legal__section li + li {
+  margin-top: var(--libitum-spacing-8);
+}
+
+/* 표는 좁은 화면에서 이 상자 안에서만 가로로 밀립니다 — 페이지 전체가 넘치지 않게. */
+.legal__table {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.legal__table table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.legal__table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.legal__table th,
+.legal__table td {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal__table thead th {
+  background: var(--bg-secondary);
+  font-weight: 700;
+}
+
+.legal__table tbody th {
+  font-weight: 600;
+}
+
+.legal__table tbody tr:last-child th,
+.legal__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.legal__siblings {
+  margin-top: var(--libitum-spacing-40);
+  padding-top: var(--libitum-spacing-24);
+  border-top: 1px solid var(--line);
+}

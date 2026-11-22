@@ -68,7 +68,7 @@ export function LearnerCountryScreen({
   const rows = port.search(query);
   const sections = learnerCountrySectionsOf(rows);
   const country = countryCode === null ? null : port.byCode(countryCode);
-  const preview = country === null ? null : port.previewOf(null, country);
+  const preview = country === null ? null : port.previewOf(null, country, copy.language);
   const searching = query.trim() !== "";
   const countLine = !searching
     ? copy.signup.country.allCountries(rows.length)

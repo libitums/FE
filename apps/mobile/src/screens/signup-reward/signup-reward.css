@@ -1,0 +1,338 @@
+/* 가입 권유 카드 · 가입 보상 모달(ADR-0174, 시안 Main · Reward). 모달의 틀은 엽전 출시 모달(`launch.css`)을 그대로 쓰고, 여기는 카드와
+   모달 안 무대(주머니 · 빛 · 톡 튀는 엽전) · 금액 줄만 둡니다. 움직임은 토큰 길이 · 가속만(d1 배수 지연), 움직임 줄이기(`signup-still`)면 없음.
+
+   황동 면 #FFF4E0 · 테두리 #F3DDB3 · 금액 글자 #9A5E12는 색 토큰 패키지에 없습니다 — 상점 보유 카드 · 보너스 알약(`coin-shop-screen.css`)과
+   엽전 칩 숫자색(`coinTextColor`)의 값을 그대로 씁니다. 그림 칸 크기(64 × 72 · 128 × 136)와 톡 튀는 끝 자리는 시안 실측입니다. */
+
+/* ---- A. 카드: 셸 기준 바텀 내비 위(`bottom`은 인라인 — `signupCardBottom`). 바(z 1) 위, 대화상자 아래 ---- */
+.signup-card {
+  position: absolute;
+  left: var(--libitum-spacing-16);
+  right: var(--libitum-spacing-16);
+  z-index: var(--libitum-elevation-z-floating);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16) var(--libitum-spacing-12)
+    var(--libitum-spacing-12);
+  border-width: 1px;
+  border-style: solid;
+  border-color: #f3ddb3;
+  border-radius: var(--libitum-radius-xl);
+  background-color: #fff4e0;
+  box-shadow: var(--libitum-elevation-shadow-s3);
+  animation: signup-card-in var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.signup-card-art {
+  width: var(--libitum-spacing-64);
+  height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* 가끔 통 튐 — 한 주기(d9 × 3) 앞 62%는 가만히 있고 뒤에서 튀었다 앉습니다. 바닥을 축으로 기웁니다. */
+.signup-card-pouch {
+  width: var(--libitum-spacing-64);
+  height: 72px;
+  transform-origin: 50% 100%;
+  animation: signup-hop calc(var(--libitum-motion-duration-d9) * 3)
+    var(--libitum-motion-easing-easing) infinite;
+  animation-delay: var(--libitum-motion-duration-d9);
+}
+
+.signup-card-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+}
+
+.signup-card-title {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.signup-card-body {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 알약 — brand-primary-pressed 면에 흰 글(5.5 : 1). brand-primary(#F46B18)는 흰 작은 글에 3 : 1이라 쓰지 않습니다. */
+.signup-card-pill {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: var(--libitum-spacing-6) 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.signup-card-pill-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+/* ---- B. 모달 무대: 빛 · 톡 튀는 엽전 · 주머니(위로 겹침 순서대로) ---- */
+.signup-reward-stage {
+  position: relative;
+  align-self: center;
+  width: 220px;
+  height: 152px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signup-reward-glow {
+  position: absolute;
+  width: 136px;
+  height: 136px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+  animation: signup-glow var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+}
+
+.signup-reward-pouch {
+  width: 128px;
+  height: 136px;
+  animation: signup-pouch-in var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter-expressive) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+}
+
+/* 엽전은 주머니 입(무대 가운데 위)에서 출발해 위로 흩어지며 사라집니다. 끝에는 opacity 0이라 남지 않습니다. */
+.signup-reward-pop {
+  position: absolute;
+  top: 56px;
+  left: 98px;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  opacity: 0;
+  animation-duration: var(--libitum-motion-duration-d9);
+  animation-timing-function: var(--libitum-motion-easing-enter);
+  animation-fill-mode: both;
+}
+
+/* 무제한 티켓 보상(ADR-0175) — 주머니 자리에 무제한 모달의 큰 무한 기호(128 × 64)를 같은 등장 움직임으로. */
+.reward-ticket-infinity {
+  height: 64px;
+}
+
+.signup-reward-pop-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.signup-reward-pop-0 {
+  animation-name: signup-pop-0;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 15);
+}
+.signup-reward-pop-1 {
+  animation-name: signup-pop-1;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 16);
+}
+.signup-reward-pop-2 {
+  animation-name: signup-pop-2;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 17);
+}
+.signup-reward-pop-3 {
+  animation-name: signup-pop-3;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 18);
+}
+.signup-reward-pop-4 {
+  animation-name: signup-pop-4;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 19);
+}
+.signup-reward-pop-5 {
+  animation-name: signup-pop-5;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 20);
+}
+
+/* 금액 줄 — 엽전(날기 출발점) + `+N`. */
+.signup-reward-amount-row {
+  align-self: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+}
+
+.signup-reward-amount-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+.signup-reward-amount {
+  color: #9a5e12;
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-heading-l-line-height);
+}
+
+/* ---- 움직임 줄이기 ---- */
+.signup-still,
+.signup-still .signup-card-pouch,
+.signup-still .signup-reward-glow,
+.signup-still .signup-reward-pouch {
+  animation: none;
+}
+
+.signup-still .signup-reward-pop {
+  display: none;
+}
+
+@keyframes signup-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes signup-hop {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  70% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  78% {
+    transform: translateY(0) rotate(3deg);
+  }
+  86% {
+    transform: translateY(-4px) rotate(0deg);
+  }
+}
+
+@keyframes signup-glow {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes signup-pouch-in {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(var(--libitum-motion-scale-reward));
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  75% {
+    transform: translateY(0) scale(var(--libitum-motion-scale-enter));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes signup-pop-0 {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(var(--libitum-motion-scale-reward));
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-88px, -40px) scale(1);
+  }
+}
+@keyframes signup-pop-1 {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(var(--libitum-motion-scale-reward));
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-58px, -76px) scale(1);
+  }
+}
+@keyframes signup-pop-2 {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(var(--libitum-motion-scale-reward));
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-18px, -90px) scale(1);
+  }
+}
+@keyframes signup-pop-3 {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(var(--libitum-motion-scale-reward));
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(24px, -88px) scale(1);
+  }
+}
+@keyframes signup-pop-4 {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(var(--libitum-motion-scale-reward));
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(64px, -72px) scale(1);
+  }
+}
+@keyframes signup-pop-5 {
+  0% {
+    opacity: 0;
+    transform: translate(0px, 0px) scale(var(--libitum-motion-scale-reward));
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(90px, -34px) scale(1);
+  }
+}

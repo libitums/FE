@@ -20,7 +20,13 @@ export type ShellEdgeSource = {
  * 메신저 목록은 자기 머리(제목 + 엽전 칩)만 쓰고 안전 영역 바로 아래에서 시작합니다(사용자 결정 2026-11-09, ADR-0113 결정 ④ 뒤집음).
  */
 export function appHeaderVisibleOn(screen: Screen): boolean {
-  return screen.name !== "messenger-list";
+  // Letters · My words(ADR-0169) · 순위(ADR-0170)도 자기 머리만 씁니다(시안 — 위 칩 줄 없음).
+  return (
+    screen.name !== "messenger-list" &&
+    screen.name !== "letters" &&
+    screen.name !== "wordbook" &&
+    screen.name !== "ranking"
+  );
 }
 
 /** 화면별 셸 가장자리 처리를 정합니다. */

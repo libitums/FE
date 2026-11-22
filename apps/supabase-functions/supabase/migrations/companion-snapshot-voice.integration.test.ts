@@ -216,10 +216,15 @@ test("SV1. 설정 기본값 · 버킷 · 캐릭터 설정 · 학습자 뒷모습
     "select id, media->>'voiceId' as voice, media->'refSlugs' as slugs from companion.characters order by id",
   );
   expect(characters.rows).toEqual([
+    // 추천 친구(20261216)의 목소리는 인물 스튜디오에서 고른 것(2026-11-19).
+    { id: "daeun", voice: "jCmXpvRzefYTd42Z167f", slugs: ["daeun"] },
     { id: "doyun", voice: "rCm09Tf1yMYbOyCRLDyB", slugs: ["doyun"] },
     { id: "duksu", voice: "WW9FljMgKZtSNvBwgs3R", slugs: ["deoksu", "duksu", "deoksu-teacher"] },
+    { id: "geonwoo", voice: "xKhEv04MyhAMd5Vl86Lv", slugs: ["geonwoo"] },
+    { id: "haejun", voice: "mJyWu2KRFhJX5zsGaF5s", slugs: ["haejun"] },
     { id: "jaemin", voice: "hBLOHZ3ct4ofaRNnBHcs", slugs: ["jaemin"] },
     { id: "mina", voice: "xi3rF0t7dg7uN2M0WUhr", slugs: ["mina"] },
+    { id: "seoyeon", voice: "CWm9F3GUmYN8uz8dJcTA", slugs: ["seoyeon"] },
     { id: "yoonkyung", voice: "ah4r1hZOydd3XWlHOm3Y", slugs: ["yoonkyung"] },
   ]);
   await app.query("select public.companion_save_profile(null, null, 'en', null)");

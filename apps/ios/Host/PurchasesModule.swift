@@ -66,6 +66,8 @@ final class PurchasesModule: NSObject, LynxModule {
       return
     }
     Purchases.shared.logIn(userId) { _, _, error in
+      // 로그인한 고객에도 Airbridge 기기 id를 건다 — 기존 계정으로 들어오면 익명 때 건 값이 따라오지 않는다.
+      if error == nil { PurchasesAttribution.linkAirbridgeDevice() }
       callback(["status": error == nil ? "ok" : "failed"])
     }
   }
@@ -121,8 +123,12 @@ final class PurchasesModule: NSObject, LynxModule {
       Purchases.shared.purchase(product: product) { transaction, _, error, cancelled in
         if cancelled {
           callback(["status": "cancelled"])
-        } else if error == nil, transaction != nil {
-          callback(["status": "purchased", "productId": product.productIdentifier])
+        } else if error == nil, let transaction {
+          // 거래 id — JS가 Airbridge Order Complete의 transactionID로 실어 중복을 막는다(ADR-0063 2026-11-19).
+          callback([
+            "status": "purchased", "productId": product.productIdentifier,
+            "transactionId": transaction.transactionIdentifier,
+          ])
         } else {
           callback(["status": "failed"])
         }

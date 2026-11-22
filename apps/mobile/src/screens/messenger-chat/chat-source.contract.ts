@@ -142,7 +142,12 @@ export type ChatSnapshot = {
 
 // 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
 export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
-import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129)
+import type {
+  ChatCorrection,
+  ChatCorrectionChange,
+  ChatRating,
+  ChatWordsResult,
+} from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129) · 채팅 단어(ADR-0170)
 import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
 import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
@@ -162,6 +167,8 @@ export type ChatCorrectionNote =
 export type ChatMyNotes = {
   readonly meaning: ChatLoad<ChatMeaning>;
   readonly correction: ChatCorrectionNote;
+  /** 이 글로 얻은 채팅 단어(ADR-0170) — 서버 방에서 센 결과가 왔을 때만. */
+  readonly chatWords?: ChatWordsResult;
 };
 /** 대화 비우기의 결과입니다(ADR-0156). */
 export type ChatClearOutcome = "cleared" | "busy" | "failed";

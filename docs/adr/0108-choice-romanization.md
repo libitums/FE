@@ -123,3 +123,10 @@
 ### 적용 기록 ⟨2026-11-06⟩ — D8: PR #386(ADR-0107) 뒤에 병합
 
 이 작업이 둘째로 병합되어 D8을 맡았다. `app.css`의 ui-lynx 로마자 글꼴 규칙(`.app .ui-lynx-chat-bubble-annotation-romanization`)에 `.app .ui-lynx-option-selector-romanization`을 더해 보기 로마자도 Duru Roman(Inter Italic 500)으로 그린다. compact 축소 규칙은 크기 · 줄 높이 · 자간만 caption으로 내리고 글꼴은 덮지 않는다 — caption 글꼴(Duru Sans)로 덮으면 합성 기울임이 된다(CSS-CR1 · CSS-CR2).
+
+### ⟨2026-11-20⟩ 빈칸 채우기 — 답 전 로마자 줄은 빈칸 자리를 숨긴다
+
+- **사용자 결정** (2026-11-20, 위키 QA-2026-11-20-iOS-1.2.0 2번): CLOZE 제시문 로마자 줄이 답 전에 빈칸 자리 정답 로마자(밑줄)를 보여 답을 알려 줬다(u00 S2-01 「annyeonghaseyo」). 답 전에는 정답 범위를 한글 줄과 같은 `___`로 두고 나머지는 그대로, 답한 뒤에는 지금처럼 채운 문장 · 정답 밑줄이다.
+- 매핑은 그대로 채운 줄과 범위(`romanizationEmphasis`)를 싣고, 화면이 답 전에 `clozeRomanizationMasked`로 범위를 되돌린다 — 정답이 여러 로마자 토큰이어도 범위 하나가 빈칸 하나다. 낭독도 빈칸을 「blank」로 읽는다(정답 없음).
+- CLOZE_CHOICE는 콘텐츠 줄의 `___`를 채우지 않아 처음부터 빈칸이다(내장 46 · 수준 5 137개 모두 `___` 있음, 2026-11-20 점검).
+- 테스트: RS5 · CZ1 · CZ2(unit), UBL3 · UBL4 · WC2(ui), AI4(integration).

@@ -365,3 +365,67 @@ test("GT10. 정해진 첫 말이 있는 인물은 방을 열 때의 첫 인사�
   expect(calls).not.toContain("reply");
   expect(save()).toMatchObject({ p_meta: { greeting: "scripted" } });
 });
+
+test("GT11. 적용 수위가 open이면 모델 인사의 프롬프트 · 출력 검사가 open을 싣는다 · 친구의 정해진 첫 말은 모델 없이", async () => {
+  const base = fakeCompanionLlm();
+  const seen: { system?: string; tiers: (string | undefined)[] } = { tiers: [] };
+  const llm: CompanionLlm = {
+    ...base,
+    async *reply(request) {
+      seen.system ??= request.system;
+      yield* base.reply(request);
+    },
+    async moderate(request) {
+      seen.tiers.push(request.romanceLine);
+      return base.moderate(request);
+    },
+  };
+  const persona = { name: "차서연", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const { call } = setup({
+    llm,
+    context: context({ persona, romanceTier: "open", replySuggestions: false }),
+  });
+  expect((await call({ character_id: "seoyeon" })).body).toMatchObject({ status: "ok" });
+  expect(seen.system).toContain("You may be a couple, say 사랑해");
+  expect(seen.system).toContain("an ordinary person living in Korea");
+  expect(seen.tiers).toEqual(["open"]);
+  // 추가하자마자 오는 정해진 첫 말(unlockLines = firstMessage.ko)은 모델 · 검사를 부르지 않는다.
+  const watched = watching();
+  const scripted = setup({
+    llm: watched.llm,
+    context: context({
+      persona: {
+        ...persona,
+        unlockLines: ["안녕하세요, 차서연이에요.", "한국엔 왜 왔어요? 궁금해요."],
+      },
+      romanceTier: "open",
+      replySuggestions: false,
+    }),
+  });
+  const answer = await scripted.call({ character_id: "seoyeon", trigger: "unlock" });
+  expect(answer.body).toMatchObject({
+    status: "ok",
+    source: "scripted",
+    segments: [
+      { kind: "speech", text: "안녕하세요, 차서연이에요." },
+      { kind: "speech", text: "한국엔 왜 왔어요? 궁금해요." },
+    ],
+  });
+  expect(watched.calls.filter((name) => name !== "translate")).toEqual([]);
+});
+
+test("GT12. 저장 meta에 적용 수위 — open은 성인일 때만, 옛 DB(수위 없음)는 standard", async () => {
+  const persona = { name: "차서연", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const cases: [Record<string, unknown>, string][] = [
+    [{ romanceTier: "open" }, "open"],
+    [{ romanceTier: "open", ageBand: "unknown" }, "standard"],
+    [{}, "standard"],
+  ];
+  for (const [overrides, expected] of cases) {
+    const { call, save } = setup({
+      context: context({ persona, replySuggestions: false, ...overrides }),
+    });
+    expect((await call({ character_id: "seoyeon" })).body).toMatchObject({ status: "ok" });
+    expect(save()!.p_meta, JSON.stringify(overrides)).toMatchObject({ romanceTier: expected });
+  }
+});

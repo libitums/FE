@@ -1,6 +1,7 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 
 import { catalogUnitTicketCost } from "./catalog-ticket-cost";
+import { setPlanAccess } from "./plan-access";
 import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
 
 // `unit` 계층: 유닛을 시작할 때 쓰는 티켓 수 — 튜토리얼 · 이미 끝낸 유닛 · 티켓으로 연 유닛이면 0, 아니면 1.
@@ -29,4 +30,13 @@ describe("catalogUnitTicketCost", () => {
     expect(catalogUnitTicketCost(progress, "u01-water", "S2", ticketUnits)).toBe(1);
     expect(catalogUnitTicketCost(progress, "u02-checkin", "S1", ticketUnits)).toBe(1);
   });
+
+  test("TK-PA. 서버 권한이 티켓 무제한(Unlimited Tickets · Premium)이면 0이다 — 잠금은 그대로(ADR-0144 D2)", () => {
+    setPlanAccess({ tier: "premium", unlimitedTickets: true, entitlements: [] });
+    expect(catalogUnitTicketCost({}, "u02-checkin", "S1")).toBe(0);
+    setPlanAccess({ tier: "chat_plus", unlimitedTickets: false, entitlements: [] });
+    expect(catalogUnitTicketCost({}, "u02-checkin", "S1")).toBe(1);
+  });
 });
+
+afterEach(() => setPlanAccess(null));

@@ -10,7 +10,11 @@ const TAB_ROOTS: ReadonlySet<Screen["name"]> = new Set([
   "journey-map",
   "roleplay-list",
   "messenger-list",
+  "ranking",
   "settings",
+  // 더보기 메뉴의 루트 화면(ADR-0169) — 바가 서는 more 스택 루트.
+  "letters",
+  "wordbook",
 ]);
 
 export function renderAppContent(screen: Screen, wiring: ScreenWiring) {

@@ -224,7 +224,8 @@ export type LearningShellSceneClasses = {
 };
 
 /**
- * 완료 장면에서 무대 카드를 내용 높이로 두고 머리와 아래 버튼 사이 세로 가운데에 세우는 클래스입니다.
+ * 완료 장면에서 무대 카드를 내용 높이로 두고 머리와 아래 버튼 사이 세로 가운데에 세우는 클래스입니다. 문항 장면도
+ * 채우기(`fill`, 문화 카드)를 청하면 같은 `-fill-*`로 남는 세로를 받습니다(가운데 정렬은 없음).
  *
  * 나뉜 배치에서 버튼 몫을 아래 여백으로 비우는 것(`-fill-rest`)은 행이 **떠 있을 때**만입니다. 행이 흐름 안이면
  * 행이 제 높이를 스스로 차지하므로 남는 세로만 받습니다(`-fill-flow`) — 둘 다 비우면 행이 그만큼 아래로 밀려
@@ -234,30 +235,24 @@ export function learningShellSceneClasses(
   arrangement: LearningShellArrangement,
   scene: LearningShellScene,
   actions: LearningShellActionPlacement = "floating",
+  fill = false,
 ): LearningShellSceneClasses {
-  if (scene === "question") return { stage: [], flow: [] };
-  if (arrangement === "split") {
-    if (actions === "in-flow") {
-      return {
-        stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
-        flow: [],
-      };
-    }
-    return {
-      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-rest"],
-      flow: [],
-    };
-  }
+  if (scene === "question" && !fill) return { stage: [], flow: [] };
+  // 문항 장면의 채우기(`fill`)는 남는 세로만 받고 가운데에 세우지 않습니다 — 문화 카드가 남는 높이까지 자랍니다.
+  const center = scene === "complete" ? ["learning-shell-stage-scene-complete"] : [];
   if (arrangement === "merged") {
     return {
-      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+      stage: [...center, "learning-shell-stage-fill-flow"],
       flow: ["learning-shell-flow-fill-scroll"],
     };
   }
-  return {
-    stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-scroll"],
-    flow: [],
-  };
+  const fillClass =
+    arrangement === "card-scroll"
+      ? "learning-shell-stage-fill-scroll"
+      : actions === "in-flow"
+        ? "learning-shell-stage-fill-flow"
+        : "learning-shell-stage-fill-rest";
+  return { stage: [...center, fillClass], flow: [] };
 }
 
 /** 해설 판의 낭독 이름입니다(제목 + 줄들, 빈 줄은 건너뜁니다). */

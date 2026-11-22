@@ -5,6 +5,7 @@
 // `fetch`(Supabase 인증 · RPC, 모든 호출을 기록) · 호스트 globalProps(`appVersion.platform`) · 분석 sink · 식별.
 // 쓰는 파일의 `afterEach`가 `resetGuestHost`를 부릅니다.
 
+import { openSettingsFromMore } from "./more-menu";
 import { vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -208,15 +209,14 @@ export async function renderGuestApp(host: GuestHost, options: RenderOptions = {
 export const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 export const present = (id: string): boolean => screen.queryByTestId(id) !== null;
-export const openSettingsTab = (): void =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+export const openSettingsTab = (): void => openSettingsFromMore();
 export const settingsCell = (id: string): HTMLElement =>
   within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
     "ui-lynx-settings-cell",
   );
 
 export function completeOnboarding(): void {
-  for (let step = 0; step < 3; step += 1) tapButtonIn("onboarding-screen-next");
+  tapButtonIn("onboarding-screen-start");
 }
 
 /** 설정 목록의 항목 testid를 위에서 아래로 읽습니다. */
@@ -236,7 +236,7 @@ export async function walkGuestEntryToMap(): Promise<void> {
   passLearnerSignup();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButtonIn("language-select-screen-next");
-  tapButtonIn("journey-entry-screen-start");
+  tapButtonIn("journey-entry-screen-story");
   await flush();
 }
 

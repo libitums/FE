@@ -4,7 +4,7 @@ import type { UiCopyOverrides } from "./ui-copy.contract";
 import { uiCopyCatalog, uiCopyFor, uiCopyWithOverrides } from "./ui-copy";
 import { uiCopyEn } from "./ui-copy-en";
 
-const languages = ["en", "vi", "es", "ja"] as const;
+const languages = ["en", "vi", "id", "es", "ja", "th", "my"] as const;
 const sampleArgs: readonly unknown[] = [0, 1, 5, "x", true];
 
 type Leaf = { readonly path: string; readonly value: string | ((...args: never[]) => unknown) };
@@ -135,12 +135,14 @@ test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · my �
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
 });
 
-// 이야기 번역 전용 언어(ADR-0158) — 화면 문구는 영어 표 그대로입니다.
-test("UC4b. 태국어 · 미얀마어 화면 문구는 영어 표와 같은 객체다", () => {
-  expect(uiCopyCatalog.th).toEqual({});
-  expect(uiCopyCatalog.my).toEqual({});
-  expect(uiCopyFor("th")).toBe(uiCopyEn);
-  expect(uiCopyFor("my")).toBe(uiCopyEn);
+// 2026-11-20 태국어 · 미얀마어도 완전한 화면 문구 표다(ADR-0158 개정) — 영어로 떨어지지 않는다.
+test("UC4b. 태국어 · 미얀마어 화면 문구는 그 언어의 표이고 영어 표가 아니다", () => {
+  expect(uiCopyFor("th")).toBe(uiCopyCatalog.th);
+  expect(uiCopyFor("my")).toBe(uiCopyCatalog.my);
+  expect(uiCopyFor("th")).not.toBe(uiCopyEn);
+  expect(uiCopyFor("my")).not.toBe(uiCopyEn);
+  expect(uiCopyFor("th").settings.title).not.toBe(uiCopyEn.settings.title);
+  expect(uiCopyFor("my").settings.title).not.toBe(uiCopyEn.settings.title);
 });
 
 test("JS4. specialUnitMap은 빈 덮어쓰기에서 영어로 채워진다", () => {

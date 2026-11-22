@@ -23,7 +23,7 @@ export function messengerTabBadge(input: { visited: boolean; newFriend: boolean 
 
 /** 열 수 있는 계정의 열린 방 가운데 아직 안 연 새 친구(isNew)가 있나 — 손님 · 시험 계정 아님은 방을 못 열어 늘 false. */
 export function hasNewFriend(rooms: readonly ChatRoomSummary[], access: MessengerAccess): boolean {
-  return access === "open" && rooms.some((room) => room.isNew && room.access.kind === "open");
+  return access !== "sign-in" && rooms.some((room) => room.isNew && room.access.kind === "open");
 }
 
 export function guideSteps(input: { mediaReady: boolean }): readonly GuideStep[] {
@@ -92,3 +92,11 @@ export type GuideStore = {
 };
 
 export const deviceGuideStore: GuideStore = { unseen: guideUnseen, markSeen: markGuideSeen };
+
+/**
+ * 추천 친구 줄(ADR-0162)을 목록 위에 세울지. 떠 있는 덕수쌤 줄은 위치를 재지 않고 원본 첫 줄 자리(머리 바로 아래)에 서므로
+ * (ADR-0139 D2), 목록 안내가 떠 있는 동안 추천 줄이 끼면 원본 줄이 밀려 어긋납니다.
+ */
+export function isSuggestedRowShown(listGuideShown: boolean): boolean {
+  return !listGuideShown;
+}

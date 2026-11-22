@@ -192,7 +192,8 @@ test("RC6. 다시 적용 — 걸려 있던 일시 차단이 풀리고 같은 결
 
 test("RC7. 페르소나 — 다섯 모두 로맨스 태도, 다섯 모두 해금 JSON과 같은 선톡 줄", async () => {
   const rows = await db.admin.query(
-    "select id, persona->>'romance' as romance, persona->'unlockLines' as lines from companion.characters order by sort_order",
+    // 스토리 인물만(추천 친구의 선톡 정본은 companion-friends.json — companion-friends 통합 테스트가 맞춘다).
+    "select id, persona->>'romance' as romance, persona->'unlockLines' as lines from companion.characters where persona->>'kind' is null order by sort_order",
   );
   for (const row of rows.rows) expect((row.romance as string).length, row.id).toBeGreaterThan(40);
   const unlocks = JSON.parse(await readFile(unlocksJson, "utf8")) as {

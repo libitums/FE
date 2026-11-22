@@ -16,6 +16,7 @@ import { emitCompanionEvent } from "../lib/companion-events";
 import { LaunchCoinsModal } from "../screens/launch/LaunchModals";
 import {
   deviceLaunchStore,
+  launchRecordAfterClaim,
   launchStep,
   tutorialDone,
   type LaunchRecord,
@@ -92,13 +93,8 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
       if (result !== null) {
         claimedFor.current = seq;
         setServer({ balance: result.balance, localAt: localRef.current });
-        if (result.bonus > 0 && store.read() === null) {
-          const next = {
-            learning: result.learning,
-            bonus: result.bonus,
-            coinsShown: false,
-            chatShown: false,
-          };
+        const next = launchRecordAfterClaim(result, store.read());
+        if (next !== null) {
           store.write(next);
           setRecord(next);
         }
