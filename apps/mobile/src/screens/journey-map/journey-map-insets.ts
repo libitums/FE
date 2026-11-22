@@ -31,7 +31,7 @@ export type MapTopLayout = {
 };
 
 /** `--libitum-layout-screen-padding-top`(12)입니다 — 칩 줄의 위 여백이기도 합니다. */
-const screenPaddingTop = 12;
+const chipRowPaddingTop = 12;
 /** 로딩 줄은 띠와 같은 위 모서리에서 spacing-8만큼 내려옵니다. */
 const progressRowGap = 8;
 
@@ -41,6 +41,6 @@ export function mapTopLayout(statusBarInset: number): MapTopLayout {
     mapPaddingTop: mapContentInsets.top + statusBarInset,
     bandTop: bandTop + statusBarInset,
     progressRowTop: bandTop + progressRowGap + statusBarInset,
-    headerTop: screenPaddingTop + statusBarInset,
+    headerTop: chipRowPaddingTop + statusBarInset,
   };
 }
