@@ -68,7 +68,8 @@ export type NotificationItemDeletedEvent = {
  */
 export type PushNotificationTarget =
   | NotificationTarget
-  | { readonly kind: "journey-map" }
+  // 보상 캠페인 알림이면 캠페인 id(ADR-0175) — 서버가 수신자 표로 다시 검증합니다.
+  | { readonly kind: "journey-map"; readonly campaignId?: string }
   | { readonly kind: "notifications" }
   // 캐릭터가 먼저 보낸 메시지(선톡)의 방입니다(ADR-0127). `variant`는 잠금 화면 미리보기 A/B의 칸 — 서버가 PostHog
   // 플래그로 고르고, 앱은 연 이벤트에 싣기만 합니다.

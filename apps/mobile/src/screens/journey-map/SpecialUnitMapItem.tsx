@@ -29,6 +29,7 @@ export function SpecialUnitMapItem({
   sheetTargetId,
   children,
   markId,
+  ring,
 }: SpecialUnitMapItemProps) {
   const copy = useUiCopy();
   const unitStatus = specialUnitStatusOf(status);
@@ -62,6 +63,7 @@ export function SpecialUnitMapItem({
           bindtap={handleSelect}
           {...(icon === undefined ? {} : { icon })}
         />
+        {ring ?? null}
       </MapUnitStage>
       <view
         className={`journey-special-unit-label journey-special-unit-label-${specialUnitLabelToneOf(unitStatus)}`}

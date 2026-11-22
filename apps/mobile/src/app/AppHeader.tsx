@@ -1,16 +1,24 @@
-import { useEffect, useMemo, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
 import type { FeedbackRating, FeedbackReason } from "../lib/feedback.contract";
 import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
-import { CoinShopScreen } from "../screens/coin-shop/CoinShopScreen";
+import { PlanChip } from "../components/PlanChip";
+import { SubscriptionToast } from "../components/SubscriptionToast";
+import type { ShopRequest } from "../screens/coin-shop/shop-model";
+import type { HeaderPlans } from "./header-plans";
+
+export type { HeaderPlans } from "./header-plans";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 import { TicketStatModal } from "../screens/tickets/TicketStatModal";
+import { useGuestGate } from "../screens/messenger-chat/use-guest-gate";
 import { UnlimitedTicketModal } from "../screens/tickets/UnlimitedTicketModal";
+import { appVersionFrom } from "../lib/app-version";
+import { openManageSubscription } from "../lib/manage-subscription";
 import { unlimitedPassView } from "../lib/unlimited-pass";
 import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { TicketHeaderWiring } from "./use-learning-tickets";
@@ -27,7 +35,7 @@ import {
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited" | "coins";
+type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
@@ -84,6 +92,9 @@ export type AppHeaderProps = {
   readonly unlimitedPass?: UnlimitedPass;
   /** 연속 학습 엽전 보상(ADR-0143) — 로그인 사용자만. 연속 학습 모달에만 넘깁니다. */
   readonly streakReward?: StreakRewardWiring;
+  /** 상점을 엽니다(ADR-0160) — 세션 층이 그립니다. 없으면 엽전 칩은 읽기 전용입니다. */
+  readonly onOpenShop?: (request: ShopRequest) => void;
+  readonly plans?: HeaderPlans;
 };
 
 export function AppHeader({
@@ -103,6 +114,8 @@ export function AppHeader({
   tickets,
   unlimitedPass,
   streakReward,
+  onOpenShop,
+  plans,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const copy = useUiCopy();
@@ -111,6 +124,14 @@ export function AppHeader({
   // 않으면서 머리만 낭독에서 가려진 채 남지 않게 합니다.
   const layer = openLayer === "unlimited" && unlimitedPass === undefined ? null : openLayer;
   const unlimitedOpen = layer === "unlimited";
+  // 구독 판의 「Manage subscription」 · 「Keep unlimited」 — 해지 · 갱신은 스토어 몫이라 그 구독 관리 화면을 엽니다(ADR-0144).
+  const platform = appVersionFrom(useGlobalProps())?.platform ?? null;
+  const manageSubscription =
+    unlimitedPass?.kind === "subscription"
+      ? () => {
+          openManageSubscription(platform, unlimitedPass.productId ?? null);
+        }
+      : undefined;
   // 모달의 모양은 열릴 때(그리고 무제한 상태가 바뀔 때) 한 번 셉니다 — 렌더마다 `Date.now()`로 새 객체를 만들면 머리가
   // 다시 그려질 때마다 모달도 다시 그려집니다. 남은 날은 하루 단위라 모달이 떠 있는 동안 다시 셀 필요가 없습니다.
   const unlimitedView = useMemo(
@@ -121,6 +142,10 @@ export function AppHeader({
     [unlimitedOpen, unlimitedPass],
   );
   const ticketModalOpen = openLayer === "tickets";
+  // 비회원 Get more tickets는 「로그인 필요」 대화상자(tickets) — 모달의 형제로 그립니다(ADR-0166, 2026-11-20).
+  const ticketGate = useGuestGate(tickets?.signIn?.onSignIn ?? null, tickets?.signIn?.sink);
+  // 구독 성공 알림은 머리가 보일 때만 섭니다 — 레이어가 덮은 동안 4초가 지나가지 않게 합니다.
+  const celebrating = (plans?.activated ?? null) !== null && layer === null && !obscured;
   // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
   useEffect(() => {
     if (!ticketModalOpen) return;
@@ -173,13 +198,33 @@ export function AppHeader({
           ticketCount={tickets?.status.available ?? null}
           ticketsUnlimited={unlimitedPass !== undefined}
           onOpenTickets={() => setOpenLayer(unlimitedPass === undefined ? "tickets" : "unlimited")}
-          onOpenCoins={() => setOpenLayer("coins")}
+          onOpenCoins={
+            onOpenShop === undefined
+              ? undefined
+              : () => onOpenShop({ tab: "coins", placement: "coin_shop", focus: null })
+          }
+          ticketPulse={celebrating && plans?.activated?.plan !== "chat_plus"}
           bumps={statBump?.statBumps}
           bumpHeld={layer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
           ticketDropFrom={tickets?.dropFrom ?? null}
           onTicketDropped={tickets?.onDropped}
+          coinUpdating={plans?.updating?.coins ?? false}
         />
+        {/* 둘째 줄 요금제 칩(ADR-0160 시안 A3) — 종 아래 오른쪽. 지도 스크롤 밖 머리 층이라 z-index가 지도 안으로 들어가지 않습니다. */}
+        {plans === undefined || plans.chip === null ? null : (
+          <view className="app-header-plan-row" data-testid="app-header-plan-row">
+            <PlanChip
+              plan={plans.chip}
+              pulse={celebrating}
+              updating={plans.updating?.plan ?? false}
+              onPress={() => onOpenShop?.({ tab: "plans", placement: "header_chip", focus: null })}
+            />
+          </view>
+        )}
+        {celebrating && plans?.activated != null ? (
+          <SubscriptionToast activation={plans.activated} onDone={plans.onActivatedShown} />
+        ) : null}
       </view>
       {openLayer === "streak" || openLayer === "trophy" ? (
         <JourneyStatModal
@@ -204,15 +249,34 @@ export function AppHeader({
         <TicketStatModal
           status={tickets.status}
           more={tickets.more}
-          onGetMore={tickets.onGetMore}
+          onGetMore={() => ticketGate.prompt("tickets") || tickets.onGetMore()}
           onClose={close}
+          covered={ticketGate.open}
+          {...(plans?.goUnlimited === undefined
+            ? {}
+            : {
+                goUnlimited: {
+                  price: plans.goUnlimited.price,
+                  onPress: () => {
+                    close();
+                    onOpenShop?.({
+                      tab: "plans",
+                      placement: "tickets_chip",
+                      focus: "unlimited_tickets",
+                    });
+                  },
+                },
+              })}
         />
       ) : null}
+      {ticketModalOpen ? ticketGate.layer : null}
       {unlimitedView !== null ? (
-        <UnlimitedTicketModal view={unlimitedView} onClose={close} />
-      ) : null}
-      {openLayer === "coins" ? (
-        <CoinShopScreen coinBalance={coinCount ?? 0} onClose={close} />
+        <UnlimitedTicketModal
+          view={unlimitedView}
+          onClose={close}
+          onManageSubscription={manageSubscription}
+          onKeepUnlimited={manageSubscription}
+        />
       ) : null}
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet

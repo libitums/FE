@@ -3,7 +3,7 @@
 2026-11-18 ~ 19에 2단계 「롤플레이 미션」의 서버 · 시험 환경 · 화면 초안을 **브랜치에서만** 만들었다. 이 문서는 그 결과를 한곳에 모은 것이다 —
 어디에 무엇이 있는지, 어떻게 돌려 보는지, 넣어야 하는 환경 변수, 그리고 **사용자가 정해야 하는 것**.
 
-- 기획: [2단계 PRD](ai-companion-mission.md) · [ADR-0160](../adr/0160-companion-mission.md)
+- 기획: [2단계 PRD](ai-companion-mission.md) · [ADR-0176](../adr/0176-companion-mission.md)
 - **main에는 아무것도 머지하지 않았다. 운영 DB에 적용한 것도, 배포한 것도, 진짜 유료 API를 부른 것도 없다.**
 - 이 문서는 임시 메모다. 결정이 끝나면 내용을 PRD · ADR로 옮기고 지운다.
 
@@ -11,9 +11,9 @@
 
 | 저장소 | 브랜치 | 내용 | 검증 |
 |---|---|---|---|
-| FE | `feat/companion-mission` (PR #496) | PRD + ADR-0160 | CI 통과 |
+| FE | `feat/companion-mission` (PR #496) | PRD + ADR-0176 | CI 통과 |
 | FE | `feat/companion-mission-core` | 미션 코어 — 계약 · 미션 파일 둘 · 프롬프트 틀 · 상태 전이 · 점수식 · 채점 · 힌트 · 실험실 번들 | `pnpm verify` |
-| FE | `feat/companion-mission-db` | 마이그레이션 `20261214120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
+| FE | `feat/companion-mission-db` | 마이그레이션 `20261225120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
 | FE | **`feat/companion-mission-server`** | 위 둘을 합치고 Edge Function을 이은 **통합 브랜치** — `mission-start` · `chat-send` 미션 갈래 · `mission-hint` · `mission-finish` · 미션 올리기 스크립트. 이 문서가 여기 있다 | `pnpm verify` |
 | FE | `feat/companion-mission-app` | 앱 화면 초안(mock 데이터, 스위치 뒤) — §6 | `pnpm verify` |
 | FE | `feat/speech-vendor-bench` | 음성 인식 · 발음 평가 벤더 비교 도구(`devtools/speech-bench/`) | `pnpm verify` |
@@ -167,7 +167,7 @@ DEEPGRAM_API_KEY=
 ### 4.7 앞서 올린 PR에 남아 있는 것
 32. #495 법률 문서: 시행일 · 「대화를 AI 학습에 쓰지 않는다」 약속 · Sentry 보존 기간 · Notion 두 페이지 맞추기 · 이용약관의 낡은 내용.
 33. #498 턴 로그: 운영 적용 순서 · 방침 문장과 시행일 · 스토어 표시 · 기기 모델(네이티브 모듈 필요).
-34. ADR 번호 0159(법률 문서) · 0160(미션) · 0161(턴 로그)과 마이그레이션 번호 20261213(턴 로그) · 20261214(미션)는 머지 순서에 따라 옮겨야 할 수 있다.
+34. 번호 — main 받기(2026-11-22)에서 미션을 ADR 0160 → **0176**, 마이그레이션 20261214 → **20261225**로 옮겼다(main에 0160 구독 입구 · 20261214 구독 대기가 먼저 들어옴). main에는 0159(온보딩) · 0167(법률 문서) · 마이그레이션 20261213(early access)이 이미 있어, #495 법률 문서의 ADR 0159와 #498 턴 로그의 ADR 0161 · 마이그레이션 20261213도 머지할 때 옮겨야 한다(0161은 아직 main에 비어 있다).
 
 ## 5. 확인하지 못한 것
 

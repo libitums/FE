@@ -1,0 +1,20 @@
+/* 단어 별 단추(ADR-0169 즐겨찾기 개정) — 누르는 자리 44 × 44(권장 터치 크기), 별 22. 면 없이 별만 보이고 누르는 동안 흐려집니다. */
+
+.word-star-button {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.word-star-button:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.word-star-button-icon {
+  width: 22px;
+  height: 22px;
+}

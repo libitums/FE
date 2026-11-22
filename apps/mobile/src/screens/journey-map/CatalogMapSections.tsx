@@ -28,6 +28,7 @@ export function CatalogMapSections({
   onCheckNew,
   coverImageUrlOf,
   clearedUnit = null,
+  coverDownloads = {},
 }: CatalogMapSectionsProps): ReactNode {
   const comingSoon = catalogComingSoonOrdinal(sections);
   const target = guide?.visible === true ? mapGuideTargetOf(sections) : null;
@@ -57,6 +58,7 @@ export function CatalogMapSections({
                 onSelectUnit={onSelectUnit}
                 {...(coverImageUrlOf === undefined ? {} : { coverImageUrlOf })}
                 clearedUnit={clearedUnit}
+                coverDownload={coverDownloads[section.episodeId] ?? { kind: "none" }}
               />
             </view>
           );

@@ -16,10 +16,15 @@ import type { PhoneNumber } from "../lib/auth-session.contract";
 import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.contract";
 import type { PlanId } from "../lib/plans-api";
 import type { PlanPlacement } from "../screens/plans/plans-model";
+import type { RankingBoardKind } from "../lib/ranking.contract";
 
 // 탭 목록과 1:1입니다. 순서가 곧 바텀 네비게이션의 좌→우 순서입니다
 // (bottom-navigator.contract.ts).
-export type Tab = "journey" | "roleplay" | "messenger" | "settings";
+// 넷째 탭은 순위(ADR-0170), 다섯째(마지막)는 더보기(⋯)입니다(ADR-0169) — 더보기 루트는 메뉴에서 고른 화면(Letters · My words · Settings)으로 바뀝니다.
+export type Tab = "journey" | "roleplay" | "messenger" | "ranking" | "more";
+
+/** 더보기 메뉴의 줄 셋 — more 스택의 루트 화면입니다(ADR-0169). */
+export type MoreRoot = "letters" | "wordbook" | "settings";
 
 // **route 목록과 1:1입니다.** route가 늘면 이 union에 멤버를 더하고, `render-screen.tsx` switch의 exhaustiveness 검사가
 // 빠진 화면을 컴파일 타임에 잡습니다. 이름은 최종 화면 이름으로 고정합니다.
@@ -30,7 +35,16 @@ export type Screen =
   // 메신저 탭 루트입니다. `notice`는 선톡 푸시로 온 방을 열 수 없을 때 한 번 보일 안내입니다(ADR-0127).
   | { name: "messenger-list"; notice?: MessengerListNotice }
   | { name: "messenger-chat"; roomId: string }
+  // 순위 탭 루트(ADR-0170) — `board`는 처음 보일 보드(방의 순위 줄은 chat-words로 엽니다).
+  | { name: "ranking"; board: RankingBoardKind }
   | { name: "settings" }
+  // 더보기 메뉴의 화면들입니다(ADR-0169). `letters` · `wordbook`은 more 스택 루트(바 유지), 나머지는 그 위에 쌓입니다.
+  | { name: "letters" }
+  | { name: "letters-compose" }
+  | { name: "wordbook" }
+  | { name: "wordbook-word"; episodeId: string; ref: string }
+  // `only`가 있으면 그 단어 하나만(자세히 › Practice this word), 없으면 오늘 복습할 단어 전부입니다.
+  | { name: "wordbook-review"; only: { readonly episodeId: string; readonly ref: string } | null }
   // 설정 탭의 화면입니다. 필드가 없습니다 — 프로필에 진행도 파라미터가 없고, 내용은 App이
   // 넘깁니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
   | { name: "profile" }
@@ -136,6 +150,8 @@ export type NavAction =
   | { type: "replace"; screen: Screen }
   | { type: "backToRoot" }
   | { type: "switchTab"; tab: Tab }
+  // 더보기 메뉴의 줄 — more 탭으로 가며 그 스택을 고른 화면 하나로 다시 세웁니다(ADR-0169).
+  | { type: "openMore"; root: MoreRoot }
   // 메신저 탭 루트(목록)의 안내만 붙이거나 지웁니다(ADR-0127) — 활성 스택 · 진입 구간과 무관하게 그 루트 하나만 바꿉니다.
   | { type: "setListNotice"; notice: MessengerListNotice | null }
   | { type: "enterApp" };
@@ -156,7 +172,8 @@ export const initialNav: Nav = {
     journey: [{ name: "journey-map" }],
     roleplay: [{ name: "roleplay-list" }],
     messenger: [{ name: "messenger-list" }],
-    settings: [{ name: "settings" }],
+    ranking: [{ name: "ranking", board: "lessons" }],
+    more: [{ name: "settings" }],
   },
 };
 

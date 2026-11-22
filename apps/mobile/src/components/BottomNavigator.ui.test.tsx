@@ -3,12 +3,14 @@ import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import flag from "@libitums/icons/lynx/flag-03";
 import friends from "@libitums/icons/lynx/friends";
 import message from "@libitums/icons/lynx/message";
-import settings from "@libitums/icons/lynx/settings";
+import cross from "@libitums/icons/lynx/cross";
+import trophy from "@libitums/icons/lynx/trophy";
 import { color } from "@libitums/design-tokens";
 
 import { UiCopyContext } from "../lib/ui-copy";
 import { markedUiCopy } from "../lib/ui-copy.test-support";
 import { BottomNavigator } from "./BottomNavigator";
+import { moreIcon } from "./more-icon";
 import type { Tab } from "../app/navigation";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다(ADR-0006 D4). 계산된 스타일·레이아웃은
@@ -40,9 +42,10 @@ test("탭 셋에 각자 제 아이콘이 실린다", () => {
     "content",
     unselected(friends),
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-settings-default")).toHaveAttribute(
+  // 더보기(ADR-0169)는 brand 동그라미 위 흰 ⋯ — 선택이 아니어도 흰 아이콘입니다.
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-more-default")).toHaveAttribute(
     "content",
-    unselected(settings),
+    selected(moreIcon),
   );
 });
 
@@ -57,7 +60,7 @@ test("선택 상태가 data-selected로 노출된다", () => {
     "data-selected",
     "false",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "data-selected",
     "false",
   );
@@ -72,18 +75,18 @@ test("선택된 탭만 안정적인 성능 timing flag를 갖는다", () => {
     "__lynx_timing_flag",
     "libitum:navigation:journey",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).not.toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).not.toHaveAttribute(
     "__lynx_timing_flag",
   );
 
-  rerender(<BottomNavigator tab="settings" onSelectTab={() => {}} />);
+  rerender(<BottomNavigator tab="more" onSelectTab={() => {}} />);
 
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).not.toHaveAttribute(
     "__lynx_timing_flag",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "__lynx_timing_flag",
-    "libitum:navigation:settings",
+    "libitum:navigation:more",
   );
 });
 
@@ -99,9 +102,9 @@ test("탭을 tap하면 onSelectTab이 그 탭 이름으로 정확히 한 번 불
   expect(onSelectTab).toHaveBeenCalledTimes(2);
   expect(onSelectTab).toHaveBeenCalledWith("roleplay");
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-more"), {});
   expect(onSelectTab).toHaveBeenCalledTimes(3);
-  expect(onSelectTab).toHaveBeenCalledWith("settings");
+  expect(onSelectTab).toHaveBeenCalledWith("more");
 });
 
 test("이미 선택된 탭을 tap해도 onSelectTab이 불린다 — 셸은 걸러내지 않는다", () => {
@@ -117,14 +120,14 @@ test("이미 선택된 탭을 tap해도 onSelectTab이 불린다 — 셸은 걸�
 test("셸은 상태를 갖지 않는다 — 선택 표시는 tab prop에서만 파생된다", () => {
   render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-more"), {});
 
   // onSelectTab만 호출됐을 뿐, `tab` prop이 바뀌지 않았으므로 렌더 상태는 그대로입니다.
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "data-selected",
     "true",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "data-selected",
     "false",
   );
@@ -144,7 +147,7 @@ test("탭에 보이는 글자가 없다 — 이름은 accessibility-label만 진
 
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveTextContent("");
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveTextContent("");
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveTextContent("");
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveTextContent("");
 });
 
 test("[SH1-E] 선택된 탭의 accessibility-label은 라벨 뒤에 selected 접미사가 붙는다", () => {
@@ -163,13 +166,13 @@ test("[SH1-E] 비선택 탭들도 각자 자기 라벨을 accessibility-label로
     "accessibility-label",
     "Roleplay",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    "Settings",
+    "More",
   );
 });
 
-test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·메신저·설정이다", () => {
+test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·메신저·순위·더보기이다(ADR-0169 · ADR-0170)", () => {
   const { container } = render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
   const tabs = Array.from(
@@ -180,7 +183,8 @@ test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·�
     "ui-lynx-bottom-navigator-item-journey",
     "ui-lynx-bottom-navigator-item-roleplay",
     "ui-lynx-bottom-navigator-item-messenger",
-    "ui-lynx-bottom-navigator-item-settings",
+    "ui-lynx-bottom-navigator-item-ranking",
+    "ui-lynx-bottom-navigator-item-more",
   ]);
 });
 
@@ -194,11 +198,11 @@ test("[BN2] 홈 탭·아이콘이 없다", () => {
 });
 
 test("[SH1-E] 선택 탭이 바뀌면 접미사가 그 탭으로 옮겨 간다", () => {
-  render(<BottomNavigator tab="settings" onSelectTab={() => {}} />);
+  render(<BottomNavigator tab="more" onSelectTab={() => {}} />);
 
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    "Settings, selected",
+    "More, selected",
   );
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
     "accessibility-label",
@@ -221,9 +225,9 @@ test("[SH1-M] 문구표를 주입하면 탭 이름이 표의 경로로 나오고
     "accessibility-label",
     "⟦shell.tabs.roleplay⟧",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    "⟦shell.tabs.settings⟧",
+    "⟦more.menu.tab⟧",
   );
 });
 
@@ -244,9 +248,9 @@ test("[MC-UI1] 메신저 탭은 셋째 자리에 message 아이콘 · 라벨 Cha
     "__lynx_timing_flag",
     "libitum:navigation:messenger",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    "Settings",
+    "More",
   );
 });
 
@@ -284,4 +288,45 @@ test("MG-UI1 badges로 NEW를 받으면 그 탭에 글자 배지가 서고 낭�
       .getByTestId("ui-lynx-bottom-navigator-item-messenger")
       .getAttribute("accessibility-label"),
   ).toBe("Chats, new");
+});
+
+// ---------------------------------------------------------------------- 더보기(ADR-0169)
+
+test("[MO-UI1] 메뉴가 열린 동안 ⋯는 ×가 되고 이름이 Close menu", () => {
+  render(<BottomNavigator tab="journey" onSelectTab={() => {}} moreOpen />);
+
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-more-default")).toHaveAttribute(
+    "content",
+    selected(cross),
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
+    "accessibility-label",
+    "Close menu",
+  );
+});
+
+test("[MO-UI2] 더보기 화면(선택 C)에 있으면 「More, selected」, 다른 탭이면 「More」", () => {
+  const { rerender } = render(<BottomNavigator tab="more" onSelectTab={() => {}} />);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
+  rerender(<BottomNavigator tab="roleplay" onSelectTab={() => {}} />);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
+    "accessibility-label",
+    "More",
+  );
+});
+
+test("[BN-UI] 순위 탭은 트로피 아이콘 · 「Ranking」 이름이고, 누르면 ranking으로 불린다(ADR-0170)", () => {
+  const onSelectTab = vi.fn<(tab: Tab) => void>();
+  render(<BottomNavigator tab="journey" onSelectTab={onSelectTab} />);
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-ranking-default")).toHaveAttribute(
+    "content",
+    unselected(trophy),
+  );
+  const item = screen.getByTestId("ui-lynx-bottom-navigator-item-ranking");
+  expect(item).toHaveAttribute("accessibility-label", "Ranking");
+  fireEvent.tap(item, {});
+  expect(onSelectTab).toHaveBeenCalledWith("ranking");
 });

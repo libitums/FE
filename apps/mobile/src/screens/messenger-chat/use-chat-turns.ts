@@ -1,5 +1,5 @@
 // 턴 계획 + 보내기 관문 + 다 쓴 판 훅입니다(messenger-chat-1-5 spec §6.2 · §12). 요금은 서버 규칙을 따릅니다(ADR-0155) —
-// 체험 인물은 체험 수, 그 밖의 인물은 첫 통부터 메시지 요금. 서버 방은 앱 지갑에서 빼지 않고(서버가 내고 `done` 잔액이 칩으로 옵니다),
+// 인물을 가리지 않는 합산 체험 수(ADR-0164 D3), 다 쓰면 첫 통부터 메시지 요금. 서버 방은 앱 지갑에서 빼지 않고(서버가 내고 `done` 잔액이 칩으로 옵니다),
 // 앱 안 방(가짜 출처)만 앱 지갑에서 뺍니다. 체험 · 지갑 호출은 이 훅만 합니다.
 
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "@lynx-js/react";
@@ -21,8 +21,6 @@ export type UseChatTurnsInput = {
   readonly trial: TrialStore;
   readonly wallet: CoinWallet;
   readonly tier: ChatTier;
-  /** 이 방의 인물 — 체험 인물이면 체험 수를 씁니다. */
-  readonly characterId: string;
   /** 서버 방이면 서버가 엽전을 냅니다 — 앱 지갑에서 빼지 않습니다. */
   readonly charging: "server" | "local";
   /** 엽전이 모자라 상점을 열어야 할 때 부릅니다. */
@@ -57,7 +55,6 @@ export function useChatTurns({
   trial,
   wallet,
   tier,
-  characterId,
   charging,
   onTopUp,
   onOutPanelOpen,
@@ -68,8 +65,8 @@ export function useChatTurns({
   const remaining = useTrialRemaining(trial);
   // 같은 값이면 같은 계획 — 아래 낭독 이펙트가 렌더마다 돌지 않습니다.
   const plan = useMemo(
-    () => turnPlanFor({ tier, characterId, trialRemaining: remaining, price: PRICE }),
-    [tier, characterId, remaining],
+    () => turnPlanFor({ tier, trialRemaining: remaining, price: PRICE }),
+    [tier, remaining],
   );
 
   // 다 쓴 판은 마지막 무료를 보낸 순간(last-free → coin) 한 번 열립니다 — 다 쓴 채 들어온 방은 판 없이 엽전 보내기입니다.
@@ -127,7 +124,6 @@ export function useChatTurns({
     // 한 통마다 최신 체험 수 · 잔액으로 다시 판정합니다(같은 커밋 안의 연속 보내기에도 어긋나지 않게).
     const latest = turnPlanFor({
       tier,
-      characterId,
       trialRemaining: trial.remaining(),
       price: PRICE,
     });
@@ -173,7 +169,7 @@ export function useChatTurns({
         return unreachable;
       }
     }
-  }, [tier, characterId, charging, trial, wallet, onTopUp, sink, roomId]);
+  }, [tier, charging, trial, wallet, onTopUp, sink, roomId]);
 
   const keepChatting = useCallback((): void => {
     "background only";

@@ -1,6 +1,7 @@
 // 로그아웃 · 계정 삭제의 결선입니다 — 설정 화면의 콜백 둘을 만들고 뒤처리(세션 삭제 → 분석 되돌리기 →
 // `entry_screen_viewed(login)` → App 세션 재시작)를 잇습니다. 어휘는 `leave-app.contract.ts`입니다.
 
+import { clearWordbook } from "../lib/wordbook";
 import { authUserIdFrom } from "../lib/auth-user-id";
 import { clearGuestSession, loadGuestSession } from "../lib/guest-session";
 import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
@@ -73,6 +74,7 @@ export function accountWiring({
           clearCachedProgress(userId);
           clearPendingLearningDays(userId);
           clearLearnerProfileCache(userId);
+          clearWordbook(userId); // 단어장 칸(ADR-0169)
           // 메신저 해금 기록도 그 계정 것만 지웁니다 — 같은 기기의 다음 계정에 열린 인물이 남지 않게(2026-11-17).
           forgetDeviceUnlocks(serverAccountKey(userId));
         }

@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -210,8 +211,7 @@ const cell = (id: string): HTMLElement =>
   );
 const dialogAction = (id: string): HTMLElement =>
   within(screen.getByTestId(`ui-lynx-dialog-action-${id}`)).getByTestId("ui-lynx-button");
-const openSettings = (): void =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+const openSettings = (): void => openSettingsFromMore();
 const onLogin = () =>
   vi.waitFor(() => expect(screen.getByTestId("login-screen-title")).toBeTruthy());
 const navigatorItems = (): HTMLElement[] =>
@@ -262,6 +262,7 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
             "remove:libitum.progress.cached.user-1",
             "remove:libitum.learning-days.pending.user-1",
             "remove:libitum.learner-profile.user-1",
+            "remove:libitum.wordbook.user-1",
           ]
         : []),
       `remove:${sessionKey}`,

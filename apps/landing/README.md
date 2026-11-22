@@ -12,6 +12,9 @@ Duru 랜딩 페이지다. [Astro](https://astro.build)로 만든 정적 사이�
 ⟨2026-10-22⟩ 두 번째 페이지 **웹 체험판** `/try/` · `/<코드>/try/`가 있다 — 앱 설치 없이 튜토리얼 u00의 첫 장면을 브라우저에서 해 본다
 ([ADR-0083](../../docs/adr/0083-web-trial-and-episode-core.md)). 색인하지 않는다. 아래 「웹 체험판」.
 
+⟨2026-11-18⟩ 세 번째 종류의 페이지 **법률 문서**가 있다 — 개인정보 처리방침 `/privacy/` · 이용약관 `/terms/`(영어 기준본)와 한국어 번역본
+`/ko/privacy/` · `/ko/terms/`([ADR-0167](../../docs/adr/0167-legal-documents-on-own-domain.md)). 색인되지만 sitemap에는 싣지 않는다. 아래 「법률 문서」.
+
 ## 명령
 
 ```sh
@@ -54,6 +57,7 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | `src/site.ts` | **배포 주소의 기본값 · 서비스 이름 · 스토어 주소 · 언어별 제목/설명/공유 카드** — 운영 값은 전부 여기다 |
 | `src/i18n/copy.ts` | 영어 문구(원본)와 `Copy` 타입. ⟨2026-11-04⟩ 목업 · 첫 표현 · 맺음 인용의 **UI 문구 · 뜻풀이**(`mock…` · `word…Gloss` · `closingGloss`)도 여기 키다 — 한국어 대사만 컴포넌트에 남는다 |
 | `src/i18n/ko.ts` · `vi.ts` · `id.ts` · `ms.ts` · `es.ts` · `ja.ts` | 한국어 · 베트남어 · 인도네시아어 · 말레이어 · 스페인어 · 일본어 문구. `Copy`를 전부 채워야 타입 검사를 지난다. ko의 목업 문구는 앱이 보여 주는 영어 그대로(앱에 한국어 UI가 없다) |
+| ⟨2026-11-18⟩ `src/legal/` | **법률 문서의 본문과 주소**(ADR-0167). `legal.contract.ts`(문서 · 절 · 블록 타입) · `legal-paths.ts`(본문이 있는 언어 `legalLanguages` · 주소 `legalPathFor` · 번역본이 없는 언어의 대체 `legalLanguageFor`) · `legal-contact.ts`(문의 메일) · `documents.ts`(등록부) · 본문 `privacy-en*.ts` · `privacy-ko*.ts` · `terms-en.ts` · `terms-ko.ts`. 그리는 것은 `components/LegalPage.astro` · `LegalText.astro`, 스타일은 `styles/legal.css` |
 | `src/pages/` | `index.astro`(기본 언어 `/`) · `[lang]/index.astro`(나머지 언어 `/<코드>/`) · `try/index.astro` · `[lang]/try/index.astro`(웹 체험판) · `404.astro`(`/404.html`) · `robots.txt.ts` · `llms.txt.ts`. **여기 있는 `.ts`는 전부 주소가 된다 — 테스트 파일을 두지 않는다** |
 | `src/layouts/Base.astro` | 모든 페이지가 함께 쓰는 문서 껍데기 — 문자셋 · 제목 · 설명 · `robots` · 아이콘 · 서체 · 건너뛰기 링크. 페이지마다 다른 head는 이름 붙은 슬롯 `head`로 받는다 |
 | `src/seo/` | 검색 · 답변 엔진용 값을 만드는 **순수 모듈 일곱**. Astro · `site.ts` · 문구를 import하지 않고 값을 인자로 받는다. 타입은 `seo.contract.ts` |
@@ -111,6 +115,22 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 
 `vitest.config.ts`가 `test` 설정을 변수로 빼서 넘기는 것은 우회다 — Astro 7은 Vite 8, vitest 3은 Vite 7의 타입을 써서
 리터럴로 적으면 `astro check`가 막는다. 둘 중 하나를 올릴 때 다시 본다.
+
+## 법률 문서
+
+개인정보 처리방침과 이용약관의 **정본은 이 저장소다**(`src/legal/`). 고치는 절차:
+
+1. **영어 기준본을 먼저 고친다**(`privacy-en*.ts` · `terms-en.ts`). 같은 PR에서 한국어 번역본의 같은 자리를 맞춘다 — 절 · 블록 종류 · 목록의 항목 수 ·
+   표의 행 수가 다르면 단위 테스트 U-LG6이 실패한다.
+2. **시행일을 올린다** — `privacyEffectiveIso`(또는 `termsEffectiveIso`)와 두 언어판의 `effectiveDate`. 셋이 어긋나면 U-LG4가 실패한다.
+3. 데이터를 받는 회사가 늘거나 바뀌면 두 언어판의 표(`privacy-*-providers.ts`)에 행을 더하고 U-LG10의 이름 목록에도 더한다. 표는 다섯 칸이다
+   (받는 자 · 하는 일 · 항목 · 국가 · 연락처 — 개인정보 보호법 제28조의8 제2항).
+4. **기능이 수집하는 것이 바뀌면 그 기능의 PR에서 방침을 고친다.** 방침이 기능보다 늦으면 안 된다 — 2026-11 이전이 그랬다(ADR-0167 맥락).
+5. 번역본 언어를 더하려면 검수한 번역으로 `privacy-<코드>*.ts` · `terms-<코드>.ts`를 만들고 `legal.contract.ts`의 `LegalLanguage` · `legal-paths.ts`의
+   `legalLanguages` · `documents.ts`에 올린다. 주소 · 언어판 링크 · hreflang · 그 언어의 푸터 링크가 목록을 따라 늘어난다.
+
+앱(iOS · Android)이 여는 주소는 호스트 빌드에 고정돼 있고 **아직 Notion이다**(ADR-0033 D1 · ADR-0167 D5). 주소를 바꾸는 PR(#515, iOS 1.2.0 (26)부터) 전까지는 Notion의
+두 페이지를 여기 본문과 같게 유지한다.
 
 ## 언어 더하기
 

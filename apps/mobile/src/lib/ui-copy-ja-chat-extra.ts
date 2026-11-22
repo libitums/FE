@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaJa } from "./ui-copy-ja-chat-media";
 import { messengerChatAlbumJa } from "./ui-copy-ja-chat-album";
+import { messengerChatSuggestedJa } from "./ui-copy-ja-chat-suggested";
 
 export const messengerChatExtraJa: MessengerChatExtraCopy = {
   media: messengerChatMediaJa,
   album: messengerChatAlbumJa,
+  suggested: messengerChatSuggestedJa,
   access: {
     signInTitle: "出会った人とメッセージしよう",
     signInBody:
       "無料アカウントを作ると、ストーリーで出会った人たちと韓国語でチャットできます。これまでの進み具合も引き継がれます。",
     signIn: "登録またはログイン",
+    promptTitle: "メッセージを送るにはログインが必要です",
+    promptBody:
+      "無料アカウントを作ると、ストーリーで出会った人たちとチャットできます。これまでの進み具合も引き継がれます。",
+    promptLater: "今はしない",
+    promptKeepBody: "無料アカウントを作ると、Yeopjeonとチケットを保存できます。",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
   chatSettings: {

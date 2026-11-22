@@ -11,7 +11,11 @@ export type UnlimitedPass =
       readonly autoRenews: boolean;
       /** 요금제 이름(스토어 상품 이름)입니다. 없으면 알약을 세우지 않습니다. */
       readonly planLabel?: string;
-    };
+      /** 스토어 상품 id — 「Manage subscription」이 Play 구독 화면에서 이 구독을 고릅니다. */
+      readonly productId?: string;
+    }
+  /** 보상으로 받은 시간 한정 무제한(ADR-0175) — 갱신이 없고 시간으로 끝납니다. */
+  | { readonly kind: "timed"; readonly startedAtMs: number; readonly endsAtMs: number };
 
 /** 기기 지역 시간의 달력 날짜입니다. `month`는 1~12. */
 export type CalendarDate = { readonly year: number; readonly month: number; readonly day: number };
@@ -35,9 +39,17 @@ export type UnlimitedPassView =
       readonly totalDays: number;
       readonly remaining: number;
       readonly planLabel: string | null;
+    }
+  | {
+      readonly kind: "timed";
+      readonly on: CalendarDate;
+      readonly hoursLeft: number;
+      readonly totalHours: number;
+      readonly remaining: number;
     };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 
 /** 그 순간의 기기 지역 시간 달력 날짜입니다. 던지지 않습니다. */
 export function calendarDateOf(ms: number): CalendarDate {
@@ -51,6 +63,17 @@ export function calendarDateOf(ms: number): CalendarDate {
  */
 export function unlimitedPassView(pass: UnlimitedPass, nowMs: number): UnlimitedPassView {
   if (pass.kind === "guest") return { kind: "guest" };
+  if (pass.kind === "timed") {
+    const leftMs = Math.max(0, pass.endsAtMs - nowMs);
+    const spanMs = pass.endsAtMs - pass.startedAtMs;
+    return {
+      kind: "timed",
+      on: calendarDateOf(pass.endsAtMs),
+      hoursLeft: Math.ceil(leftMs / HOUR_MS),
+      totalHours: Math.max(1, Math.round(spanMs / HOUR_MS)),
+      remaining: spanMs > 0 ? Math.min(1, leftMs / spanMs) : 0,
+    };
+  }
   const on = calendarDateOf(pass.endsAtMs);
   const planLabel = pass.planLabel ?? null;
   if (pass.autoRenews) {

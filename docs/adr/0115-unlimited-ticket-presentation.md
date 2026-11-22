@@ -62,3 +62,8 @@
 - 요금제 · 결제가 붙을 때 — `subscription` 상태의 출처(스토어 영수증 · 서버)와 두 콜백의 행선지를 정하고, 설정 「내 요금제」 화면을 함께 연다.
 - 요금제 이름이 정해질 때 — 칩에 이름 라벨(O3)을 붙일지 다시 본다.
 - 기기에서 무한 기호 선 그림 · 그라데이션이 어긋나면 그림을 채운 모양으로 바꾼다.
+
+## 개정 — 시간 한정 보상 이용권 (2026-11-21, ADR-0175)
+
+- `UnlimitedPass`에 `timed { startedAtMs, endsAtMs }`(푸시 캠페인 보상)을 더했다. 칩은 무제한 칩, 모달은 곧 끝남과 같은 노랑 기간 카드에 날 대신 시간(「N hours left」 · 「N of M hours」) ·
+  「After that, lessons use tickets again.」 · Got it. 시험 계정 · 구독 판이 있으면 그쪽이 앞선다. [ADR-0175](0175-push-campaign-reward.md) D8.

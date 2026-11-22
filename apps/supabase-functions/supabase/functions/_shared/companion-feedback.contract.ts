@@ -30,10 +30,19 @@ export type Feedback = {
   readonly meaning: string | null;
   /** 학습자가 이 메시지에서 쓴 배운 표현(20261125) — 있을 때만. 카드에 「배운 표현을 썼어요」. */
   readonly learnedUsed?: LearnedUse[];
+  /** 주간 순위 「Chat words」(20261220) — 이 메시지의 배운 단어(`voca:`)가 있고 기록이 됐을 때만(`chat-send-chat-words.ts`). */
+  readonly chatWords?: ChatWords;
 };
 
 /** 학습자가 쓴 배운 표현 하나. */
 export type LearnedUse = { readonly id: string; readonly surface: string };
+
+/** 이번에 센 단어 · 교정이 짚어 아직 안 센 단어(이번 주 처음일 때만) · 이번 주 센 단어 수. */
+export type ChatWords = {
+  readonly counted: LearnedUse[];
+  readonly pending: LearnedUse[];
+  readonly weekTotal: number;
+};
 
 /** 피드백 모델이 산출을 판정할 배운 표현(최근 지시한 것 가운데 글자 판정이 어려운 문형). `ref`는 `t1` · `t2` …. */
 export type LearnedTarget = {

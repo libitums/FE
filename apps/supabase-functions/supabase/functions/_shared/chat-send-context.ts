@@ -7,11 +7,13 @@ import type {
   CompanionLlm,
   GateResult,
   LearningContext,
+  RomanceLine,
 } from "./chat-send.contract.ts";
 import type { Choice } from "./chat-send-choice.ts";
 import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
 import type { ChatSendRequest } from "./companion-contract/index.ts";
+import { effectiveRomanceTier, romanceLine } from "./companion-safety.ts";
 import type { UsageCollector } from "./companion-usage.ts";
 
 export type TurnContext = {
@@ -35,3 +37,24 @@ export type TurnContext = {
   /** 이 턴의 LLM 사용량 — `llm`이 기록하는 곳. 저장 meta의 `usage`가 된다. */
   usage: UsageCollector;
 };
+
+/** 이 턴의 적용 수위(ADR-0164 — 성인이 아니면 standard)와 로맨스 선(ADR-0168). */
+export const turnRomance = (context: Pick<TurnContext, "gate" | "turn">) => ({
+  tier: effectiveRomanceTier(context.gate.ageBand, context.gate.romanceTier),
+  line: turnRomanceLine(context),
+});
+
+/** 로맨스 선이 읽는 값만 — 미션 턴(ADR-0176)은 인물 · 수위 없이 넘긴다. */
+export type RomanceContext = {
+  readonly gate: Pick<TurnContext["gate"], "ageBand" | "romanceTier">;
+  readonly turn: Pick<BegunTurn, "persona" | "speechLevel">;
+};
+
+/** 이 턴의 적용 로맨스 선(ADR-0168) — 판정의 수위 · 연령대와 턴 시작의 페르소나 · 말투 단계로. */
+export const turnRomanceLine = (context: RomanceContext): RomanceLine =>
+  romanceLine(
+    context.gate.ageBand,
+    context.gate.romanceTier,
+    context.turn.persona,
+    context.turn.speechLevel,
+  );

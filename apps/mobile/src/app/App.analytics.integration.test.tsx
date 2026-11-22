@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -106,7 +107,7 @@ async function renderApp(ui: Parameters<typeof render>[0]) {
 }
 
 function openSettingsTab(): void {
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
 }
 
 function settingsCell(id: string): HTMLElement {
@@ -123,7 +124,7 @@ function sessionApp(
   return <App {...session.sinks} />;
 }
 
-// 설정 탭 → 프로필 열기입니다. 이벤트 둘이 나가야 합니다.
+// 더보기 › Settings → 프로필 열기입니다(ADR-0169). 메뉴 열기 · 줄 누름 · 설정 · 프로필 넷이 나가야 합니다.
 function openProfile(): void {
   openSettingsTab();
   fireEvent.tap(settingsCell("profile"), {});
@@ -131,16 +132,21 @@ function openProfile(): void {
 
 // ------------------------------------------------------------------------- IA1
 
-test("[IA1] 설정 탭 → 프로필 열기이 요청 본문의 이벤트 둘(settings_opened → profile_opened)로 도착한다", async () => {
+test("[IA1] 더보기 › 설정 → 프로필 열기이 요청 본문의 이벤트 넷(more_menu_opened → more_menu_item_clicked → settings_opened → profile_opened)으로 도착한다", async () => {
   const { transport, calls } = fakeTransport();
   await renderApp(sessionApp(transport));
 
   openProfile();
 
-  await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
+  await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(4));
   const events = sentEvents(calls);
-  expect(events.map((e) => e.event)).toEqual(["settings_opened", "profile_opened"]);
-  expect(events[1]?.properties).not.toHaveProperty("email");
+  expect(events.map((e) => e.event)).toEqual([
+    "more_menu_opened",
+    "more_menu_item_clicked",
+    "settings_opened",
+    "profile_opened",
+  ]);
+  expect(events[3]?.properties).not.toHaveProperty("email");
   for (const call of calls) expect(call.url).toBe(batchUrl);
   expect(new Set(events.map((e) => e.distinct_id)).size).toBe(1);
 });
@@ -212,10 +218,16 @@ test("[IA5] 분석은 익명 ID를 따로 저장하지 않는다 — 쓰는 키�
   await renderApp(sessionApp(transport));
 
   openProfile();
-  await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(2));
+  await vi.waitFor(() => expect(sentEvents(calls)).toHaveLength(4));
 
+  // 기기 첫 실행일은 영역 이벤트(더보기 메뉴, ADR-0169)의 날 수 칸이라 익명 ID가 아닙니다(ADR-0029 「D3 목적 구분」).
   expect(
-    storageSets.filter((key) => key !== authSessionStorageKey && key !== analyticsQueueStorageKey),
+    storageSets.filter(
+      (key) =>
+        key !== authSessionStorageKey &&
+        key !== analyticsQueueStorageKey &&
+        key !== "libitum.analytics.first-open-day",
+    ),
   ).toEqual([]);
 });
 
@@ -225,13 +237,13 @@ test("[IA6] 앱을 다시 띄우면(새 세션) distinct_id가 달라진다", as
   const first = fakeTransport();
   const view = await renderApp(sessionApp(first.transport));
   openSettingsTab();
-  await vi.waitFor(() => expect(sentEvents(first.calls)).toHaveLength(1));
+  await vi.waitFor(() => expect(sentEvents(first.calls)).toHaveLength(3));
   view.unmount();
 
   const second = fakeTransport();
   await renderApp(sessionApp(second.transport));
   openSettingsTab();
-  await vi.waitFor(() => expect(sentEvents(second.calls)).toHaveLength(1));
+  await vi.waitFor(() => expect(sentEvents(second.calls)).toHaveLength(3));
 
   const firstId = sentEvents(first.calls)[0]?.distinct_id;
   const secondId = sentEvents(second.calls)[0]?.distinct_id;
@@ -292,9 +304,19 @@ test("[IA-ID1] 로그인된 설치는 부팅 뒤 이벤트가 그 사용자의 d
     expect(sentEvents(calls).map((event) => event.event)).toContain("settings_opened"),
   );
   const events = sentEvents(calls);
-  expect(events.map((event) => event.event)).toEqual(["$identify", "settings_opened"]);
-  expect(events.map((event) => event.distinct_id)).toEqual(["user-1", "user-1"]);
-  expect(events[1]!.properties).toMatchObject({
+  expect(events.map((event) => event.event)).toEqual([
+    "$identify",
+    "more_menu_opened",
+    "more_menu_item_clicked",
+    "settings_opened",
+  ]);
+  expect(events.map((event) => event.distinct_id)).toEqual([
+    "user-1",
+    "user-1",
+    "user-1",
+    "user-1",
+  ]);
+  expect(events[3]!.properties).toMatchObject({
     $process_person_profile: true,
     environment: "development",
   });

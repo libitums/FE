@@ -8,6 +8,7 @@ import type {
   HistoryEntry,
   LearningContext,
   LearningExpression,
+  RomanceLine,
   Segment,
   TurnState,
 } from "./chat-send.contract.ts";
@@ -25,6 +26,7 @@ import {
   pickOpenerExpression,
 } from "./companion-learning.ts";
 import { callRpc } from "./companion-rpc.ts";
+import { defaultRomanceLine } from "./companion-safety.ts";
 import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 
@@ -103,6 +105,8 @@ export async function generateOpener(
     readonly history?: readonly HistoryEntry[];
     readonly userText: string;
     readonly ageBand: AgeBand;
+    /** 적용 로맨스 선(ADR-0168). 출력 검사가 그 선으로 본다. 없으면 `defaultRomanceLine`. */
+    readonly romanceLine?: RomanceLine;
     readonly timeoutMs: number;
   },
 ): Promise<{ segments: Segment[]; state: TurnState | null; outcome: string }> {
@@ -125,6 +129,7 @@ export async function generateOpener(
       text: segmentsToPlain(segments),
       context: null,
       ageBand: input.ageBand,
+      romanceLine: input.romanceLine ?? defaultRomanceLine(input.ageBand),
       signal: AbortSignal.timeout(input.timeoutMs),
     });
     return {

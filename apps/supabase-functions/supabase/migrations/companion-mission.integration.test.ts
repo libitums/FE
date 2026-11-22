@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 롤플레이 미션 DB(20261214, PRD docs/specs/ai-companion-mission.md · ADR-0160): 판 시작 · 턴 · 힌트 · 닫기 · 결과 저장 · 채점 실패 ·
+// 롤플레이 미션 DB(20261225, PRD docs/specs/ai-companion-mission.md · ADR-0176): 판 시작 · 턴 · 힌트 · 닫기 · 결과 저장 · 채점 실패 ·
 // 방치 정리, 하루 무료 횟수 → 엽전 정액, 열림 · 계정 단위 판정, 남의 판 거절, 계정 삭제, 권한, 그리고 컴패니언 대화와의 격리.
 // 모든 테스트 끝에 「지갑 버킷 잔액의 합 = 원장 delta의 합」을 사용자마다 단언한다.
 const learner = "00000000-0000-4000-8000-0000000000d1";
@@ -450,6 +450,12 @@ test("MS3. 열림 · 계정 단위 판정 — 스위치 · 시험 계정 · 에�
     [learner, new Date(now).getUTCFullYear() - 10],
   );
   expect(await start(learner, "u01-water")).toMatchObject({ result: "age_restricted" });
+  // 하한은 컴패니언과 같은 만 14세(20261217) — 13세도 막힌다.
+  await db.admin.query("update companion.profiles set birth_year = $2 where user_id = $1", [
+    learner,
+    new Date(now).getUTCFullYear() - 13,
+  ]);
+  expect(await start(learner, "u01-water")).toMatchObject({ result: "age_restricted" });
 });
 
 test("MS4. 턴 상한 — 실패 · 차단 턴은 세지 않고, 상한에 닿으면 끝(turn_limit) · 실패 결과", async () => {
@@ -776,7 +782,7 @@ test("MS13. 미션 정의 올리기 — 판을 올리지 않은 변경 · 낮은
   );
 });
 
-test("MS14. 격리 — 미션 행이 있어도 기록 · 목록 · 선톡 후보 · 기억 마저 뽑기 · 대화 비우기 · 첫 인사 · 캐릭터당 고유 색인 · 컴패니언 턴이 그대로", async () => {
+test("MS14. 격리 — 미션 행이 있어도 기록 · 목록 · 선톡 후보 · 기억 마저 뽑기 · 대화 비우기 · 첫 인사 · 추천 답변 맥락 · 캐릭터당 고유 색인 · 컴패니언 턴이 그대로", async () => {
   await db.admin.query("update companion.characters set active = true where id = 'doyun'");
   // 선톡은 성인만 — 두 계정 모두 성인으로.
   await db.admin.query(
@@ -828,6 +834,11 @@ test("MS14. 격리 — 미션 행이 있어도 기록 · 목록 · 선톡 후보
     [other, JSON.stringify([{ kind: "speech", text: "안녕하세요!" }]), now],
   );
   expect(greeted).toMatchObject({ saved: true });
+  // 추천 답변 맥락(20261216에서 다시 정의) — 지난 대화 · 마지막 답이 미션 행에서 오지 않는다.
+  const suggest = await call("public.companion_suggest_context($1, 'doyun', 20, $2)", [other, now]);
+  expect(suggest["result"]).toBe("ok");
+  expect(JSON.stringify(suggest["history"])).not.toContain("알겠습니다");
+  expect((suggest["latest"] as Json)["origin"]).toBe("greeting");
   expect(
     Number(
       (

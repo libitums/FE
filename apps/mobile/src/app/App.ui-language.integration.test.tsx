@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import {
   legacyPassedRecord,
   legacyPassedSeed,
@@ -170,7 +171,7 @@ async function walkEntryFlow(
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
-  for (let index = 0; index < 3; index += 1) tapButtonIn("onboarding-screen-next");
+  tapButtonIn("onboarding-screen-start");
   tapButtonIn("login-screen-method-google");
   await advanceTimersAsync(0);
   expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
@@ -195,9 +196,9 @@ function expectEnglishJourneyTabs(): void {
     "accessibility-label",
     "Roleplay",
   );
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    "Settings",
+    "More",
   );
 }
 
@@ -258,12 +259,11 @@ test("[IL3] ⭐ 언어 선택의 Continue가 고른 언어를 1회 저장하고,
   // 고르지 않고 Continue만 누른 흐름도 확정 순간에 같은 값을 1회 저장한다(spec §5 개정 — 저장은 확정 때).
   expect(languageKeyCalls(controlStorage).sets).toEqual(["en"]);
   expect(events.length).toBeGreaterThan(0);
-  // 가입 직후 ② 나라에서 저장 이벤트(`learner_profile_saved`)가 진입 sink로 한 번 나갑니다.
-  expect(
-    events.every(
-      (event) => event.name.startsWith("entry_") || event.name.startsWith("learner_profile_"),
-    ),
-  ).toBe(true);
+  // 가입 직후 ② 나라에서 저장 이벤트(`learner_profile_saved`)가, 온보딩에서 스텝 열람 · 시작
+  // (ADR-0159)이 진입 sink로 나갑니다.
+  expect(events.every((event) => /^(entry_|learner_profile_|onboarding_)/.test(event.name))).toBe(
+    true,
+  );
   // 선택은 저장일 뿐 이벤트가 아니다 — 고르지 않은 흐름과 같은 이벤트가 같은 순서로 난다.
   expect(events).toEqual(controlEvents);
 });
@@ -320,7 +320,7 @@ test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션 · UI 언어와 
 
 // ------------------------------------------------------------ IL6 · 탭 화면 둘러보기
 
-function openTab(tab: "journey" | "roleplay" | "settings"): void {
+function openTab(tab: "journey" | "roleplay"): void {
   fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
 }
 
@@ -359,7 +359,7 @@ test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한
   expectNoHangul(root());
 
   // 설정 · 프로필 · 약관
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expectNoHangul(root());
 
@@ -473,7 +473,7 @@ test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바�
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     storageModule: storage.module,
   });
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
   expect(languageRow).toHaveTextContent("Intermediate English");
   fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
@@ -484,9 +484,9 @@ test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바�
   tapButtonIn("language-select-screen-next");
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Pengaturan/),
+    expect.stringMatching(/^Lainnya/),
   );
 });
 
@@ -497,7 +497,7 @@ test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     storageModule: storage.module,
   });
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
   fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
 
@@ -506,9 +506,9 @@ test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바
   tapButtonIn("language-select-screen-next");
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Ajustes");
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^Ajustes/),
+    expect.stringMatching(/^Más/),
   );
 });
 
@@ -519,7 +519,7 @@ test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     storageModule: storage.module,
   });
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
   fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
 
@@ -528,9 +528,9 @@ test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌
   tapButtonIn("language-select-screen-next");
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("設定");
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^設定/),
+    expect.stringMatching(/^その他/),
   );
 });
 
@@ -568,7 +568,8 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
   "[MC2-I9] 저장된 언어가 %s인 설치의 메신저 1.5 문구",
   (language) => {
     async function bootMessenger(coins: number): Promise<void> {
-      await resetMessengerChatSource({ tier: "free" });
+      // 합산 체험을 다 쓴 계정(ADR-0164 D3) — 방 머리 줄이 메시지 요금입니다.
+      await resetMessengerChatSource({ tier: "free", trial: 0 });
       const storage = sessionStorageWith({ [uiLanguageStorageKey]: language });
       await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
         storageModule: storage.module,
@@ -587,7 +588,7 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
       );
     });
 
-    // 체험 인물이 아닌 방은 첫 통부터 엽전이라(ADR-0155) 머리 줄이 메시지 요금입니다.
+    // 체험을 다 쓰면 어느 방이든 첫 통부터 엽전이라(ADR-0155 · ADR-0164) 머리 줄이 메시지 요금입니다.
     test("방 머리의 요금 줄이 그 언어의 coinEach(3)이다", async () => {
       const copy = uiCopyFor(language);
       await bootMessenger(0);

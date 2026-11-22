@@ -16,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // RevenueCat 구매 SDK(ADR-0144 2단계). 키가 없으면 한 줄도 부르지 않는다. 사용자 id는 로그인 뒤 JS가 맞춘다.
     if let config = PurchasesConfig.fromBundle() {
       PurchasesSDK.start(config)
+      // RevenueCat → Airbridge 구매 이벤트가 기기 · 광고 클릭에 잇도록 Airbridge 기기 id를 건다(비동기, 두 SDK가 섰을 때만).
+      PurchasesAttribution.linkAirbridgeDevice()
     }
 
     // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.

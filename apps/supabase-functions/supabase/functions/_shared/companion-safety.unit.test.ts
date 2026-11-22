@@ -125,8 +125,10 @@ test("SF6. 검사 지시 — 성인만 로맨스 말 · 손잡기 · 포옹 통�
   for (const layer of ["input", "output_sync"] as const) {
     {
       const text = moderationInstruction(layer, "adult");
-      expect(text).toContain("light romance between");
+      expect(text).toContain("light romance is allowed");
       expect(text).toContain("holding hands or hugging — spoken or as an *action* — are fine");
+      // 허용한 로맨스도 트래킹용으로 romance에 남긴다(ADR-0168).
+      expect(text).toContain('use "allow" with category "romance" (not "safe")');
       expect(text).toContain("mutual-crush mood (썸)");
       expect(text).toContain(
         "Physical intimacy beyond holding hands or a hug — kissing of any kind (뽀뽀, 키스, a peck)",
@@ -151,7 +153,7 @@ test("SF6. 검사 지시 — 성인만 로맨스 말 · 손잡기 · 포옹 통�
   expect(moderationInstruction("input", "minor")).toContain("a minor (treat as 13–17)");
 });
 
-test("SF7. 가짜 검사 — 로맨스 말은 성인만 통과 · 미성년자 · 나이 모름 차단, 키스 · 성적인 말은 모두 차단", async () => {
+test("SF7. 가짜 검사 — 로맨스 말은 성인만 통과(romance로 남김) · 미성년자 · 나이 모름 차단, 선 없이는 키스 · 성적인 말은 모두 차단", async () => {
   const at = (text: string, ageBand: "adult" | "minor" | "unknown") =>
     fake.moderate({
       layer: "input",
@@ -160,7 +162,7 @@ test("SF7. 가짜 검사 — 로맨스 말은 성인만 통과 · 미성년자 �
       ageBand,
       signal: new AbortController().signal,
     });
-  expect(await at("사랑해요", "adult")).toEqual({ category: "safe", action: "allow" });
+  expect(await at("사랑해요", "adult")).toEqual({ category: "romance", action: "allow" });
   expect(await at("사랑해요", "unknown")).toEqual({ category: "romance", action: "block" });
   expect(await at("사랑해요", "minor")).toEqual({ category: "romance", action: "block" });
   for (const ageBand of ["adult", "minor", "unknown"] as const) {

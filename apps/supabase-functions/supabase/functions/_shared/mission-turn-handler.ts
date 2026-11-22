@@ -1,4 +1,4 @@
-// `chat-send`의 미션 갈래(ADR-0160, PRD §3.3 ② · §3.4) — 본문에 `conversation_id`가 있으면 핸들러가 이리로 보냅니다.
+// `chat-send`의 미션 갈래(ADR-0176, PRD §3.3 ② · §3.4) — 본문에 `conversation_id`가 있으면 핸들러가 이리로 보냅니다.
 //
 // 흐름: 인증(1단계와 같음) → 본문(`missionTurnRequestSchema`) → `companion_mission_begin_turn`(판 확인 · 중복 · 계정 단위 판정 ·
 //   학습자 메시지 저장 · 프롬프트 재료, 차감 없음) → SSE 시작 → 턴(`mission-turn.ts`) → 로그 한 줄.

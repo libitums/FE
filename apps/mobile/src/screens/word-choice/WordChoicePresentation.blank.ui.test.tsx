@@ -10,12 +10,12 @@ afterEach(cleanup);
 
 const noop = (): void => undefined;
 
-function renderPresentation(question: WordChoiceQuestion): void {
+function renderPresentation(question: WordChoiceQuestion, answered = false): void {
   render(
     <WordChoicePresentation
       question={question}
       questionIndex={0}
-      answered={false}
+      answered={answered}
       pictureState="loading"
       onLoad={noop}
       onError={noop}
@@ -53,4 +53,31 @@ test("UBL2. 빈칸이 없는 제시문 · 로마자 줄도 이름이 비지 않�
   expect(
     screen.getByTestId("word-choice-screen-romanization").getAttribute("accessibility-label"),
   ).toBe("Pronunciation: samcheon wonimnida.");
+});
+
+// QA 2026-11-20(위키 QA 2번, u00 S2-01): 빈칸 채우기 로마자 줄이 답 전에 빈칸 자리 정답 로마자(밑줄)를 보여 답을 알려 줬습니다.
+const cloze: WordChoiceQuestion = {
+  prompt: "___! 한국은 처음이세요?",
+  romanization: "annyeonghaseyo! hangugeun cheoeumiseyo?",
+  romanizationEmphasis: { start: 0, length: 14 },
+  choices: ["한국어", "처음이에요", "안녕하세요"],
+  answerIndex: 2,
+};
+
+test("UBL3. 답 전 빈칸 채우기 로마자는 빈칸 자리가 ___이고 정답 로마자 · 밑줄 · 낭독에 정답이 없다", () => {
+  renderPresentation(cloze);
+  const line = screen.getByTestId("word-choice-screen-romanization");
+  expect(line).toHaveTextContent("___! hangugeun cheoeumiseyo?");
+  expect(line.textContent).not.toContain("annyeonghaseyo");
+  expect(line.querySelector(".text-role-romanization-answer")).toBeNull();
+  expect(line.getAttribute("accessibility-label")).toBe(
+    "Pronunciation: blank ! hangugeun cheoeumiseyo?",
+  );
+});
+
+test("UBL4. 답한 뒤에는 지금처럼 정답이 든 전체 로마자와 정답 밑줄이 선다", () => {
+  renderPresentation(cloze, true);
+  const line = screen.getByTestId("word-choice-screen-romanization");
+  expect(line).toHaveTextContent("annyeonghaseyo! hangugeun cheoeumiseyo?");
+  expect(line.querySelector(".text-role-romanization-answer")).toHaveTextContent("annyeonghaseyo");
 });

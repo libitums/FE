@@ -113,6 +113,7 @@ function RowBody({
               onResend={
                 feedback.resendableId === message.id ? () => feedback.onResend(message.id) : null
               }
+              chatWords={notes.chatWords ?? null}
             />
           </ChatOutgoingRow>
         );

@@ -22,7 +22,12 @@ import type {
   TranslationRequest,
 } from "./companion-steps.contract.ts";
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
-import type * as MissionLlm from "./mission-llm.contract.ts";
+import type { FriendPersonaFields, RomanceTier } from "./companion-friends.contract.ts";
+import type { RomanceLine } from "./companion-friends.contract.ts";
+import type { LlmUsage } from "./companion-llm-usage.contract.ts";
+import type { MissionLlmMembers, MissionLogEvent } from "./mission-llm.contract.ts";
+
+export type { RomanceLine, RomanceTier } from "./companion-friends.contract.ts";
 
 // ------------------------------------------------------------------ 환경
 
@@ -88,7 +93,8 @@ export type Segment = {
   readonly translation?: string;
 };
 
-export type PersonaCard = {
+/** 페르소나 카드. 추천 친구 칸(kind · met · 수위 · 배경 …)은 `companion-friends.contract.ts`. */
+export type PersonaCard = FriendPersonaFields & {
   readonly name: string;
   readonly age?: string;
   readonly job?: string;
@@ -134,6 +140,8 @@ export type ModerationRequest = {
    */
   readonly context: string | null;
   readonly ageBand: AgeBand;
+  /** 적용 로맨스 선(ADR-0168, `romanceLine`). 없으면 성인 hug · 아니면 none(`defaultRomanceLine`). */
+  readonly romanceLine?: RomanceLine;
   readonly signal: AbortSignal;
 };
 
@@ -163,32 +171,10 @@ export type {
   TranslationRequest,
 } from "./companion-steps.contract.ts";
 
-/** LLM 호출 단계 — 사용량 기록의 이름. */
-export type LlmStep =
-  | "reply"
-  | "moderation_input"
-  | "moderation_output"
-  | "feedback"
-  | "translation"
-  | "memory"
-  | "summary"
-  | "suggestions"
-  | "judge"
-  | "mission_grade"
-  | "mission_hint";
-
-/** 호출 하나의 토큰 사용량(API 응답의 usage). 캐시 쓰기 · 읽기는 입력과 따로 센다. */
-export type LlmUsage = {
-  readonly step: LlmStep;
-  readonly model: string;
-  readonly inputTokens: number;
-  readonly cacheReadTokens: number;
-  readonly cacheWriteTokens: number;
-  readonly outputTokens: number;
-};
+export type { LlmStep, LlmUsage } from "./companion-llm-usage.contract.ts";
 
 /** 벤더 추상화 계층(PRD §5 M1). 메인 답변은 글자 조각의 흐름, 나머지는 구조화된 결과 하나입니다. */
-export type CompanionLlm = {
+export type CompanionLlm = MissionLlmMembers & {
   readonly model: string;
   reply(request: ReplyRequest): AsyncIterable<string>;
   moderate(request: ModerationRequest): Promise<ModerationVerdict>;
@@ -201,10 +187,6 @@ export type CompanionLlm = {
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
   /** 평가 전용 — 캐릭터 답장 하나를 축마다 채점합니다(`companion-eval` reply). 없으면(테스트 대역) 채점하지 않습니다. */
   judgeReply?(request: ReplyJudgeRequest): Promise<ReplyJudgement>;
-  gradeMission?(request: MissionLlm.MissionLlmRequest): Promise<MissionLlm.MissionGraderDraft>;
-  missionHint?(request: MissionLlm.MissionLlmRequest): Promise<MissionLlm.MissionHintDraft>;
-  readonly graderModel?: string;
-  readonly missionTurn?: CompanionLlm;
   /** 호출마다 사용량을 `record`로 넘기는 같은 계층 — 턴마다 감싸 모은다. 없으면(테스트 대역) 모으지 않는다. */
   withUsage?(record: (usage: LlmUsage) => void): CompanionLlm;
 };
@@ -217,6 +199,8 @@ export type GateResult =
   | {
       readonly result: "ok";
       readonly ageBand: AgeBand;
+      /** 적용 로맨스 수위(20261216). 옛 DB는 칸이 없다 — standard. */
+      readonly romanceTier?: RomanceTier;
       readonly l1: string | null;
       readonly region: string | null;
       readonly tier: "free" | "premium";
@@ -267,9 +251,7 @@ export type ChatSendLogEntry = {
     | "companion_proactive"
     | "companion_memory_flush"
     | "companion_eval"
-    | "mission_start"
-    | "mission_hint"
-    | "mission_finish";
+    | MissionLogEvent;
   readonly status: number | "stream";
   readonly outcome?: string;
   readonly error?: string;

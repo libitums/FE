@@ -182,7 +182,7 @@ export function anthropicCompanionLlm(
         request.layer === "input" ? "moderation_input" : "moderation_output",
         config.moderationModel,
         verdictSchema,
-        moderationInstruction(request.layer, request.ageBand),
+        moderationInstruction(request.layer, request.ageBand, request.romanceLine),
         `${context}Text to review:\n${request.text}`,
         request.signal,
       );

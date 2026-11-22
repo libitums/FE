@@ -95,3 +95,17 @@ test("UP8. calendarDateOf는 지역 시간의 달력 날짜이고 month는 1~12�
   expect(calendarDateOf(at(2026, 1, 31, 0))).toEqual({ year: 2026, month: 1, day: 31 });
   expect(calendarDateOf(at(2026, 12, 1, 23))).toEqual({ year: 2026, month: 12, day: 1 });
 });
+
+test("UP9. 보상 이용권(timed)은 남은 시간(올림) · 전체 시간 · 남은 비율 · 끝 날(ADR-0175)", () => {
+  const HOUR = 60 * 60 * 1000;
+  const start = at(2026, 11, 21, 9);
+  const pass = { kind: "timed", startedAtMs: start, endsAtMs: start + 24 * HOUR } as const;
+  expect(unlimitedPassView(pass, start + 6.5 * HOUR)).toEqual({
+    kind: "timed",
+    on: { year: 2026, month: 11, day: 22 },
+    hoursLeft: 18,
+    totalHours: 24,
+    remaining: 17.5 / 24,
+  });
+  expect(unlimitedPassView(pass, start + 30 * HOUR)).toMatchObject({ hoursLeft: 0, remaining: 0 });
+});

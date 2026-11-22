@@ -3,7 +3,9 @@
    덱(뒤 두 장 + 맨 앞 카드의 틀 · 뒤집기) · 점입니다 — 앞 · 뒷면 안은 `culture-card-face.css`가 집니다.
    글줄은 줄바꿈을 막지 않고 높이 상한 · 말줄임이 없습니다(WCAG 1.4.4). */
 
+/* 셸 무대가 남는 세로를 줍니다(`fillStage`) — 내용 · 덱 · 맨 앞 카드가 차례로 받아 큰 화면에 빈 띠가 남지 않습니다. */
 .culture-card-activity-content {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -28,6 +30,7 @@
 /* 덱 — 뒤 두 장은 절대 배치로 맨 앞 카드 뒤에 깔리고, 맨 앞 카드가 덱의 높이를 정합니다. 뒤 장이 위로 비어져 나오는
    몫(`spacing-20`)만큼 맨 앞 카드를 내립니다. */
 .culture-card-activity-deck {
+  flex-grow: 1;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -59,9 +62,10 @@
   opacity: var(--libitum-opacity-35);
 }
 
-/* 맨 앞 카드 — 덱 높이의 하한입니다(고정이 아님, ADR-0020 D5). 뒷면 본문이 길면 카드가 따라 커지고 셸의 카드
-   스크롤이 집니다. */
+/* 맨 앞 카드 — 덱 높이의 하한입니다(고정이 아님, ADR-0020 D5). 남는 세로까지 자라고, 뒷면 본문이 그보다 길면 카드가
+   따라 커지고 셸의 카드 스크롤이 집니다. */
 .culture-card-activity-face {
+  flex-grow: 1;
   position: relative;
   z-index: var(--libitum-elevation-z-default);
   display: flex;

@@ -161,7 +161,7 @@ describe("LearnerProfileFields", () => {
     render(<Host initial={null} />);
 
     expect(screen.getByTestId("learner-profile-fields")).toBeTruthy();
-    const example = port.previewOf(null, null);
+    const example = port.previewOf(null, null, "en");
     expect(previewKind()).toBe("example");
     expect(previewLineTexts()).toEqual(example.lines.flatMap((line) => [line.ko, line.en]));
     expect(screen.getByTestId("learner-profile-preview")).toHaveTextContent(
@@ -189,7 +189,7 @@ describe("LearnerProfileFields", () => {
     expect(nameInput()).toHaveAttribute("default-value", "Emma");
     expect(countryCell()).toHaveAttribute("accessibility-label", `${copy.countryLabel}, Germany`);
     expect(previewKind()).toBe("yours");
-    const expected = port.previewOf("Emma", port.byCode("DE")).lines;
+    const expected = port.previewOf("Emma", port.byCode("DE"), "en").lines;
     expect(expected).toHaveLength(2);
     expect(previewLineTexts()).toEqual(expected.flatMap((line) => [line.ko, line.en]));
   });
@@ -201,7 +201,7 @@ describe("LearnerProfileFields", () => {
     typeName("Liam");
 
     expect(previewKind()).toBe("yours");
-    const expected = port.previewOf("Liam", null).lines;
+    const expected = port.previewOf("Liam", null, "en").lines;
     expect(previewLineTexts()).toEqual(expected.flatMap((line) => [line.ko, line.en]));
     expect(announced).toHaveLength(0);
   });
@@ -368,7 +368,7 @@ describe("LearnerProfileFields", () => {
       "accessibility-label",
       `${copy.countryLabel}, ${copy.notSet}`,
     );
-    const expected = port.previewOf("Emma", null).lines;
+    const expected = port.previewOf("Emma", null, "en").lines;
     expect(previewLineTexts()).toEqual(expected.flatMap((line) => [line.ko, line.en]));
   });
 

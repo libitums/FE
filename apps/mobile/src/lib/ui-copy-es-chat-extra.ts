@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaEs } from "./ui-copy-es-chat-media";
 import { messengerChatAlbumEs } from "./ui-copy-es-chat-album";
+import { messengerChatSuggestedEs } from "./ui-copy-es-chat-suggested";
 
 export const messengerChatExtraEs: MessengerChatExtraCopy = {
   media: messengerChatMediaEs,
   album: messengerChatAlbumEs,
+  suggested: messengerChatSuggestedEs,
   access: {
     signInTitle: "Escríbeles a las personas de tus historias",
     signInBody:
       "Crea una cuenta gratis para chatear en coreano con las personas de tus historias. Tu progreso se conserva.",
     signIn: "Regístrate o inicia sesión",
+    promptTitle: "Inicia sesión para enviar mensajes",
+    promptBody:
+      "Crea una cuenta gratis para chatear con las personas de tus historias. Tu progreso se conserva.",
+    promptLater: "Ahora no",
+    promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
   chatSettings: {

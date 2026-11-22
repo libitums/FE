@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-libra
 import {
   echoAudioOf,
   ECHO_SOURCE,
+  passAnswerEchoDelay,
   lessonAudioStub,
   withAudio,
 } from "../../lib/question-audio.test-support";
@@ -11,7 +12,7 @@ import type { LessonAudio } from "../../lib/question-audio";
 import { SyllableBuildActivity } from "./SyllableBuildActivity";
 import type { SyllableBuildQuestion } from "./syllable-build.contract";
 
-// `ui` 계층: 음절 조립 활동의 정답 뒤 재생 — 확인한 순간 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
+// `ui` 계층: 음절 조립 활동의 정답 뒤 재생 — 확인 뒤 효과음 틈을 두고 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void, rate?: number) => string>(),
@@ -68,13 +69,22 @@ afterEach(() => {
 });
 
 describe("SYLLABLE_BUILD — 정답 뒤 재생 갈래", () => {
-  test("EC5. 확인 전에는 재생이 없고 확인한 순간 속도 인자 없이 한 번 재생한다", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("EC5. 확인 전에는 재생이 없고 확인 뒤 효과음 틈을 두고 속도 인자 없이 한 번 재생한다", () => {
     const { lesson } = lessonAudioStub();
     mount([card], lesson);
     buildCard([2, 1]);
     expect(playAudio).not.toHaveBeenCalled();
 
     check();
+    expect(playAudio).not.toHaveBeenCalled();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     const call = playAudio.mock.calls[0];
@@ -88,6 +98,7 @@ describe("SYLLABLE_BUILD — 정답 뒤 재생 갈래", () => {
     buildCard([0, 3]);
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
   });
@@ -98,6 +109,7 @@ describe("SYLLABLE_BUILD — 정답 뒤 재생 갈래", () => {
     buildCard([2, 1]);
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });
@@ -108,6 +120,7 @@ describe("SYLLABLE_BUILD — 정답 뒤 재생 갈래", () => {
     buildCard([2, 1]);
 
     check();
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });

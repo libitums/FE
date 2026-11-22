@@ -105,14 +105,16 @@ export function listenBuildItemOf(
     ...(romanization === undefined
       ? {}
       : { reading: { romanization, shown: "after-check" as const } }),
-    // 조각 로마자는 다시 풀기에서만 섭니다 — 첫 시도는 소리로 고르게 둡니다(ADR-0153).
+    // 조각 로마자는 보기 로마자 설정이 켜졌으면 첫 시도부터, 꺼졌으면 다시 풀기에서만 섭니다(ADR-0153 ⟨2026-11-20⟩).
     ...readingField(
       "chipReading",
       tileReadingOf(
         order.map((index) => latinOf(port, item.tiles[index]?.roman)),
-        "review",
+        "setting",
       ),
     ),
+    // 판정 뒤 정답 상자 아래 뜻 줄입니다(QA 2026-11-20).
+    ...optionalField("meaning", english),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   };
   return { kind: "sentence-order", itemId: item.id, question };

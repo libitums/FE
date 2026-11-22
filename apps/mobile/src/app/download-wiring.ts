@@ -3,6 +3,7 @@
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import { allowEpisodes, loadMobileDataPolicy, saveMobileDataPolicy } from "../lib/download-policy";
 import type { AssetTarget } from "../lib/download-policy";
+import type { AssetActivity } from "./cover-download-state";
 import { downloadProgressSummaryOf, type DownloadCatalogInput } from "./download-progress";
 import { readNetworkProperties } from "../lib/network-status";
 import type { DownloadSettingsScreenProps } from "../screens/download-settings/download-settings.contract";
@@ -19,6 +20,11 @@ export type DownloadControls = {
   readonly assetsBytes: (episodeId: string) => number | null;
   /** 목록을 마지막으로 받은 시각(epoch ms) — 끝 카드 · 모두 끝낸 뒤 시트(D9). 없으면 `null`. */
   readonly manifestCheckedAt: number | null;
+  /** 표지 받기 표시(ADR-0165) — 받기 차례의 파일 진행 · 도는 중인가 · 받을 차례인가 · 자산을 받는 호스트인가. */
+  readonly assetActivity: AssetActivity | null;
+  readonly syncing: boolean;
+  readonly assetsScheduled: (episodeId: string) => boolean;
+  readonly tracksAssets: () => boolean;
 };
 
 export type DownloadSettingsWiring = Omit<DownloadSettingsScreenProps, "onBack">;

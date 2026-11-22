@@ -28,6 +28,9 @@ export type TicketsCopy = {
     readonly endsDate: (date: string) => string;
     readonly daysLeft: (days: number) => string;
     readonly dayProgress: (left: number, total: number) => string;
+    /** 보상 이용권(ADR-0175)의 남은 시간 · 「N of M hours」. */
+    readonly hoursLeft: (hours: number) => string;
+    readonly hourProgress: (left: number, total: number) => string;
     readonly activeMessage: string;
     readonly endingMessage: string;
     readonly manage: string;

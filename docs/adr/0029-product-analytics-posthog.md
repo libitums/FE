@@ -428,6 +428,18 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - **`surface_session_ended { seconds }`** — 학습(여정 · 롤플레이 탭) ↔ 채팅(메신저 탭) 영역이 바뀌거나 설정 탭 · 진입 화면으로 가거나 세션이 내려갈 때, 머문 영역과 초(반올림, 1초 미만은 내지 않음). 탭 위에 쌓인 레슨 · 대화방은 그 탭의 영역이다(`app/use-surface-sessions.ts`). **한계**: 앱이 배경으로 가는 신호를 호스트가 아직 보내지 않아 배경 시간도 그 영역에 들고, 배경에서 종료되면 마지막 영역은 보내지 못한다.
   - **첫 경험 마일스톤(기기당 한 번)** — `first_lesson_completed`(첫 `episode_lesson_finished { verdict: passed }` 뒤) · `first_chat_message_sent { characterId }`(첫 `chat_message_sent` 뒤). PostHog sink를 감싸 낸다(`withFirstMilestones`, 기기 키 `libitum.analytics.milestones`) — 시험 계정 거름이 바깥이라 시험 계정의 행동은 기록되지 않는다. 같은 capture에 사람 속성 `$set_once { first_lesson_day | first_chat_day }`(첫 날 수, 정수)를 싣는다 — 사람 속성은 다른 기기 · 재설치에서도 처음 값이 남는다.
   - Airbridge 매핑은 열넷을 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+  - ⟨2026-11-19 — 비회원 메신저(ADR-0166). 적용 기록⟩ **`chat_sign_in_prompt_closed { trigger: send | media | menu | coins | add_friend, choice: sign_in | later }`**
+    (공통 속성 둘 포함, `surface: chat`) — 비회원 「로그인 필요」 대화상자를 닫을 때 한 번(`screens/messenger-chat/use-guest-gate.tsx`). 뜬 수 = 이 이벤트 수,
+    로그인으로 넘어간 비율 = `choice: sign_in` 비율, 로그인 성공은 `entry_login_method_selected`. 이름이 74 → 75개, Airbridge 매핑 없음.
+  - ⟨2026-11-20 — 비회원 흐름 다듬기(ADR-0166 확인 필요 결정). 적용 기록⟩ `chat_sign_in_prompt_closed`의 `trigger`에 **`tickets`** 값을 더한다 — 머리 티켓 모달의
+    Get more tickets(비회원)에서 뜬 대화상자. `surface`는 그대로 `chat`(같은 대화상자 · 같은 이벤트), sink는 메신저와 같은 제품 이벤트 sink다. 이름 수는 그대로 75개.
+    비회원 방 전구(Reply ideas)는 새 값 없이 `send`로 센다.
+  - ⟨2026-11-21 — 가입 보상(ADR-0174). 적용 기록⟩ **`signup_reward_card_shown`**(손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번) ·
+    **`signup_reward_card_tapped`**(카드를 눌러 로그인 화면으로 갈 때마다) · **`signup_reward_shown { amount }`**(서버 지급 뒤 보상 모달이 설 때 한 번). 공통 속성 둘 포함,
+    `surface: learning`, 제품 이벤트 sink(`app/use-signup-reward.tsx`). 카드 → 가입 전환 = `entry_login_method_selected` ÷ `signup_reward_card_tapped`. Airbridge 매핑 없음.
+  - ⟨2026-11-21 — 푸시 캠페인 보상(ADR-0175). 적용 기록⟩ **`push_reward_claimed { kind, amount }`**(보상 알림을 눌러 서버가 지급했을 때 한 번 — amount는 엽전 수 또는
+    무제한 티켓 시간) · **`push_reward_failed { reason }`**(already_claimed · not_recipient · expired · unknown · guest · error, 캠페인 id가 없는 알림은 내지 않음).
+    공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-push-reward.tsx`). Airbridge 매핑 없음.
 
   #### D3 목적 구분 — 쓰는 법
 
@@ -502,6 +514,10 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
    `development`로 찍힌다**(D13) — 대시보드가 비어 보이는 것으로 드러난다. 이미 들어간 이벤트의
    값은 고칠 수 없다.
 10. **개발 이벤트도 무료 한도(월 이벤트 수)를 쓴다**(D13) — 같은 프로젝트에 쌓인다.
+
+- ⟨2026-11-18 — ADR-0159⟩ 온보딩 이벤트 둘을 더한다(진입 sink): `onboarding_step_viewed { step, via }`(스텝이 그 방문에서 처음
+  보일 때 1회) · `onboarding_started { step, autoAdvanced }`(「Get started」). 「Next」가 없어져 온보딩 → 로그인이 한 번의 탭이 됐다 —
+  `entry_screen_viewed(onboarding)` → `(login)` 전환율의 해석이 이날 바뀐다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다.
 
 ## 재검토 조건
 

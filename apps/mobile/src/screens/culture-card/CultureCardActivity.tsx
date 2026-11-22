@@ -83,9 +83,11 @@ export function CultureCardActivity({
       onExit={onExit}
       actionLabel={actionLabel}
       onAction={onAction}
-      // 덱은 면을 스스로 그립니다 — 셸의 흰 카드 안에 두면 카드 속 카드가 됩니다. 긴 뒷면은 스크롤이 집니다.
+      // 덱은 면을 스스로 그립니다 — 셸의 흰 카드 안에 두면 카드 속 카드가 됩니다. 카드는 남는 세로까지 자라고(큰 화면에
+      // 빈 띠가 남지 않게), 그보다 긴 뒷면은 카드 스크롤이 집니다(QA 2026-11-20).
       stage="bare"
       scrollCard
+      fillStage
       card={
         <view
           className="culture-card-activity-content"

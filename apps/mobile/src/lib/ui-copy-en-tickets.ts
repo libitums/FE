@@ -33,6 +33,8 @@ export const ticketsEn: TicketsCopy = {
     endsDate: (date) => `Ends ${date}`,
     daysLeft: (days) => (days === 1 ? "1 day left" : `${String(days)} days left`),
     dayProgress: (left, total) => `${String(left)} of ${String(total)} days`,
+    hoursLeft: (hours) => (hours === 1 ? "1 hour left" : `${String(hours)} hours left`),
+    hourProgress: (left, total) => `${String(left)} of ${String(total)} hours`,
     activeMessage: "Start any lesson without a ticket.",
     endingMessage: "After that, lessons use tickets again.\nYou keep all your progress.",
     manage: "Manage subscription",

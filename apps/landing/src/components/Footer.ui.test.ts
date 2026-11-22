@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { legalLanguageFor, legalPathFor } from "../legal/legal-paths";
 import { brandProfiles, languages, pages, pathFor } from "../site";
 import Footer from "./Footer.astro";
 import { render } from "./render.support";
@@ -26,18 +27,22 @@ describe.each(languages)("Footer (%s)", (language) => {
     );
   });
 
-  it("UI-FO2 약관 · 개인정보 링크", () => {
-    const links = [
-      ...document.querySelectorAll('footer ul:not([data-testid="footer-social"]) li a'),
-    ];
+  it("UI-FO2 약관 · 개인정보 링크 — 우리 주소의 문서, 번역본이 없으면 영어 기준본", () => {
+    const links = [...document.querySelectorAll('[data-testid="footer-legal"] li a')];
+    const legalLanguage = legalLanguageFor(language);
     expect(links.length).toBe(2);
-    expect(links.map((a) => a.textContent)).toEqual([t.footerTerms, t.footerPrivacy]);
+    expect(links.map((a) => a.textContent?.trim())).toEqual([t.footerTerms, t.footerPrivacy]);
+    expect(links.map((a) => a.getAttribute("href"))).toEqual([
+      legalPathFor("terms", legalLanguage),
+      legalPathFor("privacy", legalLanguage),
+    ]);
     for (const link of links) {
-      expect(link.getAttribute("target")).toBe("_blank");
-      const rel = link.getAttribute("rel") ?? "";
-      expect(rel).toContain("noopener");
-      expect(rel).toContain("noreferrer");
-      expect(link.getAttribute("href")).toMatch(/^https:\/\//);
+      // 같은 사이트 안이라 새 창으로 열지 않는다.
+      expect(link.getAttribute("target")).toBeNull();
+      expect(link.getAttribute("hreflang")).toBe(legalLanguage);
+    }
+    if (language !== "en" && language !== "ko") {
+      expect(links.map((a) => a.getAttribute("href"))).toEqual(["/terms/", "/privacy/"]);
     }
   });
 

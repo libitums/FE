@@ -16,6 +16,7 @@ import {
 } from "./chat-ui.test-support";
 import { messengerChatTestIds as roomIds } from "./messenger-chat.contract";
 import { myMessageTestIds as ids } from "./my-message.contract";
+import { createTrialStore } from "./trial-store";
 
 // `integration` 계층(CR-I1 ~ I6): 방 화면 + 가짜 출처 — 고친 문장 다시 보내기 · 👍 👎 · 👎 시트 · 신고 길(ADR-0129).
 
@@ -77,8 +78,13 @@ const openCard = (index = 0): void => {
 const logText = (): string => screen.getByTestId(roomIds.log).textContent ?? "";
 
 test("CR-I1. 답이 온 마지막 내 글의 카드에 Send corrected가 서고, 누르면 옛 턴이 빠지고 고친 글이 새로 간다", () => {
-  // 다시 보내기도 한 통 — 체험 인물이 아닌 방이라 엽전 3을 냅니다(ADR-0155).
-  const { wallet } = mountChat({ seed: seed(), tier: "free", coinBalance: 10 });
+  // 다시 보내기도 한 통 — 합산 체험을 다 쓴 계정이라 엽전 3을 냅니다(ADR-0155 · ADR-0164).
+  const { wallet } = mountChat({
+    seed: seed(),
+    tier: "free",
+    coinBalance: 10,
+    trial: createTrialStore(0),
+  });
   openCard();
   expect(screen.getByTestId(fb.resend)).toBeTruthy();
 

@@ -1,0 +1,151 @@
+/* 합치기 퀴즈(ADR-0169, 시안 JamoCompose) — 뼈대는 LearningShell, 칸 · 타일은 음절 조립 모양(syllable-build-tile ·
+   syllable-build-word의 칸 값)을 빌리고 여기에는 카드 안 배치 · 칸 상태 · 힌트 칩만 둡니다. 토큰만 씁니다. */
+
+.letters-compose {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.letters-compose-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-16);
+}
+
+.letters-compose-target {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+}
+
+.letters-compose-play {
+  width: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.letters-compose-play:active {
+  background-color: var(--libitum-color-gray-300);
+}
+
+.letters-compose-play-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.letters-compose-make {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.letters-compose-slots {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+/* 칸은 음절 조립 칸(48 × 56 · gray-100 · 투명 테두리)에 로마자 줄을 얹은 세로 묶음입니다. */
+.letters-compose-slot,
+.letters-compose-result {
+  flex-direction: column;
+  min-width: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  min-height: var(--libitum-spacing-64);
+}
+
+.letters-compose-slot-current {
+  background-color: var(--libitum-color-white);
+  border-color: var(--libitum-color-brand-strong);
+}
+
+.letters-compose-slot-correct {
+  background-color: var(--libitum-color-feedback-correct-surface);
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.letters-compose-slot-incorrect {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+.letters-compose-slot-correct .syllable-tile-label {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.letters-compose-slot-incorrect .syllable-tile-label {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.letters-compose-result {
+  min-width: calc(var(--libitum-spacing-64) + var(--libitum-spacing-8));
+  min-height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-8));
+}
+
+.letters-compose-merged {
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+}
+
+.letters-compose-op {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+}
+
+.letters-compose-workspace {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+/* 힌트 칩 — 창고 위 오른쪽(조립 힌트와 같은 자리). */
+.letters-compose-hint {
+  align-self: flex-end;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  padding-right: 14px;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-50);
+}
+
+.letters-compose-hint-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.letters-compose-hint-text {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.letters-compose-complete {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}

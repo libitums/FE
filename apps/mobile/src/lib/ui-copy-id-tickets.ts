@@ -33,6 +33,8 @@ export const ticketsId: TicketsCopy = {
     endsDate: (date) => `Berakhir ${date}`,
     daysLeft: (days) => `${String(days)} hari lagi`,
     dayProgress: (left, total) => `${String(left)} dari ${String(total)} hari`,
+    hoursLeft: (hours) => `${String(hours)} jam lagi`,
+    hourProgress: (left, total) => `${String(left)} dari ${String(total)} jam`,
     activeMessage: "Mulai pelajaran apa pun tanpa tiket.",
     endingMessage: "Setelah itu, pelajaran memakai tiket lagi.\nSemua progresmu tetap tersimpan.",
     manage: "Kelola langganan",

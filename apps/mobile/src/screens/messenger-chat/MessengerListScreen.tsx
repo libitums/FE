@@ -11,12 +11,16 @@ import { ChatListRow } from "./ChatListRow";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { MessengerListGuide } from "./MessengerGuide";
 import { useChatEvents } from "./chat-events";
-import { deviceGuideStore, GUIDE_ROOM_ID } from "./messenger-guide";
+import { deviceGuideStore, GUIDE_ROOM_ID, isSuggestedRowShown } from "./messenger-guide";
 import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
+import type { SuggestedFriendsProps } from "./suggested-friends.contract";
 import { useChatSnapshot } from "./use-chat-source";
 import { useCoinBalance } from "./use-coin-balance";
+import { useSuggestedFriends } from "./use-suggested-friends";
+import { useGuestGate } from "./use-guest-gate";
+import { canBrowseChats } from "./messenger-access";
 
 import "./messenger-list.css";
 
@@ -35,7 +39,8 @@ export function MessengerListScreen({
   access,
   onSignIn,
   guideStore = deviceGuideStore,
-}: MessengerListScreenProps): ReactNode {
+  friends,
+}: MessengerListScreenProps & SuggestedFriendsProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
@@ -44,7 +49,9 @@ export function MessengerListScreen({
   // 첫 입장 안내(덕수쌤 줄만 떠 있는 오버레이) — 덕수쌤 방이 있는 메신저(서버 모드)에서 한 번.
   const [guideUnseen, setGuideUnseen] = useState(() => guideStore.unseen("list"));
   const guideRoom = rooms.find((r) => r.roomId === GUIDE_ROOM_ID && r.access.kind === "open");
-  const guideShown = access === "open" && guideUnseen && guideRoom !== undefined;
+  const guideShown = canBrowseChats(access) && guideUnseen && guideRoom !== undefined;
+  // 비회원 미리보기(ADR-0166) — 엽전 칩 · 추천 친구 추가는 로그인 권유.
+  const guest = useGuestGate(access === "preview" ? onSignIn : null);
   const { emit } = useChatEvents();
   const endGuide = (outcome: "done" | "skipped") => {
     emit({ name: "messenger_guide_finished", surface: "chat", part: "list", outcome });
@@ -52,37 +59,44 @@ export function MessengerListScreen({
     setGuideUnseen(false);
   };
 
-  // 겹침 열림은 바뀔 때만 바깥에 알립니다. 열린 채 화면이 내려가면 닫힘을 한 번 더 알립니다
-  // (전역 머리가 가려진 채 남지 않게 — `useScreenLayer`와 같은 목적이지만, 마운트 때의 첫 false는 보내지 않습니다).
-  const onLayerChangeRef = useRef(onLayerChange);
-  const coinShopOpenRef = useRef(false);
-  useEffect(() => {
-    onLayerChangeRef.current = onLayerChange;
-    coinShopOpenRef.current = coinShopOpen;
-  });
-  useEffect(
-    () => () => {
-      if (coinShopOpenRef.current) onLayerChangeRef.current(false);
-    },
-    [],
-  );
-  useEffect(() => {
-    if (!guideShown) return undefined;
-    onLayerChangeRef.current(true);
-    return () => onLayerChangeRef.current(false);
-  }, [guideShown]);
-
   function openCoinShop() {
     "background only";
     playSound("button");
     setCoinShopOpen(true);
-    onLayerChange(true);
   }
   function closeCoinShop() {
     "background only";
     setCoinShopOpen(false);
-    onLayerChange(false);
   }
+  // 추천 친구 줄 · 시트 · 친구 찾기(ADR-0162) — 엽전이 모자라면 상점을 엽니다(그동안 친구 찾기는 낭독에서 가려짐).
+  const suggested = useSuggestedFriends({
+    port: canBrowseChats(access) ? friends : undefined,
+    onBlocked: guest.active ? () => guest.prompt("add_friend") : undefined,
+    rooms,
+    covered: coinShopOpen,
+    onShortOfCoins: openCoinShop,
+  });
+
+  // 겹침(엽전 상점 · 첫 입장 안내 · 추천 친구 시트 · 친구 찾기)을 합친 값 하나만, 바뀔 때 바깥에 알립니다 — 겹침끼리 바뀌는 사이에
+  // 닫힘이 끼어 전역 머리가 다시 읽히지 않게(접근성 리뷰 W3). 마운트 때의 첫 false는 보내지 않고, 열린 채 화면이 내려가면 닫힘을
+  // 한 번 더 알립니다(전역 머리가 가려진 채 남지 않게 — `useScreenLayer`와 같은 목적).
+  const layerOpen = coinShopOpen || guideShown || suggested.layerOpen || guest.open;
+  const onLayerChangeRef = useRef(onLayerChange);
+  const sentRef = useRef(false);
+  useEffect(() => {
+    onLayerChangeRef.current = onLayerChange;
+  });
+  useEffect(() => {
+    if (sentRef.current === layerOpen) return;
+    sentRef.current = layerOpen;
+    onLayerChangeRef.current(layerOpen);
+  }, [layerOpen]);
+  useEffect(
+    () => () => {
+      if (sentRef.current) onLayerChangeRef.current(false);
+    },
+    [],
+  );
 
   const ordered = orderChatRooms(rooms);
   // 시각 표기의 기준은 그릴 때마다 읽습니다(상태로 두면 목록이 바뀔 때마다 두 번 그려집니다 — 리뷰 #10).
@@ -91,10 +105,7 @@ export function MessengerListScreen({
   return (
     <view className="messenger-list-screen" data-testid={ids.screen}>
       {/* 겹침이 떠 있는 동안 뒤 화면을 낭독에서 숨깁니다(ADR-0016 D9). */}
-      <view
-        className="messenger-list-content"
-        accessibility-elements-hidden={coinShopOpen || guideShown}
-      >
+      <view className="messenger-list-content" accessibility-elements-hidden={layerOpen}>
         <view className="messenger-list-header" data-testid={ids.header}>
           <text
             className="messenger-list-title"
@@ -112,11 +123,11 @@ export function MessengerListScreen({
               testId={ids.coins}
               surface="white"
               height="touch-target"
-              onTap={openCoinShop}
+              onTap={() => guest.prompt("coins") || openCoinShop()}
             />
           )}
         </view>
-        {access !== "open" ? (
+        {!canBrowseChats(access) ? (
           <ChatAccessGate
             access={access}
             onSignIn={onSignIn}
@@ -135,6 +146,8 @@ export function MessengerListScreen({
             scroll-bar-enable={false}
           >
             <view className="messenger-list-list" data-testid={ids.list}>
+              {/* 안내 중에는 추천 줄을 빼 원본 첫 줄이 떠 있는 덕수쌤 줄 자리에 섭니다. */}
+              {isSuggestedRowShown(guideShown) ? suggested.row : null}
               {ordered.map((room) => (
                 <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
               ))}
@@ -143,6 +156,8 @@ export function MessengerListScreen({
         )}
       </view>
       <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
+      {suggested.layers}
+      {guest.layer}
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}
       {guideShown && guideRoom !== undefined ? (
         <MessengerListGuide

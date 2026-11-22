@@ -148,6 +148,7 @@ export const profileEs: ProfileCopy = {
 };
 
 export const coinShopEs: CoinShopCopy = {
+  digitSeparator: ".",
   title: "Yeopjeon",
   subtitle: "Antiguas monedas coreanas de latón",
   balanceLabel: "Tienes",
@@ -165,6 +166,14 @@ export const coinShopEs: CoinShopCopy = {
   notice: {
     title: "Pagos próximamente",
     description: "Aún no se pueden comprar monedas. Vuelve pronto.",
+  },
+  purchaseFailed: "La compra no se completó. Inténtalo de nuevo.",
+  purchaseWait: {
+    confirming: "Confirmando tu compra…",
+    late: "Tu compra está a salvo. Aparecerá en breve.",
+    added: (count, display) => `+${display} ${count === 1 ? "moneda añadida" : "monedas añadidas"}`,
+    adding: "Añadiendo a tu cartera",
+    updating: "Actualizando",
   },
 };
 

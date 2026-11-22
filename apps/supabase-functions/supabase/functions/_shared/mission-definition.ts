@@ -1,4 +1,4 @@
-// 롤플레이 미션(ADR-0160)의 정의를 읽습니다. 순수 함수입니다 — DB · 네트워크에 닿지 않습니다.
+// 롤플레이 미션(ADR-0176)의 정의를 읽습니다. 순수 함수입니다 — DB · 네트워크에 닿지 않습니다.
 //
 // 정본은 `missions/*.json`이고 서버 표 `companion.missions.definition`에 그대로 올라갑니다. 모양 검사는 계약 패키지의
 // `missionDefinitionSchema`(목표 id 중복 · 필수 목표 · 표현 id 중복 포함)가 하고, 여기는 오류를 읽기 좋은 줄로 바꾸고
@@ -50,7 +50,7 @@ export const goalIds = (mission: MissionDefinition): readonly string[] =>
   mission.goals.map((goal) => goal.id);
 
 /**
- * 캐스트 상대역의 바탕 네 칸(이름 · 나이 · 직업 · 말버릇, ADR-0160 D4). 단역(`characterId` 없음)이면 늘 null.
+ * 캐스트 상대역의 바탕 네 칸(이름 · 나이 · 직업 · 말버릇, ADR-0176 D4). 단역(`characterId` 없음)이면 늘 null.
  * DB의 페르소나 카드(`card`)가 있으면 그것을, 없으면 미션 파일의 `counterpart.base`를 씁니다. 카드의 다른 칸(말씨 · 예시 대사 ·
  * 로맨스 태도 · 기억 씨앗 · 화제)은 본편 시점과 어긋나서 읽지 않습니다.
  */

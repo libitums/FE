@@ -192,3 +192,73 @@ test("PC-IO9. HogQL은 LIMIT이 없으면 100행에서 잘린다 — 300명 묶�
   assert.equal(queries.length, 3);
   for (const query of queries) assert.match(query, /GROUP BY distinct_id LIMIT 1000$/);
 });
+
+test("PC-IO10. 보상(ADR-0175) — 보상 · 수신자를 먼저 적고(실패면 던짐), 목적지에 캠페인 id, 받은 수는 RPC로 읽는다", async () => {
+  const calls = [];
+  let fail = false;
+  const fetchImpl = async (url, init = {}) => {
+    calls.push({ url, init });
+    if (fail) return { ok: false, status: 500, text: async () => "boom" };
+    if (url.includes("push_campaign_reward_claim_counts"))
+      return { ok: true, json: async () => [{ campaign_id: "c1", claimed: 3 }] };
+    if (url.includes("/functions/v1/send-push"))
+      return { ok: true, status: 200, text: async () => '{"devices":1,"sent":1,"failed":0}' };
+    return { ok: true, status: 201, text: async () => "" };
+  };
+  const client = supabaseClient({ projectRef: "ref", key: "k", fetchImpl });
+  const rows = {
+    reward: { campaign_id: "c1", kind: "coins", amount: 100, hours: null },
+    recipients: Array.from({ length: 1001 }, (_, i) => ({ campaign_id: "c1", user_id: `u${i}` })),
+  };
+  await client.saveReward(rows);
+  assert.deepEqual(
+    calls.map((call) => [call.url, call.init.method]),
+    [
+      ["https://ref.supabase.co/rest/v1/push_campaign_rewards", "POST"],
+      ["https://ref.supabase.co/rest/v1/push_campaign_reward_recipients", "POST"],
+      ["https://ref.supabase.co/rest/v1/push_campaign_reward_recipients", "POST"],
+    ],
+  );
+  assert.deepEqual(JSON.parse(calls[0].init.body), rows.reward);
+  assert.equal(JSON.parse(calls[1].init.body).length, 1000);
+  assert.equal(JSON.parse(calls[2].init.body).length, 1);
+
+  calls.length = 0;
+  await client.sendAnnouncement({
+    userIds: ["a"],
+    title: "T",
+    body: "B",
+    target: { kind: "journey-map", campaignId: "c1" },
+  });
+  assert.deepEqual(JSON.parse(calls[0].init.body).target, {
+    kind: "journey-map",
+    campaignId: "c1",
+  });
+
+  assert.deepEqual(await client.rewardClaimCounts(["c1", "c2"]), new Map([["c1", 3]]));
+  assert.deepEqual(JSON.parse(calls.at(-1).init.body), { p_campaign_ids: ["c1", "c2"] });
+  assert.deepEqual(await client.rewardClaimCounts([]), new Map());
+
+  fail = true;
+  await assert.rejects(client.saveReward(rows), /보상 기록 실패 500/);
+
+  // 보상 줄은 적었는데 수신자에서 실패하면 보상 줄을 지운다(리뷰 W2).
+  fail = false;
+  calls.length = 0;
+  let inserts = 0;
+  const flaky = supabaseClient({
+    projectRef: "ref",
+    key: "k",
+    fetchImpl: async (url, init = {}) => {
+      calls.push({ url, init });
+      if (init.method === "POST" && (inserts += 1) > 1)
+        return { ok: false, status: 409, text: async () => "dup" };
+      return { ok: true, status: 201, text: async () => "" };
+    },
+  });
+  await assert.rejects(flaky.saveReward(rows), /보상 기록 실패 409/);
+  assert.deepEqual(calls.at(-1), {
+    url: "https://ref.supabase.co/rest/v1/push_campaign_rewards?campaign_id=eq.c1",
+    init: { method: "DELETE", headers: { apikey: "k", Authorization: "Bearer k" } },
+  });
+});

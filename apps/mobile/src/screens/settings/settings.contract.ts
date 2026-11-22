@@ -54,6 +54,11 @@ export type SettingsScreenProps = {
   readonly onOpenChatSettings: (() => void) | null;
   /** 「Plans」 줄 — 요금제 비교 화면을 엽니다(ADR-0144). 기능 플래그가 꺼졌거나 비회원이면 없음(undefined · null) — 줄이 없습니다. */
   readonly onOpenPlans?: (() => void) | null;
+  /** 「Hide me from ranking」 토글 줄(ADR-0170) — 서버 값이 없거나 비회원이면 없음(undefined · null). */
+  readonly rankingHidden?: {
+    readonly hidden: boolean;
+    readonly onChange: (hidden: boolean) => void;
+  } | null;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };

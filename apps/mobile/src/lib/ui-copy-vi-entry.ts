@@ -27,14 +27,13 @@ export const onboardingVi: OnboardingScreenCopy = {
       body: "Bài học ngắn mỗi ngày, vừa vặn lịch của bạn.\nHoàn thành một bài chỉ trong năm phút.",
     },
   },
-  next: "Tiếp",
   getStarted: "Bắt đầu",
   progress: (ordinal, total) => `Bước ${ordinal} / ${total}`,
   storyChat: {
-    staff: "Nhân viên",
-    welcome: "Xin chào! Bạn đang tìm gì ạ?",
-    sunscreen: "Có kem chống nắng không?",
-    thisWay: "Có, mời đi lối này.",
+    friend: "Doyun",
+    atStore: "Mình đang ở trước cửa hàng tiện lợi. Bạn muốn uống gì không?",
+    water: "Mua giúp mình một chai nước nhé!",
+    onMyWay: "Được. Mình đến ngay đây!",
   },
   quiz: { replay: "Nghe lại", stop: "Dừng", play: "Phát" },
   unit: {

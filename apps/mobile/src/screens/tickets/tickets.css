@@ -387,3 +387,33 @@
   width: 18px;
   height: 18px;
 }
+
+/* 티켓 모달의 「∞ Go unlimited」 줄(ADR-0160 · 시안 T1b) — 카운트다운 아래 · 칸 위, 주황 테두리의 옅은 알약. 짙은 모달 바탕 위
+   흰 글(대비 15 : 1). 주황 12% 면은 시안 값입니다. */
+.ticket-modal-go-unlimited {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 44px;
+  margin-top: var(--libitum-spacing-24);
+  padding: 0 var(--libitum-spacing-20);
+  border: 1.5px solid var(--libitum-color-brand-primary);
+  border-radius: 22px;
+  background-color: rgba(244, 107, 24, 0.12);
+}
+
+.ticket-modal-go-unlimited-icon {
+  width: 20px;
+  height: 16px;
+  margin-right: var(--libitum-spacing-8);
+}
+
+.ticket-modal-go-unlimited-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+}

@@ -4,7 +4,11 @@ import { isTypeableAnswer } from "../lib/hangul-keyboard";
 import type { LearningItem } from "../lib/episode-content.model";
 import type { QuestionAudio } from "../lib/question-audio";
 import type { TypingCueKind } from "../screens/typing/typing.contract";
-import { catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
+import {
+  catalogAnswerEchoOf,
+  catalogListenAudioOf,
+  catalogRecordedEchoOf,
+} from "./catalog-item-audio";
 import type {
   CatalogItemPort,
   CatalogLessonItemPort,
@@ -97,7 +101,7 @@ export function typingItemOf(item: TypingSource, port: CatalogLessonItemPort): C
         cue,
         cueSupport: null,
         hint: hint === "" ? null : hint,
-        audio: null,
+        audio: catalogRecordedEchoOf(item, port),
       });
     }
     case "SENT_BUILD": {
@@ -109,7 +113,7 @@ export function typingItemOf(item: TypingSource, port: CatalogLessonItemPort): C
         cue,
         cueSupport: null,
         hint: hint === "" ? null : hint,
-        audio: null,
+        audio: catalogRecordedEchoOf(item, port),
       });
     }
   }

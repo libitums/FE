@@ -7,6 +7,7 @@ import {
   lessonAudioStub,
   listenAudioOf,
   LISTEN_SOURCE,
+  passAnswerEchoDelay,
   testIdOrder,
   withAudio,
 } from "../../lib/question-audio.test-support";
@@ -19,7 +20,7 @@ import {
 } from "../../components/listen-controls.test-support";
 
 // `ui` 계층: 단어 선택 활동의 문항 음성 — REPLY_SELECT(듣기 갈래)는 간이 줄과 자동 재생, 그림 고르기 ·
-// 영어 뜻 고르기(정답 뒤 재생 갈래)는 고른 순간 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
+// 영어 뜻 고르기(정답 뒤 재생 갈래)는 고른 뒤 효과음 틈을 두고 한 번 재생합니다(ADR-0172). 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void, rate?: number) => string>(),
@@ -168,13 +169,58 @@ describe("REPLY_SELECT — 듣기 갈래", () => {
 });
 
 describe("정답 뒤 재생 갈래", () => {
-  test("EC1. IMG_MATCH는 고르기 전에는 재생이 없고 고른 순간 속도 인자 없이 한 번 재생하며 줄이 없다", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test("WC-E1. 대답 고르기는 상대 말을 자동 재생하고, 고른 뒤 틈을 두고 정답 대답을 한 번 더 재생한다", () => {
+    const { lesson } = lessonAudioStub();
+    const withReply = withAudio(reply, {
+      ...listenAudioOf("REPLY_SELECT", "S9-01"),
+      echo: echoAudioOf(),
+    });
+    mount([withReply], lesson);
+    expect(playAudio).toHaveBeenCalledTimes(1);
+    expect(playAudio.mock.calls[0]?.[0]).toBe(LISTEN_SOURCE);
+
+    choose(0);
+    expect(playAudio).toHaveBeenCalledTimes(1);
+    passAnswerEchoDelay();
+
+    expect(playAudio).toHaveBeenCalledTimes(2);
+    expect(playAudio.mock.calls[1]?.[0]).toBe(ECHO_SOURCE);
+  });
+
+  test("WC-E2. 정답 음성 길이를 알면 그 말소리가 끝날 때까지(틈 + 길이 + 여유) 기다렸다가 넘어간다", () => {
+    const { lesson } = lessonAudioStub();
+    const longEcho = withAudio(translate, { ...echoAudioOf(), speechMs: 3110 });
+    mount([longEcho, reply], lesson);
+    choose(0);
+
+    act(() => {
+      vi.advanceTimersByTime(800 + 3110 + 400 - 1);
+    });
+    expect(playAudio).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent("물");
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent("안녕하세요");
+  });
+
+  test("EC1. IMG_MATCH는 고르기 전에는 재생이 없고 고른 뒤 효과음 틈을 두고 속도 인자 없이 한 번 재생하며 줄이 없다", () => {
     const { lesson } = lessonAudioStub();
     const { container } = mount([pictureWithEcho], lesson);
     loadPicture();
     expect(playAudio).not.toHaveBeenCalled();
 
     choose(0);
+    expect(playAudio).not.toHaveBeenCalled();
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     const call = playAudio.mock.calls[0];
@@ -188,6 +234,7 @@ describe("정답 뒤 재생 갈래", () => {
     mount([pictureWithEcho, translate], lesson);
     loadPicture();
     choose(2);
+    passAnswerEchoDelay();
     stopAudio.mockClear();
 
     fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
@@ -201,16 +248,18 @@ describe("정답 뒤 재생 갈래", () => {
     loadPicture();
 
     choose(0);
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
   });
 
-  test("EC2. TRANSLATE_TO_EN도 고른 순간 한 번 재생하고 보고는 하지 않는다", () => {
+  test("EC2. TRANSLATE_TO_EN도 고른 뒤 효과음 틈을 두고 한 번 재생하고 보고는 하지 않는다", () => {
     const { lesson, onListenItemAnswered } = lessonAudioStub();
     mount([translateWithEcho], lesson);
     expect(playAudio).not.toHaveBeenCalled();
 
     choose(0);
+    passAnswerEchoDelay();
 
     expect(playAudio).toHaveBeenCalledTimes(1);
     expect(playAudio.mock.calls[0]?.[0]).toBe(ECHO_SOURCE);
@@ -223,6 +272,7 @@ describe("정답 뒤 재생 갈래", () => {
     mount([translateWithEcho], lesson);
 
     choose(0);
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });
@@ -232,6 +282,7 @@ describe("정답 뒤 재생 갈래", () => {
     mount([translate], lesson);
 
     choose(0);
+    passAnswerEchoDelay();
 
     expect(playAudio).not.toHaveBeenCalled();
   });

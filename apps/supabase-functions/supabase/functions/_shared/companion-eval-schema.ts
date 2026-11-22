@@ -17,6 +17,11 @@ export const caseSchema = z.object({
   id: z.string().min(1).max(64),
   text: z.string().min(1).max(2000),
   ageBand: z.enum(["adult", "minor", "unknown"]).optional(),
+  // 검사 · 답장: 적용 로맨스 수위(ADR-0164). 생략하면 standard. 성인이 아니면 open이어도 standard로 돈다(운영과 같다).
+  romanceTier: z.enum(["open", "standard"]).optional(),
+  // 검사 · 칩: 적용 로맨스 선(ADR-0168)을 바로 준다. 검사는 생략하면 수위 · 연령대로(open이면 open, 아니면 성인 hug · 그 밖 none),
+  // 칩은 생략하면 none(옛 동작). 답장은 인물 · 말투 단계 · 수위로 운영처럼 정하므로 쓰지 않는다.
+  romanceLine: z.enum(["none", "hug", "kiss", "close", "open"]).optional(),
   layer: z.enum(["input", "output_sync"]).optional(),
   l1: z.string().min(1).max(35).nullable().optional(),
   // 검사: 출력 검사 때 앞선 유저 메시지. 피드백: 바로 앞 캐릭터 말.

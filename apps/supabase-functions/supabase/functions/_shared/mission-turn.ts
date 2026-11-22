@@ -1,4 +1,4 @@
-// 미션 턴 하나의 스트림(ADR-0160, PRD §3.4). `mission-turn-handler.ts`가 판 확인 · 학습자 메시지 저장을 끝낸 뒤 부릅니다.
+// 미션 턴 하나의 스트림(ADR-0176, PRD §3.4). `mission-turn-handler.ts`가 판 확인 · 학습자 메시지 저장을 끝낸 뒤 부릅니다.
 //
 // 1단계 턴(`chat-send-turn.ts`)의 부품을 그대로 씁니다 — 입력 검사(`moderateInput`) · 답 생성(`startReply`) · 출력 검사와 다시 만들기
 // (`outputChecker` · `recoverReply`) · 번역(`startTranslation`). 시스템 프롬프트는 미션 전용(`missionSystemPrompt`)이고, 상태 줄은 미션
@@ -163,7 +163,15 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
   let translation = translate(result.segments);
   let recovered: string | null = null;
   if (ageBand !== "adult") {
-    const check = outputChecker({ deps, llm, body, gate: { ageBand } }, moderation);
+    // 미션은 로맨스 인물이 아니다 — 인물 · 수위 없이 넘겨 기본 선(성인 hug · 아니면 none)으로 검사한다.
+    const checkContext = {
+      deps,
+      llm,
+      body,
+      gate: { ageBand },
+      turn: { persona: null, speechLevel: "polite" },
+    } as const;
+    const check = outputChecker(checkContext, moderation);
     let output: ModerationVerdict;
     try {
       output = await check(result.segments);
@@ -171,10 +179,13 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
       return fail("upstream_unavailable", "failed");
     }
     if (output.action !== "allow") {
-      const again = await recoverReply(
-        { deps, llm, body, gate: { ageBand } },
-        { history, system, abort, check, category: output.category },
-      );
+      const again = await recoverReply(checkContext, {
+        history,
+        system,
+        abort,
+        check,
+        category: output.category,
+      });
       if (again === null) return fail("guardrail_blocked", "blocked");
       ({ reply, result } = again);
       recovered = output.category;

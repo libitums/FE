@@ -11,6 +11,8 @@ export type CoinClaim = {
   readonly learning: number;
   readonly bonus: number;
   readonly balance: number;
+  /** 가입 보상 도입 뒤 만든 계정인가(ADR-0174) — 출시 보너스가 없고 엽전 출시 모달도 없습니다. 옛 서버는 칸이 없어 거짓. */
+  readonly newAccount: boolean;
 };
 
 export type CoinClientDeps = {
@@ -33,7 +35,7 @@ export function coinClaimFrom(bodyText: string | null): CoinClaim | null {
     const balance = count(wallet?.balance);
     return learning === null || bonus === null || balance === null
       ? null
-      : { learning, bonus, balance };
+      : { learning, bonus, balance, newAccount: raw?.newAccount === true };
   } catch {
     return null;
   }

@@ -5,7 +5,6 @@ import {
   entryLanguages,
   initialEntryLanguage,
   isEntryLanguageAvailable,
-  isStoryOnlyLanguage,
   type EntryLanguage,
 } from "./entry-language";
 
@@ -47,10 +46,4 @@ test("EL4. 일곱 언어 모두 고를 수 있고 initialEntryLanguage가 고를
   expect(isEntryLanguageAvailable(initialEntryLanguage)).toBe(true);
 });
 
-// 2026-11-18 태국어 · 미얀마어는 이야기 번역만 있는 언어다(ADR-0158) — 화면 문구는 영어 그대로.
-test("EL5. 태국어 · 미얀마어만 이야기 번역 전용이다", () => {
-  expect(allEntryLanguages.filter((language) => isStoryOnlyLanguage(language))).toEqual([
-    "th",
-    "my",
-  ]);
-});
+// EL5(이야기 번역 전용 언어 th · my)는 2026-11-20 ADR-0158 개정으로 은퇴 — 일곱 언어 모두 화면 문구 표가 있다(UC4b · TM-U1 · TM-U6).

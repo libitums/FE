@@ -136,6 +136,8 @@
 - 「서버와 합치기」를 새로 쓰지 않는다 — 옮긴 뒤 `createJourneyProgressSync(userId)`가 지금 규칙(ADR-0062: 기기 값 먼저 → 서버 불러와 `mergeJourneyProgress` → 덮이지 않은 것은 저장)으로 올린다.
   그 계정에 서버 기록이 있으면 **합쳐지고**, 학습일은 `record_learning_days`가 멱등 저장한다(ADR-0035 D6). `entry_returning_learner_entered`는 0이다.
 
+- ⟨2026-11-21⟩ 손님 지도 하단의 가입 권유 카드(ADR-0174)도 같은 `onSignIn` → `guest-login`을 연다(여정 탭 스택 — 성공하면 지도로). 새 계정이면 지도에서 가입 보상 모달이 선다.
+
 ### D7. 세션 저장은 **한 자리** — `storeSignedInSession`
 
 새 모듈 `app/store-session.ts`(지금 `entry-wiring.ts`의 `storeSession`을 떼어 낸 것 + 두 줄). 순서: `saveAuthSession(session)` → **`clearGuestSession()`** → `setAccountState("signed-in")` → `void syncProgress()` →
@@ -228,3 +230,5 @@
 8. **GE-E1 ~ E8 첫 회차가 돌면** → 「확인 필요」 5 · 6을 닫고, 다르면 해당 D를 정정 기록한다.
 10. **사용자가 Facebook 버튼을 「이관 중」 설명과 함께 다시 세우고 싶어지면** → D1 중간 상태. 정책 `hidden.all`에서 `facebook`을 빼고 `unavailable.all`에 둔다(앱 배포 0) — 개정 2의 모양이 돌아온다. 코드 변경 0.
 9. **되살린 수단의 완료가 쌓이고 자동 플립이 필요해지면** → 버린 대안 12(B). 서버 정기 작업이 그 수단의 완료를 보고 정책 배열에서 지우는 길 — 서버 코드가 생기므로 새 ADR이다.
+
+- ⟨2026-11-19 — [ADR-0166](0166-guest-messenger-same-list.md) 적용 기록⟩ 비회원 「로그인」(`guest-login`) 성공 뒤 이동이 `backToRoot` → `back`이다 — 로그인 화면만 걷어 연 자리로 돌아간다. 설정 루트에서 열면 결과가 같고(설정 루트), 메신저 방의 「로그인 필요」 대화상자에서 열면 그 방으로 돌아와 회원으로 보낸다. 이관(D4)은 그대로다.

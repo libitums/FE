@@ -105,9 +105,10 @@ export function visibleLearnerCountryIssue(
 export function learnerProfilePreviewFor(
   draft: LearnerProfileDraft,
   port: LearnerProfilePort,
+  language: string,
 ): LearnerProfilePreview {
   const named = learnerNameFrom(draft.name);
-  return port.previewOf(named.ok ? named.name : null, chosenCountry(draft, port));
+  return port.previewOf(named.ok ? named.name : null, chosenCountry(draft, port), language);
 }
 
 /** 질의가 비었고 고른 나라가 있으면 그 줄을 맨 위로(중복 없이), 아니면 검색 결과 그대로. */

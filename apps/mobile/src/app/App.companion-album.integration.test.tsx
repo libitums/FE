@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
@@ -198,7 +199,7 @@ test("AL-I2 첫 Snapshot은 내 모습을 묻고, 고른 값을 서버 프로필
 test("AL-I3 설정 탭 Chats → You in snapshots → Man → Save면 서버 프로필에 적는다", async () => {
   await bootToRoom();
   tapRound("messenger-chat-back");
-  openTab("settings");
+  openSettingsFromMore();
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-settings-group-item-chats")).getByTestId(
       "ui-lynx-settings-cell",

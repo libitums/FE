@@ -4,6 +4,8 @@ import type { PushNotificationTarget } from "../screens/notifications/notificati
 
 /** 서버 인물 id 형식입니다(1~64자 소문자 · 숫자 · 하이픈). */
 const CHARACTER_ID = /^[a-z0-9-]{1,64}$/;
+/** 보상 캠페인 id 형식입니다(ADR-0175) — 콘솔 캠페인 id. 서버가 수신자 표로 다시 검증합니다. */
+const CAMPAIGN_ID = /^[A-Za-z0-9_-]{1,80}$/;
 
 /** 모르는 목적지 · 모양 오류는 `null`입니다. 빈 사전(목적지 없는 알림)은 여정 맵입니다. */
 export function pushTargetFrom(raw: unknown): PushNotificationTarget | null {
@@ -13,7 +15,12 @@ export function pushTargetFrom(raw: unknown): PushNotificationTarget | null {
   switch (kind) {
     case undefined:
       return Object.keys(record).length === 0 ? { kind: "journey-map" } : null;
-    case "journey-map":
+    case "journey-map": {
+      const campaignId = record["campaignId"];
+      return typeof campaignId === "string" && CAMPAIGN_ID.test(campaignId)
+        ? { kind, campaignId }
+        : { kind };
+    }
     case "notifications":
     case "roleplay-list":
       return { kind };

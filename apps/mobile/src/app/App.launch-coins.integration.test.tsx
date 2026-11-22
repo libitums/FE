@@ -35,6 +35,11 @@ vi.mock("../lib/coin-wallet-api", () => ({
   }),
 }));
 
+// 가입 보상(ADR-0174)은 출시 지급보다 먼저 한 번 묻는다 — 이 파일의 계정은 기존 회원(지급 0)이라 모달 없이 곧바로 출시 흐름으로 간다.
+vi.mock("../lib/signup-reward-api", () => ({
+  signupRewardClient: () => ({ claim: async () => ({ granted: 0, balance: 0 }) }),
+}));
+
 // 서버에 저장된 진행이 없음 — 진행 읽기가 끝나(loaded) 지도가 한가해진다.
 const noRemote = async () => ({ status: 200, body: "null" });
 let store = new Map<string, string>();

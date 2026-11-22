@@ -39,6 +39,7 @@ import {
   UPDATE_SEGMENT,
 } from "./update.mjs";
 import { campaignResults, poolResults, seriesOf } from "./results.mjs";
+import { normalizeReward, rewardProblems, rewardRows, rewardTarget } from "./reward.mjs";
 import { storyContentProblems, storyMessage, storyPack } from "./story.mjs";
 import {
   batchesByMessage,
@@ -245,6 +246,7 @@ const summaryOf = (campaign) => ({
   status: campaign.status,
   holdoutPercent: campaign.holdoutPercent,
   series: seriesOf(campaign),
+  reward: campaign.reward ?? null,
   counts: {
     sent: campaign.recipients.filter((row) => row.group === "sent").length,
     control: campaign.recipients.filter((row) => row.group === "control").length,
@@ -263,7 +265,8 @@ async function send(input) {
   if (input.confirm !== "SEND") throw new Error("확인 문구가 없습니다.");
   const storyInput = isStory(input) ? storyOrThrow() : undefined;
   const variants = normalizeVariants(input);
-  const problems = storyInput ? [] : variantsProblems(variants);
+  const reward = normalizeReward(input.reward);
+  const problems = [...(storyInput ? [] : variantsProblems(variants)), ...rewardProblems(reward)];
   if (problems.length > 0) throw new Error(problems.join(" "));
   const { nowMs, filter, holdoutPercent, selection } = audienceFor(input);
   if (selection.eligible.length === 0) throw new Error("보낼 사람이 없습니다.");
@@ -298,6 +301,7 @@ async function send(input) {
     variants: storyInput ? storyVariants(recipients) : variants,
     ...(storyInput ? { story: "push/level-5" } : {}),
     sentAtMs: nowMs,
+    reward,
     status: "sending",
     inSegment: selection.inSegment,
     excluded: selection.excluded,
@@ -305,7 +309,11 @@ async function send(input) {
     batches: [],
     totals: { devices: 0, sent: 0, failed: 0, removed: 0, failedCalls: 0 },
   };
+  // 보상(ADR-0175)은 보내기 **전에** 서버에 적습니다 — 보낸 그룹만 수신자로(대조군 없음). 적지 못하면 보내지 않습니다.
+  const rows = rewardRows(campaign);
+  if (rows !== null) await supabase.saveReward(rows);
   saveCampaign(campaign);
+  const target = rewardTarget(id, reward);
 
   const batches = batchesByMessage(
     recipients
@@ -317,7 +325,7 @@ async function send(input) {
     while (next < batches.length) {
       const batch = batches[next++];
       const result = await supabase
-        .sendAnnouncement(batch)
+        .sendAnnouncement({ ...batch, target })
         .catch((error) => ({ ok: false, error: String(error) }));
       campaign.batches.push({
         title: batch.title,
@@ -346,7 +354,7 @@ async function resultsFor(id) {
 
   const ids = new Set(campaign.recipients.map((row) => row.userId));
   const sinceDay = shiftDay(new Date(campaign.sentAtMs).toISOString().slice(0, 10), -1);
-  const [devices, days, posthog] = await Promise.all([
+  const [devices, days, posthog, claims] = await Promise.all([
     supabase.devices(),
     supabase.days(sinceDay),
     posthogReturns(config, [...ids], campaign.sentAtMs, {
@@ -355,6 +363,7 @@ async function resultsFor(id) {
       console.error(String(error));
       return null;
     }),
+    campaign.reward ? supabase.rewardClaimCounts([campaign.id]).catch(() => new Map()) : null,
   ]);
   const lastActiveNow = new Map();
   for (const row of devices) {
@@ -377,6 +386,8 @@ async function resultsFor(id) {
       filter: campaign.filter,
       excluded: campaign.excluded,
       batches: campaign.batches,
+      // 「보상 받음」 — 보상 캠페인만(ADR-0175). 받은 사람 수 / 보낸 그룹.
+      claimed: claims === null ? null : (claims.get(campaign.id) ?? 0),
     },
     results: campaignResults(campaign, { lastActiveNow, learningDays, posthog }, Date.now()),
   };
@@ -734,7 +745,11 @@ const server = createServer(async (request, response) => {
           : variants.map((variant) => ({ id: variant.id, label: variant.label })),
         seed,
         story: Boolean(storyInput),
-        problems: storyInput ? [] : variantsProblems(variants),
+        reward: normalizeReward(input.reward),
+        problems: [
+          ...(storyInput ? [] : variantsProblems(variants)),
+          ...rewardProblems(normalizeReward(input.reward)),
+        ],
         forecast: hourForecast(selection.hourCandidates, filter.localHours, nowMs),
         samples,
       });

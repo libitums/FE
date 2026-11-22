@@ -1,3 +1,7 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -6,8 +10,15 @@ import { App } from "./App";
 import { catalogLessonPlanOf } from "./catalog-lesson-plan";
 import type { CatalogActivity } from "./catalog-lesson-plan";
 import { resetPushWiringForTests } from "./push-wiring";
-import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
+import {
+  contentNotFoundResponse,
+  contentPathOf,
+  isContentRequest,
+} from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
+import { countryNamesKey, forgetCountryNames } from "../lib/country-names";
+import { resetCountryNamesSync } from "../lib/country-names-refresh";
+import { saveUiLanguage } from "../lib/ui-language";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
@@ -132,6 +143,8 @@ type BootOptions = {
   readonly store?: Map<string, string>;
   readonly server?: Partial<Server>;
   readonly backHost?: { readonly respond: (token: string, outcome: string) => void };
+  /** 콘텐츠 버킷에 있는 파일(상대 경로 → 원문) — 나머지는 404입니다. */
+  readonly content?: Record<string, string>;
 };
 
 type Booted = {
@@ -201,7 +214,10 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
     if (url.includes("grant_type=pkce")) {
       return reply(200, sessionBody(server.pkceSub, server.pkceFullName));
     }
-    if (isContentRequest(url)) return Promise.resolve(contentNotFoundResponse());
+    if (isContentRequest(url)) {
+      const text = options.content?.[contentPathOf(url) ?? ""];
+      return text === undefined ? Promise.resolve(contentNotFoundResponse()) : reply(200, text);
+    }
     if (url.includes("/auth/v1/logout")) return reply(204);
     if (url.includes("/functions/v1/delete-account")) return reply(204);
     const name = url.split("/rest/v1/rpc/")[1] ?? url;
@@ -262,6 +278,8 @@ afterEach(() => {
   process.off("unhandledRejection", onRejection);
   cleanup();
   resetPushWiringForTests();
+  forgetCountryNames();
+  resetCountryNamesSync();
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -322,8 +340,7 @@ const learnerRowCell = (): HTMLElement =>
   within(screen.getByTestId("ui-lynx-settings-group-item-learner-profile")).getByTestId(
     "ui-lynx-settings-cell",
   );
-const openSettings = (): void =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+const openSettings = (): void => openSettingsFromMore();
 /** 설정의 「Name and country in lessons」에서 이름과 나라를 저장하고 설정 목록으로 돌아옵니다. */
 function saveInSettings(name: string, code: string): void {
   openSettings();
@@ -334,12 +351,9 @@ function saveInSettings(name: string, code: string): void {
 const openJourney = (): void =>
   void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-const tapNext = (): void => tapButtonIn("onboarding-screen-next");
-/** 온보딩 세 스텝을 넘겨 로그인에 섭니다. */
+/** 온보딩의 「Get started」로 로그인에 섭니다(ADR-0159 — 어느 스텝에서든). */
 function completeOnboarding(): void {
-  tapNext();
-  tapNext();
-  tapNext();
+  tapButtonIn("onboarding-screen-start");
 }
 
 /** 로그인 뒤 ① 이름 또는 맵 — 서버 진행이 있는 계정은 ① · ② · 언어 선택 없이 맵으로 갑니다. */
@@ -421,7 +435,7 @@ type TurnView = { readonly hint: string; readonly bank: string };
 function walkFinalTurns(): TurnView[] {
   const views: TurnView[] = [];
   const total = Number(
-    /of (\d+)/.exec(screen.getByTestId("catalog-final-screen-progress").textContent ?? "")?.[1],
+    /(\d+)\D*$/.exec(screen.getByTestId("catalog-final-screen-progress").textContent ?? "")?.[1],
   );
   for (let turn = 0; turn < total; turn += 1) {
     const bank = screen.getByTestId("catalog-final-screen-bank");
@@ -677,6 +691,76 @@ test("P5c. (AC5) 다른 기기에서 저장한 값은 캐시 없이 로그인해
 
   expect(views.map((view) => view.bank).join("|")).toContain("한국에서");
   expect(views.map((view) => view.bank).join("|")).toContain("Mina");
+});
+
+// P5e — 번역 줄의 `{나라}`는 화면 언어의 나라 이름입니다(2026-11-19 l10n 점검: 베트남어 번역 줄에 「Vietnam」이 섰다). 이름 표는 번들 밖
+// 콘텐츠 버킷 파일(`country-names/vi.json`)이라, 실행 시작의 받기 차례가 받아 저장한 뒤부터 섭니다. 받지 못하면(P5f) 영어 이름입니다.
+// 시험용 고정 내장본(vitest.setup의 `episode-bundled` 대역)에는 번역표가 없어 문장은 영어로 남고, 자리에 선 나라 이름만 봅니다 —
+// 운영 내장본 · 버킷 번역에서는 「Tôi đến từ {나라}.」에 같은 이름이 섭니다.
+const vietnameseLearner = {
+  progress: toFinalOfU03,
+  preStore: {
+    "libitum.ui.language": "vi",
+    [profileCacheKey]: JSON.stringify({ v: 1, name: "Minh", countryCode: "VN", sync: "synced" }),
+  },
+  server: { profile: { name: "Minh", countryCode: "VN" } },
+} as const;
+const finalHints = (): string =>
+  walkFinalTurns()
+    .map((view) => view.hint)
+    .join("|");
+
+const countryNamesFile = (language: string): string =>
+  readFileSync(resolve(process.cwd(), `../../docs/content/country-names/${language}.json`), "utf8");
+const allCountryNames = Object.fromEntries(
+  ["es", "id", "ja", "vi"].map((language) => [
+    `country-names/${language}.json`,
+    countryNamesFile(language),
+  ]),
+);
+
+test("P5e. 실행 시작에 네 언어 표를 모두 받아 두고, 베트남어 화면의 u03 번역 줄 {나라}에 Việt Nam이 선다", async () => {
+  const { store } = await boot({ ...vietnameseLearner, content: allCountryNames });
+  await vi.waitFor(() => expect(present("journey-map-screen")).toBe(true));
+  // 오프라인에서 언어를 바꿔도 이름이 있도록 지금 언어(vi) 밖의 셋도 받습니다(2026-11-19).
+  for (const language of ["es", "id", "ja", "vi"]) {
+    await vi.waitFor(() =>
+      expect(store.get(countryNamesKey(language))).toBe(countryNamesFile(language)),
+    );
+  }
+
+  tapNode(u03, "RP");
+  const hints = finalHints();
+
+  expect(hints).toContain("Việt Nam.");
+  expect(hints).not.toContain("Vietnam");
+});
+
+test("P5f. 버킷에 표가 없으면(받기 실패) 번역 줄 {나라}는 영어 이름 그대로다", async () => {
+  const { store } = await boot(vietnameseLearner);
+  await vi.waitFor(() => expect(present("journey-map-screen")).toBe(true));
+  await flush();
+
+  tapNode(u03, "RP");
+
+  expect(store.has(countryNamesKey("vi"))).toBe(false);
+  expect(finalHints()).toContain("Vietnam.");
+});
+
+test("P5g. 시작 때 못 받았으면(오프라인) 세션 중 언어를 바꾼 순간 그 언어 표 하나를 받는다", async () => {
+  const content: Record<string, string> = {};
+  const { store } = await boot({ ...vietnameseLearner, content });
+  await vi.waitFor(() => expect(present("journey-map-screen")).toBe(true));
+  await flush();
+  expect(store.has(countryNamesKey("vi"))).toBe(false);
+
+  Object.assign(content, allCountryNames);
+  await act(async () => {
+    saveUiLanguage("ja");
+  });
+
+  await vi.waitFor(() => expect(store.get(countryNamesKey("ja"))).toBe(countryNamesFile("ja")));
+  expect(store.has(countryNamesKey("vi"))).toBe(false);
 });
 
 test("P5d. (AC5) 조회 · 저장이 전부 연결 실패여도 캐시 값으로 서고 조회는 한 번뿐이다", async () => {

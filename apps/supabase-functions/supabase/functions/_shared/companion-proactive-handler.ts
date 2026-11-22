@@ -3,18 +3,18 @@
 // 본문 { user_id, character_id, force? } — 한 대화(플레이그라운드). `force`는 빈도 판정(유저 설정 off · 선호 시각 · 조용한 시간 · 하루 상한 ·
 // 공백 · 답 없는 선톡 상한 · 늘어난 공백)을 모두 건너뛰고, 막혔을 까닭은 결과의 `wouldSkip`으로 알려 준다. 연령 · 지역 규칙과, 유저가 한 번도
 // 말하지 않은 대화(첫 인사만 있음 — `no_user_message`)는 건너뛰지 않는다.
-// 본문 { batch: n } — 후보(`companion_proactive_candidates`)를 n개까지(예약 작업).
-// 본문 { mode: "memory_flush", batch?: n } — 쉬는 대화의 기억 마저 뽑기(`companion-memory-flush.ts`, 예약 작업).
-// 선톡은 유저 없이 나가므로 연령과 상관없이 출력 검사를 지난 것만 저장한다. 크레딧을 차감하지 않는다. 지시에는 지난 대화 뒤 며칠 · 현지
-// 시간대 · 마지막 화제 · 최근 선톡 글(되풀이 금지) · 답 없는 선톡 수를 싣고, 칩 스위치가 켜져 있으면 칩도 붙인다(20261123).
+// 본문 { batch: n } — 후보(`companion_proactive_candidates`)를 n개까지. { mode: "memory_flush", batch?: n } — 쉬는 대화의 기억 마저 뽑기.
+// 선톡은 유저 없이 나가므로 연령과 상관없이 출력 검사(적용 로맨스 수위의 선)를 지난 것만 저장한다. 크레딧을 차감하지 않는다. 지시에는 지난 대화
+// 뒤 며칠 · 현지 시간대 · 마지막 화제 · 최근 선톡 글 · 답 없는 선톡 수를 싣고, 칩 스위치가 켜져 있으면 칩도 붙인다(20261123).
 // ⚠ 푸시는 아직 보내지 않는다 — `send-push`에 컴패니언 목적지가 없다(API §2.3, M3 남은 일). 앱은 다음 조회 때 메시지 목록에서 본다.
 
-import type { ChatSendDeps, HistoryEntry, PersonaCard, Segment } from "./chat-send.contract.ts";
+import type { ChatSendDeps, HistoryEntry, Segment } from "./chat-send.contract.ts";
 import { startTranslation, translationContext, withTranslations } from "./chat-send-translate.ts";
 import { defaultSuggestionTimeoutMs, suggestionsMeta } from "./chat-send-suggest.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { flushIdleMemories } from "./companion-memory-flush.ts";
+import type { ProactiveContext } from "./companion-proactive-context.ts";
 import {
   generateOpener,
   openerLearning,
@@ -29,42 +29,15 @@ import {
   timeOfDay,
 } from "./companion-prompt.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
+import { effectiveRomanceTier, offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { openerBeat } from "./companion-story.ts";
 import { generateSuggestions, suggestionRecord } from "./companion-suggest-generate.ts";
-import type { ChoiceSet } from "./companion-suggest.contract.ts";
 import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 import { createUsageCollector } from "./companion-usage.ts";
 
-const historyLimit = 12;
-const lastTopicLimit = 120;
+const [historyLimit, lastTopicLimit] = [12, 120];
 const uuidShape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-type ProactiveContext = {
-  persona: PersonaCard;
-  speechLevel: "polite" | "casual" | "slang";
-  summary: string | null;
-  l1: string | null;
-  ageBand: "adult" | "minor" | "unknown";
-  hasConversation: boolean;
-  /** 유저가 한 번이라도 말했는가(20261122). 첫 인사만 있는 대화에는 `force`여도 보내지 않는다. 옛 DB에는 없다. */
-  hasUserMessage?: boolean;
-  allowed: boolean;
-  capReached: boolean;
-  /** 빈도 판정(20261115 · 20261123): off · quiet_hours · hour · daily_cap · gap · spacing · unanswered_limit · backoff, 보내도 되면 null. */
-  skipReason?: string | null;
-  /** 선톡 맥락(20261123). 옛 DB에는 없다. */
-  unanswered?: number;
-  lastUserMessageAt?: string | null;
-  localHour?: number | null;
-  recentProactive?: string[];
-  replySuggestions?: boolean;
-  suggestionsEnabled?: boolean;
-  suggestionDisplayMax?: number;
-  recentChoiceSets?: ChoiceSet[];
-  memories: string[];
-  history: { role: "user" | "assistant"; text: string | null; segments: Segment[] }[];
-} | null;
 
 type Target = { userId: string; characterId: string };
 type Outcome = {
@@ -127,10 +100,17 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     target.userId,
     deps.random ?? Math.random,
   );
+  const line = romanceLine(
+    context.ageBand,
+    context.romanceTier,
+    context.persona,
+    context.speechLevel,
+  );
   const prompt = companionSystemPrompt({
     persona: context.persona,
     speechLevel: context.speechLevel,
     ageBand: context.ageBand,
+    romanceTier: context.romanceTier,
     l1: context.l1,
     expressions: learning.pool,
     summary: context.summary,
@@ -156,6 +136,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     history,
     userText: proactiveUserText,
     ageBand: context.ageBand,
+    romanceLine: line,
     timeoutMs: deps.llmTimeoutMs ?? 45_000,
   });
   if (made.outcome !== "model") return { ...target, ...wouldSkip, result: made.outcome };
@@ -185,6 +166,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
           request: {
             character: { name: context.persona.name, role: context.persona.role ?? null },
             speechLevel: context.speechLevel,
+            romanceLine: offeredRomanceLine(line, context.persona),
             l1: context.l1,
             history: recentSuggestionHistory([...history, { role: "assistant", segments }]),
             summary: context.summary,
@@ -207,6 +189,8 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     p_segments: stored,
     p_meta: {
       model: llm.model,
+      romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
+      romanceLine: line,
       forced: force,
       ...wouldSkip,
       ...(force ? { playground: true } : {}),

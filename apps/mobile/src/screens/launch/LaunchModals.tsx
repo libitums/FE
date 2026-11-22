@@ -20,7 +20,7 @@ import "./launch.css";
 // 순서 — fixed 안의 fixed는 Lynx에서 위 내용을 덮어 absolute로 내림). 움직임 줄이기면 튀기 · 숫자 오름 · 날아가기 없이 최종 상태.
 
 /** 숫자가 0부터 오릅니다(움직임 줄이기면 곧바로 최종). */
-function useCountUp(target: number, delayMs: number, reduced: boolean): number {
+export function useCountUp(target: number, delayMs: number, reduced: boolean): number {
   const [value, setValue] = useState(reduced ? target : 0);
   useEffect(() => {
     if (reduced) {

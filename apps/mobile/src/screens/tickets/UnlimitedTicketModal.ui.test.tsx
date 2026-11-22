@@ -123,3 +123,28 @@ test("UM6. 기간 카드는 한 문장으로 낭독된다", () => {
     "3 days left. Ends Nov 12. 3 of 30 days",
   );
 });
+
+test("UM7. 보상 이용권(timed, ADR-0175) — 남은 시간 · 끝 날 · N of M hours · 막대 · 끝나면 티켓 문구 · Got it이 닫는다", () => {
+  const { onClose, onManageSubscription } = renderModal({
+    kind: "timed",
+    on: { year: 2026, month: 11, day: 22 },
+    hoursLeft: 18,
+    totalHours: 24,
+    remaining: 0.75,
+  });
+
+  none("plan");
+  expect(id("days-left")).toHaveTextContent("18 hours left");
+  expect(id("period-label")).toHaveTextContent("Ends Nov 22");
+  expect(id("day-progress")).toHaveTextContent("18 of 24 hours");
+  expect(id("track-fill").getAttribute("style")).toContain("75%");
+  expect(id("period").getAttribute("accessibility-label")).toBe(
+    "18 hours left. Ends Nov 22. 18 of 24 hours",
+  );
+  expect(id("message")).toHaveTextContent("After that, lessons use tickets again.");
+  none("manage");
+  none("keep");
+  fireEvent.tap(id("got-it"));
+  expect(onClose).toHaveBeenCalledTimes(1);
+  expect(onManageSubscription).not.toHaveBeenCalled();
+});

@@ -57,6 +57,11 @@ export const catalogMapJa: CatalogMapCopy = {
     staleBody: "インターネットにつないで新しいエピソードを確認しましょう。",
     checkNew: "新しいストーリーを確認",
   },
+  coverDownload: {
+    gettingReady: (percent) => `準備中 · ${percent}%`,
+    tapToDownload: (size) =>
+      size === null ? "タップしてダウンロード" : `タップしてダウンロード · ${size}`,
+  },
 };
 
 export const catalogCoverJa: CatalogCoverCopy = {

@@ -8,6 +8,7 @@ import {
 } from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
+import { syncCountryNames } from "../lib/country-names-refresh";
 import { measureTask } from "../lib/perf-probe";
 import {
   downloadedAssetBytes,
@@ -18,6 +19,7 @@ import {
 import type { AssetDecision, AssetTarget } from "../lib/download-policy";
 import {
   assetDownloadDecision,
+  isDownloadAllowed,
   loadAllowedEpisodes,
   loadMobileDataPolicy,
 } from "../lib/download-policy";
@@ -49,6 +51,7 @@ import type { EpisodeContent } from "./episode-content";
 import type { DownloadControls } from "./download-wiring";
 import { hostAssetDeps, loadEpisodeContent } from "./episode-content-loader";
 import { createSplashUpdateController } from "./splash-update-controller";
+import { useAssetActivity } from "./use-asset-activity";
 
 /** 호스트가 받기 좋은 때(끊겼던 연결이 돌아옴 · 앱이 포그라운드로 돌아옴)를 알리는 전역 이벤트입니다(ADR-0071). */
 export const contentSyncEventName = "contentSyncOpportunity";
@@ -111,6 +114,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
   const [stagedReady, setStagedReady] = useState(0);
   // 목록을 마지막으로 받은 시각(ADR-0095 D9) — 받기 차례가 목록을 받을 때마다 다시 씁니다.
   const [manifestCheckedAt, setManifestCheckedAt] = useState<number | null>(null);
+  const { activity, syncing, setSyncing, onAssetProgress } = useAssetActivity();
   // 스플래시가 나갔는가 — 그 전에 갖춰진 스테이징은 스플래시의 `close()`가 바꿔 끼웁니다.
   const splashClosed = useRef(false);
   // 받기는 비동기로 늦게 끝납니다 — 그사이 sink가 바뀌면 최신 것으로 보내도록 ref로 읽습니다.
@@ -144,6 +148,15 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         ),
       }));
     };
+    // 내장본이 없는 편은 본문만으로 열리므로(ADR-0165) 그 편의 자산을 받기 시작할 때 한 번 다시 읽어 맵에 세웁니다.
+    const bundledIds = new Set(bundledCatalogInput.manifest.episodes.map((entry) => entry.id));
+    const shown = new Set<string>();
+    const onProgress = (id: string, done: number, total: number) => {
+      onAssetProgress(id, done, total);
+      if (bundledIds.has(id) || shown.has(id)) return;
+      shown.add(id);
+      reload();
+    };
     setManifestCheckedAt(manifestCheckedAtFrom(safeGet(hostContentStore, MANIFEST_CHECKED_AT_KEY)));
     const startPromoted = promoteStagedEpisodes(hostContentStore).promoted.length;
     setContent(loadEpisodeContent());
@@ -173,6 +186,9 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       // 앱 정책(최소 빌드)은 에피소드보다 먼저, 작게 한 번 받습니다 — 스플래시가 나가기 전에 저장소에 있어야
       // 그 실행에서 판정합니다(ADR-0086). 결과는 스플래시가 나가는 순간 저장소에서 읽습니다.
       await refreshAppPolicy({ fetchText: fetchContentText, store: hostContentStore });
+      // 나라 이름 표(ADR-0059 개정) — 첫 차례 넷, 그 뒤 없는 지금 언어만. 기다리지 않고, 없으면 영어 이름.
+      void syncCountryNames({ fetchText: fetchContentText, store: hostContentStore });
+      setSyncing(true);
       const summary = await refreshEpisodeCatalog({
         fetchText: fetchContentText,
         store: hostContentStore,
@@ -185,7 +201,8 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
           if (splashClosed.current) setStagedReady((count) => count + 1);
         },
         observer: watching ? controller.observer : undefined,
-      });
+        onAssetProgress: onProgress,
+      }).finally(() => setSyncing(false));
       if (watching) controller.finished();
       // 목록을 받았으면(바뀌지 않았어도) 확인 시각을 적습니다 — 「준비 중」과 「확인을 못 함」을 가릅니다(D9).
       if (summary.manifest !== "unavailable") {
@@ -263,8 +280,20 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         return episodeAssetsBytes(hostContentStore, episodeId);
       },
       manifestCheckedAt,
+      assetActivity: activity,
+      syncing,
+      assetsScheduled: (episodeId) => {
+        "background only";
+        const order = bundledCatalogInput.manifest.episodes.map((entry) => entry.id);
+        if (prefetchWindowOf(order).has(episodeId)) return true;
+        return isDownloadAllowed(loadAllowedEpisodes(), episodeId, { kind: "episode" });
+      },
+      tracksAssets: () => {
+        "background only";
+        return hostAssetDeps() !== undefined;
+      },
     }),
-    [manifestCheckedAt],
+    [manifestCheckedAt, activity, syncing],
   );
   return { content, splash, stagedReady, applyStaged, downloads };
 }

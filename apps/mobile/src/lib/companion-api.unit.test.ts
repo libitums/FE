@@ -203,20 +203,31 @@ describe("프로필 생년", () => {
         return { ok: true, status: 200, bodyText: JSON.stringify({ birthYear: 1990, l1: "en" }) };
       },
     });
-    expect(await remote.profile?.load()).toEqual({ birthYear: 1990, replySuggestions: null });
+    expect(await remote.profile?.load()).toEqual({
+      birthYear: 1990,
+      replySuggestions: null,
+      adultAck: false,
+    });
     expect(requests[0]?.url).toBe("https://example.supabase.co/rest/v1/rpc/companion_load_profile");
     expect(await reply(JSON.stringify({ birthYear: null }))).toEqual({
       birthYear: null,
       replySuggestions: null,
+      adultAck: false,
     });
-    expect(await reply("null")).toEqual({ birthYear: null, replySuggestions: null });
+    expect(await reply("null")).toEqual({
+      birthYear: null,
+      replySuggestions: null,
+      adultAck: false,
+    });
     expect(await reply(JSON.stringify({ birthYear: "1990" }))).toEqual({
       birthYear: null,
       replySuggestions: null,
+      adultAck: false,
     });
     expect(await reply(JSON.stringify({ birthYear: null, replySuggestions: false }))).toEqual({
       birthYear: null,
       replySuggestions: false,
+      adultAck: false,
     });
     expect(await reply("not json")).toBeNull();
     expect(await reply("{}", 500)).toBeNull();

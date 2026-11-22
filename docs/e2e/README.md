@@ -183,3 +183,5 @@ Airbridge 앱 이벤트 SDK(값이 없는 빌드의 무동작 · 가짜 값 빌�
 무제한 티켓 표시(시험 계정의 주황 무제한 칩 · 빛 훑기 · 칩을 누르면 무제한 모달 「GUEST PASS」 · 결과 화면 「No ticket used · Unlimited」 알약 · 「Next lesson」 무한 태그 · 일반 계정 회귀)의 수동 흐름은 [무제한 티켓 e2e](unlimited-ticket.md)에 있다(UT-E1 ~ UT-E5 · UT-A1 ~ A9). 결정은 [ADR-0115](../adr/0115-unlimited-ticket-presentation.md)가 진다. 아직 실행된 회차가 없다.
 
 에피소드 끝 설문의 낮은 별점 글 단계(1~3점 → 「What could be better?」 글 칸 · Send · Not now, 키보드 위로 올라가는 시트, 글 단계의 닫는 길은 건너뛰기가 아니라 글 없는 답)의 수동 흐름은 [설문 글 단계 e2e](episode-survey-low-rating-message.md)에 있다(ESM-E1 ~ E6). 결정은 [ADR-0036](../adr/0036-user-feedback-survey-and-app-review.md) 적용 기록 ⟨2026-11-12⟩이 진다. 2026-11-12에 iOS 시뮬레이터에서 시트 프로브로 E1 ~ E3이 돌았다(수정 전 키보드 가림 결함을 찾아 고침). 같은 날 Android 에뮬레이터에서도 E1 ~ E3이 돌았고(키보드 높이 단위 · `TextField` 첫 탭 초점 풀림 두 결함을 찾아 고침), 실제 튜토리얼 흐름 · 스크린리더 · 작은 화면은 아직이다.
+
+비회원 메신저(가입 권유 안내 대신 회원과 같은 목록 — 덕수쌤 첫 입장 안내 · 추천 친구 줄 · 엽전 칩, 데모 방 없음, 서버 요청 0 · 보내기 · 사진/음성 · 방 메뉴 · 엽전 · 친구 추가는 「로그인 필요」 대화상자 · 로그인 뒤 같은 방으로)의 수동 흐름은 [비회원 메신저 e2e](guest-messenger.md)에 있다(GM-E1 ~ E4 · GM-A1, ADR-0166).
