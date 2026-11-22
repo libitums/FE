@@ -1,4 +1,4 @@
-// 미션 턴 하나의 스트림(ADR-0176, PRD §3.4). `mission-turn-handler.ts`가 판 확인 · 학습자 메시지 저장을 끝낸 뒤 부릅니다.
+// 미션 턴 하나의 스트림(ADR-0177, PRD §3.4). `mission-turn-handler.ts`가 판 확인 · 학습자 메시지 저장을 끝낸 뒤 부릅니다.
 //
 // 1단계 턴(`chat-send-turn.ts`)의 부품을 그대로 씁니다 — 입력 검사(`moderateInput`) · 답 생성(`startReply`) · 출력 검사와 다시 만들기
 // (`outputChecker` · `recoverReply`) · 번역(`startTranslation`). 시스템 프롬프트는 미션 전용(`missionSystemPrompt`)이고, 상태 줄은 미션

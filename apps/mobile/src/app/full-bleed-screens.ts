@@ -7,6 +7,7 @@ import type { Screen } from "./nav-state";
 export function isFullBleedScreen(screen: Screen): boolean {
   return (
     screen.name === "journey-entry" ||
+    screen.name === "entry-basics-ready" ||
     screen.name === "catalog-cover" ||
     screen.name === "catalog-story" ||
     screen.name === "catalog-final" ||

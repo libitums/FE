@@ -50,7 +50,7 @@ export const chatSendRequestSchema = z.object({
    */
   replaces_message_id: z.optional(z.uuid()),
   /**
-   * 롤플레이 미션의 판 id(ADR-0176, `mission-start`의 `conversationId`). 있으면 미션 턴이고, 서버는 `missionTurnRequestSchema`
+   * 롤플레이 미션의 판 id(ADR-0177, `mission-start`의 `conversationId`). 있으면 미션 턴이고, 서버는 `missionTurnRequestSchema`
    * (`character_id` 선택)로 다시 읽습니다. 없으면 지금의 컴패니언 턴 그대로입니다.
    */
   conversation_id: z.optional(z.uuid()),

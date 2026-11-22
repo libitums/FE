@@ -20,7 +20,12 @@ import type { LearningTrail } from "./learning-trail";
 import { todayLocal } from "./learning-trail-port";
 import type { MoreWiring } from "./more-wiring";
 
-export type LettersRecommend = { readonly open: boolean; readonly layer: ReactNode };
+export type LettersRecommend = {
+  readonly open: boolean;
+  /** 띄우려고 연출이 끝나기를 기다리는 중 — 알림 권한 질문(ADR-0176)이 앞지르지 않게. */
+  readonly waiting: boolean;
+  readonly layer: ReactNode;
+};
 
 export function useLettersRecommend(input: {
   readonly trail: LearningTrail;
@@ -63,6 +68,7 @@ export function useLettersRecommend(input: {
   const close = () => setShown(null);
   return {
     open: shown !== null,
+    waiting: pending !== null,
     layer:
       shown === null ? null : (
         <LettersRecommendDialog

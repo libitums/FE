@@ -122,6 +122,10 @@ export type Screen =
   | { name: "learner-country"; learnerName: string }
   | { name: "language-select" }
   | { name: "journey-entry" }
+  // 입장 전 기초 세 걸음입니다(ADR-0176) — 여정 입장 위에 쌓이고, 끝나거나 건너뛰면 `enterApp`입니다.
+  | { name: "entry-basics-letters" }
+  | { name: "entry-basics-compose" }
+  | { name: "entry-basics-ready" }
   // 강제 업데이트 화면입니다(ADR-0086). 스플래시가 나가는 순간 정책의 최소 빌드보다 낮으면 스플래시 자리를
   // 이것으로 `replace`합니다. 필드도 나가는 수단도 없습니다 — 스토어에서 업데이트한 뒤 다시 켜는 것이 유일한 길입니다.
   | { name: "update-required" }

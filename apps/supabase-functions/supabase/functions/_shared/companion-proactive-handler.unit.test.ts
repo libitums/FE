@@ -52,6 +52,7 @@ function setup(
   options: { context?: unknown; llm?: CompanionLlm; rpc?: Record<string, unknown> } = {},
 ) {
   const rpcs: Rpc[] = [];
+  const sends: Record<string, unknown>[] = [];
   const logs: ChatSendLogEntry[] = [];
   const outbound = async (request: OutboundRequest) => {
     if (request.url.includes("/auth/v1/admin/users"))
@@ -59,6 +60,10 @@ function setup(
         status: request.headers["apikey"] === serviceKey ? 200 : 401,
         text: async () => "{}",
       };
+    if (request.url.endsWith("/functions/v1/send-push")) {
+      sends.push(JSON.parse(request.body ?? "{}") as Record<string, unknown>);
+      return { status: 200, text: async () => JSON.stringify({ devices: 1, sent: 1 }) };
+    }
     const fn = request.url.split("/rpc/")[1]!;
     rpcs.push({ fn, args: JSON.parse(request.body ?? "{}") as Record<string, unknown> });
     const body =
@@ -90,7 +95,7 @@ function setup(
     return (await response.json()) as { processed: number; outcomes: Record<string, unknown>[] };
   };
   const save = () => rpcs.find((rpc) => rpc.fn === "companion_save_proactive")?.args;
-  return { call, rpcs, logs, save };
+  return { call, rpcs, logs, save, sends };
 }
 
 const one = { user_id: userId, character_id: "mina" };
@@ -279,4 +284,25 @@ test("PR7. 선톡 저장 meta에 적용 수위 — open은 성인일 때만, 옛
       romanceTier: expected,
     });
   }
+});
+
+test("PR8. 저장한 선톡에 푸시를 붙인다 — 결과를 outcome의 push로 알리고, 푸시가 실패해도 선톡은 sent다", async () => {
+  const pushed = setup({
+    rpc: { companion_proactive_push_gate: { mode: "testers", tester: true, hasDevice: true } },
+  });
+  const result = await pushed.call(one);
+  expect(result.outcomes[0]).toMatchObject({ result: "sent", push: "sent" });
+  expect(pushed.sends).toHaveLength(1);
+  expect(pushed.sends[0]).toMatchObject({
+    audience: { userIds: [userId] },
+    title: "미나",
+    target: { kind: "companion-chat", characterId: "mina" },
+  });
+
+  const off = setup();
+  expect((await off.call(one)).outcomes[0]).toMatchObject({ result: "sent", push: "off" });
+  expect(off.sends).toHaveLength(0);
+
+  const skipped = setup({ context: context({ skipReason: "backoff", unanswered: 1 }) });
+  expect((await skipped.call(one)).outcomes[0]).not.toHaveProperty("push");
 });

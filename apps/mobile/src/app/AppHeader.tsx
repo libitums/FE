@@ -50,6 +50,8 @@ export type AppHeaderProps = {
    * 대상이 아닙니다(ADR-0016 D9).
    */
   readonly obscured?: boolean;
+  /** 알림 권한 창의 답을 기다리는 동안 참입니다(ADR-0176 D5) — 저절로 여는 연속 모달 · 설문만 미루고 낭독은 그대로입니다. */
+  readonly held?: boolean;
   /**
    * 머리의 위 모서리입니다. 기본은 화면 위 여백(12)이고, 셸이 위 안전 영역을 잡지 않는 여정 맵에서는 그 높이를
    * 더한 값입니다(⟨2026-10-19⟩ `mapTopLayout`). 인라인을 비우면 Lynx에서 앞 값이 남으므로 늘 값을 넣습니다.
@@ -104,6 +106,7 @@ export function AppHeader({
   coinCount = null,
   onOpenNotifications,
   obscured = false,
+  held = false,
   todayWeekday,
   celebrateStreak = false,
   onStreakCelebrated,
@@ -162,16 +165,16 @@ export function AppHeader({
 
   // 다른 레이어가 떠 있거나 화면 쪽 레이어가 덮고 있으면 기다립니다 — 겹쳐 띄우지 않습니다.
   useEffect(() => {
-    if (!celebrateStreak || openLayer !== null || obscured) return;
+    if (!celebrateStreak || openLayer !== null || obscured || held) return;
     setOpenLayer("streak");
     onStreakCelebrated?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [celebrateStreak, openLayer, obscured]);
+  }, [celebrateStreak, openLayer, obscured, held]);
 
   useEffect(() => {
-    if (episodeSurvey === null || celebrateStreak || openLayer !== null || obscured) return;
+    if (episodeSurvey === null || celebrateStreak || openLayer !== null || obscured || held) return;
     setOpenLayer("survey");
-  }, [episodeSurvey, celebrateStreak, openLayer, obscured]);
+  }, [episodeSurvey, celebrateStreak, openLayer, obscured, held]);
 
   return (
     <>

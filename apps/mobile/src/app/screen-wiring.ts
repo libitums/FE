@@ -54,6 +54,7 @@ import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
 import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
+import { entryPathWiring, type EntryPathWiring } from "./entry-path-wiring";
 import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
@@ -145,7 +146,6 @@ export type ScreenWiring = {
   onSelectEntryLanguage: (language: EntryLanguage) => void;
   onChangeUiLanguage: (language: EntryLanguage) => void;
   onContinueLanguageSelect: () => void;
-  onEnterJourney: () => void;
   /** 설정이 행 구성을 고르는 값(ADR-0111). */
   accountState: AccountState;
   /** 메신저 탭 — 대화 출처와 이동 콜백(messenger-chat-ui spec §7.1). */
@@ -157,6 +157,7 @@ export type ScreenWiring = {
   /** 주간 순위(ADR-0170) — 서버 포트 · 순위 탭 열기. */
   ranking: RankingWiring;
 } & GuestWiring &
+  EntryPathWiring &
   AccountWiring &
   JourneyStats &
   StatBumpWiring &
@@ -236,6 +237,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...entryPathWiring(args),
     ...messenger,
     ...guestWiring(args),
     accountState: args.accountState,

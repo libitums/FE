@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-start` — 롤플레이 미션 한 판을 시작합니다(ADR-0176, PRD §3.3 ①).
+// `POST /functions/v1/mission-start` — 롤플레이 미션 한 판을 시작합니다(ADR-0177, PRD §3.3 ①).
 //
 // 흐름: 인증(사용자 토큰, 또는 서버 키 + `x-companion-user-id`의 플레이그라운드 경로) → 본문(`missionStartRequestSchema`) →
 //   `companion_mission_start`(판정 · 진행 중이던 판 그만둠 · 대화 행 · 판 단위 예약 · 진입 대사, 한 트랜잭션) → 계약의 응답.

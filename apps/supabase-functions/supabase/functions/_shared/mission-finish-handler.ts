@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-finish` — 판을 닫고 채점해 리포트를 돌려줍니다(ADR-0176, PRD §3.3 ③ · §3.6 · §3.7).
+// `POST /functions/v1/mission-finish` — 판을 닫고 채점해 리포트를 돌려줍니다(ADR-0177, PRD §3.3 ③ · §3.6 · §3.7).
 //
 // 흐름: 인증 → 본문(`missionFinishRequestSchema`) → `companion_mission_close`의 네 결과:
 //   graded(이미 채점됨) → 그대로 · abandoned(그만둠) → 그대로 · not_ended → 409 `mission_not_ended` ·

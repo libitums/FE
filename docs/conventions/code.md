@@ -391,6 +391,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   `ItemListenControls`)은 화면 폴더 사이 값 import가 막혀 있어 처음부터 `components/`에 두었고(화면 둘 이상 — 아래 「컴포넌트」), 옛 화면 훅
   `screens/listening/use-listening-playback.ts`는 지웠다. 순수 어휘 `lib/listen-pace.ts`(속도 · 0.85 한 자리) · `lib/question-audio.ts`(문항
   음성 두 갈래)는 새로 `lib/`에 섰다. 위 예외 표는 바뀌지 않았다.
+  ⟨2026-11-22⟩ **합치기 퀴즈도 올라왔다** — `screens/letters/compose-quiz.ts`의 본문이 `lib/letters/compose-quiz.ts`로, 그 훅 · 부품이
+  `components/`(`useComposeQuiz` · `ComposeQuizParts`)로 옮겨졌다(Letters › Practice · 입장 전 기초가 쓴다 — [ADR-0176](../adr/0176-entry-basics-choice.md) D3).
+  옛 경로는 재수출 한 줄로 남았다. 위 예외 표는 바뀌지 않았다.
 
 ([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md) ·
 [ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))

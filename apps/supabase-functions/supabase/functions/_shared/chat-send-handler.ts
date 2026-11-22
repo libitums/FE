@@ -53,7 +53,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     };
 
     if (request.method !== "POST") return respond(errorResponse("method_not_allowed"));
-    // 롤플레이 미션 턴(ADR-0176) — 본문에 `conversation_id`가 있으면 미션 갈래로 간다. 아래 컴패니언 턴은 그대로다.
+    // 롤플레이 미션 턴(ADR-0177) — 본문에 `conversation_id`가 있으면 미션 갈래로 간다. 아래 컴패니언 턴은 그대로다.
     if (await isMissionTurnRequest(request)) return handleMissionTurn(deps, request);
     const { env, llm } = deps;
     if (env === null || llm === null) return respond(errorResponse("server_misconfigured"));

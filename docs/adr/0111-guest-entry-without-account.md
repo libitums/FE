@@ -94,7 +94,7 @@
   ⑤ `entry_screen_viewed { screen: "learner-name" }` → ⑥ `push(learner-name, initialName)`(`initialName` = 기기 기록의 이름 → 무작위 이름; 세션이 없어 표시 이름 단계는 없다).
   세션 저장 · 식별 · 기존 회원 판정 · 프로필 동기화 · 푸시는 **0**이다.
 - 그 뒤 ② 나라 → 언어 선택 → 여정 입장 → `enterApp`은 **기존 `entry-wiring` 콜백 그대로**다 — ② 나라의 `saveLearnerProfile`은 동기화 객체가 없어 손님 칸에 쓰고(지금 코드의 분기 — 변경 0),
-  여정 입장의 `syncPushDevice({ ask: true })`는 세션이 없어 즉시 돌아온다(알림 다이얼로그가 뜨지 않는다 — 맥락 4).
+  여정 입장의 `syncPushDevice({ ask: true })`(⟨2026-11-22 ADR-0176⟩ 이제 `ask: false`)는 세션이 없어 즉시 돌아온다(알림 다이얼로그가 뜨지 않는다 — 맥락 4).
 
 ### D4. 비회원의 진행 · 학습일은 **기존 미전송 칸을 `id = "guest"`로** 쓰고, 동기화 객체 대신 저장 객체를 세운다
 

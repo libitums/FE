@@ -11,9 +11,18 @@ const asScreen = (screen: object): Screen => screen as unknown as Screen;
 describe("isFullBleedScreen", () => {
   test.each<[string, Screen]>([
     ["journey-entry", { name: "journey-entry" }],
+    // 그림 바탕색이 화면 끝까지 이어집니다(ADR-0176).
+    ["entry-basics-ready", { name: "entry-basics-ready" }],
     ["catalog-cover", { name: "catalog-cover", episodeId: "u01-water" }],
   ])("FB1. %s는 전체 화면이다", (_name, screen) => {
     expect(isFullBleedScreen(screen)).toBe(true);
+  });
+
+  test.each<[string, Screen]>([
+    ["entry-basics-letters", { name: "entry-basics-letters" }],
+    ["entry-basics-compose", { name: "entry-basics-compose" }],
+  ])("FB1″. %s는 셸이 여백을 잡는다", (_name, screen) => {
+    expect(isFullBleedScreen(screen)).toBe(false);
   });
 
   test.each<[string, Screen]>([

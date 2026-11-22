@@ -19,7 +19,7 @@ verify_jwt = false
 [functions.companion-greet]
 verify_jwt = false
 
-# 롤플레이 미션(ADR-0176) — 1단계와 같이 함수 안에서 사용자 토큰 · 서버 키를 확인한다.
+# 롤플레이 미션(ADR-0177) — 1단계와 같이 함수 안에서 사용자 토큰 · 서버 키를 확인한다.
 [functions.mission-start]
 verify_jwt = false
 

@@ -4,12 +4,9 @@ import type { AutoPlayAudio } from "../../lib/question-audio";
 import type { ChoiceRomanization } from "../../lib/session-options";
 import type { JamoGroupId } from "../../lib/letters/jamo";
 import type { LettersRecommendReason } from "../../lib/letters-recommend";
+import type { LetterSoundPort } from "../../lib/letters/letter-sound.contract";
 
-/** 화면이 소리를 내는 포트 — 음절 → 재생 주소(없으면 null = 아직 소리 없음) · 재생. 결선이 실제 재생 모듈을 꽂습니다. */
-export type LetterSoundPort = {
-  readonly sourceOf: (syllable: string) => string | null;
-  readonly play: (source: string) => void;
-};
+export type { LetterSoundPort };
 
 export type LettersScreenProps = {
   readonly romanization: ChoiceRomanization;

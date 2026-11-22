@@ -55,9 +55,22 @@ export const languageSelectMy: LanguageSelectCopy = {
 export const journeyEntryMy: JourneyEntryCopy = {
   title: "ခရီးစဉ်က သင့်ကို စောင့်နေပါတယ်",
   display: "ဇာတ်လမ်း စတင်ရန်",
-  caption: "ဆိုးလ်မြို့ကို လှည့်လည်ရင်း သူငယ်ချင်းသစ်တွေနဲ့ တွေ့ပြီး ကိုရီးယားစကား လေ့လာပါ။",
+  caption: "ဟန်ဂူလ်နဲ့ စတွေ့တာလား။ ဆိုးလ်မရောက်ခင် အက္ခရာတချို့နဲ့ မိတ်ဆက်ပါ။",
   notice: "ဤဝန်ဆောင်မှုရှိ ပုံအချို့ကို AI နည်းပညာဖြင့် ဖန်တီးထားပါသည်",
-  start: "စတင်ရန်",
+  basics: "အခြေခံကို အရင်လေ့လာမယ်",
+  basicsDetail: "အက္ခရာ 6 လုံး၊ အသံ 3 သံ၊ ပြီးရင် ဇာတ်လမ်း",
+  story: "ဇာတ်လမ်းထဲ တန်းဝင်မယ်",
+  firstSteps: {
+    progress: (current, total) => `အဆင့် ${total} ခုအနက် ${current}`,
+    lettersTitle: "ပထမဆုံး အက္ခရာတွေနဲ့ မိတ်ဆက်ပါ",
+    lettersLead: "ဗျည်းတစ်လုံးနဲ့ သရတစ်လုံး ပေါင်းရင် အသံတစ်ခု ဖြစ်လာပါတယ်။",
+    lettersHear: "အသံကြားရန် အက္ခရာကို တို့ပါ။",
+    lettersNext: "ပေါင်းကြည့်မယ်",
+    readyTitle: "ကိုရီးယားစာ ဖတ်နိုင်သွားပြီ!",
+    readyMeaning: "“မင်းလည်း သွားမလား”",
+    readyBody: "ဆိုးလ်က သင့်ဇာတ်လမ်း စတော့မယ်။",
+    readyGo: "အင်း၊ သွားကြမယ်!",
+  },
 };
 
 export const loginMy: LoginCopy = {

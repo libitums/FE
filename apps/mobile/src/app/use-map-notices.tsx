@@ -2,7 +2,7 @@
 // 모달(ADR-0140) → 끝낸 에피소드 업데이트 안내(시안 G-A) → Letters 추천(ADR-0169). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
 
 import type { ReactNode } from "@lynx-js/react";
-import { useEffect, useRef } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import type { CatalogEntry } from "../lib/episode-catalog";
@@ -19,6 +19,9 @@ import { guestUnlimitedPass, type UnlimitedPass } from "../lib/unlimited-pass";
 import { tutorialDone } from "./launch-coins";
 import { useMessengerMediaHooks } from "./use-messenger-media-hooks";
 import { useStreakReward } from "./use-streak-reward";
+import { catalogActivityCount } from "./learning-progress";
+import type { Screen } from "./nav-state";
+import { usePushPrompt } from "./use-push-prompt";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 
 export type MapNoticesInput = {
@@ -28,6 +31,8 @@ export type MapNoticesInput = {
   readonly progress: CatalogProgress;
   readonly localCoins: number | null;
   readonly idle: boolean;
+  /** 알림 권한 질문(ADR-0176)만 보는 값 — 스토리에서 돌아옴 · 상점이 덮음. */
+  readonly promptGate: { readonly screen: Screen["name"]; readonly shopOpen: boolean };
   readonly onStartChatting: () => void;
 };
 
@@ -38,6 +43,8 @@ export function useMapNotices(input: MapNoticesInput): {
   readonly streakReward: StreakRewardWiring | undefined;
   /** 스크림 있는 안내(업데이트 · Letters 추천)가 선 동안 — 셸이 뒤 화면 · 바를 낭독에서 뺍니다. */
   readonly blocking: boolean;
+  /** 알림 권한 창의 답을 기다리는 중(ADR-0176 D5) — 머리가 연속 모달 · 설문을 저절로 열지 않습니다. */
+  readonly holdsHeader: boolean;
   /** 푸시 보상으로 받은 무제한 티켓(ADR-0175) — 머리 칩 · 무제한 모달. 구독 판이 있으면 그쪽이 앞섭니다. */
   readonly ticketPass: UnlimitedPass | undefined;
 } {
@@ -51,10 +58,13 @@ export function useMapNotices(input: MapNoticesInput): {
   const launchOpen = useRef(false);
   // 푸시 보상(ADR-0175)은 가입 보상 다음 · 엽전 출시 앞 — 가입 보상이 지난 그림의 푸시 모달을 보고 끼어들지 않습니다.
   const pushOpen = useRef(false);
+  // 알림 권한 창의 답을 기다리는 동안 어떤 안내도 그 밑에 서지 않습니다(ADR-0176 D5).
+  const [promptAsking, setPromptAsking] = useState(false);
+  const idle = input.idle && !promptAsking;
   const signup = useSignupReward({
     wiring: input.wiring,
     idle:
-      input.idle &&
+      idle &&
       !launchOpen.current &&
       !updateOpen.current &&
       !lettersOpen.current &&
@@ -66,7 +76,7 @@ export function useMapNotices(input: MapNoticesInput): {
   const push = usePushReward({
     wiring: input.wiring,
     idle:
-      input.idle &&
+      idle &&
       !signup.open &&
       !signup.holdsLaunch &&
       !launchOpen.current &&
@@ -82,7 +92,7 @@ export function useMapNotices(input: MapNoticesInput): {
     catalogProgress: input.progress,
     localCoins: input.localCoins,
     idle:
-      input.idle &&
+      idle &&
       !updateOpen.current &&
       !lettersOpen.current &&
       !signup.holdsLaunch &&
@@ -95,7 +105,7 @@ export function useMapNotices(input: MapNoticesInput): {
     catalog: input.catalog,
     sections: input.sections,
     progress: input.progress,
-    ready: input.idle && !launch.open && !signup.open && !push.holdsLater && !lettersOpen.current,
+    ready: idle && !launch.open && !signup.open && !push.holdsLater && !lettersOpen.current,
   });
   useEffect(() => {
     updateOpen.current = updateNotice.open;
@@ -105,7 +115,7 @@ export function useMapNotices(input: MapNoticesInput): {
     trail: input.wiring.learningTrail,
     more: input.wiring.more,
     ready:
-      input.idle &&
+      idle &&
       !launch.open &&
       !signup.open &&
       !push.holdsLater &&
@@ -115,6 +125,22 @@ export function useMapNotices(input: MapNoticesInput): {
   useEffect(() => {
     lettersOpen.current = letters.open;
   }, [letters.open]);
+  // 알림 권한 질문(ADR-0176)은 시스템 창이라 다른 안내가 하나도 없을 때만.
+  usePushPrompt({
+    screen: input.promptGate.screen,
+    signedIn: input.wiring.accountState === "signed-in",
+    idle:
+      input.idle &&
+      !input.promptGate.shopOpen &&
+      !signup.open &&
+      !push.holdsLater &&
+      !launch.open &&
+      !updateNotice.open &&
+      !letters.waiting &&
+      !letters.open,
+    activityCount: catalogActivityCount(input.progress),
+    onAskingChange: setPromptAsking,
+  });
   // 연속 학습 보상의 지급 잔액은 엽전 출시 결선의 서버 잔액으로 들어가고, 날아가는 동안 닿지 않은 몫은 칩에서 잠시 뺍니다.
   const streak = useStreakReward({
     signedIn: input.wiring.accountState === "signed-in",
@@ -129,6 +155,7 @@ export function useMapNotices(input: MapNoticesInput): {
     ),
     streakReward: streak.wiring,
     blocking: updateNotice.open || letters.open || signup.open || push.open,
+    holdsHeader: promptAsking,
     ticketPass: push.ticketPass,
     layer: (
       <>

@@ -213,6 +213,7 @@ export function AppSession({
       progress.episodeSurvey === null &&
       !progress.streakCelebration &&
       !moreOpen,
+    promptGate: { screen: screenNow.name, shopOpen: shop.request !== null },
     onStartChatting: () => dispatch({ type: "switchTab", tab: "messenger" }),
   });
   useMessengerWalletSync(notices.coinCount ?? screens.coinCount); // 메신저 지갑 = 머리 칩(ADR-0146)
@@ -271,7 +272,7 @@ export function AppSession({
                 episodeIntroEventSink,
                 onClosed: progress.onEpisodeSurveyClosed,
               })}
-              obscured={covered || moreOpen}
+              {...{ obscured: covered || moreOpen, held: notices.holdsHeader }}
               onOpenNotifications={wiring.onOpenNotifications}
               onOpenShop={shop.open}
               plans={headerPlansOf(plans, screenNow.name === "journey-map")}

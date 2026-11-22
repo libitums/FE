@@ -154,7 +154,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onExit={wiring.onExitNotifications}
         />
       );
-    // 진입 흐름 화면 여덟입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
+    // 진입 흐름 화면들입니다 — 스플래시부터 여정 입구 · 입장 전 기초(ADR-0176)까지가 한 흐름이라
     // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":
     case "onboarding":
@@ -164,6 +164,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "learner-country":
     case "language-select":
     case "journey-entry":
+    case "entry-basics-letters":
+    case "entry-basics-compose":
+    case "entry-basics-ready":
     case "update-required":
       return renderEntryScreen(screen, wiring);
     case "catalog-cover":

@@ -4,6 +4,7 @@ import type { AccountDeletionResult } from "../lib/account.contract";
 import { saveAuthSession } from "../lib/auth-session";
 import { accountWiring } from "./account-wiring";
 import { cachedProgressKey } from "./cached-learning-progress";
+import { pushPromptStorageKey } from "./push-prompt";
 
 // 기존 account-wiring.unit.test.ts의 「AW3」(reset 범위)와 다른 케이스입니다 — 계획 id가 겹쳐 파일을 나눴습니다.
 
@@ -56,6 +57,17 @@ afterEach(() => {
 });
 
 describe("AW 저장본의 사용자 경계", () => {
+  test("AW1b. 계정 삭제는 알림 질문 표식도 그 사용자 것만 지운다(ADR-0176)", async () => {
+    deleteAccountMock.mockResolvedValue({ status: "deleted" });
+    store.set(pushPromptStorageKey(userId), "pending");
+    store.set(pushPromptStorageKey("other"), "pending");
+
+    await wire().wiring.onDeleteAccount();
+
+    expect(store.has(pushPromptStorageKey(userId))).toBe(false);
+    expect(store.get(pushPromptStorageKey("other"))).toBe("pending");
+  });
+
   test("AW1. 계정 삭제가 성공하면 그 사용자의 저장본만 지운다", async () => {
     deleteAccountMock.mockResolvedValue({ status: "deleted" });
     const { wiring, leaveApp } = wire();

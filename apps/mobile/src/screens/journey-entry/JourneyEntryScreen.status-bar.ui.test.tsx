@@ -17,7 +17,7 @@ test("UT6: 여정 입장 화면의 루트에 표지가 하나 선다", () => {
     <JourneyEntryScreen
       safeArea={{ top: 0, bottom: 0 }}
       language="en"
-      onEnter={vi.fn()}
+      onSelectPath={vi.fn()}
       onBack={vi.fn<() => void>()}
     />,
   );

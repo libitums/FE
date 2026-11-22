@@ -9,6 +9,7 @@ import type {
 const unitKinds = new Set(["messenger", "phone-call", "visual-novel"]);
 const plainKinds = new Set(["journey-map", "notifications", "roleplay-list"]);
 const campaignIdPattern = /^[A-Za-z0-9_-]{1,80}$/;
+const characterIdPattern = /^[a-z0-9-]{1,64}$/;
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
@@ -30,6 +31,15 @@ export function pushTargetFrom(value: unknown): PushTarget | null {
   )
     return { kind, campaignId };
   if (plainKinds.has(kind)) return { kind } as PushTarget;
+  // 선톡 방(ADR-0127) — 인물 id 형식이 틀리면 목적지 없음, 변형은 a · b만 남깁니다.
+  if (kind === "companion-chat") {
+    const characterId = record?.["characterId"];
+    if (typeof characterId !== "string" || !characterIdPattern.test(characterId)) return null;
+    const variant = record?.["variant"];
+    return variant === "a" || variant === "b"
+      ? { kind, characterId, variant }
+      : { kind, characterId };
+  }
   const unitId = record?.["unitId"];
   if (unitKinds.has(kind) && typeof unitId === "string" && unitId !== "" && unitId.length <= 100) {
     return { kind, unitId } as PushTarget;

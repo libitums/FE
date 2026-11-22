@@ -160,9 +160,13 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 15항목과 같다 — 지�
     "jamo.ts#RECOMMEND_ART",
     "compose-quiz.ts#COMPOSE_ROUNDS",
     "compose-quiz.ts#COMPOSE_TILES",
+    // 입장 전 기초의 글자 · 문장(ADR-0176).
+    "entry-basics.ts#FIRST_LETTERS",
+    "entry-basics.ts#SENTENCE_SYLLABLES",
+    "entry-basics.ts#ENTRY_BASICS_SENTENCE",
   ];
 
-  assert.equal(expected.length, 26);
+  assert.equal(expected.length, 29);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

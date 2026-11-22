@@ -1,4 +1,4 @@
-// 미션 턴의 상태 줄 해석과 판의 상태 전이(ADR-0176, PRD §3.4 · §3.6). 순수 함수입니다.
+// 미션 턴의 상태 줄 해석과 판의 상태 전이(ADR-0177, PRD §3.4 · §3.6). 순수 함수입니다.
 //
 // 모델 답은 컴패니언과 같은 조각 줄(`@speech` · `@action`) 뒤에 상태 줄 하나를 씁니다 —
 // `@state {"goals_done": ["order"], "off_task": false, "closing": false}`. 조각은 기존 해석기(`createSegmentSplitter`)가 나누고,

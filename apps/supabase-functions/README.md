@@ -645,10 +645,10 @@ supabase functions serve --no-verify-jwt                                        
 되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
 
-### 롤플레이 미션 코어 (2단계, ADR-0176)
+### 롤플레이 미션 코어 (2단계, ADR-0177)
 
 에피소드 하나에 묶인 짧은 과업 대화의 **순수 층**이다 — DB · 네트워크 · Deno에 닿지 않고, 핸들러(`mission-start` · `chat-send`의 미션 갈래 ·
-`mission-hint` · `mission-finish`)와 SQL은 따로 들어온다. 기획: [PRD](../../docs/specs/ai-companion-mission.md) · [ADR-0176](../../docs/adr/0176-companion-mission.md).
+`mission-hint` · `mission-finish`)와 SQL은 따로 들어온다. 기획: [PRD](../../docs/specs/ai-companion-mission.md) · [ADR-0177](../../docs/adr/0177-companion-mission.md).
 
 | 파일(`_shared/`) | 하는 일 |
 |---|---|
@@ -794,10 +794,10 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
 그룹 크기: `update ranking.settings set group_target = 25, group_max = 30;`(이미 배정된 그룹은 그대로).
 
-## 롤플레이 미션 DB — 컴패니언 2단계 (20261225)
+## 롤플레이 미션 DB — 컴패니언 2단계 (20261226)
 
-`migrations/20261225120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
-([ADR-0176](../../docs/adr/0176-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
+`migrations/20261226120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
+([ADR-0177](../../docs/adr/0177-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
 컴패니언 쪽 SQL의 `kind = 'companion'` 조건 · 캐릭터당 고유 색인은 그대로 둬 미션 행이 기록 · 선톡 · 요약 · 기억 · 대화 비우기 · 첫 인사에
 섞이지 않는다(D2). 턴의 SQL은 미션 전용 함수다 — `companion_begin_turn` · `companion_finish_turn`은 바뀌지 않는다(D3).
 
@@ -827,16 +827,16 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 
 1. 앞의 컴패니언 마이그레이션(20261108 ~ 20261212, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유) **뒤에** 적용한다. `supabase db push --dry-run`으로
    이 파일만 올라가는지 보고 `supabase db push`, 또는 SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
-   `supabase migration repair --status applied 20261225120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
+   `supabase migration repair --status applied 20261226120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
 2. 미션 파일을 올리는 스크립트로 `companion_upsert_mission`을 부른다(파일마다 한 번, 다시 불러도 같다).
 3. `cron/companion-mission.sql`을 SQL 편집기에서 한 번 실행한다.
 4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
 
 되돌리기: `select cron.unschedule('companion-close-stale-missions')`, 스위치를 끈다. 표 · 칸은 지우지 않는다(판 · 결과가 원장과 이어져 있다).
 
-## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0176)
+## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0177)
 
-미션 코어(`_shared/mission-*.ts`)와 미션 DB(20261225)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
+미션 코어(`_shared/mission-*.ts`)와 미션 DB(20261226)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
 진입 `index.ts`, 인증은 사용자 토큰 또는 플레이그라운드 경로(`Authorization: Bearer <서버 키>` + `x-companion-user-id`), `config.toml`의
 `verify_jwt = false`, 요청마다 로그 한 줄(`mission_start` · `mission_hint` · `mission_finish`, 턴은 `chat_send … mission …`).
 LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고,

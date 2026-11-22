@@ -401,3 +401,8 @@
   --libitum-typography-label-l-line-height: 24px;
   --libitum-typography-label-m-line-height: 22px;
 }
+
+/* 준비 완료 제목(ADR-0176)은 accent-display(34px)가 두 줄로 접히는 자리라 따로 넓힙니다 — iPhone SE에서 두 줄이 닿았습니다. */
+.app-lang-my .entry-basics-ready-title {
+  line-height: 60px;
+}

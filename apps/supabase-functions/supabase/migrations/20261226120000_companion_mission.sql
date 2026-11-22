@@ -1,6 +1,6 @@
--- AI 컴패니언 2단계 — 롤플레이 미션 DB(PRD docs/specs/ai-companion-mission.md §3 · §5 · §6, ADR-0176).
+-- AI 컴패니언 2단계 — 롤플레이 미션 DB(PRD docs/specs/ai-companion-mission.md §3 · §5 · §6, ADR-0177).
 --
--- 미션 한 판 = `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행). 컴패니언 대화와 섞이지 않는다(ADR-0176 D2) —
+-- 미션 한 판 = `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행). 컴패니언 대화와 섞이지 않는다(ADR-0177 D2) —
 -- 기존 SQL의 `kind = 'companion'` 조건과 `conversations_companion_uniq`(kind = 'companion'만)는 그대로 두고, 미션의 턴 · 끝은
 -- 이 파일의 미션 전용 함수가 한다(D3 — `companion_begin_turn` · `companion_finish_turn`에 분기를 넣지 않는다).
 --

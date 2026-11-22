@@ -1,6 +1,6 @@
 # ADR-0127 — 선톡 푸시 목적지 `companion-chat`: 그 인물의 방 · 열 수 없으면 목록 안내 · 미리보기 A/B의 칸
 
-- 상태: **채택 — 앱 쪽.** 서버 발송(`send-push` 계약의 목적지 · 문구 · PostHog 플래그 배정)은 컴패니언 PR의 몫이다.
+- 상태: **채택 — 앱 쪽 + 서버 쪽**(서버 발송은 2026-11-22 추가, 아래 「서버 쪽」 — 배정은 PostHog 플래그 대신 사용자 id 해시).
 - 날짜: 2026-11-11.
 - **사용자 결정**: 결정 문서 B 절(2026-11-11, [AI 컴패니언 ↔ 메신저 UI 통합 결정](https://claude.ai/artifact/9BTvrL4GfTxvMrAUzwJr1x)) · 시안 https://claude.ai/artifact/QWsYUxVV3tKpWZfrzy5QzX — 잠금 화면 미리보기는 **A/B**(A 한국어 한 줄 · B 「{이름} sent you a message」), 배정은 **PostHog 기능 플래그**, 누르면 그 인물 방(말풍선을 따로 **비추지 않음**), 열 수 없으면 **목록 + 안내 한 줄 3초**.
 - 이어받는 결정: [ADR-0034](0034-server-push-notifications.md)(닫힌 목적지 목록 · 딥링크 금지 — 적용 기록), [ADR-0042](0042-android-push-host.md)(Android 수신 호스트), [ADR-0113](0113-messenger-chat-ui.md)(메신저 탭 · 대화 출처).
@@ -48,3 +48,22 @@
 
 ## 재검토 조건
 - 서버 대화 출처가 들어올 때(D3 판정 시점), A/B가 끝나 한 쪽으로 정할 때(variant 칸을 걷어낼지).
+
+## 서버 쪽 ⟨2026-11-22⟩ — 선톡이 저장되면 푸시 [사용자]
+
+- **까닭**: 선톡은 2026-11-19부터 하루 140 ~ 220통 나갔지만 푸시가 없어 앱을 열어야만 보였다 — 11-18 ~ 21의 554통 중 24시간 안에 답이 온 것은 9통(1.6%).
+  받은 사람의 62%는 푸시 기기가 있다.
+- **사용자 결정 2026-11-22**: 배정은 **사용자 id 해시**(D4의 PostHog 플래그를 바꿈 — 자동 캠페인과 같은 FNV-1a, 묶음 「선톡」), **대조군 30%**, **시험 계정으로 먼저 받아 보고 켠다**.
+- **보내는 때**: `companion-proactive`가 선톡을 저장한 직후(`_shared/companion-proactive-push.ts`). 빈도는 선톡의 규칙 그대로다(마지막 대화 뒤 24시간 · 선톡 사이 8시간 ·
+  하루 2통 · 답 없는 선톡 2통에서 멈춤 · 조용한 시간 · 유저가 끈 경우) — 푸시를 따로 세지 않는다. 푸시가 실패해도 선톡은 남는다(결과는 outcome의 `push`).
+- **스위치** `companion.settings.proactive_push`(`20261225120000_companion_proactive_push.sql`): `off`(기본) · `testers`(시험 계정만 — 대조군 없이 모두 받고 기록하지 않음) · `on`.
+  스위치 · 시험 계정 · 기기 유무는 `companion_proactive_push_gate`(서버 역할만)가 준다. 옛 DB · 오류면 꺼진 것으로 본다.
+- **미리보기**: 제목 = 인물 이름. A = 한국어 첫 말(줄바꿈은 빈칸, 120자에서 자름 — 출력 검사를 지난 글), B = 「{이름} sent you a message」. 말(speech)이 없으면 B.
+- **기록**: `on`일 때 배정을 `push_campaign_sends`(묶음 「선톡」 · 세그먼트 `companion-proactive`)에 **먼저** 남긴다 — 기록에 실패하면 보내지 않는다. 자동 캠페인의
+  쉬는 시간이 이 표의 모든 묶음을 보므로(`push_campaign_learners`), 선톡 푸시(대조군 포함)를 받은 사람에게 그 간격 안에는 학습 알림이 가지 않는다.
+- **푸시 기기가 없는 사람은 실험에 넣지 않는다**(`no_device`) — 받을 수 없어 두 칸의 차이를 흐린다.
+- **목적지**: `send-push`의 닫힌 목록에 `companion-chat`을 더했다(`send-push.contract.ts` · `pushTargetFrom` — 인물 id 형식 · 변형 a · b만). 발송은 `announcement`에 그 사람 하나.
+- **재는 것**: 24시간 안 답장(받는 쪽 vs 대조군), `push_notification_opened`의 `target = companion-chat` · `variant`, 다음 날 · 7일째 재방문.
+- **대가**: 채팅을 쓰는 사람에게는 선톡 푸시가 학습 알림 자리를 차지한다(같은 쉬는 시간). 반대 방향(학습 알림 직후의 선톡 푸시)은 막지 않는다 — 선톡은 답이 없으면 2통에서 멈춘다.
+  Android 1.3.0(채팅 없음)은 목적지를 몰라 눌러도 앱만 열리지만 선톡 대상이 아니다.
+- 테스트: `companion-proactive-push.unit.test.ts` PP1 ~ PP6 · `companion-proactive-handler.unit.test.ts` PR8 · `send-push-body.unit.test.ts` SP1 · `companion-proactive-push.integration.test.ts` PG1 ~ PG3.

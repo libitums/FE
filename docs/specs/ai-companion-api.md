@@ -740,7 +740,7 @@ FE가 네트워크 없이 재생한다. **파일이 아니라 TS 모듈**이다(
 | 장기 메모리 의미 검색은 pgvector | 최근 기억 N개(`memory_prompt_limit`)를 넣는다 | 임베딩 모델 미정(C). `embedding` 열은 모델을 고른 뒤 더한다 — **2026-11-09 결정: 미룸**. 용량 상한 `memory_cap` · `shared_memory_cap`(PRD §3.9) |
 | 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 → 20261127 엽전이 있으면 모든 인물, 20261216 체험도 모든 인물 합산(ADR-0164) | O2 · O3 전 초안 |
 | 말투 단계 상한 | 페르소나의 `maxSpeechLevel`(bible.yaml register에서): 윤경 · 재민 · 덕수쌤 polite, 도윤 casual, 미나 slang | bible이 「끝까지 존댓말」을 정한 인물이 있다 |
-| 선톡 푸시 | 메시지만 저장. 푸시는 `send-push` 목적지 추가 뒤 | §2.3 그대로 M3 남은 일 — 세현님 인계(§2.3.1) |
+| 선톡 푸시 | 저장 뒤 푸시(`companion-proactive-push.ts`, 스위치 `settings.proactive_push` off · testers · on — 2026-11-22) | [ADR-0127](../adr/0127-companion-push-target.md) 「서버 쪽」 |
 | 반복 위반 단계(회피 → 경고 → 차단) | 입력 차단만 세어 창(24시간) 안 3회면 30분 차단. 경고 이벤트는 없다(회피는 페르소나 프롬프트) | 계약에 경고 이벤트가 없다. 회피 · 경고는 **페르소나 거절**로 만들었다(§2.1 · `done.refusal`) |
 | 모델 하나(설정 값) | 단계별 환경 변수 — 답변 · 피드백 Sonnet, 검사 · 기억 · 요약 · 번역 Haiku. Haiku 호출에는 서버 쪽 대체 모델을 싣지 않는다 | 원가 · 지연(PRD §3.14, ADR-0135 초안) |
 | `translation` 미정(O9) | 턴마다 답 뒤 따로 호출, 6초 · 실패해도 턴은 정상 | PRD §3.4 · §2.1 |
