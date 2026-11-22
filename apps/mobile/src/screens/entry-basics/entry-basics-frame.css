@@ -18,22 +18,35 @@
   min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
 }
 
-.entry-basics-back,
-.entry-basics-skip {
+.entry-basics-back {
   flex-shrink: 0;
+}
+
+/* 큰 글자의 긴 Skip(Lewati · ကျော်ရန်)이 막대를 밀어내지 않게 줄어듭니다. */
+.entry-basics-skip {
+  flex-shrink: 1;
+  max-width: 45%;
 }
 
 .entry-basics-progress {
   flex: 1;
+  min-width: var(--libitum-spacing-48);
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
-/* 이름 · 나라 화면의 막대는 오른쪽에 뒤로 단추만큼 비웁니다 — 여기는 Skip이 그 자리에 섭니다. */
+/* 이름 · 나라 화면의 막대는 오른쪽에 뒤로 단추만큼 비웁니다 — 여기는 Skip이 그 자리에 섭니다. 낭독 초점 상자가 6pt가
+   되지 않게 높이를 줍니다(읽는 순서도 뒤로 → 단계 → Skip). */
 .entry-basics-progress .entry-step-bar {
   margin-left: 0;
   margin-right: 0;
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+}
+
+/* brand.primary는 이 바탕 위 2.97:1이라 비텍스트 기준(3:1)에 모자랍니다. */
+.entry-basics-progress .entry-step-bar-segment-done {
+  background-color: var(--libitum-color-brand-strong);
 }
 
 /* Skip — text 단추의 색만 fg-neutral-muted로(시안, 6.5:1). */

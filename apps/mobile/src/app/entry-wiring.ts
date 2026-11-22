@@ -40,7 +40,7 @@ import { oauthProviderFor, signInWithSocialProvider } from "../lib/social-sign-i
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
-import { markPushPromptPending } from "./push-prompt";
+import { forgetPushPrompt, markPushPromptPending } from "./push-prompt";
 import { syncPushDevice } from "./push-wiring";
 import { probeEntryRouteAfterLogin } from "./returning-learner-probe";
 import { entryScreenAfterLogin } from "./screen-routing";
@@ -96,10 +96,13 @@ export function entryWiring({
   // 로그인 직후 기존 회원인지 판정하고 갈래를 탑니다. 프로필 동기화는 판정 뒤에 시작해, 손님
   // 프로필 업로드가 판정 조회보다 먼저 서버 행을 만들어 신규 사용자를 오판하지 않게 합니다.
   const routeAfterLogin = async (method: EntryLoginMethod): Promise<void> => {
+    // 알림은 첫 스토리 뒤에(ADR-0176) — 판정을 기다리는 사이 · 입장 전에 꺼도 남게 먼저 적고, 기존 회원이면 지웁니다.
+    markPushPromptPending();
     const route = await probeEntryRouteAfterLogin();
     void syncLearnerProfile().catch(() => undefined);
     switch (route) {
       case "journey-map": {
+        forgetPushPrompt();
         const language = loadReturningUiLanguage();
         saveUiLanguage(language);
         setEntryLanguage(language);
@@ -111,7 +114,6 @@ export function entryWiring({
       // 새 사용자는 언어 선택 앞에 ① 이름 → ② 나라를 지납니다(ADR-0059 D7 2026-10-20). 이름 칸은 이 기기에 남은
       // 값 → 소셜 로그인의 표시 이름 → 무작위 이름 순으로 미리 채웁니다.
       case "language-select": {
-        markPushPromptPending(); // 알림은 첫 스토리 뒤에 — 입장 전에 꺼도 남게 지금 적습니다(ADR-0176)
         const session = loadAuthSession();
         const initialName =
           learnerRecord?.name ??

@@ -10,10 +10,14 @@ import { systemBackEventName } from "../lib/system-back";
 import { resetPushWiringForTests } from "./push-wiring";
 import { PUSH_PROMPT_DELAY_MS, pushPromptStorageKey } from "./push-prompt";
 import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import {
   advance,
+  answer as answerWith,
   bootToOnboarding,
   completeOnboarding,
+  jsonReply,
+  learnerProfileRecord,
   noRecord,
   present,
   settle,
@@ -136,6 +140,24 @@ async function finishStory(): Promise<void> {
   }
   expect(present("episode-banner-screen")).toBe(true);
   fireEvent.tap(screen.getByTestId("episode-banner-screen"), {});
+  await settle();
+}
+
+async function pressBack(): Promise<void> {
+  act(() => {
+    lynx.getJSModule("GlobalEventEmitter").emit(systemBackEventName, ["1"]);
+  });
+  await settle();
+}
+
+/** 첫 레슨을 열었다가 나옵니다 — Letters 추천의 신호(failed)가 남습니다. */
+async function leaveFirstLesson(): Promise<void> {
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u00-tutorial", "S1")), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  await settle();
+  for (let guard = 0; guard < 4 && !present("ui-lynx-dialog-action-leave"); guard += 1)
+    await pressBack();
+  tapButtonIn("ui-lynx-dialog-action-leave");
   await settle();
 }
 
@@ -417,6 +439,89 @@ describe("알림 권한은 첫 스토리 뒤", () => {
     });
     await jumpIn();
 
+    expect(host.register).toHaveBeenCalledTimes(1);
+  });
+
+  test("EBI16. 머리의 모달이 열려 있으면 닫힌 뒤에 묻는다", async () => {
+    const { host } = await reachEntry();
+    await jumpIn();
+    await openStory();
+    await skipStory();
+    fireEvent.tap(screen.getByTestId("top-bar-trophy"), {});
+    expect(present("journey-stat-modal-trophy")).toBe(true);
+
+    await waitPastPrompt();
+    expect(host.register).not.toHaveBeenCalled();
+
+    await pressBack();
+    expect(present("journey-stat-modal-trophy")).toBe(false);
+    await waitPastPrompt();
+    expect(host.register).toHaveBeenCalledTimes(1);
+  });
+
+  test("EBI17. Letters 추천이 기다리는 중이면 추천이 먼저이고 닫힌 뒤에 묻는다", async () => {
+    const { host } = await reachEntry();
+    await jumpIn();
+    await openStory();
+    await skipStory();
+    await leaveFirstLesson();
+    expect(present("journey-map-screen")).toBe(true);
+
+    await waitPastPrompt();
+    expect(present("letters-recommend")).toBe(true);
+    expect(host.register).not.toHaveBeenCalled();
+
+    await pressBack();
+    expect(present("letters-recommend")).toBe(false);
+    await waitPastPrompt();
+    expect(host.register).toHaveBeenCalledTimes(1);
+  });
+
+  test("EBI18. 답을 기다리는 동안 표식이 남고, 답한 뒤 지운다", async () => {
+    const { host } = await reachEntry();
+    let answer: (() => void) | null = null;
+    host.register.mockImplementation((callback) => {
+      answer = () =>
+        callback({ permission: "authorized", token: "push-token-1", environment: "sandbox" });
+    });
+    await jumpIn();
+    await openStory();
+    await skipStory();
+    await waitPastPrompt();
+    expect(host.register).toHaveBeenCalledTimes(1);
+    expect(pending(host)).toBe("pending");
+
+    act(() => answer?.());
+    await settle();
+    expect(pending(host)).toBeUndefined();
+  });
+
+  test("EBI19. 새 가입 판정을 기다리는 사이 꺼도 스토리 뒤에 묻는다", async () => {
+    const never = () => new Promise<never>(() => {});
+    stubServer({ progress: never, profile: never });
+    const first = stubHost();
+    bootToOnboarding();
+    completeOnboarding();
+    await tapSocial("google");
+    const { host } = await relaunch(first.store);
+
+    await openStory();
+    await skipStory();
+    await waitPastPrompt();
+    expect(host.register).toHaveBeenCalledTimes(1);
+  });
+
+  test("EBI20. 기존 회원으로 판정되면 표식이 남지 않는다 — 로그인 때 한 번만 묻는다", async () => {
+    stubServer({
+      progress: noRecord,
+      profile: answerWith(jsonReply(learnerProfileRecord)),
+    });
+    const host = stubHost();
+    bootToOnboarding();
+    completeOnboarding();
+    await tapSocial("google");
+
+    expect(pending(host)).toBeUndefined();
     expect(host.register).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,6 +1,7 @@
 // 알림 권한을 첫 스토리 뒤에 묻는 판정과 기기 표식입니다(ADR-0176 · ADR-0034 D4 개정).
 //
-// 표식은 새 가입으로 판정된 순간 계정마다 적습니다 — 기초 도중에 앱을 꺼도 남고, 세션으로 켜는 기존 계정은 갑자기 묻지 않습니다.
+// 표식은 로그인 직후(기존 회원 판정 전) 계정마다 적고 기존 회원이면 바로 지웁니다 — 판정 · 기초 도중에 앱을 꺼도 남고, 세션으로
+// 켜는 기존 계정은 갑자기 묻지 않습니다.
 // 「스토리를 나왔다」는 저장하지 않습니다: 다시 켜면 첫 유닛 안내가 다시 서므로, 활동 기록이 없으면 스토리를 다시 기다립니다.
 
 import { getItem, removeItem, setItem } from "../lib/storage";
@@ -54,7 +55,14 @@ export function isPushPromptPending(): boolean {
   }
 }
 
-/** 답을 기다리는 사이 로그아웃할 수 있어 묻기 시작한 계정을 받습니다. */
+/** 지금 계정의 표식을 지웁니다 — 기존 회원으로 판정돼 로그인 때 바로 묻는 길입니다. */
+export function forgetPushPrompt(): void {
+  "background only";
+  const userId = progressUserId();
+  if (userId !== null) clearPushPrompt(userId);
+}
+
+/** 답을 기다리는 사이 로그아웃할 수 있어 묻기 시작한 계정을 받습니다(계정 삭제도 지웁니다). */
 export function clearPushPrompt(userId: string): void {
   "background only";
   try {

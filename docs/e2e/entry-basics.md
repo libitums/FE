@@ -26,7 +26,7 @@
 | EC10 | 작은 화면(iPhone SE · 720 × 1280)에서 EC1 · EC3 · EC6 | 제목 · 단추 · 타일이 잘리지 않는다(모자라면 가운데가 스크롤) | 미실행 |
 | EC11 | UI 언어 vi · my로 EC1 · EC3 · EC6 | 긴 문구가 줄바꿈되고 글리프가 빠지지 않는다. 한글은 번역되지 않는다 | 미실행 |
 | EC12 | 큰 글자에서 EC1 · EC3 · EC6 | 잘리지 않는다 | 미실행 |
-| EC13 | VoiceOver · TalkBack | 단추 이름 · 「Step n of 3」 · 재배열 뒤 문장 낭독 한 번 | 미실행 |
+| EC13 | VoiceOver · TalkBack | 단추 이름 · 「Step n of 3」 · 재배열 뒤 문장 낭독 한 번. TalkBack에서는 흰 단추 · 글자 칸 · 타일이 두 번 탭으로 눌리고 제목이 머리글로 잡힌다 | VoiceOver 미실행 · TalkBack 미실행 |
 
 ## 실행 기록
 

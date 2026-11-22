@@ -63,16 +63,54 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
-    var(--libitum-layout-screen-padding-bottom);
 }
 
+/* 글자 묶음이 어두운 면을 스스로 집니다 — Fog는 화면 높이의 %라 작은 기기 · 큰 글꼴에서 글자가 가운데로 밀리면 닿지
+   않습니다(안내 12px가 최저 1.2:1까지). Fog와 겹쳐 작은 화면에서도 4.5:1입니다. 값은 gray.950(#1A1C20)이고,
+   그라데이션 안의 var()는 번들에서 풀리지 않아 값을 적습니다(Fog와 같은 사정). */
 .journey-entry-screen-top,
 .journey-entry-screen-bottom {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+}
+
+.journey-entry-screen-top {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(26, 28, 32, 0.72) 0%,
+    rgba(26, 28, 32, 0.6) 82%,
+    rgba(26, 28, 32, 0) 100%
+  );
+}
+
+.journey-entry-screen-bottom {
+  background-image: linear-gradient(
+    to bottom,
+    rgba(26, 28, 32, 0) 0%,
+    rgba(26, 28, 32, 0.72) 14%,
+    rgba(26, 28, 32, 0.92) 100%
+  );
+}
+
+.journey-entry-screen-top-body,
+.journey-entry-screen-bottom-body {
+  display: flex;
+  flex-direction: column;
   gap: var(--libitum-spacing-8);
+  padding-left: var(--libitum-layout-screen-padding-x);
+  padding-right: var(--libitum-layout-screen-padding-x);
+}
+
+.journey-entry-screen-top-body {
+  padding-top: var(--libitum-layout-screen-padding-top);
+  padding-bottom: var(--libitum-spacing-32);
+}
+
+/* 위 48은 어두운 면이 옅어지는 자리입니다. */
+.journey-entry-screen-bottom-body {
+  padding-top: var(--libitum-spacing-48);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
 }
 
 /* 뒤로가기 행입니다. RoundButton xl(56)만큼 높이를 늘 잡아 둡니다(다른 진입
@@ -101,10 +139,6 @@
   font-size: var(--libitum-typography-label-l-font-size);
   line-height: var(--libitum-typography-label-l-line-height);
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
-}
-
-.journey-entry-screen-bottom {
-  padding-top: var(--libitum-spacing-24);
 }
 
 .journey-entry-screen-display {

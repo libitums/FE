@@ -1,4 +1,4 @@
-/* 합치기 세 문제(ADR-0176, 시안 Compose) — 문제 줄 · 칸은 공용 부품이 지고, 여기에는 배치만 둡니다. */
+/* 합치기 세 문제(ADR-0176, 시안 Compose) — 문제 줄 · 칸은 공용 부품이 지고, 여기에는 배치와 이 화면의 대비만 둡니다. */
 
 .entry-basics-compose-count {
   flex-shrink: 0;
@@ -10,14 +10,55 @@
   line-height: var(--libitum-typography-label-l-line-height);
 }
 
+/* 큰 글자에서 칸 + 칸 = 결과가 넘치지 않게 접습니다. */
+.entry-basics-middle .letters-compose-slots {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 18px bold는 큰 글자가 아니라 4.5:1이 필요합니다(fg-neutral-subtle은 3.38). */
+.entry-basics-middle .letters-compose-op {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* 빈 칸의 경계 — 면(gray.100)만으로는 바탕과 1.05:1이라 합칠 자리가 안 보입니다. */
+.entry-basics-middle .letters-compose-slot-empty,
+.entry-basics-middle .letters-compose-result {
+  border-color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.entry-basics-middle .letters-compose-result.syllable-build-slot-correct {
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.entry-basics-middle .letters-compose-result.syllable-build-slot-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
 .entry-basics-compose-verdict {
   flex-shrink: 0;
-  min-height: var(--libitum-spacing-48);
+  min-height: var(--libitum-spacing-40);
   margin-top: var(--libitum-spacing-12);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.entry-basics-verdict {
+  text-align: center;
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.entry-basics-verdict-correct {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.entry-basics-verdict-incorrect {
+  color: var(--libitum-color-feedback-incorrect-text);
 }
 
 .entry-basics-compose-bank {

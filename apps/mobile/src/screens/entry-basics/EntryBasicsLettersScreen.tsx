@@ -28,8 +28,10 @@ export function EntryBasicsLettersScreen({
   const copy = uiCopy.journeyEntry.firstSteps;
   const leave = useLeaveOnce();
   const [heard, setHeard] = useState<readonly string[]>([]);
+  // 일본어는 문장 사이에 빈칸이 없습니다(「。」로 끝남).
+  const gap = copy.lettersLead.slice(-1) === "。" ? "" : " ";
   const lead = lettersHearable(sound.sourceOf)
-    ? `${copy.lettersLead} ${copy.lettersHear}`
+    ? `${copy.lettersLead}${gap}${copy.lettersHear}`
     : copy.lettersLead;
 
   return (
@@ -50,16 +52,34 @@ export function EntryBasicsLettersScreen({
         </view>
       }
     >
-      <text className="entry-basics-title" data-testid={ids.title} accessibility-traits="header">
+      <text
+        className="entry-basics-title"
+        data-testid={ids.title}
+        flatten={false}
+        accessibility-element={true}
+        accessibility-heading={true}
+        accessibility-traits="header"
+      >
         {copy.lettersTitle}
       </text>
-      <text className="entry-basics-lead" data-testid={ids.lead}>
+      <text
+        className="entry-basics-lead"
+        data-testid={ids.lead}
+        flatten={false}
+        accessibility-element={true}
+      >
         {lead}
       </text>
       <view className="entry-basics-middle">
         {(["consonants", "vowels"] as const).map((group) => (
           <view key={group} className="entry-basics-group">
-            <text className="entry-basics-group-title" accessibility-traits="header">
+            <text
+              className="entry-basics-group-title"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-heading={true}
+              accessibility-traits="header"
+            >
               {uiCopy.more.letters.groups[group]}
             </text>
             <view className="entry-basics-row">
@@ -112,13 +132,16 @@ function LetterCell({
   return (
     <view
       className={
-        source === null ? "entry-basics-cell" : "entry-basics-cell entry-basics-cell-playable"
+        source === null
+          ? "entry-basics-cell"
+          : `entry-basics-cell entry-basics-cell-playable${heard ? " entry-basics-cell-heard" : ""}`
       }
       data-testid={ids.letter(index)}
       accessibility-element={true}
       flatten={false}
       accessibility-label={`${letter.letter}, ${letter.roman}${suffix}`}
       accessibility-traits={source === null ? "none" : "button"}
+      accessibility-enable-tap={source !== null}
       bindtap={handleTap}
     >
       <text className="tile-romanization entry-basics-cell-roman" accessibility-element={false}>

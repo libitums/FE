@@ -120,6 +120,7 @@ const CHAT_PATH = "screens/prologue/PrologueChatScreen.tsx";
 const appSession = (
   routes = [
     "journey-entry",
+    "entry-basics-ready",
     "catalog-cover",
     "catalog-story",
     "catalog-final",
@@ -444,16 +445,19 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
     "catalog-epilogue",
     "catalog-final",
     "catalog-story",
+    "entry-basics-ready",
     "journey-entry",
     "roleplay-story",
   ]);
+  // 밝은 전체 화면(ADR-0176) — 표지를 다는 컴포넌트가 없다.
+  assert.deepEqual(fullBleedRoutes["entry-basics-ready"], []);
   const routeText = (route) => JSON.stringify(fullBleedRoutes[route]);
   assert.match(routeText("journey-entry"), /JourneyEntryScreen/);
   assert.match(routeText("catalog-cover"), /CatalogCoverScreen/);

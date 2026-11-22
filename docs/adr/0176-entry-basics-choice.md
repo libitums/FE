@@ -62,7 +62,10 @@
 - 표식 `libitum.push-prompt.<userId>` = `pending`을 **새 가입으로 판정된 순간** 적는다. 입장 시점에 적으면 기초 도중에 앱을 끈 사람은
   다음 실행이 여정 입장을 건너뛰어 영영 묻지 않는다.
 - 다시 켰을 때: 활동 기록이 있으면 지도에서 묻고, 없으면 첫 유닛 안내가 다시 서므로 스토리를 다시 기다린다.
-- 표식은 묻기가 끝난 뒤 지운다. 창이 떠 있는 동안 꺼지면 남는다.
+- 표식은 기존 회원 판정을 **기다리기 전에** 적고, 기존 회원으로 판정되면 지운다 — 판정을 기다리는 동안 꺼져도 묻는 차례가 남는다.
+  계정을 지우면 함께 지운다.
+- 묻기가 끝난 뒤 표식을 지운다. 다만 Android 호스트는 창을 띄우기 전에 「물었음」을 기록하므로, 창이 뜬 채로 꺼지면 다시 뜨지 않는다.
+- **겹치지 않는다**: 닫을 겹(모달 · 시트)이 열려 있거나 Letters 추천이 기다리는 중이면 미루고, 묻는 동안 다른 안내는 서지 않는다.
 - 입장 때는 `syncPushDevice({ ask: false })` — 이미 허용한 기기는 바로 토큰을 올린다.
 
 | 묻는 자리 | 전 | 이 결정 |
@@ -88,7 +91,10 @@ iOS의 추적 허용(ATT, [ADR-0079](0079-ios-tracking-authorization.md) D2)은 
 ### D7. 색 · 글자
 
 - 「바로 입장」은 brand.primary 면에 흰 글자 19px bold다(사용자 결정). 3.02:1이라 큰 글자(14pt bold = 18.67px) 기준으로만 통과한다 —
-  **크기나 굵기를 줄이지 않는다.** 맞는 글자 토큰이 없어 크기만 값을 적는다.
+  **크기나 굵기를 줄이지 않는다.** 맞는 글자 토큰이 없어 크기만 값을 적는다. 시스템 글자 배율이 1보다 작으면 이 기준 밑으로 내려간다.
+- 기초 화면 안에서만 더 진하게 한다(비텍스트 3:1 · 글 4.5:1): 단계 막대 · ▶ 아이콘은 brand.strong(▶는 Letters › Practice도 같은 부품이라 함께),
+  + · =는 fg-neutral-muted, 빈 칸 경계는 fg-neutral-subtle, 판정은 배지 대신 feedback `-text` 글(낱말 · 효과음은 같다).
+- 입장 화면의 글자 묶음은 어두운 면을 스스로 진다 — 작은 기기 · 큰 글꼴에서 가운데로 밀려도 읽히게.
 - AI 그림 고지는 남기고 gray.600(어두운 면 위 8:1)으로 올린다.
 
 ## 버린 대안
@@ -107,6 +113,7 @@ iOS의 추적 허용(ATT, [ADR-0079](0079-ios-tracking-authorization.md) D2)은 
 ## 검사
 
 - unit: `entry-basics` EB1 ~ EB4 · `entry-path-wiring` EP1 ~ EP8 · `push-prompt` PP1 ~ PP9.
-- ui: `EntryBasics*Screen` BL · BC · BR · `JourneyEntryScreen` JE-U1 ~ U9.
-- integration: `App.entry-basics.integration.test.tsx` EBI1 ~ EBI15.
+- ui: `EntryBasics*Screen` BL · BC · BR · `entry-basics.a11y` BA1 ~ BA8 · `JourneyEntryScreen` JE-U1 ~ U9 · JE-A1.
+- unit(더): `back-handler` BH0 · `account-wiring.progress-cache` AW1b.
+- integration: `App.entry-basics.integration.test.tsx` EBI1 ~ EBI20.
 - 기기: [입장 선택 e2e](../e2e/entry-basics.md).

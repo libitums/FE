@@ -58,8 +58,8 @@ export const journeyEntryTh: JourneyEntryCopy = {
   caption: "เพิ่งรู้จักฮันกึลเหรอ มารู้จักตัวอักษรสักหน่อยก่อนถึงโซล",
   notice: "รูปภาพบางส่วนในบริการนี้สร้างขึ้นด้วยเทคโนโลยี AI",
   basics: "เรียนพื้นฐานก่อน",
-  basicsDetail: "6 ตัวอักษร 3 เสียง แล้วเข้าเรื่อง",
-  story: "เข้าเรื่องเลย",
+  basicsDetail: "6 ตัวอักษร 3 เสียง แล้วเริ่มเรื่องราว",
+  story: "เข้าสู่เรื่องราวเลย",
   firstSteps: {
     progress: (current, total) => `ขั้นที่ ${current} จาก ${total}`,
     lettersTitle: "รู้จักตัวอักษรแรกของคุณ",

@@ -56,6 +56,7 @@ export const entryBasicsTestIds = {
   next: "entry-basics-next",
   title: "entry-basics-title",
   lead: "entry-basics-lead",
+  count: "entry-basics-count",
   letter: (index: number) => `entry-basics-letter-${index}`,
   sentence: "entry-basics-sentence",
   word: (index: number) => `entry-basics-word-${index}`,

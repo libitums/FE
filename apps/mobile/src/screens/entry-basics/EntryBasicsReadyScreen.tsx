@@ -83,13 +83,20 @@ export function EntryBasicsReadyScreen({
           scroll-bar-enable={false}
         >
           <view className="entry-basics-ready-content">
-            <text
-              className={`entry-basics-ready-title${reveal}`}
+            {/* 이름은 투명해지지 않는 상자가 집니다 — 투명한 글은 iOS 낭독 순회에서 빠집니다(ADR-0053 D7). */}
+            <view
+              className="entry-basics-ready-text"
               data-testid={ids.title}
+              flatten={false}
+              accessibility-element={true}
+              accessibility-label={copy.readyTitle}
+              accessibility-heading={true}
               accessibility-traits="header"
             >
-              {copy.readyTitle}
-            </text>
+              <text className={`entry-basics-ready-title${reveal}`} accessibility-element={false}>
+                {copy.readyTitle}
+              </text>
+            </view>
             <view
               className="entry-basics-sentence"
               data-testid={ids.sentence}
@@ -142,7 +149,16 @@ export function EntryBasicsReadyScreen({
                 />
               )}
             </view>
-            <text className={`entry-basics-ready-body${reveal}`}>{copy.readyBody}</text>
+            <view
+              className="entry-basics-ready-text"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-label={copy.readyBody}
+            >
+              <text className={`entry-basics-ready-body${reveal}`} accessibility-element={false}>
+                {copy.readyBody}
+              </text>
+            </view>
           </view>
         </scroll-view>
         <view className="entry-basics-ready-footer">

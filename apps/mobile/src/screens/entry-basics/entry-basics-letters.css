@@ -26,15 +26,19 @@
   line-height: var(--libitum-typography-label-l-line-height);
 }
 
+/* 셋이 같은 폭으로 서고, 큰 글자에서 모자라면 접습니다. */
 .entry-basics-row {
   display: flex;
   flex-direction: row;
-  column-gap: var(--libitum-spacing-8);
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-8);
 }
 
 .entry-basics-cell {
-  flex: 1;
-  min-width: 0;
+  box-sizing: border-box;
+  flex-grow: 1;
+  flex-shrink: 0;
+  min-width: calc(var(--libitum-spacing-80) + var(--libitum-spacing-8));
   min-height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
   display: flex;
   flex-direction: column;
@@ -48,6 +52,12 @@
 
 .entry-basics-cell-playable:active {
   background-color: var(--libitum-color-gray-100);
+}
+
+/* 들은 칸은 색만이 아니라 굵기로도 갈립니다(WCAG 1.4.1). */
+.entry-basics-cell-heard {
+  border-width: var(--libitum-stroke-width-strong);
+  border-color: var(--libitum-color-brand-strong);
 }
 
 .entry-basics-cell-roman {

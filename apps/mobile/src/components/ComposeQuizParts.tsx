@@ -2,6 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import play from "@libitums/icons/lynx/play";
+import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { COMPOSE_TILES, composeSlotStateOf } from "../lib/letters/compose-quiz";
 import { composeSyllable, jamoTileRomanOf } from "../lib/letters/jamo";
@@ -16,6 +17,8 @@ import "./compose-quiz-parts.css";
 
 // 합치기 퀴즈의 문제 줄(▶ + Make · 칸 + 칸 = 결과)과 타일 창고입니다(ADR-0169). Letters › Practice와 입장 전 기초
 // (ADR-0176)가 함께 씁니다. 칸 · 타일은 음절 조립의 모양을 빌립니다.
+//
+// Android TalkBack: 평탄화된 글은 접근성 트리에서 빠지고, `accessibility-enable-tap`이 있는 View만 두 번 탭으로 눌립니다.
 
 type ComposeQuizPartProps = {
   readonly quiz: ComposeQuiz;
@@ -48,6 +51,7 @@ export function ComposeQuizCard({
     const value = which === "consonant" ? consonant : vowel;
     const slotState = state.done ? "empty" : composeSlotStateOf(state, which);
     const name = which === "consonant" ? copy.consonantSlot : copy.vowelSlot;
+    const clearable = value !== null && verdict === null;
     return (
       <view
         className={`syllable-build-slot letters-compose-slot letters-compose-slot-${slotState}`}
@@ -55,8 +59,13 @@ export function ComposeQuizCard({
         data-state={slotState}
         accessibility-element={true}
         flatten={false}
-        accessibility-label={`${name}, ${value ?? copy.emptySlot}`}
-        accessibility-traits={value !== null && verdict === null ? "button" : "none"}
+        accessibility-label={
+          value === null
+            ? `${name}, ${copy.emptySlot}`
+            : `${name}, ${value}, ${jamoTileRomanOf(value)}`
+        }
+        accessibility-traits={clearable ? "button" : "none"}
+        accessibility-enable-tap={clearable}
         bindtap={() => {
           "background only";
           if (value !== null) quiz.dispatch({ type: "clear", slot: which });
@@ -82,15 +91,24 @@ export function ComposeQuizCard({
             silent ? `${copy.play}, ${uiCopy.more.letters.soundUnavailable}` : copy.play
           }
           accessibility-traits={silent ? "disabled" : "button"}
+          accessibility-enable-tap={!silent}
           bindtap={handlePlay}
         >
           <svg
             className="letters-compose-play-icon"
             content={play}
-            current-color={silent ? color.fg.disabled : color.brand.primary}
+            // brand.primary는 gray.100 면 위 2.84:1이라 비텍스트 기준(3:1)에 모자랍니다.
+            current-color={silent ? color.fg.disabled : color.brand.strong}
           />
         </view>
-        <text className="letters-compose-make">{copy.make(round.roman)}</text>
+        <text
+          className="letters-compose-make"
+          data-testid="compose-make"
+          flatten={false}
+          accessibility-element={true}
+        >
+          {copy.make(round.roman)}
+        </text>
       </view>
       <view className="letters-compose-slots">
         {slot("consonant")}
@@ -121,24 +139,29 @@ export function ComposeQuizCard({
 }
 
 export function ComposeQuizBank({ quiz, romanization }: ComposeQuizPartProps): ReactNode {
+  const usedTile = useUiCopy().syllableBuild.usedTile;
+  const motionClass = useMotion() === "reduced" ? " syllable-tile-motion-reduced" : "";
   const { consonant, vowel } = quiz.state;
   return (
     <view className="syllable-build-screen-bank letters-compose-bank">
       {COMPOSE_TILES.map((letter, index) => {
         const used = letter === consonant || letter === vowel;
+        const pickable = !used && quiz.verdict === null;
+        const name = `${letter}, ${jamoTileRomanOf(letter)}`;
         return (
           <view
             key={letter}
             className={
               used
                 ? "syllable-tile syllable-tile-placeholder syllable-tile-with-reading"
-                : "syllable-tile syllable-tile-bank syllable-tile-with-reading"
+                : `syllable-tile syllable-tile-bank syllable-tile-with-reading${motionClass}`
             }
             data-testid={`compose-tile-${index}`}
             accessibility-element={true}
             flatten={false}
-            accessibility-label={`${letter}, ${jamoTileRomanOf(letter)}`}
-            accessibility-traits={used || quiz.verdict !== null ? "disabled" : "button"}
+            accessibility-label={used ? usedTile(name) : name}
+            accessibility-traits={pickable ? "button" : "disabled"}
+            accessibility-enable-tap={pickable}
             bindtap={() => {
               "background only";
               if (used) return;

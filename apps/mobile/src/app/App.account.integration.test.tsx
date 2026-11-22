@@ -263,6 +263,7 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
             "remove:libitum.learning-days.pending.user-1",
             "remove:libitum.learner-profile.user-1",
             "remove:libitum.wordbook.user-1",
+            "remove:libitum.push-prompt.user-1", // ADR-0176 — 첫 스토리 뒤 알림 질문 표식
           ]
         : []),
       `remove:${sessionKey}`,

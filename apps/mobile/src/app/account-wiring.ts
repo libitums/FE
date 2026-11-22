@@ -11,6 +11,7 @@ import { clearCachedProgress } from "./cached-learning-progress";
 import { clearPendingProgress } from "./pending-learning-progress";
 import { deleteAccount } from "../lib/account-deletion";
 import { signOutRemotely } from "../lib/api-client";
+import { clearPushPrompt } from "./push-prompt";
 import { forgetPushDevice } from "./push-wiring";
 import { entryScreenViewedEvent } from "../lib/entry-flow";
 import { clearAuthSession, loadAuthSession, saveAuthSession } from "../lib/auth-session";
@@ -75,6 +76,7 @@ export function accountWiring({
           clearPendingLearningDays(userId);
           clearLearnerProfileCache(userId);
           clearWordbook(userId); // 단어장 칸(ADR-0169)
+          clearPushPrompt(userId); // 첫 스토리 뒤 알림 질문 표식(ADR-0176)
           // 메신저 해금 기록도 그 계정 것만 지웁니다 — 같은 기기의 다음 계정에 열린 인물이 남지 않게(2026-11-17).
           forgetDeviceUnlocks(serverAccountKey(userId));
         }

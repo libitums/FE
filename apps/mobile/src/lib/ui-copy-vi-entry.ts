@@ -55,7 +55,7 @@ export const languageSelectVi: LanguageSelectCopy = {
 export const journeyEntryVi: JourneyEntryCopy = {
   title: "Hành trình đang chờ bạn",
   display: "Bắt đầu câu chuyện",
-  caption: "Mới biết Hangul? Làm quen vài chữ cái trước khi đặt chân đến Seoul.",
+  caption: "Chưa quen Hangul? Làm quen vài chữ cái trước khi đặt chân đến Seoul.",
   notice: "Một số hình ảnh trong dịch vụ này được tạo bằng công nghệ AI",
   basics: "Học cơ bản trước",
   basicsDetail: "6 chữ cái, 3 âm, rồi vào truyện",

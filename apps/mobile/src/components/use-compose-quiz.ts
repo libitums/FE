@@ -36,11 +36,17 @@ export type ComposeQuiz = {
 export function useComposeQuiz({
   sound,
   autoPlay,
+  completion = "announced",
   onAnswered,
   onComplete,
 }: {
   readonly sound: LetterSoundPort;
   readonly autoPlay: AutoPlayAudio;
+  /**
+   * 다 끝낸 문구를 읽을지입니다. 입장 전 기초는 그 문구가 보이지 않고(소리에만 있는 낱말 금지 — ADR-0016 D11) 바로 다음
+   * 화면이 문장을 읽어 `silent`입니다. 기본 `announced`.
+   */
+  readonly completion?: "announced" | "silent";
   /** 판정마다 — round는 1부터. */
   readonly onAnswered?: ((round: number, target: string, correct: boolean) => void) | undefined;
   readonly onComplete?: ((rounds: number, firstTry: number) => void) | undefined;
@@ -82,7 +88,7 @@ export function useComposeQuiz({
     }
     if (action.type === "next" && next.done) {
       onComplete?.(COMPOSE_ROUNDS.length, next.firstTry);
-      announceCompletion(uiCopy.more.compose.complete);
+      if (completion === "announced") announceCompletion(uiCopy.more.compose.complete);
     }
   };
 
