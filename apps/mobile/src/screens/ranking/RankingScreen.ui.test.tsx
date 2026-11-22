@@ -95,10 +95,11 @@ test("RK-UI4. 1 ~ 3위만 메달, 4위부터 숫자", () => {
   expect(screen.queryByTestId(ids.medal(4))).toBeNull();
 });
 
-test("RK-UI5. 구역 줄: 보상이 꺼지면 「Top 3 this week」, 켜지면 액수, 4위 앞 「Keep climbing」", () => {
+test("RK-UI5. 구역 줄: 보상이 꺼지면 「Top 3 this week」, 켜지면 액수, 4위 앞 「Keep climbing」 + 3위까지 남은 점수(D13)", () => {
   mount({ kind: "ready", board });
   expect(text(ids.zoneTop)).toBe("Top 3 this week");
-  expect(text(ids.zoneClimb)).toBe("Keep climbing");
+  // 3위 9점 · 나 7점 → 넘으려면 3점(같은 점수는 먼저 닿은 사람이 위).
+  expect(text(ids.zoneClimb)).toBe("Keep climbing · 3 more to reach the top 3");
   cleanup();
   mount({ kind: "ready", board: { ...board, reward: 30 } });
   expect(text(ids.zoneTop)).toBe("Top 3 get a bonus 30 Yeopjeon");
@@ -251,7 +252,7 @@ function mountMotion(seenScore: number | null, reduced = false) {
   render(reduced ? <MotionProvider motion="reduced">{node}</MotionProvider> : node);
 }
 
-test("RK-UI10. 줄은 차례로 올라오고(칸 번호 0부터 · 7에서 멈춤), 메달은 튀어나오고, 내 줄은 한 번 강조된다", () => {
+test("RK-UI20. 줄은 차례로 올라오고(칸 번호 0부터 · 7에서 멈춤), 메달은 튀어나오고, 내 줄은 한 번 강조된다", () => {
   mountMotion(null);
   expect(itemClassOf(1)).toContain("ranking-in ranking-in-0");
   expect(itemClassOf(2)).toContain("ranking-in-1");
@@ -264,7 +265,7 @@ test("RK-UI10. 줄은 차례로 올라오고(칸 번호 0부터 · 7에서 멈�
   expect(screen.getAllByTestId(ids.ring)).toHaveLength(2);
 });
 
-test("RK-UI11. 움직임 줄이기면 모션 클래스 · 강조 고리가 서지 않는다", () => {
+test("RK-UI21. 움직임 줄이기면 모션 클래스 · 강조 고리가 서지 않는다", () => {
   mountMotion(4, true);
   expect(itemClassOf(1)).not.toContain("ranking-in");
   expect(classOf(ids.medal(1))).not.toContain("ranking-medal-in");
@@ -273,7 +274,7 @@ test("RK-UI11. 움직임 줄이기면 모션 클래스 · 강조 고리가 서�
   expect(text(ids.meScore)).toBe("7");
 });
 
-test("RK-UI12. 지난번에 본 점수보다 올랐으면 그 점수에서 지금 점수까지 센다 — 줄이 다 뜬 뒤에", () => {
+test("RK-UI22. 지난번에 본 점수보다 올랐으면 그 점수에서 지금 점수까지 센다 — 줄이 다 뜬 뒤에", () => {
   vi.useFakeTimers();
   try {
     mountMotion(4);
@@ -294,7 +295,7 @@ test("RK-UI12. 지난번에 본 점수보다 올랐으면 그 점수에서 지�
   }
 });
 
-test("RK-UI13. 본 적이 없거나 오르지 않았으면 세지 않는다", () => {
+test("RK-UI23. 본 적이 없거나 오르지 않았으면 세지 않는다", () => {
   mountMotion(null);
   expect(text(ids.meScore)).toBe("7");
   cleanup();

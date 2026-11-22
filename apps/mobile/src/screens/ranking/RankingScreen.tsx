@@ -10,7 +10,13 @@ import { Button } from "@libitums/ui-lynx/button";
 import type { RankingBoard, RankingBoardKind } from "../../lib/ranking.contract";
 import { useUiCopy } from "../../lib/ui-copy";
 import { rankingTestIds as ids, type RankingScreenProps } from "./ranking.contract";
-import { daysLeft, nearMeItems, zoneBefore, type RankingView } from "./ranking-rules";
+import {
+  daysLeft,
+  moreToTopThree,
+  nearMeItems,
+  zoneBefore,
+  type RankingView,
+} from "./ranking-rules";
 import { itemInClass, pulseClass, useReducedMotion, useRisingScore } from "./ranking-motion";
 import { Face, PulseRing, RankBadge, Row } from "./RankingRows";
 
@@ -113,7 +119,9 @@ function List({ board }: { readonly board: RankingBoard }) {
                   className="ranking-zone"
                   data-testid={zone === "top" ? ids.zoneTop : ids.zoneClimb}
                 >
-                  {zone === "top" ? copy.zoneTop(board.reward) : copy.zoneClimb}
+                  {zone === "top"
+                    ? copy.zoneTop(board.reward)
+                    : copy.zoneClimb(moreToTopThree(board))}
                 </text>
               )}
               <Row row={row} board={board} />

@@ -30,7 +30,8 @@ export type RankingCopy = {
   readonly unit: (board: RankingBoardKind, score: number) => string;
   /** 보상이 꺼져 있으면 null. */
   readonly zoneTop: (reward: number | null) => string;
-  readonly zoneClimb: string;
+  /** 내 근처 구역 줄 — `more`는 3위 안에 들려면 더 필요한 점수(D13), 없으면 격려만. */
+  readonly zoneClimb: (more: number | null) => string;
   readonly you: string;
   readonly morePass: (more: number, name: string) => string;
   readonly first: string;
