@@ -8,7 +8,8 @@ import { callRpc } from "./companion-rpc.ts";
 import { missionBrief, missionFeedbackRequest, transcriptFromHistory } from "./mission-context.ts";
 import { missionJudgeTimeoutMs } from "./mission-env.ts";
 import { judgedGoals, judgeUser } from "./mission-judge.ts";
-import { farewellsOf, guardMissionFeedback, stripFarewells } from "./mission-guards.ts";
+import { guardMissionFeedback } from "./mission-guards.ts";
+import { cleanReply, fallbackLineOf, stripMonologue } from "./mission-reply-clean.ts";
 import { allGoalsDone, parseMissionState } from "./mission-state.ts";
 import type { Segment } from "./chat-send.contract.ts";
 import type { DbMissionState } from "./mission-http.ts";
@@ -49,6 +50,12 @@ export function startMissionFeedback(context: MissionTurnContext, abort: AbortCo
           status: "stream",
           outcome: "mission_feedback_foreign_script",
         });
+      else if (guarded.reason !== undefined)
+        deps.log({
+          event: "chat_send",
+          status: "stream",
+          outcome: `mission_feedback_${guarded.reason}`,
+        });
       return guarded.feedback;
     })
     .finally(() => clearTimeout(timer));
@@ -62,32 +69,47 @@ type ReplyResult = {
 };
 
 /**
- * 판이 열려 있는 턴의 작별 인사 거르기(ADR-0177 D13). 판정(없으면 상태 줄)으로 모든 목표가 끝나는 턴이면 그대로.
- * 인사 문장을 빼고, 말이 하나도 안 남으면 `again()`으로 한 번만 다시 만들어 같은 거르기를 한다 — 그래도 말이 안 남으면 처음 답 그대로.
+ * 답 다듬기(ADR-0177 D13 · D14, `mission-reply-clean.ts`) — 혼잣말 · 작별 인사 · 대신 묻기를 거른다. 이 턴에 판이 끝나는가는 판정(없으면
+ * 답의 상태 줄 goals_done)으로 본다 — 답의 closing은 믿지 않는다. 말이 하나도 안 남으면 `again()`으로 한 번만 다시 만들어 같은 거르기,
+ * 그래도 안 남으면 혼잣말 탓이면 미션의 안전한 한 줄, 아니면 처음 답(혼잣말만 뺀 것) 그대로.
  */
-export async function settleFarewell<T extends ReplyResult>(
+export async function settleReply<T extends ReplyResult>(
   context: MissionTurnContext,
   result: T,
   judged: JudgeOutcome,
   again: () => Promise<T | null>,
-): Promise<{ result: T; outcome: "kept" | "stripped" | "retried" | "unchanged" }> {
+): Promise<{ result: T; outcome: string }> {
   const { mission, progress } = context;
-  // 판이 이 턴에 끝나는가는 판정(없으면 답의 상태 줄 goals_done)으로 본다 — 답의 closing은 믿지 않는다(QA: Haiku가 선택 목표가 남았는데
-  // closing을 켜고 인사함).
-  const reported =
-    (result.stateText === null ? null : parseMissionState(result.stateText))?.goalsDone ?? [];
-  const now = judged === null ? reported : judged.goals;
-  if (allGoalsDone(mission, [...progress.goalsDone, ...now]))
-    return { result, outcome: "unchanged" };
-  const first = stripFarewells(result.segments, farewellsOf(mission));
-  if (!first.stripped) return { result, outcome: "unchanged" };
+  const endsFor = (value: T) => {
+    const reported =
+      (value.stateText === null ? null : parseMissionState(value.stateText))?.goalsDone ?? [];
+    return allGoalsDone(mission, [
+      ...progress.goalsDone,
+      ...(judged === null ? reported : judged.goals),
+    ]);
+  };
+  const clean = (value: T) =>
+    cleanReply(mission, progress.goalsDone, value.segments, endsFor(value));
+  const first = clean(result);
+  if (first.issues.length === 0) return { result, outcome: "unchanged" };
   if (first.speechLeft)
-    return { result: { ...result, segments: first.segments }, outcome: "stripped" };
+    return { result: { ...result, segments: first.segments }, outcome: first.issues.join("+") };
   const retry = await again().catch(() => null);
-  if (retry === null) return { result, outcome: "kept" };
-  const second = stripFarewells(retry.segments, farewellsOf(mission));
-  if (!second.speechLeft) return { result, outcome: "kept" };
-  return { result: { ...retry, segments: second.segments }, outcome: "retried" };
+  const second = retry === null ? null : clean(retry);
+  if (retry !== null && second !== null && second.speechLeft)
+    return {
+      result: { ...retry, segments: second.segments },
+      outcome: `retried:${first.issues.join("+")}`,
+    };
+  if (first.issues.includes("monologue"))
+    return {
+      result: { ...result, segments: [{ kind: "speech", text: fallbackLineOf(mission) }] },
+      outcome: "fallback",
+    };
+  return {
+    result: { ...result, segments: stripMonologue(result.segments).segments },
+    outcome: "kept",
+  };
 }
 
 export async function callRpcFinish(

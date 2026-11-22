@@ -241,9 +241,14 @@ export function fakeGrade(user: string): MissionGraderDraft {
 export function fakeHint(user: string): MissionHintDraft {
   const transcript = section(user, "Conversation so far");
   if (transcript.includes("[hint-fail]")) throw new MissionLlmUnavailable("fake hint failure");
-  const goal = section(user, "Goal to reach now").split(":")[0]?.trim() ?? "";
-  if (transcript.includes("[hint-empty]")) return { ko: " ", roman: "", meaning: "" };
-  return { ko: `${goal} 할게요.`, roman: `${goal} halgeyo.`, meaning: `(fake) do ${goal}` };
+  const goal = section(user, "Default goal").split(":")[0]?.trim() ?? "";
+  if (transcript.includes("[hint-empty]")) return { goalId: goal, ko: " ", roman: "", meaning: "" };
+  return {
+    goalId: goal,
+    ko: `${goal} 할게요.`,
+    roman: `${goal} halgeyo.`,
+    meaning: `(fake) do ${goal}`,
+  };
 }
 
 /**

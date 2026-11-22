@@ -73,6 +73,10 @@ export const missionCounterpartSchema = z.object({
   samples: z.array(text(120)).check(z.minLength(1), z.maxLength(8)),
   /** 작별 인사(문장에 들어 있으면 인사로 본다). 판이 열려 있는 턴의 답에서 서버가 이 문장을 뺀다(`mission-guards.ts`). 없으면 기본 목록. */
   farewells: z.optional(z.array(text(40)).check(z.minLength(1), z.maxLength(8))),
+  /** 학습자가 꺼낼 목표가 남았을 때 상대역이 하면 안 되는 「대신 묻기」 문구(문장에 들어 있으면 그 문장을 뺀다). 없으면 기본 목록. */
+  noOffer: z.optional(z.array(text(40)).check(z.minLength(1), z.maxLength(8))),
+  /** 답을 다듬고 나서 말이 하나도 안 남을 때(혼잣말뿐) 대신 내는 안전한 한 줄. 없으면 「네? 다시 한번 말씀해 주시겠어요?」. */
+  fallback: z.optional(text(80)),
   base: z.optional(missionCounterpartBaseSchema),
 });
 

@@ -306,8 +306,9 @@ describe("chat-send — 미션 갈래", () => {
     expect(checkTurnOrder(list)).toEqual({ ok: true });
     // 성인은 교정이 준비되는 대로 나가 조각 사이에 끼일 수 있다 — 순서 규칙은 checkTurnOrder가 본다.
     const names = list.map((event) => event.event);
-    expect(names.filter((name) => name === "delta")).toHaveLength(3);
-    expect(names.filter((name) => name === "translation")).toHaveLength(3);
+    // 가짜 답의 「또 필요한 거 있으세요?」는 학습자가 꺼낼 목표(price)가 남아 대신 묻기로 걸러진다(ADR-0177 D14)
+    expect(names.filter((name) => name === "delta")).toHaveLength(2);
+    expect(names.filter((name) => name === "translation")).toHaveLength(2);
     expect(names.filter((name) => name === "correction")).toHaveLength(1);
     expect(names.slice(-2)).toEqual(["mission", "done"]);
     expect(names).not.toContain("suggestions");
@@ -468,7 +469,7 @@ describe("mission-hint", () => {
       { companion_mission_take_hint: taken },
       {
         ...fakeMissionLlm(),
-        missionHint: async () => ({ ko: "  ", roman: "", meaning: "" }),
+        missionHint: async () => ({ goalId: "pay", ko: "  ", roman: "", meaning: "" }),
       },
     );
     const failed = await createMissionHintHandler(failing.deps)(

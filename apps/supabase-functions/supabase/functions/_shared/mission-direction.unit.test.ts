@@ -29,6 +29,15 @@ describe("연출 지시 — missionDirection", () => {
     expect(room?.text).toContain("Do not close the scene");
   });
 
+  test("MD4. 어느 비트든 「이미 이뤘으면 다음」은 상대역이 꺼낼 필수 목표가 선택보다 먼저(조율자 QA: stuck 뒤 결제를 건너뜀)", () => {
+    const stuck = missionDirection({ mission: waterMission, progress: at([], 2, 2) });
+    expect(stuck).toMatchObject({ beat: "stuck", goalId: "bag" });
+    expect(stuck?.text).toContain("open pay instead");
+    const hurry = missionDirection({ mission: cafeMission, progress: at(["order"], 8, 0) });
+    expect(hurry).toMatchObject({ beat: "hurry", goalId: "pay" });
+    expect(hurry?.text).toContain("open stay instead");
+  });
+
   test("MD3. 새 목표 없이 두 턴 → stuck, 남은 턴이 둘 이하이고 필수가 남으면 hurry, 다 이뤘으면 null", () => {
     expect(missionDirection({ mission: waterMission, progress: at(["bag"], 3, 2) })).toMatchObject({
       beat: "stuck",

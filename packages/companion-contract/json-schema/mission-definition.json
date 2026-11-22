@@ -91,6 +91,21 @@
             "maxLength": 40
           }
         },
+        "noOffer": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "fallback": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
         "base": {
           "type": "object",
           "properties": {

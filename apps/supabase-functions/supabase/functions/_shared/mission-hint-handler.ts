@@ -12,7 +12,7 @@ import { missionHintRequestSchema, type MissionHintResponse } from "./companion-
 import { callRpc } from "./companion-rpc.ts";
 import { missionBrief, missionTranscript, transcriptFromHistory } from "./mission-context.ts";
 import { validateMission } from "./mission-definition.ts";
-import { hintSchema, hintUser, normalizeHint } from "./mission-hint.ts";
+import { chosenHintGoal, hintSchema, hintUser, normalizeHint } from "./mission-hint.ts";
 import {
   jsonResponse,
   missionErrorResponse,
@@ -83,12 +83,14 @@ export function createMissionHintHandler(
       return respond(missionErrorResponse("internal_error"), "mission_definition_invalid");
     const mission = definition.mission;
     const history = historyFrom({ history: row.history });
+    const goalsDone = row.state.goals.filter((entry) => entry.done).map((entry) => entry.id);
     const user = hintUser({
       mission,
       goal,
       brief: missionBrief(mission),
       transcript: missionTranscript(mission, transcriptFromHistory(history)),
       l1: row.l1,
+      goalsDone,
     });
     let hint;
     try {
@@ -103,11 +105,15 @@ export function createMissionHintHandler(
         missionErrorResponse("hint_unavailable", { hintsLeft: row.state.hintsLeft }),
         "generation_failed_counted",
       );
+    // 모델이 고른 목표(상대역의 마지막 질문) — 열린 목표가 아니면 SQL이 고른 기본 목표. SQL의 hintGoals 기록은 기본 목표 그대로다.
+    const chosen = chosenHintGoal(mission, goalsDone, goal, hint.goalId);
     const body: MissionHintResponse = {
-      goalId: row.goalId,
-      ...hint,
+      goalId: chosen.id,
+      ko: hint.ko,
+      roman: hint.roman,
+      meaning: hint.meaning,
       hintsLeft: row.state.hintsLeft,
     };
-    return respond(jsonResponse(body), `ok ${row.goalId}`);
+    return respond(jsonResponse(body), `ok ${chosen.id}`);
   };
 }

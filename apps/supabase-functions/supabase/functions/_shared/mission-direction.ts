@@ -21,9 +21,9 @@ export const hurryTurnsLeft = 2;
 /** 비트마다의 글(영어 — 상대역 모델에게). 실험실 번들이 같은 틀을 쓴다. */
 export const directionTemplates = {
   stuck:
-    "The learner seems stuck (no progress for {{stall}} turns). Ask your current question again in fewer, easier words; you may offer two short choices. Do not explain grammar or answer for them.",
+    "The learner seems stuck (no progress for {{stall}} turns). Ask your current question about goal {{goal_id}} again in fewer, easier words; you may offer two short choices. Do not explain grammar or answer for them. If the learner's message already does it, {{then}}.",
   hurry:
-    "Only {{turns_left}} learner turns are left: go straight to the required goal {{goal_id}} ({{criteria}}){{cue_part}}.",
+    "Only {{turns_left}} learner turns are left: go straight to the required goal {{goal_id}} ({{criteria}}){{cue_part}}. If the learner's message already does it, {{then}}.",
   advance:
     "Next beat: after reacting briefly, open goal {{goal_id}} ({{criteria}}) yourself{{cue_part}}. If the learner's message already does it, {{then}}.",
   room: "Every goal you can open is done, but the scene is not over: react briefly to what the learner said and then wait. Do not ask whether they need anything else and do not offer anything; leave the next move to the learner. Do not close the scene unless the learner's message completes every open goal.",
@@ -64,6 +64,15 @@ function openGoals(mission: MissionDefinition, done: readonly string[]): Mission
   return [...open.filter((goal) => goal.required), ...open.filter((goal) => !goal.required)];
 }
 
+/** 지금 겨누는 목표 다음에 꺼낼 것 — 상대역이 꺼내는 남은 목표(필수 먼저), 없으면 기다리기 · 닫기. */
+function thenAfter(goal: MissionGoal | undefined, open: readonly MissionGoal[]): string {
+  const rest = open.filter((entry) => entry.id !== goal?.id);
+  const next = rest.find(opensItself);
+  if (next !== undefined)
+    return fillTemplate(directionTemplates.thenNext, { goal_id: next.id, cue_part: cuePart(next) });
+  return rest.length > 0 ? directionTemplates.thenRoom : directionTemplates.thenClose;
+}
+
 function primary(input: MissionDirectionInput, open: readonly MissionGoal[]) {
   const { mission, progress } = input;
   const stall = progress.stall ?? 0;
@@ -72,8 +81,12 @@ function primary(input: MissionDirectionInput, open: readonly MissionGoal[]) {
   if (stall >= stuckAfter)
     return {
       beat: "stuck" as const,
-      goalId: counterpartOpen[0]?.id ?? open[0]?.id ?? null,
-      text: fillTemplate(directionTemplates.stuck, { stall }),
+      goalId: (counterpartOpen[0] ?? open[0])?.id ?? null,
+      text: fillTemplate(directionTemplates.stuck, {
+        stall,
+        goal_id: (counterpartOpen[0] ?? open[0])?.id ?? "",
+        then: thenAfter(counterpartOpen[0] ?? open[0], open),
+      }),
     };
   const required = open.find((goal) => goal.required);
   if (required !== undefined && turnsLeft <= hurryTurnsLeft)
@@ -85,17 +98,12 @@ function primary(input: MissionDirectionInput, open: readonly MissionGoal[]) {
         goal_id: required.id,
         criteria: required.criteria,
         cue_part: cuePart(required),
+        then: thenAfter(required, open),
       }),
     };
-  const [goal, next] = counterpartOpen;
+  const goal = counterpartOpen[0];
   if (goal !== undefined) {
-    const others = open.filter((entry) => entry.id !== goal.id);
-    const then =
-      next !== undefined
-        ? fillTemplate(directionTemplates.thenNext, { goal_id: next.id, cue_part: cuePart(next) })
-        : others.length > 0
-          ? directionTemplates.thenRoom
-          : directionTemplates.thenClose;
+    const then = thenAfter(goal, open);
     return {
       beat: "advance" as const,
       goalId: goal.id,

@@ -25,7 +25,7 @@ export type MissionGraderDraft = {
   nextStep: string;
 };
 
-export type MissionHintDraft = { ko: string; roman: string; meaning: string };
+export type MissionHintDraft = { goalId: string; ko: string; roman: string; meaning: string };
 
 /** 목표 판정(`mission-judge.ts`의 `judgeSchema`와 같은 모양). */
 export type MissionJudgeDraft = { goals: { id: string; quote: string }[]; off_task: boolean };

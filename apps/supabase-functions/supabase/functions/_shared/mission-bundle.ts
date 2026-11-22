@@ -64,6 +64,8 @@ export const missionLabBundleVersion = 1;
 /** 연출 지시의 포팅 검증 사례 — (미션, 목표, 턴, 막힘) → 서버 `missionDirection`의 결과. 미션이 번들에 없으면 뺀다. */
 const directionCases = [
   { mission: "u01-water", goalsDone: [], learnerTurns: 0, stall: 0 },
+  { mission: "u01-water", goalsDone: [], learnerTurns: 2, stall: 2 },
+  { mission: "u06-cafe", goalsDone: ["order"], learnerTurns: 8, stall: 0 },
   { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 1, stall: 0 },
   { mission: "u01-water", goalsDone: ["bag", "pay", "receipt"], learnerTurns: 3, stall: 0 },
   { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 3, stall: 2 },

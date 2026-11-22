@@ -72,12 +72,32 @@ export function newForeignLetters(text: string, original: string): string[] {
   return [...new Set((text.match(foreignLetter) ?? []).filter((letter) => !allowed.has(letter)))];
 }
 
-/** 미션 턴 교정 거르기 — 고친 문장 · 고친 표현 · 더 나은 표현에 원문에 없는 비한글 글자가 있으면 교정 없음(`none`). */
+/** 비교용 — 공백 · 문장 부호 · 기호를 뺀 글. */
+const bare = (text: string) => text.replace(/[\s\p{P}\p{S}]/gu, "");
+
+/** 한글이 거의 없는 말(외국어로만 말함) — 글자 중 한글이 절반 미만이거나 한글이 두 자 미만. */
+export function mostlyForeign(text: string): boolean {
+  const letters = text.match(/\p{L}/gu) ?? [];
+  const hangul = text.match(/\p{Script=Hangul}/gu) ?? [];
+  return letters.length > 0 && (hangul.length < 2 || hangul.length * 2 < letters.length);
+}
+
+/** 거른 까닭 — `same`: 고친 문장이 원문과 같음, `foreign_input`: 외국어로만 말함(교정이 곧 정답 문장 — 공짜 힌트가 됨). */
+export type FeedbackDrop = "same" | "foreign_input";
+
+/**
+ * 미션 턴 교정 거르기(교정 없음 `none`으로) — ① 고친 문장 · 고친 표현 · 더 나은 표현에 원문에 없는 비한글 글자, ② 고친 문장이 원문과
+ * 같음(공백 · 문장 부호만 다름 — 「더 나은 표현」도 없을 때), ③ 학습자가 외국어로만 말함(상대역이 「한국어로 말해 주세요」로 받아넘긴다).
+ */
 export function guardMissionFeedback(
   feedback: Feedback,
   original: string,
-): { feedback: Feedback; dropped: string[] } {
+): { feedback: Feedback; dropped: string[]; reason?: FeedbackDrop } {
   if (feedback.status !== "ok") return { feedback, dropped: [] };
+  if (mostlyForeign(original))
+    return { feedback: emptyFeedback("none", original), dropped: [], reason: "foreign_input" };
+  if (feedback.better === null && bare(feedback.corrected ?? original) === bare(original))
+    return { feedback: emptyFeedback("none", original), dropped: [], reason: "same" };
   const texts = [
     feedback.corrected ?? "",
     ...feedback.items.map((item) => item.corrected),
