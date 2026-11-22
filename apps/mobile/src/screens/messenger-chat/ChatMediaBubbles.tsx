@@ -23,14 +23,14 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import "./messenger-chat.css";
 import "./chat-media.css";
 
-export type PhotoPendingBubbleProps = {
+/** 대기 말풍선 둘의 공통 props. */
+export type PendingBubbleProps = {
   readonly name: string;
   readonly testId: string;
-  /** 이 대기 메시지의 id — 같은 메시지가 다시 서면(방을 나갔다 들어옴) 처음 선 때부터 이어 셉니다. */
-  readonly pendingId?: string;
-  /** 인물 × 매체 묶음 — 자리표시자가 서버 줄로 바뀌어 id가 달라져도 단계를 이어 갑니다. */
-  readonly pendingGroup?: string;
+  /** 대기 줄이 실은 시작 시각(기기 시계, `message.startedAt`) — 다시 서도 그만큼 지난 단계에서 섭니다. 없으면 말풍선이 선 때. */
+  readonly startedAt?: number;
 };
+export type PhotoPendingBubbleProps = PendingBubbleProps;
 export type PhotoBubbleProps = {
   readonly src: string | null;
   /** 서버 사진의 비율 · AI 표시(ADR-0146 「앱 연결」) — 없으면 3:4 · 표시 없음. */
@@ -41,12 +41,7 @@ export type PhotoBubbleProps = {
   /** 누르면 사진 보기를 엽니다(ADR-0150 2026-11-17 추가). 그림이 없으면(src null) 누를 수 없습니다. */
   readonly onOpen?: () => void;
 };
-export type VoicePendingBubbleProps = {
-  readonly name: string;
-  readonly testId: string;
-  readonly pendingId?: string;
-  readonly pendingGroup?: string;
-};
+export type VoicePendingBubbleProps = PendingBubbleProps;
 
 export type VoiceBubbleProps = {
   /** 0이면 모름 — 길이 글자를 그리지 않습니다. */
@@ -76,14 +71,13 @@ function WaveBars(): ReactNode {
 export function PhotoPendingBubble({
   name,
   testId,
-  pendingId,
-  pendingGroup,
+  startedAt,
 }: PhotoPendingBubbleProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   // 낭독 줄은 단계가 바뀌어도 그대로 — 스크린리더가 5초마다 다시 읽지 않게 합니다.
   const label = chat.list.sendingPhoto(name);
-  const stage = usePendingStage(PHOTO_STAGE_MARKS, pendingId, pendingGroup);
+  const stage = usePendingStage(PHOTO_STAGE_MARKS, startedAt);
   return (
     <view
       className={`messenger-chat-photo-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
@@ -173,13 +167,12 @@ export function PhotoBubble({
 export function VoicePendingBubble({
   name,
   testId,
-  pendingId,
-  pendingGroup,
+  startedAt,
 }: VoicePendingBubbleProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   const label = chat.list.recordingVoice(name);
-  const stage = usePendingStage(VOICE_STAGE_MARKS, pendingId, pendingGroup);
+  const stage = usePendingStage(VOICE_STAGE_MARKS, startedAt);
   return (
     <view
       className={`messenger-chat-voice-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}

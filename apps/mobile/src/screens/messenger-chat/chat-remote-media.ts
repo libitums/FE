@@ -21,6 +21,7 @@ import {
   mediaAvailabilityOf,
   mediaLineId,
   mediaLineOf,
+  pendingStartedAt,
   mediaPollDelay,
   mediaTargetOf,
   placeMediaLine,
@@ -118,13 +119,18 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     });
   };
 
-  const lineFor = async (media: RemoteMedia, target: ChatMediaTarget): Promise<ChatMessage> => {
+  // `since` — 대기 줄의 시작 시각(기기 시계): 요청한 때, 이미 지켜보던 것이면 그때, 처음 보는 것이면 지금.
+  const lineFor = async (
+    media: RemoteMedia,
+    target: ChatMediaTarget,
+    since?: number,
+  ): Promise<ChatMessage> => {
     let url: string | null = null;
     if (media.status === "complete" && media.path !== null && port !== undefined) {
       url = urls.get(media.id) ?? (await port.sign(media.path));
       if (url !== null) urls.set(media.id, url);
     }
-    return mediaLineOf(media, target, url, now());
+    return mediaLineOf(media, target, url, now(), since);
   };
 
   const poll = (room: RoomState) => {
@@ -196,13 +202,15 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     media: ChatMediaKind,
     result: { readonly media: RemoteMedia; readonly cached: boolean },
   ) => {
-    const line = await lineFor(result.media, target);
+    // 자리표시자가 실은 요청 시각(기기 시계)을 서버 줄로 넘깁니다 — 줄 id가 바뀌어도 대기 문구의 단계가 이어집니다.
+    const since = pendingStartedAt(room.messages, reqId) ?? now();
+    const line = await lineFor(result.media, target, since);
     if (!alive(room)) return;
     replace(room, reqId, line);
     if (result.media.status === "pending") {
       const state = stateOf(room);
       if (!state.tracked.has(result.media.id))
-        state.tracked.set(result.media.id, { target, media, since: now() });
+        state.tracked.set(result.media.id, { target, media, since });
       poll(room);
     }
     changed(room);
@@ -267,14 +275,15 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
         if (target === null) continue;
         const media = kindOf(row);
         const tracked = state.tracked.get(row.id);
+        const since = tracked?.since ?? now();
         if (row.status === "pending" && tracked === undefined)
-          state.tracked.set(row.id, { target, media, since: now() });
+          state.tracked.set(row.id, { target, media, since });
         if (row.status !== "pending" && tracked !== undefined) {
           state.tracked.delete(row.id);
           emit(room, media, row.status);
           settled = true;
         }
-        const line = await lineFor(row, target);
+        const line = await lineFor(row, target, since);
         if (!alive(room)) return;
         // 기다리는 동안 새 세대(다시 열기 · 새 요청)가 시작됐으면 「준비 중」 자리표시자로 되돌리지 않습니다 — 새 세대가 같은 행을
         // 다시 놓습니다. 끝난 결과는 누가 놓아도 같아 그대로 둡니다(리뷰 #442).

@@ -165,10 +165,16 @@ describe("로그 줄", () => {
   const target = { messageId: A1, text: { ko: "반가워요", en: "Nice to meet you" } };
 
   test("CM-U6a 상태마다 줄 모양", () => {
+    // 대기 줄은 기기 시계의 시작 시각(`startedAt`)을 싣는다 — 넘겨받지 못하면 지금(리뷰 #541). `at`은 서버 시각 그대로.
     expect(mediaLineOf(media(), target, null, 9)).toEqual({
       id: mediaLineId(A1, "photo", M1),
       at: 5,
       kind: "photo-pending",
+      startedAt: 9,
+    });
+    expect(mediaLineOf(media(), target, null, 9, 4)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 4,
     });
     expect(
       mediaLineOf(

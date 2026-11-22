@@ -1,10 +1,7 @@
 import { expect, test } from "vitest";
 
 import {
-  createPendingClock,
   nextStageDelay,
-  pendingEnded,
-  pendingStartOf,
   PHOTO_STAGE_MARKS,
   stageAt,
   stageLine,
@@ -38,40 +35,7 @@ test("MPS-U3 다음 단계까지 남은 시간 — 마지막 단계면 null, 이
   expect(nextStageDelay(VOICE_STAGE_MARKS, 1, 100)).toBeNull();
 });
 
-// 시작 시각은 기기 시계로만 잡습니다(리뷰 #541) — 메시지의 `at`은 서버 방에서 서버 시계라 기기 시계와 빼면 단계가 틀립니다.
-test("MPS-U4 시작 시각 — 같은 메시지는 다시 서도 처음 선 때(방을 나갔다 들어옴)", () => {
-  const clock = createPendingClock();
-  expect(pendingStartOf(clock, "m1", "mina:photo", 1000)).toBe(1000);
-  pendingEnded(clock, "mina:photo", 9000);
-  expect(pendingStartOf(clock, "m1", "mina:photo", 40_000)).toBe(1000);
-});
-
-test("MPS-U5 시작 시각 — 자리표시자가 서버 줄로 바뀌어(id가 달라짐) 곧바로 다시 서면 이어 가고, 한참 뒤의 새 요청은 새로 센다", () => {
-  const clock = createPendingClock();
-  expect(pendingStartOf(clock, "m~req", "mina:photo", 1000)).toBe(1000);
-  // 새 말풍선이 먼저 서고(옛 것은 아직 떠 있음) 그 뒤 옛 것이 내려간다.
-  expect(pendingStartOf(clock, "m~srv", "mina:photo", 7000)).toBe(1000);
-  pendingEnded(clock, "mina:photo", 7000);
-  // 옛 것이 먼저 내려가고 2초 안에 새것이 서도 이어 간다.
-  pendingEnded(clock, "mina:photo", 8000);
-  expect(pendingStartOf(clock, "m~srv2", "mina:photo", 9500)).toBe(1000);
-  // 다른 매체 · 다른 인물은 따로.
-  expect(pendingStartOf(clock, "v1", "mina:voice", 9500)).toBe(9500);
-  // 끝난 지 2초가 넘은 뒤의 새 요청.
-  pendingEnded(clock, "mina:photo", 20_000);
-  expect(pendingStartOf(clock, "m2", "mina:photo", 23_000)).toBe(23_000);
-});
-
-test("MPS-U6 오래된 기억은 버리고(10분), id · 묶음이 없으면 지금", () => {
-  const clock = createPendingClock();
-  pendingStartOf(clock, "old", "mina:photo", 0);
-  pendingEnded(clock, "mina:photo", 1000);
-  expect(pendingStartOf(clock, "new", "duksu:photo", 700_000)).toBe(700_000);
-  expect(clock.byId.has("old")).toBe(false);
-  expect(pendingStartOf(clock, undefined, undefined, 5)).toBe(5);
-});
-
-test("MPS-U7 문구 고르기 — 단계가 문구 수를 넘으면 마지막 문구(빈 글이 되지 않는다)", () => {
+test("MPS-U4 문구 고르기 — 단계가 문구 수를 넘으면 마지막 문구(빈 글이 되지 않는다)", () => {
   expect(stageLine(["a", "b"], 0)).toBe("a");
   expect(stageLine(["a", "b"], 5)).toBe("b");
   expect(stageLine([], 0)).toBe("");

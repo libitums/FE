@@ -8,7 +8,6 @@ import {
   VoiceBubble,
   VoicePendingBubble,
 } from "./ChatMediaBubbles";
-import { resetPendingClockForTests } from "./use-pending-stage";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { advance, clearBackHandlers, imageUrlOf, mountChat } from "./chat-ui.test-support";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
@@ -24,7 +23,6 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  resetPendingClockForTests();
   clearBackHandlers();
   vi.useRealTimers();
 });
@@ -67,31 +65,31 @@ test("MC-UI22. 사진 pending: 보이는 글이 5 · 11 · 17초에 다음 단�
   );
 });
 
-test("MC-UI22. 사진 pending: 같은 메시지가 다시 서면 그만큼 지난 단계에서 선다(방을 나갔다 들어옴) — 기기 시계만 본다", () => {
-  const view = render(
-    <PhotoPendingBubble name="미나" testId="pp" pendingId="m1" pendingGroup="mina:photo" />,
-  );
-  advance(12_000);
-  view.unmount();
-  advance(3000);
-  render(<PhotoPendingBubble name="미나" testId="pp" pendingId="m1" pendingGroup="mina:photo" />);
-  const text = () => screen.getByTestId("pp").textContent ?? "";
-
-  expect(text()).toContain("미나 is choosing the best shot…");
-  advance(2100);
-  expect(text()).toContain("Almost there…");
-});
-
-test("MC-UI22. 사진 pending: 자리표시자가 서버 줄로 바뀌어 다시 서도 단계가 처음으로 돌아가지 않는다(리뷰 #541)", () => {
-  const view = render(
-    <PhotoPendingBubble name="미나" testId="pp" pendingId="m~req" pendingGroup="mina:photo" />,
-  );
+test("MC-UI22. 사진 pending: 시작 시각(기기 시계)을 받으면 그만큼 지난 단계에서 선다 — 다시 서도(방을 나갔다 들어옴 · 서버 줄로 바뀜) 이어 간다", () => {
+  const startedAt = Date.now();
+  const view = render(<PhotoPendingBubble name="미나" testId="pp" startedAt={startedAt} />);
   advance(6000);
   expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
   view.unmount();
-  render(
-    <PhotoPendingBubble name="미나" testId="pp" pendingId="m~srv" pendingGroup="mina:photo" />,
-  );
+  advance(6000);
+  render(<PhotoPendingBubble name="미나" testId="pp" startedAt={startedAt} />);
+  const text = () => screen.getByTestId("pp").textContent ?? "";
+
+  expect(text()).toContain("미나 is choosing the best shot…");
+  advance(5100);
+  expect(text()).toContain("Almost there…");
+});
+
+test("MC-UI22. 사진 pending: 선 채로 시작 시각이 바뀌면 그 시각으로 다시 센다(새 요청)", () => {
+  const first = Date.now();
+  const view = render(<PhotoPendingBubble name="미나" testId="pp" startedAt={first} />);
+  // 단계마다 다시 그린 뒤 다음 타이머가 걸리므로 나눠 돌립니다.
+  advance(6000);
+  advance(6000);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is choosing the best shot…");
+  view.rerender(<PhotoPendingBubble name="미나" testId="pp" startedAt={first + 12_000} />);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is picking a moment…");
+  advance(5100);
   expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
 });
 

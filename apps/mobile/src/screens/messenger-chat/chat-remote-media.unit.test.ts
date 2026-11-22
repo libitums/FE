@@ -110,16 +110,19 @@ describe("요청 → 다시 읽기 → 결과", () => {
       ],
     });
     env.source.requestMedia("duksu", "photo");
-    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending" });
+    // 자리표시자는 요청한 때의 기기 시계를 싣는다(대기 문구 단계의 출발, 리뷰 #541).
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
     expect(env.source.snapshot().rooms.find((r) => r.roomId === "duksu")?.activity).toBe(
       "sending-photo",
     );
     await flush();
     expect(env.port.request).toHaveBeenCalledWith("snapshot", A1);
     expect(env.lines().at(-1)?.id).toBe(mediaLineId(A1, "photo", M1));
+    // 서버 줄로 바뀌어도(id · at이 서버 것) 시작 시각은 요청한 때 그대로 — 단계가 처음으로 돌아가지 않는다.
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
     expect(env.balances).toEqual([465]);
     await env.advance(2_000);
-    expect(env.lines().at(-1)?.kind).toBe("photo-pending");
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
     await env.advance(3_000);
     expect(env.lines().at(-1)).toEqual({
       id: mediaLineId(A1, "photo", M1),

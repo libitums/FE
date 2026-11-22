@@ -1,51 +1,42 @@
-// 대기 말풍선의 단계 훅(ADR-0146 추가) — 판정은 `media-pending-stage.ts`(순수), 여기는 기억 · 타이머입니다.
+// 대기 말풍선의 단계 훅(ADR-0146 추가) — 판정은 `media-pending-stage.ts`(순수), 여기는 타이머입니다.
 
 import { useEffect, useState } from "@lynx-js/react";
 
-import {
-  createPendingClock,
-  nextStageDelay,
-  pendingEnded,
-  pendingStartOf,
-  stageAt,
-} from "./media-pending-stage";
-
-// 대기 말풍선이 처음 선 때의 기억 — 화면이 다시 그려져도 남게 모듈에 둡니다(기기 시계, `media-pending-stage.ts`).
-let pendingClock = createPendingClock();
-
-/** 테스트 사이에 기억을 비웁니다. */
-export function resetPendingClockForTests(): void {
-  pendingClock = createPendingClock();
-}
+import { nextStageDelay, stageAt } from "./media-pending-stage";
 
 /**
- * 대기 문구의 단계 — 기다린 시간으로 넘어가고 마지막 단계에서 멈춥니다(`media-pending-stage.ts`). 타이머가 조금 일찍 불려도
- * 멈추지 않게 한 단계는 꼭 넘깁니다. 시작 시각은 말풍선이 처음 선 때(기기 시계)로 한 번만 정합니다.
+ * 대기 문구의 단계 — 기다린 시간으로 넘어가고 마지막 단계에서 멈춥니다. 타이머가 조금 일찍 불려도 멈추지 않게 한 단계는 꼭 넘깁니다.
+ * `startedAt`은 대기 줄이 실은 기기 시계의 시작 시각입니다 — 없으면 말풍선이 선 때. 선 채로 바뀌면(새 요청) 그 시각으로 다시 셉니다.
  */
-export function usePendingStage(
-  marks: readonly number[],
-  id: string | undefined,
-  group: string | undefined,
-): number {
-  const [start] = useState(() => pendingStartOf(pendingClock, id, group, Date.now()));
-  const [stage, setStage] = useState(() => stageAt(marks, Date.now() - start));
+export function usePendingStage(marks: readonly number[], startedAt: number | undefined): number {
+  const [mountedAt] = useState(Date.now);
+  const start = startedAt ?? mountedAt;
+  const [state, setState] = useState(() => ({ start, stage: stageAt(marks, Date.now() - start) }));
+  // 시작 시각이 바뀌면 이 렌더에서 곧바로 다시 계산합니다 — 옛 단계가 한 프레임도 비치지 않게.
+  const current =
+    state.start === start ? state : { start, stage: stageAt(marks, Date.now() - start) };
+  if (current !== state) setState(current);
+  const stage = current.stage;
   useEffect(() => {
     const wait = nextStageDelay(marks, stage, Date.now() - start);
     if (wait === null) return undefined;
     const timer = setTimeout(() => {
-      setStage((current) =>
-        Math.min(marks.length - 1, Math.max(current + 1, stageAt(marks, Date.now() - start))),
+      setState((previous) =>
+        previous.start !== start
+          ? previous
+          : {
+              start,
+              stage: Math.min(
+                marks.length - 1,
+                Math.max(previous.stage + 1, stageAt(marks, Date.now() - start)),
+              ),
+            },
       );
     }, wait);
+    // Lynx의 clearTimeout은 인자 하나만 받습니다(Android).
     return () => {
       clearTimeout(timer);
     };
   }, [marks, stage, start]);
-  useEffect(
-    () => () => {
-      pendingEnded(pendingClock, group, Date.now());
-    },
-    [group],
-  );
   return stage;
 }

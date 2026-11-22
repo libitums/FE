@@ -52,10 +52,12 @@ export function mediaSender(deps: MediaSenderDeps) {
       return { kind: "refused", notice: "unavailable" };
     }
     const reqId = mediaLineId(target.messageId, media, "req");
+    const requestedAt = now();
     put(room, {
       id: reqId,
-      at: now(),
+      at: requestedAt,
       kind: media === "photo" ? "photo-pending" : "voice-pending",
+      startedAt: requestedAt,
     });
     changed(room);
     const kind = remoteKindOf(media);
