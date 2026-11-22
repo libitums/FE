@@ -20,6 +20,8 @@ export type PushTargetOpenerArgs = {
   readonly chatSource: ChatSource;
   /** 지금 계정이 메신저를 쓸 수 있는가(ADR-0128) — 누르는 순간에 읽습니다. */
   readonly canOpenChats: () => boolean;
+  /** 선톡 푸시가 잠긴 방을 열었을 때 해금 기록을 남깁니다(재설치 · 새 기기). */
+  readonly onChatRestored?: (characterId: string) => void;
 };
 
 export function pushTargetOpener({
@@ -27,6 +29,7 @@ export function pushTargetOpener({
   notificationEventSink,
   chatSource,
   canOpenChats,
+  onChatRestored,
 }: PushTargetOpenerArgs): (target: PushNotificationTarget) => void {
   return (target) => {
     if (target.kind === "companion-chat") {
@@ -36,7 +39,12 @@ export function pushTargetOpener({
         target: target.kind,
         ...(target.variant === null ? {} : { variant: target.variant }),
       });
-      for (const action of companionPushActions(chatSource, target.characterId, canOpenChats()))
+      for (const action of companionPushActions(
+        chatSource,
+        target.characterId,
+        canOpenChats(),
+        onChatRestored,
+      ))
         dispatch(action);
       return;
     }

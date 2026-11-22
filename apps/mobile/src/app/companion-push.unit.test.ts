@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { createFixtureChatSource } from "../screens/messenger-chat/chat-fixture-source";
 import type { ChatFixtureRoom } from "../screens/messenger-chat/chat-source.contract";
@@ -23,20 +23,26 @@ const room = (id: string, over: Partial<ChatFixtureRoom> = {}): ChatFixtureRoom 
   ...over,
 });
 
-const source = createFixtureChatSource({
-  imageUrlOf: () => null,
-  seed: {
-    rooms: [
-      room("mina"),
-      room("clerk", { access: { kind: "locked", unlockEpisode: 4 } }),
-      room("owner", { inputBlock: { kind: "age-restricted" } }),
-      room("guide", { inputBlock: { kind: "temporarily-blocked", inMinutes: 10 } }),
-    ],
-    birthYear: { kind: "set", year: 2000 },
-  },
-  now: () => 1_800_000_000_000,
-  timers: { setTimeout: () => 0, clearTimeout: () => undefined },
-});
+const makeSource = () =>
+  createFixtureChatSource({
+    imageUrlOf: () => null,
+    seed: {
+      rooms: [
+        room("mina"),
+        room("clerk", { access: { kind: "locked", unlockEpisode: 4 } }),
+        room("owner", { inputBlock: { kind: "age-restricted" } }),
+        room("guide", { inputBlock: { kind: "temporarily-blocked", inMinutes: 10 } }),
+        room("minor", {
+          access: { kind: "locked", unlockEpisode: 4 },
+          inputBlock: { kind: "age-restricted" },
+        }),
+      ],
+      birthYear: { kind: "set", year: 2000 },
+    },
+    now: () => 1_800_000_000_000,
+    timers: { setTimeout: () => 0, clearTimeout: () => undefined },
+  });
+const source = makeSource();
 
 describe("companionRoomFor", () => {
   test("CP-U4 열린 방은 그 방 id(상대 id로 찾는다), 일시 차단도 연다(방 안 상태 줄이 알린다)", () => {
@@ -57,11 +63,43 @@ test("CP-U6 이동 — 메신저 탭 루트 → 방, 열 수 없으면 메신저
     { type: "backToRoot" },
     { type: "push", screen: { name: "messenger-chat", roomId: "room-mina" } },
   ]);
-  expect(companionPushActions(source, "clerk", true)).toEqual([
+  expect(companionPushActions(source, "nobody", true)).toEqual([
     { type: "switchTab", tab: "messenger" },
     { type: "backToRoot" },
     { type: "setListNotice", notice: "chat-unavailable" },
   ]);
+});
+
+test("CP-U9 잠긴 방이면 열고 들어간다 — 서버에 대화가 있어 온 선톡이다(재설치 · 새 기기). 해금 기록도 남긴다", () => {
+  const fresh = makeSource();
+  const restored = vi.fn();
+  expect(companionPushActions(fresh, "clerk", true, restored)).toEqual([
+    { type: "switchTab", tab: "messenger" },
+    { type: "backToRoot" },
+    { type: "push", screen: { name: "messenger-chat", roomId: "room-clerk" } },
+  ]);
+  expect(restored).toHaveBeenCalledWith("clerk");
+  expect(fresh.snapshot().rooms.find((each) => each.roomId === "room-clerk")?.access.kind).toBe(
+    "open",
+  );
+});
+
+test("CP-U10 이미 열린 방 · 없는 인물 · 메신저를 못 쓰는 계정은 해금 기록을 건드리지 않는다", () => {
+  const fresh = makeSource();
+  const restored = vi.fn();
+  companionPushActions(fresh, "mina", true, restored);
+  companionPushActions(fresh, "nobody", true, restored);
+  companionPushActions(fresh, "clerk", false, restored);
+  // 연령 제한으로 막힌 잠긴 방은 열지 않고 안내로 끝난다.
+  expect(companionPushActions(fresh, "minor", true, restored).slice(-1)[0]).toEqual({
+    type: "setListNotice",
+    notice: "chat-unavailable",
+  });
+  expect(fresh.snapshot().rooms.find((each) => each.roomId === "room-minor")?.access.kind).toBe(
+    "locked",
+  );
+  expect(restored).not.toHaveBeenCalled();
+  expect(companionRoomFor(fresh, "clerk")).toBeNull();
 });
 
 test("CP-U7 setListNotice는 메신저 루트만 바꾼다 — 활성 탭 · 진입 구간 · 위에 쌓인 화면은 그대로(리뷰 W2)", () => {

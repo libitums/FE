@@ -96,17 +96,30 @@ test("CP-I1 켜진 채 선톡 푸시를 누르면 다른 탭에 있어도 메신
   expect(isTabSelected("messenger")).toBe(true);
 });
 
-test("CP-I2 잠긴 인물이면 메신저 목록 + 안내, 방에 다녀와도 안내는 다시 뜨지 않는다", async () => {
+test("CP-I2 잠긴 인물이면 그 방을 열고 들어간다 — 뒤로 가면 목록에 그 방이 있다(재설치 · 새 기기)", async () => {
   const events: NotificationEvent[] = [];
   await boot(events, true);
   await tapPush({ kind: "companion-chat", characterId: "clerk" });
 
-  expect(present("messenger-list-screen")).toBe(true);
-  expect(present("messenger-chat-screen")).toBe(false);
-  expect(textOf("chat-list-notice")).toBe("This chat isn't available right now.");
+  expect(present("messenger-chat-screen")).toBe(true);
   expect(events.filter((event) => event.name === "push_notification_opened")).toEqual([
     { name: "push_notification_opened", target: "companion-chat" },
   ]);
+
+  tapRound("messenger-chat-back");
+  expect(present("messenger-list-screen")).toBe(true);
+  expect(present("messenger-list-row-clerk")).toBe(true);
+  expect(present("chat-list-notice")).toBe(false);
+});
+
+test("CP-I2b 없는 인물이면 메신저 목록 + 안내, 방에 다녀와도 안내는 다시 뜨지 않는다", async () => {
+  const events: NotificationEvent[] = [];
+  await boot(events, true);
+  await tapPush({ kind: "companion-chat", characterId: "nobody" });
+
+  expect(present("messenger-list-screen")).toBe(true);
+  expect(present("messenger-chat-screen")).toBe(false);
+  expect(textOf("chat-list-notice")).toBe("This chat isn't available right now.");
 
   tapId("messenger-list-row-mina");
   tapRound("messenger-chat-back");
