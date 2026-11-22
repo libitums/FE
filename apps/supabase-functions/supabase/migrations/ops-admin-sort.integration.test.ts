@@ -133,7 +133,6 @@ describe("ops_search_users 정렬", () => {
     ).rows;
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ anon: false, auth: false, service: true, definer: true });
-    // 20261227이 그 뒤에 p_min_snapshots · p_min_voices를 붙였다.
-    expect(rows[0].args).toMatch(/p_sort text, p_dir text(, |$)/);
+    expect(rows[0].args).toMatch(/p_sort text, p_dir text$/);
   });
 });

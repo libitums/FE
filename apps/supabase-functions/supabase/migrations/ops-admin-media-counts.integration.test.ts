@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { readFile } from "node:fs/promises";
 import { startTestDatabase } from "./postgres.test-support";
 
 // 운영 도구 에셋 수(20261227, ops-dashboard docs/admin-contract.md §E-A): ops_search_users의 줄마다 snapshots · voices,
-// p_min_snapshots · p_min_voices, p_sort snapshots · voices.
+// p_sort snapshots · voices(많은 순 · 적은 순).
 const a = "00000000-0000-4000-8000-0000000000e1";
 const b = "00000000-0000-4000-8000-0000000000e2";
 const c = "00000000-0000-4000-8000-0000000000e3";
@@ -103,54 +104,32 @@ describe("ops_search_users 에셋 수", () => {
     expect(await ids({ p_sort: "email", p_dir: "asc" })).toEqual([a, b, c, d]);
   });
 
-  test("OM-2 p_min_snapshots · p_min_voices: 그 수 이상만, 둘 다 주면 AND, 다른 필터와도 AND", async () => {
-    expect(await ids({ p_min_snapshots: 1 })).toEqual([b, a]);
-    expect(await ids({ p_min_snapshots: 2 })).toEqual([a]);
-    expect(await ids({ p_min_snapshots: 4 })).toEqual([]);
-    expect(await ids({ p_min_voices: 1 })).toEqual([b, a]);
-    expect(await ids({ p_min_voices: 2 })).toEqual([b]);
-    expect(await ids({ p_min_snapshots: 2, p_min_voices: 2 })).toEqual([]);
-    expect(await ids({ p_min_snapshots: 1, p_min_voices: 1 })).toEqual([b, a]);
-    expect(await ids({ p_min_snapshots: 1, p_tester: true })).toEqual([b]);
-    // 0 · null 은 조건 없음과 같다
-    expect(await ids({ p_min_snapshots: 0, p_min_voices: null })).toEqual([d, c, b, a]);
-    expect((await search({ p_min_voices: 1, p_limit: 1 })).total).toBe(2);
-  });
-
-  test("OM-3 p_sort snapshots · voices: 오름 · 내림, 같은 수는 id 순", async () => {
+  test("OM-2 p_sort snapshots · voices: 오름 · 내림, 같은 수는 id 순, 다른 필터 · 쪽 넘기기와 함께", async () => {
     expect(await ids({ p_sort: "snapshots", p_dir: "desc" })).toEqual([a, b, c, d]);
     expect(await ids({ p_sort: "snapshots", p_dir: "asc" })).toEqual([c, d, b, a]);
     expect(await ids({ p_sort: "voices", p_dir: "desc" })).toEqual([b, a, c, d]);
     expect(await ids({ p_sort: "voices", p_dir: "asc" })).toEqual([c, d, a, b]);
-    expect(
-      await ids({ p_sort: "voices", p_dir: "desc", p_min_snapshots: 1, p_limit: 1, p_offset: 1 }),
-    ).toEqual([a]);
+    expect(await ids({ p_sort: "voices", p_dir: "desc", p_limit: 1, p_offset: 1 })).toEqual([a]);
+    expect(await ids({ p_sort: "snapshots", p_dir: "desc", p_tester: false })).toEqual([a, c, d]);
   });
 
-  test("OM-4 범위 밖은 invalid_min_snapshots · invalid_min_voices, 옛 정렬 검사도 그대로", async () => {
-    for (const [args, code] of [
-      [{ p_min_snapshots: -1 }, "invalid_min_snapshots"],
-      [{ p_min_snapshots: 100001 }, "invalid_min_snapshots"],
-      [{ p_min_voices: -1 }, "invalid_min_voices"],
-      [{ p_sort: "media" }, "invalid_sort"],
-    ] as const) {
-      await expect(search(args)).rejects.toThrow(new RegExp(code));
+  test("OM-3 목록 밖 정렬은 invalid_sort", async () => {
+    for (const sort of ["media", "snapshot", "voices desc"]) {
+      await expect(search({ p_sort: sort })).rejects.toThrow(/invalid_sort/);
     }
   });
 
-  test("OM-5 열람 기록: 준 것만 minSnapshots · minVoices", async () => {
+  test("OM-4 열람 기록에 sort · dir", async () => {
     await search();
-    await search({ p_min_snapshots: 2, p_sort: "voices", p_dir: "desc" });
-    await search({ p_min_voices: 1 });
+    await search({ p_sort: "voices", p_dir: "desc" });
     const rows = (await db.admin.query("select detail from ops.audit_log order by id")).rows;
     expect(rows.map((r) => r.detail)).toEqual([
       { limit: 50, offset: 0 },
-      { limit: 50, offset: 0, sort: "voices", dir: "desc", minSnapshots: 2 },
-      { limit: 50, offset: 0, minVoices: 1 },
+      { limit: 50, offset: 0, sort: "voices", dir: "desc" },
     ]);
   });
 
-  test("OM-6 새 인수 꼴만 남고 service_role만 부른다", async () => {
+  test("OM-5 함수는 하나(20261214 인수 꼴 그대로)이고 service_role만 부른다", async () => {
     const rows = (
       await db.admin.query(
         `select pg_get_function_identity_arguments(p.oid) as args,
@@ -164,6 +143,28 @@ describe("ops_search_users 에셋 수", () => {
     ).rows;
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ anon: false, auth: false, service: true, definer: true });
-    expect(rows[0].args).toMatch(/p_dir text, p_min_snapshots integer, p_min_voices integer$/);
+    expect(rows[0].args).toMatch(/p_sort text, p_dir text$/);
+  });
+
+  test("OM-6 첫 판(인수 13개)을 적용한 DB에 다시 적용하면 그 함수가 지워진다", async () => {
+    await db.admin.query(
+      `create function public.ops_search_users(p_actor text, p_query text, p_country text, p_tester boolean, p_tier text,
+         p_joined_after timestamptz, p_joined_before timestamptz, p_limit integer, p_offset integer, p_sort text, p_dir text,
+         p_min_snapshots integer, p_min_voices integer) returns jsonb language sql as $$ select '{}'::jsonb $$`,
+    );
+    await db.admin.query(
+      await readFile(
+        new URL("./20261227120000_ops_admin_media_counts.sql", import.meta.url),
+        "utf8",
+      ),
+    );
+    const count = (
+      await db.admin.query(
+        `select count(*)::int as n from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'ops_search_users'`,
+      )
+    ).rows[0].n;
+    expect(count).toBe(1);
+    expect(await ids({ p_sort: "snapshots", p_dir: "desc" })).toEqual([a, b, c, d]);
   });
 });

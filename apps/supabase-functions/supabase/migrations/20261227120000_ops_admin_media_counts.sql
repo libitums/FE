@@ -1,18 +1,17 @@
 -- 운영 도구 에셋 수(ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`) — 「전체」 사용자 둘러보기를 사용자가 만든
--- 스냅샷(그림) · 음성 수로 거르고 정렬한다. 20261214 뒤에 적용한다. 공통 규칙(`p_actor` · 열람 기록 · `service_role`만)은 20261212 그대로다.
+-- 스냅샷(그림) · 음성 수로 정렬한다(많은 순 · 적은 순). 20261214 뒤에 적용한다. 공통 규칙(`p_actor` · 열람 기록 · `service_role`만)은
+-- 20261212 그대로다.
 --
 -- 바뀌는 것: `ops_search_users`
 --   - 줄마다 `snapshots` · `voices` — 그 사용자의 `companion.media` 중 **완료(status = 'complete')** 인 스냅샷 · 음성 수(없으면 0).
 --     막힘 · 실패 · 만드는 중은 세지 않는다(파일이 없다).
---   - `p_min_snapshots` · `p_min_voices`(0 ~ 100000, null = 조건 없음): 그 수 이상인 사용자만. 둘 다 주면 AND.
---     범위 밖은 `invalid_min_snapshots` · `invalid_min_voices`.
---   - `p_sort`에 `snapshots` · `voices`.
---   인수 꼴이 바뀌어 옛 함수를 지우고 새로 만든다 — 새 인수는 기본값이 있어 옛 호출도 그대로 된다.
---   열람 기록 detail에는 준 것만 `minSnapshots` · `minVoices`를 더한다.
+--   - `p_sort`에 `snapshots` · `voices`(`p_dir` asc · desc, 같은 수는 id 순).
+--   인수 꼴은 20261214 그대로라 함수만 바꾼다(`create or replace`). 이 파일의 첫 판(인수 13개, `p_min_snapshots` · `p_min_voices`)을
+--   적용한 DB라면 그 함수를 지운다 — 남으면 호출이 겹친다.
 --
--- 다시 적용해도 같은 결과다. 20261214를 다시 적용했다면 이 파일도 다시 적용한다(옛 인수 꼴이 돌아와 호출이 겹친다).
+-- 다시 적용해도 같은 결과다. 20261214를 다시 적용하면 옛 함수로 돌아가므로 이 파일도 다시 적용한다.
 
-drop function if exists public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text);
+drop function if exists public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text, integer, integer);
 
 -- 필터 찾기 · 둘러보기. 조건은 모두 AND, 정렬은 p_sort · p_dir(기본 가입 최신순). total은 limit · offset 전 수. 열람 기록 detail = 받은 필터.
 -- 줄 = UserRow + snapshots · voices(완료된 스냅샷 · 음성 수).
@@ -27,9 +26,7 @@ create or replace function public.ops_search_users(
   p_limit integer default 50,
   p_offset integer default 0,
   p_sort text default 'created_at',
-  p_dir text default 'desc',
-  p_min_snapshots integer default null,
-  p_min_voices integer default null
+  p_dir text default 'desc'
 )
 returns jsonb
 language plpgsql
@@ -61,12 +58,6 @@ begin
   end if;
   if p_offset is null or p_offset not between 0 and 100000 then
     raise exception 'invalid_offset' using errcode = '22023';
-  end if;
-  if p_min_snapshots is not null and p_min_snapshots not between 0 and 100000 then
-    raise exception 'invalid_min_snapshots' using errcode = '22023';
-  end if;
-  if p_min_voices is not null and p_min_voices not between 0 and 100000 then
-    raise exception 'invalid_min_voices' using errcode = '22023';
   end if;
   if v_sort not in ('created_at', 'last_sign_in_at', 'email', 'balance', 'country', 'snapshots', 'voices') then
     raise exception 'invalid_sort' using errcode = '22023';
@@ -112,8 +103,6 @@ begin
       and (p_joined_after is null or u.created_at >= p_joined_after)
       and (p_joined_before is null or u.created_at < p_joined_before)
       and (p_tier is null or ops.tier_of(u.id) = p_tier)
-      and (p_min_snapshots is null or coalesce(mc.snapshots, 0) >= p_min_snapshots)
-      and (p_min_voices is null or coalesce(mc.voices, 0) >= p_min_voices)
   ),
   -- 잔액은 UserRow처럼 지갑이 없으면 0(빈 값이 아니다).
   ranked as (
@@ -146,13 +135,12 @@ begin
   perform ops.log(v_actor, 'view', 'search_users', null, jsonb_strip_nulls(jsonb_build_object(
     'query', v_query, 'country', p_country, 'tester', p_tester, 'tier', p_tier,
     'joinedAfter', p_joined_after, 'joinedBefore', p_joined_before, 'limit', p_limit, 'offset', p_offset,
-    'sort', case when not v_default then v_sort end, 'dir', case when not v_default then v_dir end,
-    'minSnapshots', p_min_snapshots, 'minVoices', p_min_voices)));
+    'sort', case when not v_default then v_sort end, 'dir', case when not v_default then v_dir end)));
   return jsonb_build_object('items', v_items, 'total', v_total);
 end;
 $$;
 
-revoke all on function public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text, integer, integer)
+revoke all on function public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text)
   from public, anon, authenticated;
-grant execute on function public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text, integer, integer)
+grant execute on function public.ops_search_users(text, text, text, boolean, text, timestamptz, timestamptz, integer, integer, text, text)
   to service_role;
