@@ -9,9 +9,32 @@ const member = "00000000-0000-4000-8000-000000000002";
 let db: Awaited<ReturnType<typeof startTestDatabase>>;
 let server: Awaited<ReturnType<typeof db.connect>>;
 
-const gate = async (user: string) =>
-  (await server.query("select public.companion_proactive_push_gate($1) as g", [user])).rows[0]
-    .g as { mode: string; tester: boolean; hasDevice: boolean };
+type Gate = { mode: string; tester: boolean; hasDevice: boolean; hasRoom: boolean };
+const gate = async (user: string, character = "mina") =>
+  (
+    await server.query("select public.companion_proactive_push_gate($1, $2) as g", [
+      user,
+      character,
+    ])
+  ).rows[0].g as Gate;
+const device = (token: string, user: string, createdAt: string) =>
+  db.admin.query(
+    "insert into public.push_devices (token, user_id, environment, created_at) values ($1, $2, 'production', $3)",
+    [token, user, createdAt],
+  );
+async function spoke(user: string, character: string, at: string) {
+  const id = (
+    await db.admin.query(
+      "insert into companion.conversations (user_id, character_id, last_message_at) values ($1, $2, $3) returning id",
+      [user, character, at],
+    )
+  ).rows[0].id as string;
+  await db.admin.query(
+    `insert into companion.messages (conversation_id, user_id, role, origin, status, text, client_message_id, created_at)
+     values ($1, $2, 'user', 'turn', 'complete', '안녕하세요', gen_random_uuid(), $3)`,
+    [id, user, at],
+  );
+}
 
 beforeAll(async () => {
   db = await startTestDatabase();
@@ -32,9 +55,19 @@ beforeEach(async () => {
 });
 
 test("PG1. 스위치는 off가 기본이고 off · testers · on만 받는다", async () => {
-  expect(await gate(member)).toEqual({ mode: "off", tester: false, hasDevice: false });
+  expect(await gate(member)).toEqual({
+    mode: "off",
+    tester: false,
+    hasDevice: false,
+    hasRoom: false,
+  });
   await db.admin.query("update companion.settings set proactive_push = 'testers'");
-  expect(await gate(tester)).toEqual({ mode: "testers", tester: true, hasDevice: false });
+  expect(await gate(tester)).toEqual({
+    mode: "testers",
+    tester: true,
+    hasDevice: false,
+    hasRoom: false,
+  });
   await db.admin.query("update companion.settings set proactive_push = 'on'");
   expect((await gate(member)).mode).toBe("on");
   await expect(
@@ -56,8 +89,25 @@ test("PG3. 앱 역할(anon · authenticated)은 부를 수 없다", async () => 
     const app = await db.connect();
     await app.query(`set role ${role}`);
     await expect(
-      app.query("select public.companion_proactive_push_gate($1)", [member]),
+      app.query("select public.companion_proactive_push_gate($1, 'mina')", [member]),
     ).rejects.toMatchObject({ code: "42501" });
     await app.end();
   }
+});
+
+test("PG4. hasRoom — 가장 새 기기를 등록한 뒤 그 인물에게 말한 적이 있어야 한다(방은 기기에만 있다)", async () => {
+  // 11-10에 깐 기기에서 11-12에 미나와 말했다 → 미나 방은 그 기기에 있다. 서연과는 말한 적이 없다.
+  await device("ab".repeat(32), member, "2026-11-10T00:00:00Z");
+  await spoke(member, "mina", "2026-11-12T00:00:00Z");
+  expect((await gate(member, "mina")).hasRoom).toBe(true);
+  expect((await gate(member, "seoyeon")).hasRoom).toBe(false);
+
+  // 11-20에 새로 깔았다(새 기기) → 그 뒤로 미나와 말하기 전까지는 방이 없다고 본다.
+  await device("cd".repeat(32), member, "2026-11-20T00:00:00Z");
+  expect(await gate(member, "mina")).toMatchObject({ hasDevice: true, hasRoom: false });
+
+  // 인물을 넘기지 않는 옛 호출은 hasRoom false.
+  const old = (await server.query("select public.companion_proactive_push_gate($1) as g", [member]))
+    .rows[0].g as Gate;
+  expect(old).toMatchObject({ hasDevice: true, hasRoom: false });
 });
