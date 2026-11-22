@@ -92,9 +92,7 @@ export function Row({
         </view>
         <view className="ranking-score">
           <text className="ranking-score-text">{String(shown)}</text>
-          <text className="ranking-unit">
-            {shownScore === undefined ? unit : copy.unit(board.kind, shown)}
-          </text>
+          <text className="ranking-unit">{copy.unit(board.kind, shown)}</text>
         </view>
       </view>
       {row.me ? <PulseRing /> : null}

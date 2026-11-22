@@ -151,3 +151,14 @@ test("RK-H5. 다른 보드도 저장된 점수에서 세고, 다 센 뒤에 그 
   await run(2500);
   expect(store.scores).toEqual({ lessons: 7, "chat-words": 9 });
 });
+
+test("RK-H6. 보드를 오가도 같은 점수를 거듭 적지 않는다 — 저장은 보드마다 한 번(리뷰 #550)", async () => {
+  store.scores = { lessons: 7, "chat-words": 7 };
+  render(<Harness />);
+  await settle();
+  await tapBoard("chat-words");
+  await tapBoard("lessons");
+  await tapBoard("chat-words");
+  await tapBoard("lessons");
+  expect(store.saves).toEqual([]);
+});
