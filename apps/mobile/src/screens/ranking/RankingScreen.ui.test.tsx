@@ -236,13 +236,14 @@ const classOf = (testId: string) => screen.getByTestId(testId).getAttribute("cla
 const itemClassOf = (rank: number) =>
   screen.getByTestId(ids.row(rank)).parentElement?.getAttribute("class") ?? "";
 
-function mountMotion(seenScore: number | null, reduced = false) {
+function mountMotion(seenScore: number | null, reduced = false, onScoreCounted?: () => void) {
   const node = (
     <RankingScreen
       view={{ kind: "ready", board }}
       board="lessons"
       nowMs={NOW}
       seenScore={seenScore}
+      {...(onScoreCounted === undefined ? {} : { onScoreCounted })}
       onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
       onRetry={vi.fn<() => void>()}
       onSignIn={vi.fn<() => void>()}
@@ -301,4 +302,86 @@ test("RK-UI23. 본 적이 없거나 오르지 않았으면 세지 않는다", ()
   cleanup();
   mountMotion(9);
   expect(text(ids.meScore)).toBe("7");
+});
+
+test("RK-UI24. 세는 동안 보이는 단위는 보이는 숫자를 따르고, 낭독 줄은 줄곧 지금 점수 · 그 단위다(리뷰 #549 · #550)", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(1);
+    expect(text(ids.meScore)).toBe("1");
+    expect(text(ids.me)).toMatch(/1lesson$/);
+    expect(screen.getByTestId(ids.me).getAttribute("accessibility-label")).toContain("7 lessons");
+    for (let tick = 0; tick < 20; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.me)).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI25. 지금 점수를 다 보여 준 때 한 번 알린다 — 세는 도중에 화면을 떠나면 알리지 않는다(다음에 다시 센다)", () => {
+  vi.useFakeTimers();
+  try {
+    const counted = vi.fn<() => void>();
+    mountMotion(4, false, counted);
+    // 세기 시작(700ms) 직후 — 아직 끝나지 않았다.
+    for (let tick = 0; tick < 8; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(counted).not.toHaveBeenCalled();
+    cleanup();
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(counted).not.toHaveBeenCalled();
+
+    mountMotion(4, false, counted);
+    for (let tick = 0; tick < 25; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.meScore)).toBe("7");
+    expect(counted).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI26. 셀 것이 없으면(본 적 없음 · 오르지 않음 · 움직임 줄이기) 곧바로 지금 점수를 보여 주고 한 번 알린다", () => {
+  for (const [seenScore, reduced] of [
+    [null, false],
+    [7, false],
+    [4, true],
+  ] as const) {
+    const counted = vi.fn<() => void>();
+    mountMotion(seenScore, reduced, counted);
+    expect(text(ids.meScore)).toBe("7");
+    expect(counted).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
+});
+
+test("RK-UI27. 목록의 내 줄도 세는 동안 고정된 내 줄과 같은 숫자 · 단위다 — 낭독 줄은 지금 점수, 다 세면 목록 줄의 제 점수", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(1);
+    expect(text(ids.row(5))).toMatch(/1lesson$/);
+    expect(screen.getByTestId(ids.row(5)).getAttribute("accessibility-label")).toContain(
+      "7 lessons",
+    );
+    for (let tick = 0; tick < 25; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.row(5))).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
 });

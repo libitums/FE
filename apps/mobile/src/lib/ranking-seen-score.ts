@@ -1,4 +1,5 @@
-// 순위 화면에서 지난번에 본 내 점수의 기기 사본(ADR-0170 D12) — 숫자 오름의 출발 값입니다. 계정별 칸에 이번 주(끝 시각)와 보드별
+// 순위 화면에서 마지막으로 **다 본** 내 점수의 기기 사본(ADR-0170 D12) — 숫자 오름의 출발 값입니다. 읽기와 쓰기가 따로입니다:
+// 보드를 읽을 때는 꺼내기만 하고, 지금 점수를 다 보여 준 뒤에 적습니다(리뷰 #550). 계정별 칸에 이번 주(끝 시각)와 보드별
 // 점수를 둡니다. 주가 바뀌면 앞 주의 점수는 버립니다. 로그인이 없으면 읽지도 쓰지도 않습니다.
 
 import { loadAuthSession } from "./auth-session";
@@ -62,15 +63,15 @@ function keyOfCurrentUser(): string | null {
   return userId === null ? null : `${rankingSeenStoragePrefix}${userId}`;
 }
 
-/** 지난번에 본 점수를 돌려주고(없으면 null) 지금 점수로 바꿔 둡니다. */
-export function takeSeenScore(
-  kind: RankingBoardKind,
-  endsAt: string,
-  score: number,
-): number | null {
+/** 이 보드에서 마지막으로 다 본 내 점수(같은 주) — 없으면 null. 저장을 건드리지 않습니다. */
+export function readSeenScore(kind: RankingBoardKind, endsAt: string): number | null {
   const key = keyOfCurrentUser();
-  if (key === null) return null;
-  const seen = parseSeenScores(getItem(key));
-  setItem(key, JSON.stringify(withSeenScore(seen, kind, endsAt, score)));
-  return seenScoreIn(seen, kind, endsAt);
+  return key === null ? null : seenScoreIn(parseSeenScores(getItem(key)), kind, endsAt);
+}
+
+/** 지금 점수를 다 보여 준 뒤에 적습니다 — 세는 도중에 화면을 떠나면 적지 않아 다음에 다시 셉니다. */
+export function saveSeenScore(kind: RankingBoardKind, endsAt: string, score: number): void {
+  const key = keyOfCurrentUser();
+  if (key === null) return;
+  setItem(key, JSON.stringify(withSeenScore(parseSeenScores(getItem(key)), kind, endsAt, score)));
 }

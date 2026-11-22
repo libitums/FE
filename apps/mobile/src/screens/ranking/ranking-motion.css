@@ -74,7 +74,9 @@
   border-style: solid;
   border-color: var(--libitum-color-brand-primary);
   opacity: 0;
-  animation: ranking-ring var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter) both;
+  /* 채움은 forwards만 — both면 지연 동안 0% 값(opacity 0.6)이 적용돼 고리가 먼저 보입니다(리뷰 #549 · #550). */
+  animation: ranking-ring var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter)
+    forwards;
   animation-delay: calc(var(--libitum-motion-duration-d1) * 14);
 }
 
