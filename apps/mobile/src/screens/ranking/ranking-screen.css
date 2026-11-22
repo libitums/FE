@@ -131,10 +131,12 @@
   padding-left: var(--libitum-layout-screen-padding-x);
 }
 
+/* overflow visible — 내 줄 강조(커짐 · 고리, `ranking-motion.css`)가 줄 상자 밖으로 조금 넘칩니다. 목록의 좌우 여백 안이라 스크롤 밖으로는 나가지 않습니다. */
 .ranking-item {
   display: flex;
   flex-direction: column;
   padding-bottom: var(--libitum-spacing-8);
+  overflow: visible;
 }
 
 /* 상위 3과 내 근처 사이 생략(ADR-0170 D11) — 세로 점 셋. 글자가 아니라 점이라 문구 · 낭독이 없습니다(순위 숫자가 건너뜀을 말함). 점은 fg-neutral-subtle — 바탕 대비 3.4(비텍스트 3 이상, 접근성 S1). */

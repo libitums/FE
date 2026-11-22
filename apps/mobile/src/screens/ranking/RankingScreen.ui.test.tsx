@@ -302,3 +302,20 @@ test("RK-UI23. 본 적이 없거나 오르지 않았으면 세지 않는다", ()
   mountMotion(9);
   expect(text(ids.meScore)).toBe("7");
 });
+
+test("RK-UI24. 세는 동안 단위는 보이는 숫자를 따른다 — 「1 lessons」가 아니라 「1 lesson」(리뷰 #549)", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(1);
+    expect(text(ids.meScore)).toBe("1");
+    expect(text(ids.me)).toMatch(/1lesson$/);
+    for (let tick = 0; tick < 20; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.me)).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
+});

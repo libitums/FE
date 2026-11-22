@@ -7,6 +7,8 @@ import {
   flagOf,
   medalOf,
   moreToTopThree,
+  seenAfterLeave,
+  seenAfterLoad,
   rankingViewOf,
   zoneBefore,
 } from "./ranking-rules";
@@ -121,4 +123,17 @@ test("RK-U30. 3위까지 남은 점수(D13) — 3위 점수를 넘는 데 필요
   ).toBeNull();
   // 서버가 3위 줄을 주지 않았으면(작은 그룹) 말하지 않는다.
   expect(moreToTopThree({ ...mine, rows: [row(1), row(5, true)] })).toBeNull();
+});
+
+test("RK-U31. 본 점수 — 보드를 처음 읽을 때 한 번만 넣고, 그 보드를 떠나면 지운다(돌아와도 다시 세지 않는다 — 리뷰 #549)", () => {
+  const loaded = seenAfterLoad({}, "lessons", 4);
+  expect(loaded).toEqual({ lessons: 4 });
+  // 같은 보드를 또 읽어도(겹친 응답) 처음 값 그대로.
+  expect(seenAfterLoad(loaded, "lessons", 7)).toBe(loaded);
+  // 떠나면 null — 칸은 남아 다시 읽어도 채우지 않는다.
+  const left = seenAfterLeave(loaded, "lessons");
+  expect(left).toEqual({ lessons: null });
+  expect(seenAfterLoad(left, "lessons", 4)).toBe(left);
+  // 읽은 적 없는 보드를 떠나는 것은 아무 일도 아니다.
+  expect(seenAfterLeave({}, "chat-words")).toEqual({});
 });

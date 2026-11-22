@@ -9,7 +9,13 @@ import { saveRankingHidden } from "../../lib/ranking-hidden-cache";
 import { takeSeenScore } from "../../lib/ranking-seen-score";
 import type { RankingBoardKind, RankingClient, RankingLoad } from "../../lib/ranking.contract";
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
-import { rankingViewOf, type RankingView } from "./ranking-rules";
+import {
+  rankingViewOf,
+  seenAfterLeave,
+  seenAfterLoad,
+  type RankingView,
+  type SeenByBoard,
+} from "./ranking-rules";
 
 export type UseRankingInput = {
   readonly client: RankingClient;
@@ -31,13 +37,12 @@ export type RankingControls = {
 
 const eventBoard = (board: RankingBoardKind) => (board === "lessons" ? "lessons" : "chat_words");
 type Loads = Partial<Record<RankingBoardKind, RankingLoad>>;
-type Seen = Partial<Record<RankingBoardKind, number | null>>;
 
 export function useRanking(input: UseRankingInput): RankingControls {
   const { client, signedIn, eventSink } = input;
   const [board, setBoard] = useState<RankingBoardKind>(input.initialBoard);
   const [loads, setLoads] = useState<Loads>({});
-  const [seen, setSeen] = useState<Seen>({});
+  const [seen, setSeen] = useState<SeenByBoard>({});
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const opened = useRef(false);
@@ -58,7 +63,7 @@ export function useRanking(input: UseRankingInput): RankingControls {
       // 지난번에 본 내 점수를 꺼내고 지금 점수로 바꿔 둡니다 — 보드를 그리기 전에 함께 넣어 첫 프레임부터 옛 점수가 섭니다.
       if (result.status === "ready") {
         const previous = takeSeenScore(board, result.board.endsAt, result.board.me.score);
-        setSeen((current) => (board in current ? current : { ...current, [board]: previous }));
+        setSeen((current) => seenAfterLoad(current, board, previous));
       }
       setLoads((current) =>
         current[board] === undefined ? { ...current, [board]: result } : current,
@@ -94,6 +99,8 @@ export function useRanking(input: UseRankingInput): RankingControls {
   }, [view.kind, board]);
 
   const reload = () => {
+    // 다시 읽으면 본 점수도 새로 꺼냅니다 — 저장된 값은 앞서 읽은 점수라 낡은 출발 값에서 세지 않습니다(리뷰 #549).
+    setSeen({});
     setLoads({});
     setAttempt((current) => current + 1);
   };
@@ -109,6 +116,8 @@ export function useRanking(input: UseRankingInput): RankingControls {
         from: eventBoard(board),
         to: eventBoard(next),
       });
+      // 떠나는 보드의 숫자 오름은 한 번으로 끝 — 돌아와도 다시 돌지 않습니다(리뷰 #549).
+      setSeen((current) => seenAfterLeave(current, board));
       setBoard(next);
     },
     retry: reload,

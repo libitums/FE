@@ -41,7 +41,8 @@ function MyRow({
   const shownScore = useRisingScore(board.me.score, seenScore);
   const mine = board.rows.find((row) => row.me);
   const gap = board.next === null ? copy.first : copy.morePass(board.next.more, board.next.name);
-  const unit = copy.unit(board.kind, board.me.score);
+  // 세는 동안에도 수와 단위가 맞게 — 보이는 숫자로 고릅니다(리뷰 #549).
+  const unit = copy.unit(board.kind, shownScore);
   return (
     <view className="ranking-pin">
       <view

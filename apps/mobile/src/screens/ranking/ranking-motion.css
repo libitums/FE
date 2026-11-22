@@ -122,7 +122,13 @@
 }
 
 @keyframes ranking-ring {
+  /* 지연 동안에는 0% 값이 적용되므로(fill both) 처음은 안 보이게 두고, 시작하자마자 켭니다(리뷰 #549). */
   0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+
+  15% {
     opacity: 0.6;
     transform: scale(1);
   }

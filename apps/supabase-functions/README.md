@@ -724,7 +724,7 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 `migrations/20261220120000_weekly_ranking.sql` — 회원 주간 순위(월 00:00 UTC 시즌). 스키마 `ranking`(RLS 켬, anon · authenticated는 스키마 · 표 권한
 없음 — 앱은 RPC만, 모든 사용자 열은 `auth.users` CASCADE).
 
-- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 25 · `group_max` 30) · `groups` · `members`(주 × 사용자) ·
+- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 15 · `group_max` 18 — 20261227, 처음은 25 · 30) · `groups` · `members`(주 × 사용자) ·
   `lesson_passes`(사용자 평생 한 번) · `chat_words`(주 1번) · `preferences`(숨기기) · `rewards`(정산 기록).
 - 배정 `ranking.join_week`: 그 주에 처음 점수를 얻을 때. 구간 = 가입 나이(<14일 · <60일 · 그 밖) × 지금까지 통과한 콘텐츠 유닛(0~9 · 10~39 · 40+),
   같은 구간에서 숨기지 않은 인원이 목표 미만이고 전체가 상한 미만인 가장 오래된 그룹, 없으면 새 그룹(구간마다 advisory lock).
@@ -752,4 +752,4 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 
 보상 켜기(사용자 결정 뒤): `update ranking.settings set reward_enabled = true, reward_amount = 30;`(액수는 결정값). 끄기: `reward_enabled = false`.
 지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
-그룹 크기: `update ranking.settings set group_target = 25, group_max = 30;`(이미 배정된 그룹은 그대로).
+그룹 크기(지금 15 · 18, ADR-0170 D13): `update ranking.settings set group_target = 15, group_max = 18;`(이미 배정된 그룹은 그대로). 주 중간에 목표를 내리면 그 주의 남은 참가자는 작은 새 그룹에 들어가므로 주 경계(월 00:00 UTC) 직전에 바꾼다. 그룹이 작아지면 그룹 수가 늘어 상위 3 보상 지급 총량도 는다(25 → 15명이면 약 1.7배) — 보상을 켜기 전에 액수를 다시 본다.
