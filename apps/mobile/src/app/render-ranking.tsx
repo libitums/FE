@@ -37,6 +37,7 @@ export function RankingRoute({
       onRetry={controls.retry}
       onSignIn={onSignIn}
       onShowMe={controls.showMe}
+      seenScore={controls.seenScore}
     />
   );
 }

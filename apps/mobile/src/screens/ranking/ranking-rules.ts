@@ -124,3 +124,13 @@ export function chatStripOf(
   if (load?.status !== "ready" || load.board.kind !== "chat-words") return null;
   return { words: load.board.me.score, rank: load.board.me.rank };
 }
+
+/**
+ * 3위 안에 들려면 더 필요한 점수(ADR-0170 D13) — 3위 점수를 넘어야 하므로 +1(같은 점수는 먼저 닿은 사람이 위).
+ * 이미 3위 안이거나 3위 줄이 없으면 null.
+ */
+export function moreToTopThree(board: RankingBoard): number | null {
+  if (board.me.rank <= 3) return null;
+  const third = board.rows.find((row) => row.rank === 3);
+  return third === undefined ? null : Math.max(1, third.score - board.me.score + 1);
+}

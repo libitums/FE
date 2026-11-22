@@ -8,7 +8,15 @@ import { Avatar } from "@libitums/ui-lynx/avatar";
 import type { RankingBoard, RankingRow } from "../../lib/ranking.contract";
 import { useUiCopy } from "../../lib/ui-copy";
 import { rankingTestIds as ids } from "./ranking.contract";
+import { medalInClass, pulseClass, useReducedMotion } from "./ranking-motion";
 import { avatarToneOf, flagOf, medalOf } from "./ranking-rules";
+
+/** 내 줄 강조 고리(D12) — 줄 테두리에서 밖으로 번지며 사라집니다. 움직임 줄이기면 서지 않습니다. */
+export function PulseRing(): ReactNode {
+  return useReducedMotion() ? null : (
+    <view className="ranking-ring" data-testid={ids.ring} accessibility-elements-hidden={true} />
+  );
+}
 
 export function RankBadge({
   rank,
@@ -17,12 +25,13 @@ export function RankBadge({
   readonly rank: number;
   readonly mine: boolean;
 }): ReactNode {
+  const reduced = useReducedMotion();
   const medal = mine ? null : medalOf(rank);
   return medal === null ? (
     <text className={mine ? "ranking-rank ranking-rank-me" : "ranking-rank"}>{String(rank)}</text>
   ) : (
     <view
-      className={`ranking-medal ranking-medal-${medal}`}
+      className={`ranking-medal ranking-medal-${medal}${medalInClass(rank, reduced)}`}
       data-testid={ids.medal(rank)}
       data-medal={medal}
     >
@@ -55,10 +64,11 @@ export function Row({
   readonly board: RankingBoard;
 }): ReactNode {
   const copy = useUiCopy().ranking;
+  const reduced = useReducedMotion();
   const unit = copy.unit(board.kind, row.score);
   return (
     <view
-      className={row.me ? "ranking-row ranking-row-me" : "ranking-row"}
+      className={row.me ? `ranking-row ranking-row-me${pulseClass(reduced)}` : "ranking-row"}
       data-testid={ids.row(row.rank)}
       data-me={row.me ? "true" : "false"}
       flatten={false}
@@ -81,6 +91,7 @@ export function Row({
           <text className="ranking-unit">{unit}</text>
         </view>
       </view>
+      {row.me ? <PulseRing /> : null}
     </view>
   );
 }
