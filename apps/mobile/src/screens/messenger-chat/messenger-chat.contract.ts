@@ -62,9 +62,7 @@ export type MessengerChatCopy = {
     readonly back: string;
     readonly settings: string;
     readonly typing: (name: string) => string;
-    /** 사진 대기의 보이는 글 — 단계 넷(`media-pending-stage.ts`). 낭독 줄은 `list.sendingPhoto` 하나로 그대로입니다. */
     readonly photoPending: (name: string) => readonly [string, string, string, string];
-    /** 음성 대기의 보이는 글 — 단계 둘. 낭독 줄은 `list.recordingVoice`입니다. */
     readonly voicePending: (name: string) => readonly [string, string];
     readonly photoLabel: (name: string) => string;
     readonly voiceLabel: (name: string, duration: string, ko: string, en: string) => string;
