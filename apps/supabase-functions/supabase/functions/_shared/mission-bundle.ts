@@ -172,6 +172,19 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
         system: graderSystem,
         user: graderUserTemplate,
         schema: z.toJSONSchema(graderSchema),
+        // 자리표의 뜻 — 더한 칸. corrections_json의 n을 채점자가 focus.refs로 돌려준다(고친 문장은 새로 만들지 않는다).
+        placeholders: {
+          goals_json: "missions[i].goals의 [{id, required, criteria}]",
+          target_expressions_json: "missions[i].targetExpressions 그대로",
+          turn_goals_done_json: "턴에서 쌓인 목표 id 배열",
+          corrections_json:
+            "턴 교정이 있는 학습자 메시지마다 {n(1부터), original(학습자 글), corrected, kind, reason(교정 조각 reason을 공백으로 이은 글 | null)}",
+          transcript: "transcriptLine으로 채운 전문(진입 대사 포함)",
+          learner_l1: "학습자 언어(BCP 47), 모르면 en",
+        },
+        // 받은 결과 → 리포트(서버 normalizeGrade · buildMissionReport). 점수는 코드가 낸다.
+        report:
+          "goals.tip은 최종(턴 ∪ 채점자)으로 못 이룬 목표에만, focus.refs는 1 ~ 교정 수 안의 번호만(묶음 3개까지, 예문 = 그 번호 교정의 original → corrected), strengths 2개까지, retry 3개까지(없으면 못 쓴 목표 표현), scoreParts = 가중치 × 세부 점수(소수 첫째 자리)와 힌트 감점.",
       },
       transcriptLine: transcriptLineTemplates,
       // 대화 기록의 모양(서버 `historyMessages`와 같게) — 실험실이 같은 메시지 목록을 만들게 적어 둔 칸.

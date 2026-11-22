@@ -8,11 +8,21 @@
 export type MissionLlmRequest = { readonly user: string; readonly signal: AbortSignal };
 
 export type MissionGraderDraft = {
-  goals: { id: string; done: boolean; evidence: string | null }[];
+  goals: {
+    id: string;
+    evidence: string | null;
+    done: boolean;
+    tip: { ko: string; meaning: string } | null;
+  }[];
+  accuracyNotes: string;
   accuracy: number;
-  expressions: { id: string; used: boolean }[];
+  expressions: { id: string; evidence: string | null; used: boolean }[];
+  focus: { refs: number[]; reason: string }[];
+  strengths: { quote: string; note: string }[];
   retry: { ko: string; meaning: string }[];
+  headline: string;
   summary: string;
+  nextStep: string;
 };
 
 export type MissionHintDraft = { ko: string; roman: string; meaning: string };

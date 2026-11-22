@@ -26,8 +26,8 @@ export type MissionModels = {
 
 /** 답 생성의 출력 토큰 상한 — 컴패니언 `reply`와 같다(`companion-llm.ts`). */
 export const missionTurnMaxTokens = 2000;
-/** 채점 호출의 출력 토큰 상한 — 구조화 호출과 같다(`companion-llm.ts`의 `structured`). */
-export const missionGraderMaxTokens = 2000;
+/** 채점 호출의 출력 토큰 상한 — 리포트 칸(tip · focus · strengths · 메모)을 더해 3000(2026-11-23, QA 실측 출력 약 600 ~ 900). */
+export const missionGraderMaxTokens = 3000;
 
 /** 환경 값 → 미션의 모델 이름. 빈 글은 없는 것으로 본다. 미션 전용 값만 읽는다(컴패니언 값은 보지 않는다). */
 export function missionModelsFrom(read: (name: string) => string | undefined): MissionModels {

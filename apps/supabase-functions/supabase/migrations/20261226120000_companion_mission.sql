@@ -588,7 +588,10 @@ returns jsonb language sql stable as $$
     -- 목표 · 표현 · 다시 해 볼 표현 · 총평 · 최고 기록은 계약 `missionReportSchema`의 칸(done · ko · meaning · retry · summary · bestScore)으로도 낸다.
     'goals', (
       select coalesce(jsonb_agg(rg.value || jsonb_build_object('label', g.value->'label', 'required', (g.value->>'required')::boolean,
-        'done', coalesce((rg.value->>'achieved')::boolean, false))
+        'done', coalesce((rg.value->>'achieved')::boolean, false),
+        -- 못 이룬 목표의 「이렇게 말하면 됐어요」(이룬 목표면 null)
+        'tip', case when coalesce((rg.value->>'achieved')::boolean, false) then null
+          when jsonb_typeof(r.feedback->'tips'->(rg.value->>'id')) = 'object' then r.feedback->'tips'->(rg.value->>'id') end)
         order by g.ordinality), '[]'::jsonb)
       from jsonb_array_elements(r.goals) rg
       left join lateral (
@@ -612,6 +615,16 @@ returns jsonb language sql stable as $$
       from jsonb_array_elements(coalesce(r.feedback->'retry', '[]'::jsonb)) with ordinality x
     ), '[]'::jsonb),
     'summary', coalesce(r.feedback->>'summary', ''),
+    'headline', coalesce(r.feedback->>'headline', ''),
+    'nextStep', coalesce(r.feedback->>'nextStep', ''),
+    'strengths', coalesce(r.feedback->'strengths', '[]'::jsonb),
+    'focus', coalesce(r.feedback->'focus', '[]'::jsonb),
+    -- 점수식의 항(가중치 × 세부 점수, 소수 첫째 자리)과 힌트 감점 — 코어 `scoreParts`와 같다(세부 점수는 정수로 남긴 값).
+    'scoreParts', jsonb_build_object(
+      'task', round(coalesce((r.weights->>'task')::numeric, 0) * r.task_score, 1),
+      'accuracy', round(coalesce((r.weights->>'accuracy')::numeric, 0) * r.accuracy_score, 1),
+      'expression', round(coalesce((r.weights->>'expression')::numeric, 0) * r.expression_score, 1),
+      'hintPenalty', coalesce((r.weights->>'hintPenalty')::numeric, 0) * r.hints_used),
     'taskScore', r.task_score,
     'accuracyScore', r.accuracy_score,
     'expressionScore', r.expression_score,
@@ -1353,7 +1366,25 @@ begin
           order by ordinality limit 3
         ) x
       ), '[]'::jsonb),
-      'summary', case when jsonb_typeof(p_result->'summary') = 'string' then p_result->>'summary' end
+      'summary', case when jsonb_typeof(p_result->'summary') = 'string' then p_result->>'summary' end,
+      -- 2026-11-23 더한 리포트 칸(코어 `normalizeGrade`가 다듬어 보낸다): 결과 한 줄 · 다음 도전 · 정확도 메모 · 잘한 점(둘까지) ·
+      -- 꼭 볼 고친 문장 묶음(셋까지) · 못 이룬 목표의 한 줄({목표 id: {ko, meaning}} — 리포트에서 최종으로 못 이룬 목표에만 붙는다).
+      'headline', case when jsonb_typeof(p_result->'headline') = 'string' then p_result->>'headline' end,
+      'nextStep', case when jsonb_typeof(p_result->'nextStep') = 'string' then p_result->>'nextStep' end,
+      'accuracyNotes', case when jsonb_typeof(p_result->'accuracyNotes') = 'string' then left(p_result->>'accuracyNotes', 2000) end,
+      'strengths', case when jsonb_typeof(p_result->'strengths') = 'array' then (
+        select coalesce(jsonb_agg(value order by ordinality), '[]'::jsonb) from (
+          select value, ordinality from jsonb_array_elements(p_result->'strengths') with ordinality
+          where jsonb_typeof(value) = 'object' and coalesce(value->>'quote', '') <> '' order by ordinality limit 2
+        ) x
+      ) else '[]'::jsonb end,
+      'focus', case when jsonb_typeof(p_result->'focus') = 'array' then (
+        select coalesce(jsonb_agg(value order by ordinality), '[]'::jsonb) from (
+          select value, ordinality from jsonb_array_elements(p_result->'focus') with ordinality
+          where jsonb_typeof(value) = 'object' and jsonb_typeof(value->'examples') = 'array' order by ordinality limit 3
+        ) x
+      ) else '[]'::jsonb end,
+      'tips', case when jsonb_typeof(p_result->'tips') = 'object' then p_result->'tips' else '{}'::jsonb end
     ),
     left(p_result->>'graderModel', 200), v_payment, v_spent, p_now
   )

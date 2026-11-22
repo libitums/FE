@@ -124,9 +124,12 @@ export const missionReportFixture: MissionReport = {
   expressionScore: 50,
   hintsUsed: 0,
   weights: { task: 0.5, accuracy: 0.3, expression: 0.2, hintPenalty: 5 },
+  scoreParts: { task: 37.5, accuracy: 25.5, expression: 10, hintPenalty: 0 },
+  headline: "You ordered and paid — mission complete!",
   goals: goalStates(["order", "pay", "stay"]).map((goal) => ({
     ...goal,
     evidence: evidence[goal.id] ?? null,
+    tip: goal.done ? null : { ko: "아메리카노 얼마예요?", meaning: "How much is an americano?" },
   })),
   expressions: [
     {
@@ -142,9 +145,36 @@ export const missionReportFixture: MissionReport = {
       used: false,
     },
   ],
-  corrections: [{ original: "가지고 가요", corrected: "포장이요", kind: "better" }],
+  corrections: [
+    {
+      original: "가지고 가요",
+      corrected: "포장이요",
+      kind: "better",
+      items: [
+        {
+          original: "가지고 가요",
+          corrected: "포장이요",
+          reason: "At a café, 포장이요 is the usual way to say take-out.",
+        },
+      ],
+    },
+  ],
+  focus: [
+    {
+      examples: [{ original: "가지고 가요", corrected: "포장이요" }],
+      reason: "At a café, say 포장이요 for take-out.",
+    },
+  ],
+  strengths: [
+    {
+      quote: "아이스 아메리카노 한 잔 주세요.",
+      note: "A complete, polite order using the target pattern.",
+    },
+  ],
   retry: [{ ko: "아메리카노 얼마예요?", meaning: "How much is an americano?" }],
-  summary: "You ordered and paid smoothly. Next time, try asking the price.",
+  summary:
+    "You ordered clearly with 한 잔 주세요 and paid without trouble. Next time, try asking the price with 얼마예요. You're ready for the next café visit!",
+  nextStep: "Play again and ask how much your drink is.",
   bestScore: 73,
   graderModel: "claude-opus-5-5",
   createdAt: "2026-11-18T09:12:00+09:00",

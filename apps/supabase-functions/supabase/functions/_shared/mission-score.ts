@@ -79,3 +79,27 @@ export function scoreMission(
     outcome: input.goals.every((goal) => !goal.required || goal.done) ? "success" : "fail",
   };
 }
+
+/** 점수식의 항 — 가중치를 곱한 과업 · 정확도 · 목표 표현 점수(소수 첫째 자리)와 힌트 감점. 화면에 낼지와 별개로 리포트에 남긴다. */
+export type MissionScoreParts = {
+  readonly task: number;
+  readonly accuracy: number;
+  readonly expression: number;
+  readonly hintPenalty: number;
+};
+
+const oneDecimal = (value: number) => Math.round(value * 10) / 10;
+
+export function scoreParts(
+  score: Pick<MissionScore, "task" | "accuracy" | "expression">,
+  hintsUsed: number,
+  scoring: MissionScoring = defaultMissionScoring,
+): MissionScoreParts {
+  const { weights } = scoring;
+  return {
+    task: oneDecimal(weights.task * score.task),
+    accuracy: oneDecimal(weights.accuracy * score.accuracy),
+    expression: oneDecimal(weights.expression * score.expression),
+    hintPenalty: scoring.hintPenalty * Math.max(0, hintsUsed),
+  };
+}
