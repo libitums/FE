@@ -22,10 +22,7 @@
     },
     "input_mode": {
       "type": "string",
-      "enum": [
-        "text",
-        "voice"
-      ]
+      "enum": ["text", "voice"]
     },
     "client_region": {
       "type": "string",
@@ -45,10 +42,7 @@
           "maximum": 2
         }
       },
-      "required": [
-        "message_id",
-        "index"
-      ],
+      "required": ["message_id", "index"],
       "additionalProperties": false
     },
     "from_suggestion": {
@@ -65,12 +59,6 @@
       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
     }
   },
-  "required": [
-    "contract_version",
-    "client_message_id",
-    "text",
-    "input_mode",
-    "conversation_id"
-  ],
+  "required": ["contract_version", "client_message_id", "text", "input_mode", "conversation_id"],
   "additionalProperties": false
 }

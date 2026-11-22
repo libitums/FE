@@ -4,10 +4,7 @@
   "properties": {
     "scope": {
       "type": "string",
-      "enum": [
-        "auto",
-        "manual"
-      ]
+      "enum": ["auto", "manual"]
     },
     "units": {
       "type": "array",
@@ -27,10 +24,7 @@
             "type": "string"
           },
           "title": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "completedUnits": {
             "type": "integer",
@@ -46,22 +40,11 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "episode",
-          "title",
-          "completedUnits",
-          "expressions",
-          "selected"
-        ],
+        "required": ["episode", "title", "completedUnits", "expressions", "selected"],
         "additionalProperties": false
       }
     }
   },
-  "required": [
-    "scope",
-    "units",
-    "empty",
-    "options"
-  ],
+  "required": ["scope", "units", "empty", "options"],
   "additionalProperties": false
 }

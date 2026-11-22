@@ -81,7 +81,8 @@ export const missionFeedbackSpeechLevel = "polite" as const;
  * 학습자 오류로 치지 않게 한다(QA: 「라떼 하나요」를 「주세요」로 고친 오탐). 컴패니언(1단계) 교정에는 붙지 않는다.
  */
 export const missionFeedbackRules = `- Voice input: the message is a speech-to-text transcript. Missing or extra punctuation (. , ?), spacing, and numbers written as digits (1잔, 4500원) are transcription artifacts — never give feedback on them, and never return a correction whose only change is one of these.
-- Beginner level: the learner is a beginner in a short service-counter role-play. Natural spoken short answers are correct: a noun with 요 ("라떼 하나요", "카드요", "포장이요"), dropped particles ("네 카드요"), fillers (음, 아). Give feedback only on real grammar or word mistakes, the speech-level rule, or non-Korean parts (a message with English words still gets kind "l1_to_ko" with status "ok", as above). Keep each reason to one short sentence with no grammar terms.`;
+- Beginner level: the learner is a beginner in a short service-counter role-play. Natural spoken short answers are correct: a noun with 요 ("라떼 하나요", "카드요", "포장이요"), dropped particles ("네 카드요"), fillers (음, 아). Give feedback only on real grammar or word mistakes, the speech-level rule, or non-Korean parts (a message with English words still gets kind "l1_to_ko" with status "ok", as above). Keep each reason to one short sentence with no grammar terms.
+- Common beginner mistakes at a service counter are real mistakes, so always correct them (kind "correction"): asking staff with 줘요 instead of 주세요 ("라떼 하나 줘요" → "라떼 하나 주세요" — 줘요 sounds too casual toward a stranger serving you), a particle that changes the meaning ("카드를 할게요" → "카드로 할게요"), and 아니에요 used to decline an offer ("봉투 아니에요" → "봉투는 괜찮아요").`;
 
 /**
  * 미션 턴의 교정 요청. 교정 프롬프트 · 스키마는 컴패니언과 같고(`feedbackSystemParts` · `feedbackContent`), 상대 캐릭터는 미션의

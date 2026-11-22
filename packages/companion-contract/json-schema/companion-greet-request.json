@@ -14,14 +14,9 @@
     },
     "trigger": {
       "type": "string",
-      "enum": [
-        "open",
-        "unlock"
-      ]
+      "enum": ["open", "unlock"]
     }
   },
-  "required": [
-    "character_id"
-  ],
+  "required": ["character_id"],
   "additionalProperties": false
 }

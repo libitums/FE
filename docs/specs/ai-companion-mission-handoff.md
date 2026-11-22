@@ -16,10 +16,13 @@
 | FE | `feat/companion-mission-db` | 마이그레이션 `20261226120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
 | FE | **`feat/companion-mission-server`** | 위 둘을 합치고 Edge Function을 이은 **통합 브랜치** — `mission-start` · `chat-send` 미션 갈래 · `mission-hint` · `mission-finish` · 미션 올리기 스크립트. 이 문서가 여기 있다 | `pnpm verify` |
 | FE | `feat/companion-mission-app` | 앱 화면 초안(mock 데이터, 스위치 뒤) — §6 | `pnpm verify` |
+| FE | **`feat/companion-mission-e2e-int`** (2026-11-23) | 위 서버 통합 위에 세 갈래를 합친 것 — 답 · 페르소나 · 가드레일 · 연출 지시 · 목표 판정(`e2e-reply`, A), 채점 · 리포트 새 칸(`e2e-report`, C), 작별 인사 · 교정 비한글 거르개 · 미션 장면의 메뉴와 값(version 2). 단계 · 수치 · 앱 인계 · 사용자 결정은 [미션 파이프라인](ai-companion-mission-pipeline.md) | `pnpm verify` |
 | FE | `feat/speech-vendor-bench` | 음성 인식 · 발음 평가 벤더 비교 도구(`devtools/speech-bench/`) | `pnpm verify` |
 | FE | `feat/roleplay-turn-logs` (PR #498) · `feat/legal-pages` (PR #495) | 턴 로그 · 법률 문서 — 앞서 올린 것 | CI |
 | ops-dashboard | `feat/companion-mission-lab` | 「롤플레이 실험실」 백엔드 + 옮겨 온 화면 빌드 | pytest 777 |
 | dashboards-web | `feat/companion-mission-lab` | 「롤플레이 실험실」 화면 | 테스트 · 타입 · 빌드 |
+| ops-dashboard | **`feat/companion-mission-e2e-int`** (2026-11-23) | 실험실 백엔드 통합 — 판정 · 연출 지시 · 턴 콜백(답 스트리밍 → 플레이어 `turn-stream`의 `replyDelta` · `reply`) · 거르개(A), 음성 · 플레이어(B), 채점 · 리포트(C), 시나리오 25개 · QA 하니스 | pytest |
+| dashboards-web | **`feat/companion-mission-e2e-int`** (2026-11-23) | 플레이어(음성 · 스트리밍 턴, B) + 리포트 새 구역(C) | 테스트 · 타입 · 빌드 |
 
 대시보드 두 저장소의 작업 트리: `/Users/komet/orca/ops-dashboard-mission` · `/Users/komet/orca/dashboards-web-mission`(원래 체크아웃은 건드리지 않았다).
 
@@ -85,7 +88,8 @@ COMPANION_MISSION_BUNDLE=               # 절대 경로 또는 저장소 기준 
 
 ```sh
 # 미션 모델 — 컴패니언의 모델 설정(COMPANION_MODEL 등)을 물려받지 않는다. 비우면 코드 기본값
-COMPANION_MISSION_MODEL=                # 상대역 답 모델 id. 비우면 claude-sonnet-5-5
+COMPANION_MISSION_MODEL=                # 상대역 답 모델 id. 비우면 claude-haiku-5-5 (2026-11-23)
+COMPANION_MISSION_JUDGE_MODEL=          # 턴의 목표 판정 모델 id(답 · 교정과 병렬). 비우면 claude-haiku-5-5
 COMPANION_MISSION_GRADER_MODEL=         # 채점 모델 id. 비우면 claude-sonnet-5-5
 COMPANION_MISSION_FEEDBACK_MODEL=       # 교정 모델 id. 비우면 claude-haiku-5-5
 COMPANION_MISSION_HINT_MODEL=           # 힌트 모델 id. 비우면 claude-haiku-5-5

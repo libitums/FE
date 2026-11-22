@@ -55,11 +55,12 @@ describe("작별 인사 거르기", () => {
     totalMs: 2,
   });
 
-  test("MG3. 닫는 답이거나 판정으로 판이 끝나면 그대로, 말이 안 남으면 한 번 다시 만든다", async () => {
+  test("MG3. 판정으로 판이 끝나면 그대로(답의 closing은 보지 않음), 말이 안 남으면 한 번 다시 만든다", async () => {
     const never = async () => null;
+    // closing을 켰어도 선택 목표가 남았으면 거른다(QA: Haiku가 closing을 켜고 인사함)
     expect(
-      (await settleFarewell(context, reply("안녕히 가세요.", true), null, never)).outcome,
-    ).toBe("unchanged");
+      (await settleFarewell(context, reply("네. 안녕히 가세요.", true), null, never)).outcome,
+    ).toBe("stripped");
     const allDone = { goals: ["receipt", "ask"], offTask: false };
     expect((await settleFarewell(context, reply("안녕히 가세요."), allDone, never)).outcome).toBe(
       "unchanged",

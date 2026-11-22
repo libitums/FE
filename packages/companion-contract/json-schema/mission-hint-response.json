@@ -22,12 +22,6 @@
       "maximum": 9007199254740991
     }
   },
-  "required": [
-    "goalId",
-    "ko",
-    "roman",
-    "meaning",
-    "hintsLeft"
-  ],
+  "required": ["goalId", "ko", "roman", "meaning", "hintsLeft"],
   "additionalProperties": false
 }

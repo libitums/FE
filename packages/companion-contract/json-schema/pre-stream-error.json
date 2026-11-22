@@ -35,9 +35,6 @@
       "additionalProperties": {}
     }
   },
-  "required": [
-    "error",
-    "retryable"
-  ],
+  "required": ["error", "retryable"],
   "additionalProperties": false
 }

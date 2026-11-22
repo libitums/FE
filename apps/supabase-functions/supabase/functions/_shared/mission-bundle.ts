@@ -44,6 +44,7 @@ import {
 } from "./mission-fixtures.ts";
 import { graderSchema, graderSystem, graderUserTemplate } from "./mission-grader.ts";
 import { hintSchema, hintSystem, hintUserTemplate } from "./mission-hint.ts";
+import { defaultFarewells } from "./mission-guards.ts";
 import { judgeContextLimit, judgeSchema, judgeSystem, judgeUserTemplate } from "./mission-judge.ts";
 import {
   directionNone,
@@ -222,6 +223,14 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
         contextLimit: judgeContextLimit,
         goalSource:
           "판정 성공: 목표 = 지난 달성 ∪ 판정. 판정 실패(오류 · 시간 초과): 목표 = 지난 달성 ∪ 상태 줄 goals_done. closing · off_task는 상태 줄(판정의 off_task는 기록만).",
+      },
+      // 코드 쪽 거르개(ADR-0177 D13, mission-guards.ts) — 더한 칸.
+      guards: {
+        defaultFarewells,
+        farewellRule:
+          "학습자가 꺼낼(opener learner) 목표가 남고 상대역이 꺼낼 남은 목표가 하나 이하일 때만: 답의 closing이 참이 아니고 판정으로 모든 목표가 끝나지도 않으면, 말 조각에서 작별 인사(missions[i].counterpart.farewells ?? defaultFarewells 중 하나가 든 문장 — 문장은 . ! ? 로 끊음)를 뺀다. 빈 조각은 버린다. 말 조각이 하나도 안 남으면 같은 요청으로 한 번만 다시 만들어 같은 거르기, 그래도 안 남으면 처음 답 그대로.",
+        feedbackRule:
+          "교정이 status ok이고 corrected · items[].corrected · better.text에 원문에 없는 비한글 글자(한글 · 라틴이 아닌 문자 — 한자 · 가나 등, 숫자 · 문장 부호는 글자가 아님)가 있으면 교정 없음(status none, 나머지 칸 비움)으로 바꾼다.",
       },
       // 연출 지시(턴마다 turnDynamic의 {{direction}}) — 더한 칸. 규칙은 서버 mission-direction.ts 머리말, 사례는 fixtures.
       // stall = 새 목표 없이 이어진 학습자 턴 수(새 목표가 생긴 턴에 0으로).

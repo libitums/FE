@@ -12,22 +12,14 @@
           },
           "romanceTier": {
             "type": "string",
-            "enum": [
-              "open",
-              "standard"
-            ]
+            "enum": ["open", "standard"]
           }
         },
-        "required": [
-          "id",
-          "romanceTier"
-        ],
+        "required": ["id", "romanceTier"],
         "additionalProperties": false
       }
     }
   },
-  "required": [
-    "friends"
-  ],
+  "required": ["friends"],
   "additionalProperties": false
 }

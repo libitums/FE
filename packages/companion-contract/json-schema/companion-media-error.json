@@ -34,8 +34,6 @@
       "additionalProperties": {}
     }
   },
-  "required": [
-    "error"
-  ],
+  "required": ["error"],
   "additionalProperties": false
 }

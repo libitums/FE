@@ -62,7 +62,7 @@ type ReplyResult = {
 };
 
 /**
- * 판이 열려 있는 턴의 작별 인사 거르기(ADR-0177 D13). 장면을 닫는 답(`closing`)이거나 판정으로 모든 목표가 끝나는 턴이면 그대로.
+ * 판이 열려 있는 턴의 작별 인사 거르기(ADR-0177 D13). 판정(없으면 상태 줄)으로 모든 목표가 끝나는 턴이면 그대로.
  * 인사 문장을 빼고, 말이 하나도 안 남으면 `again()`으로 한 번만 다시 만들어 같은 거르기를 한다 — 그래도 말이 안 남으면 처음 답 그대로.
  */
 export async function settleFarewell<T extends ReplyResult>(
@@ -72,10 +72,13 @@ export async function settleFarewell<T extends ReplyResult>(
   again: () => Promise<T | null>,
 ): Promise<{ result: T; outcome: "kept" | "stripped" | "retried" | "unchanged" }> {
   const { mission, progress } = context;
-  const closing = (result.stateText === null ? null : parseMissionState(result.stateText))?.closing;
-  const endsNow =
-    judged !== null && allGoalsDone(mission, [...progress.goalsDone, ...judged.goals]);
-  if (closing === true || endsNow) return { result, outcome: "unchanged" };
+  // 판이 이 턴에 끝나는가는 판정(없으면 답의 상태 줄 goals_done)으로 본다 — 답의 closing은 믿지 않는다(QA: Haiku가 선택 목표가 남았는데
+  // closing을 켜고 인사함).
+  const reported =
+    (result.stateText === null ? null : parseMissionState(result.stateText))?.goalsDone ?? [];
+  const now = judged === null ? reported : judged.goals;
+  if (allGoalsDone(mission, [...progress.goalsDone, ...now]))
+    return { result, outcome: "unchanged" };
   const first = stripFarewells(result.segments, farewellsOf(mission));
   if (!first.stripped) return { result, outcome: "unchanged" };
   if (first.speechLeft)

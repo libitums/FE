@@ -4,11 +4,7 @@
   "properties": {
     "status": {
       "type": "string",
-      "enum": [
-        "ok",
-        "none",
-        "unavailable"
-      ]
+      "enum": ["ok", "none", "unavailable"]
     },
     "messageId": {
       "anyOf": [
@@ -33,28 +29,14 @@
             "minLength": 1
           },
           "meaning": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "intent": {
             "type": "string",
-            "enum": [
-              "elaborate",
-              "ask",
-              "reflect",
-              "redirect",
-              "boundary",
-              "progress"
-            ]
+            "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
           }
         },
-        "required": [
-          "text",
-          "meaning",
-          "intent"
-        ],
+        "required": ["text", "meaning", "intent"],
         "additionalProperties": false
       }
     },
@@ -81,11 +63,6 @@
       ]
     }
   },
-  "required": [
-    "status",
-    "messageId",
-    "items",
-    "cached"
-  ],
+  "required": ["status", "messageId", "items", "cached"],
   "additionalProperties": false
 }

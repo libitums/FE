@@ -31,9 +31,7 @@
           "maxLength": 120
         }
       },
-      "required": [
-        "en"
-      ],
+      "required": ["en"],
       "additionalProperties": {
         "type": "string",
         "minLength": 1,
@@ -117,19 +115,11 @@
               "maxLength": 300
             }
           },
-          "required": [
-            "name"
-          ],
+          "required": ["name"],
           "additionalProperties": false
         }
       },
-      "required": [
-        "label",
-        "role",
-        "relation",
-        "register",
-        "samples"
-      ],
+      "required": ["label", "role", "relation", "register", "samples"],
       "additionalProperties": false
     },
     "opening": {
@@ -151,11 +141,7 @@
           "maxLength": 300
         }
       },
-      "required": [
-        "ko",
-        "roman",
-        "en"
-      ],
+      "required": ["ko", "roman", "en"],
       "additionalProperties": {
         "type": "string",
         "minLength": 1,
@@ -190,9 +176,7 @@
                 "maxLength": 120
               }
             },
-            "required": [
-              "en"
-            ],
+            "required": ["en"],
             "additionalProperties": {
               "type": "string",
               "minLength": 1,
@@ -206,10 +190,7 @@
           },
           "opener": {
             "type": "string",
-            "enum": [
-              "counterpart",
-              "learner"
-            ]
+            "enum": ["counterpart", "learner"]
           },
           "cue": {
             "type": "string",
@@ -217,12 +198,7 @@
             "maxLength": 120
           }
         },
-        "required": [
-          "id",
-          "required",
-          "label",
-          "criteria"
-        ],
+        "required": ["id", "required", "label", "criteria"],
         "additionalProperties": false
       }
     },
@@ -247,11 +223,7 @@
             "maxLength": 200
           }
         },
-        "required": [
-          "id",
-          "ko",
-          "meaning"
-        ],
+        "required": ["id", "ko", "meaning"],
         "additionalProperties": false
       }
     },
