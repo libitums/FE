@@ -101,6 +101,11 @@ describe("CatalogCoverMapItem 일러스트", () => {
     expect(wrapper).toHaveClass("catalog-cover-illustrated-guided");
     expect(wrapper.contains(screen.getByTestId(imageTestId))).toBe(true);
     expect(wrapper.contains(screen.getByTestId(unitTestId))).toBe(true);
+    // 그림 < 노드는 래퍼 안의 문서 순서가 집니다.
+    expect(
+      screen.getByTestId(imageTestId).compareDocumentPosition(screen.getByTestId(unitTestId)) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
 
     cleanup();
     mount("available");

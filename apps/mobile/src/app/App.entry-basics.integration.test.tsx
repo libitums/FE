@@ -206,7 +206,7 @@ describe("두 길", () => {
     expect(present("episode-intro-screen")).toBe(false);
   });
 
-  test("EBI2. 기초부터 →글자 → 합치기 → 준비 완료 → 같은 가이드. 완주는 마지막에 한 번", async () => {
+  test("EBI2. 기초부터 → 글자 → 합치기 → 준비 완료 → 같은 가이드. 완주는 마지막에 한 번", async () => {
     const { events } = await reachEntry();
 
     startBasics();
