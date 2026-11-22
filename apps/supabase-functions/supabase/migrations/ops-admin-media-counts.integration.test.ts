@@ -178,7 +178,7 @@ describe("ops_search_users 에셋 수", () => {
     }
     await db.admin.query(
       await readFile(
-        new URL("./20261227120000_ops_admin_media_counts.sql", import.meta.url),
+        new URL("./20261227130000_ops_admin_media_counts.sql", import.meta.url),
         "utf8",
       ),
     );
