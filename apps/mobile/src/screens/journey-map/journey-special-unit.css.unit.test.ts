@@ -3,6 +3,16 @@ import { resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
+import { getSpecialUnitContract } from "@libitums/ui-lynx/special-unit";
+import {
+  compositeOver,
+  contrastRatio,
+  cssDeclaration,
+  parseCssColor,
+  rgbaInValue,
+  tokenColorValue,
+} from "../../lib/wcag-contrast.test-support";
+
 // `unit` 계층: 한 줄 라벨(제목)의 톤 색 · 타이포 · 안내 겹 규칙이 CSS 텍스트에 있는지만 봅니다
 // (선례: journey-map-row.css.unit.test.ts).
 
@@ -79,13 +89,38 @@ describe("first-unit-guide.css", () => {
     expect(guideCss).not.toContain("[data-");
   });
 
-  // 스크림 합성색 위에서 Face가 1.503:1까지 떨어집니다. 흰 Halo가 Face 옆을 흰색으로 두면 Face ↔ 흰색
-  // 3.016:1 · 흰색 ↔ 스크림 4.533:1입니다(접근성 점검 U1). Active Halo 규칙(클래스 둘)보다 구체도가 높아야 합니다.
-  test("SC9. 안내 겹의 배지는 Halo가 흰색이고 선택자 클래스가 셋이다", () => {
-    const selector =
-      ".journey-special-unit-guided .ui-lynx-special-unit .ui-lynx-special-unit-halo";
-    expect(bodyOf(guideCss, selector)).toContain("background-color: var(--libitum-color-white)");
-    expect(selector.match(/\./g)).toHaveLength(3);
+  // 사용자 결정 2026-11-22(ADR-0068 적용 기록) — 들린 노드는 안내를 닫았을 때와 같은 모양입니다.
+  test("SC9. 안내 겹은 배지의 Halo · 면 · 두께를 덮어쓰지 않는다", () => {
+    expect(rulesOf(guideCss).filter((rule) => /ui-lynx-special-unit/.test(rule.selector))).toEqual(
+      [],
+    );
+  });
+
+  // 흰 테가 빠져 Face ↔ 가림막은 1.503:1입니다. 알아보는 단서로 남는 두 대비는 지킵니다.
+  test("SC10. 안내 겹에서 별 ↔ Face는 3:1, 라벨 ↔ 가림막은 4.5:1 이상이다", () => {
+    const tokenRgb = (value: string) => parseCssColor(tokenColorValue(value)).rgb;
+    const star = getSpecialUnitContract(
+      { id: "cover", accessibilityLabel: "Intro", status: "available" },
+      "standard",
+    ).iconColor;
+    const face = tokenRgb("var(--libitum-color-brand-primary)");
+    expect(contrastRatio(parseCssColor(star).rgb, face)).toBeGreaterThanOrEqual(3);
+
+    const scrim = rgbaInValue(
+      cssDeclaration(
+        bodyOf(guideCss, ".first-unit-map-scrim .ui-lynx-overlay"),
+        "background-color",
+      ),
+    );
+    if (scrim === undefined) throw new Error("가림막 색이 없습니다");
+    const label = colorOf(
+      bodyOf(
+        guideCss,
+        ".journey-special-unit-guided .journey-special-unit-label .journey-special-unit-title",
+      ),
+    );
+    const veiled = compositeOver(scrim, tokenRgb("var(--libitum-color-background-primary)"));
+    expect(contrastRatio(tokenRgb(label ?? ""), veiled)).toBeGreaterThanOrEqual(4.5);
   });
 });
 

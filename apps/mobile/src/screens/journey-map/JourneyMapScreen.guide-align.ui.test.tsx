@@ -180,6 +180,50 @@ test("GA7. 가이드 동안 표지 그림까지 들리고, 그림 자리를 눌�
   expect(lifted().classList.contains("catalog-cover-illustrated-guided")).toBe(false);
 });
 
+// 기기에서 안내 글 탭이 죽어 있었습니다(GL5t) — `event-through`는 터치를 Lynx에 보내지 않고 자손에 상속돼, 글을 감싼
+// 바깥의 탭에도 가림막에도 닿지 않았습니다. jsdom은 그 속성을 흉내 내지 않으므로 속성 자체가 없는 것을 봅니다.
+test("GA9. 안내 글은 터치를 통과시키지 않고, 누르면 들린 그림이 있어도 안내가 닫히고 시작은 한 번이다", () => {
+  stubHost({ rects: asRects() });
+  const base = u00Catalog();
+  const onStartCover = vi.fn<(episodeId: string) => void>();
+  const catalog = {
+    ...base,
+    onStartCover,
+    sections: base.sections.map((section) =>
+      section.kind === "catalog-ready"
+        ? { ...section, cover: `images/covers/${section.episodeId}.webp` }
+        : section,
+    ),
+    coverImageUrlOf: (path: string) => `/static/fixture/${path}`,
+  };
+  mount(<FirstUnitGuideProvider enabled>{u00Screen(catalog)}</FirstUnitGuideProvider>);
+
+  const words = screen.getByTestId("first-unit-map-tooltip");
+  expect(words.querySelector('[event-through="true"]') === null).toBe(true);
+  expect(words.getAttribute("event-through")).not.toBe("true");
+
+  act(() => {
+    fireEvent.tap(words, {});
+  });
+
+  expect(scrimShown()).toBe(false);
+  expect(onStartCover).toHaveBeenCalledTimes(1);
+});
+
+// Android TalkBack은 `accessibility-enable-tap`이 있는 네이티브 View만 두 번 탭으로 누릅니다(`AccessibilityTapBridge`).
+test("GA10. 안내 글은 낭독 요소 하나인 단추이고 두 번 탭으로 눌린다", () => {
+  stubHost({ rects: asRects() });
+  mount(guided(true));
+
+  const words = screen.getByTestId("first-unit-map-tooltip");
+  expect(words.getAttribute("accessibility-element")).toBe("true");
+  expect(words.getAttribute("accessibility-label")).toBe("Tap to start your lesson!");
+  expect(words.getAttribute("accessibility-traits")).toBe("button");
+  expect(words.getAttribute("accessibility-enable-tap")).toBe("true");
+  expect(words.getAttribute("flatten")).toBe("false");
+  expect(words.querySelectorAll('[accessibility-element="true"]').length).toBe(0);
+});
+
 // 그림은 노드보다 낮고 가림막보다 높아야 합니다: 래퍼가 대화 층에 서고, 그 안에서는 그림 → 노드(안내 겹) 순입니다.
 test("GA8. 들린 표지 래퍼는 가림막(시트 층) 위 대화 층이고 그림에는 따로 z-index가 없다", async () => {
   const { readFileSync } = await import("node:fs");
@@ -201,6 +245,6 @@ test("GA5. 오버레이 위 가이드 문구(말풍선 메시지)는 흰색이�
   const { resolve } = await import("node:path");
   const css = readFileSync(resolve(process.cwd(), "src/components/first-unit-guide.css"), "utf8");
   expect(css).toMatch(
-    /\.first-unit-map-tooltip \.ui-lynx-tooltip-message \{[^}]*color: var\(--libitum-color-white\)/,
+    /\.first-unit-map-tooltip-message \{[^}]*color: var\(--libitum-color-white\)/,
   );
 });
