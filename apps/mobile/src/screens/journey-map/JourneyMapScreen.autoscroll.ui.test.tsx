@@ -219,6 +219,23 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(host.calls.slice(callsBefore).filter((call) => call.method === "scrollTo")).toEqual([]);
   });
 
+  test("AS10c. 자동 스크롤이 잠긴 지도도 말풍선의 제자리 이동을 연 자리로 기억한다", () => {
+    const host = stubHost({ rects: { ...asRects(), [unitSelector]: unitRect(410) } });
+    const first = mount(mapScreen());
+    touchMap();
+    rerender(first, atTwo());
+    tapTarget();
+    expect(host.scrollTos()).toEqual([scrollToCall(0, true)]);
+
+    act(() => {
+      first.unmount();
+    });
+    const callsBefore = host.calls.length;
+    mount(atThree());
+
+    expect(host.calls.slice(callsBefore).filter((call) => call.method === "scrollTo")).toEqual([]);
+  });
+
   /** 지도 내용이 놓였다는 소식 — 가이드의 맨 위 맞춤은 이 뒤에만 나갑니다(DURU-ANDROID-F). */
   const laidOut = () =>
     act(() => {

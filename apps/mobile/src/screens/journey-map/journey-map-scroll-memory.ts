@@ -5,7 +5,7 @@
 
 let remembered: number | null = null;
 
-/** 스크롤 이벤트마다, 그리고 자동 스크롤의 목적지가 지금 자리라 이벤트가 없을 때 부릅니다. */
+/** 스크롤 이벤트마다, 그리고 자동 스크롤 · 말풍선의 목적지가 지금 자리라 이벤트가 없을 때 부릅니다. */
 export function rememberMapScroll(scrollTop: number): void {
   remembered = Math.max(0, scrollTop);
 }
