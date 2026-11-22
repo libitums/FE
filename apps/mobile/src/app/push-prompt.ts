@@ -11,6 +11,9 @@ export const pushPromptStorageKey = (userId: string): string => `libitum.push-pr
 
 const PENDING = "pending";
 
+/** 지도가 한가해진 뒤 완료 연출(발자국)이 끝나기를 기다리는 시간 — Letters 추천(ADR-0169)과 같은 값입니다. */
+export const PUSH_PROMPT_DELAY_MS = 1200;
+
 export type PushPromptInput = {
   readonly signedIn: boolean;
   readonly pending: boolean;

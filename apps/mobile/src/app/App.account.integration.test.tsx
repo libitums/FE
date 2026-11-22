@@ -346,7 +346,7 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 �
     {},
   );
   fireEvent.tap(
-    within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button"),
     {},
   );
 

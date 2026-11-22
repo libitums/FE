@@ -65,11 +65,7 @@ export function EntryBasicsComposeScreen({
       <text className="entry-basics-compose-count">
         {`${copy.formLabel} · ${state.round + 1} / ${COMPOSE_ROUNDS.length}`}
       </text>
-      <text
-        className="entry-basics-title"
-        data-testid={ids.title}
-        accessibility-traits="header"
-      >
+      <text className="entry-basics-title" data-testid={ids.title} accessibility-traits="header">
         {copy.instruction}
       </text>
       <view className="entry-basics-middle">

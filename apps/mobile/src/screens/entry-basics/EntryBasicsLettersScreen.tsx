@@ -50,11 +50,7 @@ export function EntryBasicsLettersScreen({
         </view>
       }
     >
-      <text
-        className="entry-basics-title"
-        data-testid={ids.title}
-        accessibility-traits="header"
-      >
+      <text className="entry-basics-title" data-testid={ids.title} accessibility-traits="header">
         {copy.lettersTitle}
       </text>
       <text className="entry-basics-lead" data-testid={ids.lead}>

@@ -1,5 +1,6 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
+import { entryPathEventExamples, entryPathEventNames } from "./entry-path-events.test-support";
 import { planEventExamples } from "./purchase-intent.test-support";
 import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
 
@@ -11,6 +12,7 @@ export const allEventNames = [
   "onboarding_step_viewed",
   "onboarding_started",
   "entry_returning_learner_entered",
+  ...entryPathEventNames,
   "notifications_opened",
   "notification_item_tapped",
   "notification_item_deleted",
@@ -85,6 +87,7 @@ export const unmappedEvents = [
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_login_method_selected", method: "guest" },
   { name: "entry_returning_learner_entered", method: "google" },
+  ...entryPathEventExamples,
   { name: "notifications_opened" },
   { name: "notification_item_tapped", notificationId: "n-1", target: "roleplay-list" },
   { name: "notification_item_deleted", notificationId: "n-2", target: "roleplay-list" },

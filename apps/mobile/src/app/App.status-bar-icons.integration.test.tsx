@@ -241,7 +241,7 @@ test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
   expectJourneyEntryMarker();
 
-  tapButtonIn("journey-entry-screen-start");
+  tapButtonIn("journey-entry-screen-story");
   await flush();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-entry-screen-title")).not.toBeInTheDocument();

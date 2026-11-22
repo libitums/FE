@@ -39,9 +39,12 @@ export const ENTRY_BASICS_LETTERS: readonly EntryBasicsLetter[] =
     return picked;
   })();
 
-export const ENTRY_BASICS_WORDS: readonly EntryBasicsWord[] = /* @__PURE__ */ SENTENCE_SYLLABLES.map(
-  ([syllable, round]) => ({ syllable, roman: syllableRomanOf(syllable), round }),
-);
+export const ENTRY_BASICS_WORDS: readonly EntryBasicsWord[] =
+  /* @__PURE__ */ SENTENCE_SYLLABLES.map(([syllable, round]) => ({
+    syllable,
+    roman: syllableRomanOf(syllable),
+    round,
+  }));
 
 /** 「눌러서 들어 보세요」라고 말해도 되는가 — 여섯 소리가 다 있을 때만입니다. */
 export function lettersHearable(sourceOf: (syllable: string) => string | null): boolean {

@@ -20,7 +20,6 @@ import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-docume
 import type { LegalDocument } from "../lib/legal-document.contract";
 import {
   appUpdateRequiredEvent,
-  entryCompletedEvent,
   entryLoginMethodSelectedEvent,
   entryReturningLearnerEnteredEvent,
   entryScreenViewedEvent,
@@ -41,6 +40,7 @@ import { oauthProviderFor, signInWithSocialProvider } from "../lib/social-sign-i
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { NavAction } from "./nav-state";
+import { markPushPromptPending } from "./push-prompt";
 import { syncPushDevice } from "./push-wiring";
 import { probeEntryRouteAfterLogin } from "./returning-learner-probe";
 import { entryScreenAfterLogin } from "./screen-routing";
@@ -111,6 +111,7 @@ export function entryWiring({
       // 새 사용자는 언어 선택 앞에 ① 이름 → ② 나라를 지납니다(ADR-0059 D7 2026-10-20). 이름 칸은 이 기기에 남은
       // 값 → 소셜 로그인의 표시 이름 → 무작위 이름 순으로 미리 채웁니다.
       case "language-select": {
+        markPushPromptPending(); // 알림은 첫 스토리 뒤에 — 입장 전에 꺼도 남게 지금 적습니다(ADR-0176)
         const session = loadAuthSession();
         const initialName =
           learnerRecord?.name ??
@@ -288,13 +289,6 @@ export function entryWiring({
       entryEventSink?.(entryScreenViewedEvent("journey-entry"));
       dispatch({ type: "push", screen: { name: "journey-entry" } });
     },
-    // 여정 입장의 `여정 시작하기`입니다 — 완주 이벤트 → `enterApp`. 이 진입
-    // 구간을 비우는 순간이 바텀 네비게이션이 처음 보이는 순간입니다.
-    onEnterJourney: () => {
-      entryEventSink?.(entryCompletedEvent());
-      dispatch({ type: "enterApp" });
-      // 진입 흐름의 끝에서 알림을 묻습니다 — 다이얼로그는 맵 위에 뜨고, 답을 기다리지 않습니다(ADR-0034).
-      void syncPushDevice({ ask: true });
-    },
+    // 여정 입장의 두 길 · 완주는 `entry-path-wiring.ts`가 집니다(ADR-0176).
   };
 }

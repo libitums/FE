@@ -149,9 +149,7 @@ export function ComposeQuizBank({ quiz, romanization }: ComposeQuizPartProps): R
             {romanization === "shown" ? (
               <text
                 className={
-                  used
-                    ? "tile-romanization syllable-tile-romanization-used"
-                    : "tile-romanization"
+                  used ? "tile-romanization syllable-tile-romanization-used" : "tile-romanization"
                 }
               >
                 {jamoTileRomanOf(letter)}

@@ -110,13 +110,14 @@ test.each(["google", "phone"] as const)(
     passLearnerSignup();
     expect(present("language-select-screen-title")).toBe(true);
     tapButtonIn("language-select-screen-next");
-    tapButtonIn("journey-entry-screen-start");
+    tapButtonIn("journey-entry-screen-story");
     await settle();
 
     expect(onMap()).toBe(true);
     expect(eventNames(events).filter((name) => name === "entry_completed")).toHaveLength(1);
     expect(eventNames(events).some((name) => name.startsWith("entry_returning"))).toBe(false);
-    expect(host.register).toHaveBeenCalledTimes(1);
+    // 새 가입자의 알림 질문은 첫 스토리 뒤입니다(ADR-0176 — `App.entry-basics.integration.test.tsx` EBI9).
+    expect(host.register).not.toHaveBeenCalled();
   },
 );
 

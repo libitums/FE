@@ -19,6 +19,9 @@ import { guestUnlimitedPass, type UnlimitedPass } from "../lib/unlimited-pass";
 import { tutorialDone } from "./launch-coins";
 import { useMessengerMediaHooks } from "./use-messenger-media-hooks";
 import { useStreakReward } from "./use-streak-reward";
+import { catalogActivityCount } from "./learning-progress";
+import type { Screen } from "./nav-state";
+import { usePushPrompt } from "./use-push-prompt";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 
 export type MapNoticesInput = {
@@ -28,6 +31,8 @@ export type MapNoticesInput = {
   readonly progress: CatalogProgress;
   readonly localCoins: number | null;
   readonly idle: boolean;
+  /** 알림 권한 질문(ADR-0176)만 보는 값 — 스토리에서 돌아옴 · 상점이 덮음. */
+  readonly promptGate: { readonly screen: Screen["name"]; readonly shopOpen: boolean };
   readonly onStartChatting: () => void;
 };
 
@@ -115,6 +120,20 @@ export function useMapNotices(input: MapNoticesInput): {
   useEffect(() => {
     lettersOpen.current = letters.open;
   }, [letters.open]);
+  // 알림 권한 질문(ADR-0176)은 시스템 창이라 다른 안내가 하나도 없을 때만.
+  usePushPrompt({
+    screen: input.promptGate.screen,
+    signedIn: input.wiring.accountState === "signed-in",
+    idle:
+      input.idle &&
+      !input.promptGate.shopOpen &&
+      !signup.open &&
+      !push.holdsLater &&
+      !launch.open &&
+      !updateNotice.open &&
+      !letters.open,
+    activityCount: catalogActivityCount(input.progress),
+  });
   // 연속 학습 보상의 지급 잔액은 엽전 출시 결선의 서버 잔액으로 들어가고, 날아가는 동안 닿지 않은 몫은 칩에서 잠시 뺍니다.
   const streak = useStreakReward({
     signedIn: input.wiring.accountState === "signed-in",
