@@ -3,8 +3,13 @@ import { afterEach, expect, test, vi } from "vitest";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import type { RemoteEarlyUnlock } from "../screens/messenger-chat/early-access-parse";
 import type { VisibleFriend } from "../screens/messenger-chat/friend-catalog.contract";
+import { setPlanAccess } from "../lib/plan-access";
 import { setMessengerMediaHooks } from "./messenger-chat-wiring";
-import { setEarlyAccessRemote, suggestedFriendsPort } from "./suggested-friends-wiring";
+import {
+  guestSuggestedFriendsPort,
+  setEarlyAccessRemote,
+  suggestedFriendsPort,
+} from "./suggested-friends-wiring";
 
 // `unit` 계층(SW-U1 ~ SW-U6, ADR-0162 D5 · ADR-0164 D2): 먼저 만나기 결선 — 서버 포트가 없으면 꺼짐, 있으면 제안 목록을 읽고, 열기 결과를
 // 화면 결과로 옮기며 돌려받은 지갑 잔액을 머리 엽전 칩 알림으로 보낸다. 서버 포트는 처음 쓸 때 한 번만 만든다(배경 스레드).
@@ -12,6 +17,7 @@ import { setEarlyAccessRemote, suggestedFriendsPort } from "./suggested-friends-
 afterEach(() => {
   setEarlyAccessRemote(null);
   setMessengerMediaHooks(null);
+  setPlanAccess(null);
 });
 
 function remoteWith(unlock: RemoteEarlyUnlock | null) {
@@ -106,4 +112,12 @@ test("SW-U4 포트는 같은 설정이면 같은 객체 · 같은 함수다 — 
   expect(suggestedFriendsPort().offers).toBe(first.offers);
   setEarlyAccessRemote(null);
   expect(suggestedFriendsPort()).not.toBe(first);
+});
+
+test("SW-U7 모든 인물 — 회원 포트는 지금 요금제를 부를 때마다 읽고, 손님 포트에는 없다", () => {
+  const port = suggestedFriendsPort();
+  expect(port.allStory?.()).toBe(false);
+  setPlanAccess({ tier: "chat_plus", unlimitedTickets: false, entitlements: [] });
+  expect(port.allStory?.()).toBe(true);
+  expect(guestSuggestedFriendsPort().allStory).toBeUndefined();
 });

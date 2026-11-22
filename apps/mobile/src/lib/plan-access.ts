@@ -23,6 +23,14 @@ export function planChatTier(): ChatPlanTier {
   return current?.tier ?? "free";
 }
 
+/**
+ * 구독이 이야기 인물을 모두 여는가입니다 — 대화 요금제(Chat Plus · Premium)의 「모든 인물」(`companion.plans.all_characters`).
+ * 서버 권한은 요금제별 혜택을 싣지 않아 대화 등급으로 읽습니다(두 대화 요금제 모두 켜져 있음, 사용자 결정 2026-11-22).
+ */
+export function planAllCharacters(): boolean {
+  return planChatTier() !== "free";
+}
+
 /** 지금 가진 요금제(권한 줄마다 요금제 id · 상품). 순수. */
 export function currentPlanIds(
   entitlements: PlanEntitlements | null,

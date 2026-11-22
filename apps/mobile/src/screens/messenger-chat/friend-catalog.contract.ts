@@ -89,6 +89,8 @@ export type SuggestedFriendsPort = {
   readonly earlyAccess: ((characterId: string) => Promise<EarlyAccessResult>) | null;
   /** 이 에피소드를 끝냈는가 — 해금 규칙을 채웠지만 아직 추가하지 않은 스토리 인물. 없으면 모두 거짓. */
   readonly metEpisode?: (episodeId: string) => boolean;
+  /** 구독자(모든 인물)인가 — 참이면 못 만난 이야기 인물도 「Start chatting」으로 엽니다. 없으면(손님 · 가짜 출처) 거짓. */
+  readonly allStory?: () => boolean;
   /** 서버의 켜진 제안 — 목록 화면이 한 번 읽어 카탈로그에 얹습니다. 없으면(가짜 출처 · 손님) 제안이 없습니다. */
   readonly offers?: (() => Promise<readonly EarlyAccessListing[]>) | null;
   /**

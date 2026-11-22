@@ -146,6 +146,23 @@ test("ML1. 잠긴 인물 → 잠긴 시트(먼저 만나기 꺼짐) → Not now�
   expect(screen.queryByTestId(ids.sheet)).toBeNull();
 });
 
+test("ML6. 구독자(모든 인물)는 못 만난 이야기 인물도 Start chatting으로 연다 — 먼저 만나기를 부르지 않고 via free", () => {
+  const early = vi.fn(async () => ({ kind: "unlocked" }) as const);
+  const { events } = mount("open", early, { allStory: () => true });
+  fireEvent.tap(screen.getByTestId(ids.avatar("mina")), {});
+  expect(screen.queryByTestId(ids.sheetEarly)).toBeNull();
+  expect(screen.queryByTestId(ids.sheetInfo)).toBeNull();
+
+  tapId(ids.sheetStart);
+
+  expect(early).not.toHaveBeenCalled();
+  expect(rowOrder()).toContain(list.row("mina"));
+  expect(screen.queryByTestId(ids.avatar("mina"))).toBeNull();
+  expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([
+    expect.objectContaining({ characterId: "mina", kind: "story", from: "row", via: "free" }),
+  ]);
+});
+
 test("ML1. See all → 친구 찾기, 거기서 Chat → 시트 → Start chatting이면 줄이 Added가 된다", () => {
   mount();
   fireEvent.tap(screen.getByTestId(ids.seeAll), {});

@@ -69,6 +69,22 @@ describe("FD-U2 섹션 · 동작", () => {
   });
 });
 
+test("FD-U4 구독자(모든 인물)는 잠긴 이야기 인물이 모두 Chat이다 — 먼저 만나기 · 잠김 줄이 없다", () => {
+  const { story } = directoryOf({
+    catalog,
+    rooms,
+    earlyAccess: true,
+    now: NOW,
+    allStory: true,
+    filter: { kind: "story" },
+  });
+  expect(story.some((row) => row.action === "early" || row.action === "locked")).toBe(false);
+  expect(story.find((row) => row.character.id === "jaemin")).toMatchObject({
+    action: "chat",
+    offer: null,
+  });
+});
+
 test("FD-U3 필터 — story는 일반을 비우고, 카테고리는 이야기를 비우고 그 카테고리만", () => {
   const story = directoryOf({ ...input, earlyAccess: false, filter: { kind: "story" } });
   expect(story.general).toEqual([]);

@@ -31,6 +31,8 @@ export type SuggestInput = {
   readonly earlyAccess: boolean;
   readonly now: number;
   readonly metEpisode?: (episodeId: string) => boolean;
+  /** 구독자(모든 인물) — 못 만난 이야기 인물도 추가할 수 있습니다(값 없이). 없으면 거짓. */
+  readonly allStory?: boolean;
 };
 
 export type OfferBadge =
@@ -46,14 +48,16 @@ export function localizedLine(line: LocalizedLine, language: string): string {
   return own === undefined || own === "" ? line.en : own;
 }
 
-/** 열린 방 → added, 일반 · 해금 규칙 없음 · 끝낸 에피소드 → addable, 그 밖 locked. */
+/** 열린 방 → added, 일반 · 해금 규칙 없음 · 끝낸 에피소드 · 구독자(모든 인물) → addable, 그 밖 locked. */
 export function friendStatusOf(
   character: FriendProfile,
   room: ChatRoomSummary,
   metEpisode?: (episodeId: string) => boolean,
+  allStory = false,
 ): FriendStatus {
   if (room.access.kind === "open") return "added";
   if (character.kind === "general" || character.unlockEpisodeId === null) return "addable";
+  if (allStory) return "addable";
   return metEpisode?.(character.unlockEpisodeId) === true ? "addable" : "locked";
 }
 
@@ -102,7 +106,7 @@ export function suggestedFriendsOf(input: SuggestInput): readonly SuggestedFrien
   for (const character of input.catalog.characters) {
     const room = roomOfFriend(input.rooms, character.id);
     if (room === undefined) continue;
-    const status = friendStatusOf(character, room, input.metEpisode);
+    const status = friendStatusOf(character, room, input.metEpisode, input.allStory);
     if (status === "added") continue;
     const offer = status === "locked" ? offerOf(character, input.earlyAccess, input.now) : null;
     list.push({ character, room, status, offer });
