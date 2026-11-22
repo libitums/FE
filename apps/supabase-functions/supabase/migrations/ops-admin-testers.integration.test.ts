@@ -1001,7 +1001,7 @@ describe("구독 표가 있는 DB", () => {
   test("OT-14 마이그레이션을 다시 적용해도 같다", async () => {
     await rpc(server, "ops_set_tester", [ACTOR, real, true]);
     await db.admin.query(
-      await readFile(new URL("./20261213120000_ops_admin_testers.sql", import.meta.url), "utf8"),
+      await readFile(new URL("./20261213130000_ops_admin_testers.sql", import.meta.url), "utf8"),
     );
     expect((await rpc(server, "ops_list_testers", [ACTOR])).items.map((u: Json) => u.id)).toEqual([
       real,
@@ -1031,8 +1031,9 @@ describe("구독 표가 없는 DB(20261129 운영 적용 전)", () => {
     `);
     for (const file of [
       "20261212120000_ops_admin.sql",
-      "20261213120000_ops_admin_testers.sql",
-      "20261214120000_ops_admin_sort.sql",
+      "20261213130000_ops_admin_testers.sql",
+      "20261214130000_ops_admin_sort.sql",
+      "20261227130000_ops_admin_media_counts.sql",
     ]) {
       await db.admin.query(await readFile(new URL(`./${file}`, import.meta.url), "utf8"));
     }

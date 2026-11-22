@@ -684,7 +684,10 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 
 ### 2차 — 시험 계정 페이지 · 엽전 지급 고르기 · 대화 조각 (20261213)
 
-`migrations/20261213120000_ops_admin_testers.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A. 20261212의 공통 규칙(`p_actor` · 열람/쓰기 기록 ·
+운영 도구 마이그레이션 넷(20261213 · 20261214 · 20261215 · 20261227)의 번호는 같은 날짜의 다른 마이그레이션과 겹치지 않게 `…130000`이다.
+운영 상태(2026-11-23): 20261213 · 20261227은 SQL 편집기로 적용했고, 20261214(20261227이 대신한다) · 20261215는 적용하지 않았다.
+
+`migrations/20261213130000_ops_admin_testers.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A. 20261212의 공통 규칙(`p_actor` · 열람/쓰기 기록 ·
 `service_role`만 · `not_a_tester`는 `{ok:false}` + `refused`) 그대로다.
 
 - 바뀌는 것: UserRow에 `paid`(스토어 이벤트가 있거나 원장에 `purchase` · `subscription` 지급 — 시험 계정 잔액 맞추기 `operator`는 세지 않음, 구독 표가
@@ -702,12 +705,12 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 - 테스트: `migrations/ops-admin-testers.integration.test.ts`(구독 표가 있을 때 · 없을 때).
 
 **운영 적용은 사람이 한다.** 20261212 **뒤에** 적용한다. SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
-`supabase migration repair --status applied 20261213120000`. 다시 적용해도 같다(`create or replace`). 20261212를 이 파일 뒤에 다시 적용하면
+`supabase migration repair --status applied 20261213130000`. 다시 적용해도 같다(`create or replace`). 20261212를 이 파일 뒤에 다시 적용하면
 UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파일도 다시 적용한다. ops_admin 2차(시험 계정 페이지)는 이 파일이 있어야 뜬다.
 
 ### 정렬 — 「전체」 사용자 둘러보기 (20261214)
 
-`migrations/20261214120000_ops_admin_sort.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
+`migrations/20261214130000_ops_admin_sort.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
 
 - `ops_search_users`에 `p_sort`(`created_at` · `last_sign_in_at` · `email` · `balance` · `country`, 기본 `created_at`) · `p_dir`(`asc` · `desc`, 기본 `desc`).
   목록 밖 값은 `invalid_sort` · `invalid_dir`. 빈 값은 늘 뒤, 같은 값은 id 순, email은 대소문자 무시, 잔액은 지갑이 없으면 0. 열람 기록 detail에는
@@ -717,12 +720,12 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 - 테스트: `migrations/ops-admin-sort.integration.test.ts`.
 
 **운영 적용은 사람이 한다.** 20261213 **뒤에** 적용한다. SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
-`supabase migration repair --status applied 20261214120000`. 다시 적용해도 같다. 20261213을 이 파일 뒤에 다시 적용하면 옛 인수 꼴 함수가 함께 남아
+`supabase migration repair --status applied 20261214130000`. 다시 적용해도 같다. 20261213을 이 파일 뒤에 다시 적용하면 옛 인수 꼴 함수가 함께 남아
 이름만으로 부를 때 `is not unique`가 나니, 그때는 이 파일도 다시 적용한다.
 
 ### 판정 메시지 (20261215)
 
-`migrations/20261215120000_ops_admin_moderation.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §F.
+`migrations/20261215130000_ops_admin_moderation.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §F.
 
 - 새 RPC `ops_user_moderation(p_actor, p_user, p_limit 기본 50(1~200), p_before)` — 사용자 상세 「신고 · 판정」에서 판정마다 어떤 메시지였는지 본다.
   `{items: [{id, at, stage, category, action, messageId, characterId, message, reply}], hasMore}` 최신순, `allow`는 뺀다(타임라인과 같다).
@@ -734,7 +737,7 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 - 테스트: `migrations/ops-admin-moderation.integration.test.ts`.
 
 **운영 적용은 사람이 한다.** 20261214 **뒤에** 적용한다(실제로 기대는 것은 20261212의 `ops` 도우미뿐이다). SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
-`supabase migration repair --status applied 20261215120000`. 다시 적용해도 같다(`create or replace`). 이 파일이 없으면 ops_admin은 판정 목록을
+`supabase migration repair --status applied 20261215130000`. 다시 적용해도 같다(`create or replace`). 이 파일이 없으면 ops_admin은 판정 목록을
 메시지 없이 옛 모양으로 보이고 「DB 업데이트(20261215) 뒤에 보입니다」로 알린다.
 
 ### 에셋 수 — 「전체」를 스냅샷 · 음성 수로 정렬 (20261227)
