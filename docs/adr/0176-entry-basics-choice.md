@@ -59,13 +59,13 @@
 
 - 때: 표지 스토리를 **끝내거나 · 건너뛰거나 · 나와** 지도로 돌아온 뒤, 지도가 한가하고(겹침 · 보상 모달 · 업데이트 안내 · 상점 없음)
   완료 연출(1.2 s)이 끝났을 때.
-- 표식 `libitum.push-prompt.<userId>` = `pending`을 **새 가입으로 판정된 순간** 적는다. 입장 시점에 적으면 기초 도중에 앱을 끈 사람은
-  다음 실행이 여정 입장을 건너뛰어 영영 묻지 않는다.
+- 표식 `libitum.push-prompt.<userId>` = `pending`을 **로그인 성공 뒤 기존 회원 판정 전에** 적는다. 입장 시점에 적으면 기초 도중에 앱을 끈
+  사람은 다음 실행이 여정 입장을 건너뛰어 영영 묻지 않는다.
 - 다시 켰을 때: 활동 기록이 있으면 지도에서 묻고, 없으면 첫 유닛 안내가 다시 서므로 스토리를 다시 기다린다.
 - 표식은 기존 회원 판정을 **기다리기 전에** 적고, 기존 회원으로 판정되면 지운다 — 판정을 기다리는 동안 꺼져도 묻는 차례가 남는다.
   계정을 지우면 함께 지운다.
 - 묻기가 끝난 뒤 표식을 지운다. 다만 Android 호스트는 창을 띄우기 전에 「물었음」을 기록하므로, 창이 뜬 채로 꺼지면 다시 뜨지 않는다.
-- **겹치지 않는다**: 닫을 겹(모달 · 시트)이 열려 있거나 Letters 추천이 기다리는 중이면 미루고, 묻는 동안 다른 안내는 서지 않는다.
+- **겹치지 않는다**: 닫을 겹(모달 · 시트)이 열려 있거나 Letters 추천이 기다리는 중이면 미루고, 묻는 동안 다른 안내 · 머리가 저절로 여는 연속 모달 · 설문은 서지 않는다.
 - 입장 때는 `syncPushDevice({ ask: false })` — 이미 허용한 기기는 바로 토큰을 올린다.
 
 | 묻는 자리 | 전 | 이 결정 |
@@ -115,5 +115,5 @@ iOS의 추적 허용(ATT, [ADR-0079](0079-ios-tracking-authorization.md) D2)은 
 - unit: `entry-basics` EB1 ~ EB4 · `entry-path-wiring` EP1 ~ EP8 · `push-prompt` PP1 ~ PP9.
 - ui: `EntryBasics*Screen` BL · BC · BR · `entry-basics.a11y` BA1 ~ BA8 · `JourneyEntryScreen` JE-U1 ~ U9 · JE-A1.
 - unit(더): `back-handler` BH0 · `account-wiring.progress-cache` AW1b.
-- integration: `App.entry-basics.integration.test.tsx` EBI1 ~ EBI20.
+- integration: `App.entry-basics.integration.test.tsx` EBI1 ~ EBI21 · `AppHeader` AH-H1.
 - 기기: [입장 선택 e2e](../e2e/entry-basics.md).

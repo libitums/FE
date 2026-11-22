@@ -269,6 +269,30 @@ test("[AH-S3] 연속 축하가 먼저다 — 연속 모달을 닫은 뒤에 설�
   expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
 });
 
+test("[AH-H1] 알림 권한 창의 답을 기다리는 동안 연속 모달 · 설문이 저절로 열리지 않는다(ADR-0176)", () => {
+  const onStreakCelebrated = vi.fn();
+  const { rerender } = render(
+    <AppHeader
+      {...fixture()}
+      held={true}
+      celebrateStreak={true}
+      onStreakCelebrated={onStreakCelebrated}
+    />,
+  );
+  expect(screen.queryByTestId("journey-stat-modal-streak") === null).toBe(true);
+  expect(onStreakCelebrated).not.toHaveBeenCalled();
+  expect(screen.getByTestId("app-header")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "false",
+  );
+
+  rerender(<AppHeader {...fixture()} held={true} episodeSurvey={survey} />);
+  expect(screen.queryByTestId("episode-survey-options") === null).toBe(true);
+
+  rerender(<AppHeader {...fixture()} held={false} episodeSurvey={survey} />);
+  expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
+});
+
 test("AH-D1. 티켓 칩이 줄어드는 동안만 머리를 말풍선 층 위로 올린다 — 「−1」이 맵의 띠 뒤로 가지 않게(시안 E4)", () => {
   const tickets = (dropFrom: number | null): TicketHeaderWiring => ({
     status: { available: 2, slots: [], nextInMs: null },

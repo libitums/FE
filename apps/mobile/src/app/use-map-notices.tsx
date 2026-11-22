@@ -43,6 +43,8 @@ export function useMapNotices(input: MapNoticesInput): {
   readonly streakReward: StreakRewardWiring | undefined;
   /** 스크림 있는 안내(업데이트 · Letters 추천)가 선 동안 — 셸이 뒤 화면 · 바를 낭독에서 뺍니다. */
   readonly blocking: boolean;
+  /** 알림 권한 창의 답을 기다리는 중(ADR-0176 D5) — 머리가 연속 모달 · 설문을 저절로 열지 않습니다. */
+  readonly holdsHeader: boolean;
   /** 푸시 보상으로 받은 무제한 티켓(ADR-0175) — 머리 칩 · 무제한 모달. 구독 판이 있으면 그쪽이 앞섭니다. */
   readonly ticketPass: UnlimitedPass | undefined;
 } {
@@ -153,6 +155,7 @@ export function useMapNotices(input: MapNoticesInput): {
     ),
     streakReward: streak.wiring,
     blocking: updateNotice.open || letters.open || signup.open || push.open,
+    holdsHeader: promptAsking,
     ticketPass: push.ticketPass,
     layer: (
       <>

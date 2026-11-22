@@ -496,6 +496,28 @@ describe("알림 권한은 첫 스토리 뒤", () => {
     expect(pending(host)).toBeUndefined();
   });
 
+  test("EBI21. 답을 기다리는 동안 다른 안내가 서지 않고, 답한 뒤에 선다", async () => {
+    const { host } = await reachEntry();
+    let answer: (() => void) | null = null;
+    host.register.mockImplementation((callback) => {
+      answer = () => callback({ permission: "denied" });
+    });
+    await jumpIn();
+    await openStory();
+    await skipStory();
+    await waitPastPrompt();
+    expect(host.register).toHaveBeenCalledTimes(1);
+
+    await leaveFirstLesson();
+    await waitPastPrompt();
+    expect(present("letters-recommend")).toBe(false);
+
+    act(() => answer?.());
+    await settle();
+    await waitPastPrompt();
+    expect(present("letters-recommend")).toBe(true);
+  });
+
   test("EBI19. 새 가입 판정을 기다리는 사이 꺼도 스토리 뒤에 묻는다", async () => {
     const never = () => new Promise<never>(() => {});
     stubServer({ progress: never, profile: never });

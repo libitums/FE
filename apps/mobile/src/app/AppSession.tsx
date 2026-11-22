@@ -272,7 +272,7 @@ export function AppSession({
                 episodeIntroEventSink,
                 onClosed: progress.onEpisodeSurveyClosed,
               })}
-              obscured={covered || moreOpen}
+              {...{ obscured: covered || moreOpen, held: notices.holdsHeader }}
               onOpenNotifications={wiring.onOpenNotifications}
               onOpenShop={shop.open}
               plans={headerPlansOf(plans, screenNow.name === "journey-map")}
