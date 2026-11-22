@@ -6,8 +6,7 @@
 
 /** 단계가 시작되는 시각(ms, 요청부터). */
 export const PHOTO_STAGE_MARKS: readonly number[] = [0, 5000, 11000, 17000];
-// 음성은 시연용 방의 도착(2.5초)보다 앞에 둬 둘째 문구가 보이게 합니다.
-export const VOICE_STAGE_MARKS: readonly number[] = [0, 1500];
+export const VOICE_STAGE_MARKS: readonly number[] = [0, 2500];
 
 /** 기다린 시간의 단계 — 기기 시각이 거꾸로 가도(음수) 첫 단계입니다. */
 export function stageAt(marks: readonly number[], elapsedMs: number): number {

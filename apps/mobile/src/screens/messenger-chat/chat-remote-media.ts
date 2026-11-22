@@ -119,7 +119,6 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     });
   };
 
-  // `since` — 대기 줄의 시작 시각(기기 시계): 요청한 때, 이미 지켜보던 것이면 그때, 처음 보는 것이면 지금.
   const lineFor = async (
     media: RemoteMedia,
     target: ChatMediaTarget,
@@ -210,7 +209,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     if (result.media.status === "pending") {
       const state = stateOf(room);
       if (!state.tracked.has(result.media.id))
-        state.tracked.set(result.media.id, { target, media, since });
+        state.tracked.set(result.media.id, { target, media, since: now() });
       poll(room);
     }
     changed(room);
@@ -275,9 +274,10 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
         if (target === null) continue;
         const media = kindOf(row);
         const tracked = state.tracked.get(row.id);
-        const since = tracked?.since ?? now();
+        const lineId = mediaLineId(target.messageId, media, row.id);
+        const since = pendingStartedAt(room.messages, lineId) ?? tracked?.since ?? now();
         if (row.status === "pending" && tracked === undefined)
-          state.tracked.set(row.id, { target, media, since });
+          state.tracked.set(row.id, { target, media, since: now() });
         if (row.status !== "pending" && tracked !== undefined) {
           state.tracked.delete(row.id);
           emit(room, media, row.status);

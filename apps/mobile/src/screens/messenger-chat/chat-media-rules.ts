@@ -192,7 +192,10 @@ export function collapseMediaResults(messages: readonly ChatMessage[]): ChatMess
   });
 }
 
-/** 그 id의 대기 줄이 실은 시작 시각(기기 시계) — 대기 줄이 아니거나 없으면 null. */
+/**
+ * 그 id의 대기 줄이 실은 시작 시각(기기 시계) — 대기 줄이 아니거나 없으면 null. 이미 놓인 줄의 값이 먼저입니다:
+ * 줄을 다시 놓을 때 이 값을 넘겨 단계가 처음으로 돌아가지 않게 합니다(다시 읽기 상한의 `tracked.since`와는 따로 잽니다).
+ */
 export function pendingStartedAt(messages: readonly ChatMessage[], id: string): number | null {
   const line = messages.find((message) => message.id === id);
   if (line === undefined || (line.kind !== "photo-pending" && line.kind !== "voice-pending"))

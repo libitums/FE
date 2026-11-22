@@ -93,12 +93,19 @@ test("MC-UI22. 사진 pending: 선 채로 시작 시각이 바뀌면 그 시각�
   expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
 });
 
-test("MC-UI22. 음성 pending: 1.5초 뒤 「… is sending it…」로 넘어간다", () => {
+test("MC-UI22. 사진 pending: 기기 시계가 뒤로 가 시작 시각이 앞날이어도 5초 뒤에는 넘어간다(리뷰 #541)", () => {
+  render(<PhotoPendingBubble name="미나" testId="pp" startedAt={Date.now() + 30_000} />);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is picking a moment…");
+  advance(5100);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
+});
+
+test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {
   render(<VoicePendingBubble name="미나" testId="vp" />);
   const text = () => screen.getByTestId("vp").textContent ?? "";
 
   expect(text()).toContain("미나 is recording a voice message…");
-  advance(1600);
+  advance(2600);
   expect(text()).toContain("미나 is sending it…");
   expect(screen.getByTestId("vp").getAttribute("accessibility-label")).toBe(
     "미나 is recording a voice message…",
