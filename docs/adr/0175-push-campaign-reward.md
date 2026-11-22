@@ -123,8 +123,8 @@
 
 ## 운영 적용(사용자) — 순서대로, 첫 보상 발송 전에 셋 다
 1. `20261224120000_push_campaign_reward.sql` **한 파일만** 적용하고 이력에 그 버전을 적는다(`supabase migration repair --status applied 20261224120000`).
-   `supabase db push`로 한꺼번에 올리지 않는다 — 2026-11-22 조회에서 운영 이력에 저장소의 `20261216120000` · `20261218120000`이 없고, main에 아직 없는
-   `20261223120000_companion_early_access_subscriber`(PR #540)가 있다. 이 파일은 그 버전과 겹쳐서 20261224로 옮겼다.
+   `supabase db push`로 한꺼번에 올리지 않는다 — 2026-11-22 조회에서 운영 이력에 저장소의 `20261216120000` · `20261218120000`이 없다(함께 올라가거나 순서
+   오류로 멈춘다). `20261223120000`은 `companion_early_access_subscriber`(PR #540, main b1c368bb)가 이미 써서 이 파일은 20261224로 옮겼다.
    확인: `select count(*) from public.push_campaign_rewards;`(0).
 2. `supabase functions deploy send-push` — 없으면 알림에서 캠페인 id가 빠져 아무도 받지 못한다.
 3. 이 JS와 호스트가 든 iOS · Android 앱을 배포한다. 옛 앱 사용자는 받지 못하므로 퍼진 뒤에 보낸다.
