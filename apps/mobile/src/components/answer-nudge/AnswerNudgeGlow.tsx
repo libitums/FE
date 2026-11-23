@@ -3,8 +3,8 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 
 import "./answer-nudge.css";
 
-/** 힌트가 켜진 조각의 바깥 상자에 붙이는 클래스 — 브랜드 색 테두리와 고요한 그림자. */
-export const ANSWER_NUDGE_TARGET_CLASS = " answer-nudge-target";
+/** 힌트가 켜진 조각의 바깥 상자에 붙이는 클래스 — 고요한 그림자. 브랜드 색 테두리는 조각의 CSS가 이 클래스와 묶어 정합니다. */
+export const ANSWER_NUDGE_TARGET_CLASS = "answer-nudge-target";
 
 /**
  * 힌트가 켜진 조각 안에 놓는 숨 쉬는 빛(ADR-0177). 그림자를 진 빈 층의 불투명도만 움직입니다 — box-shadow는 iOS keyframe

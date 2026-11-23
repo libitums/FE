@@ -23,18 +23,31 @@ describe("낱말을 이루는 타일(음절 조립)", () => {
   const tiles = ["현", "드", "카", "찮"];
 
   test("AN-U3 놓은 글자가 어느 정답의 앞부분이면, 그 정답을 이어 가는 첫 타일", () => {
-    expect(nextTileForWords(tiles, ["카드"], [])).toBe(2);
-    expect(nextTileForWords(tiles, ["카드"], [2])).toBe(1);
+    expect(nextTileForWords(tiles, ["카드"], [], 2)).toBe(2);
+    expect(nextTileForWords(tiles, ["카드"], [2], 2)).toBe(1);
   });
 
   test("AN-U4 정답이 여럿이면 어느 것으로든 이어지는 타일. 같은 글자 타일은 아직 창고에 있는 것", () => {
-    expect(nextTileForWords(["가", "나", "다"], ["다나", "나가"], [])).toBe(1);
-    expect(nextTileForWords(["나", "가", "나"], ["나나"], [0])).toBe(2);
+    expect(nextTileForWords(["가", "나", "다"], ["다나", "나가"], [], 2)).toBe(1);
+    expect(nextTileForWords(["나", "가", "나"], ["나나"], [0], 2)).toBe(2);
   });
 
   test("AN-U5 틀린 글자가 놓였거나 낱말이 끝났으면 가리키지 않는다", () => {
-    expect(nextTileForWords(tiles, ["카드"], [0])).toBeNull();
-    expect(nextTileForWords(tiles, ["카드"], [2, 1])).toBeNull();
+    expect(nextTileForWords(tiles, ["카드"], [0], 2)).toBeNull();
+    expect(nextTileForWords(tiles, ["카드"], [2, 1], 2)).toBeNull();
+  });
+
+  test("AN-U7 칸이 다 찼으면 가리키지 않는다 — 더 긴 정답이 있어도 누를 수 없는 타일이다", () => {
+    const more = ["괜", "찮", "아", "요"];
+    expect(nextTileForWords(more, ["괜찮아", "괜찮아요"], [0, 1, 2], 3)).toBeNull();
+    expect(nextTileForWords(more, ["괜찮아", "괜찮아요"], [0, 1], 3)).toBe(2);
+  });
+
+  test("AN-U8 남은 타일로 끝낼 수 없는 정답 쪽으로는 이끌지 않는다", () => {
+    // 「가나다」는 「다」 타일이 없어 못 만든다 — 「나가」로 이어지는 「나」를 가리킨다.
+    expect(nextTileForWords(["가", "나"], ["가나다", "나가"], [], 3)).toBe(1);
+    // 칸 수보다 긴 정답도 후보가 아니다.
+    expect(nextTileForWords(["가", "나", "다"], ["가나다"], [], 2)).toBeNull();
   });
 });
 

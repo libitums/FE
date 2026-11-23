@@ -66,7 +66,7 @@ export function SentenceOrderChip({
   const glow = nudged && placedOrdinal === null;
   const reading =
     (romanization === undefined ? "" : " sentence-order-chip-with-reading") +
-    (glow ? ANSWER_NUDGE_TARGET_CLASS : "");
+    (glow ? ` ${ANSWER_NUDGE_TARGET_CLASS}` : "");
 
   return (
     <view

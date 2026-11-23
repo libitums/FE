@@ -84,3 +84,23 @@ test("SO-UI63 칸을 다 채운 뒤 · 대화 조립에서는 켜지지 않는�
   wait(10_000);
   expect(screen.queryByTestId("answer-nudge-glow")).toBeNull();
 });
+
+test("SO-UI64 켜진 뒤 틀린 조각을 놓았다가 빼도 곧바로 켜지지 않는다 — 5초를 처음부터 다시 센다", () => {
+  mount([question]);
+  wait(5_000);
+  expect(nudged(1)).toBe(true);
+  fireEvent.tap(chip(0), {}); // 틀린 조각을 놓음
+  fireEvent.tap(chip(0), {}); // 뺌 — 처음과 같은 상태
+  expect(screen.queryByTestId("answer-nudge-glow")).toBeNull();
+  wait(4_900);
+  expect(screen.queryByTestId("answer-nudge-glow")).toBeNull();
+  wait(100);
+  expect(nudged(1)).toBe(true);
+});
+
+test("SO-UI65 힌트 시트가 열려 있는 동안에는 세지 않는다 — 닫으면 그때부터 5초", () => {
+  mount([{ ...question, hint: { ghost: ["나는 밥을 먹었다"] } }]);
+  fireEvent.tap(screen.getByTestId("assembled-hint-button"), {});
+  wait(10_000);
+  expect(screen.queryByTestId("answer-nudge-glow")).toBeNull();
+});

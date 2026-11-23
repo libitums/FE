@@ -35,7 +35,7 @@ export function SyllableTile({
   const variant = placedOrdinal === null ? "bank" : "placed";
   const reading = romanization === undefined ? "" : " syllable-tile-with-reading";
   const glow = nudged && placedOrdinal === null;
-  const base = `syllable-tile syllable-tile-${variant}${reading}${glow ? ANSWER_NUDGE_TARGET_CLASS : ""}`;
+  const base = `syllable-tile syllable-tile-${variant}${reading}${glow ? ` ${ANSWER_NUDGE_TARGET_CLASS}` : ""}`;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 

@@ -117,7 +117,8 @@ export function SentenceOrderActivity({
   );
 
   useSentenceOrderAnnouncements(result, state.questionIndex, state.phase, complete, copy);
-  const nudgedIndex = useSentenceOrderNudge(question, state, guide.visible);
+  const busy = guide.visible || hint.open || listen.playback === "playing";
+  const nudgedIndex = useSentenceOrderNudge(question, state, busy);
 
   // 안내가 떠 있는 동안은 조각이 움직이지 않습니다 — 겹침 층에만 기대지 않습니다.
   const toggle = (chipIndex: number) => {
