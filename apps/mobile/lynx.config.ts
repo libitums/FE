@@ -83,6 +83,8 @@ export default defineConfig(({ command }): Config => {
           // 없음으로 표시해 import를 통째로 버리게 합니다 — release 번들 약 −40 kB(ADR-0171).
           rules: [
             { test: /render-dev-probe\.tsx$/, sideEffects: false },
+            // 롤플레이 미션의 가짜 출처 · 가짜 기기 · fixture도 같은 길로 release에서 뺍니다(`roleplay-mission-dev-fakes.ts`).
+            { test: /roleplay-mission-dev-fakes\.ts$/, sideEffects: false },
             // 디자인 토큰 JS는 묶음마다 최상위 `deepFreeze(...)`를 불러, 앱이 쓰는 color · motion · opacity
             // 말고도 typography · font · elevation 등 열두 묶음이 두 스레드에 다 실립니다. 최상위 호출만
             // 순수로 표시해 쓰이지 않는 묶음을 버립니다 — release 번들 약 −14 kB.

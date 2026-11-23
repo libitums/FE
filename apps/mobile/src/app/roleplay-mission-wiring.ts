@@ -4,14 +4,17 @@
 
 import { useEffect, useState } from "@lynx-js/react";
 
-import { createFakeMissionSource } from "../screens/roleplay-mission/mission-fake-source";
-import { createFakeAudioDevice } from "../screens/roleplay-mission/mission-fake-voice";
+import {
+  unavailableAudioDevice,
+  unavailableMissionSource,
+} from "../screens/roleplay-mission/mission-unavailable";
 import type { MissionAudioDevice } from "../screens/roleplay-mission/mission-voice.contract";
 import type {
   MissionList,
   MissionSource,
 } from "../screens/roleplay-mission/roleplay-mission.contract";
 import { ROLEPLAY_MISSION_READY } from "../screens/roleplay-mission/roleplay-mission-ready";
+import { devMissionAudioDevice, devMissionSource } from "./roleplay-mission-dev-fakes";
 
 let enabledOverride: boolean | null = null;
 let sourceOverride: MissionSource | null = null;
@@ -33,8 +36,10 @@ const serverMissionSource = (): MissionSource | null => null;
 
 export function roleplayMissionSource(): MissionSource {
   if (sourceOverride !== null) return sourceOverride;
-  // 개발 미리보기의 가짜는 채점 대기 판 하나를 둡니다 — 「Report ready」 → 곧장 리포트 흐름이 돕니다.
-  singleton ??= serverMissionSource() ?? createFakeMissionSource({ pendingReport: true });
+  // 가짜는 dev 빌드에만 — release는 `__DEV__`가 false라 가짜 · fixture가 번들에서 빠집니다(`roleplay-mission-dev-fakes.ts`).
+  // `__DEV__ ?` 삼항을 풀지 않습니다(MD-S2).
+  singleton ??=
+    serverMissionSource() ?? (__DEV__ ? devMissionSource() : null) ?? unavailableMissionSource;
   return singleton;
 }
 
@@ -46,7 +51,8 @@ const hostAudioDevice = (): MissionAudioDevice | null => null;
 
 export function roleplayMissionAudioDevice(): MissionAudioDevice {
   if (deviceOverride !== null) return deviceOverride;
-  deviceSingleton ??= hostAudioDevice() ?? createFakeAudioDevice();
+  deviceSingleton ??=
+    hostAudioDevice() ?? (__DEV__ ? devMissionAudioDevice() : null) ?? unavailableAudioDevice;
   return deviceSingleton;
 }
 

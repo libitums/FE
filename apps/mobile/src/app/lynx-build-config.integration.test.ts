@@ -70,3 +70,13 @@ test("[DP-I1] 최종 설정: render-dev-probe.tsx를 부수 효과 없는 모듈
   );
   expect(sideEffectFreeRules).toHaveLength(1);
 });
+
+test("[MD-I1] 최종 설정: roleplay-mission-dev-fakes.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0177)", () => {
+  // 이 규칙이 빠지면 release에서 `__DEV__` 호출은 죽어도 미션 가짜 출처 · 가짜 기기 · fixture가 번들에 남습니다.
+  const fakesModule = resolve(import.meta.dirname, "roleplay-mission-dev-fakes.ts");
+  const sideEffectFreeRules = bundlerConfig.module.rules.filter(
+    (rule) =>
+      rule?.sideEffects === false && rule.test instanceof RegExp && rule.test.test(fakesModule),
+  );
+  expect(sideEffectFreeRules).toHaveLength(1);
+});
