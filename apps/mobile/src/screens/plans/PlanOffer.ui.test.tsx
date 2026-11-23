@@ -35,9 +35,7 @@ test("SB-UI3a 티켓 — 카드 하나, Go unlimited → onSelect(unlimited_tick
 test("SB-UI3b 대화 — Chat Plus · Premium(BEST) 카드 둘, 누르면 그 요금제로", () => {
   const offer = offerFor("messenger");
   render(<ChatPlanOffer offer={offer} />);
-  expect(screen.getByTestId(ids.offerCard("chat_plus"))).toHaveTextContent(
-    "30 free messages a day",
-  );
+  expect(screen.getByTestId(ids.offerCard("chat_plus"))).toHaveTextContent("30 chats a day");
   expect(screen.getByTestId(ids.offerCard("premium"))).toHaveTextContent("BEST");
   fireEvent.tap(screen.getByTestId(ids.offerCard("premium")), {});
   expect(offer.onSelect).toHaveBeenCalledWith("premium");

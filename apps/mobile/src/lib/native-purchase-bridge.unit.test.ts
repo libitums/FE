@@ -187,3 +187,46 @@ test("NP-U7 호스트가 답하지 않거나 던지면 상품 · 나라는 null�
   expect(await offers).toBeNull();
   expect(await country).toBeNull();
 });
+
+test("NP-U8 구매 답의 거래 id(transactionId)를 싣고, 없거나 비었으면 뺀다 — Airbridge Order Complete 중복 제거(ADR-0063)", async () => {
+  const withId = createNativePurchaseBridge(
+    () =>
+      fakeModule({
+        purchase: {
+          status: "purchased",
+          productId: "duru.coins.1200.v1",
+          transactionId: "2000000812345678",
+        },
+      }),
+    () => true,
+  );
+  expect(await withId.purchase("duru.coins.1200.v1")).toEqual({
+    kind: "purchased",
+    productId: "duru.coins.1200.v1",
+    transactionId: "2000000812345678",
+  });
+  const blank = createNativePurchaseBridge(
+    () =>
+      fakeModule({
+        purchase: { status: "purchased", productId: "duru.coins.1200.v1", transactionId: "" },
+      }),
+    () => true,
+  );
+  expect(await blank.purchase("duru.coins.1200.v1")).toEqual({
+    kind: "purchased",
+    productId: "duru.coins.1200.v1",
+  });
+});
+
+test("NP-U9 Play 보류 결제(pending — 현금 · 편의점 결제)는 실패가 아니라 취소처럼 조용히 끝난다, 모르는 답은 그대로 실패", async () => {
+  const pending = createNativePurchaseBridge(
+    () => fakeModule({ purchase: { status: "pending" } }),
+    () => true,
+  );
+  expect(await pending.purchase("duru.coins.3000.v1")).toEqual({ kind: "cancelled" });
+  const unknown = createNativePurchaseBridge(
+    () => fakeModule({ purchase: { status: "deferred" } }),
+    () => true,
+  );
+  expect(await unknown.purchase("duru.coins.3000.v1")).toEqual({ kind: "failed" });
+});

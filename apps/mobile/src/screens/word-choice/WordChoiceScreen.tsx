@@ -32,7 +32,12 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
 import { choiceReport } from "../../lib/item-answer";
-import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import {
+  advanceAfterAnswerMs,
+  answerEchoCueOf,
+  listenCueOf,
+  standaloneLessonAudio,
+} from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import {
   choiceRomanizationOf,
@@ -48,11 +53,7 @@ import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
 
-// `ListeningActivity`의 형태를 그대로 잇되 **제시 채널에서 오디오가 빠집니다**
-// — `ListeningPrompt` · `lib/audio.ts` · 재생 상태를 이 화면이 가져오지
-// 않습니다. 제시문은 `<text>` 하나입니다 — 카드 표면을 두지 않습니다.
-//
-// 세션 상태는 이 화면이 소유하고 순수 함수 `wordChoiceSessionReducer`를
+// 제시문은 `<text>` 하나입니다 — 카드 표면을 두지 않습니다. 세션 상태는 이 화면이 소유하고 순수 함수 `wordChoiceSessionReducer`를
 // 소비합니다. 판정·완료·응답 여부를 상태에 적지 않습니다 — 전부 파생입니다.
 //
 // **뼈대는 이 화면의 것이 아닙니다.** 상단 바·세션 헤더·지시문·무대 카드·아래 버튼은 `LearningShell`이
@@ -103,8 +104,7 @@ export function WordChoiceActivity({
   const explains = question !== null && wordChoiceAfterAnswerOf(question) === "explain";
   const result = question !== null && answered ? answeredResultOf(state, question) : null;
 
-  // 문항 음성입니다. 단어 선택(REPLY_SELECT)은 듣기 갈래 — 간이 줄 · 자동 재생 · 보고, 그림 고르기 · 뜻 고르기는
-  // 정답 뒤 재생 갈래 — 고른 순간 1.0으로 한 번(정오 무관, 조작 없음)입니다.
+  // 문항 음성입니다 — 듣기 갈래(REPLY_SELECT: 간이 줄 · 자동 재생 · 보고)와 정답 뒤 재생 갈래(판정 뒤 한 번, ADR-0172).
   const audioLesson = lessonAudio ?? standaloneLessonAudio(initialSessionOptions);
   const audioKey = String(state.questionIndex);
   const listen = useListenAudio(listenCueOf(audioKey, question?.audio), audioLesson);
@@ -158,17 +158,16 @@ export function WordChoiceActivity({
         ? { label: copy.common.continue, run: () => goNext(selectedIndex) }
         : undefined;
 
-  // 고른 뒤 2.5초입니다 — 듣기와 같은 값입니다. **참조가 곧 걸음의 정체입니다**(껍데기가 그것으로 타이머를 갈고
-  // 겹침을 막습니다). 매 렌더 새로 만들면 관계없는 리렌더 하나가 기다림을 처음부터 되돌립니다.
+  // 고른 뒤 2.5초(정답 음성이 길면 끝날 때까지, ADR-0172)입니다. **참조가 곧 걸음의 정체입니다** — 매 렌더 새로 만들면 기다림이 되돌아갑니다.
   const advance = useMemo(() => {
     const selected = state.selectedChoiceIndex;
     if (question === null || selected === null || explains) return undefined;
     return {
       label: copy.common.continue,
       run: () => goNext(selected),
-      delayMs: 2500,
+      delayMs: advanceAfterAnswerMs(2500, question.audio, audioLesson.autoPlay),
     };
-  }, [question, state.selectedChoiceIndex, copy]);
+  }, [question, state.selectedChoiceIndex, copy, audioLesson.autoPlay]);
   const counter = lessonCounter(
     lesson,
     question === null ? Math.max(0, questions.length - 1) : state.questionIndex,

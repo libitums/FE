@@ -1,5 +1,6 @@
 // 테스트 지원 — 문항 음성 화면 테스트의 픽스처입니다(듣기 · 정답 뒤 재생 값, 레슨 소리 설정 대역, DOM 순서). 제품 코드는 값 import하지 않습니다.
 import { vi } from "vitest";
+import { act } from "@lynx-js/react/testing-library";
 
 import type {
   AnswerEchoAudio,
@@ -54,4 +55,14 @@ export function testIdOrder(root: ParentNode, ids: readonly string[]): string[] 
   return [...root.querySelectorAll("[data-testid]")]
     .map((element) => element.getAttribute("data-testid") ?? "")
     .filter((id) => ids.includes(id));
+}
+
+/**
+ * 정답 뒤 음성의 틈(판정 효과음 뒤, ADR-0172)을 흘려 보냅니다 — 가짜 타이머(`vi.useFakeTimers`) 아래에서 부릅니다.
+ * 틈의 상한(1초, QD1)만큼 흘리므로 값이 조금 바뀌어도 이 시험은 그대로입니다.
+ */
+export function passAnswerEchoDelay(): void {
+  act(() => {
+    vi.advanceTimersByTime(1000);
+  });
 }

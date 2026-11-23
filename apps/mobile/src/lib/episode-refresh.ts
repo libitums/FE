@@ -81,6 +81,8 @@ export type RefreshDeps = {
   onEpisodeStaged?: (id: string) => void;
   /** 실행 시작의 첫 차례에 스플래시가 붙이는 관찰자입니다. */
   observer?: RefreshObserver;
+  /** 편마다의 파일 진행(관찰자와 같은 값) — 표지 받기 표시가 씁니다(ADR-0165). */
+  onAssetProgress?: RefreshObserver["progressed"];
   /** 차례로 시도할 매니페스트 경로입니다. 없으면 이 앱의 수준(`CONTENT_CLIENT_LEVEL`)으로 정합니다(ADR-0087). */
   manifestPaths?: readonly string[];
   /**

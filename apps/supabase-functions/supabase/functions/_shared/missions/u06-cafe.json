@@ -1,9 +1,12 @@
 {
   "id": "u06-cafe",
   "episodeId": "u06-cafe",
-  "version": 1,
-  "title": { "ko": "커피 주문하기", "en": "Order a coffee" },
-  "scene": "아침, 익선동 카페 끌림. 학습자는 어제 골목에서 이 직원에게 길을 물었던 손님이다. 이름은 서로 모른다.",
+  "version": 3,
+  "title": {
+    "ko": "커피 주문하기",
+    "en": "Order a coffee"
+  },
+  "scene": "아침, 익선동 카페 끌림. 학습자는 어제 골목에서 이 직원에게 길을 물었던 손님이다. 이름은 서로 모른다. 메뉴와 값(이 밖의 메뉴 · 값은 지어내지 않는다): 아메리카노 오천 원, 라떼(카페라떼) 오천오백 원, 바닐라 라떼 육천 원, 녹차 라떼 육천 원 — 모두 따뜻한 것 · 아이스 둘 다 된다. 카드 · 현금 모두 된다. 매장에서 마셔도 되고 포장도 된다.",
   "counterpart": {
     "characterId": "doyun",
     "label": "카페 직원",
@@ -11,12 +14,15 @@
     "relation": "어제 길을 알려 준 손님을 알아보고 반가워하지만, 손님과 직원 사이다.",
     "register": "손님 응대의 서비스 존댓말(「드릴까요?」 · 「나왔습니다」). 반말을 쓰지 않는다.",
     "samples": ["뭐 드릴까요?", "드시고 가세요?", "오천 원이에요.", "나오면 불러 드릴게요."],
+    "farewells": ["안녕히 가세요", "또 오세요", "좋은 하루 보내세요", "맛있게 드세요"],
     "base": {
       "name": "한도윤",
       "age": "22세",
       "job": "카페 끌림 아르바이트 · 소속사 아이돌 연습생(노래 · 춤)",
       "speech": "궁금한 걸 먼저 묻는다. 반가움과 응원을 숨기지 않는다. 막히면 먼저 긴장을 풀어준다"
-    }
+    },
+    "learnerRegister": "polite",
+    "learnerRegisterNote": "직원과 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다."
   },
   "opening": {
     "ko": "반가워요. 뭐 드릴까요?",
@@ -27,26 +33,46 @@
     {
       "id": "order",
       "required": true,
-      "label": { "en": "Order a drink" },
-      "criteria": "학습자가 음료 하나를 주문했다(종류가 분명하다)."
+      "label": {
+        "en": "Order a drink"
+      },
+      "criteria": "학습자가 음료 하나를 주문했다(종류가 분명하다).",
+      "opener": "counterpart",
+      "cue": "뭐 드릴까요?"
     },
     {
       "id": "pay",
       "required": true,
-      "label": { "en": "Say how you'll pay" },
-      "criteria": "학습자가 결제 수단(카드 · 현금 등)을 말했다."
+      "label": {
+        "en": "Say how you'll pay"
+      },
+      "criteria": "학습자가 결제 수단(카드 · 현금 등)을 말했다.",
+      "opener": "counterpart",
+      "cue": "결제는 어떻게 하시겠어요?"
     },
     {
       "id": "stay",
       "required": false,
-      "label": { "en": "Say for here or to go" },
-      "criteria": "학습자가 매장에서 마실지 가져갈지 밝혔다."
+      "label": {
+        "en": "Say for here or to go"
+      },
+      "criteria": "학습자가 매장에서 마실지 가져갈지 밝혔다.",
+      "opener": "counterpart",
+      "cue": "드시고 가세요?"
     },
     {
       "id": "price",
       "required": false,
-      "label": { "en": "Ask how much it is" },
-      "criteria": "학습자가 가격을 물었다."
+      "label": {
+        "en": "Ask how much it is"
+      },
+      "criteria": "학습자가 가격을 물었다.",
+      "opener": "learner",
+      "withhold": [
+        "[0-9][0-9,]* ?원",
+        "[일이삼사오육칠팔구]?천 ?(?:[일이삼사오육칠팔구]?백)? ?원",
+        "만 ?원"
+      ]
     }
   ],
   "targetExpressions": [
@@ -55,7 +81,11 @@
       "ko": "{음료} 한 잔 주세요.",
       "meaning": "Please give me one {drink}."
     },
-    { "id": "patt:fbe5e354", "ko": "{명사} 얼마예요?", "meaning": "How much is/are the {N}?" }
+    {
+      "id": "patt:fbe5e354",
+      "ko": "{명사} 얼마예요?",
+      "meaning": "How much is/are the {N}?"
+    }
   ],
   "turnLimit": 10
 }

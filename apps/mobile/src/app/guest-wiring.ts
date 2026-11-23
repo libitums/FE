@@ -61,7 +61,7 @@ export function guestWiring(args: GuestWiringArgs): GuestWiring {
       entryEventSink?.(entryScreenViewedEvent("login"));
       dispatch({ type: "push", screen: { name: "guest-login" } });
     },
-    // 성공하면 이관(세션 저장 전) → 세션 저장 → 이벤트 → 프로필 동기화 → 설정 루트 → 알림 질문입니다.
+    // 성공하면 이관(세션 저장 전) → 세션 저장 → 이벤트 → 프로필 동기화 → 연 자리로 → 알림 질문입니다.
     onSelectGuestSignInMethod: async (method) => {
       const result = await signInWithSocialProvider(oauthProviderFor(method));
       if (result.status !== "signed-in") {
@@ -74,7 +74,7 @@ export function guestWiring(args: GuestWiringArgs): GuestWiring {
       storeSignedInSession(result.session, args);
       entryEventSink?.(entryLoginMethodSelectedEvent(method));
       void args.syncLearnerProfile().catch(() => undefined);
-      dispatch({ type: "backToRoot" });
+      dispatch({ type: "back" }); // 로그인 화면만 걷어 연 자리(설정 루트 · 메신저 목록 · 방)로 돌아갑니다(ADR-0166)
       void syncPushDevice({ ask: true });
       return { status: "signed-in" };
     },

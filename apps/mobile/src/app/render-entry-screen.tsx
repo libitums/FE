@@ -1,14 +1,18 @@
-// 진입 흐름 화면 여덟의 route를 화면으로 옮깁니다 — 스플래시 → 온보딩 → 로그인 →
-// 인증 코드 → ① 이름 → ② 나라 → 언어 고르기 → 여정 입구. `render-learning-screen.tsx` ·
+// 진입 흐름 화면들의 route를 화면으로 옮깁니다 — 스플래시 → 온보딩 → 로그인 → 인증 코드 → ① 이름 → ② 나라 →
+// 언어 고르기 → 여정 입구 → (기초부터면) 글자 → 합치기 → 준비 완료(ADR-0176). `render-learning-screen.tsx` ·
 // `render-episode-intro.tsx` · `render-roleplay-screen.tsx`와 같은 갈래입니다.
 //
-// **묶음의 근거가 파일 크기가 아니라 흐름입니다.** 이 여덟은 앱을 처음 여는 한 흐름이고,
+// **묶음의 근거가 파일 크기가 아니라 흐름입니다.** 이 화면들은 앱을 처음 여는 한 흐름이고,
 // 그래서 새 진입 화면이 늘 때 어디에 넣을지가 이름만으로 정해집니다. 크기로 자르면
 // 다음 사람이 그 자리를 못 찾습니다.
 //
 // 전이 · 이벤트 · 토큰 저장은 `wiring`의 콜백이 집니다 — 화면은 결과를 그리고 조작을
 // 올릴 뿐입니다.
 
+import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
+import { EntryBasicsComposeScreen } from "../screens/entry-basics/EntryBasicsComposeScreen";
+import { EntryBasicsLettersScreen } from "../screens/entry-basics/EntryBasicsLettersScreen";
+import { EntryBasicsReadyScreen } from "../screens/entry-basics/EntryBasicsReadyScreen";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { LearnerCountryScreen } from "../screens/learner-profile/LearnerCountryScreen";
@@ -21,7 +25,7 @@ import { VerificationCodeScreen } from "../screens/verification-code/Verificatio
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
-/** 진입 흐름의 route 아홉입니다. `renderScreen`의 `switch`가 이 아홉을 한 자리로 보냅니다. */
+/** 진입 흐름의 route 열둘입니다. `renderScreen`의 `switch`가 이 열둘을 한 자리로 보냅니다. */
 export type EntryScreen = Extract<
   Screen,
   {
@@ -34,6 +38,9 @@ export type EntryScreen = Extract<
       | "learner-country"
       | "language-select"
       | "journey-entry"
+      | "entry-basics-letters"
+      | "entry-basics-compose"
+      | "entry-basics-ready"
       | "update-required";
   }
 >;
@@ -47,7 +54,12 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
     case "update-required":
       return <UpdateRequiredScreen onUpdate={wiring.onOpenAppStore} />;
     case "onboarding":
-      return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
+      return (
+        <OnboardingScreen
+          onComplete={wiring.onOnboardingComplete}
+          onEvent={wiring.onOnboardingEvent}
+        />
+      );
     case "login":
       return (
         <LoginScreen
@@ -106,11 +118,49 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
           // 깔려야 합니다 — `isFullBleedScreen`).
           safeArea={wiring.safeAreaInsets}
           language={wiring.entryLanguage}
-          onEnter={wiring.onEnterJourney}
+          onSelectPath={wiring.onSelectEntryPath}
           onBack={wiring.onJourneyEntryBack}
         />
       );
+    case "entry-basics-letters":
+      return (
+        <EntryBasicsLettersScreen
+          sound={wiring.more.letterSound}
+          onNext={() => wiring.onCompleteBasicsStep("letters")}
+          onSkip={() => wiring.onSkipBasics("letters")}
+          onBack={wiring.onBasicsBack}
+        />
+      );
+    case "entry-basics-compose":
+      return (
+        <EntryBasicsComposeScreen
+          romanization={wiring.more.romanization}
+          sound={wiring.more.letterSound}
+          autoPlay={wiring.more.autoPlay}
+          onNext={() => wiring.onCompleteBasicsStep("compose")}
+          onSkip={() => wiring.onSkipBasics("compose")}
+          onBack={wiring.onBasicsBack}
+        />
+      );
+    case "entry-basics-ready":
+      return (
+        <EntryBasicsReadyScreen
+          safeArea={wiring.safeAreaInsets}
+          planeUrl={tutorialCoverUrlOf(wiring)}
+          onNext={() => wiring.onCompleteBasicsStep("ready")}
+          onBack={wiring.onBasicsBack}
+        />
+      );
   }
+}
+
+/** 준비 완료의 비행기 — 지도의 튜토리얼 표지와 같은 그림 · 같은 주소 해석입니다(새 바이트 0). */
+function tutorialCoverUrlOf(wiring: ScreenWiring): string | null {
+  for (const section of wiring.catalogSections) {
+    if (section.kind !== "catalog-ready" || section.episodeId !== TUTORIAL_EPISODE_ID) continue;
+    return section.cover === undefined ? null : wiring.episodeContent.imageUrlOf(section.cover);
+  }
+  return null;
 }
 
 /**

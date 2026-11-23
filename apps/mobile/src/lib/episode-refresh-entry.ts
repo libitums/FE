@@ -115,11 +115,19 @@ async function ensureAssets(
   wire: unknown,
   marker: "active" | "staged",
 ): Promise<EnsureGroupsOutcome> {
-  const watch = run.watched.has(entry.id) ? run.deps.observer : undefined;
+  const watched = run.watched.has(entry.id) ? run.deps.observer : undefined;
+  const onProgress = run.deps.onAssetProgress;
+  const watch = {
+    progressed: (id: string, done: number, total: number) => {
+      watched?.progressed(id, done, total);
+      onProgress?.(id, done, total);
+    },
+    ready: (id: string) => watched?.ready(id),
+  };
   const total = episodeAssetPaths(wire).length + 1;
   const settled = new Set<string>();
   let done = 1;
-  watch?.progressed(entry.id, done, total);
+  watch.progressed(entry.id, done, total);
   const policy = run.deps.assetPolicy;
   const outcome = await ensureEpisodeAssetGroups(
     run.deps.store,
@@ -139,13 +147,13 @@ async function ensureAssets(
         if (settled.has(path)) return;
         settled.add(path);
         done += 1;
-        watch?.progressed(entry.id, done, total);
+        watch.progressed(entry.id, done, total);
       },
     },
   );
   if (outcome === "incomplete" || outcome === "deferred" || outcome === "skipped") return outcome;
-  if (done < total) watch?.progressed(entry.id, total, total);
-  watch?.ready(entry.id);
+  if (done < total) watch.progressed(entry.id, total, total);
+  watch.ready(entry.id);
   return outcome;
 }
 

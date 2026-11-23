@@ -22,6 +22,7 @@
   각 상품에 현지화 표시 이름(영어 이름 그대로 — Unlimited Tickets · Chat Plus · Premium) · 설명 · 심사용 스크린샷이 필요합니다.
 - **Google Play**: 「정기 결제」 여섯 — **정기 결제 id = 위 상품 id**, 기본 요금제(base plan) 하나씩(id 예: `base`, 자동 갱신, 기간 1개월 / 1년).
   RevenueCat은 Play 구독을 `duru.premium.monthly.v1:base`처럼 보내고, 서버는 `:` 앞부분으로 찾습니다. 엽전 팩 셋은 「인앱 상품」(관리형, 소모 처리는 SDK).
+  Play 쪽 단계별 목록(가격 · 유예 · 서비스 계정 · RTDN · 키 파일 · 라이선스 테스터)은 [Android 결제 수동 설정 목록](android-purchases-setup.md)(2026-11-20).
 - 가격을 바꿀 때는 같은 id로 스토어에서 바꿉니다. 기간 · 종류를 바꾸거나 기존 구독자를 옛 가격에 남기려면 `.v2` 새 id + 서버 `store_products` 행 추가
   (옛 행은 지우지 말고 `active = false`) — ADR-0144 D5.
 
@@ -47,7 +48,7 @@
 | `REVENUECAT_WEBHOOK_AUTH` | Supabase Edge Function 비밀(운영 · 개발 각각) | RevenueCat 웹훅의 Authorization 헤더 값과 같은 문자열 |
 | `REVENUECAT_ACCEPT_SANDBOX` | Supabase Edge Function 비밀 | 개발(QA) 프로젝트만 `true`. 운영은 비워 둠 |
 | RevenueCat 공개 SDK 키 — iOS(`appl_…`) | `apps/ios/Config/RevenueCat.local.xcconfig`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → Info.plist `RevenueCatAPIKey` | 앱이 SDK를 여는 키. 비면 SDK · 구매 모듈 없음 |
-| RevenueCat 공개 SDK 키 — Android(`goog_…`) | `apps/android/app/revenuecat.properties`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → `BuildConfig.REVENUECAT_API_KEY` | 같음. 릴리스 빌드도 이 두 파일을 메인 체크아웃에서 복사한다(`/release-build` 값 파일 목록) |
+| RevenueCat 공개 SDK 키 — Android(`goog_…`) | `apps/android/app/revenuecat.properties`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → `BuildConfig.REVENUECAT_API_KEY` | 같음 — `goog_`로 시작하지 않으면 SDK를 열지 않는다(2026-11-20). 릴리스 빌드도 이 두 파일을 메인 체크아웃에서 복사한다(`/release-build` 값 파일 목록) |
 | App Store In-App Purchase Key(.p8) · Issuer ID · Key ID | RevenueCat 대시보드만 | 영수증 · 서버 알림 |
 | Play 서비스 계정 JSON | RevenueCat 대시보드만 | Play 영수증 · RTDN |
 | Airbridge 앱 이름 · API 토큰 | RevenueCat 대시보드 Airbridge 통합 | 매출 이벤트 전달 |
@@ -65,8 +66,12 @@
 - **실제 결제를 여는 스위치는 하나** — `apps/mobile/src/lib/plans-flag.ts`의 `purchasesEnabled()`. 아래 6의 샌드박스 확인 뒤 `true`로 바꾼다.
   꺼진 동안에도 키가 있으면 스토어 가격 · 스토어 나라는 읽는다(가격 표시가 스토어 값).
 
+- 2단계 후속(2026-11-18): 요금제 화면에 구독 고지(가격 · 기간 · 자동 갱신 · 해지 · 이용약관 · 개인정보처리방침) · 지금 요금제 배지 · 구독 관리(스토어 화면),
+  서버 권한이 티켓 무제한 · Premium 대화 관문을 연다(ADR-0144 「2단계 후속」). App Store Connect 앱 설명 · 「이용약관(EULA)」 자리에도 이용약관 링크를 둔다.
+
 ## 6. 켜기 전 샌드박스 확인
 1. 위 1 ~ 4 완료(상품 · RevenueCat · 웹훅 · 서버). `purchasesEnabled()`를 로컬에서만 `true`로 바꿔 빌드.
 2. iOS: 샌드박스 Apple 계정 · Android: 라이선스 테스터 계정으로 각 상품 한 번씩 — 요금제 카드에 스토어 가격, 구매 시트, 취소(안내 없음), 성공 뒤 칩 · 권한.
+   구독 뒤 요금제 화면 「Current plan」 · 「Manage subscription」이 스토어 구독 화면을 여는지, 머리 티켓 칩이 무제한인지(Unlimited Tickets · Premium).
 3. `companion.store_events`에 이벤트 · `companion.plan_entitlements` · 지갑 원장 확인. 복원 · 환불(샌드박스) · 업그레이드(PRODUCT_CHANGE) 한 번씩.
 4. 통과하면 `purchasesEnabled()` = true PR.

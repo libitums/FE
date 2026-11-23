@@ -30,6 +30,16 @@ export type TicketHeaderWiring = {
   readonly dropFrom: number | null;
   /** 칩이 줄어듦을 마치면 부릅니다. 기다리던 레슨을 엽니다. */
   readonly onDropped: () => void;
+  /**
+   * 비회원이면 Get more tickets가 「로그인 필요」 대화상자(trigger tickets)로 갑니다(ADR-0166, 2026-11-20) — 로그인 흐름과 이벤트
+   * sink. 회원 · 시험 계정은 없음(지금 동작 그대로).
+   */
+  readonly signIn?: TicketSignIn | null;
+};
+
+export type TicketSignIn = {
+  readonly onSignIn: () => void;
+  readonly sink: EpisodeIntroEventSink;
 };
 
 export type OutOfTicketsWiring = {

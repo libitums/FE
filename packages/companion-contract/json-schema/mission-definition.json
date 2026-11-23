@@ -32,7 +32,11 @@
         }
       },
       "required": ["en"],
-      "additionalProperties": false
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 240
+      }
     },
     "scene": {
       "type": "string",
@@ -76,6 +80,40 @@
             "minLength": 1,
             "maxLength": 120
           }
+        },
+        "farewells": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "noOffer": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "fallback": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "learnerRegister": {
+          "type": "string",
+          "enum": ["polite", "casual"]
+        },
+        "learnerRegisterNote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
         },
         "base": {
           "type": "object",
@@ -128,7 +166,11 @@
         }
       },
       "required": ["ko", "roman", "en"],
-      "additionalProperties": false
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 400
+      }
     },
     "goals": {
       "minItems": 1,
@@ -159,12 +201,34 @@
               }
             },
             "required": ["en"],
-            "additionalProperties": false
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240
+            }
           },
           "criteria": {
             "type": "string",
             "minLength": 1,
             "maxLength": 300
+          },
+          "opener": {
+            "type": "string",
+            "enum": ["counterpart", "learner"]
+          },
+          "cue": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "withhold": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
           }
         },
         "required": ["id", "required", "label", "criteria"],

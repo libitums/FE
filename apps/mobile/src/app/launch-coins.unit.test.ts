@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import { launchRecordFrom, launchStep, tutorialDone, type LaunchRecord } from "./launch-coins";
+import {
+  launchRecordAfterClaim,
+  launchRecordFrom,
+  launchStep,
+  tutorialDone,
+  type LaunchRecord,
+} from "./launch-coins";
 
 // `unit` 계층(YL-U3 ~ U5): 엽전 출시 안내 순서 · 새 사용자 미룸 · 기록 읽기(ADR-0140).
 
@@ -50,4 +56,23 @@ test("YL-U5 기록 읽기 — 틀리면 null, 본 표시는 참일 때만", () =
   expect(launchRecordFrom(JSON.stringify({ learning: "1", bonus: 0 }))).toBeNull();
   expect(launchRecordFrom("x")).toBeNull();
   expect(launchRecordFrom(null)).toBeNull();
+});
+
+test("SR-U10 지급 뒤 출시 기록 — 기존 회원은 보너스로 엽전 모달, 새 계정은 엽전 모달 없이 채팅 모달만(ADR-0174), 이미 기록 있으면 그대로", () => {
+  const claim = { learning: 10, bonus: 100, balance: 110, newAccount: false };
+  expect(launchRecordAfterClaim(claim, null)).toEqual({
+    learning: 10,
+    bonus: 100,
+    coinsShown: false,
+    chatShown: false,
+  });
+  expect(launchRecordAfterClaim({ ...claim, bonus: 0, newAccount: true }, null)).toEqual({
+    learning: 10,
+    bonus: 0,
+    coinsShown: true,
+    chatShown: false,
+  });
+  expect(launchRecordAfterClaim({ ...claim, bonus: 0 }, null)).toBeNull();
+  const existing = { learning: 0, bonus: 100, coinsShown: true, chatShown: true };
+  expect(launchRecordAfterClaim(claim, existing)).toBeNull();
 });

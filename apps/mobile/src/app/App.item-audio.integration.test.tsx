@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
+import { passAnswerEchoDelay } from "../lib/question-audio.test-support";
 import type { CatalogActivity, CatalogLessonPlan } from "./catalog-lesson-plan";
 import { withItemAudioIds } from "./test-helpers/item-audio-content";
 import {
@@ -259,7 +260,7 @@ describe("옛 호스트", () => {
 });
 
 describe("정답 뒤 재생 · 문장 순서 듣기 · 따라 읽기", () => {
-  test("IT7. WORD_ORDER는 확인 전 재생 0, 확인 뒤 play 한 번이고 playAtRate는 없다", async () => {
+  test("IT7. WORD_ORDER는 확인 전 재생 0, 확인 뒤 틈을 두고 play 한 번이고 playAtRate는 없다", async () => {
     const { host } = await bootItemAudioApp({
       progress: { [u01]: ["intro", "S1", "S2", "S3", "S4", "S5"] },
     });
@@ -273,7 +274,12 @@ describe("정답 뒤 재생 · 문장 순서 듣기 · 따라 읽기", () => {
 
     for (const chip of question.answerOrder) tapId(`sentence-order-chip-${chip}`);
     expect(host.play.mock.calls.length).toBe(before);
+    vi.useFakeTimers();
     tapCheck();
+    // 판정 효과음 뒤에 틈을 두고 시작합니다(ADR-0172).
+    expect(host.play.mock.calls.length).toBe(before);
+    passAnswerEchoDelay();
+    vi.useRealTimers();
 
     expect(host.play.mock.calls.length).toBe(before + 1);
     expect(host.play.mock.calls.at(-1)?.[0]).toBe(source);

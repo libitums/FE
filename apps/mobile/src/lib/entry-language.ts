@@ -16,7 +16,7 @@ export type EntryLanguageLabel =
   | "Thai · ภาษาไทย"
   | "Burmese · မြန်မာ";
 
-// 목록의 렌더 순서입니다. 2026-11-18 태국어 · 미얀마어는 이야기 번역 전용으로 끝에 둡니다(ADR-0158).
+// 목록의 렌더 순서입니다. 2026-11-18 태국어 · 미얀마어를 끝에 더했고(ADR-0158), 2026-11-20부터 두 언어도 화면 문구 표가 있습니다(ADR-0158 개정).
 export const entryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja", "th", "my"];
 
 // `entryLanguages[0]`과 같은 값이어야 한다는 성질을 unit이 단언합니다 — 리터럴이
@@ -51,7 +51,7 @@ export function entryLanguageLabel(language: EntryLanguage): EntryLanguageLabel 
 }
 
 // 지금 고를 수 있는 언어인가입니다. 영어 · 베트남어(ADR-0091 D4) · 인도네시아어(ADR-0093) · 스페인어(ADR-0097) ·
-// 일본어(ADR-0098) 모두 열려 있습니다. 목록에 고를 수 없는 언어를 다시 둘 때를 위해 판정은 남깁니다.
+// 일본어(ADR-0098) · 태국어 · 미얀마어(ADR-0158) 모두 열려 있습니다. 목록에 고를 수 없는 언어를 다시 둘 때를 위해 판정은 남깁니다.
 export function isEntryLanguageAvailable(language: EntryLanguage): boolean {
   switch (language) {
     case "en":
@@ -64,9 +64,4 @@ export function isEntryLanguageAvailable(language: EntryLanguage): boolean {
       return true;
     }
   }
-}
-
-// 화면 문구 표가 없고 에피소드 번역만 있는 언어입니다(ADR-0158) — 화면은 영어 표가 채웁니다.
-export function isStoryOnlyLanguage(language: EntryLanguage): boolean {
-  return language === "th" || language === "my";
 }

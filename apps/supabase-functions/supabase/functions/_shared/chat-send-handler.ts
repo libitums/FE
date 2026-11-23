@@ -29,6 +29,7 @@ import { saveSuggestions } from "./companion-suggest-generate.ts";
 import type { PreStreamErrorCode } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { createUsageCollector, usageLine } from "./companion-usage.ts";
+import { handleMissionTurn, isMissionTurnRequest } from "./mission-turn-handler.ts";
 
 // 지난 대화는 마지막 요약 뒤 메시지 전부다(마이그레이션 20261120). 요약 뒤 남는 최근 메시지가 `historyKeep`개이고,
 // 그 밖이 `settings.summary_after`개 쌓이면 요약되어 빠진다(기본 20 ~ 49개). `historyCap`은 요약이 계속 실패할 때의 상한이다.
@@ -52,6 +53,8 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     };
 
     if (request.method !== "POST") return respond(errorResponse("method_not_allowed"));
+    // 롤플레이 미션 턴(ADR-0177) — 본문에 `conversation_id`가 있으면 미션 갈래로 간다. 아래 컴패니언 턴은 그대로다.
+    if (await isMissionTurnRequest(request)) return handleMissionTurn(deps, request);
     const { env, llm } = deps;
     if (env === null || llm === null) return respond(errorResponse("server_misconfigured"));
 

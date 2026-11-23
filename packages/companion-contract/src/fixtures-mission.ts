@@ -1,4 +1,4 @@
-// 롤플레이 미션(ADR-0160)의 재생용 값입니다. 6화 「커피 주문」 한 판 — 시작 → 힌트 → 끝(리포트는 PRD 부록 B의 예 그대로) —
+// 롤플레이 미션(ADR-0177)의 재생용 값입니다. 6화 「커피 주문」 한 판 — 시작 → 힌트 → 끝(리포트는 PRD 부록 B의 예 그대로) —
 // 과 목록 · 지난 리포트입니다. 턴 스트림은 `fixtures-streams.ts`의 `turn-mission`입니다.
 import type {
   MissionDefinition,
@@ -111,22 +111,25 @@ const evidence: Record<string, string> = {
   stay: "가지고 가요.",
 };
 
-/** PRD 부록 B의 리포트 — 과업 75 · 정확도 85 · 목표 표현 50 · 힌트 0 → 73점, 성공. */
+/** PRD 부록 B의 리포트 — 과업 75 · 정확도 85 · 목표 표현 50 · 힌트 0 → 73점, 성공(필수를 이룬 뒤 학습자가 끝냄). */
 export const missionReportFixture: MissionReport = {
   conversationId: ids.conversation,
   missionId: "u06-cafe",
   missionVersion: 1,
   outcome: "success",
-  endReason: "goals",
+  endReason: "finish",
   totalScore: 73,
   taskScore: 75,
   accuracyScore: 85,
   expressionScore: 50,
   hintsUsed: 0,
   weights: { task: 0.5, accuracy: 0.3, expression: 0.2, hintPenalty: 5 },
+  scoreParts: { task: 37.5, accuracy: 25.5, expression: 10, hintPenalty: 0 },
+  headline: "You ordered and paid — mission complete!",
   goals: goalStates(["order", "pay", "stay"]).map((goal) => ({
     ...goal,
     evidence: evidence[goal.id] ?? null,
+    tip: goal.done ? null : { ko: "아메리카노 얼마예요?", meaning: "How much is an americano?" },
   })),
   expressions: [
     {
@@ -142,9 +145,36 @@ export const missionReportFixture: MissionReport = {
       used: false,
     },
   ],
-  corrections: [{ original: "가지고 가요", corrected: "포장이요", kind: "better" }],
+  corrections: [
+    {
+      original: "가지고 가요",
+      corrected: "포장이요",
+      kind: "better",
+      items: [
+        {
+          original: "가지고 가요",
+          corrected: "포장이요",
+          reason: "At a café, 포장이요 is the usual way to say take-out.",
+        },
+      ],
+    },
+  ],
+  focus: [
+    {
+      examples: [{ original: "가지고 가요", corrected: "포장이요" }],
+      reason: "At a café, say 포장이요 for take-out.",
+    },
+  ],
+  strengths: [
+    {
+      quote: "아이스 아메리카노 한 잔 주세요.",
+      note: "A complete, polite order using the target pattern.",
+    },
+  ],
   retry: [{ ko: "아메리카노 얼마예요?", meaning: "How much is an americano?" }],
-  summary: "You ordered and paid smoothly. Next time, try asking the price.",
+  summary:
+    "You ordered clearly with 한 잔 주세요 and paid without trouble. Next time, try asking the price with 얼마예요. You're ready for the next café visit!",
+  nextStep: "Play again and ask how much your drink is.",
   bestScore: 73,
   graderModel: "claude-opus-5-5",
   createdAt: "2026-11-18T09:12:00+09:00",

@@ -1,7 +1,13 @@
 import { describe, expect, test } from "vitest";
 
 import type { ChatRoomSummary } from "./chat-source.contract";
-import { guideSeenFrom, guideSteps, hasNewFriend, messengerTabBadge } from "./messenger-guide";
+import {
+  guideSeenFrom,
+  guideSteps,
+  hasNewFriend,
+  messengerTabBadge,
+  isSuggestedRowShown,
+} from "./messenger-guide";
 
 // `unit` 계층(MG-U1 ~ U3): 메신저 첫 입장 안내 판정(사용자 결정 2026-11-13).
 
@@ -36,6 +42,10 @@ describe("하단 탭 NEW", () => {
     ).toBe(false);
     expect(hasNewFriend([room("duksu")], "open")).toBe(false);
   });
+
+  test("MG-U1b 비회원 미리보기(preview)도 회원처럼 새 친구 NEW를 센다(ADR-0166)", () => {
+    expect(hasNewFriend([room("duksu"), room("mina", { isNew: true })], "preview")).toBe(true);
+  });
 });
 
 describe("코치마크 단계 · 기록", () => {
@@ -49,5 +59,12 @@ describe("코치마크 단계 · 기록", () => {
     expect(guideSeenFrom("not json")).toEqual([]);
     expect(guideSeenFrom(JSON.stringify(["list", "room", "list", "x"]))).toEqual(["list", "room"]);
     expect(guideSeenFrom(JSON.stringify({ list: true }))).toEqual([]);
+  });
+});
+
+describe("목록 안내와 추천 친구 줄", () => {
+  test("MG-U4 목록 안내가 떠 있는 동안은 추천 줄을 세우지 않는다 — 떠 있는 덕수쌤 줄이 원본 첫 줄 자리에 맞게", () => {
+    expect(isSuggestedRowShown(true)).toBe(false);
+    expect(isSuggestedRowShown(false)).toBe(true);
   });
 });

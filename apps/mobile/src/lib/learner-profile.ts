@@ -9,6 +9,7 @@ import type {
   LearnerProfileRecord,
   LearnerProfileSavedEvent,
 } from "./learner-profile.contract";
+import { COUNTRY_NAME_LANGUAGES, storedCountryNames } from "./country-names";
 import type { LearnerCountryText } from "./placeholder-fill";
 
 export const LEARNER_NAME_MAX_LENGTH = 30;
@@ -121,11 +122,23 @@ export function pickLearnerName(
   return pool[index] ?? "";
 }
 
-/** 문장에 서는 세 표기입니다 - 관사가 있으면 `en` 앞에 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다. */
-export function learnerCountryTextOf(country: LearnerCountry): LearnerCountryText {
+/**
+ * 문장에 서는 세 표기입니다 - `en` 칸은 뜻 줄(번역 줄)의 나라 이름이라 화면 언어의 이름이고(2026-11-19 — 기기에 받아 둔 표,
+ * `country-names.ts`), 표가 아직 없거나 그 나라가 없으면 영어 이름입니다. 영어 관사는 영어 문장(en)에만 붙습니다
+ * (th · my는 2026-11-20부터 그 언어 문장 — ADR-0158 개정). 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다.
+ */
+export function learnerCountryTextOf(country: LearnerCountry, language = "en"): LearnerCountryText {
+  const local = COUNTRY_NAME_LANGUAGES.includes(language)
+    ? (storedCountryNames(language)?.[country.code] ?? country.en)
+    : null;
   return {
     ko: country.ko,
     roman: country.roman,
-    en: country.article === undefined ? country.en : `${country.article} ${country.en}`,
+    en:
+      local !== null
+        ? local
+        : country.article === undefined
+          ? country.en
+          : `${country.article} ${country.en}`,
   };
 }

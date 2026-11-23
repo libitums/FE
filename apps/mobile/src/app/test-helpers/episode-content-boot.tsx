@@ -14,6 +14,7 @@ import { sha256Hex, utf8Bytes } from "../../lib/sha256";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
 import { downloadAllowedStorageKey } from "../../lib/download-policy";
 import { resetPrefetchWindowForTests } from "../../lib/prefetch-window";
+import type { ProgressSeedShape } from "./progress-seed";
 
 // 에피소드 콘텐츠 받기 integration 테스트가 함께 쓰는 부팅 · 대역입니다. 대역은 경계뿐입니다 — 가짜 전송
 // (`fetch`) · `NativeModules`(`StorageModule`, 선택 `ContentFileModule`) · Supabase 설정(`vi.stubEnv`).
@@ -131,6 +132,10 @@ export type BootOptions = {
    * 받는 흐름을 볼 때 씁니다 — 창은 진행 중인 편 + 다음 1편이라 새 사용자에게 뒤 편은 열 때까지 받지 않습니다.
    */
   readonly allowEpisodes?: readonly string[];
+  /** 진행 씨앗(`App`의 `progressSeed`) — 앞 편을 끝낸 사용자로 부팅합니다. */
+  readonly progressSeed?: ProgressSeedShape;
+  /** 호스트의 연결 문자열(`NetworkStatusModule.current`, 예: `cellular:metered`). 없으면 옛 호스트입니다. */
+  readonly network?: string;
 };
 
 export type Booted = { readonly urls: string[]; readonly store: Map<string, string> };
@@ -151,6 +156,9 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
       remove: (key: string) => void store.delete(key),
     },
     ...(options.contentFiles === undefined ? {} : { ContentFileModule: options.contentFiles }),
+    ...(options.network === undefined
+      ? {}
+      : { NetworkStatusModule: { current: () => options.network } }),
   });
   vi.stubEnv("PUBLIC_SUPABASE_URL", supabaseUrl);
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -187,6 +195,7 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
     <App
       {...(options.onEvent === undefined ? {} : { episodeIntroEventSink: options.onEvent })}
       {...(options.onEntryEvent === undefined ? {} : { entryEventSink: options.onEntryEvent })}
+      {...(options.progressSeed === undefined ? {} : { progressSeed: options.progressSeed })}
     />,
   );
   if (options.splash === "hold") {

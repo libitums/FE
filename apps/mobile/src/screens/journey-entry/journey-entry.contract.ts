@@ -1,4 +1,6 @@
+import type { EntryPath } from "../../lib/entry-flow";
 import type { EntryLanguage } from "../../lib/entry-language";
+import type { EntryBasicsCopy } from "../entry-basics/entry-basics.contract";
 
 /**
  * 셸이 넘기는 가려지는 가장자리입니다. **이 화면은 셸의 안쪽 여백을 받지 않습니다** —
@@ -16,7 +18,8 @@ export type JourneyEntrySafeArea = {
 export type JourneyEntryScreenProps = {
   readonly safeArea: JourneyEntrySafeArea;
   readonly language: EntryLanguage;
-  readonly onEnter: () => void;
+  /** 두 길 가운데 고른 것입니다 — 기초부터 · 바로 입장(ADR-0176). 화면이 서 있는 동안 한 번만 부릅니다. */
+  readonly onSelectPath: (path: EntryPath) => void;
   /** 좌상단 뒤로가기(2026-09-21 디자인 반영)입니다. 없으면 그리지 않습니다. */
   readonly onBack?: () => void;
 };
@@ -28,7 +31,12 @@ export type JourneyEntryCopy = {
   readonly caption: string;
   /** AI 생성 그림 고지입니다. */
   readonly notice: string;
-  readonly start: string;
+  readonly basics: string;
+  /** 「기초부터」 단추의 보조 줄입니다. */
+  readonly basicsDetail: string;
+  readonly story: string;
+  /** 「기초부터」로 이어지는 세 화면의 문구입니다. */
+  readonly firstSteps: EntryBasicsCopy;
 };
 
 export type JourneyEntryTestId =
@@ -40,4 +48,5 @@ export type JourneyEntryTestId =
   | "journey-entry-screen-caption"
   | "journey-entry-screen-notice"
   | "journey-entry-screen-language"
-  | "journey-entry-screen-start";
+  | "journey-entry-screen-basics"
+  | "journey-entry-screen-story";

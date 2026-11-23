@@ -67,6 +67,20 @@ export const correctionDataSchema = z.object({
    * 칩을 그대로 보낸 메시지(`skipped`)에는 없다.
    */
   learnedUsed: z.optional(z.array(z.object({ id: z.string(), surface: z.string() }))),
+  /**
+   * 주간 순위 「Chat words」(ADR-0170) — 이 메시지에서 쓴 배운 단어(`voca:`)가 있을 때만. `learnedUsed` 가운데 단어만 본다.
+   * - `counted`: 이번에 새로 센 단어(이번 주 처음 바르게 씀). 앱은 내 말풍선 아래 「+N chat words」와 칩으로 보인다.
+   * - `pending`: 교정(`items[].original`)이 짚은 단어 가운데 이번 주에 아직 안 센 것 — 고쳐 다시 보내면 센다(회색 칩).
+   * - `weekTotal`: 이번 주 센 단어 수(이번 것 포함).
+   * 이미 이번 주에 센 단어는 어느 쪽에도 없다. 칩을 그대로 보낸 메시지(`skipped`)나 서버 기록이 실패하면 칸이 없다.
+   */
+  chatWords: z.optional(
+    z.object({
+      counted: z.array(z.object({ id: z.string(), surface: z.string() })),
+      pending: z.array(z.object({ id: z.string(), surface: z.string() })),
+      weekTotal: nonNegativeInt,
+    }),
+  ),
 });
 
 export const translationDataSchema = z.object({ segment: nonNegativeInt, text: z.string() });
@@ -127,20 +141,25 @@ export const doneDataSchema = z.object({
   creditsSpent: nonNegativeInt,
   balance: z.nullable(nonNegativeInt),
   refusal: z.optional(z.object({ stage: refusalStageSchema })),
+  /** 이번 턴의 적용 로맨스 수위(ADR-0164, 20261216 뒤 서버). 옛 서버는 보내지 않는다 — 없으면 standard로 본다. */
+  romanceTier: z.optional(z.enum(["open", "standard"])),
 });
 
 /**
- * 미션 턴(ADR-0160)의 목표 진척입니다 — 미션 턴에만, `state` 자리(답 · 번역 · 교정 뒤, `done` 바로 앞)에 한 번 옵니다. 미션 턴에는
+ * 미션 턴(ADR-0177)의 목표 진척입니다 — 미션 턴에만, `state` 자리(답 · 번역 · 교정 뒤, `done` 바로 앞)에 한 번 옵니다. 미션 턴에는
  * `state` · `suggestions`가 오지 않습니다. 목표는 한 번 달성하면 되돌아가지 않습니다.
  * - `goals`: 미션 정의의 순서대로 목표마다 달성 여부.
- * - `turnsLeft`: 남은 학습자 턴. `ended`: 이 턴이 마지막이면 그 까닭(`goals` 성공 · `turn_limit` 실패), 아니면 null —
+ * - `turnsLeft`: 남은 학습자 턴. `ended`: 이 턴으로 판이 닫혔으면 그 까닭(`goals` 모든 목표 · `turn_limit` 턴 상한), 아니면 null —
  *   null이 아니면 앱은 `mission-finish`를 부른다.
+ * - `requiredDone`: 필수 목표를 모두 이뤘는가(성공 확정). `ended`가 null인데 참이면 판은 이어진다 — 앱은 「미션 성공 — 계속하기 /
+ *   끝내기」를 띄우고, 끝내기는 `mission-finish`(`abandon` 없이)로 닫아 채점한다(끝난 까닭 `finish`).
  */
 export const missionDataSchema = z.object({
   conversationId: z.uuid(),
   goals: z.array(z.object({ id: missionGoalIdSchema, done: z.boolean() })),
   turnsLeft: nonNegativeInt,
   ended: z.nullable(missionEndReasonSchema),
+  requiredDone: z.boolean(),
 });
 
 const eventOf = <Name extends string, Data extends z.ZodMiniType>(event: Name, data: Data) =>

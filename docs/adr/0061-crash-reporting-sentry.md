@@ -66,6 +66,12 @@
 - `MainActivity`의 기존 익명 `LynxViewClient`에 `onReceivedError` 하나를 더해 `CrashReporting.onLynxError(error)`로 넘긴다.
 - 받는 코드 범위는 둘이다: `200 ≤ code < 300` → `js-background`, `1100 ≤ code < 1200` → `js-main-thread`. 그 밖(이미지 · 리소스 · 레이아웃 등 네이티브 오류)과
   `level`이 `warn`인 것은 받지 않는다 — URL이 실리고 양이 많다.
+- ⟨2026-11-21⟩ **스크롤 위치 보정(UI 메서드 code 4)도 받지 않는다.** 이름이 `Error`이고 메시지가 정확히
+  `UI method invoke: {"code":4,"data":"Target scroll position = <수> is beyond threshold. Clamped to position = <수>"}`이면 `REJECTED`(예산을 쓰지 않는다).
+  Android 스크롤 상자가 범위 밖 목적지를 가장 가까운 자리로 옮겼다는 알림이라 화면은 이미 그 자리에 있다. 메인 스레드 `Element.invoke`는 그 콜백을
+  동기로 불러 `.catch`가 붙기 전에 거부되고, 런타임이 그 순간 올리므로(logcat에는 `unhandled rejection`, 호스트가 받는 이름은 `Error`) JS 쪽에서는 막을 수 없다
+  (아래 「정정 기록」 2026-11-21). `<수>`는 호스트가 찍는 소수 꼴(`0.0` · `-2244.0` · `1.0E7` — 지수는 `e`/`E` · 부호 모두)이다.
+  다른 code 4 실패 · 다른 code의 같은 문구 · UI 메서드 결과가 아닌 같은 문구 · 이름이 `unhandled rejection`인 것 · 뒤에 글이 붙은 것 · `NaN` · `Infinity`는 그대로 받는다.
 
 ### D2. 에러 경계가 잡은 렌더 예외는 `reportCrash`가 같은 통로로 한 번 넘긴다
 
@@ -521,6 +527,18 @@ A5 · A6의 측정은 「안 나오는 길」을 찾는 것이었고 **탐침한
   「tombstone 쪽 `crashed` 세션이 다른 envelope이라 서버가 잇는지 모른다」도 닫혔다 — 집계된다.
 - 번들 수치 문장을 main 병합과 상한 변경(1,723,000 — 사용자 결정)에 맞췄다(「대가」 5).
 - 닫히지 않은 것은 「확인하지 못한 것」에 그대로 있다 — 서버가 붙이는 IP · 매핑으로 풀린 스택 · release 빌드 · ANR · API 31 ~ 33 · 실기 · M2 / M3 쿼리.
+
+### 2026-11-21 — 스크롤 위치 보정(code 4)을 받지 않음 (Sentry DURU-ANDROID-G · Q · X)
+
+- **무엇이었나.** `Target scroll position = 0.0 is beyond threshold. Clamped to position = −(스크롤 상자 높이)` — 지도 미끄럼 스크롤(`use-map-glide`)이
+  메인 스레드에서 보낸 `scrollTo(0)`이, 네이티브 스크롤 범위가 아직 「0 − 상자 높이」인 순간에 닿은 것이다. Sentry의 `lynx.source`가 `js-main-thread`이고
+  스택이 worklet 런타임의 `invoke` ← `Promise (native)` ← 앱의 미끄럼 단계 함수이며, 메인 스레드에서 `scrollTo`를 부르는 곳은 그 하나뿐이다.
+- **해가 없다** [실측 — Pixel 8 에뮬레이터 `assembleBundled`, 맨 위 맞춤을 레이아웃 전으로 당긴 탐침 번들]: 같은 오류(−2337)가 나도 지도는 맨 위에 있고 안내도 그대로 섰다.
+  그런데 프로세스당 예산(D11, 20건)을 먹어 진짜 오류를 밀어낼 수 있었다.
+- **JS에서 막을 수 없다** [실측]: `use-map-glide`는 2026-10-21부터 `.catch(() => {})`를 달았지만 logcat에 `quick_context … unhandled rejection: … UI method invoke` →
+  `LynxError 1101`이 그대로 찍혔다. 런타임의 `invoke`가 `__InvokeUIMethod` 콜백을 Promise 실행자 안에서 동기로 받아 거부하기 때문이다(스택의 `Promise (native)` 프레임).
+- **건수.** 30일 1,898건 중 1,893건이 `1.3.0+14`(#402 이전 번들)이고, #402 뒤 릴리스는 `1.4.0+15` 1건(Q) · `1.4.1+23` 1건(X) · `1.5.0+25` 0건이었다.
+- **고친 것.** `CrashReportPayload.fromLynxError`가 위 D1의 꼴을 `null`로 돌린다. 기기에서 탐침 번들로 같은 오류를 내고 깔때기 결말이 `REJECTED`인 것을 봤다.
 
 ## 재검토 조건
 

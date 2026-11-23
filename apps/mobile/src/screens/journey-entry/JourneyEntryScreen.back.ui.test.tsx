@@ -23,14 +23,14 @@ function pressBack(): boolean {
   return handled;
 }
 
-test("[US22] JourneyEntryScreen → 뒤로가기는 onBack 1회 · onEnter 0회", () => {
+test("[US22] JourneyEntryScreen → 뒤로가기는 onBack 1회 · onSelectPath 0회", () => {
   const onBack = vi.fn<() => void>();
-  const onEnter = vi.fn();
+  const onSelectPath = vi.fn();
   render(
     <JourneyEntryScreen
       safeArea={{ top: 0, bottom: 0 }}
       language="en"
-      onEnter={onEnter}
+      onSelectPath={onSelectPath}
       onBack={onBack}
     />,
   );
@@ -38,5 +38,5 @@ test("[US22] JourneyEntryScreen → 뒤로가기는 onBack 1회 · onEnter 0회"
   expect(pressBack()).toBe(true);
 
   expect(onBack).toHaveBeenCalledTimes(1);
-  expect(onEnter).not.toHaveBeenCalled();
+  expect(onSelectPath).not.toHaveBeenCalled();
 });

@@ -43,6 +43,12 @@ type ItemBase<T extends string> = {
   story?: ItemStory;
 };
 
+/**
+ * 정답 음성 id — 와이어 `feedback.audio_url`(콘텐츠 수준 5). 수준 4까지는 같은 id가 `stimulus.audio_url`에 왔습니다.
+ * 빈 값이면 키가 없습니다(ADR-0172).
+ */
+type AnswerAudio = { answerAudioUrl?: string };
+
 /** 문항 피드백의 정답 줄 — `feedback.correct`. */
 export type CorrectFeedback = { correct: Text };
 /** 대답 고르기의 해설 — 틀림 줄 · 틀린 보기 id는 있을 때만. */
@@ -61,13 +67,14 @@ export type LearningItem =
       exampleAudioUrl?: string;
     })
   | (ItemBase<"CLOZE"> & { prompt: Text; context: Text; tiles: Text[]; answers: Text[] })
-  | (ItemBase<"IMG_MATCH"> & { prompt: Text; stimulus: Stimulus; options: Option[] })
-  | (ItemBase<"WORD_ORDER"> & {
-      prompt: Text;
-      stimulus?: Stimulus;
-      tiles: Text[];
-      answers: Text[];
-    })
+  | (ItemBase<"IMG_MATCH"> & AnswerAudio & { prompt: Text; stimulus: Stimulus; options: Option[] })
+  | (ItemBase<"WORD_ORDER"> &
+      AnswerAudio & {
+        prompt: Text;
+        stimulus?: Stimulus;
+        tiles: Text[];
+        answers: Text[];
+      })
   | (ItemBase<"LISTEN_SELECT"> & {
       prompt: Text;
       context?: Text;
@@ -81,7 +88,8 @@ export type LearningItem =
       options: Option[];
       feedback: { correct: Text; wrong?: Text; wrongOption?: string };
     })
-  | (ItemBase<"TRANSLATE_TO_KO"> & { prompt: Text; stimulus?: Stimulus; answers: Text[] })
+  | (ItemBase<"TRANSLATE_TO_KO"> &
+      AnswerAudio & { prompt: Text; stimulus?: Stimulus; answers: Text[] })
   | (ItemBase<"TRANSLATE_TO_EN"> & { prompt: Text; stimulus: Stimulus; options: Option[] })
   | (ItemBase<"DICTATION"> & { prompt: Text; stimulus: Stimulus; answers: Text[] })
   | (ItemBase<"SENT_BUILD"> & { prompt: Text; context: Text; answers: Text[] })
@@ -108,15 +116,17 @@ type StimulusChoice<T extends string> = ItemBase<T> & {
   options: Option[];
   feedback: CorrectFeedback;
 };
-type TilesBuild<T extends string> = ItemBase<T> & {
-  prompt: Text;
-  stimulus: Stimulus;
-  /** 이야기 빈칸의 문맥(`___` 자리) — 없으면 키가 없습니다. */
-  context?: Text;
-  tiles: Text[];
-  answers: Text[];
-};
-type Speech<T extends string> = ItemBase<T> & { prompt: Text; stimulus: Stimulus; answers: Text[] };
+type TilesBuild<T extends string> = ItemBase<T> &
+  AnswerAudio & {
+    prompt: Text;
+    stimulus: Stimulus;
+    /** 이야기 빈칸의 문맥(`___` 자리) — 없으면 키가 없습니다. */
+    context?: Text;
+    tiles: Text[];
+    answers: Text[];
+  };
+type Speech<T extends string> = ItemBase<T> &
+  AnswerAudio & { prompt: Text; stimulus: Stimulus; answers: Text[] };
 
 export type AddedLearningItem =
   | (ItemBase<"CLOZE_CHOICE"> & {

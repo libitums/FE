@@ -1,4 +1,4 @@
-// 미션 턴의 상태 줄 해석과 판의 상태 전이(ADR-0160, PRD §3.4 · §3.6). 순수 함수입니다.
+// 미션 턴의 상태 줄 해석과 판의 상태 전이(ADR-0177, PRD §3.4 · §3.6). 순수 함수입니다.
 //
 // 모델 답은 컴패니언과 같은 조각 줄(`@speech` · `@action`) 뒤에 상태 줄 하나를 씁니다 —
 // `@state {"goals_done": ["order"], "off_task": false, "closing": false}`. 조각은 기존 해석기(`createSegmentSplitter`)가 나누고,
@@ -16,6 +16,8 @@ export type MissionTurnState = {
   readonly goalsDone: readonly string[];
   readonly offTask: boolean;
   readonly closing: boolean;
+  /** 이 답이 꺼낸 목표(상대역의 자기 보고 — 순서 검사, ADR-0177 D15). 없거나 모르는 값이면 null. */
+  readonly opens?: string | null;
 };
 
 /** 판의 상태(`conversations.mission_state`). 학습자 턴 수는 끝난 턴만 센다. */
@@ -23,6 +25,8 @@ export type MissionProgress = {
   readonly goalsDone: readonly string[];
   readonly learnerTurns: number;
   readonly hintsUsed: number;
+  /** 새 목표 없이 이어진 학습자 턴 수(연출 지시의 「막힘」, `mission-direction.ts`). 없으면 0. */
+  readonly stall?: number;
 };
 
 export const initialMissionProgress: MissionProgress = {
@@ -53,6 +57,15 @@ export function parseMissionState(text: string): MissionTurnState | null {
     ],
     offTask: record["off_task"] === true,
     closing: record["closing"] === true,
+    // 칸이 없으면 undefined(모름 — 순서 검사를 하지 않는다), null이면 「아무 목표도 묻지 않음」.
+    ...("opens" in record
+      ? {
+          opens:
+            typeof record["opens"] === "string" && record["opens"].trim() !== ""
+              ? record["opens"].trim()
+              : null,
+        }
+      : {}),
   };
 }
 
@@ -83,14 +96,34 @@ export function mergeGoalsDone(
 export const allRequiredDone = (mission: MissionDefinition, goalsDone: readonly string[]) =>
   mission.goals.every((goal) => !goal.required || goalsDone.includes(goal.id));
 
-/** 끝 판정 — 필수 목표를 모두 이뤘으면 `goals`(성공), 아니고 학습자 턴이 상한에 닿았으면 `turn_limit`(실패), 아니면 null. */
+export const allGoalsDone = (mission: MissionDefinition, goalsDone: readonly string[]) =>
+  mission.goals.every((goal) => goalsDone.includes(goal.id));
+
+/**
+ * 턴 뒤의 끝 판정 — 모든 목표(필수 + 선택)를 이뤘으면 `goals`, 아니고 학습자 턴이 상한에 닿았으면 `turn_limit`, 아니면 null.
+ * 필수만 이룬 판은 닫히지 않는다(「성공 확정」 — `allRequiredDone`). 학습자가 끝내기를 누르면 `missionFinishReason`이 `finish`로 닫는다.
+ * 성공 · 실패는 끝난 까닭이 아니라 필수 목표로 정한다 — 필수를 이룬 뒤 턴 상한에 닿아도 성공이다.
+ */
 export function missionEndReason(
   mission: MissionDefinition,
   progress: MissionProgress,
 ): MissionEndReason | null {
-  if (allRequiredDone(mission, progress.goalsDone)) return "goals";
+  if (allGoalsDone(mission, progress.goalsDone)) return "goals";
   if (progress.learnerTurns >= mission.turnLimit) return "turn_limit";
   return null;
+}
+
+/**
+ * 학습자의 끝내기(`mission-finish`, `abandon` 없이)가 진행 중인 판을 닫는 까닭 — 필수를 모두 이뤘으면 `finish`(채점),
+ * 아니면 null(닫지 않는다 — 서버는 `mission_not_ended`, 그만두려면 `abandon: true`). 이미 끝난 판이면 그 까닭 그대로.
+ */
+export function missionFinishReason(
+  mission: MissionDefinition,
+  progress: MissionProgress,
+): MissionEndReason | null {
+  const ended = missionEndReason(mission, progress);
+  if (ended !== null) return ended;
+  return allRequiredDone(mission, progress.goalsDone) ? "finish" : null;
 }
 
 export type MissionTurnOutcome = {
@@ -98,6 +131,8 @@ export type MissionTurnOutcome = {
   /** 이번 턴에 새로 달성한 목표(파일 순서). */
   readonly newlyDone: readonly string[];
   readonly ended: MissionEndReason | null;
+  /** 필수 목표를 모두 이뤘는가(판이 끝났든 아니든). 끝나지 않았는데 참이면 앱은 「계속하기 / 끝내기」를 띄운다. */
+  readonly requiredDone: boolean;
   readonly offTask: boolean;
 };
 
@@ -116,10 +151,12 @@ export function advanceMission(
     learnerTurns: progress.learnerTurns + 1,
     hintsUsed: progress.hintsUsed,
   };
+  const newlyDone = goalsDone.filter((id) => !progress.goalsDone.includes(id));
   return {
-    progress: next,
-    newlyDone: goalsDone.filter((id) => !progress.goalsDone.includes(id)),
+    progress: { ...next, stall: newlyDone.length > 0 ? 0 : (progress.stall ?? 0) + 1 },
+    newlyDone,
     ended: missionEndReason(mission, next),
+    requiredDone: allRequiredDone(mission, goalsDone),
     offTask: state?.offTask ?? false,
   };
 }
@@ -138,6 +175,7 @@ export function missionEventData(
     })),
     turnsLeft: Math.max(0, mission.turnLimit - progress.learnerTurns),
     ended: missionEndReason(mission, progress),
+    requiredDone: allRequiredDone(mission, progress.goalsDone),
   };
 }
 

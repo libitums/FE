@@ -27,14 +27,13 @@ export const onboardingEs: OnboardingScreenCopy = {
       body: "Unidades diarias cortas que caben en tu día.\nCompleta una en solo cinco minutos.",
     },
   },
-  next: "Siguiente",
   getStarted: "Empezar",
   progress: (ordinal, total) => `Paso ${ordinal} de ${total}`,
   storyChat: {
-    staff: "Personal",
-    welcome: "¡Bienvenido! ¿Buscas algo?",
-    sunscreen: "¿Tienen protector solar?",
-    thisWay: "Sí, por aquí.",
+    friend: "Doyun",
+    atStore: "Estoy en la tienda de conveniencia. ¿Quieres algo de tomar?",
+    water: "¡Una botella de agua, por favor!",
+    onMyWay: "Vale. ¡Ya voy!",
   },
   quiz: { replay: "Repetir", stop: "Detener", play: "Reproducir" },
   unit: {
@@ -57,9 +56,22 @@ export const languageSelectEs: LanguageSelectCopy = {
 export const journeyEntryEs: JourneyEntryCopy = {
   title: "Tu viaje te espera",
   display: "Empieza tu historia",
-  caption: "Explora Seúl, conoce gente nueva y aprende coreano por el camino.",
+  caption: "¿No conoces el hangul? Descubre algunas letras antes de aterrizar en Seúl.",
   notice: "Algunas imágenes de este servicio se generaron con tecnología de IA",
-  start: "Empezar",
+  basics: "Primero, lo básico",
+  basicsDetail: "6 letras, 3 sonidos y luego la historia",
+  story: "Ir a la historia",
+  firstSteps: {
+    progress: (current, total) => `Paso ${current} de ${total}`,
+    lettersTitle: "Conoce tus primeras letras",
+    lettersLead: "Una consonante y una vocal forman un bloque de sonido.",
+    lettersHear: "Toca una letra para escucharla.",
+    lettersNext: "Vamos a combinarlas",
+    readyTitle: "¡Acabas de leer coreano!",
+    readyMeaning: "«¿Tú también vas?»",
+    readyBody: "Tu historia en Seúl está a punto de empezar.",
+    readyGo: "¡Sí, vamos!",
+  },
 };
 
 export const loginEs: LoginCopy = {

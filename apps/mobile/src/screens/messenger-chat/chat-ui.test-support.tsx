@@ -91,6 +91,8 @@ export type MountChatOptions = {
   readonly guideStore?: GuideStore;
   /** 제품 사용 이벤트를 받을 sink — 주면 결선처럼 이벤트 자리(`ChatEventsContext`)로 감쌉니다. */
   readonly eventSink?: EpisodeIntroEventSink;
+  /** 비회원 방(ADR-0166) — 주면 보내기 같은 계정 동작이 로그인 권유가 됩니다. */
+  readonly onSignInRequired?: () => void;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -118,6 +120,7 @@ export function mountChat(options: MountChatOptions = {}) {
     onExit,
     onOpenMemories,
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
+    onSignInRequired: options.onSignInRequired ?? null,
   };
   const room = <MessengerChatScreen {...screenProps} />;
   const view = render(

@@ -255,7 +255,7 @@ test("RM6. 거절 답 — 차단 턴에 보통 assistant 메시지로(meta.refus
   });
 });
 
-test("RM7. 페르소나 거절 줄 — 다섯 캐릭터 모두 회피 · 경고를 말투 상한까지 갖는다", async () => {
+test("RM7. 페르소나 거절 줄 — 스토리 다섯 · 추천 친구 넷 모두 회피 · 경고를 말투 상한까지 갖는다", async () => {
   const result = await db.admin.query(
     "select id, persona->'refusalLines' as lines, coalesce(persona->>'maxSpeechLevel', 'slang') as max from companion.characters order by sort_order",
   );
@@ -266,6 +266,10 @@ test("RM7. 페르소나 거절 줄 — 다섯 캐릭터 모두 회피 · 경고�
     "mina",
     "doyun",
     "jaemin",
+    "seoyeon",
+    "haejun",
+    "daeun",
+    "geonwoo",
   ]);
   for (const row of result.rows) {
     const expected = levels.slice(0, levels.indexOf(row.max as string) + 1);

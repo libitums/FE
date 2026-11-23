@@ -32,7 +32,7 @@
             },
             "endReason": {
               "type": "string",
-              "enum": ["goals", "turn_limit"]
+              "enum": ["goals", "turn_limit", "finish"]
             },
             "totalScore": {
               "type": "integer",
@@ -78,6 +78,28 @@
               "required": ["task", "accuracy", "expression", "hintPenalty"],
               "additionalProperties": false
             },
+            "scoreParts": {
+              "type": "object",
+              "properties": {
+                "task": {
+                  "type": "number"
+                },
+                "accuracy": {
+                  "type": "number"
+                },
+                "expression": {
+                  "type": "number"
+                },
+                "hintPenalty": {
+                  "type": "number"
+                }
+              },
+              "required": ["task", "accuracy", "expression", "hintPenalty"],
+              "additionalProperties": false
+            },
+            "headline": {
+              "type": "string"
+            },
             "goals": {
               "type": "array",
               "items": {
@@ -105,13 +127,37 @@
                       }
                     },
                     "required": ["en"],
-                    "additionalProperties": false
+                    "additionalProperties": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 240
+                    }
                   },
                   "done": {
                     "type": "boolean"
                   },
                   "evidence": {
                     "type": ["string", "null"]
+                  },
+                  "tip": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "ko": {
+                            "type": "string"
+                          },
+                          "meaning": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["ko", "meaning"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 },
                 "required": ["id", "required", "label", "done", "evidence"],
@@ -162,9 +208,75 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "original": {
+                          "type": "string"
+                        },
+                        "corrected": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["original", "corrected", "reason"],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "required": ["original", "corrected", "kind"],
+                "additionalProperties": false
+              }
+            },
+            "focus": {
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "examples": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "original": {
+                          "type": "string"
+                        },
+                        "corrected": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["original", "corrected"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": ["examples", "reason"],
+                "additionalProperties": false
+              }
+            },
+            "strengths": {
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": ["quote", "note"],
                 "additionalProperties": false
               }
             },
@@ -186,6 +298,9 @@
               }
             },
             "summary": {
+              "type": "string"
+            },
+            "nextStep": {
               "type": "string"
             },
             "bestScore": {

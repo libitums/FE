@@ -4,7 +4,11 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 import type { OnboardingStep } from "./onboarding.contract";
 import {
   nextOnboardingStep,
-  onboardingActionLabel,
+  onboardingAutoAdvanceMs,
+  onboardingAutoAdvanceStep,
+  onboardingStartedEvent,
+  onboardingStepViewedEvent,
+  onboardingSwipeStep,
   previousOnboardingStep,
   onboardingCopy,
   onboardingSteps,
@@ -26,15 +30,9 @@ test("OB2. nextOnboardingStep이 0→1·1→2·2→null이다", () => {
   expect(nextOnboardingStep(2)).toBeNull();
 });
 
-test("OB3. onboardingActionLabel이 0·1에서 같고 2에서 갈린다", () => {
-  const stepZero = onboardingActionLabel(0, uiCopyEn.onboarding);
-  const stepOne = onboardingActionLabel(1, uiCopyEn.onboarding);
-  const stepTwo = onboardingActionLabel(2, uiCopyEn.onboarding);
-
-  expect(stepZero.trim().length).toBeGreaterThan(0);
-  expect(stepTwo.trim().length).toBeGreaterThan(0);
-  expect(stepOne).toBe(stepZero);
-  expect(stepTwo).not.toBe(stepZero);
+test("OB3. 모든 스텝의 버튼 문구는 Get started 하나다(다음 버튼 없음)", () => {
+  expect(uiCopyEn.onboarding.getStarted.trim().length).toBeGreaterThan(0);
+  expect("next" in uiCopyEn.onboarding).toBe(false);
 });
 
 test("OB4. 스텝 셋 각각에 공백 아닌 제목·본문이 있다", () => {
@@ -56,4 +54,45 @@ test("OB5. previousOnboardingStep이 0에서 null, 1·2에서 한 칸 앞이다"
   expect(previousOnboardingStep(0)).toBeNull();
   expect(previousOnboardingStep(1)).toBe(0);
   expect(previousOnboardingStep(2)).toBe(1);
+});
+
+test("OB6. 왼쪽으로 민 손가락은 다음 스텝, 오른쪽은 앞 스텝 — 끝에서는 null", () => {
+  const start = { x: 300, y: 200 };
+  expect(onboardingSwipeStep(0, start, { x: 240, y: 206 })).toBe(1);
+  expect(onboardingSwipeStep(1, start, { x: 240, y: 206 })).toBe(2);
+  expect(onboardingSwipeStep(2, start, { x: 240, y: 206 })).toBeNull();
+  expect(onboardingSwipeStep(1, start, { x: 360, y: 196 })).toBe(0);
+  expect(onboardingSwipeStep(0, start, { x: 360, y: 196 })).toBeNull();
+});
+
+test("OB7. 짧거나 세로가 더 긴 움직임은 스텝을 넘기지 않는다", () => {
+  const start = { x: 300, y: 200 };
+  expect(onboardingSwipeStep(0, start, { x: 290, y: 200 })).toBeNull();
+  expect(onboardingSwipeStep(0, start, { x: 240, y: 290 })).toBeNull();
+});
+
+test("OB8. 자동 넘김은 마지막 스텝에서 멈추고, 동작 줄이기면 하지 않는다", () => {
+  expect(onboardingAutoAdvanceMs).toBeGreaterThanOrEqual(3000);
+  expect(onboardingAutoAdvanceStep(0, false)).toBe(1);
+  expect(onboardingAutoAdvanceStep(1, false)).toBe(2);
+  expect(onboardingAutoAdvanceStep(2, false)).toBeNull();
+  expect(onboardingAutoAdvanceStep(0, true)).toBeNull();
+});
+
+test("OB9. 이벤트는 스텝을 1부터 문자열로, 시작에는 자동 넘김 여부를 싣는다", () => {
+  expect(onboardingStepViewedEvent(0, "start")).toEqual({
+    name: "onboarding_step_viewed",
+    step: "1",
+    via: "start",
+  });
+  expect(onboardingStepViewedEvent(2, "auto")).toEqual({
+    name: "onboarding_step_viewed",
+    step: "3",
+    via: "auto",
+  });
+  expect(onboardingStartedEvent(1, true)).toEqual({
+    name: "onboarding_started",
+    step: "2",
+    autoAdvanced: true,
+  });
 });

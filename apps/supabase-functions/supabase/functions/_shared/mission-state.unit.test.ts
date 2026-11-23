@@ -1,13 +1,14 @@
 import { describe, expect, test } from "vitest";
 
 import { createSegmentSplitter } from "./companion-segments.ts";
-import { outputFixtures, transitionFixtures } from "./mission-fixtures.ts";
+import { finishFixtures, outputFixtures, transitionFixtures } from "./mission-fixtures.ts";
 import {
   advanceMission,
   initialMissionProgress,
   mergeGoalsDone,
   missionEndReason,
   missionEventData,
+  missionFinishReason,
   parseMissionReply,
   parseMissionState,
   progressFromJson,
@@ -63,7 +64,18 @@ describe("판의 상태 전이", () => {
     "MS4. %s",
     (_name, fixture) => {
       expect(fixture.mission).toBe(cafeMission.id);
-      const before = progressFromJson(cafeMission, fixture.before);
+      const mission =
+        fixture.goals === undefined
+          ? cafeMission
+          : {
+              ...cafeMission,
+              goals: fixture.goals.map((goal) => ({
+                ...goal,
+                label: { en: goal.id },
+                criteria: "-",
+              })),
+            };
+      const before = progressFromJson(mission, fixture.before);
       const state =
         fixture.state === null
           ? null
@@ -72,11 +84,21 @@ describe("판의 상태 전이", () => {
               offTask: fixture.state.off_task,
               closing: fixture.state.closing,
             };
-      const outcome = advanceMission(cafeMission, before, state);
+      const outcome = advanceMission(mission, before, state);
       expect(outcome.progress.goalsDone).toEqual(fixture.expected.goals_done);
       expect(outcome.progress.learnerTurns).toBe(fixture.expected.learner_turns);
       expect(outcome.progress.hintsUsed).toBe(fixture.before.hints_used);
       expect(outcome.ended).toBe(fixture.expected.ended);
+      expect(outcome.requiredDone).toBe(fixture.expected.required_done);
+    },
+  );
+
+  test.each(finishFixtures.map((fixture) => [fixture.name, fixture] as const))(
+    "MS4b. 끝내기 — %s",
+    (_name, fixture) => {
+      expect(fixture.mission).toBe(cafeMission.id);
+      const before = progressFromJson(cafeMission, fixture.before);
+      expect(missionFinishReason(cafeMission, before)).toBe(fixture.expected.ended);
     },
   );
 
@@ -99,12 +121,27 @@ describe("판의 상태 전이", () => {
     expect(
       missionEndReason(waterMission, { goalsDone: ["bag"], learnerTurns: 8, hintsUsed: 0 }),
     ).toBe("turn_limit");
+    // 필수만 이룬 판은 닫히지 않는다(선택 receipt · ask가 남음). 모든 목표를 이뤄야 goals.
     expect(
       missionEndReason(waterMission, { goalsDone: ["pay", "bag"], learnerTurns: 2, hintsUsed: 0 }),
+    ).toBeNull();
+    expect(
+      missionEndReason(waterMission, {
+        goalsDone: ["bag", "pay", "receipt", "ask"],
+        learnerTurns: 4,
+        hintsUsed: 0,
+      }),
     ).toBe("goals");
+    expect(
+      missionFinishReason(waterMission, {
+        goalsDone: ["pay", "bag"],
+        learnerTurns: 2,
+        hintsUsed: 0,
+      }),
+    ).toBe("finish");
   });
 
-  test("MS7. SSE mission 이벤트 값 — 파일 순서의 목표 · 남은 턴 · 끝", () => {
+  test("MS7. SSE mission 이벤트 값 — 파일 순서의 목표 · 남은 턴 · 끝 · 필수 달성", () => {
     const id = "6c2d8f3b-5d2e-4a8f-8b62-3e4f5a6b7c81";
     expect(
       missionEventData(id, cafeMission, { goalsDone: ["order"], learnerTurns: 1, hintsUsed: 0 }),
@@ -118,14 +155,22 @@ describe("판의 상태 전이", () => {
       ],
       turnsLeft: 9,
       ended: null,
+      requiredDone: false,
     });
     expect(
       missionEventData(id, cafeMission, {
         goalsDone: ["order", "pay"],
         learnerTurns: 3,
         hintsUsed: 0,
-      }).ended,
-    ).toBe("goals");
+      }),
+    ).toMatchObject({ ended: null, requiredDone: true });
+    expect(
+      missionEventData(id, cafeMission, {
+        goalsDone: ["order", "pay", "stay", "price"],
+        learnerTurns: 4,
+        hintsUsed: 0,
+      }),
+    ).toMatchObject({ ended: "goals", requiredDone: true });
   });
 
   test("MS8. mission_state jsonb 왕복 — 모르는 모양은 처음 상태, 모르는 목표는 버림", () => {

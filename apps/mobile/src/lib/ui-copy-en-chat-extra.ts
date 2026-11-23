@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaEn } from "./ui-copy-en-chat-media";
 import { messengerChatAlbumEn } from "./ui-copy-en-chat-album";
+import { messengerChatSuggestedEn } from "./ui-copy-en-chat-suggested";
 
 export const messengerChatExtraEn: MessengerChatExtraCopy = {
   media: messengerChatMediaEn,
   album: messengerChatAlbumEn,
+  suggested: messengerChatSuggestedEn,
   access: {
     signInTitle: "Text the people you meet",
     signInBody:
       "Create a free account to chat in Korean with the people from your stories. Your progress so far comes with you.",
     signIn: "Sign up or log in",
+    promptTitle: "Sign in to send messages",
+    promptBody:
+      "Create a free account to chat with the people from your stories. Your progress so far comes with you.",
+    promptLater: "Not now",
+    promptKeepBody: "Create a free account to keep your Yeopjeon and tickets.",
   },
   pushNotice: { chatUnavailable: "This chat isn't available right now." },
   chatSettings: {

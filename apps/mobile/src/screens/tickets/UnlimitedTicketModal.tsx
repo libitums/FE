@@ -27,6 +27,7 @@ import "./unlimited-ticket-modal.css";
 // - guest(시험 계정): GUEST PASS 알약 · 안내 문구 · 「Got it」(닫기). 기간 카드 없음.
 // - renews · ends(구독): 요금제 이름 알약(있을 때) · 기간 카드 · 「Manage subscription」.
 // - ending-soon(갱신 꺼짐 · 7일 이하): 노랑 기간 카드 · 「Keep unlimited」 + 「Manage subscription」 링크.
+// - timed(푸시 보상 이용권, ADR-0175): 노랑 기간 카드(남은 시간) · 끝난 뒤 문구 · 「Got it」(닫기).
 //
 // 지금은 시험 계정만 결선합니다 — 구독 판의 두 콜백은 결제가 붙을 때 이어집니다.
 
@@ -55,6 +56,7 @@ function ModalButton({ testId, label, tone, onTap }: ModalButtonProps): ReactNod
     <view
       className={`ticket-button unlimited-ticket-button-${tone}`}
       data-testid={testId}
+      flatten={false}
       accessibility-element={true}
       accessibility-label={label}
       accessibility-traits="button"
@@ -75,11 +77,11 @@ export function UnlimitedTicketModal({
   const alive = useMotion() === "standard";
   const copy = useUiCopy();
   const m = copy.tickets.unlimitedModal;
-  const plan = view.kind === "guest" ? m.guestPass : view.planLabel;
+  const plan = view.kind === "guest" ? m.guestPass : view.kind === "timed" ? null : view.planLabel;
   const message =
     view.kind === "guest"
       ? m.guestMessage
-      : view.kind === "ending-soon"
+      : view.kind === "ending-soon" || view.kind === "timed"
         ? m.endingMessage
         : m.activeMessage;
   const manage = () => onManageSubscription?.();
@@ -118,6 +120,7 @@ export function UnlimitedTicketModal({
 
       <view
         className={`ticket-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
+        flatten={false}
         accessibility-element={true}
         accessibility-traits="header"
         accessibility-label={
@@ -158,12 +161,17 @@ export function UnlimitedTicketModal({
 
       {view.kind === "guest" ? null : <UnlimitedPassPeriod view={view} />}
 
-      <text className="ticket-modal-message" data-testid="unlimited-ticket-modal-message">
+      <text
+        className="ticket-modal-message"
+        data-testid="unlimited-ticket-modal-message"
+        flatten={false}
+        accessibility-element={true}
+      >
         {message}
       </text>
 
       <view className="ticket-modal-footer unlimited-ticket-modal-footer">
-        {view.kind === "guest" ? (
+        {view.kind === "guest" || view.kind === "timed" ? (
           <ModalButton
             testId="unlimited-ticket-modal-got-it"
             label={m.gotIt}

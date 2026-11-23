@@ -32,6 +32,8 @@ export const statusBarSurfaceRegistry = {
   /** route → 그 route에서 띠를 어둡게 칠하는 컴포넌트(채팅 · 통화 구간은 밝아 표지가 없다). */
   fullBleedRoutes: {
     "journey-entry": ["JourneyEntryScreen"],
+    // 준비 완료(ADR-0176) — 그림 바탕색(#FEFEFE)을 띠 밑까지 깔아 기본(어두운) 아이콘 그대로라 표지가 없습니다.
+    "entry-basics-ready": [],
     "catalog-cover": ["EpisodeIntroScreen", "CatalogCoverScreen", "EpisodeBannerScreen"],
     // 막간 이야기 — 시작 화면(Skip · Start), 컷 화면, 전화 화면, 끝의 「To be continued…」 배너가 짙습니다(ADR-0088).
     // 메신저는 밝은 면이라 표지가 없습니다.
@@ -87,6 +89,11 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 더보기 메뉴의 바깥 막(ADR-0169) — 투명한 면이라 띠를 칠하지 않는다(지도의 명암 그대로). 표지가 없다.
+    "components/more-menu.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     // 메신저 채팅방 겹침(ADR-0113) — 가운데 모달 · 설정 사이드바는 ui-lynx 기본 스크림(0.45)이라 표지가 없다.
     // 메신저 새 친구 시트(ADR-0117) — 띠를 덮는 것은 ui-lynx 기본 스크림(0.45)이라 표지가 없다.
     "screens/messenger-chat/new-friend.css": {
@@ -110,6 +117,16 @@ export const statusBarSurfaceRegistry = {
     },
     // 메신저 첫 입장 목록 안내(ADR-0139) — ui-lynx 대화상자 기본 스크림이라 표지가 없다.
     "screens/messenger-chat/messenger-guide.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
+    // 추천 친구 프로필 시트(ADR-0162) — 새 친구 시트와 같은 ui-lynx 기본 스크림이라 표지가 없다.
+    "screens/messenger-chat/suggested-sheet.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
+    // 친구 찾기 층(ADR-0162) — 밝은 앱 바탕(background-primary)을 띠 밑까지 덮어 기본(어두운) 아이콘 그대로라 표지가 없다.
+    "screens/messenger-chat/friend-directory.css": {
       classification: "default-scrim",
       carriers: [],
     },

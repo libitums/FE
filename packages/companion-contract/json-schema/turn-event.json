@@ -221,6 +221,50 @@
                 "required": ["id", "surface"],
                 "additionalProperties": false
               }
+            },
+            "chatWords": {
+              "type": "object",
+              "properties": {
+                "counted": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "surface": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "surface"],
+                    "additionalProperties": false
+                  }
+                },
+                "pending": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "surface": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["id", "surface"],
+                    "additionalProperties": false
+                  }
+                },
+                "weekTotal": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": ["counted", "pending", "weekTotal"],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -407,15 +451,18 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "enum": ["goals", "turn_limit"]
+                  "enum": ["goals", "turn_limit", "finish"]
                 },
                 {
                   "type": "null"
                 }
               ]
+            },
+            "requiredDone": {
+              "type": "boolean"
             }
           },
-          "required": ["conversationId", "goals", "turnsLeft", "ended"],
+          "required": ["conversationId", "goals", "turnsLeft", "ended", "requiredDone"],
           "additionalProperties": false
         }
       },
@@ -547,6 +594,10 @@
               },
               "required": ["stage"],
               "additionalProperties": false
+            },
+            "romanceTier": {
+              "type": "string",
+              "enum": ["open", "standard"]
             }
           },
           "required": ["assistantMessageId", "creditsSpent", "balance"],

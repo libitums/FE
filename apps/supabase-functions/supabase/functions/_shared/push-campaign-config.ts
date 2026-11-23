@@ -7,7 +7,7 @@ export const pushCampaignConfig: CampaignConfig = {
   localHour: 20,
   cooldownHours: 72,
   rules: {
-    "tutorial-cover": { holdoutPercent: 30, minIdleHours: 20, maxIdleHours: 24 * 14, story: false },
+    // tutorial-cover는 끔(사용자 결정 2026-11-20): 보낸 쪽 72h 앱 열기 4.6% < 대조 8.8%(263 / 113명). 새 문구를 정할 때까지 규칙을 두지 않아 "no-rule"로 건너뜁니다.
     "tutorial-lesson1": {
       holdoutPercent: 50,
       minIdleHours: 20,

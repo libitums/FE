@@ -15,30 +15,30 @@ describe("learnerFillOf", () => {
   const emma: LearnerProfileRecord = { name: "Emma", countryCode: "US" };
 
   test("PG-1. 기록이 없으면 noLearnerProfile 그 참조다", () => {
-    expect(learnerFillOf(null, learnerProfilePort)).toBe(noLearnerProfile);
-    expect(learnerFillOf(null, noLearnerProfilePort)).toBe(noLearnerProfile);
+    expect(learnerFillOf(null, learnerProfilePort, "en")).toBe(noLearnerProfile);
+    expect(learnerFillOf(null, noLearnerProfilePort, "en")).toBe(noLearnerProfile);
   });
 
   test("PG-2. 기록이 있으면 이름과 나라의 세 표기가 선다", () => {
-    expect(learnerFillOf(emma, learnerProfilePort)).toEqual({
+    expect(learnerFillOf(emma, learnerProfilePort, "en")).toEqual({
       name: "Emma",
       country: { ko: "미국", roman: "miguk", en: "the United States" },
     });
-    expect(learnerFillOf({ name: "Liam", countryCode: "DE" }, learnerProfilePort)).toEqual({
+    expect(learnerFillOf({ name: "Liam", countryCode: "DE" }, learnerProfilePort, "en")).toEqual({
       name: "Liam",
       country: { ko: "독일", roman: "dogil", en: "Germany" },
     });
   });
 
   test("PG-3. 표에 없는 코드는 나라 키가 빠진다", () => {
-    const fill = learnerFillOf({ name: "Emma", countryCode: "ZZ" }, learnerProfilePort);
+    const fill = learnerFillOf({ name: "Emma", countryCode: "ZZ" }, learnerProfilePort, "en");
 
     expect(fill).toEqual({ name: "Emma" });
     expect(Object.keys(fill)).toEqual(["name"]);
   });
 
   test("PG-3. 빈 포트(자산이 아직 닫히지 않음)에서도 나라 키가 빠진다", () => {
-    const fill = learnerFillOf(emma, noLearnerProfilePort);
+    const fill = learnerFillOf(emma, noLearnerProfilePort, "en");
 
     expect(fill).toEqual({ name: "Emma" });
     expect(Object.keys(fill)).toEqual(["name"]);

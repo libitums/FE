@@ -8,8 +8,8 @@ else
 fi
 
 maestro "$@" test -e "DOCUMENT_LABEL=Terms of Use" \
-  -e "DOCUMENT_TITLE=DURU Term of Use" \
+  -e "DOCUMENT_TITLE=.*Duru Terms of Use.*" \
   e2e/android-legal-documents.yaml
 maestro "$@" test -e "DOCUMENT_LABEL=Privacy Policy" \
-  -e "DOCUMENT_TITLE=DURU Privacy Policy" \
+  -e "DOCUMENT_TITLE=.*Duru Privacy Policy.*" \
   e2e/android-legal-documents.yaml

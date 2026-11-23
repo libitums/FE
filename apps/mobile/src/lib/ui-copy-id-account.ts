@@ -147,6 +147,7 @@ export const profileId: ProfileCopy = {
 };
 
 export const coinShopId: CoinShopCopy = {
+  digitSeparator: ".",
   title: "Yeopjeon",
   subtitle: "Koin kuningan Korea kuno",
   balanceLabel: "Kamu punya",
@@ -164,6 +165,14 @@ export const coinShopId: CoinShopCopy = {
   notice: {
     title: "Pembayaran segera hadir",
     description: "Pembelian koin belum tersedia. Silakan cek kembali nanti.",
+  },
+  purchaseFailed: "Pembelian tidak berhasil. Coba lagi.",
+  purchaseWait: {
+    confirming: "Mengonfirmasi pembelianmu…",
+    late: "Pembelianmu aman. Sebentar lagi akan muncul.",
+    added: (_count, display) => `+${display} koin ditambahkan`,
+    adding: "Menambahkan ke dompetmu",
+    updating: "Memperbarui",
   },
 };
 

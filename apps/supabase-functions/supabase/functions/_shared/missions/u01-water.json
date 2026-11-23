@@ -1,9 +1,12 @@
 {
   "id": "u01-water",
   "episodeId": "u01-water",
-  "version": 1,
-  "title": { "ko": "편의점에서 계산하기", "en": "Pay at the convenience store" },
-  "scene": "낮, 익선동 골목 어귀의 편의점 계산대. 학습자는 물 한 병을 계산대에 올려놓았다.",
+  "version": 3,
+  "title": {
+    "ko": "편의점에서 계산하기",
+    "en": "Pay at the convenience store"
+  },
+  "scene": "낮, 익선동 골목 어귀의 편의점 계산대. 학습자는 물 한 병을 계산대에 올려놓았다. 가게 사실(이 밖의 물건 · 값은 지어내지 않는다): 물 한 병 삼천 원, 봉투는 무료, 카드 · 현금 모두 된다, 영수증은 뽑아 줄 수 있다. 따뜻한 물은 팔지 않고, 계산대 옆 온장고에 따뜻한 보리차(천오백 원)가 있다.",
   "counterpart": {
     "label": "편의점 점원",
     "role": "편의점 계산대의 점원. 계산을 하고 봉투와 영수증이 필요한지 묻는다.",
@@ -14,7 +17,10 @@
       "삼천 원입니다.",
       "영수증 드릴까요?",
       "감사합니다. 안녕히 가세요."
-    ]
+    ],
+    "farewells": ["안녕히 가세요", "또 오세요", "좋은 하루 보내세요"],
+    "learnerRegister": "polite",
+    "learnerRegisterNote": "점원과 처음 보는 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다."
   },
   "opening": {
     "ko": "봉투 드릴까요?",
@@ -25,30 +31,50 @@
     {
       "id": "bag",
       "required": true,
-      "label": { "en": "Answer about the bag" },
-      "criteria": "학습자가 봉투가 필요한지 아닌지 답했다."
+      "label": {
+        "en": "Answer about the bag"
+      },
+      "criteria": "학습자가 봉투가 필요한지 아닌지 답했다.",
+      "opener": "counterpart",
+      "cue": "봉투 드릴까요?"
     },
     {
       "id": "pay",
       "required": true,
-      "label": { "en": "Say how you'll pay" },
-      "criteria": "학습자가 결제 수단(카드 · 현금 등)을 말했다."
+      "label": {
+        "en": "Say how you'll pay"
+      },
+      "criteria": "학습자가 결제 수단(카드 · 현금 등)을 말했다.",
+      "opener": "counterpart",
+      "cue": "삼천 원입니다. 결제는 어떻게 하시겠어요?"
     },
     {
       "id": "receipt",
       "required": false,
-      "label": { "en": "Answer about the receipt" },
-      "criteria": "학습자가 영수증이 필요한지 아닌지 답했다."
+      "label": {
+        "en": "Answer about the receipt"
+      },
+      "criteria": "학습자가 영수증이 필요한지 아닌지 답했다.",
+      "opener": "counterpart",
+      "cue": "영수증 드릴까요?"
     },
     {
       "id": "ask",
       "required": false,
-      "label": { "en": "Ask for something else" },
-      "criteria": "학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다."
+      "label": {
+        "en": "Ask for something else"
+      },
+      "criteria": "학습자가 다른 물건(예: 따뜻한 물)이 있는지 묻거나 달라고 했다.",
+      "opener": "learner",
+      "withhold": ["보리차", "온장고"]
     }
   ],
   "targetExpressions": [
-    { "id": "patt:b3d9256a", "ko": "{수단}로 할게요.", "meaning": "I will do it using {수단}." }
+    {
+      "id": "patt:b3d9256a",
+      "ko": "{수단}로 할게요.",
+      "meaning": "I will do it using {수단}."
+    }
   ],
   "turnLimit": 8
 }

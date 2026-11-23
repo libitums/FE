@@ -94,7 +94,7 @@
   ⑤ `entry_screen_viewed { screen: "learner-name" }` → ⑥ `push(learner-name, initialName)`(`initialName` = 기기 기록의 이름 → 무작위 이름; 세션이 없어 표시 이름 단계는 없다).
   세션 저장 · 식별 · 기존 회원 판정 · 프로필 동기화 · 푸시는 **0**이다.
 - 그 뒤 ② 나라 → 언어 선택 → 여정 입장 → `enterApp`은 **기존 `entry-wiring` 콜백 그대로**다 — ② 나라의 `saveLearnerProfile`은 동기화 객체가 없어 손님 칸에 쓰고(지금 코드의 분기 — 변경 0),
-  여정 입장의 `syncPushDevice({ ask: true })`는 세션이 없어 즉시 돌아온다(알림 다이얼로그가 뜨지 않는다 — 맥락 4).
+  여정 입장의 `syncPushDevice({ ask: true })`(⟨2026-11-22 ADR-0176⟩ 이제 `ask: false`)는 세션이 없어 즉시 돌아온다(알림 다이얼로그가 뜨지 않는다 — 맥락 4).
 
 ### D4. 비회원의 진행 · 학습일은 **기존 미전송 칸을 `id = "guest"`로** 쓰고, 동기화 객체 대신 저장 객체를 세운다
 
@@ -135,6 +135,8 @@
 - **App 세션을 재시작하지 않는다**(`leaveApp` · `signedOutNav` 아님) — 떠나는 것이 아니라 같은 사람이 계정을 얻는 것이고, 재시작하면 진행 · 알림 · 젬 상태가 처음 값으로 돌아간다.
 - 「서버와 합치기」를 새로 쓰지 않는다 — 옮긴 뒤 `createJourneyProgressSync(userId)`가 지금 규칙(ADR-0062: 기기 값 먼저 → 서버 불러와 `mergeJourneyProgress` → 덮이지 않은 것은 저장)으로 올린다.
   그 계정에 서버 기록이 있으면 **합쳐지고**, 학습일은 `record_learning_days`가 멱등 저장한다(ADR-0035 D6). `entry_returning_learner_entered`는 0이다.
+
+- ⟨2026-11-21⟩ 손님 지도 하단의 가입 권유 카드(ADR-0174)도 같은 `onSignIn` → `guest-login`을 연다(여정 탭 스택 — 성공하면 지도로). 새 계정이면 지도에서 가입 보상 모달이 선다.
 
 ### D7. 세션 저장은 **한 자리** — `storeSignedInSession`
 
@@ -228,3 +230,5 @@
 8. **GE-E1 ~ E8 첫 회차가 돌면** → 「확인 필요」 5 · 6을 닫고, 다르면 해당 D를 정정 기록한다.
 10. **사용자가 Facebook 버튼을 「이관 중」 설명과 함께 다시 세우고 싶어지면** → D1 중간 상태. 정책 `hidden.all`에서 `facebook`을 빼고 `unavailable.all`에 둔다(앱 배포 0) — 개정 2의 모양이 돌아온다. 코드 변경 0.
 9. **되살린 수단의 완료가 쌓이고 자동 플립이 필요해지면** → 버린 대안 12(B). 서버 정기 작업이 그 수단의 완료를 보고 정책 배열에서 지우는 길 — 서버 코드가 생기므로 새 ADR이다.
+
+- ⟨2026-11-19 — [ADR-0166](0166-guest-messenger-same-list.md) 적용 기록⟩ 비회원 「로그인」(`guest-login`) 성공 뒤 이동이 `backToRoot` → `back`이다 — 로그인 화면만 걷어 연 자리로 돌아간다. 설정 루트에서 열면 결과가 같고(설정 루트), 메신저 방의 「로그인 필요」 대화상자에서 열면 그 방으로 돌아와 회원으로 보낸다. 이관(D4)은 그대로다.

@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { u01OpenSeed } from "./test-helpers/progress-seed";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { afterEach, expect, test, vi } from "vitest";
@@ -102,7 +103,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
 test("[I3] 제목 축 닫힌 집합이 상태 settings에서 계약이 고정한 목록과 정확히 같다", async () => {
   const { container } = await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
   expect(headingAxis(container)).toEqual(["settings-screen-title"]);
@@ -126,7 +127,7 @@ test("[I3] 제목 축 닫힌 집합이 상태 step-sheet-open에서 계약이 �
 test("[HT1] 제목 축 닫힌 집합이 상태 profile에서 계약이 고정한 목록과 정확히 같다", async () => {
   const { container } = await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
   fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
 
@@ -288,15 +289,7 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여덟 각각에서 계�
   expect(headingAxis(container)).toEqual(["onboarding-screen-title"]);
 
   fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("onboarding-screen-start")).getByTestId("ui-lynx-button"),
     {},
   );
 

@@ -86,3 +86,10 @@
 ## 적용 기록
 
 - ⟨2026-11-03⟩ **내장본에도 번역표** — **사용자 결정**(버킷 업로드 전에도 「What do you say?」 같은 문항 제목이 UI 언어로 보이게): 앱에 내장한 u01 ~ u10(balance 판)에 `translations.vi` · `translations.id`를 붙였다. 표는 수준 3 업로드 묶음(staging 기준)의 번역 초안을 그 편이 쓰는 영어만 골라 담았고 빠진 문장은 없다. 원어민 검수 전 초안이다. 번들이 약 205 kB 늘어 상한을 3,740,000 bytes로 올렸다(`devtools/bundle-size/budget.json`).
+- ⟨2026-11-19⟩ **D6 재검토 — iOS 추적 허용 안내를 다섯 언어로** — 사용자 요구(「1.2.0까지 머지된 것이 지원 UI 언어 en · es · id · ja · vi 모두에서 제대로」)로
+  재검토 조건이 섰다. `apps/ios/Host/{en,es,id,ja,vi}.lproj/InfoPlist.strings`에 `NSUserTrackingUsageDescription`을 두고 프로젝트에 `InfoPlist.strings` 변형 묶음
+  (Host 리소스 단계) · `knownRegions`(es · id · ja · vi)를 더했다. 시스템 대화상자는 여전히 **기기 언어**를 따른다(앱 UI 언어가 아님) — 기기가 그 언어면 그 문구,
+  아니면 영어(개발 지역). th · my는 두지 않는다(UI가 영어, ADR-0158). 다른 지역이 생겨 iOS가 시스템 UI(공유 시트 등)를 그 언어로 내는 것은 의도한 결과다.
+  `pnpm test:ios-pods`의 IL1 ~ IL3가 파일 · 프로젝트 등록을 지킨다. 문구는 원어민 검수 전 초안.
+- ⟨2026-11-19⟩ **엽전 수의 묶음 기호** — 「1,200」은 es · id · vi에서 1.2로 읽힌다. 문구표 `coinShop.digitSeparator`(en · ja 「,」, es · id · vi 「.」)로
+  `formatCoinCount`가 묶는다(`Intl` 없이). 스토어 가격 글은 스토어가 지역에 맞춰 주므로 그대로다.

@@ -56,6 +56,10 @@ export const catalogMapEn: CatalogMapCopy = {
     staleBody: "Connect to the internet to check for new episodes.",
     checkNew: "Check for new stories",
   },
+  coverDownload: {
+    gettingReady: (percent) => `Getting ready · ${percent}%`,
+    tapToDownload: (size) => (size === null ? "Tap to download" : `Tap to download · ${size}`),
+  },
 };
 
 export const catalogCoverEn: CatalogCoverCopy = {

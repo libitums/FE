@@ -50,6 +50,7 @@ export const shellJa: ShellCopy = {
     journey: "ジャーニー",
     roleplay: "ロールプレイ",
     messenger: "チャット",
+    ranking: "ランキング",
     settings: "設定",
   },
   tabNew: { badge: "NEW", spoken: "新着" },

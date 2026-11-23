@@ -46,7 +46,8 @@ beforeEach(async () => {
     "update companion.settings set message_cost = 3, testers_only = false, minor_daily_limit_seconds = null",
   );
   await db.admin.query(
-    `insert into auth.users (id, email, raw_app_meta_data) values ($1, 'a@libitum.test', '{}'), ($2, 'b@libitum.test', '{}')`,
+    // 출시 보너스는 가입 보상 도입 전 계정(기존 회원)만 받는다(ADR-0174) — 이 파일의 사용자는 기존 회원이다.
+    `insert into auth.users (id, email, raw_app_meta_data, created_at) values ($1, 'a@libitum.test', '{}', '2026-01-01'), ($2, 'b@libitum.test', '{}', '2026-01-01')`,
     [user, other],
   );
   await signIn(app, user);
@@ -89,7 +90,12 @@ test("YL4. 진행 기록이 없어도 보너스는 받는다. 로그인 없으�
   await expect(anon.query("select public.companion_claim_coins()")).rejects.toBeTruthy();
 });
 
-test("YL5. 무료 티어 — 체험 캐릭터 밖은 잔액이 한 턴 값(3) 미만이면 insufficient_credits, 이상이면 열리고 3을 쓴다", async () => {
+test("YL5. 무료 티어 — 합산 체험을 다 쓰면 잔액이 한 턴 값(3) 미만이면 insufficient_credits, 이상이면 열리고 3을 쓴다", async () => {
+  // 체험은 모든 인물이 함께 쓴다(20261216) — 덕수쌤에게 다 쓰면 윤경도 엽전이다.
+  await db.admin.query(
+    "insert into companion.trial_usage (user_id, character_id, used) select $1, 'duksu', trial_limit from companion.settings",
+    [user],
+  );
   const gate = async () =>
     (
       await server.query(

@@ -1,6 +1,9 @@
 // 베트남어 문구표입니다(ADR-0091 D3). 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 // 번역 초안 — 원어민 검수 필요.
 
+import { moreCopy } from "./ui-copy-more";
+import { rankingCopy } from "./ui-copy-ranking";
+import { signupRewardCopy } from "./ui-copy-signup-reward";
 import { assembledHintVi } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
@@ -126,4 +129,7 @@ export const uiCopyVi: UiCopy = {
   login: loginVi,
   verificationCode: verificationCodeVi,
   authFailure: authFailureVi,
+  more: moreCopy.vi,
+  ranking: rankingCopy.vi,
+  signupReward: signupRewardCopy.vi,
 };

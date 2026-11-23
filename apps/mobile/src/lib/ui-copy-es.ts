@@ -1,6 +1,9 @@
 // 스페인어 문구표입니다(ADR-0097). 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 // 번역 초안 — 원어민 검수 필요.
 
+import { moreCopy } from "./ui-copy-more";
+import { rankingCopy } from "./ui-copy-ranking";
+import { signupRewardCopy } from "./ui-copy-signup-reward";
 import { assembledHintEs } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
@@ -126,4 +129,7 @@ export const uiCopyEs: UiCopy = {
   login: loginEs,
   verificationCode: verificationCodeEs,
   authFailure: authFailureEs,
+  more: moreCopy.es,
+  ranking: rankingCopy.es,
+  signupReward: signupRewardCopy.es,
 };

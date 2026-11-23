@@ -3,14 +3,14 @@
    시각 연결을 보지 못해, 이름을 바꾸면 빠뜨린 선택자가 에러 없이 스타일만 안 먹는
    형태로 남습니다. */
 
-/* 2026-09-21 디자인 반영: 카드 컨테이너 둘을 위아래로 두는 400 높이 영역입니다.
-   400은 spacing 토큰(최대 96)에 없는 디자인 지정값이라 생값으로 둡니다. */
+/* 2026-09-21 디자인 반영: 카드 컨테이너 둘을 위아래로 두는 카드 영역입니다(디자인 400 —
+   값은 `onboardingStageMaxHeight`가 집니다). */
 .onboarding-screen-cards {
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-12);
-  height: 400px;
-  flex-shrink: 0;
+  /* 높이는 카드 영역(`.onboarding-screen-stage` — 디자인 400, 낮은 화면에서 줄어듦)을 채웁니다. */
+  flex: 1;
   overflow: visible;
 }
 
@@ -53,10 +53,25 @@
 }
 
 /* 첫 스텝 둘째 카드(대화 카드)입니다. 버블 묶음이 카드 높이를 채우고 세로
-   가운데에 섭니다. */
+   가운데에 섭니다.
+
+   카드 영역이 줄면 그림 카드가 먼저 줄고 대화 카드는 버블 셋의 높이를 지킵니다 — 슬롯의
+   `flex-basis: auto`가 내용 높이이고, 디자인 높이(400)에서는 그림 카드와 반씩입니다. Lynx flex 항목은
+   내용 높이 아래로도 줄어(웹의 자동 최소 크기가 없음) 버블 글자끼리 겹쳤습니다(2026-11-19 iPhone SE).
+   큰 글자에서 버블이 카드 영역보다 커지면 슬롯은 그림 카드 몫 48을 남기고 멈추고, 넘친 버블은
+   버블 묶음이 자릅니다 — 카드 영역 밖(제목 · 본문 위)으로 그리지 않습니다. */
+.onboarding-screen-chat {
+  flex: 0 1 auto;
+  min-height: calc((100% - var(--libitum-spacing-12)) / 2);
+  max-height: calc(100% - var(--libitum-spacing-12) - var(--libitum-spacing-48));
+}
+
+/* 슬롯부터 버블 묶음까지 `flex-basis: auto`라야 슬롯이 버블 셋의 실제 높이를 잽니다(0이면 내용 높이가
+   사라져 대화 카드가 반 높이로 잘렸습니다). 슬롯이 상한에 닿으면 이 사슬이 함께 줄고 버블 묶음이 자릅니다. */
+.onboarding-screen-chat .ui-lynx-card,
 .onboarding-screen-chat .ui-lynx-card-regions,
 .onboarding-screen-chat .ui-lynx-card-content {
-  flex: 1;
+  flex: 1 1 auto;
 }
 
 .onboarding-screen-chat-list {
@@ -64,17 +79,23 @@
   flex-direction: column;
   justify-content: center;
   gap: var(--libitum-spacing-8);
-  flex: 1;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
-/* 인물: 바닥을 카드 아래 끝에 맞추고 카드보다 48 크게 그려 위로 튀어나오게
-   합니다. 원본 540×810(2:3) 비율을 지킵니다. */
+.onboarding-screen-chat-list .ui-lynx-chat-bubble {
+  flex-shrink: 0;
+}
+
+/* 인물(도윤): 바닥을 카드 아래 끝에 맞추고 카드보다 80 크게 그려 머리가 위로 튀어나오게
+   합니다. 오른쪽의 편의점과 겹치지 않게 골목 쪽(왼쪽)에 둡니다. 그림은 전신 컷의 윗부분
+   (417×819)만 잘라 넣었습니다 — 아래 끝이 카드 아래 끝과 맞습니다. */
 .onboarding-screen-hero-character {
   position: absolute;
-  right: var(--libitum-spacing-16);
+  left: var(--libitum-spacing-16);
   bottom: 0;
-  height: calc(100% + var(--libitum-spacing-48));
-  aspect-ratio: 540 / 810;
+  height: calc(100% + var(--libitum-spacing-80));
+  aspect-ratio: 417 / 819;
   /* Card가 elevation z-default(1)로 떠 있어 그보다 한 단계 위에 둡니다. */
   z-index: var(--libitum-elevation-z-sticky);
 }

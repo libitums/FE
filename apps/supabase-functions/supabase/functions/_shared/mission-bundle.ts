@@ -5,7 +5,12 @@
 
 import { z } from "zod";
 
-import { feedbackHistoryLimit, feedbackContent, feedbackSystem } from "./companion-llm-prompts.ts";
+import {
+  feedbackHistoryLimit,
+  feedbackContent,
+  feedbackSystem,
+  translationSystem,
+} from "./companion-llm-prompts.ts";
 import { feedbackSchema } from "./companion-llm-schemas.ts";
 import {
   missionBrief,
@@ -14,26 +19,77 @@ import {
 } from "./mission-context.ts";
 import { missionCounterpartBase, type MissionDefinition } from "./mission-definition.ts";
 import {
+  directionTemplates,
+  hurryTurnsLeft,
+  missionDirection,
+  stuckAfter,
+} from "./mission-direction.ts";
+import {
   missionGraderMaxTokens,
+  missionFeedbackModelEnv,
   missionGraderModelEnv,
+  missionHintModelEnv,
+  missionJudgeMaxTokens,
+  missionJudgeModelEnv,
+  missionJudgeTimeoutMs,
+  missionTurnModelEnv,
   missionModelsFrom,
   missionTurnMaxTokens,
 } from "./mission-env.ts";
-import { outputFixtures, scoringFixtures, transitionFixtures } from "./mission-fixtures.ts";
+import {
+  finishFixtures,
+  outputFixtures,
+  scoringFixtures,
+  transitionFixtures,
+} from "./mission-fixtures.ts";
 import { graderSchema, graderSystem, graderUserTemplate } from "./mission-grader.ts";
 import { hintSchema, hintSystem, hintUserTemplate } from "./mission-hint.ts";
+import { defaultFarewells } from "./mission-guards.ts";
+import { judgeContextLimit, judgeSchema, judgeSystem, judgeUserTemplate } from "./mission-judge.ts";
 import {
+  directionNone,
   goalLineTemplate,
   learnedLineBareTemplate,
   learnedLineTemplate,
   learnedNone,
   missionTurnDynamicTemplate,
   requirementWords,
+  requiredStatusWords,
   turnSystemStable,
 } from "./mission-prompt.ts";
 import { defaultMissionScoring, missionHintLimit } from "./mission-score.ts";
 
 export const missionLabBundleVersion = 1;
+
+/** 연출 지시의 포팅 검증 사례 — (미션, 목표, 턴, 막힘) → 서버 `missionDirection`의 결과. 미션이 번들에 없으면 뺀다. */
+const directionCases = [
+  { mission: "u01-water", goalsDone: [], learnerTurns: 0, stall: 0 },
+  { mission: "u01-water", goalsDone: [], learnerTurns: 2, stall: 2 },
+  { mission: "u01-water", goalsDone: ["bag", "pay", "receipt"], learnerTurns: 6, stall: 3 },
+  { mission: "u06-cafe", goalsDone: ["order"], learnerTurns: 8, stall: 0 },
+  { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 1, stall: 0 },
+  { mission: "u01-water", goalsDone: ["bag", "pay", "receipt"], learnerTurns: 3, stall: 0 },
+  { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 3, stall: 2 },
+  { mission: "u01-water", goalsDone: ["bag"], learnerTurns: 6, stall: 1 },
+  { mission: "u06-cafe", goalsDone: [], learnerTurns: 0, stall: 0 },
+  { mission: "u06-cafe", goalsDone: ["order", "pay"], learnerTurns: 2, stall: 0 },
+  { mission: "u06-cafe", goalsDone: ["order", "pay", "stay"], learnerTurns: 3, stall: 0 },
+] as const;
+
+function directionFixtures(missions: readonly MissionDefinition[]) {
+  return directionCases.flatMap((entry) => {
+    const mission = missions.find((candidate) => candidate.id === entry.mission);
+    if (mission === undefined) return [];
+    const progress = {
+      goalsDone: [...entry.goalsDone],
+      learnerTurns: entry.learnerTurns,
+      hintsUsed: 0,
+      stall: entry.stall,
+    };
+    const direction = missionDirection({ mission, progress });
+    return [{ ...entry, expected: direction ?? { beat: null, goalId: null, text: directionNone } }];
+  });
+}
 
 const contextSentinel = "\u0000context\u0000";
 
@@ -108,6 +164,11 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
     source: { repo: "libitums/FE", commit: input.commit },
     defaults: {
       turnModel: models.turnModel,
+      judgeModel: models.judgeModel,
+      // 답 호출의 생각 깊이(서버 `replyEffort` 기본값) — Haiku 5.5는 지정하지 않으면 medium으로 생각해 느리다. 더한 칸.
+      turnEffort: "low",
+      judgeMaxTokens: missionJudgeMaxTokens,
+      judgeTimeoutMs: missionJudgeTimeoutMs,
       feedbackModel: models.feedbackModel,
       hintModel: models.hintModel,
       graderModel: models.graderModel,
@@ -115,9 +176,10 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       graderMaxTokens: missionGraderMaxTokens,
       // 서버가 이 값을 읽는 환경 변수(운영 값은 여기 없다 — 코드의 기본값만).
       env: {
-        turnModel: "COMPANION_MODEL",
-        feedbackModel: "COMPANION_FEEDBACK_MODEL",
-        hintModel: "COMPANION_SUGGEST_MODEL",
+        turnModel: missionTurnModelEnv,
+        judgeModel: missionJudgeModelEnv,
+        feedbackModel: missionFeedbackModelEnv,
+        hintModel: missionHintModelEnv,
         graderModel: missionGraderModelEnv,
       },
     },
@@ -134,25 +196,85 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       fixtures: outputFixtures.map(({ raw, expected }) => ({ raw, expected })),
     },
     // 학습자 턴 하나의 전이(목표 합치기 · 끝 판정) — 포팅 검증용으로 더한 칸.
+    // 판은 모든 목표(goals) · 턴 상한(turn_limit) · 학습자의 끝내기(finish — 필수를 이룬 뒤에만)로 닫힌다.
     transitions: {
+      endRule:
+        "턴 뒤: 모든 목표(필수 + 선택)를 이뤘으면 goals, 아니고 학습자 턴 ≥ turnLimit이면 turn_limit, 아니면 null(필수만 이뤘으면 required_done 참 · 판은 이어짐). 끝내기: 끝나지 않았고 필수를 모두 이뤘으면 finish, 필수를 못 이뤘으면 닫지 않음. 성공 = 필수 목표를 모두 이룸(끝난 까닭과 무관).",
       fixtures: transitionFixtures.map(({ name: _name, ...fixture }) => fixture),
+      // 끝내기(mission-finish, abandon 없이) — 더한 칸.
+      finishFixtures: finishFixtures.map(({ name: _name, ...fixture }) => fixture),
     },
     prompts: {
       turnDynamic: missionTurnDynamicTemplate,
       goalLine: goalLineTemplate,
       requirementWords,
+      // `{{required_status}}`의 글 — 이번 메시지 앞의 판 상태로 필수를 다 이뤘으면 done, 아니면 pending. 더한 칸.
+      requiredStatusWords,
       // `{{learned_expressions}}`의 한 줄(뜻이 있으면 learnedLine, 없으면 learnedLineBare)과 빈 목록 글 — 규격에 더한 칸.
       learnedLine: learnedLineTemplate,
       learnedLineBare: learnedLineBareTemplate,
       learnedNone,
       feedback: feedbackPrompt(sample),
       hint: { system: hintSystem, user: hintUserTemplate, schema: z.toJSONSchema(hintSchema) },
+      // 목표 판정(턴마다, 답 · 교정과 병렬) — 더한 칸. `{{context}}`는 이번 메시지 앞의 대화 마지막 contextLimit줄(transcriptLine 모양),
+      // `{{open_goals_json}}`은 아직 못 이룬 목표의 [{id, criteria}](파일 순서). 결과의 goals 중 인용(quote)이 빈 것 · 이미 이룬 것 ·
+      // 미션에 없는 id는 버린다. 판정이 실패하면 답 모델의 상태 줄 goals_done으로 돌아간다(goalSource).
+      judge: {
+        system: judgeSystem,
+        user: judgeUserTemplate,
+        schema: z.toJSONSchema(judgeSchema),
+        contextLimit: judgeContextLimit,
+        goalSource:
+          "판정 성공: 목표 = 지난 달성 ∪ 판정. 판정 실패(오류 · 시간 초과): 목표 = 지난 달성 ∪ 상태 줄 goals_done. closing · off_task는 상태 줄(판정의 off_task는 기록만).",
+      },
+      // 코드 쪽 거르개(ADR-0177 D13, mission-guards.ts) — 더한 칸.
+      guards: {
+        defaultFarewells,
+        farewellRule:
+          "학습자가 꺼낼(opener learner) 목표가 남고 상대역이 꺼낼 남은 목표가 하나 이하일 때만: 답의 closing이 참이 아니고 판정으로 모든 목표가 끝나지도 않으면, 말 조각에서 작별 인사(missions[i].counterpart.farewells ?? defaultFarewells 중 하나가 든 문장 — 문장은 . ! ? 로 끊음)를 뺀다. 빈 조각은 버린다. 말 조각이 하나도 안 남으면 같은 요청으로 한 번만 다시 만들어 같은 거르기, 그래도 안 남으면 처음 답 그대로.",
+        feedbackRule:
+          "교정이 status ok이고 corrected · items[].corrected · better.text에 원문에 없는 비한글 글자(한글 · 라틴이 아닌 문자 — 한자 · 가나 등, 숫자 · 문장 부호는 글자가 아님)가 있으면 교정 없음(status none, 나머지 칸 비움)으로 바꾼다.",
+      },
+      // 연출 지시(턴마다 turnDynamic의 {{direction}}) — 더한 칸. 규칙은 서버 mission-direction.ts 머리말, 사례는 fixtures.
+      // stall = 새 목표 없이 이어진 학습자 턴 수(새 목표가 생긴 턴에 0으로).
+      direction: {
+        templates: directionTemplates,
+        stuckAfter,
+        hurryTurnsLeft,
+        none: directionNone,
+        fixtures: directionFixtures(input.missions),
+      },
       grader: {
         system: graderSystem,
         user: graderUserTemplate,
         schema: z.toJSONSchema(graderSchema),
+        // 자리표의 뜻 — 더한 칸. corrections_json의 n을 채점자가 focus.refs로 돌려준다(고친 문장은 새로 만들지 않는다).
+        placeholders: {
+          goals_json: "missions[i].goals의 [{id, required, criteria}]",
+          target_expressions_json: "missions[i].targetExpressions 그대로",
+          turn_goals_done_json: "턴에서 쌓인 목표 id 배열",
+          corrections_json:
+            "턴 교정이 있는 학습자 메시지마다 {n(1부터), original(학습자 글), corrected, kind, reason(교정 조각 reason을 공백으로 이은 글 | null)}",
+          transcript: "transcriptLine으로 채운 전문(진입 대사 포함)",
+          learner_l1: "학습자 언어(BCP 47), 모르면 en",
+        },
+        // 받은 결과 → 리포트(서버 normalizeGrade · buildMissionReport). 점수는 코드가 낸다.
+        report:
+          "goals.tip은 최종(턴 ∪ 채점자)으로 못 이룬 목표에만, focus.refs는 1 ~ 교정 수 안의 번호만(묶음 3개까지, 예문 = 그 번호 교정의 original → corrected), strengths 2개까지, retry 3개까지(없으면 못 쓴 목표 표현), scoreParts = 가중치 × 세부 점수(소수 첫째 자리)와 힌트 감점.",
       },
       transcriptLine: transcriptLineTemplates,
+      // 대화 기록의 모양(서버 `historyMessages`와 같게) — 실험실이 같은 메시지 목록을 만들게 적어 둔 칸.
+      sceneStartUser: null,
+      sceneStart:
+        "진입 대사는 상대역(assistant) 메시지로 대화 맨 앞에 그대로 둔다. 앞에 고정 user 글을 넣지 않는다 — 1단계 첫 인사 · 선톡 뒤 턴과 같다.",
+      // 진입 대사 · 목표 글의 학습자 언어(선택 칸) — 서버는 파일 → 캐시 → 1단계 번역 노드 순서로 고른다(`mission-localize.ts`).
+      openingTranslation: {
+        system: translationSystem("{{learner_l1}}", "{{count}}"),
+        lines:
+          "1. [speech] 진입 대사(opening.ko) · 이어서 목표마다 [narration] 목표 글(label.ko ?? label.en). 파일에 그 언어 칸이 있으면 그 줄은 빼고, 결과는 미션 × 판 × 언어로 캐시한다.",
+      },
+      historyAssistantFormat:
+        "지난 상대역 답은 조각마다 `@{kind} {text}` 한 줄(`@speech …` · `@action …`)을 줄바꿈으로 이은 글. 상태 줄(`@state …`)과 저장된 번역은 넣지 않는다. 학습자 글은 보낸 글 그대로.",
     },
     missions: input.missions.map(missionEntry),
   };

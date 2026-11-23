@@ -56,7 +56,9 @@ export { checkTurnOrder, type TurnOrderResult, type TurnOrderViolation } from ".
 export {
   ageSourceSchema,
   characterAvailabilitySchema,
+  companionAckAdultResponseSchema,
   companionCharacterSchema,
+  companionFriendsResponseSchema,
   companionMemoryListSchema,
   companionMemorySchema,
   companionMessageSchema,
@@ -69,8 +71,11 @@ export {
   messageRatingSchema,
   proactivePrefSchema,
   ratingReasonSchema,
+  romanceTierSchema,
   segmentSchema,
+  type CompanionAckAdultResponse,
   type CompanionCharacter,
+  type CompanionFriendsResponse,
   type CompanionMemory,
   type CompanionMemoryList,
   type CompanionMessage,
@@ -83,6 +88,7 @@ export {
   type MessageRating,
   type ProactivePref,
   type RatingReason,
+  type RomanceTier,
 } from "./rpc.ts";
 export {
   companionSuggestRequestSchema,
@@ -129,6 +135,7 @@ export {
   type SnapshotSelf,
 } from "./media.ts";
 export {
+  MISSION_ERRORS,
   MISSION_TURN_LIMIT_MAX,
   MISSION_TURN_LIMIT_MIN,
   expressionIdSchema,
@@ -150,8 +157,11 @@ export {
   missionStartResponseSchema,
   missionTargetExpressionSchema,
   missionTurnRequestSchema,
+  missionErrorBodySchema,
   type MissionCounterpartBase,
   type MissionDefinition,
+  type MissionErrorBody,
+  type MissionErrorCode,
   type MissionEndReason,
   type MissionGoal,
   type MissionGoalState,
@@ -172,6 +182,7 @@ export {
   missionReportSchema,
   missionResultsSchema,
   missionWeightsSchema,
+  missionScorePartsSchema,
   type MissionFinishRequest,
   type MissionFinishResponse,
   type MissionList,
@@ -180,4 +191,5 @@ export {
   type MissionReport,
   type MissionResults,
   type MissionWeights,
+  type MissionScoreParts,
 } from "./mission-report.ts";

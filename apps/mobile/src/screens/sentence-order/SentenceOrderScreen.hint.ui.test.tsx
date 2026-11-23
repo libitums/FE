@@ -34,7 +34,7 @@ const listenBuild: SentenceOrderQuestion = {
   answerOrder: [1, 2, 0],
   chipReading: {
     values: ["cheoeumiseyo?", "annyeonghaseyo!", "hangugeun", "cheoeumieyo!"],
-    shown: "review",
+    shown: "setting",
   },
   audio: {
     kind: "listen",
@@ -54,7 +54,7 @@ const tapCheck = () =>
 
 function mount(
   questions: SentenceOrderQuestion[],
-  extra: { inReview?: boolean } = {},
+  extra: { inReview?: boolean; choiceRomanization?: "shown" | "hidden" } = {},
   onItemAnswered = vi.fn<(r: ItemAnswerReport) => void>(),
 ) {
   render(
@@ -89,14 +89,20 @@ describe("조각 로마자 (SH1 · SH2)", () => {
     expect(screen.queryByTestId("sentence-order-chip-2-roman")).toBeNull();
   });
 
-  test("SH2. 듣고 조립은 첫 시도에 로마자가 없고 다시 풀기에서만 선다, 힌트 버튼은 없다", () => {
+  test("SH2. 듣고 조립은 보기 로마자 설정이 켜졌으면 첫 시도부터 조각 로마자가 서고, 힌트 버튼은 없다", () => {
+    // 사용자 결정 2026-11-20(ADR-0153 ⟨2026-11-20⟩) — 전에는 다시 풀기에서만 섰습니다. 조각에 뜻은 싣지 않습니다.
     mount([listenBuild]);
-    expect(screen.queryByTestId("sentence-order-chip-0-roman")).toBeNull();
-    expect(screen.queryByTestId("assembled-hint-button")).toBeNull();
-    cleanup();
-    mount([listenBuild], { inReview: true });
     expect(id("sentence-order-chip-0-roman")).toHaveTextContent("cheoeumiseyo?");
     expect(id("sentence-order-chip-3-roman")).toHaveTextContent("cheoeumieyo!");
+    expect(screen.queryByTestId("assembled-hint-button")).toBeNull();
+  });
+
+  test("SH2b. 설정이 꺼지면 첫 시도에는 없고, 다시 풀기에서는 그대로 선다", () => {
+    mount([listenBuild], { choiceRomanization: "hidden" });
+    expect(screen.queryByTestId("sentence-order-chip-0-roman")).toBeNull();
+    cleanup();
+    mount([listenBuild], { choiceRomanization: "hidden", inReview: true });
+    expect(id("sentence-order-chip-0-roman")).toHaveTextContent("cheoeumiseyo?");
   });
 });
 
@@ -135,7 +141,11 @@ describe("작은 화면 (SH5)", () => {
     expect(id("sentence-order-lines")).toHaveAttribute("data-compact", "true");
     expect(screen.queryByTestId("sentence-order-line-1")).toBeNull();
     cleanup();
+    // 듣고 조립도 첫 시도에 로마자가 서면 답 줄이 하나로 준다(13 mini 맞춤, ADR-0153 D3) — 설정이 꺼지면 둘 그대로.
     mount([listenBuild]);
+    expect(id("sentence-order-lines")).toHaveAttribute("data-compact", "true");
+    cleanup();
+    mount([listenBuild], { choiceRomanization: "hidden" });
     expect(id("sentence-order-lines")).toHaveAttribute("data-compact", "false");
     expect(id("sentence-order-line-1")).toBeTruthy();
   });

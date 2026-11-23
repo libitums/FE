@@ -60,7 +60,7 @@ describe("문장 조립 · 듣고 조립 (AHM4~6)", () => {
     expect(question.hint).toEqual({ ghost: ["감사합니다. 안녕히 가세요."] });
   });
 
-  test("AHM5. 듣고 조립은 조각 로마자를 다시 풀기 전용으로 싣고 힌트가 없다", () => {
+  test("AHM5. 듣고 조립은 조각 로마자를 설정 따름(setting)으로, 정답 뜻을 싣고 힌트가 없다", () => {
     const listen = {
       id: "S2-02",
       event: "R",
@@ -74,7 +74,8 @@ describe("문장 조립 · 듣고 조립 (AHM4~6)", () => {
     const question = questionOf(
       listenBuildItemOf(listen as Extract<LearningItem, { type: "LISTEN_BUILD" }>, audioPort),
     );
-    expect(question.chipReading).toMatchObject({ shown: "review" });
+    expect(question.chipReading).toMatchObject({ shown: "setting" });
+    expect(question.meaning).toBe("GaNa");
     expect(question).not.toHaveProperty("hint");
   });
 
