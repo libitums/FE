@@ -15,11 +15,10 @@ import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { voiceDurationLabel } from "./chat-rules";
 import { SLOP_SMALL } from "./hit-slop";
 import type { ChatText } from "./chat-source.contract";
-import { chatMediaTestIds as mediaIds } from "./chat-media.contract";
+import { chatMediaTestIds as mediaIds, type ChatPendingStage } from "./chat-media.contract";
 import {
-  DRAWING_STAGE_MARKS,
+  DRAWING_MIN_STAGE,
   PHOTO_STAGE_MARKS,
-  PREPARING_STAGE_MARKS,
   stageLine,
   VOICE_STAGE_MARKS,
 } from "./media-pending-stage";
@@ -36,14 +35,8 @@ export type PendingBubbleProps = {
   /** 대기 줄이 실은 시작 시각(기기 시계, `message.startedAt`) — 다시 서도 그만큼 지난 단계에서 섭니다. 없으면 말풍선이 선 때. */
   readonly startedAt?: number;
 };
-export type PhotoPendingBubbleProps = PendingBubbleProps & {
-  /** 서버가 알려 준 진행 단계 — 없으면 기다린 시간으로 추정합니다. 단계가 바뀌면 부르는 쪽이 `key`로 다시 세웁니다. */
-  readonly serverStage?: "preparing" | "drawing";
-  /** 「그리는 중」을 처음 본 때(기기 시계). */
-  readonly drawingAt?: number;
-  /** 도착할 사진의 비율 — 있으면 상자를 그 크기로 맞춰 도착할 때 목록이 튀지 않습니다. */
-  readonly aspect?: "3:2" | "1:1";
-};
+/** 서버가 알려 준 단계 · 비율을 더 받습니다 — 단계는 문구를 앞으로만 당기고, 비율은 상자를 도착할 사진 크기로 맞춥니다. */
+export type PhotoPendingBubbleProps = PendingBubbleProps & ChatPendingStage;
 export type PhotoBubbleProps = {
   readonly src: string | null;
   /** 서버 사진의 비율 · AI 표시(ADR-0146 「앱 연결」) — 없으면 3:4 · 표시 없음. */
@@ -86,30 +79,24 @@ export function PhotoPendingBubble({
   testId,
   startedAt,
   serverStage,
-  drawingAt,
   aspect,
 }: PhotoPendingBubbleProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   // 낭독 줄은 단계가 바뀌어도 그대로 — 스크린리더가 5초마다 다시 읽지 않게 합니다.
   const label = chat.list.sendingPhoto(name);
-  // 서버 단계가 있으면 그것이 기준 — 구상 중은 첫 문구, 그리는 중은 그때부터 문구 2 ~ 4. 없으면 기다린 시간으로 추정.
-  const drawing = serverStage === "drawing";
-  const marks = serverStage === "preparing" ? PREPARING_STAGE_MARKS : PHOTO_STAGE_MARKS;
-  const counted = usePendingStage(
-    drawing ? DRAWING_STAGE_MARKS : marks,
-    drawing ? drawingAt : startedAt,
-  );
-  const stage = counted + (drawing ? 1 : 0);
-  const box = aspect === undefined ? "" : ` ${SKELETON_ASPECT_CLASS[aspect]}`;
+  // 기준은 기다린 시간 — 서버가 「그리는 중」이라 하면 적어도 둘째 문구로 당깁니다(내려가지 않음).
+  const counted = usePendingStage(PHOTO_STAGE_MARKS, startedAt);
+  const stage = serverStage === "drawing" ? Math.max(counted, DRAWING_MIN_STAGE) : counted;
+  const box = aspect === undefined ? "" : ` ${PENDING_ASPECT_CLASS[aspect]}`;
   return (
     <view
-      className={`messenger-chat-photo-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
+      className={`messenger-chat-photo-pending${box}${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={label}
     >
-      <view className={`messenger-chat-photo-skeleton${box}`}>
+      <view className="messenger-chat-photo-skeleton">
         <view className="messenger-chat-photo-disc">
           <svg
             className="messenger-chat-icon-sm"
@@ -130,9 +117,9 @@ export function PhotoPendingBubble({
   );
 }
 
-const SKELETON_ASPECT_CLASS = {
-  "3:2": "messenger-chat-photo-skeleton-3x2",
-  "1:1": "messenger-chat-photo-skeleton-1x1",
+const PENDING_ASPECT_CLASS = {
+  "3:2": "messenger-chat-photo-pending-3x2",
+  "1:1": "messenger-chat-photo-pending-1x1",
 } as const;
 
 const ASPECT_CLASS = {

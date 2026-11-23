@@ -222,7 +222,7 @@ describe("저장본 · 거절 · 연결 실패", () => {
 });
 
 describe("서버 진행 단계", () => {
-  test("CM-U9d 다시 읽을 때 단계가 drawing으로 바뀌면 대기 줄에 단계 · 그리기 시작(기기 시계) · 비율이 실리고, 그 뒤로는 그대로다", async () => {
+  test("CM-U9d 다시 읽을 때 단계가 drawing으로 바뀌면 대기 줄에 단계 · 비율이 실리고, 시작 시각은 그대로다", async () => {
     const env = await opened({
       request: { kind: "accepted", media: media({ stage: "preparing" }), cached: false },
       loads: [
@@ -243,11 +243,10 @@ describe("서버 진행 단계", () => {
       kind: "photo-pending",
       startedAt: 1_000,
       serverStage: "drawing",
-      drawingAt: 3_000,
       aspect: "3:2",
     });
     await env.advance(3_000);
-    expect(env.lines().at(-1)).toMatchObject({ serverStage: "drawing", drawingAt: 3_000 });
+    expect(env.lines().at(-1)).toMatchObject({ startedAt: 1_000, serverStage: "drawing" });
   });
 });
 

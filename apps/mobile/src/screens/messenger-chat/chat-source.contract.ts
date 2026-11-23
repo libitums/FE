@@ -17,15 +17,6 @@ export type ChatCounterpart = {
 type ChatMessageBase = { readonly id: string; readonly at: number };
 /** 대기 줄이 처음 놓인 때(**기기 시계**) — 대기 문구의 단계가 여기서부터 셉니다. `at`은 서버 방에서 서버 시계라 쓰지 않습니다. */
 type ChatPendingStart = { readonly startedAt?: number };
-/**
- * 서버가 알려 준 사진의 진행 단계(ADR-0146 개정 2026-11-23) — 없으면(옛 서버 · 가짜 방) 기다린 시간으로 추정합니다.
- * `drawingAt`은 앱이 「그리는 중」을 처음 본 때(기기 시계), `aspect`는 도착할 사진의 비율입니다.
- */
-type ChatPendingStage = {
-  readonly serverStage?: "preparing" | "drawing";
-  readonly drawingAt?: number;
-  readonly aspect?: "3:2" | "1:1";
-};
 
 export type ChatMessage =
   | (ChatMessageBase & {
@@ -161,7 +152,7 @@ import type {
 } from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129) · 채팅 단어(ADR-0170)
 import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
-import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
+import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =

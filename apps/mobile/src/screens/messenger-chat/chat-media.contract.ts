@@ -50,6 +50,15 @@ export type RemoteMedia = {
   readonly stage?: "preparing" | "drawing" | null;
 };
 
+/**
+ * 대기 줄이 싣는 서버 진행 단계 · 비율(ADR-0146 개정 2026-11-23) — 없으면(옛 서버 · 가짜 방) 기다린 시간으로만 추정합니다.
+ * 단계는 문구를 앞으로만 당깁니다(「그리는 중」이면 적어도 둘째 문구). `aspect`는 도착할 사진의 비율입니다.
+ */
+export type ChatPendingStage = {
+  readonly serverStage?: NonNullable<RemoteMedia["stage"]>;
+  readonly aspect?: NonNullable<RemoteMedia["aspect"]>;
+};
+
 /** 앨범 RPC(`companion_list_media`)의 한 건 — 그때의 말 · 지난 대화 표시가 더 붙습니다(ADR-0150). */
 export type RemoteAlbumMedia = RemoteMedia & {
   readonly characterId: string;

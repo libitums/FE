@@ -7,15 +7,22 @@
 }
 
 /* 서버 사진 — 3:2(240 × 160) · 1:1(200 × 200). 모서리는 기존 3:4 사진과 같습니다. */
-.messenger-chat-photo-3x2 {
+/* 크기는 도착한 사진과 만드는 중인 상자(서버가 비율을 먼저 알려 줄 때 — ADR-0146 개정 2026-11-23)가 같이 씁니다 — 도착할 때 목록이
+   튀지 않게. 상자 쪽은 묶음의 클래스로 겁니다(기본 180 × 240보다 구체적인 선택자). */
+.messenger-chat-photo-3x2,
+.messenger-chat-photo-pending-3x2 .messenger-chat-photo-skeleton {
   width: 240px;
   height: 160px;
-  border-radius: var(--libitum-radius-md);
 }
 
-.messenger-chat-photo-1x1 {
+.messenger-chat-photo-1x1,
+.messenger-chat-photo-pending-1x1 .messenger-chat-photo-skeleton {
   width: 200px;
   height: 200px;
+}
+
+.messenger-chat-photo-3x2,
+.messenger-chat-photo-1x1 {
   border-radius: var(--libitum-radius-md);
 }
 
@@ -34,15 +41,4 @@
 .messenger-chat-voice-play-off,
 .messenger-chat-voice-play-off:active {
   opacity: var(--libitum-opacity-disabled);
-}
-
-/* 만드는 중인 사진의 상자 — 서버가 비율을 먼저 알려 주면(ADR-0146 개정 2026-11-23) 도착할 사진과 같은 크기로 맞춥니다. */
-.messenger-chat-photo-skeleton-3x2 {
-  width: 240px;
-  height: 160px;
-}
-
-.messenger-chat-photo-skeleton-1x1 {
-  width: 200px;
-  height: 200px;
 }

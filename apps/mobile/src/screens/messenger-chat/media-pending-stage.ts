@@ -8,11 +8,10 @@
 export const PHOTO_STAGE_MARKS: readonly number[] = [0, 5000, 11000, 17000];
 export const VOICE_STAGE_MARKS: readonly number[] = [0, 2500];
 /**
- * 서버가 단계를 알려 줄 때(ADR-0146 개정 2026-11-23): 「구상 중」은 첫 문구 하나에 머물고, 「그리는 중」은 그때부터 문구 2 ~ 4를
- * 넘깁니다(운영 그리기 13 ~ 17초). 서버가 알려 주지 않으면(옛 서버 · 가짜 방) 위 `PHOTO_STAGE_MARKS`로 추정합니다.
+ * 서버가 「그리는 중」이라 알려 줄 때의 최소 단계(ADR-0146 개정 2026-11-23) — 둘째 문구(「taking the picture…」).
+ * 서버 단계는 문구를 **앞으로만** 당깁니다: 기준은 늘 기다린 시간이고, 서버가 더 낮은 단계를 말해도 내려가지 않습니다.
  */
-export const PREPARING_STAGE_MARKS: readonly number[] = [0];
-export const DRAWING_STAGE_MARKS: readonly number[] = [0, 6000, 12000];
+export const DRAWING_MIN_STAGE = 1;
 
 /** 기다린 시간의 단계 — 기기 시각이 거꾸로 가도(음수) 첫 단계입니다. */
 export function stageAt(marks: readonly number[], elapsedMs: number): number {

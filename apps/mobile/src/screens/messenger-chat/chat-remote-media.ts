@@ -27,7 +27,6 @@ import {
   mediaTargetOf,
   placeMediaLine,
   remoteKindOf,
-  withCarriedDrawing,
 } from "./chat-media-rules";
 import type { ChatRemote } from "./chat-remote.contract";
 import type { ChatMediaKind, ChatMessage } from "./chat-source.contract";
@@ -279,7 +278,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
         // 기다리는 동안 새 세대(다시 열기 · 새 요청)가 시작됐으면 「준비 중」 자리표시자로 되돌리지 않습니다 — 새 세대가 같은 행을
         // 다시 놓습니다. 끝난 결과는 누가 놓아도 같아 그대로 둡니다(리뷰 #442).
         if (state.gen !== gen && row.status === "pending") continue;
-        put(room, withCarriedDrawing(room.messages, line));
+        put(room, line);
       }
       changed(room);
       if (settled) readBalance();
