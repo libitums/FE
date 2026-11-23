@@ -113,7 +113,7 @@ describe("메신저 route (MC-U26)", () => {
   });
 });
 
-describe("appHeaderVisibleOn (사용자 결정 2026-11-09: 메신저 목록에는 전역 머리가 없다)", () => {
+describe("appHeaderVisibleOn (사용자 결정 2026-11-09 · 2026-11-23: 메신저 · 롤플레이 목록에는 전역 머리가 없다)", () => {
   test("메신저 목록에서 전역 머리(AppHeader)가 숨는다", () => {
     expect(appHeaderVisibleOn(asScreen({ name: "messenger-list" }))).toBe(false);
   });
