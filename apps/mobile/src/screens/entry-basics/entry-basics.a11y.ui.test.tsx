@@ -46,7 +46,11 @@ function mountCompose(motion: "standard" | "reduced" = "standard") {
       <EntryBasicsComposeScreen
         romanization="shown"
         autoPlay="off"
-        sound={{ sourceOf: (syllable) => `src:${syllable}`, play: noop }}
+        sound={{
+          sourceOf: (syllable) => `src:${syllable}`,
+          letterSourceOf: () => null,
+          play: noop,
+        }}
         onNext={noop}
         onBack={noop}
         onSkip={noop}
@@ -56,22 +60,25 @@ function mountCompose(motion: "standard" | "reduced" = "standard") {
 }
 
 test.each([
-  ["있으면", (syllable: string) => `src:${syllable}`, "true"],
+  ["있으면", (letter: string) => `clip:${letter}`, "true"],
   ["없으면", () => null, "false"],
-] as const)("BA1. 글자 칸 — 소리가 %s 두 번 탭 가능 여부가 따라간다", (_label, sourceOf, value) => {
-  render(
-    <EntryBasicsLettersScreen
-      sound={{ sourceOf, play: noop }}
-      onNext={noop}
-      onBack={noop}
-      onSkip={noop}
-    />,
-  );
-  enableTap(screen.getByTestId(ids.letter(0)), value);
-  inTree(screen.getByTestId(ids.title));
-  inTree(screen.getByTestId(ids.lead));
-  expect(screen.getByTestId(ids.title)).toHaveAttribute("accessibility-heading", "true");
-});
+] as const)(
+  "BA1. 글자 칸 — 소리가 %s 두 번 탭 가능 여부가 따라간다",
+  (_label, letterSourceOf, value) => {
+    render(
+      <EntryBasicsLettersScreen
+        sound={{ sourceOf: () => null, letterSourceOf, play: noop }}
+        onNext={noop}
+        onBack={noop}
+        onSkip={noop}
+      />,
+    );
+    enableTap(screen.getByTestId(ids.letter(0)), value);
+    inTree(screen.getByTestId(ids.title));
+    inTree(screen.getByTestId(ids.lead));
+    expect(screen.getByTestId(ids.title)).toHaveAttribute("accessibility-heading", "true");
+  },
+);
 
 test("BA2. 합치기 — 타일 · 칸 · 재생이 TalkBack으로 눌리고 문제 글이 읽힌다", () => {
   mountCompose();

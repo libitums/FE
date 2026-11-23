@@ -68,6 +68,22 @@ export function jamoSoundOf(letter: string): string {
   return composeSyllable("ㅇ", letter);
 }
 
+/**
+ * 자모 칸을 누르면 나는 앱 내장 녹음의 이름입니다(ADR-0173 ⟨2026-11-23⟩). 녹음은 자음 18개 `c-<로마자>-sound` · 모음 21개
+ * `v-<로마자>`이고 호스트 음성 폴더(`apps/ios/Host/audio/`, Android는 같은 폴더를 복사 — ADR-0045)에 `hangul-` 이름으로
+ * 실었습니다. ㅇ은 녹음이 없어 지금처럼 「아」(ㅏ)를 냅니다. 자모가 아니면 null. 합치기 퀴즈 음절은 `letterAudioIdOf`입니다.
+ */
+export function jamoClipOf(letter: string): string | null {
+  if (letter.length !== 1) return null;
+  const initial = INITIALS.indexOf(letter);
+  if (initial >= 0) {
+    const roman = INITIAL_ROMAN[initial] ?? "";
+    return roman === "" ? "hangul-v-a" : `hangul-c-${roman}-sound`;
+  }
+  const medial = MEDIALS.indexOf(letter);
+  return medial >= 0 ? `hangul-v-${MEDIAL_ROMAN[medial] ?? ""}` : null;
+}
+
 /** 받침 없는 음절의 (초성, 중성) 번호. 아니면 null. */
 function partsOf(syllable: string): readonly [number, number] | null {
   if (syllable.length !== 1) return null;

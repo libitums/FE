@@ -15,6 +15,7 @@ import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.c
 
 // `integration` 계층: 글자 소리(ADR-0173) — 기기에 받아 둔 음성 정보 파일(letters 항목) → 콘텐츠 로더 → 더보기 결선 →
 // Letters 칸 · 합치기 퀴즈 → 재생 모듈. 경계 대역은 저장소 · 오디오 모듈 · env뿐입니다(주소는 실제 해석기가 만듭니다).
+// ⟨2026-11-23⟩ 자모 칸은 앱 내장 녹음(`hangul-…`, 호스트 번들 이름)을 냅니다 — 정보 파일과 상관없이. 퀴즈 음절은 그대로 버킷입니다.
 
 const bucketAudio = (id: string) =>
   `https://test.supabase.co/storage/v1/object/public/content/audio/${id}.m4a`;
@@ -75,17 +76,13 @@ const sources = (play: ReturnType<typeof vi.fn>) => play.mock.calls.map((call) =
 const cellEvents = (events: readonly EpisodeIntroEvent[]) =>
   events.filter((event) => event.name === "letters_cell_tapped");
 
-test("LAI1. 업로드 뒤 — 자모 칸을 누르면 그 소리(ㄱ → 가 · ㅑ → 야 · ㄲ → 까)를 버킷에서 재생하고 이벤트는 played", async () => {
+test("LAI1. 자모 칸을 누르면 그 자모의 내장 녹음(ㄱ · ㅑ · ㄲ)을 재생하고 이벤트는 played", async () => {
   const { play, events } = await boot(LETTERS_MANIFEST);
   openLetters();
   fireEvent.tap(screen.getByTestId("letters-cell-0"), {});
   fireEvent.tap(screen.getByTestId("letters-cell-15"), {});
   fireEvent.tap(screen.getByTestId("letters-cell-24"), {});
-  expect(sources(play)).toEqual([
-    bucketAudio("letters/ga"),
-    bucketAudio("letters/ya"),
-    bucketAudio("letters/kka"),
-  ]);
+  expect(sources(play)).toEqual(["hangul-c-g-sound", "hangul-v-ya", "hangul-c-kk-sound"]);
   expect(cellEvents(events)).toMatchObject([
     { letter: "ㄱ", audio: "played" },
     { letter: "ㅑ", audio: "played" },
@@ -99,10 +96,10 @@ test("LAI5. 칸을 여러 번 눌러도 소리만 — 진동 모듈 호출 없�
   for (const index of [0, 15, 24, 0])
     fireEvent.tap(screen.getByTestId(`letters-cell-${index}`), {});
   expect(sources(play)).toEqual([
-    bucketAudio("letters/ga"),
-    bucketAudio("letters/ya"),
-    bucketAudio("letters/kka"),
-    bucketAudio("letters/ga"),
+    "hangul-c-g-sound",
+    "hangul-v-ya",
+    "hangul-c-kk-sound",
+    "hangul-c-g-sound",
   ]);
   expect(haptic).not.toHaveBeenCalled();
   expect(cellEvents(events)).toHaveLength(4);
@@ -141,11 +138,13 @@ test("LAI2. 업로드 뒤 — 합치기 퀴즈를 맞히면 효과음 틈 뒤 �
   expect(sources(play)).toEqual([bucketAudio("letters/ga"), bucketAudio("letters/neo")]);
 });
 
-test("LAI3. 업로드 전(정보 파일에 letters 없음) — 칸 · 퀴즈 모두 재생 호출 없이 그대로 동작하고 이벤트는 unavailable", async () => {
+test("LAI3. 업로드 전(정보 파일에 letters 없음) — 칸은 내장 녹음이 나고, 퀴즈는 음절 소리 없이 그대로 동작한다", async () => {
   const { play, events } = await boot(manifestTextOf());
   openLetters();
   fireEvent.tap(screen.getByTestId("letters-cell-0"), {});
-  expect(cellEvents(events)).toMatchObject([{ letter: "ㄱ", audio: "unavailable" }]);
+  expect(cellEvents(events)).toMatchObject([{ letter: "ㄱ", audio: "played" }]);
+  expect(sources(play)).toEqual(["hangul-c-g-sound"]);
+  play.mockClear();
   openCompose();
   vi.useFakeTimers();
   pick("ㄱ");
@@ -161,10 +160,10 @@ test("LAI3. 업로드 전(정보 파일에 letters 없음) — 칸 · 퀴즈 모
   );
 });
 
-test("LAI4. 정보 파일이 아예 없어도(첫 실행 · 오프라인) 같은 길", async () => {
+test("LAI4. 정보 파일이 아예 없어도(첫 실행 · 오프라인) 자모 칸 소리는 난다", async () => {
   const { play, events } = await boot(null);
   openLetters();
   fireEvent.tap(screen.getByTestId("letters-cell-10"), {});
-  expect(cellEvents(events)).toMatchObject([{ audio: "unavailable" }]);
-  expect(play).not.toHaveBeenCalled();
+  expect(cellEvents(events)).toMatchObject([{ letter: "ㅋ", audio: "played" }]);
+  expect(sources(play)).toEqual(["hangul-c-k-sound"]);
 });

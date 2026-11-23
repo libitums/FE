@@ -5,7 +5,7 @@ import { color } from "@libitums/design-tokens";
 import volume from "@libitums/icons/lynx/volume";
 import { Button } from "@libitums/ui-lynx/button";
 
-import { JAMO_GROUPS, jamoSoundOf } from "../../lib/letters/jamo";
+import { JAMO_GROUPS } from "../../lib/letters/jamo";
 import type { JamoGroupId, JamoLetter } from "../../lib/letters/jamo";
 import { useUiCopy } from "../../lib/ui-copy";
 import { lettersTestIds as ids, type LettersScreenProps } from "./letters.contract";
@@ -70,7 +70,7 @@ export function LettersScreen({
                       index={index}
                       letter={letter}
                       group={group.id}
-                      source={sound.sourceOf(jamoSoundOf(letter.letter))}
+                      source={sound.letterSourceOf(letter.letter)}
                       showRoman={romanization === "shown"}
                       heard={heard.indexOf(letter.letter) >= 0}
                       unavailableLabel={copy.more.letters.soundUnavailable}
