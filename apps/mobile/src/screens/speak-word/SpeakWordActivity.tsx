@@ -6,10 +6,8 @@ import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
 import { SpeechWaves } from "../../components/SpeechWaves";
-import { TextRoles } from "../../components/TextRoles";
 import { useSpeechAttempt } from "../../components/use-speech-attempt";
 import { announce, announceCompletion } from "../../lib/accessibility";
-import { romanizationSegmentsOf } from "../../lib/romanization-segments";
 import { stopAudio } from "../../lib/audio";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -275,18 +273,13 @@ export function SpeakWordActivity({
                 onLoad={picture.onLoad}
                 onError={picture.onError}
               />
-              {/* 정답 로마자 줄입니다 — 영어 뜻은 그림의 낭독 이름 · 실패 대체 글자에 남아 줄이 없습니다. 판정이 나면 이
-                  줄 자리에 정답 상자가 섭니다(맞아도 보입니다 — 발음을 한 번 더 확인합니다). */}
-              {result !== null ? (
+              {/* 판정 전 카드는 그림뿐입니다 — 정답 로마자를 먼저 보이면 그림을 보고 떠올리는 문항이 읽는 문항이 됩니다
+                  (사용자 결정 2026-11-23, ADR-0084 적용 기록). 영어 뜻은 그림의 낭독 이름 · 실패 대체 글자에 남습니다. 판정이
+                  나면 정답 상자(낱말 · 로마자)가 섭니다(맞아도 보입니다 — 발음을 한 번 더 확인합니다). */}
+              {result === null ? null : (
                 <AnswerReveal
                   testId="speak-word-reveal"
                   text={speakWordRevealText(question, copy)}
-                />
-              ) : question.romanization === null ? null : (
-                <TextRoles.Romanization
-                  segments={romanizationSegmentsOf(question.romanization, undefined)}
-                  size="m"
-                  testId="speak-word-romanization"
                 />
               )}
             </>
