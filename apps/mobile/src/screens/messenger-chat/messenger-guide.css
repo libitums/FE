@@ -177,6 +177,10 @@
   margin-left: var(--libitum-spacing-48);
 }
 
+.messenger-guide-tail-sample {
+  margin-left: var(--libitum-spacing-48);
+}
+
 /* 가리키는 입력 줄 부품의 고리. */
 .messenger-guide-target-chat .messenger-chat-composer-pill {
   border-width: var(--libitum-stroke-width-strong);
@@ -187,6 +191,13 @@
   border-width: var(--libitum-stroke-width-strong);
   border-style: solid;
   border-color: var(--libitum-color-brand-primary);
+}
+
+/* 예시 스냅샷 단계 — 사진 알약만. 주황 면이라 고리는 흰 테두리로 띄웁니다. */
+.messenger-guide-target-sample .messenger-chat-pill-snapshot {
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-white);
 }
 
 .messenger-guide-target-media .messenger-chat-pill {

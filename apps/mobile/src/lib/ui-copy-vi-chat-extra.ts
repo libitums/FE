@@ -139,11 +139,15 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       ideas: "Không biết nói gì? Chạm vào bóng đèn cạnh ô nhập để xem gợi ý trả lời.",
       media:
         "Bạn cũng có thể nhờ mình gửi ảnh hoặc tin nhắn thoại bằng các nút phía trên bàn phím.",
+      sample:
+        "Muốn xem mình đang làm gì không? Chạm Snapshot, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
     },
     next: "Tiếp",
     done: "Đã hiểu",
     skip: "Bỏ qua",
     stepOf: (step, total) => `${step}/${total}`,
+    newTag: "Mới",
+    free: "MIỄN PHÍ",
   },
   launch: {
     newTag: "MỚI",

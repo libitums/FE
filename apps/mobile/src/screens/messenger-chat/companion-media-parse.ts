@@ -165,3 +165,24 @@ export function mediaPageFrom(
   });
   return { items, hasMore: raw.hasMore };
 }
+
+/** `companion_sample_snapshot_offer` 본문 — `{ available: true }`일 때만 참(못 읽으면 제안하지 않습니다). */
+export function sampleOfferFrom(bodyText: string | null): boolean {
+  return recordOf(parse(bodyText))?.available === true;
+}
+
+/**
+ * `companion_claim_sample_snapshot` 본문 → 받음 · 거절 · 실패. `ok` · `already`는 받음(already는 저장본), 서버가 주지 않기로 한
+ * 경우(`not_offered` · `no_sample` · …)는 거절, 본문이 깨졌거나 사진이 없으면 실패입니다.
+ */
+export function sampleClaimFrom(bodyText: string | null): MediaRequestResult {
+  const raw = recordOf(parse(bodyText));
+  const result = stringOf(raw?.result);
+  if (result === null) return { kind: "failed" };
+  if (result !== "ok" && result !== "already")
+    return { kind: "refused", notice: "not-eligible", until: null };
+  const media = remoteMediaOf(raw?.media);
+  return media === null
+    ? { kind: "failed" }
+    : { kind: "accepted", media, cached: result === "already" };
+}

@@ -101,7 +101,13 @@ export function MessengerChatScreen({
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
   serverBusy.current = server && busy;
   const tools = useBubbleTools({ roomId, source, thread, announce });
-  const guide = useRoomGuide(roomId, thread, guideStore, state.overlay.kind !== "none");
+  const guide = useRoomGuide(
+    roomId,
+    thread,
+    guideStore,
+    state.overlay.kind !== "none",
+    source.sampleSnapshot,
+  );
   useAutoIdeas({
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
     enabled: preferences.replyIdeas,
@@ -222,6 +228,7 @@ export function MessengerChatScreen({
               avatarUrl={thread.counterpart.avatarUrl}
               onNext={guide.next}
               onSkip={guide.skip}
+              sampleOnly={guide.sampleOnly}
             />
           )}
           {state.overlay.kind === "more-menu" ? (
@@ -258,6 +265,7 @@ export function MessengerChatScreen({
             sendCost={turn.sendCost}
             birthYear={birthYear}
             guideClass={guideTargetClass(guide.step)}
+            {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}
             guest={guest.active}
             aboveComposer={
               turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null

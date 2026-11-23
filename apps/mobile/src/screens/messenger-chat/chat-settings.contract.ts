@@ -113,11 +113,21 @@ export type MessengerGuideCopy = {
   readonly cardTitle: (name: string) => string;
   readonly cardBody: string;
   readonly cardButton: (name: string) => string;
-  readonly steps: { readonly chat: string; readonly ideas: string; readonly media: string };
+  readonly steps: {
+    readonly chat: string;
+    readonly ideas: string;
+    readonly media: string;
+    /** 예시 스냅샷 단계(ADR-0146 추가) — 사진 단추를 누르면 첫 한 장은 무료. */
+    readonly sample: string;
+  };
   readonly next: string;
   readonly done: string;
   readonly skip: string;
   readonly stepOf: (step: number, total: number) => string;
+  /** 안내를 이미 본 사람에게 예시 단계만 보일 때의 꼬리표(「1 of 1」 대신). */
+  readonly newTag: string;
+  /** 예시 단계 동안 사진 알약의 가격 자리에 서는 글. */
+  readonly free: string;
 };
 
 export type ChatSettingsCopy = {

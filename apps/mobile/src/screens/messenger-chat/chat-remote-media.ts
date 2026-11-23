@@ -13,6 +13,7 @@ import type {
   RemoteMedia,
 } from "./chat-media.contract";
 import type { ChatRemakeResult } from "./chat-album.contract";
+import { sampleSnapshotMethods, type SampleSnapshotMethods } from "./chat-remote-sample";
 import { mediaSender } from "./chat-remote-send";
 import {
   collapseMediaResults,
@@ -68,6 +69,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     media: ChatMediaKind,
   ) => Promise<ChatRemakeResult>;
   readonly resume: (room: RoomState) => void;
+  readonly sample: SampleSnapshotMethods;
 } {
   const { live, changed, now, isOpen, schedule, hooks } = deps;
   const port = deps.remote.media;
@@ -206,18 +208,8 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     if (!result.cached) readBalance();
   };
 
-  const send = mediaSender({
-    port,
-    now,
-    alive,
-    put,
-    replace,
-    changed,
-    noticeLine,
-    accept,
-    emit,
-    readBalance,
-  });
+  const ops = { port, now, alive, put, replace, changed, noticeLine, accept, emit, readBalance };
+  const send = mediaSender(ops);
 
   const request = (roomId: string, media: ChatMediaKind) => {
     const room = live(roomId);
@@ -286,5 +278,5 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     })();
   };
 
-  return { request, remake, resume };
+  return { request, remake, resume, sample: sampleSnapshotMethods({ ...ops, live, schedule }) };
 }

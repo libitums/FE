@@ -5,14 +5,13 @@ import { getItem, isStorageAvailable, setItem } from "../../lib/storage";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { MessengerAccess } from "./messenger-access";
 
-export type GuideStep = "chat" | "ideas" | "media";
-export type GuidePart = "list" | "room";
+/** `sample` — 사진 단추를 가리키고, 누르면 예시 스냅샷을 무료로 한 장 받는 단계(ADR-0146 추가). */
+export type GuideStep = "chat" | "ideas" | "media" | "sample";
+/** `snapshot` — 예시 스냅샷 단계를 봤는가(안내를 이미 본 사람에게 그 단계만 따로 한 번 보이려고 따로 적습니다). */
+export type GuidePart = "list" | "room" | "snapshot";
 
 /** 안내를 맡는 인물 방입니다(서버 모드 인물 표의 덕수쌤). 없으면 안내가 서지 않습니다. */
 export const GUIDE_ROOM_ID = "duksu";
-/** 사진 · 음성이 서버에 이어지면 true — 그 전에는 코치마크의 사진 · 음성 단계를 건너뜁니다. */
-export const MESSENGER_MEDIA_READY = false;
-
 export const messengerTabVisitedStorageKey = "libitum.messenger.tab-visited";
 export const messengerGuideSeenStorageKey = "libitum.messenger.guide-seen";
 
@@ -26,11 +25,20 @@ export function hasNewFriend(rooms: readonly ChatRoomSummary[], access: Messenge
   return access !== "sign-in" && rooms.some((room) => room.isNew && room.access.kind === "open");
 }
 
-export function guideSteps(input: { mediaReady: boolean }): readonly GuideStep[] {
-  return input.mediaReady ? ["chat", "ideas", "media"] : ["chat", "ideas"];
+/**
+ * 방 안내의 단계 — 새 사용자는 chat · ideas, 서버가 예시 스냅샷을 제안하면 sample이 붙습니다. 안내를 이미 본 사람은 제안되고
+ * 예시 단계를 아직 안 봤을 때 sample만 한 번. 그 밖에는 빈 목록(안내 없음).
+ */
+export function roomGuideSteps(input: {
+  readonly roomSeen: boolean;
+  readonly snapshotSeen: boolean;
+  readonly offered: boolean;
+}): readonly GuideStep[] {
+  const sample: readonly GuideStep[] = input.offered && !input.snapshotSeen ? ["sample"] : [];
+  return input.roomSeen ? sample : ["chat", "ideas", ...sample];
 }
 
-const PARTS: readonly GuidePart[] = ["list", "room"];
+const PARTS: readonly GuidePart[] = ["list", "room", "snapshot"];
 
 export function guideSeenFrom(raw: string | null): readonly GuidePart[] {
   if (raw === null || raw === "") return [];

@@ -154,6 +154,7 @@ import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
 import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
+import type { SampleSnapshotMethods } from "./chat-remote-sample";
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -206,6 +207,8 @@ export type ChatSource = {
   readonly sendText: (roomId: string, text: string) => void;
   /** 잔액은 줄지 않습니다(결제 없음). */
   readonly requestMedia: (roomId: string, media: ChatMediaKind) => void;
+  /** 예시 스냅샷(ADR-0146 추가) — 안내에서 무료로 한 장. 서버 모드가 아니면 없습니다(안내의 예시 단계가 서지 않음). */
+  readonly sampleSnapshot?: SampleSnapshotMethods;
   readonly regenerateIdeas: (roomId: string) => void;
   readonly setAutoIdeas: (roomId: string, on: boolean) => void;
   readonly setStoryPoint: (roomId: string, storyPointId: string) => void;

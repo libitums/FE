@@ -147,11 +147,15 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
         "¿No sabes qué decir? Toca la bombilla junto al cuadro de mensaje para ver ideas de respuesta.",
       media:
         "También puedes pedirme una foto o un mensaje de voz con los botones sobre el teclado.",
+      sample:
+        "¿Quieres ver qué estoy haciendo? Toca Snapshot y te envío una foto. La primera va por mi cuenta.",
     },
     next: "Siguiente",
     done: "Entendido",
     skip: "Omitir",
     stepOf: (step, total) => `${step} de ${total}`,
+    newTag: "Nuevo",
+    free: "GRATIS",
   },
   launch: {
     newTag: "NUEVO",

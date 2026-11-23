@@ -30,6 +30,8 @@ export const messengerChatMediaEs: ChatMediaCopy = {
           : "Este mensaje no se puede convertir en mensaje de voz.";
       case "unavailable":
         return "Las fotos y los mensajes de voz no están disponibles ahora.";
+      case "sample-gift":
+        return "¡Esa corrió por mi cuenta! La próxima Snapshot usa tus Yeopjeon.";
       default:
         return "No se pudo enviar tu solicitud. Revisa tu conexión e inténtalo de nuevo.";
     }
