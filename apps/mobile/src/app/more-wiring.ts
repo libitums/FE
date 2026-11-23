@@ -86,7 +86,10 @@ export function moreWiring(args: MoreWiringArgs): MoreWiring {
     letterSound: {
       sourceOf: (syllable) => letterAudioSourceOf(syllable, episodeContent),
       letterSourceOf: jamoClipOf,
-      play: (source) => void playAudio(source, noop),
+      play: (source, onDone) => {
+        // 재생 모듈이 없으면 끝 알림이 오지 않으니 곧바로 끝을 알립니다.
+        if (playAudio(source, onDone ?? noop) === "unavailable") onDone?.();
+      },
     },
     autoPlay: autoPlayAudioOf(args.sessionOptions),
     wordSound: {

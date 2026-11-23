@@ -6,5 +6,6 @@ export type LetterSoundPort = {
   readonly sourceOf: (syllable: string) => string | null;
   /** 자모 칸 하나의 소리(ㄱ · ㅏ …) — 앱 내장 녹음입니다(`jamoClipOf`, 2026-11-23). */
   readonly letterSourceOf: (letter: string) => string | null;
-  readonly play: (source: string) => void;
+  /** 소리를 냅니다 — 끝나면(멈춤 · 다른 소리로 바뀜 포함) `onDone`을 한 번 부릅니다. */
+  readonly play: (source: string, onDone?: () => void) => void;
 };
