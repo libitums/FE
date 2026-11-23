@@ -31,6 +31,8 @@ import type {
 import { speechResult, speechStatus } from "./speech-recognition-payload";
 
 export type {
+  SpeechFallback,
+  SpeechKoreanPack,
   SpeechOnDevice,
   SpeechPermissionState,
   SpeechRequestOutcome,

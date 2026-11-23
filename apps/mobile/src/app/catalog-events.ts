@@ -129,5 +129,12 @@ export function itemAnsweredEventOf(
       ? { skipReason: report.skipReason }
       : {}),
     ...(report.hintUsed === undefined ? {} : { hintUsed: report.hintUsed }),
+    ...(report.speech === undefined
+      ? {}
+      : {
+          speechErrorCode: String(report.speech.errorCode),
+          speechFallback: report.speech.fallback,
+          speechKoreanPack: report.speech.koreanPack,
+        }),
   };
 }

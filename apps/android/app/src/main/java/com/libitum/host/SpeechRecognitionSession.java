@@ -11,6 +11,9 @@ final class SpeechRecognitionSession {
   private double level;
   private double peakLevel;
   private double levelSum;
+  private String fallback = SpeechRecognitionRoute.FALLBACK_NONE;
+  private int fallbackErrorCode;
+  private String koreanPack = SpeechRecognitionRoute.PACK_UNKNOWN;
 
   SpeechRecognitionSession(boolean requestedOnDevice, boolean supportsOnDevice, long startedAtMs) {
     this.requestedOnDevice = requestedOnDevice;
@@ -18,12 +21,30 @@ final class SpeechRecognitionSession {
     this.startedAtMs = startedAtMs;
   }
 
-  boolean requiresOnDevice() { return requestedOnDevice && supportsOnDevice; }
+  boolean requiresOnDevice() {
+    return requestedOnDevice && supportsOnDevice
+        && SpeechRecognitionRoute.FALLBACK_NONE.equals(fallback);
+  }
   boolean isFinished() { return finished; }
   boolean finish() {
     if (finished) return false;
     finished = true;
     return true;
+  }
+
+  /** Switches this request to the network recognizer once; the on-device guarantee is gone after it. */
+  boolean fallBackToNetwork(String reason, int errorCode) {
+    if (finished || !requiresOnDevice()) return false;
+    fallback = reason;
+    fallbackErrorCode = errorCode;
+    return true;
+  }
+
+  String fallback() { return fallback; }
+  int fallbackErrorCode() { return fallbackErrorCode; }
+  String koreanPack() { return koreanPack; }
+  void observeKoreanPack(String pack) {
+    if (pack != null) koreanPack = pack;
   }
 
   // RecognitionListener reports a service-defined dB value, not PCM samples.
