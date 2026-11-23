@@ -195,3 +195,15 @@
 - **넣지 않은 것**: 진행 막대(서버 쪽 「앱 인계」의 선택 항목), 서버 `stageAt`(서버 시계라 쓰지 않는다 — 기기 시계만), 서버 단계 전용 문구(「장면을 구상하는 중…」 · 「그리는 중…」).
 - **순서**: 이 앱 변경은 서버 개정 없이도 안전하다(칸이 없으면 지금처럼 보인다). 서버 개정이 배포되면 그때부터 실제 단계를 따른다.
 - **테스트**: `companion-media-parse.unit.test.ts` CM-U1d · `chat-media-rules.unit.test.ts` CM-U6d ~ U6f · `chat-remote-media.unit.test.ts` CM-U9d · `ChatMediaBubbles.ui.test.tsx` MC-UI23.
+
+## 추가 ⟨2026-11-23⟩ — 안내에서 무료 예시 한 장 [사용자]
+
+- **계기**: 최근 7일 채팅한 1,220명 가운데 스냅샷을 써 본 사람은 38명(3.1%), 음성은 127명(10.4%)이다. 방 안내의 사진 · 음성 단계는 서버 연결 전에 꺼 둔 채(`MESSENGER_MEDIA_READY = false`)였고, 사진은 엽전 35에 약 19초를 기다려야 해 무엇인지 모르는 채로 먼저 쓰기 어렵다.
+- **사용자 결정 2026-11-23**(시안 https://claude.ai/artifact/3m6hGsXV8NdHKXrFUuZvjs): 덕수쌤 방 안내가 사진 알약을 가리키고(고리 · 가격 자리에 「FREE」), 누르면 결제 확인 없이 **미리 올려 둔 예시 사진**을 준다. 받은 사진은 대화 · 앨범에 남는다. 안내를 이미 본 사람에게도 사진을 써 본 적이 없으면 그 단계만 「New」로 한 번 보인다.
+- **예시 사진**: 실제 생성기로 덕수쌤의 첫 인사 메시지에서 만든 3:2 한 장(「내 모습」 숨김 — 학습자는 손만 보인다. 모든 사용자에게 같은 한 장이라 성별이 드러나지 않게). 실제 사용자가 만든 사진은 쓰지 않는다. 후보: https://claude.ai/artifact/Tx4u28fEgfAfUseFF8CcGN
+- **서버**(마이그레이션 `20261229120000_companion_media_sample.sql`): 표 `companion.media_samples`(인물 → 버킷 경로 `samples/…` · 비율 · 켬), 앱 RPC `companion_sample_snapshot_offer(p_character_id)` → `{ available }`(예시가 켜져 있고 이 계정에 스냅샷 행이 하나도 없을 때), `companion_claim_sample_snapshot(p_message_id)` → `{ result, media? }`. 받은 사진은 보통 스냅샷과 같은 `companion.media` 행이다(`charge = 'sample'` · `cost 0` · complete) — 엽전 예약 · 원장 · 하루 상한과 무관하고, 인물마다 계정당 한 번. Storage는 `companion-media/samples/`를 로그인한 사용자가 읽을 수 있게 정책을 더했다(쓰기 · 지우기는 서버 키만. 계정 삭제는 `<user_id>/` 폴더만 지운다).
+- **앱**: 안내 단계 `sample`(`roomGuideSteps`) — 새 사용자는 chat · ideas 뒤에, 이미 본 사람은 그 단계만. 서버가 제안할 때만 선다(첫 인사가 온 뒤 한 번 묻는다). 사진 알약을 누르면 대기 말풍선이 적어도 1.5초 섰다가 예시 사진으로 바뀌고, 회색 한 줄(「이번 것은 무료, 다음부터는 엽전」)이 붙는다. Skip은 받지 않고 끝낸다. 예시 단계까지 갔으면(받았든 넘겼든) 기기에 `snapshot`을 본 것으로 적어 다시 권하지 않는다.
+- **운영 순서**: 마이그레이션 적용 → 예시 파일을 `companion-media/samples/duksu-guide-01.png`에 올림 → `companion.media_samples`에 한 줄. 표에 줄이 없으면 제안이 꺼져 앱은 지금처럼 보인다(앱을 먼저 내도 안전).
+- **넣지 않은 것**: 음성 예시, 덕수쌤이 아닌 인물의 예시(안내가 덕수쌤 방에만 선다), 여러 장 돌려 보이기.
+- **한계**: 일곱 언어 문구는 원어민 검수 전. 기기 확인 전. 예시를 받은 메시지에서 「다시 만들기」를 하면 다시 그리기 값(25)이 든다.
+- **테스트**: 서버 `companion-media-sample.integration.test.ts` MS1 ~ MS6. 앱 `companion-media-parse.unit.test.ts` CM-U4a · U4b, `companion-media-api.unit.test.ts` CM-U8s, `messenger-guide.unit.test.ts` MG-U9, `chat-remote-media.unit.test.ts` CM-U30 ~ U32, `MessengerGuide.sample.ui.test.tsx` MG-UI10 ~ UI13.

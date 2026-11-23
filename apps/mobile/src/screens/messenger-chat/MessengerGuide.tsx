@@ -141,6 +141,8 @@ export type RoomGuideProps = {
   readonly avatarUrl: string | null;
   readonly onNext: () => void;
   readonly onSkip: () => void;
+  /** 안내를 이미 본 사람에게 예시 단계만 뜬 것 — 단계 수 대신 「New」. */
+  readonly sampleOnly?: boolean;
 };
 
 /** 방 첫 입장 코치마크 — 머리 · 로그 위만 덮습니다. 아무 데나 탭 = Next, 뒤로가기 = Skip. */
@@ -151,6 +153,7 @@ export function MessengerRoomGuide({
   avatarUrl,
   onNext,
   onSkip,
+  sampleOnly = false,
 }: RoomGuideProps): ReactNode {
   const copy = useUiCopy().messengerChat.guide;
   const step = steps[index] ?? "chat";
@@ -177,7 +180,7 @@ export function MessengerRoomGuide({
           avatarUrl={avatarUrl}
           title={name}
           body={copy.steps[step]}
-          step={copy.stepOf(index + 1, steps.length)}
+          step={sampleOnly ? copy.newTag : copy.stepOf(index + 1, steps.length)}
         >
           <GuideButton
             label={copy.skip}
@@ -185,12 +188,15 @@ export function MessengerRoomGuide({
             primary={false}
             onTap={onSkip}
           />
-          <GuideButton
-            label={last ? copy.done : copy.next}
-            testId={ids.guideCoachNext}
-            primary={true}
-            onTap={onNext}
-          />
+          {/* 예시 단계는 사진 알약을 누르는 것이 다음입니다 — 「다음」 단추가 없습니다. */}
+          {step === "sample" ? null : (
+            <GuideButton
+              label={last ? copy.done : copy.next}
+              testId={ids.guideCoachNext}
+              primary={true}
+              onTap={onNext}
+            />
+          )}
         </GuideBubble>
         <view
           className={`messenger-guide-tail messenger-guide-tail-down messenger-guide-tail-${step}`}
