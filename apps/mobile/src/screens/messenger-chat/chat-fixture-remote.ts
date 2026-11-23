@@ -293,5 +293,6 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     controls,
     requestMedia: media.request,
     remake: media.remake,
+    sample: media.sample,
   };
 }

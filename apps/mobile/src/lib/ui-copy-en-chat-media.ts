@@ -30,6 +30,8 @@ export const messengerChatMediaEn: ChatMediaCopy = {
           : "This message can't become a voice message.";
       case "unavailable":
         return "Pictures and voice messages aren't available right now.";
+      case "sample-gift":
+        return "That one was on me! Next time, a Snapshot uses your Yeopjeon.";
       default:
         return "Couldn't send your request. Check your connection and try again.";
     }

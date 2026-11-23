@@ -55,6 +55,7 @@ function setup(
     noMedia?: boolean;
     history?: typeof history;
     sign?: ChatMediaRemote["sign"];
+    sample?: NonNullable<ChatMediaRemote["sample"]>;
   } = {},
 ) {
   const timers = fakeTimers();
@@ -68,6 +69,7 @@ function setup(
     load: vi.fn(async () => (loads.length > 0 ? (loads.shift() ?? null) : [])),
     sign: vi.fn(over.sign ?? (async (path: string) => `https://signed/${path}`)),
     balance: vi.fn(async () => 465),
+    ...(over.sample === undefined ? {} : { sample: over.sample }),
   };
   const remote: ChatRemote = {
     loadHistory: async () => over.history ?? history,
@@ -357,5 +359,59 @@ describe("늦게 끝난 옛 다시 읽기(리뷰 #442)", () => {
     release("https://signed/u/1.png"); // 옛 세대가 늦게 끝남
     await flush();
     expect(photoOf(A2)).toEqual(["photo"]);
+  });
+});
+
+describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 장)", () => {
+  const sampleMedia = media({
+    status: "complete",
+    path: "samples/duksu-guide-01.png",
+    aspect: "3:2",
+  });
+  const sampleOf = (result: MediaRequestResult, offered = true) => ({
+    offer: vi.fn(async () => offered),
+    claim: vi.fn(async () => result),
+  });
+
+  test("CM-U30 제안 — 서버가 준다고 할 때만, 예시 포트가 없으면(옛 원격) 거짓", async () => {
+    const offered = await opened({
+      sample: sampleOf({ kind: "accepted", media: sampleMedia, cached: false }),
+    });
+    expect(await offered.source.sampleSnapshot?.offered("duksu")).toBe(true);
+    expect(offered.port.sample?.offer).toHaveBeenCalledWith("duksu");
+    const none = await opened();
+    expect(await none.source.sampleSnapshot?.offered("duksu")).toBe(false);
+  });
+
+  test("CM-U31 받기 — 곧바로 대기 줄, 잠깐 뒤 예시 사진 · 「이번 것은 무료」 줄. 잔액은 읽지 않는다(값 없음)", async () => {
+    const sample = sampleOf({ kind: "accepted", media: sampleMedia, cached: false });
+    const env = await opened({ sample });
+    const done = env.source.sampleSnapshot?.claim("duksu");
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
+    expect(sample.claim).toHaveBeenCalledWith(A1);
+    await flush();
+    // 서버가 곧바로 답해도 잠깐은 만드는 중으로 보인다.
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending" });
+    await env.advance(1_500);
+    expect(await done).toBe(true);
+    const tail = env.lines().slice(-2);
+    expect(tail[0]).toMatchObject({
+      kind: "photo",
+      imageUrl: "https://signed/samples/duksu-guide-01.png",
+      aspect: "3:2",
+      aiGenerated: true,
+    });
+    expect(tail[1]).toMatchObject({ kind: "media-notice", media: "photo", notice: "sample-gift" });
+    expect(env.balances).toEqual([]);
+    expect(env.port.request).not.toHaveBeenCalled();
+  });
+
+  test("CM-U32 받지 못하면 대기 줄이 회색 안내로 바뀌고 false — 사진 · 무료 줄은 서지 않는다", async () => {
+    const env = await opened({ sample: sampleOf({ kind: "failed" }) });
+    const done = env.source.sampleSnapshot?.claim("duksu");
+    await env.advance(1_500);
+    expect(await done).toBe(false);
+    expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "request-failed" });
+    expect(env.lines().some((m) => m.kind === "photo" || m.kind === "photo-pending")).toBe(false);
   });
 });

@@ -219,6 +219,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     },
     sendText,
     requestMedia,
+    ...(remoteRoom === null ? {} : { sampleSnapshot: remoteRoom.sample }),
     regenerateIdeas: (roomId) => {
       const room = live(roomId);
       if (room === null) return;

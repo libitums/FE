@@ -13,7 +13,9 @@ export type ChatMediaNotice =
   | "busy"
   | "no-coins"
   | "not-eligible"
-  | "unavailable";
+  | "unavailable"
+  /** 예시 스냅샷을 받은 뒤 서는 한 줄 — 「이번 것은 무료, 다음부터는 엽전」(ADR-0146 추가). */
+  | "sample-gift";
 
 /** 로그 줄 하나(사진 · 음성 결과 대신 서는 회색 줄). `until`은 상한이 풀리는 시각(ms) — limit만. */
 export type ChatMediaNoticeLine = {
@@ -97,6 +99,14 @@ export type ChatMediaRemote = {
   readonly saveSelf?: (self: ChatSnapshotSelf) => Promise<boolean>;
   /** 서버 지갑 잔액(sub + grant + paid) — 못 읽으면 null. */
   readonly balance: () => Promise<number | null>;
+  /**
+   * 예시 스냅샷(ADR-0146 추가) — 안내에서 무료로 한 장. `offer`는 그 인물의 예시를 이 계정에 줄 수 있는가(못 읽으면 false),
+   * `claim`은 그 메시지에 예시를 받기(값 없음 · 엔진 없음, 계정당 한 번). 없으면(옛 원격) 안내의 예시 단계가 서지 않습니다.
+   */
+  readonly sample?: {
+    readonly offer: (characterId: string) => Promise<boolean>;
+    readonly claim: (messageId: string) => Promise<MediaRequestResult>;
+  };
 };
 
 export type ChatMediaOutcome = "complete" | "blocked" | "failed" | "refused";

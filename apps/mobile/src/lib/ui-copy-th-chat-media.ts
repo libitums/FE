@@ -27,6 +27,8 @@ export const messengerChatMediaTh: ChatMediaCopy = {
         return photo ? "ข้อความนี้ทำเป็นรูปภาพไม่ได้" : "ข้อความนี้ทำเป็นข้อความเสียงไม่ได้";
       case "unavailable":
         return "ตอนนี้ยังใช้รูปภาพและข้อความเสียงไม่ได้";
+      case "sample-gift":
+        return "รูปนี้ให้ฟรี! Snapshot ครั้งต่อไปจะใช้ Yeopjeon ของคุณ";
       default:
         return "ส่งคำขอไม่สำเร็จ โปรดตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง";
     }

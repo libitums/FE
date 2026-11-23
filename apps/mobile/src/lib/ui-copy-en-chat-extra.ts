@@ -140,11 +140,15 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
       ideas: "Not sure what to say? Tap the bulb next to the message box for reply ideas.",
       media:
         "You can also ask me for a photo or a voice message with the buttons above the keyboard.",
+      sample:
+        "Want to see what I'm up to? Tap Snapshot and I'll send you a photo. This first one is on me.",
     },
     next: "Next",
     done: "Got it",
     skip: "Skip",
     stepOf: (step, total) => `${step} of ${total}`,
+    newTag: "New",
+    free: "FREE",
   },
   launch: {
     newTag: "NEW",
