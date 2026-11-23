@@ -565,6 +565,24 @@ test("FS16. 알림 후보 — 스위치 · 기기 · 방 · 현지 시각 · 답
   ]);
 });
 
+test("FS16c. 알림 언어 나라 — 학습 프로필 나라가 마지막 지역보다 먼저(재리뷰 m6)", async () => {
+  await settings("story_push = 'on'");
+  await pool("mina-01", "mina");
+  await live("mina", "mina-01", "2 hours");
+  await pushReady(member);
+  const code = (
+    await db.admin.query("select country_code from public.learner_profiles where user_id = $1", [
+      member,
+    ])
+  ).rows[0].country_code as string;
+  const other = code === "VN" ? "TH" : "VN";
+  await db.admin.query(
+    "insert into companion.profiles (user_id, last_region) values ($1, $2) on conflict (user_id) do update set last_region = excluded.last_region",
+    [member, other],
+  );
+  expect((await candidates()).find((c) => c.userId === member)?.country).toBe(code);
+});
+
 test("FS17. 알림 후보에서 빠지는 사람 — 기기 없음 · 기기 뒤로 말 없음 · 선톡 off · 현지 밤 · 시간대 모름 · 답함 · 6시간 넘음", async () => {
   await settings("story_push = 'on'");
   await pool("mina-01", "mina");

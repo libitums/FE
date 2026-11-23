@@ -257,13 +257,13 @@ test("FS-UI10. 보기를 닫으면 friend_story_closed 한 번 — 본 장 · �
   ]);
 });
 
-test("FS-UI10. 마지막 장에서 다음을 누르면 completed, 그 탭은 skipped로 센다", async () => {
+test("FS-UI10. 마지막 장에서 다음을 누르면 completed, 끝내는 탭은 skipped로 세지 않는다", async () => {
   const { events } = await mount(live);
   tapId(ids.watchAll);
   tapId(ids.next);
   expect(screen.queryByTestId(ids.viewer)).toBeNull();
   expect(events().filter((e) => e.name === "friend_story_closed")).toEqual([
-    expect.objectContaining({ shown: "1", total: "1", skipped: "1", reason: "completed" }),
+    expect.objectContaining({ shown: "1", total: "1", skipped: "0", reason: "completed" }),
   ]);
 });
 

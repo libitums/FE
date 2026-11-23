@@ -45,6 +45,9 @@ const handoff = (text: string | null, free = true): StoryReplyHandoff => ({
   },
 });
 
+const eventsNamed = (sink: ReturnType<typeof vi.fn>, name: string) =>
+  sink.mock.calls.map(([e]) => e as { name: string }).filter((e) => e.name === name);
+
 const myMessages = (messages: readonly ChatMessage[]) =>
   messages.filter((m) => m.kind === "text" && m.from === "me");
 
@@ -57,14 +60,9 @@ test("FS-UI9. 칩 말이면 방이 서자마자 인용과 함께 보내고 내 �
   expect(sent[0]).toMatchObject({ text: { ko: "괜찮아요?" }, story: { storyId: "st-mina" } });
   expect(screen.getByTestId(ids.quote).textContent).toContain("You replied to 미나's story");
   expect(screen.queryByTestId(ids.quoteBar)).toBeNull();
-  expect(sink.mock.calls.map(([e]) => e)).toContainEqual(
-    expect.objectContaining({
-      name: "friend_story_replied",
-      characterId: "mina",
-      via: "chip",
-      free: true,
-    }),
-  );
+  expect(eventsNamed(sink, "friend_story_replied")).toEqual([
+    expect.objectContaining({ characterId: "mina", via: "chip", free: true }),
+  ]);
 });
 
 test("FS-UI9. 답장 칸이면 인용 띠가 서고, 다음에 보내는 글에 인용이 실리며 띠가 사라진다 — replied(typed)", () => {
@@ -77,9 +75,9 @@ test("FS-UI9. 답장 칸이면 인용 띠가 서고, 다음에 보내는 글에 
   const sent = myMessages(source.thread("mina")?.messages ?? []);
   expect(sent[0]).toMatchObject({ text: { ko: "안" }, story: { storyId: "st-mina" } });
   expect(screen.queryByTestId(ids.quoteBar)).toBeNull();
-  expect(sink.mock.calls.map(([e]) => e)).toContainEqual(
-    expect.objectContaining({ name: "friend_story_replied", via: "typed", free: false }),
-  );
+  expect(eventsNamed(sink, "friend_story_replied")).toEqual([
+    expect.objectContaining({ via: "typed", free: false }),
+  ]);
   // 띠가 떨어진 뒤의 글에는 인용이 없다.
   tapKeys(...KEYS_AN);
   act(() => {
@@ -103,9 +101,9 @@ test("FS-UI9. 무료 칩은 chat_message_sent(paid false · cost 0)를 내고, �
   putStoryReplyHandoff(handoff("괜찮아요?"));
   const sink = vi.fn();
   mountChat({ eventSink: sink, tier: "free", trial: createTrialStore(0), coinBalance: 0 });
-  expect(sink.mock.calls.map(([e]) => e)).toContainEqual(
-    expect.objectContaining({ name: "chat_message_sent", paid: false, cost: "0", storyFree: true }),
-  );
+  expect(eventsNamed(sink, "chat_message_sent")).toEqual([
+    expect.objectContaining({ paid: false, cost: "0", storyFree: true }),
+  ]);
   cleanup();
   putStoryReplyHandoff(handoff("괜찮아요?", false));
   const { source } = mountChat({ tier: "free", trial: createTrialStore(0), coinBalance: 0 });
@@ -125,4 +123,30 @@ test("FS-UI9. 다른 방의 넘김은 꺼내지 않는다", () => {
   const { source } = mountChat();
   expect(myMessages(source.thread("mina")?.messages ?? [])).toHaveLength(0);
   expect(takeStoryReplyHandoff("other")).not.toBeNull();
+});
+
+test("FS-UI13. 무료 인용 띠에 입력해 보낸 답장 — chat_message_sent(storyFree) 한 번 · replied(typed, free) 한 번(감사 A16)", () => {
+  putStoryReplyHandoff(handoff(null));
+  const sink = vi.fn();
+  mountChatOpen({ eventSink: sink, tier: "free", trial: createTrialStore(5), coinBalance: 0 });
+  tapKeys(...KEYS_AN);
+  tapId(chat.send);
+  expect(eventsNamed(sink, "chat_message_sent")).toEqual([
+    expect.objectContaining({ paid: false, cost: "0", storyFree: true }),
+  ]);
+  expect(eventsNamed(sink, "friend_story_replied")).toEqual([
+    expect.objectContaining({ via: "typed", free: true }),
+  ]);
+});
+
+test("FS-UI13. 엽전으로 보낸 유료 칩 — chat_message_sent(paid, storyFree 없음) 한 번 · replied(chip, free false) 한 번(감사 A16)", () => {
+  putStoryReplyHandoff(handoff("괜찮아요?", false));
+  const sink = vi.fn();
+  mountChat({ eventSink: sink, tier: "free", trial: createTrialStore(0), coinBalance: 100 });
+  const sent = eventsNamed(sink, "chat_message_sent");
+  expect(sent).toEqual([expect.objectContaining({ paid: true })]);
+  expect(sent[0]).not.toHaveProperty("storyFree");
+  expect(eventsNamed(sink, "friend_story_replied")).toEqual([
+    expect.objectContaining({ via: "chip", free: false }),
+  ]);
 });

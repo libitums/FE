@@ -60,8 +60,9 @@ export function StoryViewer({
 
   const step = (action: "next" | "prev" | "tick") => {
     const next = viewerStep({ index, count: items.length }, action);
-    if (action === "next") onSkip?.();
     if (next === "close") return onClose("completed");
+    // 끝내는 탭은 건너뜀이 아닙니다(다 본 것) — 다음 장으로 넘긴 탭만 셉니다.
+    if (action === "next") onSkip?.();
     setIndex(next.index);
   };
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고

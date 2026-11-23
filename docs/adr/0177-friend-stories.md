@@ -118,7 +118,7 @@
 - `friend_story_viewed { characterId, met: boolean, from: row | list | watch_all | push, index, total }` — **장 단위.** 보기에서 한 장이 설 때마다
   (`index` = 몇째 장, 1부터 · `total` = 그 보기의 장 수, 10진 문자열).
 - `friend_story_closed { shown, total, skipped, reason: completed | closed | back | replied }` — 보기가 닫힐 때 한 번. `shown` = 선 장 수,
-  `skipped` = 다음 탭으로 넘긴 수, `reason` = 끝까지 넘김 · 닫기 단추 · 시스템 뒤로 · 칩/답장 칸/Add friend and reply로 대화방.
+  `skipped` = 다음 장으로 넘긴 탭 수(마지막 장에서 끝내는 탭은 세지 않음), `reason` = 끝까지 넘김 · 닫기 단추 · 시스템 뒤로 · 칩/답장 칸/Add friend and reply로 대화방.
 - `friend_story_replied { characterId, via: chip | typed, free: boolean }` — 인용이 실린 글을 보낼 때(무료 여부는 앱이 본 `freeReply`, 정본은 서버).
   무료로 보낸 글의 `chat_message_sent`에는 `storyFree: true`(앱 힌트 — 정본은 서버 `companion.story_replies.free`).
 - `friend_story_word_saved { characterId }`.
