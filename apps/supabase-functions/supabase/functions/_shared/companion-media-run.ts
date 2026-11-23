@@ -18,6 +18,7 @@ import type { SnapshotSelf } from "./companion-contract/index.ts";
 import {
   claudeTool,
   downloadRef,
+  downloadRefJson,
   EngineError,
   type Image,
   imageBlock,
@@ -43,6 +44,26 @@ import {
   type SnapshotVerdict,
   verdictFrom,
 } from "./companion-snapshot-prompts.ts";
+import {
+  bundleDir,
+  CHECK_TOOL as V2_CHECK_TOOL,
+  checkSystem as v2CheckSystem,
+  compose,
+  type Manifest,
+  manifestFrom,
+  normalizePlan,
+  PLAN_TOOL,
+  planContent,
+  planSystem,
+  type RecentPlan,
+  route,
+  slugFromRefs,
+  type StoredPlan,
+  suggestion,
+  type V2Verdict,
+  v2VerdictFrom,
+} from "./companion-snapshot-v2.ts";
+import { callRpc } from "./companion-rpc.ts";
 import {
   budgetExhausted,
   budgetFor,
@@ -123,47 +144,60 @@ export async function runSnapshot(
     if (env.anthropicKey === null || env.openaiKey === null) {
       return await done("failed", { failure: "engine_failed", error: "keys missing" });
     }
-    // 기준 이미지 읽기와 프롬프트 노드는 서로 기다릴 것이 없어 동시에 돌립니다(프롬프트 노드는 그림이 아니라 대화 글만 봅니다).
-    // 제한 시간은 둘 다 시작 전에 정합니다 — 프롬프트 노드 몫은 기준 이미지 단계가 끝난 뒤가 아니라 지금 남은 예산에서 나옵니다.
-    const refsTimeout = phase("refs", deps.storageTimeoutMs);
-    const promptTimeout = phase("prompt", deps.textTimeoutMs);
-    // `sheet`면 표정 시트를 빼고 시트 한 장만(입력 토큰 — 사진 원가의 약 2/3 — 를 줄인다).
-    const refNames =
-      env.snapshotRefs === "sheet"
-        ? job.refs.filter((name) => !name.endsWith("-expressions.png")).slice(0, 1)
-        : job.refs.slice(0, 4);
-    const [loaded, noded] = await Promise.allSettled([
-      timed("refs", () =>
-        Promise.all(refNames.map((name) => downloadRef(deps.fetch, env, name, refsTimeout))),
-      ),
-      timed("prompt", () =>
-        claudeTool(
-          deps.fetch,
-          env.anthropicKey!,
-          env.snapshotModel,
-          {
-            system: promptSystem(job.ageBand),
-            tool: PROMPT_TOOL,
-            content: promptContent(job),
-            maxTokens: 1024,
-          },
-          promptTimeout,
+    // v2m(ADR-0179): 스위치가 켜졌고(시험 계정만이면 시험 계정이고) 그 인물의 묶음이 있으면 장면 설계로. 아니면 아래 v1 그대로.
+    const v2 = env.snapshotPipeline === "v1" ? null : await prepareV2(deps, env, job, phase, timed, meta);
+    let refs: Image[];
+    let prompt: SnapshotPrompt | StoredPlan;
+    let aspect: Aspect;
+    let text: string;
+    if (v2 !== null) {
+      const drawn = await planV2(deps, env, job, v2, phase, timed, usage);
+      if ("failure" in drawn) return await done("failed", drawn);
+      ({ refs, prompt, aspect, text } = drawn);
+    } else {
+      // 기준 이미지 읽기와 프롬프트 노드는 서로 기다릴 것이 없어 동시에 돌립니다(프롬프트 노드는 그림이 아니라 대화 글만 봅니다).
+      // 제한 시간은 둘 다 시작 전에 정합니다 — 프롬프트 노드 몫은 기준 이미지 단계가 끝난 뒤가 아니라 지금 남은 예산에서 나옵니다.
+      const refsTimeout = phase("refs", deps.storageTimeoutMs);
+      const promptTimeout = phase("prompt", deps.textTimeoutMs);
+      // `sheet`면 표정 시트를 빼고 시트 한 장만(입력 토큰 — 사진 원가의 약 2/3 — 를 줄인다).
+      const refNames =
+        env.snapshotRefs === "sheet"
+          ? job.refs.filter((name) => !name.endsWith("-expressions.png")).slice(0, 1)
+          : job.refs.slice(0, 4);
+      const [loaded, noded] = await Promise.allSettled([
+        timed("refs", () =>
+          Promise.all(refNames.map((name) => downloadRef(deps.fetch, env, name, refsTimeout))),
         ),
-      ),
-    ]);
-    if (noded.status === "fulfilled") usage["prompt"] = noded.value.usage;
-    if (loaded.status === "rejected")
-      return await done("failed", { failure: "refs_missing", error: short(loaded.reason) });
-    const refs: Image[] = loaded.value;
+        timed("prompt", () =>
+          claudeTool(
+            deps.fetch,
+            env.anthropicKey!,
+            env.snapshotModel,
+            {
+              system: promptSystem(job.ageBand),
+              tool: PROMPT_TOOL,
+              content: promptContent(job),
+              maxTokens: 1024,
+            },
+            promptTimeout,
+          ),
+        ),
+      ]);
+      if (noded.status === "fulfilled") usage["prompt"] = noded.value.usage;
+      if (loaded.status === "rejected")
+        return await done("failed", { failure: "refs_missing", error: short(loaded.reason) });
+      refs = loaded.value;
 
-    if (noded.status === "rejected")
-      return await done("failed", { failure: "prompt_failed", error: short(noded.reason) });
-    const prompt: SnapshotPrompt | null = snapshotPromptFrom(noded.value.input);
-    if (prompt === null)
-      return await done("failed", { failure: "prompt_failed", error: "bad prompt shape" });
-    const aspect: Aspect = job.aspect === "auto" ? prompt.aspect : job.aspect;
+      if (noded.status === "rejected")
+        return await done("failed", { failure: "prompt_failed", error: short(noded.reason) });
+      const v1Prompt = snapshotPromptFrom(noded.value.input);
+      if (v1Prompt === null)
+        return await done("failed", { failure: "prompt_failed", error: "bad prompt shape" });
+      prompt = v1Prompt;
+      aspect = job.aspect === "auto" ? v1Prompt.aspect : job.aspect;
+      text = imagePrompt(v1Prompt, job.snapshotSelf);
+    }
     const size = SIZES[aspect];
-    const text = imagePrompt(prompt, job.snapshotSelf);
     meta["size"] = size;
     meta["promptHash"] = await promptHash(text);
     if (prompt.safety === "block") {
@@ -227,7 +261,7 @@ export async function runSnapshot(
     }
 
     // 3. 검사 노드 — 켰을 때 또는 미성년자 · 나이 모름이면 늘, 기준 이미지 첫 장과 나란히.
-    let verdict: SnapshotVerdict | null = null;
+    let verdict: SnapshotVerdict | V2Verdict | null = null;
     if (!env.snapshotCheck && job.ageBand === "adult") {
       meta["check"] = "skipped";
     } else {
@@ -238,21 +272,35 @@ export async function runSnapshot(
             deps.fetch,
             env.anthropicKey!,
             env.snapshotModel,
-            {
-              system: checkSystem(job.ageBand),
-              tool: CHECK_TOOL,
-              content: [
-                imageBlock(refs[0]!),
-                imageBlock({ bytes: png, mime: "image/png" }),
-                { type: "text", text: "Image 1: reference. Image 2: snapshot. Give the verdict." },
-              ],
-              maxTokens: 600,
-            },
+            v2 === null
+              ? {
+                  system: checkSystem(job.ageBand),
+                  tool: CHECK_TOOL,
+                  content: [
+                    imageBlock(refs[0]!),
+                    imageBlock({ bytes: png, mime: "image/png" }),
+                    { type: "text", text: "Image 1: reference. Image 2: snapshot. Give the verdict." },
+                  ],
+                  maxTokens: 600,
+                }
+              : {
+                  system: v2CheckSystem(job.ageBand, v2.manifest.figureKeep),
+                  tool: V2_CHECK_TOOL,
+                  content: [
+                    imageBlock(refs[0]!),
+                    imageBlock({ bytes: png, mime: "image/png" }),
+                    {
+                      type: "text",
+                      text: `Image 1: face reference. Image 2: snapshot. Planned learner: ${(prompt as StoredPlan).learner}. Give the verdict.`,
+                    },
+                  ],
+                  maxTokens: 600,
+                },
             timeout,
           ),
         );
         usage["check"] = call.usage;
-        verdict = verdictFrom(call.input);
+        verdict = v2 === null ? verdictFrom(call.input) : v2VerdictFrom(call.input);
       } catch (error) {
         return await done("failed", {
           failure: "check_error",
@@ -286,6 +334,7 @@ export async function runSnapshot(
         error: short(error),
       });
     }
+    if (v2 !== null) await recordOutfitCandidate(deps, env, job, prompt as StoredPlan);
     return await done("complete", {
       path,
       mime: "image/png",
@@ -296,5 +345,133 @@ export async function runSnapshot(
     });
   } catch (error) {
     return await done("failed", { failure: "engine_failed", error: short(error) });
+  }
+}
+
+// ------------------------------------------------------------------ v2m(ADR-0179)
+
+type PhaseFn = (name: keyof typeof SNAPSHOT_PHASES, capMs?: number) => number;
+type TimedFn = <T>(name: string, work: () => Promise<T>) => Promise<T>;
+type V2Ready = { readonly manifest: Manifest; readonly recent: readonly RecentPlan[] };
+type V2Drawn = { refs: Image[]; prompt: StoredPlan; aspect: Aspect; text: string };
+
+/**
+ * v2m으로 그릴 수 있는지: 그 인물의 묶음(manifest.json)과 시험 계정 여부 · 최근 계획을 동시에 읽는다. 못 그리면 null(→ v1) — 까닭은
+ * `meta.v2`에 남긴다(`no_slug` · `not_tester` · `no_bundle` · `bad_bundle` · `bundle_error` · `context_error`).
+ */
+async function prepareV2(
+  deps: MediaRunDeps,
+  env: MediaEnv,
+  job: SnapshotJob,
+  phase: PhaseFn,
+  timed: TimedFn,
+  meta: Record<string, unknown>,
+): Promise<V2Ready | null> {
+  const fallback = (why: string) => {
+    meta["pipeline"] = "v1";
+    meta["v2"] = why;
+    return null;
+  };
+  const slug = slugFromRefs(job.refs);
+  if (slug === null) return fallback("no_slug");
+  const timeout = phase("refs", deps.storageTimeoutMs);
+  const [bundle, context] = await timed("v2", () =>
+    Promise.allSettled([
+      downloadRefJson(deps.fetch, env, `${bundleDir(slug)}/manifest.json`, timeout),
+      callRpc<{ tester?: boolean; recent?: unknown[] } | null>(
+        deps.outbound,
+        env,
+        "companion_snapshot_v2_context",
+        { p_user_id: job.userId, p_character_id: job.characterId },
+      ),
+    ]),
+  );
+  const tester = context.status === "fulfilled" && context.value?.tester === true;
+  if (env.snapshotPipeline === "v2m-test" && !tester)
+    return fallback(context.status === "rejected" ? "context_error" : "not_tester");
+  if (bundle.status === "rejected") return fallback("bundle_error");
+  if (bundle.value === null) return fallback("no_bundle");
+  const manifest = manifestFrom(bundle.value);
+  if (manifest === null) return fallback("bad_bundle");
+  const recent =
+    context.status === "fulfilled" && Array.isArray(context.value?.recent)
+      ? (context.value.recent.filter((p) => typeof p === "object" && p !== null) as RecentPlan[])
+      : [];
+  meta["pipeline"] = "v2m";
+  return { manifest, recent };
+}
+
+/** 장면 설계 → 라우팅 → 기준 그림 한 장 → 조립. 실패는 그대로 닫을 결과(failure)로. */
+async function planV2(
+  deps: MediaRunDeps,
+  env: MediaEnv,
+  job: SnapshotJob,
+  v2: V2Ready,
+  phase: PhaseFn,
+  timed: TimedFn,
+  usage: Record<string, unknown>,
+): Promise<V2Drawn | { failure: string; error: string }> {
+  const suggest = suggestion(v2.recent);
+  const promptTimeout = phase("prompt", deps.textTimeoutMs);
+  let call;
+  try {
+    call = await timed("prompt", () =>
+      claudeTool(
+        deps.fetch,
+        env.anthropicKey!,
+        env.snapshotModel,
+        {
+          system: planSystem(job.ageBand),
+          tool: PLAN_TOOL,
+          content: planContent({ ...job, manifest: v2.manifest, recent: v2.recent, suggest }),
+          maxTokens: 1024,
+        },
+        promptTimeout,
+      ),
+    );
+  } catch (error) {
+    return { failure: "prompt_failed", error: short(error) };
+  }
+  usage["prompt"] = call.usage;
+  const plan = normalizePlan(call.input, v2.manifest, job.snapshotSelf);
+  if (plan === null) return { failure: "prompt_failed", error: "bad plan shape" };
+  const routed = route(v2.manifest, plan);
+  const stored: StoredPlan = {
+    ...plan,
+    suggested: suggest,
+    outfit_name: routed.outfitName,
+    ref: routed.ref,
+    figure: v2.manifest.figureKeep,
+  };
+  const aspect: Aspect = job.aspect === "auto" ? plan.aspect : job.aspect;
+  const text = compose(plan, job.snapshotSelf, routed, v2.manifest.figureKeep);
+  if (plan.safety === "block") return { refs: [], prompt: stored, aspect, text };
+  try {
+    const refsTimeout = phase("refs", deps.storageTimeoutMs);
+    const ref = await timed("refs", () => downloadRef(deps.fetch, env, routed.ref, refsTimeout));
+    return { refs: [ref], prompt: stored, aspect, text };
+  } catch (error) {
+    return { failure: "refs_missing", error: short(error) };
+  }
+}
+
+/** 옷장에 없는 옷을 골랐으면 후보로 기록만 한다(운영 대시보드 크론이 모아 그린다). 실패해도 스냅샷은 그대로 — 던지지 않는다. */
+async function recordOutfitCandidate(
+  deps: MediaRunDeps,
+  env: MediaEnv,
+  job: SnapshotJob,
+  plan: StoredPlan,
+): Promise<void> {
+  if (plan.new_outfit === null || plan.outfit_change === "none") return;
+  try {
+    await callRpc(deps.outbound, env, "companion_snapshot_outfit_candidate", {
+      p_character_id: job.characterId,
+      p_name: plan.new_outfit_name,
+      p_description: plan.new_outfit,
+      p_outfit_change: plan.outfit_change,
+      p_media_id: job.mediaId,
+    });
+  } catch {
+    // 후보 기록은 덤이다.
   }
 }
