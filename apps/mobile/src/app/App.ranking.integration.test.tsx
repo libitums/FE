@@ -222,3 +222,34 @@ test("RK-I5. 서버 방: 저장 카드의 채팅 단어 칩 · 머리 아래 이
     source: "chat",
   });
 });
+
+test("RK-I7. 순위 탭을 열면 응답이 오기 전부터 남은 날 줄이 서 있다 — 읽은 뒤 머리 아래가 밀리지 않는다(ADR-0170 D14)", async () => {
+  let respond: (load: RankingLoad) => void = () => undefined;
+  const client: RankingClient = {
+    load: () =>
+      new Promise<RankingLoad>((resolve) => {
+        respond = resolve;
+      }),
+    preferences: async () => ({ hidden: false }),
+    setHidden: async (hidden) => ({ hidden }),
+  };
+  setRankingClientForTests(client);
+  await renderTesterApp(
+    <App progressSeed={legacyPassedSeedWithCoins(0)} episodeIntroEventSink={sink} />,
+  );
+  openTab("ranking");
+  await flush();
+  // 아직 응답 전 — 불러오는 중인데도 남은 날 줄이 있다(기기에서 센 값).
+  expect(screen.getByTestId("ranking-loading")).toBeInTheDocument();
+  const before = textOf("ranking-ends");
+  expect(before).toMatch(/^Ends in \d days?$/);
+
+  await act(async () => {
+    respond({ status: "not-joined", endsAt: "2099-01-05T00:00:00Z" });
+  });
+  await flush();
+  expect(screen.queryByTestId("ranking-loading")).toBeNull();
+  // 서버 값(2099년)이 오면 그 값으로 바뀐다 — 기기에서 센 값(1 ~ 7일)과 다른 큰 수.
+  expect(textOf("ranking-ends")).toMatch(/^Ends in \d{4,} days$/);
+  expect(textOf("ranking-ends")).not.toBe(before);
+});

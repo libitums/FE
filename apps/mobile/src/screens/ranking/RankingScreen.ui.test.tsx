@@ -385,3 +385,26 @@ test("RK-UI27. 목록의 내 줄도 세는 동안 고정된 내 줄과 같은 �
     vi.useRealTimers();
   }
 });
+
+test("RK-UI30. 머리의 남은 날 줄은 읽기 전부터 서 있다 — 불러오는 중 · 오류에서도 같은 자리라 읽은 뒤 아래가 밀리지 않는다", () => {
+  mount({ kind: "loading" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  expect(screen.queryByTestId(ids.group)).toBeNull();
+  cleanup();
+  mount({ kind: "error" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  cleanup();
+  mount({ kind: "offline" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  cleanup();
+  // 서버 값이 오면 그 값 — 기기에서 센 값(11-23)과 다른 주.
+  mount({ kind: "not-joined", endsAt: "2026-11-30T00:00:00Z" });
+  expect(text(ids.ends)).toBe("Ends in 10 days");
+  cleanup();
+  // 비회원 · 숨김은 순위에 들지 않으므로 지금처럼 없다.
+  mount({ kind: "guest" });
+  expect(screen.queryByTestId(ids.ends)).toBeNull();
+  cleanup();
+  mount({ kind: "hidden" });
+  expect(screen.queryByTestId(ids.ends)).toBeNull();
+});

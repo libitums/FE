@@ -134,3 +134,25 @@ export function moreToTopThree(board: RankingBoard): number | null {
   const third = board.rows.find((row) => row.rank === 3);
   return third === undefined ? null : Math.max(1, third.score - board.me.score + 1);
 }
+
+/**
+ * 이번 주가 끝나는 때(ISO) — 다음 월요일 00:00 UTC. 서버의 `endsAt`과 같은 규칙이라, 보드를 읽기 전에도 머리의 남은 날 줄을
+ * 같은 자리에 세워 읽은 뒤 아래가 밀리지 않게 합니다.
+ */
+export function weekEndsAt(nowMs: number): string {
+  const now = new Date(nowMs);
+  // 월요일 = 1. 오늘이 월요일이면 7일 뒤.
+  const daysToMonday = (8 - now.getUTCDay()) % 7 || 7;
+  const end = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysToMonday);
+  return `${new Date(end).toISOString().slice(0, 19)}Z`;
+}
+
+/**
+ * 머리의 남은 날 줄이 쓸 끝 시각 — 서버가 준 값이 먼저, 아직 못 읽었으면(불러오는 중 · 오류 · 오프라인) 기기에서 센 값.
+ * 순위에 들지 않는 화면(비회원 · 숨김)은 줄이 없어 null.
+ */
+export function shownEndsAt(view: RankingView, nowMs: number): string | null {
+  if (view.kind === "guest" || view.kind === "hidden") return null;
+  if (view.kind === "ready") return view.board.endsAt;
+  return view.kind === "not-joined" ? view.endsAt : weekEndsAt(nowMs);
+}
