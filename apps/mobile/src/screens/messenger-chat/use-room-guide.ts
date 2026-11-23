@@ -7,9 +7,16 @@
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { useChatEvents } from "./chat-events";
+import type { SampleOffer } from "./chat-media.contract";
 import type { SampleSnapshotMethods } from "./chat-remote-sample";
 import type { ChatThread } from "./chat-source.contract";
-import { GUIDE_ROOM_ID, roomGuideSteps, type GuideStep, type GuideStore } from "./messenger-guide";
+import {
+  GUIDE_ROOM_ID,
+  isSampleStep,
+  roomGuideSteps,
+  type GuideStep,
+  type GuideStore,
+} from "./messenger-guide";
 
 // 이번 실행에서 서버가 「예시 없음」이라 답한 방 — 방을 다시 열 때마다 묻지 않습니다(기기에 남기지는 않음: 운영이 예시를 나중에
 // 켜면 다음 실행에서 다시 묻습니다).
@@ -29,7 +36,7 @@ export type RoomGuide = {
   readonly sampleOnly: boolean;
   /** 다음 단계로 — 마지막이면 끝. 예시 단계에서는 무동작(사진 알약을 눌러야 끝납니다). 건너뛰기는 없습니다. */
   readonly next: () => void;
-  /** 예시 단계에서 사진 알약을 눌렀습니다 — 안내를 끝내고 예시를 받습니다. */
+  /** 예시 단계에서 그 알약(사진 · 음성)을 눌렀습니다 — 예시를 받고 다음 단계로, 마지막이면 안내를 끝냅니다. */
   readonly takeSample: () => void;
 };
 
@@ -46,7 +53,8 @@ export function useRoomGuide(
   const guideRoom = roomId === GUIDE_ROOM_ID;
   const [roomSeen] = useState(() => !(guideRoom && store.unseen("room")));
   const [snapshotSeen] = useState(() => !(guideRoom && store.unseen("snapshot")));
-  const [offered, setOffered] = useState(false);
+  const [voiceSeen] = useState(() => !(guideRoom && store.unseen("voice")));
+  const [offer, setOffer] = useState<SampleOffer>({ snapshot: false, voice: false });
   const [ended, setEnded] = useState(false);
   const [index, setIndex] = useState(0);
   const greeted =
@@ -57,26 +65,35 @@ export function useRoomGuide(
 
   // 예시를 줄 수 있는지는 서버가 정합니다 — 첫 인사가 온 뒤 한 번 묻고, 답이 올 때까지 안내를 세우지 않습니다(도중에 단계 수가
   // 바뀌지 않게).
-  const asks = guideRoom && !snapshotSeen && sample !== undefined && !declined.has(roomId);
+  const asks =
+    guideRoom && !(snapshotSeen && voiceSeen) && sample !== undefined && !declined.has(roomId);
   const [answered, setAnswered] = useState(false);
   const asked = useRef(false);
   const canAsk = asks && server && greeted;
   useEffect(() => {
     if (!canAsk || asked.current || sample === undefined) return;
     asked.current = true;
-    void sample.offered(roomId).then((available) => {
-      if (available) setOffered(true);
+    void sample.offered(roomId).then((answer) => {
+      if (answer.snapshot || answer.voice) setOffer(answer);
       else declined.add(roomId);
       setAnswered(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canAsk]);
 
-  const steps = guideRoom ? roomGuideSteps({ roomSeen, snapshotSeen, offered }) : [];
+  const steps = guideRoom
+    ? roomGuideSteps({
+        roomSeen,
+        snapshotSeen,
+        offered: offer.snapshot,
+        voiceSeen,
+        voiceOffered: offer.voice,
+      })
+    : [];
   const ready = !asks || answered;
   const shown = !ended && ready && steps.length > 0 && !covered && server && greeted;
   const step = shown ? (steps[index] ?? null) : null;
-  const taking = useRef(false);
+  const taken = useRef<GuideStep | null>(null);
   /** 안내를 끝냅니다(건너뛰기가 없어 늘 끝까지 본 것). 예시 단계는 여기서 적지 않습니다 — 받은 뒤에 적습니다. */
   const end = () => {
     emit({
@@ -96,18 +113,20 @@ export function useRoomGuide(
     step,
     sampleOnly: roomSeen,
     next: () => {
-      // 예시 단계는 사진 알약을 눌러야 끝납니다.
-      if (step === "sample") return;
+      // 예시 단계는 그 알약을 눌러야 끝납니다.
+      if (isSampleStep(step)) return;
       if (index >= steps.length - 1) end();
       else setIndex(index + 1);
     },
     takeSample: () => {
-      if (step !== "sample" || sample === undefined || taking.current) return;
-      taking.current = true;
-      end();
+      if (!isSampleStep(step) || sample === undefined || taken.current === step) return;
+      taken.current = step;
+      if (index >= steps.length - 1) end();
+      else setIndex(index + 1);
       // 받은 뒤에야 본 것으로 적습니다 — 받지 못하면 다음에 방에 올 때 다시 권합니다.
-      void sample.claim(roomId).then((received) => {
-        if (received) store.markSeen("snapshot");
+      const part = step === "sample" ? "snapshot" : "voice";
+      void sample.claim(roomId, step === "sample" ? "photo" : "voice").then((received) => {
+        if (received) store.markSeen(part);
       });
     },
   };

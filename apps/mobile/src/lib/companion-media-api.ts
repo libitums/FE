@@ -115,10 +115,13 @@ export function createCompanionMediaRemote(deps: CompanionMediaDeps): ChatMediaR
             }),
           ),
         ),
-      claim: async (messageId) =>
+      claim: async (messageId, kind) =>
         sampleClaimFrom(
           bodyOf(
-            await post("/rest/v1/rpc/companion_claim_sample_snapshot", { p_message_id: messageId }),
+            await post("/rest/v1/rpc/companion_claim_sample_snapshot", {
+              p_message_id: messageId,
+              p_kind: kind,
+            }),
           ),
         ),
     },

@@ -100,14 +100,17 @@ export type ChatMediaRemote = {
   /** 서버 지갑 잔액(sub + grant + paid) — 못 읽으면 null. */
   readonly balance: () => Promise<number | null>;
   /**
-   * 예시 스냅샷(ADR-0146 추가) — 안내에서 무료로 한 장. `offer`는 그 인물의 예시를 이 계정에 줄 수 있는가(못 읽으면 false),
-   * `claim`은 그 메시지에 예시를 받기(값 없음 · 엔진 없음, 계정당 한 번). 없으면(옛 원격) 안내의 예시 단계가 서지 않습니다.
+   * 예시 스냅샷 · 예시 음성(ADR-0146 추가) — 안내에서 무료로 하나씩. `offer`는 그 인물의 예시를 이 계정에 줄 수 있는가(못 읽으면 둘 다
+   * false), `claim`은 그 메시지에 예시를 받기(값 없음 · 엔진 없음, 종류마다 계정당 한 번). 없으면(옛 원격) 안내의 예시 단계가 서지 않습니다.
    */
   readonly sample?: {
-    readonly offer: (characterId: string) => Promise<boolean>;
-    readonly claim: (messageId: string) => Promise<MediaRequestResult>;
+    readonly offer: (characterId: string) => Promise<SampleOffer>;
+    readonly claim: (messageId: string, kind: RemoteMediaKind) => Promise<MediaRequestResult>;
   };
 };
+
+/** 서버가 이 계정에 줄 수 있는 예시 — 사진 · 음성 따로. */
+export type SampleOffer = { readonly snapshot: boolean; readonly voice: boolean };
 
 export type ChatMediaOutcome = "complete" | "blocked" | "failed" | "refused";
 export type ChatMediaSettled = {

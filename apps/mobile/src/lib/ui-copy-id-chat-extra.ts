@@ -140,6 +140,8 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       media: "Kamu juga bisa minta foto atau pesan suara lewat tombol di atas keyboard.",
       sample:
         "Mau lihat aku lagi apa? Ketuk Snapshot dan aku kirim foto. Yang pertama gratis dariku.",
+      voice:
+        "Mau dengar suaraku? Ketuk Suara kilat dan aku bacakan pesan itu. Yang pertama juga gratis dariku.",
     },
     next: "Berikutnya",
     done: "Mengerti",

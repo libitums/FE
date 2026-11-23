@@ -265,6 +265,7 @@ export function MessengerChatScreen({
             birthYear={birthYear}
             guideClass={guideTargetClass(guide.step)}
             {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}
+            {...(guide.step === "voice" ? { onTakeVoiceSample: guide.takeSample } : {})}
             guest={guest.active}
             aboveComposer={
               turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null

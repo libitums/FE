@@ -8,6 +8,7 @@ import type {
   RemoteMedia,
   RemoteMediaKind,
   RemoteMediaStatus,
+  SampleOffer,
 } from "./chat-media.contract";
 import { nextUtcMidnight } from "./chat-media-rules";
 
@@ -166,9 +167,10 @@ export function mediaPageFrom(
   return { items, hasMore: raw.hasMore };
 }
 
-/** `companion_sample_snapshot_offer` 본문 — `{ available: true }`일 때만 참(못 읽으면 제안하지 않습니다). */
-export function sampleOfferFrom(bodyText: string | null): boolean {
-  return recordOf(parse(bodyText))?.available === true;
+/** `companion_sample_snapshot_offer` 본문 — `{ available, voice }`. 참일 때만 제안합니다(못 읽으면 둘 다 거짓). */
+export function sampleOfferFrom(bodyText: string | null): SampleOffer {
+  const raw = recordOf(parse(bodyText));
+  return { snapshot: raw?.available === true, voice: raw?.voice === true };
 }
 
 /**

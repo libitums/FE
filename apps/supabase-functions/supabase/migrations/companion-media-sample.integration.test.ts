@@ -41,7 +41,7 @@ async function message(user: string, character = "duksu", role = "assistant"): P
 }
 const offer = async (character = "duksu") =>
   (await app.query("select public.companion_sample_snapshot_offer($1) as o", [character])).rows[0]
-    .o as { available: boolean };
+    .o as { available: boolean; voice: boolean };
 type Claim = {
   result: string;
   media?: {
@@ -56,6 +56,17 @@ type Claim = {
 const claim = async (messageId: string) =>
   (await app.query("select public.companion_claim_sample_snapshot($1) as c", [messageId])).rows[0]
     .c as Claim;
+const VOICE = "samples/duksu-guide-voice-01.mp3";
+const GREETING = "안녕하세요! 덕수쌤이에요.";
+const claimVoice = async (messageId: string) =>
+  (await app.query("select public.companion_claim_sample_snapshot($1, 'voice') as c", [messageId]))
+    .rows[0].c as Claim & { media?: { kind: string; mime: string; aspect: string | null } };
+const addVoiceSample = () =>
+  db.admin.query(
+    `insert into companion.media_samples (character_id, kind, storage_path, aspect, mime, text)
+     values ('duksu', 'voice', $1, null, 'audio/mpeg', $2)`,
+    [VOICE, GREETING],
+  );
 
 beforeAll(async () => {
   db = await startTestDatabase();
@@ -86,10 +97,10 @@ beforeEach(async () => {
 });
 
 test("MS1. 제안 — 그 인물의 예시가 켜져 있고 스냅샷을 한 번도 만든 적이 없을 때만 available", async () => {
-  expect(await offer()).toEqual({ available: true });
-  expect(await offer("mina")).toEqual({ available: false });
+  expect(await offer()).toMatchObject({ available: true });
+  expect(await offer("mina")).toMatchObject({ available: false });
   await db.admin.query("update companion.media_samples set active = false");
-  expect(await offer()).toEqual({ available: false });
+  expect(await offer()).toMatchObject({ available: false });
 });
 
 test("MS2. 받기 — 값 없이(cost 0 · charge sample) 완성된 스냅샷 행이 생기고, 지갑 · 원장은 그대로다", async () => {
@@ -129,7 +140,7 @@ test("MS3. 계정당 한 번 — 다시 부르면 already로 같은 행을 돌�
   const again = await claim(await message(learner));
   expect(again.result).toBe("already");
   expect(again.media?.id).toBe(first.media?.id);
-  expect(await offer()).toEqual({ available: false });
+  expect(await offer()).toMatchObject({ available: false });
   const rows = await db.admin.query(
     "select count(*)::int as n from companion.media where user_id = $1",
     [learner],
@@ -151,7 +162,7 @@ test("MS5. 이미 스냅샷을 써 본 사람에게는 제안하지 않는다(�
      values ($1, 'duksu', $2, 'snapshot', 'complete', 'photo', 35, $3, 'image/png', '3:2')`,
     [learner, id, `${learner}/x.png`],
   );
-  expect(await offer()).toEqual({ available: false });
+  expect(await offer()).toMatchObject({ available: false });
   expect((await claim(id)).result).toBe("not_offered");
 });
 
@@ -200,4 +211,60 @@ test("MS8. 대화를 쓰지 못하는 계정(14세 미만 · 일시 차단)은 �
   );
   // 지갑이 비어 있어도(엽전 0) 받는다.
   expect((await claim(id)).result).toBe("ok");
+});
+
+// ------------------------------------------------------------------ 예시 음성(20261230) — 스냅샷 다음 단계에서 미리 만든 음성 하나
+
+test("MS9. 음성 제안 — 그 인물의 음성 예시가 켜져 있고 음성을 한 번도 만든 적이 없을 때만 voice. 사진 제안과 따로 간다", async () => {
+  expect(await offer()).toEqual({ available: true, voice: false });
+  await addVoiceSample();
+  expect(await offer()).toEqual({ available: true, voice: true });
+  const id = await message(learner);
+  await db.admin.query(
+    `insert into companion.media (user_id, character_id, message_id, kind, status, charge, cost, storage_path, mime, text)
+     values ($1, 'duksu', $2, 'voice', 'complete', 'voice', 15, $3, 'audio/mpeg', '안녕')`,
+    [learner, id, `${learner}/v.mp3`],
+  );
+  expect(await offer()).toEqual({ available: true, voice: false });
+});
+
+test("MS10. 음성 받기 — 값 없이 완성된 음성 행(kind voice · charge sample · 읽은 글)이 생기고, 사진 예시와 따로 한 번씩 받는다", async () => {
+  await addVoiceSample();
+  const id = await message(learner);
+  const voice = await claimVoice(id);
+  expect(voice.result).toBe("ok");
+  expect(voice.media).toMatchObject({
+    kind: "voice",
+    status: "complete",
+    cost: 0,
+    charge: "sample",
+    path: VOICE,
+    mime: "audio/mpeg",
+    aspect: null,
+  });
+  const row = await db.admin.query("select text from companion.media where id = $1", [
+    voice.media?.id,
+  ]);
+  expect(row.rows[0].text).toBe(GREETING);
+  // 음성을 받아도 사진 예시는 그대로 받을 수 있다(그 반대도).
+  const photo = await claim(id);
+  expect(photo.result).toBe("ok");
+  expect(photo.media?.id).not.toBe(voice.media?.id);
+  expect((await claimVoice(id)).result).toBe("already");
+  expect(await offer()).toEqual({ available: false, voice: false });
+});
+
+test("MS11. 음성 막는 경우 — 음성 예시가 없으면 no_sample, 음성을 써 본 사람은 not_offered, 모르는 종류는 거절", async () => {
+  const id = await message(learner);
+  expect((await claimVoice(id)).result).toBe("no_sample");
+  await addVoiceSample();
+  await db.admin.query(
+    `insert into companion.media (user_id, character_id, message_id, kind, status, charge, cost, storage_path, mime, text)
+     values ($1, 'duksu', $2, 'voice', 'complete', 'voice', 15, $3, 'audio/mpeg', '안녕')`,
+    [learner, id, `${learner}/v.mp3`],
+  );
+  expect((await claimVoice(id)).result).toBe("not_offered");
+  await expect(
+    app.query("select public.companion_claim_sample_snapshot($1, 'video')", [id]),
+  ).rejects.toMatchObject({ code: "22023" });
 });

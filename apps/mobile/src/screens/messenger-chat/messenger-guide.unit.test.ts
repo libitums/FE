@@ -86,3 +86,31 @@ test("MG-U9 방 안내의 단계 — 새 사용자는 chat · ideas (+ 제안되
     "ideas",
   ]);
 });
+
+test("MG-U10 예시 음성 단계 — 스냅샷 다음에 붙고, 사진 · 음성은 따로 제안 · 따로 봄", () => {
+  const both = { offered: true, voiceOffered: true };
+  expect(
+    roomGuideSteps({ roomSeen: false, snapshotSeen: false, voiceSeen: false, ...both }),
+  ).toEqual(["chat", "ideas", "sample", "voice"]);
+  expect(
+    roomGuideSteps({ roomSeen: true, snapshotSeen: false, voiceSeen: false, ...both }),
+  ).toEqual(["sample", "voice"]);
+  // 사진은 이미 봤고 음성만 남았으면 음성만.
+  expect(roomGuideSteps({ roomSeen: true, snapshotSeen: true, voiceSeen: false, ...both })).toEqual(
+    ["voice"],
+  );
+  // 음성을 써 본 계정(서버가 제안하지 않음)에는 사진만.
+  expect(
+    roomGuideSteps({
+      roomSeen: true,
+      snapshotSeen: false,
+      voiceSeen: false,
+      offered: true,
+      voiceOffered: false,
+    }),
+  ).toEqual(["sample"]);
+  expect(roomGuideSteps({ roomSeen: true, snapshotSeen: true, voiceSeen: true, ...both })).toEqual(
+    [],
+  );
+  expect(guideSeenFrom('["voice","room"]')).toEqual(["voice", "room"]);
+});

@@ -208,3 +208,12 @@
 - **리뷰 반영 ⟨#554⟩**: (1) 받기는 대화를 쓰지 못하는 계정(14세 미만 · 일시 차단)을 막는다 — 요금제 · 잔액은 보지 않는다(엽전 0이어도 받는다). (2) 예시 단계를 본 것으로 적는 때는 **받은 뒤**(또는 Skip) — 받기에 실패하면 다음에 방에 올 때 다시 권한다. (3) 서버가 주지 않기로 한 경우는 「연결 확인」이 아니라 「지금은 쓸 수 없음」 줄. (4) 「만드는 중」 대기는 방의 타이머로 걸어, 방이 비워져도 대기 줄이 남지 않는다. (5) 알약을 거듭 눌러도 한 번만 받는다. (6) 안내는 서버 답이 온 뒤에 서서 도중에 단계 수가 바뀌지 않고, 「예시 없음」 답은 그 실행 동안 기억해 방을 열 때마다 묻지 않는다. (7) 운영의 고아 파일 조회가 `samples/`를 내놓지 않는다. (8) 예시 단계만 뜬 경우 완료 이벤트의 `part`는 `snapshot`. 쓰이지 않게 된 `guideSteps` · `MESSENGER_MEDIA_READY`를 지웠다.
 - **한계**: 일곱 언어 문구는 원어민 검수 전. 기기 확인 전. 예시를 받은 메시지에서 「다시 만들기」를 하면 다시 그리기 값(25)이 든다. 예시 행은 스냅샷 행이라 그날의 시도 상한(운영 30) 집계에 한 장으로 잡힌다.
 - **테스트**: 서버 `companion-media-sample.integration.test.ts` MS1 ~ MS8. 앱 `companion-media-parse.unit.test.ts` CM-U4a · U4b, `companion-media-api.unit.test.ts` CM-U8s, `messenger-guide.unit.test.ts` MG-U9, `chat-remote-media.unit.test.ts` CM-U30 ~ U33, `MessengerGuide.sample.ui.test.tsx` MG-UI10 ~ UI14.
+
+## 추가 ⟨2026-11-23⟩ — 안내에서 무료 예시 음성 [사용자]
+
+- **사용자 결정 2026-11-23**: 방 안내의 스냅샷 단계 다음에 음성 단계를 붙인다 — 음성 단추를 가리키고, 누르면 미리 만들어 둔 음성을 그대로 준다.
+- **무엇을 주나**: 덕수쌤의 첫 인사는 모든 사용자에게 같은 문장이다(최근 3일 824개 대화 모두 「안녕하세요! 덕수쌤이에요. 한국어나 한국 문화에 대해 궁금한 게 있으면 언제든지 물어봐요.」). 그 문장을 읽은 음성 파일 하나를 버킷 `companion-media/samples/`에 두고, 첫 인사 메시지의 음성으로 준다 — 글과 소리가 맞는다.
+- **서버(20261230)**: `companion.media_samples`에 종류(`kind` snapshot · voice) · 읽은 글(`text`)을 더하고 인물 · 종류마다 한 줄. 제안 RPC가 `voice`를 더 돌려준다(음성 예시가 켜져 있고 그 계정이 음성을 한 번도 만든 적이 없을 때). 받기 RPC는 종류(`p_kind`, 기본 snapshot)를 받는다 — 종류를 넘기지 않는 앞 빌드는 그대로 스냅샷. 받은 음성은 보통 음성과 같은 media 행(kind voice · charge sample · cost 0)이고 사진 예시와 따로 한 번씩 받는다. 막는 조건(14세 미만 · 일시 차단)은 사진과 같다.
+- **앱**: 단계 `voice`, 기기 기록 `voice`. 사진 알약을 누르면 사진을 받는 동안 안내가 음성 단계로 넘어가고, 음성 알약에 고리 · FREE가 선다. 누르면 결제 확인 없이 음성 대기 줄 → 음성 말풍선 → 「이번 것은 무료」 줄. 사진 · 음성은 따로 제안 · 따로 기록이라, 음성을 써 본 계정에는 사진 단계만, 사진을 이미 본 기기에는 음성 단계만 「New」로 뜬다. 처음 온 사용자는 4단계(chat → ideas → 사진 → 음성).
+- **테스트**: 서버 `companion-media-sample.integration.test.ts` MS9 ~ MS11. 앱 `messenger-guide.unit.test.ts` MG-U10, `companion-media-parse.unit.test.ts` CM-U4a, `companion-media-api.unit.test.ts` CM-U8s, `chat-remote-media.unit.test.ts` CM-U34, `MessengerGuide.sample.ui.test.tsx` MG-UI15 · UI16.
+- **한계**: 일곱 언어 문구는 원어민 검수 전. 기기 확인 전(음성 알약을 가리키는 꼬리 위치 포함). 첫 인사 문장이 바뀌면 예시 음성 파일과 표의 글도 함께 바꿔야 한다.
