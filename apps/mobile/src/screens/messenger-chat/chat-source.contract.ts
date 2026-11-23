@@ -98,9 +98,11 @@ export type ChatRoomSummary = {
   readonly roomId: string;
   readonly counterpart: ChatCounterpart;
   readonly access: ChatRoomAccess;
+  /** 목록이 미리보기로 쓰는 줄 — 보통 마지막 줄, 맨 끝이 사진 · 음성 안내 줄이면 그 앞의 줄(`lastPreviewLine`). */
   readonly lastMessage: ChatMessage | null;
   readonly unread: number;
   readonly activity: ChatRoomActivity;
+  /** `lastMessage`의 시각(없으면 0) — 목록의 시각 · 정렬. */
   readonly updatedAt: number;
   /** 방금 해금돼 아직 열어 보지 않은 방(목록 NEW 줄). */
   readonly isNew: boolean;

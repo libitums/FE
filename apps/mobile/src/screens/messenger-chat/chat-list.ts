@@ -1,6 +1,6 @@
 // 목록 정렬 · 미리보기 · 안 읽은 수 · 시간입니다(messenger-chat-ui spec §5.6).
 
-import type { ChatRoomSummary, ChatText } from "./chat-source.contract";
+import type { ChatMessage, ChatRoomSummary, ChatText } from "./chat-source.contract";
 import { COMPANION_ROSTER } from "./companion-roster";
 
 export type ChatRowPreview =
@@ -47,6 +47,21 @@ export function newBadgeShown(
 ): boolean {
   if (room.access.kind !== "open") return false;
   return room.isNew || preview.kind === "greeting";
+}
+
+/**
+ * 목록 한 줄이 미리보기 · 시각으로 쓰는 줄 — 보통 마지막 줄입니다. 맨 끝이 사진 · 음성 안내 줄(`media-notice` — 「이번 것은 무료」,
+ * 엽전 부족 등)이면 그 앞의 줄을 씁니다: 그 줄은 대화가 아니라 단추를 누른 결과 안내라, 받은 음성 · 사진이 빈 줄로 가려지지 않게.
+ * 다른 회색 줄(전송 실패 `notice` · 위기 안내 `crisis`)은 건너뛰지 않습니다 — 보내지 못한 글이나 위기 안내를 부른 글이 목록에
+ * 드러나면 안 됩니다(ADR-0125). 사진 · 음성 안내 줄뿐이면 마지막 줄 그대로(빈 미리보기).
+ */
+export function lastPreviewLine(messages: readonly ChatMessage[]): ChatMessage | null {
+  const last = messages[messages.length - 1] ?? null;
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const line = messages[i] as ChatMessage;
+    if (line.kind !== "media-notice") return line;
+  }
+  return last;
 }
 
 const firstLineOf = (characterId: string): string | null =>
