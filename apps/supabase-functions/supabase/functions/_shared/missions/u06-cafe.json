@@ -1,7 +1,7 @@
 {
   "id": "u06-cafe",
   "episodeId": "u06-cafe",
-  "version": 3,
+  "version": 4,
   "title": {
     "ko": "커피 주문하기",
     "en": "Order a coffee"
@@ -22,7 +22,8 @@
       "speech": "궁금한 걸 먼저 묻는다. 반가움과 응원을 숨기지 않는다. 막히면 먼저 긴장을 풀어준다"
     },
     "learnerRegister": "polite",
-    "learnerRegisterNote": "직원과 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다."
+    "learnerRegisterNote": "직원과 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다.",
+    "voice": "rCm09Tf1yMYbOyCRLDyB"
   },
   "opening": {
     "ko": "반가워요. 뭐 드릴까요?",

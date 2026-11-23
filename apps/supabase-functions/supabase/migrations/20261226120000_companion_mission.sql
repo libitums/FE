@@ -1754,3 +1754,217 @@ revoke all on function public.companion_list_missions() from public, anon;
 revoke all on function public.companion_list_mission_results(text) from public, anon;
 grant execute on function public.companion_list_missions() to authenticated;
 grant execute on function public.companion_list_mission_results(text) to authenticated;
+
+-- ------------------------------------------------------------------ 음성(mission-stt · mission-tts, 2026-11-23)
+--
+-- 음성은 판 단위 과금에 들어 있어 따로 엽전을 받지 않는다(원가 절감은 나중). 대신 호출마다 한 줄을 남겨 원가를 잰다(받아 적은 초 · 합성한 글자 ·
+-- 캐시 적중 · 벤더 왕복 시간) — `companion.mission_voice_calls`. 같은 표로 남용 상한을 센다(판당 호출 수 = 턴 상한 × 배수, 하루 초 · 글자).
+-- 녹음은 어디에도 저장하지 않는다(받아 적은 글만 응답으로 돌려준다). 합성한 mp3는 `companion-media/mission-tts/…`(같은 글은 사용자 사이에서 공유).
+-- 힌트 예문은 `companion.mission_hints`에 남겨 `mission-tts`가 앱이 보낸 글이 아니라 저장된 글을 읽게 한다.
+
+alter table companion.settings
+  -- 판당 호출 상한의 배수: 받아 적기 ≤ 턴 상한 × 이 값, 합성 ≤ (턴 상한 + 진입 대사 1 + 힌트 상한) × 이 값. 0이면 음성을 끈다(비상 스위치).
+  add column mission_voice_per_turn integer not null default 3 check (mission_voice_per_turn between 0 and 20),
+  -- 사용자 하루(UTC) 받아 적기 초 상한 · 합성 글자 상한(캐시 적중 포함). 0이면 끈다.
+  add column mission_stt_daily_seconds integer not null default 1800 check (mission_stt_daily_seconds between 0 and 86400),
+  add column mission_tts_daily_chars integer not null default 20000 check (mission_tts_daily_chars between 0 and 1000000);
+
+create table companion.mission_voice_calls (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  conversation_id uuid not null references companion.conversations (id) on delete cascade,
+  kind text not null check (kind in ('stt', 'tts')),
+  -- tts만: 'message:<id>' · 'hint:<번호>'.
+  target text check (target is null or char_length(target) <= 80),
+  seconds numeric(6, 2) not null default 0 check (seconds >= 0),
+  chars integer not null default 0 check (chars >= 0),
+  -- 끝나지 않았으면 null(함수가 도중에 죽음). ok · cached(합성 캐시 적중) · empty · busy · server · failed(검사 · 저장 실패).
+  outcome text check (outcome is null or outcome in ('ok', 'cached', 'empty', 'busy', 'server', 'failed')),
+  vendor_ms integer check (vendor_ms is null or vendor_ms >= 0),
+  model text check (model is null or char_length(model) <= 80),
+  meta jsonb not null default '{}'::jsonb check (jsonb_typeof(meta) = 'object'),
+  created_at timestamptz not null default now(),
+  finished_at timestamptz
+);
+create index mission_voice_calls_conversation_idx on companion.mission_voice_calls (conversation_id, kind);
+create index mission_voice_calls_user_idx on companion.mission_voice_calls (user_id, kind, created_at);
+
+create table companion.mission_hints (
+  conversation_id uuid not null references companion.conversations (id) on delete cascade,
+  hint_no integer not null check (hint_no between 1 and 20),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  goal_id text not null check (char_length(goal_id) <= 32),
+  ko text not null check (char_length(ko) between 1 and 400),
+  created_at timestamptz not null default now(),
+  primary key (conversation_id, hint_no)
+);
+
+alter table companion.mission_voice_calls enable row level security;
+alter table companion.mission_hints enable row level security;
+revoke all on table companion.mission_voice_calls, companion.mission_hints from public, anon, authenticated;
+grant select, insert, update, delete on table companion.mission_voice_calls, companion.mission_hints to service_role;
+
+-- 힌트 예문 저장(mission-hint가 문장을 만든 뒤). 그 판의 주인만 · 같은 번호는 덮어쓴다(다시 시도 안전).
+create function public.companion_mission_save_hint(
+  p_user_id uuid, p_conversation_id uuid, p_hint_no integer, p_goal_id text, p_ko text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  c companion.conversations := companion.mission_conversation(p_user_id, p_conversation_id, false);
+begin
+  if c.id is null then
+    return jsonb_build_object('result', 'mission_not_found');
+  end if;
+  insert into companion.mission_hints (conversation_id, hint_no, user_id, goal_id, ko)
+  values (c.id, p_hint_no, p_user_id, p_goal_id, p_ko)
+  on conflict (conversation_id, hint_no) do update set goal_id = excluded.goal_id, ko = excluded.ko, created_at = now();
+  return jsonb_build_object('result', 'ok', 'hintNo', p_hint_no);
+end;
+$$;
+
+-- 음성 호출 하나의 시작. 판 확인 → (tts) 읽을 글 꺼내기 → 상한 → 기록 줄. 판을 잠가 같은 판의 동시 호출이 상한을 넘지 않게 한다.
+--   p_kind 'stt': 열린 판(active · 끝나지 않음)만. p_seconds = 녹음 길이.
+--   p_kind 'tts': 그 사용자의 판이면 상태와 무관(끝난 턴의 마지막 답 · 리포트에서 다시 듣기). p_target = { kind: message, id } | { kind: hint, no }.
+--     메시지는 그 판의 상대역 메시지(origin mission · complete · 숨기지 않음)의 말 조각(speech)만 이어 붙인다 — 행동 지문은 읽지 않는다.
+--   반환: { result: ok, callId, text?(tts), voice?(미션 정의 counterpart.voice), missionId } 또는 { result: 거절 코드, detail? }.
+create function public.companion_mission_voice_begin(
+  p_user_id uuid, p_conversation_id uuid, p_kind text, p_seconds numeric, p_target jsonb, p_now timestamptz
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  s companion.settings;
+  c companion.conversations;
+  v_def jsonb;
+  v_text text;
+  v_target text;
+  v_amount numeric;
+  v_limit integer;
+  v_daily integer;
+  v_used integer;
+  v_day_used numeric;
+  v_day timestamptz := (date_trunc('day', p_now at time zone 'utc')) at time zone 'utc';
+  v_call uuid;
+begin
+  if p_kind not in ('stt', 'tts') then
+    raise exception 'unknown voice kind %', p_kind using errcode = '22023';
+  end if;
+  select * into s from companion.settings;
+  c := companion.mission_conversation(p_user_id, p_conversation_id, true);
+  if c.id is null then
+    return jsonb_build_object('result', 'mission_not_found');
+  end if;
+  if p_kind = 'stt' and c.status <> 'active' then
+    return jsonb_build_object('result', 'mission_closed', 'detail', jsonb_build_object('status', c.status, 'endReason', c.end_reason));
+  end if;
+  if p_kind = 'stt' and c.end_reason is not null then
+    return jsonb_build_object('result', 'mission_ended', 'detail', jsonb_build_object('endReason', c.end_reason));
+  end if;
+  v_def := companion.mission_definition_of(c);
+
+  if p_kind = 'tts' then
+    if p_target->>'kind' = 'message'
+        and coalesce(p_target->>'id', '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+      v_target := 'message:' || lower(p_target->>'id');
+      select string_agg(btrim(x.seg->>'text'), ' ' order by x.ord) into v_text
+      from companion.messages m, jsonb_array_elements(m.segments) with ordinality as x(seg, ord)
+      where m.id = (p_target->>'id')::uuid and m.conversation_id = c.id and m.role = 'assistant' and m.origin = 'mission'
+        and m.status = 'complete' and not m.hidden and x.seg->>'kind' = 'speech' and btrim(coalesce(x.seg->>'text', '')) <> '';
+    elsif p_target->>'kind' = 'hint' and coalesce(p_target->>'no', '') ~ '^[0-9]{1,2}$' then
+      v_target := 'hint:' || (p_target->>'no');
+      select h.ko into v_text from companion.mission_hints h
+      where h.conversation_id = c.id and h.hint_no = (p_target->>'no')::integer;
+    end if;
+    if v_text is null or v_text = '' then
+      return jsonb_build_object('result', 'voice_target_not_found');
+    end if;
+    v_amount := char_length(v_text);
+    v_limit := ((v_def->>'turnLimit')::integer + 1 + s.mission_hint_limit) * s.mission_voice_per_turn;
+    v_daily := s.mission_tts_daily_chars;
+  else
+    v_amount := greatest(0, coalesce(p_seconds, 0));
+    v_limit := (v_def->>'turnLimit')::integer * s.mission_voice_per_turn;
+    v_daily := s.mission_stt_daily_seconds;
+  end if;
+
+  select count(*) into v_used from companion.mission_voice_calls where conversation_id = c.id and kind = p_kind;
+  if v_used >= v_limit then
+    return jsonb_build_object('result', 'voice_limit', 'detail', jsonb_build_object('scope', 'mission', 'limit', v_limit));
+  end if;
+  select coalesce(sum(case when p_kind = 'stt' then v.seconds else v.chars end), 0) into v_day_used
+  from companion.mission_voice_calls v where v.user_id = p_user_id and v.kind = p_kind and v.created_at >= v_day;
+  if v_day_used + v_amount > v_daily then
+    return jsonb_build_object('result', 'voice_limit', 'detail', jsonb_build_object('scope', 'day', 'limit', v_daily));
+  end if;
+
+  insert into companion.mission_voice_calls (user_id, conversation_id, kind, target, seconds, chars, created_at)
+  values (p_user_id, c.id, p_kind, v_target, case when p_kind = 'stt' then round(v_amount, 2) else 0 end,
+    case when p_kind = 'tts' then v_amount::integer else 0 end, p_now)
+  returning id into v_call;
+  return jsonb_strip_nulls(jsonb_build_object(
+    'result', 'ok',
+    'callId', v_call,
+    'missionId', c.mission_id,
+    'text', v_text,
+    'voice', v_def->'counterpart'->>'voice'
+  ));
+end;
+$$;
+
+-- 음성 호출 하나의 끝 — 결과 · 벤더 왕복 시간 · 모델 · 메타(캐시 · 재시도 등)를 적는다. 원가 = outcome ok인 줄의 seconds · chars.
+create function public.companion_mission_voice_finish(p_call_id uuid, p_outcome text, p_meta jsonb, p_now timestamptz)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update companion.mission_voice_calls set
+    outcome = p_outcome,
+    vendor_ms = case when p_meta ? 'vendorMs' then (p_meta->>'vendorMs')::integer end,
+    model = left(p_meta->>'model', 80),
+    meta = coalesce(p_meta, '{}'::jsonb) - 'vendorMs' - 'model',
+    finished_at = p_now
+  where id = p_call_id
+$$;
+
+-- 20261130 판 + `mission-tts/` 제외 한 줄. 미션 합성 캐시(media 행 없이 사용자 사이에서 공유하는 파일)를 「주인 없는 파일」로 세지 않는다.
+create or replace function public.companion_media_orphans(p_limit integer)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare
+  v jsonb;
+begin
+  if to_regclass('storage.objects') is null then
+    return '[]'::jsonb;
+  end if;
+  execute $q$
+    select coalesce(jsonb_agg(x.name order by x.name), '[]'::jsonb) from (
+      select o.name from storage.objects o
+      where o.bucket_id = 'companion-media'
+        and o.name not like 'mission-tts/%'
+        and not exists (select 1 from companion.media m where m.storage_path = o.name)
+      order by o.name limit $1
+    ) x
+  $q$ into v using greatest(1, least(coalesce(p_limit, 100), 1000));
+  return v;
+end;
+$$;
+
+revoke all on function public.companion_mission_save_hint(uuid, uuid, integer, text, text) from public, anon, authenticated;
+revoke all on function public.companion_mission_voice_begin(uuid, uuid, text, numeric, jsonb, timestamptz)
+  from public, anon, authenticated;
+revoke all on function public.companion_mission_voice_finish(uuid, text, jsonb, timestamptz) from public, anon, authenticated;
+grant execute on function public.companion_mission_save_hint(uuid, uuid, integer, text, text) to service_role;
+grant execute on function public.companion_mission_voice_begin(uuid, uuid, text, numeric, jsonb, timestamptz) to service_role;
+grant execute on function public.companion_mission_voice_finish(uuid, text, jsonb, timestamptz) to service_role;

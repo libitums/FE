@@ -1,6 +1,6 @@
 // `chat-send`의 HTTP 가장자리: 스트림 전 오류 응답 · 호출자 확인 · 본문 검사 · SSE 쓰기.
 
-import type { ChatSendDeps, ChatSendEnv } from "./chat-send.contract.ts";
+import type { ChatSendDeps } from "./chat-send.contract.ts";
 import {
   PRE_STREAM_ERRORS,
   SUPPORTED_CONTRACT_VERSIONS,
@@ -10,7 +10,7 @@ import {
   type PreStreamErrorCode,
   type TurnEvent,
 } from "./companion-contract/index.ts";
-import { authUserIdRequest, isServiceKey } from "./companion-rpc.ts";
+import { authUserIdRequest, isServiceKey, type RpcEnv } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
 const uuidShape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -37,8 +37,8 @@ export function errorResponse(
 
 /** 사용자 id, 또는 실패면 null. 서버 키 + 헤더면 플레이그라운드 경로입니다. */
 export async function callerUserId(
-  deps: ChatSendDeps,
-  env: ChatSendEnv,
+  deps: Pick<ChatSendDeps, "outbound">,
+  env: RpcEnv,
   request: Request,
 ): Promise<{ userId: string; playground: boolean } | null> {
   const token = bearerTokenFrom(request.headers.get("authorization"));

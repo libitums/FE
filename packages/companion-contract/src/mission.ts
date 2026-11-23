@@ -88,6 +88,11 @@ export const missionCounterpartSchema = z.object({
    */
   learnerRegister: z.optional(z.enum(["polite", "casual"])),
   learnerRegisterNote: z.optional(text(200)),
+  /**
+   * (음성) 상대역의 ElevenLabs 음성 id — `mission-tts`가 이 목소리로 읽는다. 없으면 서버 기본값(`COMPANION_MISSION_TTS_VOICE`, 비우면
+   * 편의점 점원 음성). 앱 화면에는 쓰지 않는다.
+   */
+  voice: z.optional(z.string().check(z.regex(/^[A-Za-z0-9]{8,64}$/))),
   base: z.optional(missionCounterpartBaseSchema),
 });
 
@@ -215,6 +220,8 @@ export const missionHintResponseSchema = z.object({
   roman: z.string(),
   meaning: z.string(),
   hintsLeft: nonNegativeInt,
+  /** (음성) 이 판에서 몇 번째 힌트인지(1부터) — `mission-tts`의 `hint_no`. 서버가 예문을 저장하지 못했으면 없다(듣기 단추를 숨김). */
+  hintNo: z.optional(z.int().check(z.gte(1), z.lte(20))),
 });
 
 // ------------------------------------------------------------------ 미션 함수의 오류

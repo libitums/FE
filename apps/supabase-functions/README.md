@@ -690,6 +690,34 @@ COMPANION_MISSION_HINT_MODEL=       # 힌트 모델 id. 비워 두면 claude-hai
 
 미션 턴의 입력 · 출력 검사와 번역만 컴패니언의 `COMPANION_MODERATION_MODEL` · `COMPANION_TRANSLATION_MODEL`을 그대로 쓴다.
 
+### 미션 음성 — mission-stt · mission-tts (2026-11-23)
+
+롤플레이에서는 기기 음성 인식을 쓰지 않고 서버가 ElevenLabs를 부른다(STT Scribe v3 · TTS `eleven_v4_turbo`, 파이프라인 문서 §6 · §10). 앱은 키를 갖지 않는다.
+계약은 `packages/companion-contract/src/mission-voice.ts`(JSON Schema `mission-stt-*` · `mission-tts-*` · `mission-voice-error`), fixture는 `fixtures-mission-voice.ts`.
+
+- **`mission-stt`**: multipart `contract_version` · `conversation_id` · `audio`(16kHz mono 16-bit PCM WAV, 30초 · 1 MiB까지) → `{text, autoSend, reason, words, features, latencyMs}`.
+  자기의 **열린 판**(active · 끝나지 않음)만. Scribe는 `language_code=kor` · `tag_audio_events=false` · `timestamps_granularity=word`, 화자 분리 없음,
+  `enable_logging=false`(무보존 모드 — `COMPANION_MISSION_STT_ZERO_RETENTION=off`로 끔). **녹음은 저장하지 않는다** — 메모리에서 벤더로 넘기고 버린다(기록 · 로그에도 글 · 소리 없음).
+  `autoSend`는 순수 함수 `autosendDecision`(`_shared/mission-voice-autosend.ts`, 대시보드 `autosend_decision`과 같은 규칙 · 문턱 0.85 · 0.93 · 0.35초 · 한글 0.6).
+  실패: `speech_empty` 422(빈 결과 · 0.2초 미만) · `speech_busy` 429(다시 하지 않음) · `speech_unavailable` 503(5xx · 연결 실패는 한 번 다시, 시간 초과 12초는 다시 하지 않음).
+- **`mission-tts`**: `{conversation_id, kind: "message", message_id}`(상대역 메시지 · 진입 대사) 또는 `{…, kind: "hint", hint_no}`(힌트 예문) → `{url, expiresAt, cached, mime}`.
+  **앱이 보낸 글은 합성하지 않는다** — SQL이 그 판의 메시지에서 말 조각(speech)만 꺼내고(행동 지문 제외), 힌트는 `mission-hint`가 저장한 예문(`companion.mission_hints`, 응답의 `hintNo`)을 읽는다.
+  읽기 글은 숫자를 한국어 수로(`spokenText`). 음성 = 미션 파일 `counterpart.voice`(없으면 `COMPANION_MISSION_TTS_VOICE`). 실패는 가벼운 `tts_unavailable` 503(앱은 조용히 글자만).
+- **돌려주는 방식 = 1단계 음성과 같은 비공개 버킷 `companion-media` + 서명 주소**(파일 `mission-tts/<모델>/<음성>/<읽는 글 sha256>.mp3`, 1시간).
+  응답 본문 스트리밍 대신 이것을 고른 까닭: ① 같은 글(진입 대사 · 정형 문장)은 사용자 사이에서 한 번만 합성하는 캐시가 파일 자리 하나로 된다(캐시 적중은 서명 한 번, 벤더 0원)
+  ② 앱의 재생 포트(`play(url)`)가 주소를 받는다 ③ 다시 듣기 · 리포트에서 같은 주소를 쓴다. 대가는 첫 합성의 첫 소리가 「합성 끝 + 올리기 + 서명」만큼 늦는 것(실측 합성 전체 0.34 ~ 0.6초 + 저장 왕복) —
+  첫 소리를 더 당겨야 하면 캐시 빗나감에서만 본문 스트리밍을 더하는 것이 다음 단계다. 공유 파일이라 앱이 자기 토큰으로 서명할 수 없어(정책은 `<user_id>/`만) 서버가 서명한다.
+  `companion_media_orphans`는 `mission-tts/`를 세지 않는다(이 마이그레이션이 다시 정의).
+- **상한 · 기록**(엽전은 받지 않는다 — 판 단위 과금에 포함): `companion_mission_voice_begin`이 판을 잠그고 센다 — 판당 받아 적기 ≤ 턴 상한 × `mission_voice_per_turn`(3),
+  합성 ≤ (턴 상한 + 1 + 힌트 상한) × 3, 사용자 하루(UTC) 받아 적기 `mission_stt_daily_seconds`(1800초) · 합성 `mission_tts_daily_chars`(20000자, 캐시 포함). 넘으면 429 `voice_limit`(`detail.scope`).
+  `mission_voice_per_turn = 0`이면 음성을 끈다. 호출마다 `companion.mission_voice_calls` 한 줄(종류 · 초 · 글자 · 결과 ok/cached/empty/busy/server/failed · 벤더 ms · 모델 · 재시도) —
+  원가 = `outcome = 'ok'`인 줄의 `seconds` 합(Scribe) · `chars` 합(TTS). 같은 값을 구조화 로그(`event: mission_stt | mission_tts`)에도 남긴다.
+- 테스트: `_shared/mission-stt-handler.unit.test.ts` · `mission-tts-handler.unit.test.ts`(가짜 ElevenLabs · Storage) · `mission-voice-pure.unit.test.ts` · `mission-voice.integration.test.ts`(실제 SQL).
+  **진짜 ElevenLabs로는 확인하지 않았다** — 매개변수는 대시보드 실험실이 맥미니에서 검증한 값과 같다.
+- 환경 변수(값은 비워 둔다): `COMPANION_MISSION_STT_MODEL` · `COMPANION_MISSION_TTS_MODEL` · `COMPANION_MISSION_TTS_VOICE` · `COMPANION_MISSION_STT_ZERO_RETENTION` ·
+  `COMPANION_MISSION_AUTOSEND_{CONF_MIN,CONF_MEAN,MIN_SECONDS,HANGUL_MIN,WITHOUT_CONFIDENCE}`. 키는 1단계와 같은 `ELEVENLABS_API_KEY`.
+- 배포: `supabase functions deploy mission-stt` · `supabase functions deploy mission-tts`(`verify_jwt = false`) — 미션 마이그레이션 적용 뒤.
+
 ## revenuecat-webhook — 구독 · 엽전 팩(ADR-0144)
 
 RevenueCat이 보내는 구독 · 구매 이벤트를 받아 우리 DB(정본)에 반영한다. 인증은 Supabase JWT가 아니라 RevenueCat이 싣는 `Authorization`

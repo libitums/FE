@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "autoSend": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "enum": ["ok", "low_confidence", "no_confidence", "too_short", "not_korean", "empty"]
+    },
+    "words": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "start": {
+            "type": ["number", "null"]
+          },
+          "end": {
+            "type": ["number", "null"]
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["text", "start", "end", "confidence"],
+        "additionalProperties": false
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "confMin": {
+          "type": ["number", "null"]
+        },
+        "confMean": {
+          "type": ["number", "null"]
+        },
+        "chars": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "hangulRatio": {
+          "type": ["number", "null"]
+        },
+        "seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": ["confMin", "confMean", "chars", "hangulRatio", "seconds"],
+      "additionalProperties": false
+    },
+    "latencyMs": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": ["text", "autoSend", "reason", "words", "features", "latencyMs"],
+  "additionalProperties": false
+}

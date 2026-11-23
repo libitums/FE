@@ -93,7 +93,18 @@ COMPANION_MISSION_JUDGE_MODEL=          # 턴의 목표 판정 모델 id(답 · 
 COMPANION_MISSION_GRADER_MODEL=         # 채점 모델 id. 비우면 claude-sonnet-5-5
 COMPANION_MISSION_FEEDBACK_MODEL=       # 교정 모델 id. 비우면 claude-haiku-5-5
 COMPANION_MISSION_HINT_MODEL=           # 힌트 모델 id. 비우면 claude-haiku-5-5
+# 미션 음성(mission-stt · mission-tts, 파이프라인 문서 §6.6). 키는 1단계 음성과 같은 ELEVENLABS_API_KEY(아래)
+COMPANION_MISSION_STT_MODEL=            # 받아 적기 모델. 비우면 scribe_v3
+COMPANION_MISSION_TTS_MODEL=            # 합성 모델. 비우면 eleven_v4_turbo
+COMPANION_MISSION_TTS_VOICE=            # 미션 파일에 counterpart.voice가 없을 때 음성 id. 비우면 l6fNdLYgoqjfTIPUeFc9(실험실 기본)
+COMPANION_MISSION_STT_ZERO_RETENTION=   # 비우면 Scribe에 enable_logging=false(무보존). 계정이 거절하면 off
+COMPANION_MISSION_AUTOSEND_CONF_MIN=    # 바로 보내기 문턱 — 낱말 확신도 최소. 비우면 0.85
+COMPANION_MISSION_AUTOSEND_CONF_MEAN=   # 낱말 확신도 평균. 비우면 0.93
+COMPANION_MISSION_AUTOSEND_MIN_SECONDS= # 녹음 최소 초. 비우면 0.35
+COMPANION_MISSION_AUTOSEND_HANGUL_MIN=  # 한글 비율. 비우면 0.6
+COMPANION_MISSION_AUTOSEND_WITHOUT_CONFIDENCE= # 확신도가 없을 때 on이면 바로 보냄. 비우면 확인
 # 아래는 1단계에서 이미 쓰는 것 — 미션 턴의 입력 · 출력 검사와 번역은 이 값을 그대로 읽는다
+ELEVENLABS_API_KEY=                     # 1단계 companion-voice와 같은 키 — 미션 음성도 읽는다
 ANTHROPIC_API_KEY=                      # sk-ant-…
 COMPANION_LLM=                          # anthropic | fake
 COMPANION_MODERATION_MODEL=             # 검사 모델 id

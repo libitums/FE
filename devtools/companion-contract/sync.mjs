@@ -23,6 +23,7 @@ const SERVER_EXCLUDED = new Set([
   "fixtures.ts",
   "fixtures-streams.ts",
   "fixtures-mission.ts",
+  "fixtures-mission-voice.ts",
   "json-schema.ts",
 ]);
 

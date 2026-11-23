@@ -29,6 +29,13 @@ verify_jwt = false
 [functions.mission-finish]
 verify_jwt = false
 
+# 미션 음성(ElevenLabs Scribe · eleven_v4_turbo) — 같은 규칙으로 함수 안에서 확인한다.
+[functions.mission-stt]
+verify_jwt = false
+
+[functions.mission-tts]
+verify_jwt = false
+
 [functions.send-push]
 verify_jwt = false
 

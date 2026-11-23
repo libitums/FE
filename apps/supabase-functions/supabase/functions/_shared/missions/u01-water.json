@@ -1,7 +1,7 @@
 {
   "id": "u01-water",
   "episodeId": "u01-water",
-  "version": 3,
+  "version": 4,
   "title": {
     "ko": "편의점에서 계산하기",
     "en": "Pay at the convenience store"
@@ -20,7 +20,8 @@
     ],
     "farewells": ["안녕히 가세요", "또 오세요", "좋은 하루 보내세요"],
     "learnerRegister": "polite",
-    "learnerRegisterNote": "점원과 처음 보는 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다."
+    "learnerRegisterNote": "점원과 처음 보는 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다.",
+    "voice": "l6fNdLYgoqjfTIPUeFc9"
   },
   "opening": {
     "ko": "봉투 드릴까요?",
