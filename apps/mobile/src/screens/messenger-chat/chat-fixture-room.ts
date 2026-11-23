@@ -14,6 +14,7 @@ import type {
   ChatThread,
   ChatTimers,
 } from "./chat-source.contract";
+import { lastPreviewLine } from "./chat-list";
 
 export type RoomState = {
   readonly seed: ChatFixtureRoom;
@@ -136,17 +137,8 @@ export function summaryOf(
   resolveUrl: (path: string | null) => string | null,
 ): ChatRoomSummary {
   if (room.summaryCache === null) {
-    const last = room.messages[room.messages.length - 1] ?? null;
-    // 목록 미리보기는 상대가 한 말 · 보낸 것을 보입니다 — 맨 끝이 회색 안내 줄(고지 · 사진/음성 안내 · 위기 안내)이면 그 앞의 줄을
-    // 씁니다(안내 뒤에 빈 줄로 보이지 않게). 그런 줄뿐이면 그대로 둡니다. 시각 · 정렬은 실제 마지막 줄.
-    let shown = last;
-    for (let i = room.messages.length - 1; i >= 0; i -= 1) {
-      const kind = (room.messages[i] as ChatMessage).kind;
-      if (kind !== "notice" && kind !== "media-notice" && kind !== "crisis") {
-        shown = room.messages[i] as ChatMessage;
-        break;
-      }
-    }
+    // 미리보기 · 시각은 같은 줄에서 — 맨 끝의 사진 · 음성 안내 줄은 건너뜁니다(`lastPreviewLine`).
+    const last = lastPreviewLine(room.messages);
     room.summaryCache = {
       roomId: room.seed.roomId,
       counterpart: {
@@ -155,7 +147,7 @@ export function summaryOf(
         avatarUrl: resolveUrl(room.seed.counterpart.avatarPath),
       },
       access: room.access,
-      lastMessage: shown,
+      lastMessage: last,
       unread: room.unread,
       activity: activityOf(room),
       updatedAt: last === null ? 0 : last.at,

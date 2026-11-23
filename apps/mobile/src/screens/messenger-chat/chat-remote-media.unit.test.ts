@@ -448,8 +448,8 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     expect(env.lines().at(-1)?.kind).toBe("media-notice");
     const row = env.source.snapshot().rooms.find((room) => room.roomId === "duksu");
     expect(row?.lastMessage?.kind).toBe("voice");
-    // 시각 · 정렬은 실제 마지막 줄 그대로.
-    expect(row?.updatedAt).toBe(env.lines().at(-1)?.at);
+    // 시각 · 정렬도 보이는 그 줄의 것 — 내용과 시각이 서로 다른 줄을 가리키지 않는다.
+    expect(row?.updatedAt).toBe(row?.lastMessage?.at);
   });
 
   test("CM-U32 받지 못하면 대기 줄이 회색 안내로 바뀌고 false — 사진 · 무료 줄은 서지 않는다", async () => {
