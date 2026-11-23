@@ -162,7 +162,51 @@ test("FS-UI7. 알림으로 연 인물의 스토리가 서면 그 보기를 연�
 test("FS-UI7. 목록이 이미 서 있을 때(탭 유지) 알림이 오면 그 스토리를 연다", async () => {
   await mount(live);
   expect(screen.queryByTestId(ids.viewer)).toBeNull();
-  act(() => putPendingStoryOpen("daeun"));
+  await act(async () => {
+    putPendingStoryOpen("daeun");
+    for (let i = 0; i < 6; i += 1) await vi.advanceTimersByTimeAsync(1);
+  });
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1);
+  });
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+});
+
+test("FS-UI7. 목록이 선 뒤에 올라온 스토리도 알림이 오면 다시 읽어 연다", async () => {
+  const lists: (readonly FriendStory[])[] = [[], live];
+  const port: FriendStoriesPort = {
+    load: async () => lists.shift() ?? live,
+    imageUrl: (path) => `https://cdn/${path}`,
+    seen: { seenIds: () => new Set(), markSeen: () => undefined },
+  };
+  render(
+    <ChatEventsContext.Provider value={{ sink: vi.fn(), roomId: null }}>
+      <MessengerListScreen
+        source={makeSource(seed())}
+        wallet={createCoinWallet({ earned: 100 })}
+        onOpenRoom={vi.fn()}
+        onGoToJourney={vi.fn()}
+        onLayerChange={vi.fn()}
+        notice={null}
+        onNoticeShown={vi.fn()}
+        access="open"
+        onSignIn={vi.fn()}
+        friends={friendsPort()}
+        stories={port}
+      />
+    </ChatEventsContext.Provider>,
+  );
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(screen.queryByTestId(ids.row)).toBeNull();
+  await act(async () => {
+    putPendingStoryOpen("daeun");
+    for (let i = 0; i < 6; i += 1) await vi.advanceTimersByTimeAsync(1);
+  });
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1);
+  });
   expect(screen.getByTestId(ids.viewer)).not.toBeNull();
 });
 

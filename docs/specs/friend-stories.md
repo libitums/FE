@@ -71,8 +71,9 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI1 목록 → 친구 스토리 → 칩 → 대화방으로 이동, 보낸 글에 인용 카드, 서버 요청 몸 `story_id`, 이벤트 `friend_story_replied { via: chip }`.
 - FSI2 답장 칸 → 대화방 인용 띠 → 입력 보냄 → 인용 카드 · `story_id` · `via: typed`, 띠가 사라짐.
 - FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
-- FSI4 서버 기록의 `story`가 인용 카드로 다시 섬(앱 다시 켬).
-- FSI5 알림 `companion-chat` + `story: true` → 메신저 목록 위 그 인물의 스토리 보기, 스토리가 없으면 방.
+- FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).
+- FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
+  · Android `PushTargetJsonTest`(불리언 `story` 옮김).
 - FSI6 스토리 RPC 실패 · 손님 → 추천 줄 그대로, 오류 없음.
 
 ### 2.4 서버

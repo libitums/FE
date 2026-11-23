@@ -173,6 +173,8 @@ final class PushNotificationController {
         Object value = source.opt(key);
         if (value instanceof String) target.putString(key, (String) value);
       }
+      // 친구 스토리 알림(ADR-0177 D7) — 불리언 true일 때만. 옛 JS는 이 칸을 모르고 방을 연다.
+      if (Boolean.TRUE.equals(source.opt("story"))) target.putBoolean("story", true);
       return target;
     } catch (JSONException error) {
       return null;

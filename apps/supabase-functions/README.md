@@ -831,6 +831,9 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 
 ## 친구 스토리 (20261228, ADR-0177)
 
+> 적용 순서 함정: 운영에 이미 `20261229120000_companion_media_sample.sql`(더 늦은 번호)이 적용돼 있으면 `supabase db push`가 20261228 둘을 건너뛴다 —
+> `supabase db push --include-all`로 넣는다(`schema_migrations`에 두 버전이 남는지 확인).
+
 `migrations/20261228120000_friend_stories.sql`(표 · 함수) + `20261228130000_friend_stories_pool.sql`(묶음 내용 — 정본 `docs/content/friend-stories.json`) ·
 Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`(목적지 `story`) · `companion-proactive`(하루 한 번 합산) · 예약 `cron/friend-stories.sql`.
 

@@ -46,7 +46,7 @@ export type UseChatRoomProps = {
   readonly edges: KeyboardDockEdges;
   readonly onExit: () => void;
   /** 보내기 관문입니다(턴 · 엽전). 거짓이면 글을 그대로 두고 아무것도 보내지 않습니다. 기본은 늘 참. */
-  readonly authorizeSend?: () => boolean;
+  readonly authorizeSend?: (idea: boolean) => boolean; // idea = 답장 보기(아이디어)로 보냄
   /** 비회원(ADR-0166) — 방을 열 때 생년을 묻지 않습니다(2026-11-20). */
   readonly guest?: boolean;
   /** 입력 줄의 글을 보낼 때 한 번 꺼내는 선택 칸(친구 스토리 인용, ADR-0177 D5 — 꺼내면 띠가 떨어짐). 답장 보기에는 싣지 않습니다. */
@@ -163,7 +163,7 @@ export function useChatRoom({
     const current = stateRef.current;
     if (idea !== undefined && current.slot.kind !== "ideas") return; // 판이 이미 접힘 — 같은 렌더의 연속 탭
     if (!canSend(idea ?? current.text)) return;
-    if (authorizeRef.current !== undefined && !authorizeRef.current()) return;
+    if (authorizeRef.current !== undefined && !authorizeRef.current(idea !== undefined)) return;
     const options = idea === undefined ? takeOptionsRef.current?.() : undefined;
     try {
       if (options === undefined) source.sendText(roomId, idea ?? current.text);

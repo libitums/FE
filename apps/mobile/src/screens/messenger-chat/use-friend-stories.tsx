@@ -55,7 +55,8 @@ export function useFriendStories({
 }): FriendStoriesUi {
   const { emit } = useChatEvents();
   const [stories, setStories] = useState<readonly FriendStory[] | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  // 읽기가 끝난 횟수 — 알림으로 들어오면 다시 읽고(목록이 선 뒤에 올라온 스토리), 끝난 뒤 그 스토리를 엽니다(리뷰 m1).
+  const [loadCount, setLoadCount] = useState(0);
   const [, setSeenVersion] = useState(0);
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [pendingVersion, setPendingVersion] = useState(0);
@@ -76,12 +77,12 @@ export function useFriendStories({
       .then((list) => {
         if (!live) return;
         setStories(list);
-        setLoaded(true);
+        setLoadCount((count) => count + 1);
       });
     return () => {
       live = false;
     };
-  }, [hasLoader]);
+  }, [hasLoader, pendingVersion]);
 
   const now = Date.now();
   const seen = port?.seen.seenIds() ?? new Set<string>();
@@ -114,13 +115,13 @@ export function useFriendStories({
 
   // 알림(`story: true`)으로 들어왔으면 읽기가 끝난 뒤 그 인물의 스토리를, 없으면 열린 방을 엽니다(D7).
   useEffect(() => {
-    if (!loaded && port !== undefined) return;
+    if (loadCount === 0 && port !== undefined) return;
     const characterId = takePendingStoryOpen();
     if (characterId === null) return;
     if (open({ from: "push", characterId })) return;
     const room = rooms.find((each) => each.counterpart.id === characterId);
     if (room !== undefined && room.access.kind === "open") onOpenRoom(room.roomId);
-  }, [loaded, pendingVersion]);
+  }, [loadCount, port === undefined ? pendingVersion : -1]);
 
   const close = () => setViewer(null);
 

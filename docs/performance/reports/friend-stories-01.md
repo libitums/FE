@@ -29,7 +29,7 @@
 
 | 대상 | 앞(main `9a6fa106`) | 뒤 |
 |---|---|---|
-| `main.lynx.bundle` | CI 표 참고 | 5,601,186 B, 천장 5,850,000 B |
+| `main.lynx.bundle` | 5,506.8 kB(CI) | 5,595.1 kB(CI, +88.3 kB) · 로컬 실측 5,603,496 B, 천장 5,850,000 B |
 | `static/image` | 같음 | 3,107.1 kB(그림을 번들에 넣지 않음) |
 | `packages/ui-lynx/dist` | 같음 | 570.0 kB(바꾸지 않음) |
 

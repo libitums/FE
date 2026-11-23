@@ -13,14 +13,22 @@ import { StoryQuoteBar } from "./StoryQuote";
 type Attached = { readonly quote: ChatStoryQuote; readonly free: boolean };
 
 export type StoryReplyApi = {
-  /** 붙은 인용이 무료 안내인가 — 그렇다면 앱의 체험 · 엽전 관문을 지나지 않습니다(정본은 서버, D6). */
-  readonly freeAttached: () => boolean;
+  /**
+   * 입력 줄 글의 관문 — 붙은 인용이 무료 안내면 앱의 체험 · 엽전 관문을 지나지 않고 `chat_message_sent`(무료)만 냅니다(정본은 서버, D6).
+   * 답장 보기(아이디어)나 인용이 없으면 보통 관문(`gate`)입니다.
+   */
+  readonly authorize: (idea: boolean, gate: () => boolean) => boolean;
   /** 입력 줄의 글을 보낼 때 한 번 — 인용을 꺼내고 띠를 뗍니다. 붙은 것이 없으면 undefined. */
   readonly takeSendOptions: () => ChatSendOptions | undefined;
   readonly bar: (name: string) => ReactNode;
 };
 
-export function useStoryReply(roomId: string, source: ChatSource): StoryReplyApi {
+/** `gate` = 보통 보내기 관문(체험 · 엽전 · 답 기다림). 무료가 아닌 칩 말도 이 관문을 거칩니다. */
+export function useStoryReply(
+  roomId: string,
+  source: ChatSource,
+  gate: () => boolean,
+): StoryReplyApi {
   const { emit } = useChatEvents();
   const [handoff] = useState(() => takeStoryReplyHandoff(roomId));
   const [attached, setAttached] = useState<Attached | null>(() =>
@@ -37,15 +45,24 @@ export function useStoryReply(roomId: string, source: ChatSource): StoryReplyApi
       free: free ? "yes" : "no",
     });
 
-  // 칩 말 — 방이 선 뒤 한 번, 인용과 함께 보냅니다.
+  const freeSent = (characterId: string) => {
+    emit({ name: "chat_message_sent", surface: "chat", characterId, paid: false, cost: "0" });
+    return true;
+  };
+
+  // 칩 말 — 방이 선 뒤 한 번, 인용과 함께 보냅니다. 무료가 아니면 보통 관문(엽전이 모자라면 상점 안내)을 거칩니다.
   useEffect(() => {
     if (handoff === null || handoff.text === null) return;
+    if (!(handoff.free ? freeSent(handoff.quote.characterId) : gate())) return;
     source.sendText(roomId, handoff.text, { story: handoff.quote });
     replied("chip", handoff);
   }, []);
 
   return {
-    freeAttached: () => attachedRef.current?.free === true,
+    authorize: (idea, normal) => {
+      const current = attachedRef.current;
+      return !idea && current?.free === true ? freeSent(current.quote.characterId) : normal();
+    },
     takeSendOptions: () => {
       const current = attachedRef.current;
       if (current === null) return undefined;

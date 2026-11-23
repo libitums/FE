@@ -375,8 +375,8 @@ end $$;
 
 -- ------------------------------------------------------------------ 알림
 
--- 알림 후보 — 스위치 · 기기 · 방(가장 새 기기 뒤에 그 인물에게 말함) · 선톡 설정 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시 · 오늘 보낸 알림 없음
--- (모든 묶음 — 선톡 · 스토리 · 자동 캠페인). 사람마다 가장 새 스토리 하나.
+-- 알림 후보 — 스위치(알림 · 스토리) · 기기 · 방(가장 새 기기 뒤에 그 인물에게 말함) · 선톡 설정 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시 ·
+-- 오늘 보낸 알림 없음(모든 묶음 — 선톡 · 스토리 · 자동 캠페인) · 오늘 스토리 묶음 줄 없음(대조군 포함). 사람마다 가장 새 스토리 하나.
 create function public.companion_story_push_candidates(p_now timestamptz, p_limit integer)
 returns jsonb
 language sql
@@ -428,6 +428,17 @@ as $$
       and companion.user_timezone(pr.user_id) is not null
       and extract(hour from p_now at time zone companion.user_timezone(pr.user_id)) between 9 and 20
       and not companion.pushed_today(pr.user_id, p_now)
+      -- 스토리 스위치가 꺼지면(또는 시험 계정만이면) 알림도 끊는다 — 앱이 그 스토리를 보여 줄 수 없다(리뷰 M2).
+      and companion.stories_on(pr.user_id)
+      -- 스토리 묶음은 대조군까지 하루 한 줄 — 대조군이 매시 다시 기록되지 않게(리뷰 M1).
+      and not exists (
+        select 1 from public.push_campaign_sends s
+        where s.user_id = pr.user_id and s.series in ('스토리', '스토리 시험')
+          and s.run_at >= (
+            date_trunc('day', p_now at time zone companion.user_timezone(pr.user_id))
+              at time zone companion.user_timezone(pr.user_id)
+          )
+      )
     limit greatest(p_limit, 0)
   ) x
 $$;

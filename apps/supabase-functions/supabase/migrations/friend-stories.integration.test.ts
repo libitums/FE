@@ -601,18 +601,43 @@ test("FS17. 알림 후보에서 빠지는 사람 — 기기 없음 · 기기 뒤
   expect(await candidates()).toEqual([]); // 6시간 넘음
 });
 
-test("FS18. 하루 한 번 합산 — 오늘(현지) 선톡 · 스토리 · 다른 캠페인이 나갔으면 빠지고, 대조군 · 어제 것은 세지 않는다", async () => {
+test("FS18. 하루 한 번 합산 — 오늘(현지) 선톡 · 스토리 · 다른 캠페인이 나갔으면 빠지고, 어제 것 · 선톡 대조군은 세지 않는다", async () => {
   await settings("story_push = 'on'");
   await pool("mina-01", "mina");
   await live("mina", "mina-01", "2 hours");
   await pushReady(member);
   await sent(member, "선톡", "now() - interval '3 days'");
-  await sent(member, "스토리", "now()", "control");
+  await sent(member, "선톡", "now()", "control");
   expect((await candidates()).length).toBe(1);
   await sent(member, "선톡", "now() - interval '1 minute'");
   expect(await candidates()).toEqual([]);
   await db.admin.query("delete from public.push_campaign_sends");
   await sent(member, "tutorial-rest", "now() - interval '1 minute'");
+  expect(await candidates()).toEqual([]);
+});
+
+test("FS18b. 스토리 대조군도 하루 한 줄 — 오늘(현지) 스토리 · 스토리 시험 줄이 있으면 후보(group 무관)에서 빠진다", async () => {
+  await settings("story_push = 'on'");
+  await pool("mina-01", "mina");
+  await live("mina", "mina-01", "2 hours");
+  await pushReady(member);
+  expect((await candidates()).length).toBe(1);
+  await sent(member, "스토리", "now() - interval '1 minute'", "control");
+  expect(await candidates()).toEqual([]);
+  await db.admin.query("delete from public.push_campaign_sends");
+  await sent(member, "스토리 시험", "now() - interval '1 minute'", "control");
+  expect(await candidates()).toEqual([]);
+});
+
+test("FS18c. 스토리 스위치가 꺼지거나 시험 계정만이면 알림 후보에서도 빠진다(알림 스위치가 on이어도)", async () => {
+  await settings("story_push = 'on'");
+  await pool("mina-01", "mina");
+  await live("mina", "mina-01", "2 hours");
+  await pushReady(member);
+  expect((await candidates()).length).toBe(1);
+  await settings("friend_stories = 'testers'");
+  expect(await candidates()).toEqual([]);
+  await settings("friend_stories = 'off'");
   expect(await candidates()).toEqual([]);
 });
 

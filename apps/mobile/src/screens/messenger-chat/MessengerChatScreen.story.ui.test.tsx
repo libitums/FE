@@ -14,6 +14,7 @@ import type { ChatMessage } from "./chat-source.contract";
 import { friendStoriesTestIds as ids, type StoryReplyHandoff } from "./friend-stories.contract";
 import { messengerChatTestIds as chat } from "./messenger-chat.contract";
 import { putStoryReplyHandoff, takeStoryReplyHandoff } from "./story-reply-handoff";
+import { createTrialStore } from "./trial-store";
 
 // `ui` 계층(FS-UI9): 대화방이 스토리 답장 넘김을 받는다(ADR-0177 D5) — 칩 말은 곧바로 인용과 함께 보내고, 답장 칸이면 입력 줄 위
 // 인용 띠를 붙여 다음 글에 싣는다. 무료 안내인 답장은 보내기 관문(체험 · 엽전)을 지나지 않고 이벤트가 난다.
@@ -96,6 +97,27 @@ test("FS-UI9. 인용 띠를 ×로 떼면 보내는 글에 인용이 없다", () 
   tapId(chat.send);
   expect(myMessages(source.thread("mina")?.messages ?? [])[0]).not.toHaveProperty("story");
   expect(outgoingCount()).toBe(1);
+});
+
+test("FS-UI9. 무료 칩은 chat_message_sent(paid false · cost 0)를 내고, 무료가 아닌 칩은 보내기 관문을 거친다(엽전 없으면 보내지 않음)", () => {
+  putStoryReplyHandoff(handoff("괜찮아요?"));
+  const sink = vi.fn();
+  mountChat({ eventSink: sink, tier: "free", trial: createTrialStore(0), coinBalance: 0 });
+  expect(sink.mock.calls.map(([e]) => e)).toContainEqual(
+    expect.objectContaining({ name: "chat_message_sent", paid: false, cost: "0" }),
+  );
+  cleanup();
+  putStoryReplyHandoff(handoff("괜찮아요?", false));
+  const { source } = mountChat({ tier: "free", trial: createTrialStore(0), coinBalance: 0 });
+  expect(myMessages(source.thread("mina")?.messages ?? [])).toHaveLength(0);
+});
+
+test("FS-UI9. 무료 인용 띠가 붙어 있어도 추천 답변(아이디어)은 보통 관문을 거친다", () => {
+  putStoryReplyHandoff(handoff(null));
+  const { source } = mountChatOpen({ tier: "free", trial: createTrialStore(0), coinBalance: 0 });
+  tapId(chat.ideasButton);
+  tapId(chat.idea(0));
+  expect(myMessages(source.thread("mina")?.messages ?? [])).toHaveLength(0);
 });
 
 test("FS-UI9. 다른 방의 넘김은 꺼내지 않는다", () => {
