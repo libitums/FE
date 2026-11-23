@@ -85,6 +85,8 @@ export function TicketStatModal({
         </view>
       </view>
 
+      {/* 머리와 숫자 사이 여백 — 아래 안내 줄이 서면(엽전으로 1장의 결과) 줄어들어 버튼이 화면 안에 남습니다. */}
+      <view className="ticket-modal-top-gap" />
       <view
         className={`ticket-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
         accessibility-element={true}

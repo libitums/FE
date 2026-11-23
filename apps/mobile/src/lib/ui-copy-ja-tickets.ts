@@ -37,10 +37,14 @@ export const ticketsJa: TicketsCopy = {
     slotReady: "使用可",
     message: "レッスン1回につきチケットを1枚使います。\n使ったチケットは1時間で回復します。",
   },
-  getMore: "チケットを増やす",
+  getMore: "チケットを1枚もらう",
+  getMoreLabel: (price) => `コイン${String(price)}枚でチケットを1枚もらう`,
   moreNotice: {
-    granted: "チケットを手に入れる方法は近日公開です。今日は無料チケットをどうぞ！",
-    notGranted: "チケットを手に入れる方法は近日公開です。",
+    bought: "チケットを1枚追加しました。",
+    short: (more) => `コインが足りません。あと${String(more)}枚必要です。`,
+    full: "チケットはすでに満タンです。",
+    signIn: "コインを使うにはログインしてください。",
+    failed: "チケットを受け取れませんでした。もう一度お試しください。",
   },
   outOfTickets: {
     title: "チケットがありません",

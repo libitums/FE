@@ -52,10 +52,14 @@ export const ticketsEn: TicketsCopy = {
     slotReady: "Ready",
     message: "Each lesson uses one ticket.\nA used ticket charges back in 1 hour.",
   },
-  getMore: "Get more tickets",
+  getMore: "Get 1 ticket",
+  getMoreLabel: (price) => `Get 1 ticket for ${String(price)} coins`,
   moreNotice: {
-    granted: "More ways to get tickets are coming soon. Here's a free ticket for today!",
-    notGranted: "More ways to get tickets are coming soon.",
+    bought: "1 ticket added.",
+    short: (more) => `Not enough coins. You need ${String(more)} more.`,
+    full: "Your tickets are already full.",
+    signIn: "Sign in to use coins.",
+    failed: "Couldn't get a ticket. Please try again.",
   },
   outOfTickets: {
     title: "Out of tickets",

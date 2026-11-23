@@ -53,10 +53,14 @@ export const ticketsEs: TicketsCopy = {
     slotReady: "Listo",
     message: "Cada lección usa un boleto.\nUn boleto usado se recarga en 1 hora.",
   },
-  getMore: "Conseguir más boletos",
+  getMore: "Conseguir 1 boleto",
+  getMoreLabel: (price) => `Conseguir 1 boleto por ${String(price)} monedas`,
   moreNotice: {
-    granted: "Pronto habrá más formas de conseguir boletos. ¡Aquí tienes uno gratis por hoy!",
-    notGranted: "Pronto habrá más formas de conseguir boletos.",
+    bought: "Se añadió 1 boleto.",
+    short: (more) => `No tienes suficientes monedas. Te faltan ${String(more)}.`,
+    full: "Ya tienes todos los boletos.",
+    signIn: "Inicia sesión para usar monedas.",
+    failed: "No se pudo conseguir el boleto. Inténtalo de nuevo.",
   },
   outOfTickets: {
     title: "Sin boletos",

@@ -3,6 +3,11 @@
 
 export const ticketCapacity = 3;
 export const ticketRefillMs = 3_600_000;
+/**
+ * 「Get 1 ticket」 한 장의 엽전 값입니다(사용자 결정 2026-11-23). 정본은 서버 설정 `companion.settings.ticket_price`이고, 버튼은 이 값을
+ * 보입니다 — 서버 값을 바꾸면 이것도 함께 바꿉니다(응답의 값은 이벤트에 실립니다).
+ */
+export const ticketPriceCoins = 20;
 
 export type TicketLedger = {
   readonly refillAtMs: number;
@@ -24,7 +29,7 @@ export type TicketStatus = {
 };
 
 // 원장은 단조 증가하는 세 값입니다 — 두 기기의 원장을 필드마다 큰 값으로 합쳐도 되게 하려는 모양입니다.
-//   `refillAtMs` 쓰기로만 늘어나는 「가득 차는 시각」 · `grantedMs` 무료로 받은 시간의 합 · `grantDay` 마지막으로 받은 날.
+//   `refillAtMs` 쓰기로만 늘어나는 「가득 차는 시각」 · `grantedMs` 받은(무료 · 엽전으로 산) 시간의 합 · `grantDay` 옛 하루 무료를 마지막으로 받은 날.
 // 실효 충전 완료 시각은 `refillAtMs − grantedMs`입니다. 쓰는 쪽이 늦추고 받는 쪽이 당깁니다. 합칠 때 쓰기는
 // 큰 `refillAtMs`로, 받기는 큰 `grantedMs`로 남아 「남은 장수가 적은 쪽」이 되면서도 받은 1장을 잃지 않습니다.
 
@@ -66,15 +71,13 @@ export function spendTicket(ledger: TicketLedger, nowMs: number): TicketLedger |
   return { ...ledger, refillAtMs: effective + ticketRefillMs + ledger.grantedMs };
 }
 
-/** 하루(`day` = 기기 지역 날짜) 한 번 한 장을 바로 채웁니다. 가득이거나 그날 이미 받았으면 `null`입니다. */
-export function grantFreeTicket(
-  ledger: TicketLedger,
-  nowMs: number,
-  day: string,
-): TicketLedger | null {
-  if (ledger.grantDay === day) return null;
+/**
+ * 엽전으로 산 1장을 바로 채웁니다(사용자 결정 2026-11-23 — 하루 한 장 무료를 갈음). 가득이면 `null` — 부르는 쪽은 엽전을 빼기
+ * 전에 이것으로 가득인지 봅니다. `grantDay`(옛 하루 무료 기록)는 합치기 호환을 위해 그대로 둡니다.
+ */
+export function addBoughtTicket(ledger: TicketLedger, nowMs: number): TicketLedger | null {
   if (ticketStatusAt(ledger, nowMs).available === ticketCapacity) return null;
-  return { ...ledger, grantedMs: ledger.grantedMs + ticketRefillMs, grantDay: day };
+  return { ...ledger, grantedMs: ledger.grantedMs + ticketRefillMs };
 }
 
 export function mergeTicketLedgers(a: TicketLedger, b: TicketLedger): TicketLedger {

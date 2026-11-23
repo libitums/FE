@@ -1,5 +1,5 @@
 // 학습 티켓의 앱 쪽 상태입니다 — 원장(진행 훅이 저장 · 병합)을 읽어 지금 장수를 내고, 새 레슨의 문지기 ·
-// 머리 모달(E1) · 티켓 없음 대화상자(E6m) · 「Get more tickets」를 묶습니다. 시각은 기기 시계입니다.
+// 머리 모달(E1) · 티켓 없음 대화상자(E6m) · 「Get 1 ticket」(엽전 20으로 1장, 사용자 결정 2026-11-23)을 묶습니다. 시각은 기기 시계입니다.
 //
 // 다시 그리는 때: 모달이나 대화상자가 떠 있으면 1초마다(카운트다운), 아니면 다음 한 장이 차는 순간 한 번(칩 숫자).
 //
@@ -12,12 +12,15 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import { motion as motionTokens } from "@libitums/design-tokens";
 import { motionDurationMs } from "@libitums/ui-lynx/motion";
 
-import { grantFreeTicket, ticketStatusAt } from "../lib/learning-tickets";
+import { ticketStatusAt } from "../lib/learning-tickets";
 import type { TicketLedger, TicketStatus } from "../lib/learning-tickets";
-import { localDayFrom } from "../lib/progress-api";
+import { ticketPurchaseClient, ticketRequestId } from "../lib/ticket-purchase-api";
+import type { TicketPurchase } from "../lib/ticket-purchase-api";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { TicketMoreResult, TicketSurface } from "../screens/tickets/tickets.contract";
+import { reportServerBalance } from "./server-balance-report";
 import { createTicketStart } from "./ticket-gate";
+import { buyOneTicket } from "./ticket-purchase-flow";
 import type { TicketStart } from "./ticket-gate";
 
 export type TicketHeaderWiring = {
@@ -77,6 +80,8 @@ export function setTicketDropWaitForTests(enabled: boolean): void {
 export type LearningTicketsOptions = {
   /** 머리 칩이 화면에 서 있는가입니다(탭 루트). 거짓이면 쓴 뒤 바로 엽니다. */
   readonly chipShown: boolean;
+  /** 엽전으로 1장 사기(서버 RPC) — 없으면 앱 결선(저장된 로그인)입니다. 단위 테스트가 바꿔 끼웁니다. */
+  readonly buy?: (requestId: string) => Promise<TicketPurchase | "signed-out" | null>;
 };
 
 export function useLearningTickets(
@@ -126,12 +131,25 @@ export function useLearningTickets(
     setTickets(next);
   };
 
-  const getMore = (surface: TicketSurface): TicketMoreResult => {
+  // 사는 중이면 새 탭을 무시합니다 — 같은 렌더 안의 연타도 막도록 ref로 듭니다(엽전이 두 번 빠지지 않게).
+  const buying = useRef(false);
+  const getMore = (surface: TicketSurface, show: (more: TicketMoreResult) => void): void => {
     "background only";
-    const granted = grantFreeTicket(ledger.current, Date.now(), localDayFrom(new Date()));
-    if (granted !== null) write(granted);
-    eventSink?.({ name: "ticket_more_tapped", surface, granted: granted !== null });
-    return { granted: granted !== null };
+    if (buying.current) return;
+    buying.current = true;
+    show({ kind: "buying" });
+    void buyOneTicket({
+      ledger: () => ledger.current,
+      write,
+      now: () => Date.now(),
+      buy: options.buy ?? ((requestId) => ticketPurchaseClient().buy(requestId)),
+      onBalance: reportServerBalance,
+      requestId: () => ticketRequestId(),
+    }).then(({ more, outcome, price }) => {
+      buying.current = false;
+      show(more);
+      eventSink?.({ name: "ticket_more_tapped", surface, result: outcome, price: String(price) });
+    });
   };
 
   const gate = createTicketStart({
@@ -162,7 +180,7 @@ export function useLearningTickets(
     header: {
       status,
       more: modalMore,
-      onGetMore: () => setModalMore(getMore("ticket_modal")),
+      onGetMore: () => getMore("ticket_modal", setModalMore),
       onModalChange: (open) => {
         setModalOpen(open);
         if (!open) setModalMore(null);
@@ -176,10 +194,10 @@ export function useLearningTickets(
         : {
             status,
             more: blocked.more,
-            onGetMore: () => {
-              const more = getMore("out_of_tickets");
-              setBlocked((current) => (current === null ? null : { ...current, more }));
-            },
+            onGetMore: () =>
+              getMore("out_of_tickets", (more) =>
+                setBlocked((current) => (current === null ? null : { ...current, more })),
+              ),
             onStartLesson: () => {
               const open = blocked.open;
               setBlocked(null);

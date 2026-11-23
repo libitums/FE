@@ -177,7 +177,7 @@ test("GM6 비회원 티켓 모달 Get more tickets → 로그인 권유(tickets)
   await flush();
 
   expect(present(access.prompt)).toBe(true);
-  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Get more tickets");
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Get 1 ticket");
   expect(present("ticket-modal-more-notice")).toBe(false);
   expect(events.filter((event) => event.name === "ticket_more_tapped")).toEqual([]);
   tapButtonIn("ui-lynx-dialog-action-sign-in");
