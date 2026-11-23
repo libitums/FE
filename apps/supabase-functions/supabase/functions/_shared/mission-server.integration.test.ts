@@ -375,8 +375,12 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
     });
     // ③ 성공 확정 판이 열린 채 새 판을 시작하면 그 판은 그만둠이 아니라 채점 대기
     const left = await succeed("u01-water");
-    const next = await start("u06-cafe");
-    expect(next.abandoned ?? []).not.toContain(left.conversationId);
+    await start("u06-cafe");
+    const leftRow = await db.admin.query(
+      "select status, mission_state->>'closedBy' as by from companion.conversations where id = $1",
+      [left.conversationId],
+    );
+    expect(leftRow.rows[0]).toEqual({ status: "pending", by: "new_mission" });
     expect(await finish({ conversation_id: left.conversationId })).toMatchObject({
       status: "graded",
     });

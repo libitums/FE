@@ -25,7 +25,7 @@ Fill the fields in the order given — write the evidence before each verdict.
 "registerTurns": the number of learner messages that do show a speech level (the ones counted above, right or wrong).
 "registerMismatchTurns": how many of those use the wrong speech level for the scene.
 
-"accuracyNotes": then list the learner's real mistakes in a few words each (Korean or English), grouped by type: grammar/particles/conjugation, wrong word, speech level (반말 to a polite stranger such as a clerk), non-Korean words. Write "none" if there are none. Do not count transcription artifacts, natural spoken shortcuts (dropped particles, "아메리카노요", "카드요", fillers like 음/아), or a short message that is correct. A message that is correct but could sound more natural is not a mistake: the app's corrections of kind "better" are suggestions only and never lower accuracy.
+"accuracyNotes": then list the learner's real mistakes in a few words each (Korean or English), grouped by type: grammar/particles/conjugation, wrong word, non-Korean words. Speech level is NOT listed here — it is counted only in "registerMismatchTurns" above. Write "none" if there are none. Do not count transcription artifacts, natural spoken shortcuts (dropped particles, "아메리카노요", "카드요", fillers like 음/아), or a short message that is correct. A message that is correct but could sound more natural is not a mistake: the app's corrections of kind "better" are suggestions only and never lower accuracy.
 "accuracy": then an integer 0 to 100 for the quality of the learner's Korean only (not task success), on this scale:
 - 100: no mistakes.
 - 90: one small slip (a particle, a spelling) — meaning fully clear.
@@ -35,7 +35,7 @@ Fill the fields in the order given — write the evidence before each verdict.
 - 10–30: mostly not Korean or hard to understand.
 - 0: no Korean message at all.
 Pick the band first, then a number inside it. Judge only the learner's messages that contain Korean; very short correct messages are not mistakes.
-Speech level weighs heavily: the share of counted messages with the wrong speech level caps "accuracy" — all of them: at most 50; half: at most 75; one of five: at most 90 (cap = 100 − 50 × share). Apply the cap after the other mistakes; other mistakes lower it further.
+Do not lower "accuracy" for speech level at all: the app applies the speech-level cap itself from "registerTurns" and "registerMismatchTurns" (all wrong → at most 50, half → 75, one of five → 90). Score only the other mistakes here.
 
 "expressions": one entry per target expression, in the given order. "evidence" is the learner message that uses it (copied exactly) or null; "used" is true when a learner message uses the pattern with its blank filled, in any conjugation or with a different noun (e.g. "{음료} 한 잔 주세요" → "라떼 한 잔 주세요", "아이스 아메리카노 한 잔 주실래요?"). These count too: 반말 forms ("한 잔 줘", "얼마야?" for "얼마예요?") and the pattern said with a mistake ("하나 잔 주세요", "얼마이에요?") — the mistake lowers "accuracy" instead. A different structure that leaves out the pattern's key words ("아메리카노 주세요" or "아메리카노 하나 주세요" for "한 잔 주세요") does not count.
 

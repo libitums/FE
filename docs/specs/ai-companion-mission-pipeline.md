@@ -355,22 +355,67 @@ Scribe로 받아 적고 → 플레이어의 스트리밍 턴(`turn-stream`, 답 
 - **곁가지 질문 되풀이**: 직원이 따뜻한 것 · 아이스를 턴을 넘겨 다시 묻는 일이 남았다(규칙은 「한 번」). 판정 · 점수에는 영향 없음.
 - **교정의 이상한 「ok」**: 「너 AI지?」에 고친 문장이 원문 그대로인 교정이 붙은 일(1단계 교정 프롬프트 — 미션 쪽에서 「고친 문장 = 원문이면 버림」을 더할지는 C와 함께 볼 일).
 
-## 10. 앱 인계 (앱이 구현할 것 — 한곳에 모음)
+## 10. 앱 인계 — 앱 화면 초안(`feat/companion-mission-app`)에 옮길 것 전부
 
-1. **서버 쪽은 이미 있다**: `chat-send` 미션 갈래가 판정 · 연출 지시 · 거르개를 한다. 앱은 SSE 순서(`start → delta → correction → mission → done`)를 그대로 받는다. 거르기 상태의 성인 턴은 `delta`가 조금 늦게(답이 다 모인 뒤 한꺼번에) 온다.
-2. **성공 확정 · 계속하기**(ADR-0177 D6): `mission.requiredDone`이 참이고 `ended`가 null이면 「계속하기 / 끝내기」. 끝내기는 `mission-finish`를 `abandon` 없이.
-3. **음성**(§6.5): 녹음 16kHz mono WAV(0.4 ~ 30초), 서버 STT로 갈 경우 `mission-stt` · `mission-tts` 엔드포인트 제안, 자동 재생 규칙(말 조각만, 마이크를 누르면 멈춤), 받아 적은 글 처리, 음성 문구 표.
-4. **첫 소리 당기기**: 답 조각이 오는 대로(`delta`) 첫 말 조각이 끝나면 TTS를 시작한다. 실험실 플레이어는 `reply`(답 전체)에서 시작한다 — 앱은 더 일찍 시작할 수 있다.
-5. **리포트 새 구역**(§5.7): 결과 한 줄 · 이렇게 말하면 됐어요 · 점수 항 · 잘한 점 · 꼭 볼 고친 문장 · 다음 도전. 칸이 없으면 그리지 않는다. 문구 표(영어 확정, es · ja · id · vi 번역 필요).
-6. **채점 중 화면**: 채점이 5 ~ 6초 걸린다 — 「Scoring your conversation…」을 그만큼 보인다. `grading_failed`면 같은 요청으로 채점만 다시.
-7. **미션 파일 version 2**: 장면 글이 바뀌어 진입 대사 · 목표 글 번역 캐시가 새로 만들어진다(서버가 판 버전별로 캐시).
+> 이 절만 보고 구현할 수 있게 쓴다(2026-11-23 기준, 서버 `feat/companion-mission-e2e-int`). 참고 구현은 대시보드 플레이어
+> (`dashboards-web` `apps/contents/src/companion/missionPlayer/`). 문구는 영어만 확정 — es · ja · id · vi는 번역이 필요하다.
 
-## 11. 사용자 결정 필요 (한곳에 모음)
+### 10.1 서버 계약에서 바뀐 · 새 칸
 
-1. **받아 적은 글의 기본값** — 입력 칸에 넣고 학습자가 확인 뒤 보내기(B 권장: STT 오류가 정확도 점수를 깎지 않게) vs 바로 보내기(회화 흐름, 앱 초안의 동작).
-2. **앱의 STT 방식** — 기기 음성 인식(지금 앱의 `useSpeechAttempt`) 유지 vs 서버 Scribe(정확도 · 확신도 · 같은 글로 교정 · 채점).
-3. **TTS 모델 `eleven_v4_turbo`의 귀 확인** — 지연은 가장 좋다(첫 바이트 0.24초). 자연스러움은 사람이 들어 봐야 한다. 단가 미확인.
-4. **반말의 무게** — 점원에게 반말 내내면 정확도 75 ~ 85 띠(C의 눈금), 「줘요」는 교정 대상(이번에 미션 교정 규칙으로 넣음). 이 무게가 맞는지.
-5. **점수 항 구역을 앱에 낼지** — 데이터에는 늘 있다(`scoreParts`).
-6. **성공 확정 뒤 방치 · 그만두기** — 성공 확정 판을 화면을 떠나며 두면 30분 뒤 리포트 없이 닫힌다. 떠날 때 끝내기를 불러 리포트를 남길지(ADR-0177 D6 앱 인계 ④).
+| 어디 | 칸 | 뜻 |
+| --- | --- | --- |
+| `companion_list_missions`(`missionListSchema`) | `pendingReports?: [{conversationId, missionId, endedAt}]` | **채점 대기 판** — 필수 목표를 이룬 채 방치(30분) · 새 판 시작으로 닫혀 아직 채점 안 된 판. 앱은 목록을 열 때 판마다 `mission-finish {conversation_id}`를 불러 리포트를 받는다(그때 채점, 5 ~ 6초). 몇 번 불러도 리포트는 하나(동시에 두 번 불리면 채점 호출이 두 번 날 수 있지만 저장은 하나 — 첫 결과) |
+| `mission-finish` | `abandon: true`의 뜻 | **필수 목표를 이룬 판이면 끝내기와 같다**(`status: "graded"`, 리포트, `endReason: "finish"`). 필수 전이면 지금처럼 `abandoned` |
+| 판 상태 `status` | `pending` | 채점 대기(위). 턴은 닫혀 있다(`mission_closed`) |
+| SSE `correction`(`kind`) | `correction` · `l1_to_ko` = **고치기**, `better` = **더 나은 표현** | 미션 턴의 교정은 둘로 갈린다(2026-11-23 사용자 결정). 고치기는 틀린 것(문법 · 어휘 · 화계 · 뜻 안 통함), 더 나은 표현은 틀리지 않았지만 더 자연스러운 말 — 점수와 무관. 미션 턴에서는 `better` 덧붙이기 칸은 비어 온다 |
+| 리포트 `corrections[].kind` | 위와 같음 | 「Key corrections」(`focus`)와 고친 문장 구역은 고치기에서만, 더 나은 표현은 따로 |
+| 리포트 `accuracyScore` | 화계 상한 | 장면의 기대 화계(미션 `counterpart.learnerRegister`, 두 미션 모두 존댓말)와 어긋난 학습자 턴의 비율로 상한 — 내내 50 · 절반 75 · 다섯 중 하나 90. 「네」 · 「카드요」처럼 화계가 드러나지 않는 말은 세지 않는다. 어긋났으면 `focus` 첫 묶음과 `summary`에 말투 이야기가 온다 |
+| 미션 정의(`missionDefinitionSchema`) | `counterpart.learnerRegister` · `learnerRegisterNote` · `farewells` · `noOffer` · `fallback`, `goals[].opener` · `cue` · `withhold` | 서버 거르개 · 연출 지시용. 앱 화면에는 쓰지 않는다(목록 · 카드 칸은 그대로) |
 
+### 10.2 화면 요소
+
+1. **교정 카드 둘**: 고치기 카드는 지금 모양(제목 「FIX」 / 「IN KOREAN」). **더 나은 표현 카드는 다른 색 · 점선 테두리**(틀렸다는 인상을 주지 않게), 제목 「MORE NATURAL」(이미 문구 표의 `feedbackTitles.better`). 앱 초안에 없는 모양이니 최소로.
+2. **리포트**: 구역 순서 — 히어로(결과 · 점수 · 최고 기록 · 결과 한 줄) → 목표 → You could have said → 목표 표현 → 정확도 · 힌트 → **How your score adds up(점수 항 — 앱에서도 보인다, 사용자 결정)** → What went well → Key corrections → **Sounds more natural(새 — kind better만)** → 고친 문장(고치기 중 Key corrections에 없는 것) → 다시 해 볼 표현 → 총평 → Next challenge.
+3. **그만두기 대화상자**: 필수 목표를 이룬 판이면 문구를 바꾸고 「Finish」를 누르면 **채점 → 리포트 화면**(`mission-finish`를 `abandon` 없이 불러도, 있어도 같다). 필수 전이면 지금 문구 그대로.
+4. **목록 화면**: `pendingReports`가 있으면 그 판의 리포트를 받아(위) 지난 리포트에 넣는다 — 「채점 중」 표시를 잠깐 둘 수 있다.
+5. **음성**(§6, 결정됨): 롤플레이에서는 **서버 STT(ElevenLabs Scribe v3) API**를 쓰고 기기 음성 인식은 쓰지 않는다. TTS는 `eleven_v4_turbo`. 받아 적은 글은 **확신도가 높으면 바로 보내고, 낮으면 입력 칸에 넣어 확인**(문턱값은 에이전트 B의 구현을 따른다). 엔드포인트 제안(`mission-stt` · `mission-tts`)과 자동 재생 규칙 · 음성 문구 표는 §6.5.
+6. **첫 소리**: 서버는 미션 답을 다듬은 뒤 한꺼번에 보낸다(`delta`가 답 끝에 몰려 온다, ADR-0177 D14). 첫 말 조각이 오면 바로 TTS.
+7. **채점 중 화면**: 5 ~ 6초. `grading_failed`면 같은 요청으로 채점만 다시.
+
+### 10.3 새 문구(영어 확정)
+
+| 키(제안) | en | 쓰는 곳 |
+| --- | --- | --- |
+| `report.better` | Sounds more natural | 리포트의 더 나은 표현 구역 제목 |
+| `quitSuccessTitle` | Finish this mission? | 필수 달성 뒤 그만두기 대화상자 제목 |
+| `quitSuccessBody` | You've done the required goals, so we'll score your conversation and show your report. | 같은 대화상자 본문 |
+| `quitSuccessConfirm` | Finish | 같은 대화상자 확인 단추 |
+| `report.scoreParts` · `partTask` · `partAccuracy` · `partExpression` · `partHints` · `tips` · `focus` · `strengths` · `nextStep` | §5.7 표 | 리포트 새 구역 |
+| 음성 문구 | §6.5 표 | 녹음 · 받아 적기 |
+
+### 10.4 상태 전이(판 하나)
+
+```
+active ──턴(모든 목표)──▶ ended(goals) ──mission-finish──▶ finished(리포트)
+active ──턴(턴 상한)──▶ ended(turn_limit) ──mission-finish──▶ finished
+active(필수 달성) ──끝내기 · 그만두기──▶ finish ──채점──▶ finished
+active(필수 달성) ──30분 방치 · 새 판 시작──▶ pending(채점 대기) ──다음 mission-finish──▶ finished
+active(필수 전) ──그만두기 · 30분 방치 · 새 판 시작──▶ abandoned(리포트 없음)
+채점 실패 ──▶ grading_failed(값 돌려줌) ──같은 요청──▶ 채점만 다시
+```
+
+## 11. 사용자 결정
+
+### 11.1 결정됨 (2026-11-23)
+
+1. **화계 어긋남을 더 무겁게** — 내내 어긋나면 정확도 상한 50(합계 85 근처), 절반 75, 다섯 중 하나 90. 반대 방향(반말 장면에서 존댓말)도 같다. 미션 파일 `counterpart.learnerRegister`(ADR-0177 D15).
+2. **교정을 둘로** — 고치기(점수 · Key corrections)와 더 나은 표현(점수와 무관, 다른 카드 · 리포트의 따로 된 구역).
+3. **성공해도 리포트는 준다** — 필수 달성 뒤 그만두기 = 끝내기, 방치 · 새 판 시작 = 채점 대기 뒤 게으른 채점.
+4. **점수 항 구역은 앱에서도 보인다.**
+5. **앱의 음성 인식은 서버 STT(Scribe)**, TTS는 `eleven_v4_turbo`.
+6. **받아 적은 글은 확신도로** — 높으면 바로 보내고 낮으면 입력 칸.
+7. 목표 순서 — 답이 스스로 `opens`를 적고 코드가 검사, 어긋나면 한 번 다시(조율자 추천 · 사용자 승인).
+
+### 11.2 아직 결정 필요
+
+- (없음 — 새로 생기면 여기에)
