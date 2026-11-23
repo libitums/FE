@@ -19,8 +19,8 @@ describe("자모 내장 소리", () => {
     expect(jamoClipOf("ㅝ")).toBe("hangul-v-wo");
   });
 
-  test("JC2. ㅇ은 녹음이 없어 「아」(ㅏ)와 같은 소리", () => {
-    expect(jamoClipOf("ㅇ")).toBe("hangul-v-a");
+  test("JC2. ㅇ은 자기 녹음 「으」(c-ng-sound) — 다른 자음과 같은 「자음 + ㅡ」 규칙(2026-11-23)", () => {
+    expect(jamoClipOf("ㅇ")).toBe("hangul-c-ng-sound");
   });
 
   test("JC3. 자모가 아니면 null", () => {
