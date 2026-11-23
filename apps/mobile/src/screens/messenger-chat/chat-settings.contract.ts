@@ -119,6 +119,8 @@ export type MessengerGuideCopy = {
     readonly media: string;
     /** 예시 스냅샷 단계(ADR-0146 추가) — 사진 단추를 누르면 첫 한 장은 무료. */
     readonly sample: string;
+    /** 예시 음성 단계 — 음성 단추를 누르면 첫 인사를 읽은 음성을 무료로 한 번. */
+    readonly voice: string;
   };
   readonly next: string;
   readonly done: string;

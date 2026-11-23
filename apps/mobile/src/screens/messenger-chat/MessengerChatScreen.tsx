@@ -227,7 +227,6 @@ export function MessengerChatScreen({
               name={thread.counterpart.name}
               avatarUrl={thread.counterpart.avatarUrl}
               onNext={guide.next}
-              onSkip={guide.skip}
               sampleOnly={guide.sampleOnly}
             />
           )}
@@ -266,6 +265,7 @@ export function MessengerChatScreen({
             birthYear={birthYear}
             guideClass={guideTargetClass(guide.step)}
             {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}
+            {...(guide.step === "voice" ? { onTakeVoiceSample: guide.takeSample } : {})}
             guest={guest.active}
             aboveComposer={
               turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null

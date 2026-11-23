@@ -31,7 +31,9 @@ export const messengerChatMediaId: ChatMediaCopy = {
       case "unavailable":
         return "Foto dan pesan suara belum tersedia saat ini.";
       case "sample-gift":
-        return "Yang itu gratis dariku! Snapshot berikutnya memakai Yeopjeon kamu.";
+        return photo
+          ? "Yang itu gratis dariku! Snapshot berikutnya memakai Yeopjeon kamu."
+          : "Yang itu gratis dariku! Suara kilat berikutnya memakai Yeopjeon kamu.";
       default:
         return "Permintaanmu tidak terkirim. Periksa koneksi lalu coba lagi.";
     }

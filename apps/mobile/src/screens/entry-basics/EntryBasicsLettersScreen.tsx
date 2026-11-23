@@ -7,7 +7,6 @@ import { Button } from "@libitums/ui-lynx/button";
 
 import { ENTRY_BASICS_LETTERS, lettersHearable } from "../../lib/entry-basics";
 import type { EntryBasicsLetter } from "../../lib/entry-basics";
-import { jamoSoundOf } from "../../lib/letters/jamo";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLeaveOnce } from "../../lib/use-leave-once";
 import { EntryBasicsFrame } from "./EntryBasicsFrame";
@@ -30,7 +29,7 @@ export function EntryBasicsLettersScreen({
   const [heard, setHeard] = useState<readonly string[]>([]);
   // 일본어는 문장 사이에 빈칸이 없습니다(「。」로 끝남).
   const gap = copy.lettersLead.slice(-1) === "。" ? "" : " ";
-  const lead = lettersHearable(sound.sourceOf)
+  const lead = lettersHearable((letter) => sound.letterSourceOf(letter))
     ? `${copy.lettersLead}${gap}${copy.lettersHear}`
     : copy.lettersLead;
 
@@ -89,7 +88,7 @@ export function EntryBasicsLettersScreen({
                     key={letter.letter}
                     index={index}
                     letter={letter}
-                    source={sound.sourceOf(jamoSoundOf(letter.letter))}
+                    source={sound.letterSourceOf(letter.letter)}
                     heard={heard.indexOf(letter.letter) >= 0}
                     onPlay={(source) => {
                       sound.play(source);

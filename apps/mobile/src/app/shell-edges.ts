@@ -21,8 +21,10 @@ export type ShellEdgeSource = {
  */
 export function appHeaderVisibleOn(screen: Screen): boolean {
   // Letters · My words(ADR-0169) · 순위(ADR-0170)도 자기 머리만 씁니다(시안 — 위 칩 줄 없음).
+  // 롤플레이 목록도 같습니다(사용자 결정 2026-11-23 — 칩 줄 없이 큰 제목).
   return (
     screen.name !== "messenger-list" &&
+    screen.name !== "roleplay-list" &&
     screen.name !== "letters" &&
     screen.name !== "wordbook" &&
     screen.name !== "ranking"

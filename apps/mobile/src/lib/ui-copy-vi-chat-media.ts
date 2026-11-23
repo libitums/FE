@@ -31,7 +31,9 @@ export const messengerChatMediaVi: ChatMediaCopy = {
       case "unavailable":
         return "Ảnh và tin nhắn thoại hiện chưa dùng được.";
       case "sample-gift":
-        return "Tấm này mình tặng! Snapshot lần sau sẽ dùng Yeopjeon của bạn.";
+        return photo
+          ? "Tấm này mình tặng! Snapshot lần sau sẽ dùng Yeopjeon của bạn."
+          : "Lần này mình tặng! Giọng nói nhanh lần sau sẽ dùng Yeopjeon của bạn.";
       default:
         return "Không gửi được yêu cầu. Hãy kiểm tra kết nối rồi thử lại.";
     }

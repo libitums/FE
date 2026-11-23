@@ -106,3 +106,18 @@ ADR-0169의 기본값(조정자 결정)을 근거와 함께 확정한다.
 - integration: `App.letters-audio.integration.test.tsx` LAI1 ~ LAI4(받아 둔 정보 파일 → 로더 → 결선 → 화면 → 재생 모듈, 주소는 실제 해석기).
 - e2e: [수동 절차](../e2e/letters-audio.md) — iOS 시뮬레이터 · Android `assembleBundled` 에뮬레이터, 검증용 say 파일을 기기의 받아 둔 파일 자리에 두고.
 - 업로드 도구: `DRY_RUN=1`으로 운영 정보 파일(1,879항목)을 받아 합쳐 1,920항목 · 바뀐 줄은 `generated_at`과 letters 41항목뿐임을 확인.
+
+## 적용 기록 ⟨2026-11-23 — 자모 칸 소리는 앱 내장 녹음⟩
+
+**사용자 요청**(2026-11-23): 「staging/audio/hangul/<clip>.m4a 버킷에 letters 눌렀을 때 들어볼 수 있는 음성 모아 놨는데 내장하고 눌렀을 때 들려주면 될 거 같은데」.
+
+- **녹음**: 버킷 `staging`의 `audio/hangul/` 39개 — 자음 18개 `c-<로마자>-sound.m4a`(ㅇ 없음) · 모음 21개 `v-<로마자>.m4a`. 모두 1채널 44.1 kHz AAC, 0.6 ~ 0.8 s, 합계 317,558 B.
+  로마자는 `jamo.ts`의 초성 · 중성 로마자와 하나씩 맞는다. 이 기록을 쓸 때 녹음을 직접 듣지 않았다 — 자음 녹음이 「자음 + ㅏ」(가)인지 자음 단독 소리인지는 확인하지 않았다.
+- **D2를 자모 칸에서 갈음한다.** 자모 칸(Letters 자모표 · 입장 전 기초 「글자 여섯」)은 그 자모의 녹음을 낸다(`lib/letters/jamo.ts`의 `jamoClipOf`). ㅇ은 녹음이 없어 지금까지처럼 「아」(모음 ㅏ 녹음)를 낸다.
+  합치기 퀴즈의 음절 소리(가 · 너 · 도)는 바뀌지 않는다 — D1의 버킷 음절 소리 그대로다(`sourceOf`).
+- **앱에 싣는다** — [ADR-0060](0060-episode-voice-remote-audio.md) D1(「앱에 싣지 않음」)의 예외다. 튜토리얼 음성과 같은 길([ADR-0045](0045-android-host-audio-assets.md)):
+  `apps/ios/Host/audio/hangul-<원래 이름>.m4a`(iOS는 폴더 참조라 그대로 실리고, Android는 Gradle이 같은 폴더를 `assets/audio/`로 복사), JS는 `/` 없는 이름 하나를 재생 모듈에 넘긴다.
+  까닭: 자모표는 고정된 40칸이라 콘텐츠 갱신이 필요 없고, 버킷 `audio/letters/`는 아직 비어 있어 칸이 소리 없이 서 있었다. 첫 실행 · 오프라인에서도 바로 난다.
+  대가: 앱 크기 +317,558 B(Lynx 번들 천장과 무관). 녹음을 바꾸려면 앱 업데이트가 필요하다.
+- **포트**: `LetterSoundPort`에 `letterSourceOf(letter)`(자모 → 번들 이름)를 더했다. `lettersHearable`(기초 「눌러서 들어 보세요」 약속)도 자모 기준이다 — 정보 파일이 없어도 약속한다.
+- 검사: unit JC1 ~ JC4(이름 규칙 · ㅇ · 자모 아님 · 40칸 모두 파일이 호스트 폴더에 있음), ui LS4 · BL2 · BL4, integration LAI1 · LAI3 · LAI4 · LAI5 · EBI7 · EBI8.

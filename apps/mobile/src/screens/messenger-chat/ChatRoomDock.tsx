@@ -40,6 +40,8 @@ export type ChatRoomDockProps = {
   readonly guideClass?: string;
   /** 예시 스냅샷 단계(ADR-0146 추가) — 있으면 사진 알약이 「FREE」로 서고, 누르면 결제 확인 대신 이것을 부릅니다. */
   readonly onTakeSample?: () => void;
+  /** 예시 음성 단계 — 있으면 음성 알약이 「FREE」로 서고, 누르면 결제 확인 대신 이것을 부릅니다. */
+  readonly onTakeVoiceSample?: () => void;
   /** 비회원(ADR-0166) — 보기가 없어도 전구를 켜 두고 누르면 관문(send 권유)으로 갑니다(2026-11-20). */
   readonly guest?: boolean;
 };
@@ -67,6 +69,7 @@ export function ChatRoomDock({
   birthYear,
   guideClass = "",
   onTakeSample,
+  onTakeVoiceSample,
   guest = false,
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
@@ -133,8 +136,11 @@ export function ChatRoomDock({
               (() =>
                 dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } }))
             }
-            onSnapVoice={() =>
-              dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "voice" } })
+            voiceFree={onTakeVoiceSample !== undefined}
+            onSnapVoice={
+              onTakeVoiceSample ??
+              (() =>
+                dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "voice" } }))
             }
             onMore={() =>
               menuOpen

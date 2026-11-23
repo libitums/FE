@@ -56,6 +56,8 @@
 
 ### D5. **「Get more tickets」는 Coming soon 안내 + 관심 이벤트이고, 초기 이벤트로 한 장을 바로 채운다 — 사용자 결정**
 
+> ⟨2026-11-23⟩ **이 결정은 아래 적용 기록 「엽전으로 1장」으로 갈음됐다** — 하루 한 장 무료 · Coming soon 안내는 없다.
+
 - 하루(기기 지역 날짜) 한 번, 가득이 아닐 때만 채운다 [추론 — 횟수는 사용자 미확인].
 - 버튼 아래 안내 한 줄 — 받았으면 「…coming soon. Here's a free ticket for today!」, 아니면 「…coming soon.」.
 - E6m에서 받으면 버튼 자리에 「Start lesson」이 서고, 누르면 그 한 장을 써서 막혔던 레슨을 연다.
@@ -123,3 +125,24 @@
 - **값**: `catalogUnitTicketCost(progress, episodeId, unitKey, ticketUnits)` — 적힌 유닛이면 0. 말풍선 태그 · 문지기가 같은 함수를 쓴다.
 - **맵**: 열림(`available`)이고 적힌 레슨 · 문화 노드는 `LearningUnit`의 `active`(`brand.primary` 면 · 흰 아이콘, 낭독 접미사 `current`)로 선다. 끝낸 유닛은 끝낸 색, 잠긴 유닛은 기록이 있어도 잠김 그대로다. 최종 테스트(스페셜 항목)는 바꾸지 않았다.
 - **서버**: 마이그레이션 `20261023120000_learning_progress_ticket_units.sql`이 `merge_learning_progress_v1`에 검증(`catalogProgress`와 같은 규칙, 어기면 `22023 invalid ticket units`)과 키별 합집합을 더한다. 마이그레이션 전 서버는 이 키를 `||`로 들어온 값 그대로 남긴다(검증 · 합집합 없음) — 새 앱이 먼저 나가도 저장이 막히지 않는다.
+
+## 적용 기록 ⟨2026-11-23 — 「Get more tickets」를 엽전으로 1장⟩
+
+**사용자 결정**(2026-11-23): 「티켓 칩 클릭 시 화면도 get more tickets 엽전으로 얻게 바꾸자」 → 값 · 양 · 범위를 골랐다.
+
+| 항목 | 결정 | 버린 안 |
+|---|---|---|
+| 값 | **1장 = 엽전 20**(서버 설정 `companion.settings.ticket_price`, 앱 표시는 `ticketPriceCoins`) | 10(레슨 통과 +5와 가까워 싸게 순환) · 30 |
+| 양 | **누를 때마다 1장**, 가득(3장)까지 | 빈 칸 수만큼 한 번에 채우기 |
+| 하루 한 장 무료(D5) | **없앤다** — 「Get 1 ticket」은 엽전 구매 하나 | 무료 먼저, 그다음 엽전 |
+| 범위 | **머리 칩 모달(E1)과 티켓 없음 대화상자(E6m) 둘 다** | 칩 모달만 |
+
+- **서버**(마이그레이션 `20261231120000_ticket_purchase.sql`): RPC `companion_buy_ticket(p_request_id uuid)` — 로그인 필수, 지갑을 잠그고 구독분 → 지급분 → 구매분 순서로 값을 뺀다(먼저 만나기 · 턴 예약과 같은 순서). 원장 `spend` · 사유 `ticket` · `ref_id` = 요청 id. 같은 요청 id는 다시 빼지 않고 `already`. 모자라면 빼지 않고 `short`(`shortBy`). 응답에 지갑(`wallet_json`)을 싣는다.
+- **티켓은 여전히 앱 원장**이다(D1 · 진행 스냅숏 합치기). 서버가 뺀 뒤에만 `addBoughtTicket`이 한 장을 더한다(`grantedMs` + 1시간, 합치기는 큰 값). 가득이면 서버를 부르지 않는다.
+- **앱**: 버튼 「Get 1 ticket」 + 엽전 그림 · 20(낭독 「Get 1 ticket for 20 coins」). 응답을 기다리는 동안 버튼이 흐려지고 눌리지 않는다(연타 · 두 번 빠짐 방지). 결과 안내 다섯 — `1 ticket added.` · `Not enough coins. You need N more.` · `Your tickets are already full.` · `Sign in to use coins.` · `Couldn't get a ticket. Please try again.` 7개 언어(번역 초안, 원어민 검수 필요). 돌려받은 잔액은 머리 엽전 칩에 알린다(`server-balance-report.ts` — 티켓 훅이 메신저 결선을 import하면 순환이 생겨 잎 모듈로 뺐다).
+- **배치**: 결과 안내는 버튼 **위**에 선다 — 머리 모달(E1)은 버튼이 화면 아래 끝이라 아래 줄은 작은 화면(360×640)에서 잘렸다. 모달의 머리 ~ 숫자 사이 여백 96은 공간이 모자라면 16까지 줄어든다(`ticket-modal-top-gap`) — 안내가 서도 버튼이 화면 안에 남는다(Android 에뮬레이터 360×640 확인).
+- **비회원**: 칩 모달에서는 전과 같이 로그인 권유 대화상자(ADR-0166, 제목이 버튼 글자를 따라 「Get 1 ticket」). 티켓 없음 대화상자에서는 「Sign in to use coins.」 안내.
+- **측정**: `ticket_more_tapped`의 속성이 `granted`(불리언) → **`result`**(`bought` · `short` · `full` · `sign_in` · `failed`) · **`price`**(10진 문자열)로 바뀐다([ADR-0029](0029-product-analytics-posthog.md) 표).
+- **알려진 한계**: 서버가 뺀 뒤 앱이 원장에 쓰기 전에 앱이 꺼지면 엽전만 빠진다(원장이 기기에 있는 구조의 대가). 두 기기에서 같은 시각 근처에 따로 사면 합치기(큰 값)에서 한 장이 사라질 수 있다.
+- 검사: DB integration TP1 ~ TP6, unit TPA1 ~ TPA6 · TF1 ~ TF6 · TK7 ~ TK11, ui TM4 · TM4b · TM4c · OT3 · OT4, integration IT4 · IT5 · IT12 ~ IT14 · GM6 · GT-U1.
+

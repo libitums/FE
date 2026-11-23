@@ -32,11 +32,13 @@
   line-height: var(--libitum-typography-heading-l-line-height);
 }
 
+/* 높이는 그룹 알약(28)에 맞춰 고정 — 알약이 읽은 뒤에 서도 줄 높이가 달라지지 않습니다(아래가 밀리지 않게). */
 .ranking-meta {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  min-height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
 }
 
 .ranking-group {
