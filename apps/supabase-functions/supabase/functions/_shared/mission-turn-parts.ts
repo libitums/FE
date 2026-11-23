@@ -9,6 +9,7 @@ import { missionBrief, missionFeedbackRequest, transcriptFromHistory } from "./m
 import { missionJudgeTimeoutMs } from "./mission-env.ts";
 import { judgedGoals, judgeUser } from "./mission-judge.ts";
 import { guardMissionFeedback } from "./mission-guards.ts";
+import { expectedOpen, firmDirection } from "./mission-direction.ts";
 import { cleanReply, fallbackLineOf, stripMonologue } from "./mission-reply-clean.ts";
 import { allGoalsDone, parseMissionState } from "./mission-state.ts";
 import type { Segment } from "./chat-send.contract.ts";
@@ -77,38 +78,68 @@ export async function settleReply<T extends ReplyResult>(
   context: MissionTurnContext,
   result: T,
   judged: JudgeOutcome,
-  again: () => Promise<T | null>,
+  regenerate: (directionOverride: string | null) => Promise<T | null>,
 ): Promise<{ result: T; outcome: string }> {
   const { mission, progress } = context;
-  const endsFor = (value: T) => {
-    const reported =
-      (value.stateText === null ? null : parseMissionState(value.stateText))?.goalsDone ?? [];
-    return allGoalsDone(mission, [
-      ...progress.goalsDone,
-      ...(judged === null ? reported : judged.goals),
-    ]);
+  const stateOf = (value: T) =>
+    value.stateText === null ? null : parseMissionState(value.stateText);
+  const doneFor = (value: T) => [
+    ...progress.goalsDone,
+    ...(judged === null ? (stateOf(value)?.goalsDone ?? []) : judged.goals),
+  ];
+  const clean = (value: T) => {
+    const doneAfter = doneFor(value);
+    return cleanReply(
+      mission,
+      progress.goalsDone,
+      value.segments,
+      allGoalsDone(mission, doneAfter),
+      doneAfter,
+    );
   };
-  const clean = (value: T) =>
-    cleanReply(mission, progress.goalsDone, value.segments, endsFor(value));
-  const first = clean(result);
-  if (first.issues.length === 0) return { result, outcome: "unchanged" };
+  // 순서 검사(ADR-0177 D15): 이번 말 뒤 상태로 정한 「꺼내야 할 목표」와 답의 자기 보고(opens)가 어긋나면 확정 지시로 한 번 다시.
+  const after = (value: T) => {
+    const doneAfter = doneFor(value);
+    const added = doneAfter.some((id) => !progress.goalsDone.includes(id));
+    return {
+      goalsDone: doneAfter,
+      learnerTurns: progress.learnerTurns + 1,
+      hintsUsed: progress.hintsUsed,
+      stall: added ? 0 : (progress.stall ?? 0) + 1,
+    };
+  };
+  let base = result;
+  let order = "";
+  const expected = expectedOpen(mission, after(result));
+  const opens = stateOf(result)?.opens;
+  if (expected !== null && opens !== undefined && opens !== expected.id) {
+    const again = await regenerate(firmDirection(expected)).catch(() => null);
+    if (again !== null && clean(again).speechLeft) {
+      base = again;
+      order = `order:${opens ?? "none"}->${expected.id}${stateOf(again)?.opens === expected.id ? "" : "(still)"}`;
+    }
+  }
+  const tag = (outcome: string) =>
+    order === "" ? outcome : outcome === "unchanged" ? order : `${order}+${outcome}`;
+  const first = clean(base);
+  if (first.issues.length === 0) return { result: base, outcome: tag("unchanged") };
   if (first.speechLeft)
-    return { result: { ...result, segments: first.segments }, outcome: first.issues.join("+") };
-  const retry = await again().catch(() => null);
+    return { result: { ...base, segments: first.segments }, outcome: tag(first.issues.join("+")) };
+  const retry = await regenerate(null).catch(() => null);
   const second = retry === null ? null : clean(retry);
   if (retry !== null && second !== null && second.speechLeft)
     return {
       result: { ...retry, segments: second.segments },
-      outcome: `retried:${first.issues.join("+")}`,
+      outcome: tag(`retried:${first.issues.join("+")}`),
     };
   if (first.issues.includes("monologue"))
     return {
-      result: { ...result, segments: [{ kind: "speech", text: fallbackLineOf(mission) }] },
-      outcome: "fallback",
+      result: { ...base, segments: [{ kind: "speech", text: fallbackLineOf(mission) }] },
+      outcome: tag("fallback"),
     };
   return {
-    result: { ...result, segments: stripMonologue(result.segments).segments },
-    outcome: "kept",
+    result: { ...base, segments: stripMonologue(base.segments).segments },
+    outcome: tag("kept"),
   };
 }
 

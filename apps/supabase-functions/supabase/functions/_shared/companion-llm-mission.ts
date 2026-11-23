@@ -199,6 +199,9 @@ export function fakeGrade(user: string): MissionGraderDraft {
   if (transcript.includes("[grade-empty]"))
     return {
       goals: [],
+      registerNotes: "none",
+      registerTurns: 0,
+      registerMismatchTurns: 0,
       accuracyNotes: "none",
       accuracy: 80,
       expressions: [],
@@ -220,6 +223,9 @@ export function fakeGrade(user: string): MissionGraderDraft {
       const tip = done ? null : { ko: `${id} 할게요.`, meaning: `(fake) do ${id}` };
       return { id, evidence: learnerLine, done, tip };
     }),
+    registerNotes: "none",
+    registerTurns: 0,
+    registerMismatchTurns: 0,
     accuracyNotes: "none",
     accuracy: 80,
     expressions: expressions.map(({ id }) => ({

@@ -17,7 +17,7 @@ import { fillTemplate } from "./mission-template.ts";
 export const directionNone = "Close the scene.";
 
 /** 답 끝의 앱용 줄. 학습자에게 보이지 않는다. 조각 형식은 컴패니언과 같고 이 줄만 다르다. */
-export const missionStateLine = `@state {"goals_done": [<ids of every goal the learner has done so far, earlier turns included>], "off_task": <true or false>, "closing": <true or false>}`;
+export const missionStateLine = `@state {"goals_done": [<ids of every goal the learner has done so far, earlier turns included>], "off_task": <true or false>, "closing": <true or false>, "opens": <the id of the goal this reply asks the learner about, or null>}`;
 
 /** 판 내내 같은 앞부분의 틀. `base_block`은 캐스트일 때만 채워지고 단역이면 빈 글이다. */
 export const missionTurnStableTemplate = `You are playing {{counterpart_label}} in a short role-play mission in Duru, an app where people learn Korean through a story. The learner plays themselves inside the scene and has a task to finish in Korean, in their own words. You are an AI character, and you never claim to be a real human if sincerely asked.
@@ -70,7 +70,8 @@ After the bubbles, always write exactly one last line for the app (never shown t
 {{state_line}}
 - "goals_done": a goal counts only if the learner said it in Korean in their own message (mistakes are fine if the meaning is clear). It does not count when you said it for them, when they said it in another language, or when they only said something vague.
 - "off_task": true if the learner's latest message did not try to do the task (off topic, another language, unclear, rude).
-- "closing": true if this reply closes the scene.`;
+- "closing": true if this reply closes the scene.
+- "opens": the one goal your reply's question opens for the learner (for example "pay" for 「결제는 어떻게 하시겠어요?」), or null if your reply asks about no goal.`;
 
 /** 캐스트의 바탕 네 칸 묶음 틀. 칸이 없으면 그 줄을 뺀다(`base_lines`). */
 export const missionBaseTemplate = `
@@ -175,6 +176,8 @@ export type MissionDynamicInput = {
   readonly l1: string | null;
   /** 그 에피소드까지의 학습 표현(1단계 `expressions` 그대로). */
   readonly expressions: readonly LearningExpression[];
+  /** 확정된 연출 지시(순서가 어긋난 답을 다시 만들 때 — `firmDirection`). 없으면 판 상태로 만든다. */
+  readonly directionOverride?: string;
 };
 
 /** 남은 학습자 턴 — 지금 답하는 메시지를 포함한다. */
@@ -192,7 +195,9 @@ export function turnDynamic(input: MissionDynamicInput): string {
     learner_l1: input.l1 ?? "en",
     learned_expressions: learnedExpressions(input.expressions),
     direction:
-      missionDirection({ mission: input.mission, progress: input.progress })?.text ?? directionNone,
+      input.directionOverride ??
+      missionDirection({ mission: input.mission, progress: input.progress })?.text ??
+      directionNone,
   });
 }
 

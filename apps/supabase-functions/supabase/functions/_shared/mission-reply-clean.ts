@@ -88,7 +88,41 @@ export function stripSentences(
   return { segments: out, stripped };
 }
 
-export type CleanIssue = "monologue" | "farewell" | "offer";
+export type CleanIssue = "monologue" | "farewell" | "offer" | "withhold";
+
+/** 말 조각에서 정규식 중 하나에 걸리는 문장을 뺀다. */
+export function stripPatterns(
+  segments: readonly Segment[],
+  patterns: readonly RegExp[],
+): { segments: Segment[]; stripped: boolean } {
+  let stripped = false;
+  const out: Segment[] = [];
+  for (const segment of segments) {
+    if (segment.kind !== "speech" || patterns.length === 0) {
+      out.push(segment);
+      continue;
+    }
+    const kept = sentences(segment.text).filter((part) => {
+      const hit = patterns.some((pattern) => pattern.test(part));
+      if (hit) stripped = true;
+      return !hit;
+    });
+    const text = kept.join("").trim();
+    if (text !== "") out.push({ ...segment, text });
+  }
+  return { segments: out, stripped };
+}
+
+/** 아직 안 이뤄진(이번 말로도) 목표의 「먼저 말하면 안 되는 것」 정규식. */
+export function withheldPatterns(
+  mission: MissionDefinition,
+  doneAfter: readonly string[],
+): RegExp[] {
+  return mission.goals
+    .filter((goal) => !doneAfter.includes(goal.id))
+    .flatMap((goal) => goal.withhold ?? [])
+    .map((source) => new RegExp(source));
+}
 
 /**
  * 답 하나 다듬기. `endsNow` — 이 턴에 판이 끝나는가(판정 기준). 끝나면 인사 · 대신 묻기는 그대로 둔다(혼잣말은 늘 거른다).
@@ -98,6 +132,8 @@ export function cleanReply(
   goalsDone: readonly string[],
   segments: readonly Segment[],
   endsNow: boolean,
+  /** 이번 말까지 이룬 목표(판정 기준). 없으면 `goalsDone`. 「먼저 말하면 안 되는 것」(`withhold`)을 거를 때 쓴다. */
+  doneAfter: readonly string[] = goalsDone,
 ): { segments: Segment[]; issues: CleanIssue[]; speechLeft: boolean } {
   const issues: CleanIssue[] = [];
   const mono = stripMonologue(segments);
@@ -115,6 +151,10 @@ export function cleanReply(
       if (offer.stripped) issues.push("offer");
       out = offer.segments;
     }
+    // 학습자가 먼저 꺼내야 하는 것(예: 가격)을 상대역이 먼저 말한 문장(ADR-0177 D15).
+    const withheld = stripPatterns(out, withheldPatterns(mission, doneAfter));
+    if (withheld.stripped) issues.push("withhold");
+    out = withheld.segments;
   }
   return { segments: out, issues, speechLeft: out.some((segment) => segment.kind === "speech") };
 }

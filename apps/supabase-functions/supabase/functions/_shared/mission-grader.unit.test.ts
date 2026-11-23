@@ -28,6 +28,9 @@ const draft: GraderDraft = {
     { id: "price", evidence: null, done: false, tip: { ko: "얼마예요?", meaning: "How much?" } },
     { id: "dance", evidence: "춤", done: true, tip: null },
   ],
+  registerNotes: "none",
+  registerTurns: 3,
+  registerMismatchTurns: 0,
   accuracyNotes: "가지고 가요 — word choice",
   accuracy: 85.4,
   expressions: [
@@ -75,6 +78,7 @@ describe("채점 프롬프트", () => {
         "corrections_json",
         "goals_json",
         "learner_l1",
+        "learner_register",
         "mission_brief",
         "target_expressions_json",
         "transcript",

@@ -34,6 +34,7 @@ export const directionTemplates = {
   thenRoom: "just react and wait (do not say goodbye: the scene is not over)",
   thenClose: "every goal is done: close the scene",
   noCue: " with a natural question",
+  firm: "The learner's latest message has been handled. In this reply, react in a few words and then open goal {{goal_id}} ({{criteria}}) yourself{{cue_part}}. Do not ask about any other goal.",
 } as const;
 
 export type MissionDirectionInput = {
@@ -132,4 +133,27 @@ export function missionDirection(input: MissionDirectionInput): MissionDirection
           goals: learnerGoals.map((goal) => `${goal.id} (${goal.criteria})`).join("; "),
         })}`;
   return { ...head, text: `${head.text}${tail}` };
+}
+
+/**
+ * 이번 학습자 말 **뒤**의 판 상태로 정한 「이 답이 꺼내야 할 목표」(ADR-0177 D15) — stuck · hurry · advance 비트의 목표(상대역이 꺼낼 것,
+ * 필수 먼저). room이거나 다 끝났으면 null. 답의 상태 줄 `opens`와 비교해 어긋나면 `firmDirection`으로 한 번 다시 만든다.
+ */
+export function expectedOpen(
+  mission: MissionDefinition,
+  after: MissionProgress,
+): MissionGoal | null {
+  const direction = missionDirection({ mission, progress: after });
+  if (direction === null || direction.goalId === null) return null;
+  const goal = mission.goals.find((entry) => entry.id === direction.goalId);
+  return goal !== undefined && opensItself(goal) ? goal : null;
+}
+
+/** 조건 없는 연출 지시 — 「지금 X를 꺼내라」. */
+export function firmDirection(goal: MissionGoal): string {
+  return fillTemplate(directionTemplates.firm, {
+    goal_id: goal.id,
+    criteria: goal.criteria,
+    cue_part: cuePart(goal),
+  });
 }

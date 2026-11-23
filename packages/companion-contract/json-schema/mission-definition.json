@@ -106,6 +106,15 @@
           "minLength": 1,
           "maxLength": 80
         },
+        "learnerRegister": {
+          "type": "string",
+          "enum": ["polite", "casual"]
+        },
+        "learnerRegisterNote": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
         "base": {
           "type": "object",
           "properties": {
@@ -211,6 +220,15 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 120
+          },
+          "withhold": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
           }
         },
         "required": ["id", "required", "label", "criteria"],

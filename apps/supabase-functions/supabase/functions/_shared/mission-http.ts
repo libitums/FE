@@ -93,7 +93,7 @@ export async function readMissionBody<T>(
 
 /** DB가 돌려주는 판 상태(`companion.mission_progress_json`). */
 export type DbMissionState = {
-  readonly status: "active" | "finished" | "abandoned";
+  readonly status: "active" | "pending" | "finished" | "abandoned";
   readonly endReason: string | null;
   readonly goals: readonly {
     readonly id: string;

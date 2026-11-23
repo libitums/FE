@@ -115,7 +115,8 @@ alter table companion.conversations alter column character_id drop not null;
 alter table companion.conversations
   add column mission_id text,
   add column mission_version integer,
-  add column status text check (status is null or status in ('active', 'finished', 'abandoned')),
+  -- pending(2026-11-23): 필수 목표를 이룬 채 방치 · 새 판 시작으로 닫혔고 아직 채점 전(「채점 대기」) — 다음 mission-finish가 채점한다.
+  add column status text check (status is null or status in ('active', 'pending', 'finished', 'abandoned')),
   -- { goalsDone: [목표 id, 파일 순서], turns, hints, hintGoals: [힌트를 준 목표 id], offTask, stall(새 목표 없이 이어진 턴), gradingFailed? }
   add column mission_state jsonb check (mission_state is null or jsonb_typeof(mission_state) = 'object'),
   add column ended_at timestamptz,
@@ -476,6 +477,16 @@ begin
 end;
 $$;
 
+-- 성공 확정(필수 목표를 모두 이룸) 판을 「채점 대기」로 닫는다(방치 · 새 판 시작 — 2026-11-23 사용자 결정 「성공해도 리포트는 줘야지」).
+-- LLM은 부르지 않는다 — 다음 mission-finish가 채점한다(게으른 채점). 예약은 열어 둔다(결과 저장이 확정한다). p_reason은 판 상태에 남긴다.
+create function companion.mission_pend(p_conversation_id uuid, p_reason text, p_now timestamptz)
+returns void language sql as $$
+  update companion.conversations
+  set status = 'pending', end_reason = coalesce(end_reason, 'finish'), ended_at = coalesce(ended_at, p_now),
+    mission_state = mission_state || jsonb_build_object('closedBy', p_reason)
+  where id = p_conversation_id and kind = 'mission' and status = 'active'
+$$;
+
 -- 필수 목표를 모두 이뤘는가 · 모든 목표를 이뤘는가(판 상태 mission_state의 goalsDone 기준).
 create function companion.mission_required_done(p_state jsonb, d jsonb)
 returns boolean language sql immutable as $$
@@ -793,8 +804,14 @@ begin
 
   for v_old in select id from companion.conversations
     where user_id = p_user_id and kind = 'mission' and status = 'active' for update loop
-    perform companion.mission_abandon(v_old, 'user', p_now);
-    v_abandoned := v_abandoned || v_old;
+    -- 성공 확정 판은 그만둠이 아니라 채점 대기(리포트를 잃지 않게). 아니면 지금처럼 그만둠.
+    if companion.mission_required_done((select mission_state from companion.conversations where id = v_old),
+        companion.mission_definition_of((select x from companion.conversations x where x.id = v_old))) then
+      perform companion.mission_pend(v_old, 'new_mission', p_now);
+    else
+      perform companion.mission_abandon(v_old, 'user', p_now);
+      v_abandoned := v_abandoned || v_old;
+    end if;
   end loop;
 
   select * into v_mission from companion.missions where id = p_mission_id;
@@ -1195,12 +1212,13 @@ begin
   if c.status = 'abandoned' then
     return jsonb_build_object('result', 'abandoned', 'endReason', c.end_reason);
   end if;
-  if coalesce(p_abandon, false) then
+  v_def := companion.mission_definition_of(c);
+  -- 그만두기(abandon)라도 필수 목표를 이뤘으면 끝내기와 같다 — 채점 · 리포트 · 성공 기록(2026-11-23 사용자 결정).
+  if coalesce(p_abandon, false) and c.status = 'active' and not companion.mission_required_done(c.mission_state, v_def) then
     perform companion.mission_abandon(c.id, 'user', p_now);
     return jsonb_build_object('result', 'abandoned', 'endReason', 'user',
       'balance', (select sub_balance + grant_balance + paid_balance from companion.credit_wallets where user_id = p_user_id));
   end if;
-  v_def := companion.mission_definition_of(c);
   if c.end_reason is null and companion.mission_required_done(c.mission_state, v_def) then
     update companion.conversations set end_reason = 'finish', ended_at = p_now where id = c.id returning * into c;
   end if;
@@ -1478,7 +1496,7 @@ $$;
 
 -- 방치된 판 닫기(pg_cron). 마지막 메시지 뒤 settings.mission_stale_after가 지난 진행 중인 판 → abandoned · stale, 예약 확정.
 -- 채점이 실패해 값을 이미 돌려준 판(gradingFailed)은 그대로 둔다 — 채점만 다시 부를 수 있다. 닫은 판 수.
--- 필수 목표를 이룬 채 이어 가다(requiredDone) 방치된 판도 같다 — 리포트 없이 stale(채점은 LLM이라 여기서 못 한다). 앱은 나갈 때 끝내기를 부른다.
+-- 필수 목표를 이룬 채 방치된 판은 그만둠이 아니라 채점 대기(pending)로 닫는다 — LLM은 여기서 부르지 않고 다음 mission-finish가 채점한다.
 create function public.companion_close_stale_missions(p_now timestamptz)
 returns integer
 language plpgsql
@@ -1494,7 +1512,13 @@ begin
     where kind = 'mission' and status = 'active' and coalesce(last_message_at, created_at) < p_now - v_after
       and not coalesce((mission_state->>'gradingFailed')::boolean, false)
     for update skip locked loop
-    perform companion.mission_abandon(v_id, 'stale', p_now);
+    -- 성공 확정 판은 채점 대기(pending, closedBy stale) — 채점은 다음 mission-finish가 한다. 아니면 그만둠 · stale.
+    if companion.mission_required_done((select mission_state from companion.conversations where id = v_id),
+        companion.mission_definition_of((select x from companion.conversations x where x.id = v_id))) then
+      perform companion.mission_pend(v_id, 'stale', p_now);
+    else
+      perform companion.mission_abandon(v_id, 'stale', p_now);
+    end if;
     v_count := v_count + 1;
   end loop;
   return v_count;
@@ -1530,6 +1554,13 @@ begin
   end if;
   return jsonb_build_object(
     'enabled', true,
+    -- 채점 대기 판(방치 · 새 판 시작으로 닫힌 성공 확정 판) — 앱은 각 판에 mission-finish를 불러 리포트를 받는다(게으른 채점).
+    'pendingReports', coalesce((
+      select jsonb_agg(jsonb_build_object('conversationId', c.id, 'missionId', c.mission_id,
+        'endedAt', companion.mission_ts(c.ended_at)) order by c.ended_at)
+      from companion.conversations c
+      where c.user_id = v_user and c.kind = 'mission' and c.status = 'pending'
+    ), '[]'::jsonb),
     'l1', (select l1 from companion.profiles where user_id = v_user),
     'price', companion.mission_price(v_user, now())
       || jsonb_build_object('freeLeft', (companion.mission_price(v_user, now())->>'freeRemaining')::integer),

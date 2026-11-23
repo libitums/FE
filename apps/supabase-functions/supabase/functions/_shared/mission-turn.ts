@@ -203,9 +203,21 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
       translation = translate(result.segments);
     }
   }
-  const settled = await settleReply(context, result, await judge, async () => {
-    const retry = startReply(context, history, system, abort);
-    return retry.done;
+  const settled = await settleReply(context, result, await judge, async (directionOverride) => {
+    const again =
+      directionOverride === null
+        ? system
+        : `${prompt.stable}${systemSplit}${
+            missionSystemPrompt({
+              mission,
+              progress: context.progress,
+              l1: row.profile.l1,
+              expressions: row.learning.expressions,
+              base: missionCounterpartBase(mission, row.persona),
+              directionOverride,
+            }).dynamic
+          }`;
+    return startReply(context, history, again, abort).done;
   });
   const cleaned = settled.outcome === "unchanged" ? null : settled.outcome;
   if (settled.result !== result) translation = translate(settled.result.segments);

@@ -42,7 +42,10 @@ export type GraderInput = {
   readonly l1: string | null;
 };
 
-/** 채점 입력의 교정 목록 — 1부터 매긴 번호(`n`)를 채점자가 `focus.refs`로 되돌려 준다. */
+/** 고치기(fix) — 틀린 것. 「더 나은 표현」(kind better)은 점수 · 꼭 볼 고친 문장에 쓰지 않는다(2026-11-23 사용자 결정). */
+export const isFix = (correction: MissionCorrection) => correction.kind !== "better";
+
+/** 채점 입력의 교정 목록 — 1부터 매긴 번호(`n`)를 채점자가 `focus.refs`로 되돌려 준다. 호출하는 쪽이 고치기만 넘긴다. */
 export function correctionsForGrader(corrections: readonly MissionCorrection[]) {
   return corrections.map(({ original, corrected, kind, reason }, index) => ({
     n: index + 1,
@@ -66,7 +69,26 @@ export function graderUser(input: GraderInput): string {
     corrections_json: json(correctionsForGrader(input.corrections)),
     transcript: input.transcript,
     learner_l1: input.l1 ?? "en",
+    learner_register: learnerRegisterLine(input.mission),
   });
+}
+
+/** 채점자에게 주는 장면의 기대 화계 한 줄(미션 파일 `counterpart.learnerRegister`, 없으면 polite). */
+export function learnerRegisterLine(mission: MissionDefinition): string {
+  const register = mission.counterpart.learnerRegister ?? "polite";
+  const word = register === "polite" ? "polite (존댓말: -요 / -습니다)" : "casual (반말)";
+  const note = mission.counterpart.learnerRegisterNote;
+  return note === undefined ? word : `${word} — ${note}`;
+}
+
+/**
+ * 화계 상한(2026-11-23 사용자 결정 — 내내 어긋남 = 50, 절반 = 75, 다섯 중 하나 = 90). 화계가 드러난 턴이 없으면 상한 없음(100).
+ * 채점자가 낸 턴 수로 코드가 다시 걸어 재채점 흔들림을 줄인다.
+ */
+export function registerCap(turns: number, mismatch: number): number {
+  if (!Number.isFinite(turns) || turns <= 0) return 100;
+  const share = Math.min(1, Math.max(0, (Number.isFinite(mismatch) ? mismatch : 0) / turns));
+  return Math.round(100 - 50 * share);
 }
 
 type Line = { readonly ko: string; readonly meaning: string };
@@ -82,6 +104,8 @@ export type MissionGrade = {
   /** 채점자가 고른 교정 묶음 — `refs`는 입력 교정의 번호(1부터), 범위 밖 번호는 버렸다. */
   readonly focus: readonly { readonly refs: readonly number[]; readonly reason: string }[];
   readonly accuracyNotes: string;
+  /** 화계(2026-11-23) — 화계가 드러난 학습자 턴 · 어긋난 턴 · 그로 걸린 정확도 상한 · 채점자의 메모. */
+  readonly register: { turns: number; mismatch: number; cap: number; notes: string };
   readonly score: MissionScore;
 };
 
@@ -147,9 +171,11 @@ export function normalizeGrade(
     .map((entry) => ({ quote: entry.quote.trim(), note: entry.note.trim() }))
     .filter((entry) => entry.quote !== "" && entry.note !== "")
     .slice(0, missionReportLimits.strengths);
-  const accuracy = Number.isFinite(draft.accuracy)
+  const raw = Number.isFinite(draft.accuracy)
     ? Math.round(Math.min(100, Math.max(0, draft.accuracy)))
     : 0;
+  const cap = registerCap(draft.registerTurns, draft.registerMismatchTurns);
+  const accuracy = Math.min(raw, cap);
   const score = scoreMission(
     {
       goals,
@@ -170,6 +196,12 @@ export function normalizeGrade(
     strengths,
     focus,
     accuracyNotes: draft.accuracyNotes.trim(),
+    register: {
+      turns: Math.max(0, Math.round(draft.registerTurns || 0)),
+      mismatch: Math.max(0, Math.round(draft.registerMismatchTurns || 0)),
+      cap,
+      notes: draft.registerNotes.trim(),
+    },
     score,
   };
 }

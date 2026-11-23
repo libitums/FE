@@ -21,27 +21,32 @@ Fill the fields in the order given — write the evidence before each verdict.
   - Goals the app already marked are a hint only: check them yourself.
 - "tip": for a goal that is not done, one short natural Korean line the learner could have said here — "ko" fills any blank for this scene, "meaning" is its meaning in the learner's language. null for a done goal.
 
-"accuracyNotes": first, list the learner's real mistakes in a few words each (Korean or English), grouped by type: grammar/particles/conjugation, wrong word, speech level (반말 to a polite stranger such as a clerk), non-Korean words. Write "none" if there are none. Do not count transcription artifacts, natural spoken shortcuts (dropped particles, "아메리카노요", "카드요", fillers like 음/아), or a short message that is correct.
+"registerNotes": first, the speech level (화계) the scene expects from the learner is given under "Expected learner register". Go through the learner's messages and list, in a few words, each one whose speech level is wrong for the scene (반말 such as "줘", "할래", "-어/-아" endings in a polite scene; or 존댓말 in a casual scene). Messages that do not show a speech level — a bare noun or noun + 요 ("카드요", "라떼 하나요"), "네", "아니요", fillers, or messages wholly in another language — are not counted at all. Write "none" if nothing is wrong.
+"registerTurns": the number of learner messages that do show a speech level (the ones counted above, right or wrong).
+"registerMismatchTurns": how many of those use the wrong speech level for the scene.
+
+"accuracyNotes": then list the learner's real mistakes in a few words each (Korean or English), grouped by type: grammar/particles/conjugation, wrong word, speech level (반말 to a polite stranger such as a clerk), non-Korean words. Write "none" if there are none. Do not count transcription artifacts, natural spoken shortcuts (dropped particles, "아메리카노요", "카드요", fillers like 음/아), or a short message that is correct. A message that is correct but could sound more natural is not a mistake: the app's corrections of kind "better" are suggestions only and never lower accuracy.
 "accuracy": then an integer 0 to 100 for the quality of the learner's Korean only (not task success), on this scale:
 - 100: no mistakes.
 - 90: one small slip (a particle, a spelling) — meaning fully clear.
-- 75–85: a few small slips, or 반말 throughout to a polite stranger with otherwise correct Korean.
+- 75–85: a few small slips.
 - 55–70: mistakes in about half of the messages, or one clause in another language, but every message is understood.
 - 35–50: mistakes in most messages, or several clauses / one whole message in another language; still mostly understood.
 - 10–30: mostly not Korean or hard to understand.
 - 0: no Korean message at all.
 Pick the band first, then a number inside it. Judge only the learner's messages that contain Korean; very short correct messages are not mistakes.
+Speech level weighs heavily: the share of counted messages with the wrong speech level caps "accuracy" — all of them: at most 50; half: at most 75; one of five: at most 90 (cap = 100 − 50 × share). Apply the cap after the other mistakes; other mistakes lower it further.
 
 "expressions": one entry per target expression, in the given order. "evidence" is the learner message that uses it (copied exactly) or null; "used" is true when a learner message uses the pattern with its blank filled, in any conjugation or with a different noun (e.g. "{음료} 한 잔 주세요" → "라떼 한 잔 주세요", "아이스 아메리카노 한 잔 주실래요?"). These count too: 반말 forms ("한 잔 줘", "얼마야?" for "얼마예요?") and the pattern said with a mistake ("하나 잔 주세요", "얼마이에요?") — the mistake lowers "accuracy" instead. A different structure that leaves out the pattern's key words ("아메리카노 주세요" or "아메리카노 하나 주세요" for "한 잔 주세요") does not count.
 
-"focus": at most 3 of the given corrections worth the learner's attention, most important first: mistakes that change meaning or repeat over the conversation before small slips; skip corrections that only fix transcription artifacts or style. Put corrections of the same kind in one entry. "refs" are their "n" numbers; "reason" is one short sentence in the learner's language with no grammar jargon (say "use 로 after a vowel", not "instrumental particle allomorph"). Empty when there are no corrections or none matter.
+"focus": at most 3 of the given corrections worth the learner's attention, most important first. If the learner used the wrong speech level, the first entry is about that (e.g. "With a clerk, end with -요 or -습니다"). Otherwise: mistakes that change meaning or repeat over the conversation before small slips; skip corrections that only fix transcription artifacts or style. Put corrections of the same kind in one entry. "refs" are their "n" numbers; "reason" is one short sentence in the learner's language with no grammar jargon (say "use 로 after a vowel", not "instrumental particle allomorph"). Empty when there are no corrections or none matter.
 
 "strengths": 1 or 2 specific things the learner did well, each with "quote" (a learner message copied exactly) and "note" (one short sentence in the learner's language saying why it was good). Empty only when the learner wrote no Korean.
 
 "retry": 1 to 3 short Korean lines worth practising next time — first target expressions the learner did not use, then lines for goals they did not reach, otherwise a better version of a line they struggled with. "ko" is the line filled in to fit this scene (no blanks like {음료}); "meaning" is its meaning in the learner's language.
 
 "headline": one short line in the learner's language naming the result (e.g. "You ordered and paid — mission complete!"). No numbers.
-"summary": two or three plain sentences in the learner's language: one specific thing that went well, the one most useful thing to work on, and a short encouragement. Be honest — no empty praise, no numbers or scores, no grammar jargon.
+"summary": two or three plain sentences in the learner's language: one specific thing that went well, the one most useful thing to work on (the speech level, if it was wrong), and a short encouragement. Be honest — no empty praise, no numbers or scores, no grammar jargon.
 "nextStep": one short sentence in the learner's language suggesting the next challenge (e.g. an optional goal they skipped, or using a target expression).
 
 Judge only what is in the conversation, and never invent learner messages.`;
@@ -61,6 +66,9 @@ export const graderUserTemplate = `# Mission
 # Corrections the app gave on learner messages (JSON, "n" = number)
 {{corrections_json}}
 
+# Expected learner register
+{{learner_register}}
+
 # Conversation
 {{transcript}}
 
@@ -79,6 +87,9 @@ export const graderSchema = z.object({
       tip: line.nullable(),
     }),
   ),
+  registerNotes: z.string(),
+  registerTurns: z.number(),
+  registerMismatchTurns: z.number(),
   accuracyNotes: z.string(),
   accuracy: z.number(),
   expressions: z.array(

@@ -333,6 +333,55 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
     expect(graded).toMatchObject({ status: "graded", report: { outcome: "success" } });
   });
 
+  test("MI8. 성공 확정 판 — 그만두기는 끝내기처럼 채점, 방치 · 새 판 시작은 채점 대기(pending)로 닫혔다가 다음 finish에서 채점(ADR-0177 D15)", async () => {
+    const start = async (id: string) =>
+      missionStartResponseSchema.parse(
+        await (
+          await createMissionStartHandler(deps())(post("mission-start", { mission_id: id }))
+        ).json(),
+      );
+    const finish = async (body: object) =>
+      missionFinishResponseSchema.parse(
+        await (await createMissionFinishHandler(deps())(post("mission-finish", body))).json(),
+      );
+    // 판을 여러 번 시작한다 — 하루 무료 횟수 뒤에는 엽전이 든다
+    await db.admin.query(
+      "select public.companion_grant_credits($1, 'paid', 500, 'purchase', gen_random_uuid()::text, null)",
+      [learner],
+    );
+    const succeed = async (id: string) => {
+      const game = await start(id);
+      await events(await turn(game.conversationId, "아니요, 괜찮아요 [goal:bag]"));
+      await events(await turn(game.conversationId, "카드로 할게요 [goal:pay]"));
+      return game;
+    };
+    // ① 그만두기(abandon)여도 필수를 이뤘으면 채점 · 리포트
+    const quit = await succeed("u01-water");
+    expect(await finish({ conversation_id: quit.conversationId, abandon: true })).toMatchObject({
+      status: "graded",
+      report: { outcome: "success", endReason: "finish" },
+    });
+    // ② 방치 → pending → 다음 finish에서 채점
+    const stale = await succeed("u01-water");
+    await server.query("select public.companion_close_stale_missions(now() + interval '2 hours')");
+    const pending = await db.admin.query(
+      "select status, end_reason, mission_state->>'closedBy' as by from companion.conversations where id = $1",
+      [stale.conversationId],
+    );
+    expect(pending.rows[0]).toEqual({ status: "pending", end_reason: "finish", by: "stale" });
+    expect(await finish({ conversation_id: stale.conversationId })).toMatchObject({
+      status: "graded",
+      report: { outcome: "success" },
+    });
+    // ③ 성공 확정 판이 열린 채 새 판을 시작하면 그 판은 그만둠이 아니라 채점 대기
+    const left = await succeed("u01-water");
+    const next = await start("u06-cafe");
+    expect(next.abandoned ?? []).not.toContain(left.conversationId);
+    expect(await finish({ conversation_id: left.conversationId })).toMatchObject({
+      status: "graded",
+    });
+  });
+
   test("MI4. 그만둠 · 거절 코드 — abandon은 abandoned, 남의 판 · 없는 판은 404, 끝나지 않은 판의 채점은 409", async () => {
     const game = missionStartResponseSchema.parse(
       await (

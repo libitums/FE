@@ -47,6 +47,11 @@ export const missionGoalSchema = z.object({
   opener: z.optional(z.enum(["counterpart", "learner"])),
   /** `counterpart` 목표에서 상대역이 기회를 열 때 쓸 수 있는 한국어 한 줄(예: 「결제는 어떻게 하시겠어요?」). 학습자 쪽 말이 아니다. */
   cue: z.optional(text(120)),
+  /**
+   * (2026-11-23) 이 목표가 아직 안 이뤄졌을 때 상대역이 먼저 말하면 안 되는 것 — 정규식(자바스크립트 · 파이썬 공통 문법) 목록.
+   * 서버가 답의 문장 중 걸리는 것을 뺀다(예: 가격 묻기 목표 → 금액 표현). 학습자가 꺼낼 목표에 쓴다.
+   */
+  withhold: z.optional(z.array(text(80)).check(z.maxLength(8))),
 });
 
 export const missionTargetExpressionSchema = z.object({
@@ -79,6 +84,12 @@ export const missionCounterpartSchema = z.object({
   noOffer: z.optional(z.array(text(40)).check(z.minLength(1), z.maxLength(8))),
   /** 답을 다듬고 나서 말이 하나도 안 남을 때(혼잣말뿐) 대신 내는 안전한 한 줄. 없으면 「네? 다시 한번 말씀해 주시겠어요?」. */
   fallback: z.optional(text(80)),
+  /**
+   * (2026-11-23) 이 장면에서 학습자에게 기대하는 화계 — `polite`(존댓말: -요 · -습니다) | `casual`(반말). 채점은 어긋난 학습자 턴의
+   * 비율로 정확도 상한을 건다(내내 어긋남 = 50). 없으면 polite. `learnerRegisterNote`는 채점자에게 주는 한 줄 설명.
+   */
+  learnerRegister: z.optional(z.enum(["polite", "casual"])),
+  learnerRegisterNote: z.optional(text(200)),
   base: z.optional(missionCounterpartBaseSchema),
 });
 

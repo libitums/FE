@@ -24,6 +24,7 @@ import {
   focusCorrections,
   graderSchema,
   graderUser,
+  isFix,
   normalizeGrade,
   type MissionCorrection,
 } from "./mission-grader.ts";
@@ -81,11 +82,13 @@ export function graderRequest(material: GradeMaterial, mission: MissionDefinitio
     }));
   const history = historyFrom({ history: material.transcript });
   const progress = progressFromDb(mission, material.state);
+  // 채점자에게는 고치기만 — 「더 나은 표현」은 감점 · 꼭 볼 고친 문장의 재료가 아니다(focus 번호도 이 목록 기준).
+  const fixes = corrections.filter(isFix);
   const user = graderUser({
     mission,
     brief: missionBrief(mission),
     transcript: missionTranscript(mission, transcriptFromHistory(history)),
-    corrections,
+    corrections: fixes,
     turnGoalsDone: progress.goalsDone,
     l1: material.profile.l1,
   });
@@ -97,7 +100,7 @@ export function graderRequest(material: GradeMaterial, mission: MissionDefinitio
     },
     hintPenalty: Number(material.weights.hintPenalty),
   };
-  return { user, progress, scoring, corrections };
+  return { user, progress, scoring, corrections, fixes };
 }
 
 /** SQL 리포트 → 계약의 리포트(모르는 칸은 버린다). 모양이 어긋나면 null. */
@@ -161,7 +164,7 @@ export function createMissionFinishHandler(
     if (llm.gradeMission === undefined)
       return respond(missionErrorResponse("server_misconfigured"), "no_grader");
 
-    const { user, progress, scoring, corrections } = graderRequest(material, mission);
+    const { user, progress, scoring, fixes } = graderRequest(material, mission);
     let draft;
     try {
       const signal = AbortSignal.timeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs);
@@ -192,7 +195,7 @@ export function createMissionFinishHandler(
       turnGoalsDone: progress.goalsDone,
       hintsUsed: progress.hintsUsed,
       scoring,
-      correctionCount: corrections.length,
+      correctionCount: fixes.length,
     });
     // 채점자의 판정만 보낸다 — 턴에서 쌓인 것과의 합집합은 SQL이 한다(byTurn · byGrader를 따로 남긴다).
     const verdicts = new Map(draft.goals.map((goal) => [goal.id.trim(), goal]));
@@ -217,8 +220,11 @@ export function createMissionFinishHandler(
       headline: grade.headline,
       nextStep: grade.nextStep,
       strengths: grade.strengths,
-      focus: focusCorrections(grade.focus, corrections),
-      accuracyNotes: grade.accuracyNotes,
+      focus: focusCorrections(grade.focus, fixes),
+      accuracyNotes:
+        grade.register.mismatch > 0
+          ? `${grade.accuracyNotes} [register ${grade.register.mismatch}/${grade.register.turns} → cap ${grade.register.cap}: ${grade.register.notes}]`
+          : grade.accuracyNotes,
       graderModel: llm.graderModel ?? llm.model,
     };
     let saved: Graded | Rejection;

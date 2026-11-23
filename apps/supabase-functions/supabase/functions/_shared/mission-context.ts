@@ -73,7 +73,7 @@ export function missionTranscript(
     .join("\n");
 }
 
-/** 미션 턴의 교정은 서비스 장면이라 존댓말 관계로 본다 — 반말이면 부드럽게(`better`) 제안한다. */
+/** 미션 턴의 교정은 장면의 기대 화계(`counterpart.learnerRegister`, 기본 존댓말)로 본다 — 어긋나면 고치기(correction). */
 export const missionFeedbackSpeechLevel = "polite" as const;
 
 /**
@@ -82,7 +82,11 @@ export const missionFeedbackSpeechLevel = "polite" as const;
  */
 export const missionFeedbackRules = `- Voice input: the message is a speech-to-text transcript. Missing or extra punctuation (. , ?), spacing, and numbers written as digits (1잔, 4500원) are transcription artifacts — never give feedback on them, and never return a correction whose only change is one of these.
 - Beginner level: the learner is a beginner in a short service-counter role-play. Natural spoken short answers are correct: a noun with 요 ("라떼 하나요", "카드요", "포장이요"), dropped particles ("네 카드요"), fillers (음, 아). Give feedback only on real grammar or word mistakes, the speech-level rule, or non-Korean parts (a message with English words still gets kind "l1_to_ko" with status "ok", as above). Keep each reason to one short sentence with no grammar terms.
-- Common beginner mistakes at a service counter are real mistakes, so always correct them (kind "correction"): asking staff with 줘요 instead of 주세요 ("라떼 하나 줘요" → "라떼 하나 주세요" — 줘요 sounds too casual toward a stranger serving you), a particle that changes the meaning ("카드를 할게요" → "카드로 할게요"), and 아니에요 used to decline an offer ("봉투 아니에요" → "봉투는 괜찮아요").`;
+- Common beginner mistakes at a service counter are real mistakes, so always correct them (kind "correction"): asking staff with 줘요 instead of 주세요 ("라떼 하나 줘요" → "라떼 하나 주세요" — 줘요 sounds too casual toward a stranger serving you), a particle that changes the meaning ("카드를 할게요" → "카드로 할게요"), and 아니에요 used to decline an offer ("봉투 아니에요" → "봉투는 괜찮아요").
+- Fix or suggestion — decide in this order. (1) Is the message wrong (grammar, word, the speech level the scene expects, or meaning not clear)? Then it is a fix: kind "correction" (or "l1_to_ko" for non-Korean parts). (2) If it is not wrong, it is NEVER a correction. Use kind "better" only when a clearly more common, natural phrasing exists that a native speaker would really use here ("봉투 필요 없어요" → "봉투는 괜찮아요"); otherwise status "none". Most correct messages get "none" — a suggestion on every turn is noise. Leave the extra "better" field null in this role-play.`;
+
+/** 장면이 반말일 때(`learnerRegister: casual`) — 존댓말이 화계 어긋남(고치기)이다. 1단계 「존댓말은 늘 괜찮다」를 덮는다. */
+export const missionCasualRule = `- This scene expects 반말 from the learner (they are close friends). 존댓말 here is a speech-level mistake: kind "correction", "corrected" in 반말, one item per changed ending.`;
 
 /**
  * 미션 턴의 교정 요청. 교정 프롬프트 · 스키마는 컴패니언과 같고(`feedbackSystemParts` · `feedbackContent`), 상대 캐릭터는 미션의
@@ -97,18 +101,20 @@ export function missionFeedbackRequest(
     readonly signal: AbortSignal;
   },
 ): FeedbackRequest {
+  const casual = mission.counterpart.learnerRegister === "casual";
   return {
     text: input.text,
     l1: input.l1,
     previous: null,
     history: recentFeedbackHistory(input.history),
-    speechLevel: missionFeedbackSpeechLevel,
+    // 화계 어긋남은 고치기(2026-11-23 사용자 결정 — 더 무겁게): 존댓말 장면의 반말은 correction, 반말 장면의 존댓말도 correction.
+    speechLevel: casual ? "casual" : missionFeedbackSpeechLevel,
     character: {
       name: mission.counterpart.label,
       role: mission.counterpart.role,
-      banmalFeedback: "better",
+      banmalFeedback: "correction",
     },
-    extraRules: missionFeedbackRules,
+    extraRules: casual ? `${missionFeedbackRules}\n${missionCasualRule}` : missionFeedbackRules,
     signal: input.signal,
   };
 }

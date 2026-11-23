@@ -14,6 +14,9 @@ export type MissionGraderDraft = {
     done: boolean;
     tip: { ko: string; meaning: string } | null;
   }[];
+  registerNotes: string;
+  registerTurns: number;
+  registerMismatchTurns: number;
   accuracyNotes: string;
   accuracy: number;
   expressions: { id: string; evidence: string | null; used: boolean }[];

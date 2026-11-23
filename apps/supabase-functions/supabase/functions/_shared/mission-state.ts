@@ -16,6 +16,8 @@ export type MissionTurnState = {
   readonly goalsDone: readonly string[];
   readonly offTask: boolean;
   readonly closing: boolean;
+  /** 이 답이 꺼낸 목표(상대역의 자기 보고 — 순서 검사, ADR-0177 D15). 없거나 모르는 값이면 null. */
+  readonly opens?: string | null;
 };
 
 /** 판의 상태(`conversations.mission_state`). 학습자 턴 수는 끝난 턴만 센다. */
@@ -55,6 +57,15 @@ export function parseMissionState(text: string): MissionTurnState | null {
     ],
     offTask: record["off_task"] === true,
     closing: record["closing"] === true,
+    // 칸이 없으면 undefined(모름 — 순서 검사를 하지 않는다), null이면 「아무 목표도 묻지 않음」.
+    ...("opens" in record
+      ? {
+          opens:
+            typeof record["opens"] === "string" && record["opens"].trim() !== ""
+              ? record["opens"].trim()
+              : null,
+        }
+      : {}),
   };
 }
 

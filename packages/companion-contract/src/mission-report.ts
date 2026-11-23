@@ -171,6 +171,19 @@ export const missionListSchema = z.object({
   price: missionPriceSchema,
   /** 학습자 언어 — 목표 글의 `label[l1]`이 이 언어다(번역이 준비된 것만). 모르면 null. 옛 서버에는 없다. */
   l1: z.optional(z.nullable(z.string())),
+  /**
+   * (선택, 2026-11-23) 채점 대기 판 — 필수 목표를 이룬 채 방치 · 새 판 시작으로 닫혀 아직 채점되지 않은 판. 앱은 판마다 `mission-finish`를
+   * 불러 그때 채점한 리포트를 받는다(게으른 채점). 옛 서버에는 없다.
+   */
+  pendingReports: z.optional(
+    z.array(
+      z.object({
+        conversationId: z.uuid(),
+        missionId: missionIdSchema,
+        endedAt: z.nullable(z.string()),
+      }),
+    ),
+  ),
 });
 
 /** `companion_list_mission_results(p_mission_id)`의 반환 — 지난 리포트 전부(최신이 앞)와 최고 기록. */

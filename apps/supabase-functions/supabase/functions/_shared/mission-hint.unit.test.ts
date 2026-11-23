@@ -109,7 +109,7 @@ test("MH5. 미션 턴의 교정 요청 — 컴패니언 교정 프롬프트를 �
   expect(request.character).toEqual({
     name: "카페 직원",
     role: cafeMission.counterpart.role,
-    banmalFeedback: "better",
+    banmalFeedback: "correction",
   });
   expect(request.history).toEqual([{ role: "assistant", text: "반가워요. 뭐 드릴까요?" }]);
   expect(feedbackContent(request)).toContain("Character: 반가워요. 뭐 드릴까요?");
