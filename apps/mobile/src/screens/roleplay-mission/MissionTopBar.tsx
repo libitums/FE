@@ -1,7 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
+import mute from "@libitums/icons/lynx/mute";
 import tick from "@libitums/icons/lynx/tick";
+import volume from "@libitums/icons/lynx/volume";
 import { color } from "@libitums/design-tokens";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
@@ -21,6 +23,9 @@ export type MissionTopBarProps = {
   readonly turnsLeft: number;
   /** 필수 목표를 다 이뤘다(성공 확정) — 남은 턴 뒤에 「Mission success」가 붙고 카드를 닫아도 남습니다. */
   readonly success: boolean;
+  /** 상대역 말 자동 재생 — 머리 오른쪽 스피커 토글(켬 = 스피커, 끔 = 음소거). */
+  readonly autoPlay: boolean;
+  readonly onToggleAutoPlay: () => void;
   readonly onQuit: () => void;
 };
 
@@ -35,9 +40,13 @@ export function MissionTopBar({
   goals,
   turnsLeft,
   success,
+  autoPlay,
+  onToggleAutoPlay,
   onQuit,
 }: MissionTopBarProps): ReactNode {
-  const copy = useUiCopy().roleplayMission;
+  const ui = useUiCopy();
+  const copy = ui.roleplayMission;
+  const autoPlayState = autoPlay ? ui.settings.optionState.on : ui.settings.optionState.off;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   return (
     <view className="mission-talk-top" style={{ paddingTop: `${String(insetTop)}px` }}>
@@ -80,6 +89,15 @@ export function MissionTopBar({
               ? `${copy.turnsLeft(turnsLeft)} · ${copy.extra.success.mark}`
               : copy.turnsLeft(turnsLeft)}
           </text>
+        </view>
+        <view data-testid={ids.autoPlay} data-on={autoPlay ? "true" : "false"}>
+          <RoundButton
+            accessibilityLabel={`${copy.extra.voice.autoPlay}, ${autoPlayState}`}
+            icon={autoPlay ? volume : mute}
+            variant="neutral"
+            size="l"
+            bindtap={onToggleAutoPlay}
+          />
         </view>
       </view>
       <scroll-view

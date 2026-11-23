@@ -26,6 +26,7 @@ export const missionTestIds = {
   hintUse: id("hint-use"),
   hintClose: id("hint-close"),
   hintListen: id("hint-listen"),
+  autoPlay: id("auto-play"),
   successCard: id("success-card"),
   successContinue: id("success-continue"),
   successFinish: id("success-finish"),

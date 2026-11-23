@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, within } from "@lynx-js/react/testing-library";
 
 import { MissionTalkScreen } from "./MissionTalkScreen";
 import { MISSION_FIXTURE_IDS } from "./mission-fixture";
@@ -221,4 +221,48 @@ test("MV-UI8 그만두기 확인을 띄우면 녹음을 버린다(보내지 않�
   expect(voice.device.recording()).toBe(false);
   expect(onSend).not.toHaveBeenCalled();
   expect(id("roleplay-mission-mic")).toHaveAttribute("data-listening", "false");
+});
+
+function stubStorage(initial: Record<string, string> = {}): Map<string, string> {
+  const store = new Map(Object.entries(initial));
+  vi.stubGlobal("NativeModules", {
+    StorageModule: {
+      get: (key: string) => store.get(key) ?? null,
+      set: (key: string, value: string) => void store.set(key, value),
+      remove: (key: string) => void store.delete(key),
+    },
+  });
+  return store;
+}
+
+test("MV-UI9 자동 재생 끄기 — 위 띠의 스피커 토글, 기기에 기억하고 재생을 멈춘다", async () => {
+  const store = stubStorage();
+  const voice = voicePorts();
+  mount(talking, voice);
+  await settle();
+  expect(voice.device.played).toHaveLength(1);
+  const toggle = id("roleplay-mission-auto-play");
+  expect(toggle).toHaveAttribute("data-on", "true");
+  expect(within(toggle).getByTestId("ui-lynx-round-button")).toHaveAttribute(
+    "accessibility-label",
+    "Auto-play, on",
+  );
+  const stopsBefore = voice.device.stops();
+  tapRound("roleplay-mission-auto-play");
+  expect(id("roleplay-mission-auto-play")).toHaveAttribute("data-on", "false");
+  expect(store.get("libitum.roleplay-mission.autoplay")).toBe("off");
+  expect(voice.device.stops()).toBeGreaterThan(stopsBefore);
+});
+
+test("MV-UI10 꺼 둔 설정이면 새 말을 자동 재생하지 않고, 다시 듣기는 된다", async () => {
+  stubStorage({ "libitum.roleplay-mission.autoplay": "off" });
+  const voice = voicePorts();
+  mount(talking, voice);
+  await settle();
+  expect(voice.device.played).toEqual([]);
+  expect(id("roleplay-mission-auto-play")).toHaveAttribute("data-on", "false");
+  const opening = MISSION_FIXTURE_IDS.opening;
+  fireEvent.tap(id(`roleplay-mission-replay-${opening}`), {});
+  await settle();
+  expect(voice.device.played).toEqual([`fake://tts/${opening}`]);
 });

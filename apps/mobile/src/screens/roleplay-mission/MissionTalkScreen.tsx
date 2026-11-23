@@ -19,6 +19,7 @@ import { MissionHintCard, MissionSuccessCard } from "./MissionTalkCards";
 import { MissionTalkLine } from "./MissionTalkLine";
 import { MissionTopBar } from "./MissionTopBar";
 import type { MissionTalkScreenProps } from "./roleplay-mission.contract";
+import { loadMissionAutoPlay, saveMissionAutoPlay } from "./mission-autoplay-storage";
 import { useMissionVoice } from "./use-mission-voice";
 
 import "./roleplay-mission-talk.css";
@@ -61,6 +62,8 @@ export function MissionTalkScreen({
   const [prefill, setPrefill] = useState({ text: "", key: 0 });
   // 받아 적은 글을 입력 칸에 넣었으면 학습자가 (고쳐서) 보낸 글도 음성 턴입니다.
   const [heardPending, setHeardPending] = useState(false);
+  // 상대역 말 자동 재생(기기에 기억) — 꺼도 다시 듣기 · 힌트 예문 듣기는 됩니다.
+  const [autoPlay, setAutoPlay] = useState(loadMissionAutoPlay);
   const enabled = canSendMission(state);
   const voice = useMissionVoice(ports, state.conversationId);
 
@@ -92,7 +95,7 @@ export function MissionTalkScreen({
   const lastThem = [...state.lines].reverse().find((line) => line.kind === "them");
   const lastMessageId = lastThem?.kind === "them" ? lastThem.messageId : null;
   useEffect(() => {
-    if (lastMessageId !== null)
+    if (lastMessageId !== null && autoPlay)
       voice.autoPlay(lastMessageId, { kind: "message", messageId: lastMessageId });
   }, [lastMessageId]);
 
@@ -134,6 +137,13 @@ export function MissionTalkScreen({
         goals={state.goals}
         turnsLeft={state.turnsLeft}
         success={state.requiredDone}
+        autoPlay={autoPlay}
+        onToggleAutoPlay={() => {
+          const next = !autoPlay;
+          setAutoPlay(next);
+          saveMissionAutoPlay(next);
+          if (!next) voice.stopPlayback();
+        }}
         onQuit={askQuit}
       />
       <view className="mission-talk-body" accessibility-elements-hidden={confirming}>

@@ -26,6 +26,8 @@ export type MissionExtraCopy = {
     readonly maxLength: string;
     readonly replay: string;
     readonly hintListen: string;
+    /** 위 띠의 자동 재생 토글 — 낭독은 「Auto-play, On / Off」(켬 · 끔 낱말은 설정 화면의 것). */
+    readonly autoPlay: string;
   };
   /** 목록 카드의 채점 대기 판 표시(`pendingReports`) — 리포트 준비됨 · 채점 중. */
   readonly reportReady: { readonly ready: string; readonly grading: string };
@@ -69,6 +71,7 @@ export const missionExtraEn: MissionExtraCopy = {
     maxLength: "Recording stops after 30 seconds.",
     replay: "Play again",
     hintListen: "Listen",
+    autoPlay: "Auto-play",
   },
   reportReady: { ready: "Report ready", grading: "Scoring…" },
   report: {
@@ -111,6 +114,7 @@ export const missionExtraEs: MissionExtraCopy = {
     maxLength: "La grabación se detiene a los 30 segundos.",
     replay: "Escuchar otra vez",
     hintListen: "Escuchar",
+    autoPlay: "Reproducción automática",
   },
   reportReady: { ready: "Informe listo", grading: "Puntuando…" },
   report: {
@@ -153,6 +157,7 @@ export const missionExtraJa: MissionExtraCopy = {
     maxLength: "録音は30秒で止まります。",
     replay: "もう一度聞く",
     hintListen: "聞く",
+    autoPlay: "自動再生",
   },
   reportReady: { ready: "レポート準備完了", grading: "採点中…" },
   report: {

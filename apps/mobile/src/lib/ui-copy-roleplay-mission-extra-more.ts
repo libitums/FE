@@ -28,6 +28,7 @@ export const missionExtraId: MissionExtraCopy = {
     maxLength: "Rekaman berhenti setelah 30 detik.",
     replay: "Putar lagi",
     hintListen: "Dengarkan",
+    autoPlay: "Putar otomatis",
   },
   reportReady: { ready: "Laporan siap", grading: "Menilai…" },
   report: {
@@ -70,6 +71,7 @@ export const missionExtraVi: MissionExtraCopy = {
     maxLength: "Ghi âm sẽ dừng sau 30 giây.",
     replay: "Nghe lại",
     hintListen: "Nghe",
+    autoPlay: "Tự động phát",
   },
   reportReady: { ready: "Báo cáo đã sẵn sàng", grading: "Đang chấm…" },
   report: {
@@ -112,6 +114,7 @@ export const missionExtraTh: MissionExtraCopy = {
     maxLength: "การบันทึกจะหยุดหลัง 30 วินาที",
     replay: "ฟังอีกครั้ง",
     hintListen: "ฟัง",
+    autoPlay: "เล่นอัตโนมัติ",
   },
   reportReady: { ready: "รายงานพร้อมแล้ว", grading: "กำลังให้คะแนน…" },
   report: {
@@ -154,6 +157,7 @@ export const missionExtraMy: MissionExtraCopy = {
     maxLength: "အသံဖမ်းခြင်းသည် စက္ကန့် 30 ပြည့်လျှင် ရပ်ပါမယ်။",
     replay: "ထပ်နားထောင်ရန်",
     hintListen: "နားထောင်ရန်",
+    autoPlay: "အလိုအလျောက်ဖွင့်",
   },
   reportReady: { ready: "အစီရင်ခံစာ အသင့်", grading: "အမှတ်ပေးနေသည်…" },
   report: {
