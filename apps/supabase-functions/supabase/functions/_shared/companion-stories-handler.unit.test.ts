@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, ChatSendLogEntry } from "./chat-send.contract.ts";
 import {
   createStoriesHandler,
+  STORY_PUSH_CONCURRENCY,
   STORY_PUSH_HOLDOUT,
   storyPushPlan,
 } from "./companion-stories-handler.ts";
@@ -128,7 +129,7 @@ function setup(options: {
     requests
       .filter((r) => r.url.endsWith(suffix))
       .map((r) => JSON.parse(r.body ?? "null") as unknown);
-  return { call, requests, bodyOf, logs };
+  return { call, requests, bodyOf, logs, outbound };
 }
 
 test("SH2. 올리고 → 후보 → 받는 사람은 배정 기록 뒤 send-push(그 사람 하나 · 목적지 companion-chat + story)", async () => {
@@ -209,4 +210,38 @@ test("SH4. 서버 키만 · POST만 — 올리기가 실패해도 알림 후보�
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ posted: 0, outcomes: [] });
   expect(t.logs.at(-1)).toMatchObject({ event: "companion_stories", status: 200 });
+});
+
+test("SH5. 사람마다 알림은 동시에 STORY_PUSH_CONCURRENCY명까지 — 결과 순서는 후보 순서 그대로", async () => {
+  const users = Array.from({ length: 500 }, (_, n) => uuid(n + 1))
+    .filter((id) => !inHoldout(SEED, id, STORY_PUSH_HOLDOUT))
+    .slice(0, 20);
+  const t = setup({ candidates: users.map((id) => candidate(id)) });
+  let inFlight = 0;
+  let most = 0;
+  const handler = createStoriesHandler({
+    env,
+    outbound: async (request) => {
+      if (!request.url.endsWith("/functions/v1/send-push")) return t.outbound(request);
+      inFlight += 1;
+      most = Math.max(most, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      inFlight -= 1;
+      return t.outbound(request);
+    },
+    nowMs: () => Date.parse("2026-12-01T05:05:00Z"),
+    log: () => undefined,
+  });
+  const response = await handler(
+    new Request("https://ref.supabase.co/functions/v1/companion-stories", {
+      method: "POST",
+      headers: { Authorization: "Bearer service-secret" },
+      body: "{}",
+    }),
+  );
+  const result = (await response.json()) as { outcomes: { userId: string; result: string }[] };
+  expect(result.outcomes.map((o) => o.userId)).toEqual(users);
+  expect(result.outcomes.every((o) => o.result === "sent")).toBe(true);
+  expect(most).toBeGreaterThan(1);
+  expect(most).toBeLessThanOrEqual(STORY_PUSH_CONCURRENCY);
 });

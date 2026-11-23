@@ -139,6 +139,30 @@ test("FS-UI4. 6초 뒤 다음 장, 마지막 뒤 닫힘 — 장마다 onShown", 
   expect(props.onClose).toHaveBeenCalledTimes(1);
 });
 
+test("FS-UI3. 한 장에서 단어를 저장해도 다음 장(다른 단어)의 알약은 Save word로 다시 선다", () => {
+  const savedRefs = new Set<string>();
+  const port: StoryWordPort = {
+    lookup: (word) =>
+      word.ref === "voca:b"
+        ? { ko: "불", roman: "bul", meaning: "fire" }
+        : { ko: "물", roman: "mul", meaning: "water" },
+    saved: (word) => savedRefs.has(word.ref),
+    save: (word) => void savedRefs.add(word.ref),
+  };
+  mount({
+    words: port,
+    items: [
+      friendItem("a", "윤경"),
+      friendItem("b", "해준", { word: { episodeId: "u02-fire", ref: "voca:b" } }),
+    ],
+  });
+  tapId(ids.word);
+  expect(screen.getByTestId(ids.word).textContent).toBe("물 saved to My words");
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.word).textContent).not.toContain("saved to My words");
+  expect(screen.getByTestId(ids.word).textContent).toContain("불");
+});
+
 test("FS-UI4. 다음 · 이전 탭, 처음에서 이전은 그대로", () => {
   mount();
   tapId(ids.previous);

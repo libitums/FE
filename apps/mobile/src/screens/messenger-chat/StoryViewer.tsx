@@ -207,7 +207,14 @@ export function StoryViewer({
             </text>
           </view>
           {unmet === null ? (
-            <WordPill item={item} words={words} copy={copy} onSaved={() => onSaveWord(item)} />
+            // 장마다 새로 — 저장 표시(`saved`)가 다음 장으로 넘어가지 않게.
+            <WordPill
+              key={item.story.id}
+              item={item}
+              words={words}
+              copy={copy}
+              onSaved={() => onSaveWord(item)}
+            />
           ) : null}
         </view>
         {unmet === null ? (

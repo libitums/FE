@@ -10,6 +10,7 @@
 import type { ChatSendEnv, ChatSendLogEntry } from "./chat-send.contract.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
 import type { Outbound } from "./delete-account.contract.ts";
+import { mapLimited } from "./map-limited.ts";
 import { inHoldout } from "./push-campaign-text.ts";
 import { serviceKeyHeaders } from "./service-key.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
@@ -23,6 +24,11 @@ const SEED = `series:${STORY_PUSH_SERIES}`;
 /** 본문의 한국어 한 줄 상한(글자) — 넘으면 자르고 「…」. 잠금 화면 두 줄 안. */
 const LINE_MAX = 40;
 const CANDIDATE_LIMIT = 200;
+/**
+ * 사람마다 알림(기록 + send-push 두 번 왕복)을 동시에 몇 명까지 — 200명을 하나씩 돌면 Edge 시간 상한에 닿을 수 있다. 후보는 사람마다 하나라
+ * 같은 사람의 줄이 겹치지 않는다. send-push 한 번이 그 사람 기기 묶음만 보내므로 8이면 FCM · APNs에도 무리가 없다.
+ */
+export const STORY_PUSH_CONCURRENCY = 8;
 
 export type StoryPushMode = "off" | "testers" | "on";
 
@@ -200,17 +206,16 @@ export function createStoriesHandler(deps: StoriesDeps): (request: Request) => P
       deps.log({ event: "companion_stories", status: 200, outcome: "candidates_failed" });
     }
 
-    const outcomes: Outcome[] = [];
-    for (const raw of rows) {
+    const outcomes: Outcome[] = await mapLimited(rows, STORY_PUSH_CONCURRENCY, async (raw) => {
       const candidate = candidateOf(raw);
       const row = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
-      outcomes.push({
+      return {
         userId: candidate?.userId ?? row["userId"] ?? null,
         characterId: candidate?.characterId ?? row["characterId"] ?? null,
         storyId: candidate?.storyId ?? row["storyId"] ?? null,
         result: candidate === null ? "invalid" : await pushOne(deps, env, candidate, now),
-      });
-    }
+      };
+    });
     deps.log({
       event: "companion_stories",
       status: 200,
