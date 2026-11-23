@@ -1,4 +1,4 @@
-// 친구 스토리 줄 · 보기 · 대화 인용 문구(my, ADR-0177).
+// 친구 스토리 줄 · 보기 · 대화 인용 문구(my, ADR-0178).
 // 번역 초안 — 원어민 검수 필요(ADR-0158 개정).
 
 import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories.contract";

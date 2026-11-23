@@ -6,7 +6,7 @@ import type { ChatRemote, RemoteHistory, RemoteTurnHandlers } from "./chat-remot
 import { companionSeed } from "./companion-roster";
 import type { ChatStoryQuote } from "./friend-stories.contract";
 
-// `integration` 계층(FSI-R1 · R2): 서버 방의 스토리 답장(ADR-0177 D5) — 출처가 턴 요청에 `storyId`를 싣고(다시 보내기에도), 서버 기록의
+// `integration` 계층(FSI-R1 · R2): 서버 방의 스토리 답장(ADR-0178 D5) — 출처가 턴 요청에 `storyId`를 싣고(다시 보내기에도), 서버 기록의
 // 인용(`message_json.story`)이 내 글에 다시 선다.
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));

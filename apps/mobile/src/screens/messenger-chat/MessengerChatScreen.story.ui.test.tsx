@@ -16,7 +16,7 @@ import { messengerChatTestIds as chat } from "./messenger-chat.contract";
 import { putStoryReplyHandoff, takeStoryReplyHandoff } from "./story-reply-handoff";
 import { createTrialStore } from "./trial-store";
 
-// `ui` 계층(FS-UI9): 대화방이 스토리 답장 넘김을 받는다(ADR-0177 D5) — 칩 말은 곧바로 인용과 함께 보내고, 답장 칸이면 입력 줄 위
+// `ui` 계층(FS-UI9): 대화방이 스토리 답장 넘김을 받는다(ADR-0178 D5) — 칩 말은 곧바로 인용과 함께 보내고, 답장 칸이면 입력 줄 위
 // 인용 띠를 붙여 다음 글에 싣는다. 무료 안내인 답장은 보내기 관문(체험 · 엽전)을 지나지 않고 이벤트가 난다.
 
 const NOW = new Date(2026, 10, 23, 12, 0, 0).getTime();

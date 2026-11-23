@@ -1,4 +1,4 @@
-// 목록 화면의 추천 친구 상태(`useSuggestedFriends`)가 밖에 내놓는 모양과 시트 모델 만들기입니다(ADR-0162 · ADR-0177). 순수.
+// 목록 화면의 추천 친구 상태(`useSuggestedFriends`)가 밖에 내놓는 모양과 시트 모델 만들기입니다(ADR-0162 · ADR-0178). 순수.
 
 import type { ReactNode } from "@lynx-js/react";
 
@@ -6,7 +6,7 @@ import type { DirectoryRow } from "./friend-directory";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
 import type { SuggestedFriend } from "./suggested-friends";
 
-/** 시트를 연 자리 — 줄 · 친구 찾기 · 스토리(ADR-0177). 이벤트 `from`에 그대로 실립니다. */
+/** 시트를 연 자리 — 줄 · 친구 찾기 · 스토리(ADR-0178). 이벤트 `from`에 그대로 실립니다. */
 /** 연 곳 — 스토리 줄의 추천 아바타(`story_row`) · 스토리 보기의 Add friend and reply(`story_viewer`). */
 export type SuggestedFrom = "row" | "directory" | "story_row" | "story_viewer";
 
@@ -15,12 +15,12 @@ export type SuggestedFriendsUi = {
   readonly row: ReactNode;
   /** 줄의 칸 수(노출 이벤트 — 목록 화면이 실제로 그린 줄만 셉니다, 감사 A5). */
   readonly rowCount: number;
-  /** 추천 대상 전체(줄 최대 수로 자르지 않음) — 스토리 줄(ADR-0177 D3)이 안 만난 친구 · 그 밖의 추천을 고릅니다. 포트가 없으면 빈 목록. */
+  /** 추천 대상 전체(줄 최대 수로 자르지 않음) — 스토리 줄(ADR-0178 D3)이 안 만난 친구 · 그 밖의 추천을 고릅니다. 포트가 없으면 빈 목록. */
   readonly all: readonly SuggestedFriend[];
   /** 그 추천 친구의 프로필 시트를 엽니다(스토리 줄의 추천 아바타 · 잠긴 안 만난 친구). */
   readonly openFriend: (friend: SuggestedFriend, from: SuggestedFrom) => void;
   /**
-   * 안 만난 친구 스토리의 「Add friend and reply」(ADR-0177 D4) — 추가 가능이면 시트 없이 추가 길(성인 확인 포함)을 타고 성공하면 `onAdded`,
+   * 안 만난 친구 스토리의 「Add friend and reply」(ADR-0178 D4) — 추가 가능이면 시트 없이 추가 길(성인 확인 포함)을 타고 성공하면 `onAdded`,
    * 잠김이면 프로필 시트를 엽니다.
    */
   readonly meet: (friend: SuggestedFriend, onAdded: () => void) => void;

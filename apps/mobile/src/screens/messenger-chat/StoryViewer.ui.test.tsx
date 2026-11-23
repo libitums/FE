@@ -12,7 +12,7 @@ import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
 import { general, room } from "./suggested-friends.test-support";
 
-// `ui` 계층(FS-UI3 ~ UI6): 스토리 보기(ADR-0177 D4) — 장 · 한 줄 카드 · 단어 알약 · 무료 안내 · 칩 · 답장 칸, 6초 넘김 · 멈춤 ·
+// `ui` 계층(FS-UI3 ~ UI6): 스토리 보기(ADR-0178 D4) — 장 · 한 줄 카드 · 단어 알약 · 무료 안내 · 칩 · 답장 칸, 6초 넘김 · 멈춤 ·
 // 모션 줄이기, 안 만난 친구 카드, 시스템 뒤로.
 
 beforeEach(() => {

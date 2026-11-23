@@ -48,7 +48,7 @@ export const chatSendRequestSchema = z.object({
    */
   replaces_message_id: z.optional(z.uuid()),
   /**
-   * 친구 스토리 답장(ADR-0177 D5 · D6): 답하는 스토리의 id(`companion_friend_stories()`의 `id`). 서버가 관문 전에 첫 답장 무료를 판정하고
+   * 친구 스토리 답장(ADR-0178 D5 · D6): 답하는 스토리의 id(`companion_friend_stories()`의 `id`). 서버가 관문 전에 첫 답장 무료를 판정하고
    * (스토리마다 계정당 한 번 — 금액 0 예약), 인용을 메시지와 함께 남겨 기록 읽기의 `story`로 돌려주며, 이번 턴 지시에 그 스토리 한 줄을 싣습니다.
    * 판정이 실패하거나 스토리가 없으면 보통 턴입니다. 계약 판은 그대로입니다(선택 칸).
    */

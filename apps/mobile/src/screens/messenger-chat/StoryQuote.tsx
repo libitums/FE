@@ -23,7 +23,7 @@ export type StoryQuoteBarProps = {
   readonly onRemove: () => void;
 };
 
-/** 내 말풍선 위 스토리 인용 카드(ADR-0177 D5, 시안 3번) — 캡션 · 그림 · 한 줄 · Story · 경과. 낭독은 한 덩어리입니다. */
+/** 내 말풍선 위 스토리 인용 카드(ADR-0178 D5, 시안 3번) — 캡션 · 그림 · 한 줄 · Story · 경과. 낭독은 한 덩어리입니다. */
 export function StoryQuoteCard({ quote, name, now }: StoryQuoteCardProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   const imageUrlOf = useContext(StoryImageContext);
@@ -56,7 +56,7 @@ export function StoryQuoteCard({ quote, name, now }: StoryQuoteCardProps): React
   );
 }
 
-/** 입력 줄 위 인용 띠(ADR-0177 D5) — 다음에 보내는 글에 스토리 인용이 실립니다. ×로 뗍니다. */
+/** 입력 줄 위 인용 띠(ADR-0178 D5) — 다음에 보내는 글에 스토리 인용이 실립니다. ×로 뗍니다. */
 export function StoryQuoteBar({ quote, name, onRemove }: StoryQuoteBarProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   return (

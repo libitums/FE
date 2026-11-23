@@ -1,4 +1,4 @@
-// 본 친구 스토리 표시의 기기 저장입니다(ADR-0177 D3, 계정마다). lib/storage의 getItem · setItem만 씁니다.
+// 본 친구 스토리 표시의 기기 저장입니다(ADR-0178 D3, 계정마다). lib/storage의 getItem · setItem만 씁니다.
 // 서버에 쓰지 않습니다 — 보는 것마다 RPC를 늘리지 않고, 다른 기기에서는 다시 「안 봄」입니다. 실패는 삼키고 이번 실행만 메모리로 갑니다.
 
 import { getItem, setItem } from "../../lib/storage";

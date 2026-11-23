@@ -1,4 +1,4 @@
-// 스토리 보기(ADR-0177 D4)의 부품 — 넘김 타이머 · 진행 막대 · 아이콘 단추 · 단어 알약 · 답장 칩/칸 · 안 만난 친구 카드.
+// 스토리 보기(ADR-0178 D4)의 부품 — 넘김 타이머 · 진행 막대 · 아이콘 단추 · 단어 알약 · 답장 칩/칸 · 안 만난 친구 카드.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
@@ -19,7 +19,7 @@ import { localizedLine, type SuggestedFriend } from "./suggested-friends";
 
 import "./story-progress.css";
 
-/** 한 장을 보이는 시간 — 진행 막대 CSS(`story-viewer.css`)의 6000ms와 같은 값입니다(ADR-0177 D4). */
+/** 한 장을 보이는 시간 — 진행 막대 CSS(`story-viewer.css`)의 6000ms와 같은 값입니다(ADR-0178 D4). */
 export const STORY_SHOW_MS = 6_000;
 
 const SLOP = { top: "8px", bottom: "8px", left: "8px", right: "8px" } as const;

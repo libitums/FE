@@ -46,7 +46,7 @@ export type ChatRemote = {
       readonly characterId: string;
       readonly text: string;
       readonly clientMessageId: string;
-      /** 친구 스토리 답장(ADR-0177 D5) — 요청 몸 `story_id`. */
+      /** 친구 스토리 답장(ADR-0178 D5) — 요청 몸 `story_id`. */
       readonly storyId?: string;
     },
     handlers: RemoteTurnHandlers,
@@ -66,7 +66,7 @@ export type ChatRemote = {
   readonly earlyAccess?: EarlyAccessRemote;
   /** 추천 친구(20261216, ADR-0164) — 보이는 친구 · 성인 확인. 없으면(옛 테스트 원격) 추천 친구가 서지 않습니다. */
   readonly friends?: CompanionFriendsRemote;
-  /** 친구 스토리(ADR-0177 D2) — 없으면(옛 테스트 원격) 스토리가 서지 않습니다. */
+  /** 친구 스토리(ADR-0178 D2) — 없으면(옛 테스트 원격) 스토리가 서지 않습니다. */
   readonly stories?: CompanionStoriesRemote;
 };
 

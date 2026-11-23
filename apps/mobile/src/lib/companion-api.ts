@@ -92,7 +92,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
       visible: async () => visibleFriendsFrom(await call("/rest/v1/rpc/companion_friends", {})),
       ackAdult: async () => adultAckFrom(await call("/rest/v1/rpc/companion_ack_adult", {})),
     },
-    // 친구 스토리(ADR-0177 D2) — 함수가 없는 서버(배포 전)는 404 → null(스토리 없음).
+    // 친구 스토리(ADR-0178 D2) — 함수가 없는 서버(배포 전)는 404 → null(스토리 없음).
     stories: {
       list: async () => friendStoriesFrom(await call("/rest/v1/rpc/companion_friend_stories", {})),
     },

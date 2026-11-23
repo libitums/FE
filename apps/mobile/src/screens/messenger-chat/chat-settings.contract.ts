@@ -53,7 +53,7 @@ export type MessengerChatExtraCopy = {
   readonly album: ChatAlbumCopy;
   /** 추천 친구 줄 · 프로필 시트 · 친구 찾기(ADR-0162). */
   readonly suggested: SuggestedFriendsCopy;
-  /** 친구 스토리 줄 · 보기 · 대화 인용(ADR-0177). */
+  /** 친구 스토리 줄 · 보기 · 대화 인용(ADR-0178). */
   readonly stories: FriendStoriesCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;

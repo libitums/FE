@@ -1,6 +1,6 @@
-# 친구 스토리 1단계 — 계약 · 계층별 테스트 계획 (ADR-0177)
+# 친구 스토리 1단계 — 계약 · 계층별 테스트 계획 (ADR-0178)
 
-결정은 [ADR-0177](../adr/0177-friend-stories.md)이 정본이다. 여기는 그 결정을 구현이 기댈 모양과 테스트 계획으로 고정한다.
+결정은 [ADR-0178](../adr/0178-friend-stories.md)이 정본이다. 여기는 그 결정을 구현이 기댈 모양과 테스트 계획으로 고정한다.
 PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 · 첫 답장 무료 · 알림). PR 2(내 단어 · 카드 스토리)는 이 문서에 절을 더한다.
 
 ## 1. 계약
@@ -114,6 +114,6 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 
 ## 5. 문서 영향
 
-- 새로: ADR-0177 · 이 문서 · `docs/e2e/friend-stories.md` · `docs/performance/reports/friend-stories-01.md` · `docs/content/friend-stories.json`.
+- 새로: ADR-0178 · 이 문서 · `docs/e2e/friend-stories.md` · `docs/performance/reports/friend-stories-01.md` · `docs/content/friend-stories.json`.
 - 고침: `docs/adr/README.md`(색인) · ADR-0162(추천 줄 자리 → 스토리 줄 · 「See all」 자리) · `docs/screens.md`(메신저 목록 · 보기 층) ·
   `docs/specs/ai-companion-api.md`(RPC · `story_id`) · `apps/supabase-functions/README.md`(배포 · 스위치).

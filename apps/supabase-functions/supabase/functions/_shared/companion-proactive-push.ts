@@ -20,7 +20,7 @@ const SEED = `series:${PROACTIVE_PUSH_SERIES}`;
 const PREVIEW_MAX = 120;
 
 export type ProactivePushMode = "off" | "testers" | "on";
-/** `daily_cap`: 오늘(현지) 선톡 · 스토리 알림이 이미 나감 — 하루 한 번 합산(ADR-0177 D7, 문 `pushedToday`). */
+/** `daily_cap`: 오늘(현지) 선톡 · 스토리 알림이 이미 나감 — 하루 한 번 합산(ADR-0178 D7, 문 `pushedToday`). */
 export type ProactivePushSkip = "off" | "not_tester" | "no_device" | "no_room" | "daily_cap";
 export type ProactivePushResult =
   | ProactivePushSkip

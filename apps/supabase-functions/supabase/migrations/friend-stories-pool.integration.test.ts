@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { startTestDatabase } from "./postgres.test-support";
 
-// 20261228130000(ADR-0177 D1): 친구 스토리 묶음 27줄이 정본 `docs/content/friend-stories.json`과 같다 — 친구 페르소나(FR1)와 같은 약속.
+// 20261228130000(ADR-0178 D1): 친구 스토리 묶음 27줄이 정본 `docs/content/friend-stories.json`과 같다 — 친구 페르소나(FR1)와 같은 약속.
 
 const poolJson = new URL("../../../../docs/content/friend-stories.json", import.meta.url);
 

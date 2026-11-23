@@ -4,7 +4,7 @@ import { describe, expect, test } from "vitest";
 
 import { COMPANION_CATALOG } from "./companion-roster";
 
-// `unit` 계층(FS-U9): 친구 스토리 묶음의 정본(`docs/content/friend-stories.json`, ADR-0177 D1)이 앱 콘텐츠와 맞는다 —
+// `unit` 계층(FS-U9): 친구 스토리 묶음의 정본(`docs/content/friend-stories.json`, ADR-0178 D1)이 앱 콘텐츠와 맞는다 —
 // 그림은 에피소드 JSON이 쓰는 버킷 경로(버킷에 있음이 보장된 그림)만, 단어는 그 에피소드의 단어, 인물은 카탈로그 인물.
 
 type PoolStory = {

@@ -17,7 +17,7 @@ import { putPendingStoryOpen, takeStoryReplyHandoff } from "./story-reply-handof
 import { suggestedFriendsTestIds as suggestedIds } from "./suggested-friends.contract";
 import { catalogOf, friend, general } from "./suggested-friends.test-support";
 
-// `ui` 계층(FS-UI7): 목록 화면 + 가짜 출처 + 가짜 스토리 포트(ADR-0177 D2 · D3 · D5) — 스토리가 없으면 추천 줄 그대로, 있으면 스토리 줄,
+// `ui` 계층(FS-UI7): 목록 화면 + 가짜 출처 + 가짜 스토리 포트(ADR-0178 D2 · D3 · D5) — 스토리가 없으면 추천 줄 그대로, 있으면 스토리 줄,
 // 친구 스토리 → 보기 → 칩 · 답장 칸이 넘김을 남기고 방을 엶, 목록 줄 「New story」, 본 것 표시, 이벤트, 알림으로 연 스토리.
 
 beforeEach(() => {

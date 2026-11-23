@@ -1,4 +1,4 @@
-/* 스토리 보기의 진행 막대 채움(ADR-0177 D4) — 콘텐츠 길이 예외(motion-literals allowlist). 이 파일에만 둡니다.
+/* 스토리 보기의 진행 막대 채움(ADR-0178 D4) — 콘텐츠 길이 예외(motion-literals allowlist). 이 파일에만 둡니다.
    한 장을 보이는 6초(`STORY_SHOW_MS`)와 같은 길이로 왼쪽부터 찹니다. 가속은 토큰(linear). 모션 줄이기면 이 클래스가 붙지 않습니다. */
 
 /* 지금 칸은 6초 동안 왼쪽부터 찹니다(`STORY_SHOW_MS`와 같은 값 — 콘텐츠 길이 예외, motion-literals allowlist). 멈추면 그 자리에 섭니다. */

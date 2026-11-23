@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20261228(ADR-0177): 친구 스토리 — 묶음 · 날마다 올림 · 앱 읽기 · 스토리마다 첫 답장 무료(금액 0 예약) · 인용 · 알림 후보(선톡과 합쳐 하루 한 번).
+// 20261228(ADR-0178): 친구 스토리 — 묶음 · 날마다 올림 · 앱 읽기 · 스토리마다 첫 답장 무료(금액 0 예약) · 인용 · 알림 후보(선톡과 합쳐 하루 한 번).
 const tester = "00000000-0000-4000-8000-000000000001";
 const member = "00000000-0000-4000-8000-000000000002";
 const other = "00000000-0000-4000-8000-000000000003";

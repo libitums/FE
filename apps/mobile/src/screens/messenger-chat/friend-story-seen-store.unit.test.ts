@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { deviceStorySeenStore, FRIEND_STORY_SEEN_KEY } from "./friend-story-seen-store";
 
-// `unit` 계층(FS-U12): 본 친구 스토리 표시는 계정마다 기기에 적는다(ADR-0177 D3).
+// `unit` 계층(FS-U12): 본 친구 스토리 표시는 계정마다 기기에 적는다(ADR-0178 D3).
 
 const NOW = 1_800_000_000_000;
 let store: Map<string, string>;

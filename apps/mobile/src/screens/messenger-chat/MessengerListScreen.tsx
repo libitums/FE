@@ -81,7 +81,7 @@ export function MessengerListScreen({
     onShortOfCoins: openCoinShop,
   });
 
-  // 친구 스토리(ADR-0177) — 스토리가 있으면 추천 줄 자리에 스토리 줄, 보기는 목록 위 층. 손님 · 접근 불가는 포트가 없습니다.
+  // 친구 스토리(ADR-0178) — 스토리가 있으면 추천 줄 자리에 스토리 줄, 보기는 목록 위 층. 손님 · 접근 불가는 포트가 없습니다.
   const friendStories = useFriendStories({
     port: canBrowseChats(access) && access !== "preview" ? stories : undefined,
     rooms,

@@ -32,7 +32,7 @@ import {
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 
-// `integration` 계층(FSI1 ~ FSI6, ADR-0177): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
+// `integration` 계층(FSI1 ~ FSI6, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
 // (`companion_friend_stories` · `companion_friends`). 목록 → 보기 → 칩 · 답장 칸 → 대화방(인용 카드 · 인용 띠), 안 만난 친구 추가 → 답장,
 // 못 읽음이면 추천 줄 그대로.
 

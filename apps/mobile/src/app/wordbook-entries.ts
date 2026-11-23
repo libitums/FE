@@ -71,7 +71,7 @@ export function wordbookEntriesOf(
   return entries;
 }
 
-/** 카탈로그(UI 언어)에서 그 에피소드 · 단어를 찾습니다(친구 스토리 단어, ADR-0177 D4). 준비 안 됨 · 없음은 null. */
+/** 카탈로그(UI 언어)에서 그 에피소드 · 단어를 찾습니다(친구 스토리 단어, ADR-0178 D4). 준비 안 됨 · 없음은 null. */
 export function catalogWordOf(
   catalog: readonly CatalogEntry[],
   episodeId: string,

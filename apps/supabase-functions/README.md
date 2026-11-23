@@ -829,7 +829,7 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
 그룹 크기(지금 15 · 18, ADR-0170 D13): `update ranking.settings set group_target = 15, group_max = 18;`(이미 배정된 그룹은 그대로). 주 중간에 목표를 내리면 그 주의 남은 참가자는 작은 새 그룹에 들어가므로 주 경계(월 00:00 UTC) 직전에 바꾼다. 그룹이 작아지면 그룹 수가 늘어 상위 3 보상 지급 총량도 는다(25 → 15명이면 약 1.7배) — 보상을 켜기 전에 액수를 다시 본다.
 
-## 친구 스토리 (20261228, ADR-0177)
+## 친구 스토리 (20261228, ADR-0178)
 
 > 적용 순서 함정: 운영에 이미 `20261229120000_companion_media_sample.sql`(더 늦은 번호)이 적용돼 있으면 `supabase db push`가 20261228 둘을 건너뛴다 —
 > `supabase db push --include-all`로 넣는다(`schema_migrations`에 두 버전이 남는지 확인).

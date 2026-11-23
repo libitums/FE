@@ -9,7 +9,7 @@ import { suggestedFriendsTestIds } from "./suggested-friends.contract";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `ui` 계층(FS-UI1 · UI2): 스토리 줄(ADR-0177 D3) — 제목 · Watch all · 친구(안 본 것 · 본 것) · 구분 선 · 안 만난 친구 · 추천 · Find friends.
+// `ui` 계층(FS-UI1 · UI2): 스토리 줄(ADR-0178 D3) — 제목 · Watch all · 친구(안 본 것 · 본 것) · 구분 선 · 안 만난 친구 · 추천 · Find friends.
 
 afterEach(cleanup);
 

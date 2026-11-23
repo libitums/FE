@@ -21,7 +21,7 @@ export type PushTarget =
   | { readonly kind: "phone-call"; readonly unitId: string }
   | { readonly kind: "visual-novel"; readonly unitId: string }
   // 선톡 방(ADR-0127) — 앱이 인물 id 형식을 다시 검증합니다. `variant`는 미리보기 A/B의 칸입니다.
-  // `story`: 친구 스토리 알림(ADR-0177 D7) — 새 앱은 그 인물의 살아 있는 스토리를 엽니다(옛 앱은 이 칸을 모르고 방을 엽니다).
+  // `story`: 친구 스토리 알림(ADR-0178 D7) — 새 앱은 그 인물의 살아 있는 스토리를 엽니다(옛 앱은 이 칸을 모르고 방을 엽니다).
   | {
       readonly kind: "companion-chat";
       readonly characterId: string;

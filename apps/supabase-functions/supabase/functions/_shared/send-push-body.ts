@@ -36,7 +36,7 @@ export function pushTargetFrom(value: unknown): PushTarget | null {
     const characterId = record?.["characterId"];
     if (typeof characterId !== "string" || !characterIdPattern.test(characterId)) return null;
     const variant = record?.["variant"];
-    // 친구 스토리 알림(ADR-0177 D7) — 새 앱은 그 인물의 스토리를, 옛 앱은 방을 엽니다. `true`만 남깁니다.
+    // 친구 스토리 알림(ADR-0178 D7) — 새 앱은 그 인물의 스토리를, 옛 앱은 방을 엽니다. `true`만 남깁니다.
     const story = record?.["story"] === true ? { story: true as const } : {};
     return variant === "a" || variant === "b"
       ? { kind, characterId, variant, ...story }

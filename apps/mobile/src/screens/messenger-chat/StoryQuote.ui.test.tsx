@@ -6,7 +6,7 @@ import { friendStoriesTestIds as ids } from "./friend-stories.contract";
 import { StoryImageContext } from "./story-image-context";
 import { StoryQuoteBar, StoryQuoteCard } from "./StoryQuote";
 
-// `ui` 계층(FS-UI8): 대화방의 스토리 인용(ADR-0177 D5) — 내 말풍선 위 카드 · 입력 줄 위 인용 띠.
+// `ui` 계층(FS-UI8): 대화방의 스토리 인용(ADR-0178 D5) — 내 말풍선 위 카드 · 입력 줄 위 인용 띠.
 
 afterEach(cleanup);
 

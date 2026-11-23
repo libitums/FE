@@ -10,7 +10,7 @@ import {
 import type { OutboundRequest } from "./delete-account.contract.ts";
 import { inHoldout } from "./push-campaign-text.ts";
 
-// 친구 스토리(ADR-0177 D1 · D7): 매시 — 올리고(`companion_post_stories`) → 알림 후보 → 사람마다 한 통(배정 기록 뒤 발송).
+// 친구 스토리(ADR-0178 D1 · D7): 매시 — 올리고(`companion_post_stories`) → 알림 후보 → 사람마다 한 통(배정 기록 뒤 발송).
 const env: ChatSendEnv = {
   supabaseUrl: "https://ref.supabase.co",
   supabaseAnonKey: "anon",

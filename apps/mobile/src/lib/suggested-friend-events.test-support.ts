@@ -35,7 +35,7 @@ export const suggestedFriendEventExamples = [
     characterId: "jaemin",
     outcome: "short",
   },
-  // 친구 스토리(ADR-0177 D8) — 같은 메신저 목록 · 방에서 납니다. PostHog만.
+  // 친구 스토리(ADR-0178 D8) — 같은 메신저 목록 · 방에서 납니다. PostHog만.
   {
     name: "friend_story_row_viewed",
     surface: "chat",

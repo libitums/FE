@@ -2028,7 +2028,7 @@ describe("완화 수위(ADR-0164)", () => {
   });
 });
 
-describe("친구 스토리 답장(ADR-0177 D5 · D6)", () => {
+describe("친구 스토리 답장(ADR-0178 D5 · D6)", () => {
   const storyId = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
   const watch = () => {
     const fake = fakeCompanionLlm();

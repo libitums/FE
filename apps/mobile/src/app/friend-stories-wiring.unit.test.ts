@@ -7,7 +7,7 @@ import { setEarlyAccessRemote } from "./suggested-friends-wiring";
 import { catalogWordOf } from "./wordbook-entries";
 import { friendStoriesPort, setFriendStoriesStoresForTests } from "./friend-stories-wiring";
 
-// `unit` 계층(SW-S1 ~ S4, state-data): 친구 스토리 결선(ADR-0177 D2 · D4) — 서버 포트가 없으면 null(스토리 없음), 있으면 RPC,
+// `unit` 계층(SW-S1 ~ S4, state-data): 친구 스토리 결선(ADR-0178 D2 · D4) — 서버 포트가 없으면 null(스토리 없음), 있으면 RPC,
 // 같은 설정이면 같은 포트 객체(효과가 렌더마다 다시 돌지 않게), 단어는 UI 언어 카탈로그에서 찾고 저장은 별표 단어장.
 
 afterEach(() => {

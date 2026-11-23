@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import type { ChatStreamRequest } from "./chat-stream.contract";
 import { createCompanionRemote, type CompanionRemoteDeps } from "./companion-api";
 
-// `unit` 계층(SA-S1 ~ S2, state-data): 친구 스토리 RPC · 답장 턴의 `story_id`(ADR-0177 D2 · D5). 던지지 않습니다.
+// `unit` 계층(SA-S1 ~ S2, state-data): 친구 스토리 RPC · 답장 턴의 `story_id`(ADR-0178 D2 · D5). 던지지 않습니다.
 
 const config = { url: "https://example.supabase.co", anonKey: "anon" };
 

@@ -1,4 +1,4 @@
-// `companion_friend_stories()` 응답을 앱의 스토리로 풉니다(ADR-0177 D2). 순수 · 던지지 않습니다.
+// `companion_friend_stories()` 응답을 앱의 스토리로 풉니다(ADR-0178 D2). 순수 · 던지지 않습니다.
 // 모양이 틀린 줄은 버리고(나머지는 남김), 몸이 틀리면 null(못 읽음 — 스토리 없음과 같음)입니다.
 
 import type { LocalizedLine } from "./friend-catalog.contract";
@@ -88,7 +88,7 @@ export function friendStoriesFrom(body: string | null): readonly FriendStory[] |
   return stories;
 }
 
-/** 내 글의 스토리 인용(`message_json.story`, ADR-0177 D5) — id · 인물 · 한 줄이 없으면 빈 칸(인용 없음). 그림 · 시각은 없어도 됩니다. */
+/** 내 글의 스토리 인용(`message_json.story`, ADR-0178 D5) — id · 인물 · 한 줄이 없으면 빈 칸(인용 없음). 그림 · 시각은 없어도 됩니다. */
 export function storyQuoteOf(raw: unknown): { readonly story?: ChatStoryQuote } {
   if (!isRecord(raw)) return {};
   const storyId = text(raw["id"]);

@@ -1,4 +1,4 @@
-// 친구 스토리 포트의 결선입니다(ADR-0177). 읽기는 진입점이 끼운 서버 대화 포트(`companion_friend_stories`, 추천 친구와 같은 포트),
+// 친구 스토리 포트의 결선입니다(ADR-0178). 읽기는 진입점이 끼운 서버 대화 포트(`companion_friend_stories`, 추천 친구와 같은 포트),
 // 본 것은 계정마다 기기 저장, 단어는 UI 언어 카탈로그에서 찾고 저장은 별표 단어장(ADR-0169). 배경 전용 라이브러리를 값으로 가져오지 않습니다.
 
 import type { CatalogEntry } from "../lib/episode-catalog";

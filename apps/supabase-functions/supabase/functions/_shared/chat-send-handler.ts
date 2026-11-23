@@ -63,7 +63,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     if (!checked.ok) return respond(checked.response);
     const body = checked.body;
 
-    // 친구 스토리 답장(ADR-0177 D6): 첫 답장 무료는 관문 **전에** 판정한다 — 무료면 금액 0 예약이 먼저 서고, 관문의 엽전 부족 판정과
+    // 친구 스토리 답장(ADR-0178 D6): 첫 답장 무료는 관문 **전에** 판정한다 — 무료면 금액 0 예약이 먼저 서고, 관문의 엽전 부족 판정과
     // 시작(`begin_turn`)이 그 예약을 그대로 쓴다. 실패하면 보통 턴(값은 보통).
     const story =
       body.story_id === undefined

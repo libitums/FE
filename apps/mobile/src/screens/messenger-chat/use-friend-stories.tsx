@@ -1,4 +1,4 @@
-// 목록 화면의 친구 스토리 상태(ADR-0177) — 읽기 · 줄 · 보기 · 본 것 표시 · 답장 넘김 · 이벤트를 한곳에서 잇습니다. 판정은 순수 모듈이 집니다.
+// 목록 화면의 친구 스토리 상태(ADR-0178) — 읽기 · 줄 · 보기 · 본 것 표시 · 답장 넘김 · 이벤트를 한곳에서 잇습니다. 판정은 순수 모듈이 집니다.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";

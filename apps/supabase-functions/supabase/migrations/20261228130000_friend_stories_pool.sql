@@ -1,4 +1,4 @@
--- 친구 스토리 묶음 27줄(ADR-0177 D1) — 정본 `docs/content/friend-stories.json`(통합 테스트 FSP1이 같은지 본다).
+-- 친구 스토리 묶음 27줄(ADR-0178 D1) — 정본 `docs/content/friend-stories.json`(통합 테스트 FSP1이 같은지 본다).
 -- 인물 아홉 × 셋. 그림은 버킷에 이미 있는 콘텐츠 그림(에피소드 JSON이 쓰는 경로)만, 단어는 카탈로그 단어 카드의 voca ref.
 -- 다시 적용하면 같은 id의 줄을 정본 값으로 덮어쓴다(켬 · 만든 시각은 그대로). 운영에서 줄을 끄려면 `active = false`.
 

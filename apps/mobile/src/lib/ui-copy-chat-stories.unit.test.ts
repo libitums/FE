@@ -11,7 +11,7 @@ import { uiCopyFor } from "./ui-copy";
 import { placeholderProblems } from "./ui-copy-placeholder.test-support";
 import { scriptLeaves } from "./ui-copy-script.test-support";
 
-// `unit` 계층(FS-U13): 친구 스토리 문구 일곱 언어(ADR-0177) — 빈 글이 없고, 영어 밖 표는 영어를 그대로 두지 않으며, 문구표에 걸려 있다.
+// `unit` 계층(FS-U13): 친구 스토리 문구 일곱 언어(ADR-0178) — 빈 글이 없고, 영어 밖 표는 영어를 그대로 두지 않으며, 문구표에 걸려 있다.
 
 const tables = {
   es: messengerChatStoriesEs,

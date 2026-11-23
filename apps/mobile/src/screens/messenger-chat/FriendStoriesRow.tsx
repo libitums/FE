@@ -75,7 +75,7 @@ function StoryFace({
 }
 
 /**
- * 채팅 목록 맨 위 스토리 줄(ADR-0177 D3, 시안 1번) — 추천 친구 줄(ADR-0162) 자리를 바꿉니다. 판정은 `storyRowOf`가 하고 여기서는
+ * 채팅 목록 맨 위 스토리 줄(ADR-0178 D3, 시안 1번) — 추천 친구 줄(ADR-0162) 자리를 바꿉니다. 판정은 `storyRowOf`가 하고 여기서는
  * 그리기만 합니다. 목록 스크롤 안이라 z-index 없이 문서 순서로 그립니다.
  */
 export function FriendStoriesRow({

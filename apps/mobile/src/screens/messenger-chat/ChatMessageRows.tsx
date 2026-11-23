@@ -116,7 +116,7 @@ function RowBody({
             chatWords={notes.chatWords ?? null}
           />
         );
-        // 스토리 답장(ADR-0177 D5)이면 말풍선 위에 인용 카드 — 줄은 가로라 둘을 세로 묶음에 담습니다.
+        // 스토리 답장(ADR-0178 D5)이면 말풍선 위에 인용 카드 — 줄은 가로라 둘을 세로 묶음에 담습니다.
         return (
           <ChatOutgoingRow testId={ids.outgoing}>
             {message.story === undefined ? (

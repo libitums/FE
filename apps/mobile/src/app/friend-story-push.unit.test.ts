@@ -6,7 +6,7 @@ import { takePendingStoryOpen } from "../screens/messenger-chat/story-reply-hand
 import { companionPushActions } from "./companion-push";
 import { pushTargetFrom } from "./push-target";
 
-// `unit` 계층(FS-U14): 스토리 알림 목적지(ADR-0177 D7) — `companion-chat` + `story: true`. 옛 앱은 방을 열고(뒤로 맞음), 새 앱은
+// `unit` 계층(FS-U14): 스토리 알림 목적지(ADR-0178 D7) — `companion-chat` + `story: true`. 옛 앱은 방을 열고(뒤로 맞음), 새 앱은
 // 메신저 목록으로 가서 그 인물의 스토리를 엽니다(목록이 스토리를 읽은 뒤 — 없으면 방).
 
 afterEach(() => {

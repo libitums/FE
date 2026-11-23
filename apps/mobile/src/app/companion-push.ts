@@ -25,7 +25,7 @@ export function companionPushActions(
 ): readonly NavAction[] {
   // 메신저를 쓸 수 없는 계정(ADR-0128)이면 메신저 탭 루트(그 계정의 안내)에서 멈춥니다 — 방 · 「열 수 없음」 안내를 띄우지 않는다.
   if (!canOpenChats) return tabRootActions("messenger");
-  // 친구 스토리 알림(ADR-0177 D7) — 목록까지 가서, 목록이 스토리를 읽은 뒤 그 인물의 스토리(없으면 열린 방)를 엽니다.
+  // 친구 스토리 알림(ADR-0178 D7) — 목록까지 가서, 목록이 스토리를 읽은 뒤 그 인물의 스토리(없으면 열린 방)를 엽니다.
   if (story) {
     putPendingStoryOpen(characterId);
     return tabRootActions("messenger");

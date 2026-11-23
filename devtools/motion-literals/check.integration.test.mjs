@@ -151,7 +151,7 @@ test("[LM3′] allowlist에서 narrative-background.css를 빼면 그 파일의 
     { path: reviewBadge, reason: "다시 풀기 배지 튀어 듦(ADR-0058)" },
     { path: unlimitedShine, reason: "무제한 칩 빛 훑기 주기(ADR-0115)" },
     { path: rankingMotion, reason: "순위 화면 등장 연출 값(ADR-0170 D12)" },
-    { path: storyProgress, reason: "스토리 진행 막대 6초(ADR-0177 D4)" },
+    { path: storyProgress, reason: "스토리 진행 막대 6초(ADR-0178 D4)" },
   ]);
   try {
     for (const root of roots) {

@@ -1,4 +1,4 @@
-// `POST /functions/v1/companion-stories` — 친구 스토리(ADR-0177 D1 · D7). 서버 키만 받는다(pg_cron 매시 5분).
+// `POST /functions/v1/companion-stories` — 친구 스토리(ADR-0178 D1 · D7). 서버 키만 받는다(pg_cron 매시 5분).
 //
 // 1. 올림 `companion_post_stories(now)` — 인물마다 UTC 하루 하나(올림 시각이 지났을 때). 실패해도 2를 돈다(앞 시각에 올린 스토리의 알림).
 // 2. 알림 후보 `companion_story_push_candidates(now, limit)` — 스위치 · 기기 · 방 · 답함 · 6시간 · 현지 09 ~ 21시 · 오늘 알림 없음(선톡 · 스토리 ·

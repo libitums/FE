@@ -22,7 +22,7 @@ export type ChatListRowProps = {
   /** 시간 표기 기준 시각(epoch ms)입니다. */
   readonly now: number;
   readonly onOpen: (roomId: string) => void;
-  /** 그 인물의 안 본 친구 스토리(ADR-0177 D3) — 안 읽은 메시지 · 진행 중 활동이 없을 때만 줄이 「New story」가 되고 누르면 스토리를 엽니다. */
+  /** 그 인물의 안 본 친구 스토리(ADR-0178 D3) — 안 읽은 메시지 · 진행 중 활동이 없을 때만 줄이 「New story」가 되고 누르면 스토리를 엽니다. */
   readonly story?: FriendStory | null;
   readonly onOpenStory?: () => void;
 };

@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { historyFrom } from "./companion-parse";
 
-// `unit` 계층(SS-S1, state-data): 서버 기록의 내 글에 실린 스토리 인용(`message_json.story`, ADR-0177 D5)을 다시 세운다.
+// `unit` 계층(SS-S1, state-data): 서버 기록의 내 글에 실린 스토리 인용(`message_json.story`, ADR-0178 D5)을 다시 세운다.
 
 const U1 = "11111111-1111-4111-8111-111111111111";
 const U2 = "55555555-5555-4555-8555-555555555555";

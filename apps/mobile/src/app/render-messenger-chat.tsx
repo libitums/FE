@@ -49,7 +49,7 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
         onSignIn={wiring.onSignIn}
         // 비회원 미리보기(ADR-0166)는 앱 인물 표만 — 서버 RPC 0.
         friends={access === "preview" ? guestSuggestedFriendsPort() : suggestedFriendsPort()}
-        // 친구 스토리(ADR-0177) — 회원 메신저만. 손님 · 접근 불가는 서버 RPC 0(목록 화면이 한 번 더 거릅니다).
+        // 친구 스토리(ADR-0178) — 회원 메신저만. 손님 · 접근 불가는 서버 RPC 0(목록 화면이 한 번 더 거릅니다).
         stories={
           access === "open"
             ? friendStoriesPort({

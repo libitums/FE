@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { friendStoriesFrom } from "./friend-stories-parse";
 
-// `unit` 계층(FS-U8): `companion_friend_stories()` 응답 풀기(ADR-0177 D2).
+// `unit` 계층(FS-U8): `companion_friend_stories()` 응답 풀기(ADR-0178 D2).
 
 const wire = (patch: Record<string, unknown> = {}) => ({
   id: "3a7b8c90-4d5e-4f60-b172-8d9e0f1a2b34",

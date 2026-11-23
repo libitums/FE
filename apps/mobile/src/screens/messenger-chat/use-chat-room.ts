@@ -49,7 +49,7 @@ export type UseChatRoomProps = {
   readonly authorizeSend?: (idea: boolean) => boolean; // idea = 답장 보기(아이디어)로 보냄
   /** 비회원(ADR-0166) — 방을 열 때 생년을 묻지 않습니다(2026-11-20). */
   readonly guest?: boolean;
-  /** 입력 줄의 글을 보낼 때 한 번 꺼내는 선택 칸(친구 스토리 인용, ADR-0177 D5 — 꺼내면 띠가 떨어짐). 답장 보기에는 싣지 않습니다. */
+  /** 입력 줄의 글을 보낼 때 한 번 꺼내는 선택 칸(친구 스토리 인용, ADR-0178 D5 — 꺼내면 띠가 떨어짐). 답장 보기에는 싣지 않습니다. */
   readonly takeSendOptions?: () => ChatSendOptions | undefined;
 };
 
@@ -167,7 +167,7 @@ export function useChatRoom({
     const options = idea === undefined ? takeOptionsRef.current?.() : undefined;
     try {
       if (options === undefined) source.sendText(roomId, idea ?? current.text);
-      else source.sendText(roomId, idea ?? current.text, options); // 스토리 인용(ADR-0177 D5)
+      else source.sendText(roomId, idea ?? current.text, options); // 스토리 인용(ADR-0178 D5)
     } catch {} // 던져도 입력 칸 비우기가 끊기지 않게 합니다(device-findings-1 D5).
     // `stateRef`는 렌더 때만 갱신되므로, 같은 렌더 안의 연속 탭이 다시 보내지 않게 바로 맞춥니다(리뷰 P3-1).
     stateRef.current =

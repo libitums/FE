@@ -233,7 +233,7 @@ test("PP6. 시험 계정 단계 — 기록 없이 보낸다. 스위치를 못 �
   ).toBe("send_failed");
 });
 
-test("PP9. 오늘(현지) 선톡 · 스토리 알림이 이미 나갔으면 보내지 않는다 — 하루 한 번 합산(ADR-0177 D7), 기록 · 발송 없음", async () => {
+test("PP9. 오늘(현지) 선톡 · 스토리 알림이 이미 나갔으면 보내지 않는다 — 하루 한 번 합산(ADR-0178 D7), 기록 · 발송 없음", async () => {
   const userId = pick({ control: false, variant: 0 });
   expect(
     proactivePushPlan({ ...base, userId, mode: "on", tester: false, pushedToday: true }),

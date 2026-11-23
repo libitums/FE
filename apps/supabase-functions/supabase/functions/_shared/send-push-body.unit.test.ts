@@ -30,7 +30,7 @@ describe("SP1 pushTargetFrom", () => {
       characterId: "mina",
     });
     expect(pushTargetFrom({ kind: "companion-chat", characterId: "Mina!" })).toBeNull();
-    // 친구 스토리 알림(ADR-0177 D7) — `story: true`만 남기고 다른 값은 버린다.
+    // 친구 스토리 알림(ADR-0178 D7) — `story: true`만 남기고 다른 값은 버린다.
     expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", story: true })).toEqual({
       kind: "companion-chat",
       characterId: "mina",

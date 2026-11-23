@@ -1,4 +1,4 @@
-// 친구 스토리(ADR-0177) 계약입니다 — 서버 스토리의 앱 쪽 모양 · 포트 · 문구표 · props · test-id. 타입만 둡니다.
+// 친구 스토리(ADR-0178) 계약입니다 — 서버 스토리의 앱 쪽 모양 · 포트 · 문구표 · props · test-id. 타입만 둡니다.
 
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { LocalizedLine } from "./friend-catalog.contract";
@@ -14,7 +14,7 @@ export type FriendStoryLine = {
 /** 스토리의 단어 — 카탈로그 단어 카드의 `voca:` ref입니다. 글 · 뜻은 UI 언어 카탈로그에서 읽습니다. */
 export type FriendStoryWord = { readonly episodeId: string; readonly ref: string };
 
-/** 서버 `companion_friend_stories()`의 한 줄(ADR-0177 D2). 시각은 epoch ms. */
+/** 서버 `companion_friend_stories()`의 한 줄(ADR-0178 D2). 시각은 epoch ms. */
 export type FriendStory = {
   readonly id: string;
   readonly characterId: string;
@@ -30,7 +30,7 @@ export type FriendStory = {
   readonly freeReply: boolean;
 };
 
-/** 본 스토리 표시 — 기기 저장(계정마다). 쓸 때 만료가 지난 표시는 지웁니다(ADR-0177 D3). */
+/** 본 스토리 표시 — 기기 저장(계정마다). 쓸 때 만료가 지난 표시는 지웁니다(ADR-0178 D3). */
 export type StorySeenStore = {
   readonly seenIds: () => ReadonlySet<string>;
   readonly markSeen: (storyId: string, expiresAt: number, now: number) => void;
@@ -73,7 +73,7 @@ export type FriendStoryEntry = {
 /** 안 만난 친구(추천 대상)의 스토리 칸 — 추가 길은 추천 친구 그대로(ADR-0162). */
 export type UnmetStoryEntry = { readonly story: FriendStory; readonly friend: SuggestedFriend };
 
-/** 스토리 줄(ADR-0177 D3): 친구 스토리 → 구분 선 → 안 만난 친구 스토리 → 그 밖의 추천 친구 → Find friends. */
+/** 스토리 줄(ADR-0178 D3): 친구 스토리 → 구분 선 → 안 만난 친구 스토리 → 그 밖의 추천 친구 → Find friends. */
 export type StoryRow = {
   readonly friends: readonly FriendStoryEntry[];
   readonly unmet: readonly UnmetStoryEntry[];
@@ -98,7 +98,7 @@ export type StoryViewerItem = {
   readonly unmet: SuggestedFriend | null;
 };
 
-/** 대화방의 스토리 인용(ADR-0177 D5) — 내 말풍선 위 카드. 서버 기록(`message_json.story`)에서도 다시 섭니다. */
+/** 대화방의 스토리 인용(ADR-0178 D5) — 내 말풍선 위 카드. 서버 기록(`message_json.story`)에서도 다시 섭니다. */
 export type ChatStoryQuote = {
   readonly storyId: string;
   readonly characterId: string;
@@ -109,7 +109,7 @@ export type ChatStoryQuote = {
   readonly postedAt: number | null;
 };
 
-/** 보기 → 대화방 넘김(ADR-0177 D5). `text`가 있으면 곧바로 보내고, null이면 입력 줄 위 인용 띠로 붙입니다. */
+/** 보기 → 대화방 넘김(ADR-0178 D5). `text`가 있으면 곧바로 보내고, null이면 입력 줄 위 인용 띠로 붙입니다. */
 export type StoryReplyHandoff = {
   readonly roomId: string;
   readonly quote: ChatStoryQuote;

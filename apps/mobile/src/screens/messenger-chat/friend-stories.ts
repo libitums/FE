@@ -1,4 +1,4 @@
-// 친구 스토리의 판정입니다(ADR-0177). 순수 — 스토리 · 대화 스냅숏의 방 · 추천 친구 · 본 것 · 시각만 봅니다.
+// 친구 스토리의 판정입니다(ADR-0178). 순수 — 스토리 · 대화 스냅숏의 방 · 추천 친구 · 본 것 · 시각만 봅니다.
 
 import type { ChatMessage, ChatRoomSummary } from "./chat-source.contract";
 import type {
@@ -57,7 +57,7 @@ function latestByCharacter(stories: readonly FriendStory[], now: number): Map<st
   return latest;
 }
 
-/** 스토리 줄(ADR-0177 D3) — 친구(안 본 것 → 본 것, 각 최근 순) · 안 만난 친구(추천 순서) · 그 밖의 추천. */
+/** 스토리 줄(ADR-0178 D3) — 친구(안 본 것 → 본 것, 각 최근 순) · 안 만난 친구(추천 순서) · 그 밖의 추천. */
 export function storyRowOf(input: StoryRowInput): StoryRow {
   const latest = latestByCharacter(input.stories, input.now);
   const friends: FriendStoryEntry[] = [];
@@ -156,13 +156,13 @@ export function viewerItemsOf(
   return unmet === undefined ? null : { items: [unmetItem(unmet, imageUrl)], start: 0 };
 }
 
-/** 그 내 글이 답장한 스토리 id(ADR-0177 D5) — 서버 턴 요청의 `storyId`. 인용이 없으면 undefined. */
+/** 그 내 글이 답장한 스토리 id(ADR-0178 D5) — 서버 턴 요청의 `storyId`. 인용이 없으면 undefined. */
 export function storyIdIn(messages: readonly ChatMessage[], id: string): string | undefined {
   const message = messages.find((each) => each.id === id);
   return message?.kind === "text" ? message.story?.storyId : undefined;
 }
 
-/** 내가 보낸 글 한 줄 — 스토리 답장이면 인용을 싣습니다(ADR-0177 D5). 가짜 · 서버 출처가 함께 씁니다. */
+/** 내가 보낸 글 한 줄 — 스토리 답장이면 인용을 싣습니다(ADR-0178 D5). 가짜 · 서버 출처가 함께 씁니다. */
 export function myTextLine(
   id: string,
   at: number,

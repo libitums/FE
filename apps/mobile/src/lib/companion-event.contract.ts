@@ -97,7 +97,7 @@ export type ChatCoinEvent =
       readonly characterId: string;
       readonly paid: boolean;
       readonly cost: string;
-      /** 스토리 첫 답장 무료로 보냄(ADR-0177 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
+      /** 스토리 첫 답장 무료로 보냄(ADR-0178 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
       readonly storyFree?: true;
     })
   | (Common & {

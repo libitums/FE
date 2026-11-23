@@ -23,7 +23,7 @@ export type ChatMessage =
       readonly kind: "text";
       readonly from: "me" | "them";
       readonly text: ChatText;
-      /** 친구 스토리에 단 답장이면 그 스토리 인용(ADR-0177 D5) — 내 글에만. */
+      /** 친구 스토리에 단 답장이면 그 스토리 인용(ADR-0178 D5) — 내 글에만. */
       readonly story?: ChatStoryQuote;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
@@ -159,7 +159,7 @@ import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contrac
 import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
 import type { SampleSnapshotMethods } from "./chat-remote-sample";
-import type { ChatStoryQuote } from "./friend-stories.contract"; // 친구 스토리 인용(ADR-0177)
+import type { ChatStoryQuote } from "./friend-stories.contract"; // 친구 스토리 인용(ADR-0178)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -197,7 +197,7 @@ export function notesOf(thread: ChatThread, messageId: string): ChatMyNotes {
   return thread.notes[messageId] ?? NO_NOTES;
 }
 
-/** 보내기 선택 칸 — 친구 스토리 인용(ADR-0177). */
+/** 보내기 선택 칸 — 친구 스토리 인용(ADR-0178). */
 export type ChatSendOptions = { readonly story?: ChatStoryQuote };
 
 export type ChatReportReasonId = "rude" | "sexual" | "hateful" | "wrong-korean" | "other";
@@ -212,7 +212,7 @@ export type ChatSource = {
   readonly openRoom: (roomId: string) => void;
   /** 방을 나갑니다(리뷰 #1). 이후 온 답은 다시 안 읽음으로 쌓입니다. 열려 있지 않은 방이면 무동작. */
   readonly closeRoom: (roomId: string) => void;
-  /** `options.story` = 친구 스토리 답장(ADR-0177 D5) — 내 글에 인용이 붙고, 서버 방은 `story_id`를 실어 보냅니다. */
+  /** `options.story` = 친구 스토리 답장(ADR-0178 D5) — 내 글에 인용이 붙고, 서버 방은 `story_id`를 실어 보냅니다. */
   readonly sendText: (roomId: string, text: string, options?: ChatSendOptions) => void;
   /** 잔액은 줄지 않습니다(결제 없음). */
   readonly requestMedia: (roomId: string, media: ChatMediaKind) => void;

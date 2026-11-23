@@ -116,8 +116,8 @@
 - 테스트: `suggested-friends.unit.test.ts` SF-U8 · `friend-directory.unit.test.ts` FD-U4 · `plan-access.unit.test.ts` PA5 · `suggested-friends-wiring.unit.test.ts` SW-U7 ·
   `MessengerListScreen.suggested.ui.test.tsx` ML6 · `companion-early-access.integration.test.ts` EA7 · EA8.
 
-## 추가 ⟨2026-11-23, 친구 스토리 — ADR-0177⟩
+## 추가 ⟨2026-11-23, 친구 스토리 — ADR-0178⟩
 
-- 스토리가 하나라도 있으면 목록 맨 위 줄은 스토리 줄(ADR-0177 D3)이 된다. 추천 친구는 그 줄의 안 만난 친구 스토리(점선 고리) · 그 밖의 추천 아바타로 이어지고,
+- 스토리가 하나라도 있으면 목록 맨 위 줄은 스토리 줄(ADR-0178 D3)이 된다. 추천 친구는 그 줄의 안 만난 친구 스토리(점선 고리) · 그 밖의 추천 아바타로 이어지고,
   「See all」은 줄 끝 「Find friends」 동그라미로 옮겼다(친구 찾기 그대로). 스토리가 없으면(서버 적용 전 · 못 읽음 · 손님) 이 ADR의 R1 줄 그대로다.
 - 안 만난 친구 스토리의 「Add friend and reply」는 D5의 추가 길(성인 확인 포함)을 시트 없이 타고, 잠긴 인물이면 R4 시트를 연다. 이벤트 `from`에 `story`가 더해졌다.

@@ -187,7 +187,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     const placed = new Set<string>();
     const clientMessageId = clientIds.get(localId) ?? deps.uuid();
     clientIds.set(localId, clientMessageId);
-    const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0177 D5) — 다시 보내기에도 실림
+    const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0178 D5) — 다시 보내기에도 실림
     remote.openTurn(
       { characterId: characterOf(room), text, clientMessageId, ...(storyId ? { storyId } : {}) },
       {

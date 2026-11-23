@@ -1,4 +1,4 @@
-// 친구 스토리의 제품 사용 이벤트입니다(ADR-0177 D8) — PostHog만(Airbridge로 보내지 않음). 타입만 둡니다.
+// 친구 스토리의 제품 사용 이벤트입니다(ADR-0178 D8) — PostHog만(Airbridge로 보내지 않음). 타입만 둡니다.
 // 공통 속성(`surface` · `daysSinceFirstOpen`)은 `companion-event.contract.ts`의 묶음과 같은 규약으로 붙습니다 — 보내는 자리는
 // `emitCompanionEvent`입니다. 값은 문자열 · 불리언뿐입니다(수는 10진 문자열).
 
