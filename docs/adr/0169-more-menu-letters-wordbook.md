@@ -38,7 +38,7 @@
 ### D2. Letters — 자모표 40자, 소리는 버킷에서
 
 - more 스택 루트(뒤로 없음 · 바 유지 · 전역 머리 없음). 위 고정(제목 · 리드 · 「Practice: build sounds」), 아래 4열 격자만 스크롤: 기본 자음 14 · 기본 모음 10 · 쌍자음 5 · 겹모음 11.
-  칸 = 로마자(보드의 개정 로마자, 기존 보기 로마자 설정을 따름) · 글자 · 스피커. ~~방금 칸 강조~~, 들은 칸 스피커 brand-strong.
+  칸 = 로마자(보드의 개정 로마자, 기존 보기 로마자 설정을 따름) · 글자 · 스피커. ~~방금 칸 강조~~, ~~들은 칸 스피커 brand-strong~~ → 소리가 나는 동안만 스피커 brand-strong(⟨2026-11-23⟩ 아래 적용 기록).
   ⟨2026-11-21 개정 — 아래 「칸 눌림 개정」⟩ 방금 칸 강조(선택 상태)를 없앴다. 칸은 누르는 동안만 눌림 면(gray-100)이고 움직이지 않으며 진동하지 않는다.
 - 소리: 자음 + ㅏ(가 · 까 …), 모음은 ㅇ + 모음(아 · 의 …). 파일은 앱에 싣지 않는다([ADR-0060](0060-episode-voice-remote-audio.md) D1) — 버킷 `audio/letters/<로마자>.m4a`,
   음성 정보 파일(`audio/manifest.json`)에 `letters/<로마자>` 항목이 있을 때만 소리가 있다고 본다. 없으면 스피커가 흐린 모양이고 낭독에 「sound not available yet」, 칸은 그대로 눌린다.
@@ -200,3 +200,13 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
 - 테스트: unit · ui · integration(아래 증거) — mobile 10,249건 통과 · ui-lynx 통과.
 - e2e: [수동 절차](../e2e/more-menu-letters-wordbook.md) — ⟨2026-11-20⟩ ME-E1~E4 · E20 일부 실행(메뉴 카드 잘림 수정 뒤 iOS · Android 통과), 나머지 미실행.
 - 성능: [보고서](../performance/reports/more-menu-letters-wordbook-01.md)(미측정, 번들만).
+
+## 적용 기록 ⟨2026-11-23 — 스피커 색은 소리가 나는 동안만⟩
+
+**사용자 요청**(2026-11-23): 「버튼 눌렀을 때 사운드 아이콘 소리 들릴 때만 색상변경되야하는데 계속 유지되어잇네」.
+
+- 「들은 칸」 표시(스피커 brand-strong · `data-heard` · 낭독 「heard」 · 기초 칸의 굵은 brand 테두리 `entry-basics-cell-heard`)를 **지웠다**. 대신 **소리가 나는 동안만** 스피커가 brand-strong(기초 칸은 테두리도)이고, 끝나면 처음 색으로 돌아간다 — Letters 자모표와 입장 전 기초 「글자 여섯」 둘 다.
+- 끝은 재생 모듈의 끝 알림으로 안다 — `LetterSoundPort.play(source, onDone)`. 다른 칸을 누르면 앞 칸은 곧바로 처음 색이다(누를 때마다 차례 번호 — 앞 재생의 늦은 끝 알림이 새 칸을 끄지 않음). 끝 알림이 오지 않아도(재생 모듈 없음 · 끊김) 3초 안전망 뒤 돌아간다(`use-playing-letter.ts`). 재생 모듈이 없으면 결선이 곧바로 끝을 알린다.
+- 낭독 이름에서 「heard」가 빠진다 — 칸은 「글자, 로마자」(소리 없으면 「…, sound not available yet」).
+- 검사: ui LS4 · LS4b · LS4c · LS7 · BL2 · BL4.
+
