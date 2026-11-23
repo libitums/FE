@@ -59,4 +59,13 @@ describe("FS-U13 친구 스토리 문구", () => {
       });
     },
   );
+
+  test("Find friends — 줄의 짧은 이름은 76px 칸에 맞고, 낭독 이름은 친구 찾기 제목 그대로(요청 2026-11-23)", () => {
+    expect(messengerChatStoriesEs.findFriends).toBe("Buscar");
+    expect(messengerChatStoriesMy.findFriends).toBe("ရှာရန်");
+    for (const language of ["en", "es", "id", "ja", "vi", "th", "my"] as const) {
+      const copy = uiCopyFor(language).messengerChat;
+      expect(copy.stories.findFriendsLabel, language).toBe(copy.suggested.directory.title);
+    }
+  });
 });

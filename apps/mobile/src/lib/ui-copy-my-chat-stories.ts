@@ -17,7 +17,7 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
   newBadge: "အသစ်",
   friendLabel: (name, age, seen) => `${name}၏ စတိုရီ၊ ${age}${seen ? "၊ ကြည့်ပြီး" : "၊ အသစ်"}`,
   unmetLabel: (name) => `${name}၏ စတိုရီ၊ သူငယ်ချင်းသစ်`,
-  findFriends: "သူငယ်ချင်း ရှာရန်",
+  findFriends: "ရှာရန်", // 줄 칸(76px)에 맞게 짧게 — 낭독은 findFriendsLabel
   findFriendsLabel: "သူငယ်ချင်း ရှာရန်",
   listPreview: (line) => `စတိုရီအသစ် · ${line}`,
   listRowLabel: (name, line) => `${name}၊ စတိုရီအသစ်: ${line}။ စတိုရီ ဖွင့်မည်`,

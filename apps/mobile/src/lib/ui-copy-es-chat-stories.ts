@@ -16,7 +16,7 @@ export const messengerChatStoriesEs: FriendStoriesCopy = {
   newBadge: "Nueva",
   friendLabel: (name, age, seen) => `Historia de ${name}, ${age}${seen ? ", vista" : ", nueva"}`,
   unmetLabel: (name) => `Historia de ${name}, nueva amistad`,
-  findFriends: "Buscar amigos",
+  findFriends: "Buscar", // 줄 칸(76px)에 맞게 짧게 — 낭독은 findFriendsLabel(친구 찾기 제목 그대로)
   findFriendsLabel: "Buscar amigos",
   listPreview: (line) => `Nueva historia · ${line}`,
   listRowLabel: (name, line) => `${name}, nueva historia: ${line}. Abre la historia`,
