@@ -227,7 +227,6 @@ export function MessengerChatScreen({
               name={thread.counterpart.name}
               avatarUrl={thread.counterpart.avatarUrl}
               onNext={guide.next}
-              onSkip={guide.skip}
               sampleOnly={guide.sampleOnly}
             />
           )}
