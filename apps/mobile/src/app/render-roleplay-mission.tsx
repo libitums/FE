@@ -3,7 +3,11 @@
 
 import type { Screen } from "./nav-state";
 import { RoleplayMissionRoute } from "./RoleplayMissionFlow";
-import { notifyMissionResultsChanged, roleplayMissionSource } from "./roleplay-mission-wiring";
+import {
+  notifyMissionResultsChanged,
+  roleplayMissionAudioDevice,
+  roleplayMissionSource,
+} from "./roleplay-mission-wiring";
 import { firstCoverImageOf } from "./roleplay-story-model";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -17,6 +21,7 @@ export function renderRoleplayMission(
       missionId={screen.missionId}
       insets={wiring.safeAreaInsets}
       source={roleplayMissionSource()}
+      device={roleplayMissionAudioDevice()}
       imageUrlOf={(episodeId) => firstCoverImageOf(wiring.episodeContent, episodeId)}
       ordinalOf={(episodeId) =>
         wiring.catalogSections.find((section) => section.episodeId === episodeId)?.ordinal ?? null

@@ -1,5 +1,6 @@
 // 롤플레이 미션 한 route의 흐름입니다 — 미리보기 → 대화 → (채점) → 리포트, 다시 하기는 미리보기로. 단계는 판의 상태
 // (`MissionPhase`)가 정하고 route는 하나입니다(대본형 롤플레이와 같은 방식). 뒤로가기 · 그만두기 · 목록으로는 롤플레이 목록으로 나갑니다.
+// 목록에 이 미션의 채점 대기 판(`pendingReports`, ADR-0177)이 있으면 열 때 곧장 채점해 리포트를 보입니다(`mission-finish`).
 
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
@@ -9,10 +10,12 @@ import { missionCardOf } from "../screens/roleplay-mission/mission-model";
 import { MissionPreviewScreen } from "../screens/roleplay-mission/MissionPreviewScreen";
 import { MissionReportScreen } from "../screens/roleplay-mission/MissionReportScreen";
 import { MissionTalkScreen } from "../screens/roleplay-mission/MissionTalkScreen";
+import type { MissionAudioDevice } from "../screens/roleplay-mission/mission-voice.contract";
 import type {
   MissionCard,
   MissionList,
   MissionSource,
+  MissionVoicePorts,
 } from "../screens/roleplay-mission/roleplay-mission.contract";
 import { useMissionSession } from "../screens/roleplay-mission/use-mission-session";
 
@@ -20,6 +23,9 @@ export type RoleplayMissionFlowProps = {
   readonly insets: SafeAreaInsets;
   readonly card: MissionCard;
   readonly source: MissionSource;
+  readonly voice: MissionVoicePorts;
+  /** 이 미션의 채점 대기 판 — 있으면 미리보기 대신 채점 → 리포트로 엽니다. */
+  readonly pendingConversationId: string | null;
   readonly onExit: () => void;
   /** 리포트를 받았습니다 — 목록의 최고 기록을 다시 읽습니다. */
   readonly onReport: () => void;
@@ -29,11 +35,16 @@ export function RoleplayMissionFlow({
   insets,
   card,
   source,
+  voice,
+  pendingConversationId,
   onExit,
   onReport,
 }: RoleplayMissionFlowProps): ReactNode {
   const session = useMissionSession(source, card.item.id);
   const { state } = session;
+  useEffect(() => {
+    if (pendingConversationId !== null) session.openPending(pendingConversationId);
+  }, []);
   // 채점 실패 화면에서 다시 시도한 채점은 리포트 화면 위에서 기다립니다(대화로 돌아가지 않음).
   const [retrying, setRetrying] = useState(false);
 
@@ -74,7 +85,8 @@ export function RoleplayMissionFlow({
         />
       );
     case "grading":
-      if (retrying) {
+      // 채점 실패 뒤 다시 시도 · 채점 대기 판(대화 없이 곧장 채점)은 리포트 화면 위에서 기다립니다.
+      if (retrying || state.lines.length === 0) {
         return (
           <MissionReportScreen
             insets={insets}
@@ -104,19 +116,27 @@ export function RoleplayMissionFlow({
       onHint={session.hint}
       onDismissHint={session.dismissHint}
       onQuit={session.quit}
+      onKeepGoing={session.keepGoing}
+      onFinish={session.finish}
+      voice={voice}
     />
   );
 }
 
-export type RoleplayMissionRouteProps = Omit<RoleplayMissionFlowProps, "card"> & {
+export type RoleplayMissionRouteProps = Omit<
+  RoleplayMissionFlowProps,
+  "card" | "voice" | "pendingConversationId"
+> & {
   readonly missionId: string;
+  /** 기기 녹음 · 재생(호스트 모듈 자리 — 지금은 가짜). */
+  readonly device: MissionAudioDevice;
   readonly imageUrlOf: (episodeId: string) => string | null;
   readonly ordinalOf: (episodeId: string) => number | null;
 };
 
 /** route 입구 — 출처에서 목록을 읽어 미션 칸을 만든 뒤 흐름을 세웁니다. 읽는 동안은 짙은 바탕만 둡니다. */
 export function RoleplayMissionRoute(props: RoleplayMissionRouteProps): ReactNode {
-  const { missionId, imageUrlOf, ordinalOf, source } = props;
+  const { missionId, imageUrlOf, ordinalOf, source, device, ...rest } = props;
   const [list, setList] = useState<MissionList | null>(null);
   useEffect(() => {
     let alive = true;
@@ -136,5 +156,14 @@ export function RoleplayMissionRoute(props: RoleplayMissionRouteProps): ReactNod
       <view className="roleplay-story-screen-backdrop" data-testid="roleplay-mission-loading" />
     );
   }
-  return <RoleplayMissionFlow {...props} card={card} />;
+  const pending = list?.pendingReports?.find((entry) => entry.missionId === missionId);
+  return (
+    <RoleplayMissionFlow
+      {...rest}
+      source={source}
+      card={card}
+      voice={{ device, transcribe: source.transcribe, speak: source.speak }}
+      pendingConversationId={pending?.conversationId ?? null}
+    />
+  );
 }

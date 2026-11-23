@@ -1,6 +1,7 @@
 // 롤플레이 미션 문구의 번역 초안(인도네시아어 · 베트남어) — 원어민 검수 필요. 모양과 영어 정본은 `ui-copy-roleplay-mission.ts`입니다.
 
 import { roleplayMissionEn, type RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
+import { missionExtraId, missionExtraVi } from "./ui-copy-roleplay-mission-extra-more";
 
 export const roleplayMissionId: RoleplayMissionCopy = {
   ...roleplayMissionEn,
@@ -50,7 +51,7 @@ export const roleplayMissionId: RoleplayMissionCopy = {
   quitBody: "Kamu tidak akan mendapat laporan, dan permainan ini tetap terhitung.",
   quitConfirm: "Keluar",
   quitCancel: "Lanjutkan",
-  ended: { goals: "Misi selesai!", turn_limit: "Giliran habis" },
+  ended: { goals: "Misi selesai!", turn_limit: "Giliran habis", finish: "Misi selesai!" },
   grading: "Menilai percakapanmu…",
   report: {
     success: "Misi selesai",
@@ -76,6 +77,7 @@ export const roleplayMissionId: RoleplayMissionCopy = {
     refunded: "Kami mengembalikan pembayaran untuk permainan ini.",
     retryGrading: "Coba lagi",
   },
+  extra: missionExtraId,
 };
 
 export const roleplayMissionVi: RoleplayMissionCopy = {
@@ -126,7 +128,7 @@ export const roleplayMissionVi: RoleplayMissionCopy = {
   quitBody: "Bạn sẽ không nhận được báo cáo, và lượt chơi này vẫn được tính.",
   quitConfirm: "Bỏ",
   quitCancel: "Tiếp tục",
-  ended: { goals: "Hoàn thành nhiệm vụ!", turn_limit: "Hết lượt" },
+  ended: { goals: "Hoàn thành nhiệm vụ!", turn_limit: "Hết lượt", finish: "Hoàn thành nhiệm vụ!" },
   grading: "Đang chấm cuộc trò chuyện…",
   report: {
     success: "Hoàn thành nhiệm vụ",
@@ -152,4 +154,5 @@ export const roleplayMissionVi: RoleplayMissionCopy = {
     refunded: "Chúng tôi đã hoàn lại khoản bạn trả cho lượt này.",
     retryGrading: "Thử lại",
   },
+  extra: missionExtraVi,
 };

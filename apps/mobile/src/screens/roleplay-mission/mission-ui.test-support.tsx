@@ -2,12 +2,17 @@
 
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
+import { createFakeMissionSource } from "./mission-fake-source";
+import type { FakeMissionOptions } from "./mission-fake-source";
+import { createFakeAudioDevice } from "./mission-fake-voice";
+import type { FakeAudioDevice, FakeAudioOptions } from "./mission-fake-voice";
 import { missionListFixture, missionStartFixture } from "./mission-fixture";
 import { initialMissionSession, missionSessionReducer } from "./mission-session";
 import type {
   MissionCard,
   MissionSessionAction,
   MissionSessionState,
+  MissionVoicePorts,
 } from "./roleplay-mission.contract";
 
 export const insets = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -62,3 +67,26 @@ export function typeInto(testId: string, value: string, name: "input" | "confirm
 
 /** 확인 다이얼로그의 단추를 id로 누릅니다(ui-lynx `Dialog`의 `ui-lynx-dialog-action-<id>`). */
 export const tapDialogAction = (actionId: string) => tapButton(`ui-lynx-dialog-action-${actionId}`);
+
+const now = (task: () => void) => task();
+
+/** 대화 화면의 음성 포트 — 가짜 출처의 받아 적기 · 합성과 가짜 기기(모두 즉시 실행). */
+export function voicePorts(
+  options: { readonly source?: FakeMissionOptions; readonly device?: FakeAudioOptions } = {},
+): MissionVoicePorts & { readonly device: FakeAudioDevice } {
+  const source = createFakeMissionSource({ schedule: now, ...options.source });
+  return {
+    device: createFakeAudioDevice({ schedule: () => undefined, ...options.device }),
+    transcribe: source.transcribe,
+    speak: source.speak,
+  };
+}
+
+/** 대기 중인 프라미스 몇 겹을 풉니다(받아 적기 · 합성의 결과가 상태로 오를 때까지). */
+export async function settle(): Promise<void> {
+  for (let i = 0; i < 6; i += 1) {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  }
+}

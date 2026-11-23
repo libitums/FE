@@ -1,6 +1,7 @@
 // 롤플레이 미션 문구의 번역 초안(스페인어 · 일본어) — 원어민 검수 필요. 모양과 영어 정본은 `ui-copy-roleplay-mission.ts`입니다.
 
 import { roleplayMissionEn, type RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
+import { missionExtraEs, missionExtraJa } from "./ui-copy-roleplay-mission-extra";
 
 export const roleplayMissionEs: RoleplayMissionCopy = {
   ...roleplayMissionEn,
@@ -50,7 +51,7 @@ export const roleplayMissionEs: RoleplayMissionCopy = {
   quitBody: "No recibirás un informe y esta partida cuenta igualmente.",
   quitConfirm: "Salir",
   quitCancel: "Seguir",
-  ended: { goals: "¡Misión cumplida!", turn_limit: "Sin turnos" },
+  ended: { goals: "¡Misión cumplida!", turn_limit: "Sin turnos", finish: "¡Misión cumplida!" },
   grading: "Puntuando tu conversación…",
   report: {
     success: "Misión cumplida",
@@ -76,6 +77,7 @@ export const roleplayMissionEs: RoleplayMissionCopy = {
     refunded: "Te devolvimos lo que pagaste por esta partida.",
     retryGrading: "Reintentar",
   },
+  extra: missionExtraEs,
 };
 
 export const roleplayMissionJa: RoleplayMissionCopy = {
@@ -126,7 +128,7 @@ export const roleplayMissionJa: RoleplayMissionCopy = {
   quitBody: "レポートはもらえず、このプレイは使ったことになります。",
   quitConfirm: "やめる",
   quitCancel: "続ける",
-  ended: { goals: "ミッション達成!", turn_limit: "ターン切れ" },
+  ended: { goals: "ミッション達成!", turn_limit: "ターン切れ", finish: "ミッション達成!" },
   grading: "会話を採点しています…",
   report: {
     success: "ミッション達成",
@@ -152,4 +154,5 @@ export const roleplayMissionJa: RoleplayMissionCopy = {
     refunded: "このプレイの支払いは返しました。",
     retryGrading: "もう一度試す",
   },
+  extra: missionExtraJa,
 };

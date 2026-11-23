@@ -5,6 +5,16 @@ import { Button } from "@libitums/ui-lynx/button";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { missionTestIds as ids } from "./mission-test-ids";
+import {
+  otherCorrections,
+  ReportBetter,
+  ReportFocus,
+  ReportHeadline,
+  ReportNextStep,
+  ReportScoreParts,
+  ReportStrengths,
+  ReportTips,
+} from "./MissionReportExtras";
 import type { MissionReport, MissionReportScreenProps } from "./roleplay-mission.contract";
 
 import "./roleplay-mission-report.css";
@@ -47,6 +57,7 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
   const copy = useUiCopy().roleplayMission.report;
   const doneCount = report.goals.filter((goal) => goal.done).length;
   const usedCount = report.expressions.filter((entry) => entry.used).length;
+  const corrections = otherCorrections(report);
   return (
     <view className="mission-report-body">
       <view className="mission-report-hero">
@@ -66,6 +77,7 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
             {copy.best(report.bestScore)}
           </text>
         )}
+        <ReportHeadline report={report} />
       </view>
       <Section title={`${copy.task} · ${String(doneCount)} / ${String(report.goals.length)}`}>
         {report.goals.map((goal) => (
@@ -78,6 +90,7 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
           />
         ))}
       </Section>
+      <ReportTips report={report} />
       {report.expressions.length === 0 ? null : (
         <Section
           title={`${copy.expressions} · ${String(usedCount)} / ${String(report.expressions.length)}`}
@@ -107,10 +120,14 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
           good={false}
         />
       </view>
-      {report.corrections.length === 0 ? null : (
+      <ReportScoreParts report={report} />
+      <ReportStrengths report={report} />
+      <ReportFocus report={report} />
+      <ReportBetter report={report} />
+      {corrections.length === 0 ? null : (
         <Section title={copy.corrections}>
           <view className="mission-report-section" data-testid={ids.reportCorrections}>
-            {report.corrections.map((entry, index) => (
+            {corrections.map((entry, index) => (
               <view
                 key={`${entry.original}:${String(index)}`}
                 className="mission-report-card"
@@ -146,13 +163,15 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
           {report.summary}
         </text>
       </Section>
+      <ReportNextStep report={report} />
     </view>
   );
 }
 
 /**
- * 미션 리포트입니다(PRD §3.8 · 부록 B) — 성공 여부 · 최종 점수 · 이 미션 최고 기록, 목표별 달성 · 목표 표현 사용 ·
- * 정확도 · 힌트, 고친 문장 · 다시 해 볼 표현 · 총평. 채점이 실패하면 리포트 대신 「다시 시도」와 값이 돌아갔다는 안내입니다.
+ * 미션 리포트입니다(PRD §3.8 · 부록 B, 파이프라인 문서 §10.2 ②) — 성공 여부 · 최종 점수 · 이 미션 최고 기록 · 결과 한 줄, 목표별 달성 ·
+ * 못 이룬 목표의 예문 · 목표 표현 사용 · 정확도 · 힌트 · 점수 항, 잘한 점 · 꼭 볼 고친 문장 · 더 나은 표현 · 나머지 고친 문장 ·
+ * 다시 해 볼 표현 · 총평 · 다음 도전. 채점이 실패하면 리포트 대신 「다시 시도」와 값이 돌아갔다는 안내입니다.
  * 레슨 결과 화면은 정답 수 기반이라 담을 칸이 없어 새로 그렸습니다(PRD §7).
  */
 export function MissionReportScreen({

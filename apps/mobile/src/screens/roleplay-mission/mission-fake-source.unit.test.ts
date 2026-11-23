@@ -95,7 +95,7 @@ describe("가짜 출처의 한 판", () => {
     });
   });
 
-  test("MF-U5 부록 B의 대화(주문 · 포장 · 카드)는 성공으로 끝나고 리포트가 73점이다", async () => {
+  test("MF-U5 부록 B의 대화(주문 · 포장 · 카드)는 필수를 이뤄 판이 열린 채 성공 확정 — 끝내기로 73점", async () => {
     const { source, id } = await startedPlay();
     await turnEvents(source, id, "아이스 아메리카노 한 잔 주세요.");
     const stay = await turnEvents(source, id, "가지고 가요.");
@@ -104,19 +104,94 @@ describe("가짜 출처의 한 판", () => {
       kind: "better",
     });
     const last = await turnEvents(source, id, "카드로 할게요.");
-    expect(last.find((event) => event.event === "mission")?.data).toMatchObject({ ended: "goals" });
+    expect(last.find((event) => event.event === "mission")?.data).toMatchObject({
+      ended: null,
+      requiredDone: true,
+    });
     const finished = await source.finish(id, false);
     expect(missionFinishResponseSchema.safeParse(finished).success).toBe(true);
     expect(finished).toMatchObject({
       status: "graded",
       report: {
         outcome: "success",
+        endReason: "finish",
         totalScore: 73,
         taskScore: 75,
         expressionScore: 50,
         bestScore: 73,
+        scoreParts: { task: 37.5, accuracy: 25.5, expression: 10, hintPenalty: 0 },
+        corrections: [{ original: "가지고 가요.", corrected: "포장이요.", kind: "better" }],
+        focus: [],
+        strengths: [{ quote: "아이스 아메리카노 한 잔 주세요." }],
       },
     });
+  });
+
+  test("MF-U5b 모든 목표를 이루면 `goals`로 닫히고, 고치기 교정은 Key corrections 묶음이 된다", async () => {
+    const { source, id } = await startedPlay();
+    await turnEvents(source, id, "아메리카노 한 잔 주세요.");
+    const fix = await turnEvents(source, id, "카드으로 할게요.");
+    expect(fix.find((event) => event.event === "correction")?.data).toMatchObject({
+      status: "ok",
+      kind: "correction",
+      corrected: "카드로 할게요.",
+    });
+    await turnEvents(source, id, "포장이요.");
+    const last = await turnEvents(source, id, "얼마예요?");
+    expect(last.find((event) => event.event === "mission")?.data).toMatchObject({
+      ended: "goals",
+      requiredDone: true,
+    });
+    const finished = await source.finish(id, false);
+    expect(missionFinishResponseSchema.safeParse(finished).success).toBe(true);
+    expect(finished).toMatchObject({
+      status: "graded",
+      report: {
+        endReason: "goals",
+        focus: [{ examples: [{ original: "카드으로 할게요.", corrected: "카드로 할게요." }] }],
+      },
+    });
+  });
+
+  test("MF-U5c 필수를 이룬 판의 그만두기는 끝내기와 같다 — 필수 전 채점 요청은 거절", async () => {
+    const done = await startedPlay();
+    await turnEvents(done.source, done.id, "아메리카노 주세요");
+    await expect(done.source.finish(done.id, false)).rejects.toThrow("mission_not_ended");
+    await turnEvents(done.source, done.id, "카드로 할게요");
+    expect(await done.source.finish(done.id, true)).toMatchObject({
+      status: "graded",
+      report: { endReason: "finish", outcome: "success" },
+    });
+  });
+
+  test("MF-U5d 채점 대기 판 — 목록의 pendingReports, finish로 채점하면 목록에서 빠진다", async () => {
+    const source = createFakeMissionSource({ schedule: now, pendingReport: true });
+    const list = await source.list();
+    expect(missionListSchema.safeParse(list).success).toBe(true);
+    const pending = list.pendingReports?.[0];
+    expect(pending).toMatchObject({ missionId: "u06-cafe" });
+    if (pending === undefined) throw new Error("no pending");
+    expect(await source.finish(pending.conversationId, false)).toMatchObject({
+      status: "graded",
+      report: { endReason: "finish", outcome: "success" },
+    });
+    expect((await source.list()).pendingReports).toBeUndefined();
+  });
+
+  test("MF-U5e 받아 적기는 대본의 말을 차례로, 합성은 메시지 id · 글로 주소를 낸다", async () => {
+    const { source, id } = await startedPlay();
+    const clip = { uri: "fake://clip.wav", seconds: 1.2 };
+    expect(await source.transcribe(id, clip)).toMatchObject({ autoSend: true, reason: "ok" });
+    expect(await source.transcribe(id, clip)).toMatchObject({
+      autoSend: false,
+      reason: "low_confidence",
+    });
+    expect(await source.speak(id, { kind: "message", messageId: "m1" })).toEqual({
+      kind: "audio",
+      url: "fake://tts/m1",
+    });
+    const silent = createFakeMissionSource({ schedule: now, ttsFails: true });
+    expect(await silent.speak(id, { kind: "text", text: "네" })).toEqual({ kind: "failed" });
   });
 
   test("MF-U6 턴 상한에 닿으면 `turn_limit`로 끝나고 리포트는 실패다", async () => {
@@ -158,6 +233,8 @@ describe("가짜 출처의 한 판", () => {
       code: "not_available",
     });
     const once = await startedPlay({ grading: "fail-once" });
+    await turnEvents(once.source, once.id, "아메리카노 주세요");
+    await turnEvents(once.source, once.id, "카드로 할게요");
     expect(await once.source.finish(once.id, false)).toMatchObject({
       status: "grading_failed",
       refunded: true,

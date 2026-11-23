@@ -7,7 +7,7 @@ import { MissionReportScreen } from "./MissionReportScreen";
 import { cafeCard, id, insets, maybe, tapButton, tapRound } from "./mission-ui.test-support";
 import type { MissionReport, MissionStartRejection } from "./roleplay-mission.contract";
 
-// `ui` 계층(MR-UI1 ~ · MP-UI1 ~): 리포트(부록 B) · 채점 실패 · 미리보기(값 · 거절 · 시작)를 실제 컴포넌트로 본다.
+// `ui` 계층(MR-UI1 ~ · MP-UI1 ~): 리포트(부록 B + 2026-11-23 새 구역) · 채점 실패 · 미리보기(값 · 거절 · 시작)를 실제 컴포넌트로 본다.
 
 afterEach(() => {
   cleanup();
@@ -58,11 +58,75 @@ test("MR-UI1 부록 B 리포트 — 성공 · 73점 · 최고 기록, 목표 3/4
   );
   expect(id("roleplay-mission-report-accuracy")).toHaveTextContent("85");
   expect(id("roleplay-mission-report-hints")).toHaveTextContent("0 hints");
-  expect(id("roleplay-mission-report-corrections")).toHaveTextContent("포장이요");
+  // 계약 fixture의 교정은 더 나은 표현 하나뿐 — 「Sounds more natural」에 서고 고친 문장 구역은 없다.
+  expect(id("roleplay-mission-report-better")).toHaveTextContent("Sounds more natural");
+  expect(id("roleplay-mission-report-better")).toHaveTextContent("포장이요");
+  expect(maybe("roleplay-mission-report-corrections")).not.toBeInTheDocument();
   expect(id("roleplay-mission-report-retry")).toHaveTextContent("아메리카노 얼마예요?");
   expect(id("roleplay-mission-report-summary")).toHaveTextContent(
-    "Next time, try asking the price.",
+    "Next time, try asking the price with 얼마예요.",
   );
+});
+
+test("MR-UI1b 새 구역 — 결과 한 줄 · You could have said · 점수 항 · 잘한 점 · Key corrections · Next challenge", () => {
+  mountReport(missionReportFixture);
+  expect(id("roleplay-mission-report-headline")).toHaveTextContent(
+    "You ordered and paid — mission complete!",
+  );
+  expect(id("roleplay-mission-report-tips")).toHaveTextContent("You could have said");
+  expect(id("roleplay-mission-report-tips")).toHaveTextContent("Ask how much it is");
+  expect(id("roleplay-mission-report-tips")).toHaveTextContent("아메리카노 얼마예요?");
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("How your score adds up");
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Goals+37.5");
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Accuracy+25.5");
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Target expressions+10");
+  expect(id("roleplay-mission-report-score-parts")).not.toHaveTextContent("Hints");
+  expect(id("roleplay-mission-report-strengths")).toHaveTextContent("What went well");
+  expect(id("roleplay-mission-report-strengths")).toHaveTextContent(
+    "A complete, polite order using the target pattern.",
+  );
+  expect(id("roleplay-mission-report-focus")).toHaveTextContent("Key corrections");
+  expect(id("roleplay-mission-report-next-step")).toHaveTextContent(
+    "Next challengePlay again and ask how much your drink is.",
+  );
+});
+
+test("MR-UI1c 힌트 감점은 있을 때만, 고친 문장 구역은 고치기 중 Key corrections에 없는 것만", () => {
+  mountReport({
+    ...missionReportFixture,
+    scoreParts: { task: 25, accuracy: 25.5, expression: 0, hintPenalty: 10 },
+    corrections: [
+      { original: "카드으로 할게요", corrected: "카드로 할게요", kind: "correction" },
+      { original: "물 주세요요", corrected: "물 주세요", kind: "correction" },
+      { original: "가지고 가요", corrected: "포장이요", kind: "better" },
+    ],
+    focus: [
+      {
+        examples: [{ original: "카드으로 할게요", corrected: "카드로 할게요" }],
+        reason: "After a vowel, use 로.",
+      },
+    ],
+  });
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Hints\u221210");
+  expect(id("roleplay-mission-report-focus")).toHaveTextContent("카드로 할게요");
+  expect(id("roleplay-mission-report-corrections")).toHaveTextContent("물 주세요");
+  expect(id("roleplay-mission-report-corrections")).not.toHaveTextContent("카드로 할게요");
+  expect(id("roleplay-mission-report-corrections")).not.toHaveTextContent("포장이요");
+  expect(id("roleplay-mission-report-better")).toHaveTextContent("포장이요");
+});
+
+test("MR-UI1d 옛 결과 행(새 칸 없음)은 새 구역을 그리지 않는다", () => {
+  const {
+    scoreParts: _parts,
+    headline: _headline,
+    focus: _focus,
+    strengths: _strengths,
+    nextStep: _next,
+    ...old
+  } = missionReportFixture;
+  mountReport({ ...old, goals: old.goals.map(({ tip: _tip, ...goal }) => goal) });
+  for (const section of ["headline", "tips", "score-parts", "strengths", "focus", "next-step"])
+    expect(maybe(`roleplay-mission-report-${section}`)).not.toBeInTheDocument();
 });
 
 test("MR-UI2 실패 리포트 · 고친 문장이 없으면 그 절이 없다", () => {

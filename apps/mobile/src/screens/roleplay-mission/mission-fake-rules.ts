@@ -1,13 +1,20 @@
-// 가짜 출처의 규칙 — 6화 「커피 주문」의 낱말 판정 · 상대역 대사 · 리포트 계산입니다. 서버(상태 줄 · 채점 모델)의 흉내일 뿐
-// 앱의 판정이 아닙니다 — 서버 구현이 붙으면 이 파일은 개발 미리보기 · 테스트에서만 돕니다.
+// 가짜 출처의 규칙 — 6화 「커피 주문」의 낱말 판정 · 상대역 대사 · 교정(고치기 / 더 나은 표현) · 받아 적기 · 리포트 계산입니다.
+// 서버(상태 줄 · 채점 모델 · Scribe)의 흉내일 뿐 앱의 판정이 아닙니다 — 서버 구현이 붙으면 이 파일은 개발 미리보기 · 테스트에서만 돕니다.
 
-import { missionReportFixture, missionStartFixture } from "./mission-fixture";
+import { missionHintExamples, missionReportFixture, missionStartFixture } from "./mission-fixture";
+import type { MissionTranscript } from "./mission-voice.contract";
 import type { MissionEndReason, MissionReport } from "./roleplay-mission.contract";
 
 type FakeLine = { readonly ko: string; readonly en: string };
+type FakeFix = {
+  readonly kind: "correction" | "better";
+  readonly from: string;
+  readonly to: string;
+  readonly reason: string;
+};
 
 /**
- * 6화의 가짜 대본 — 한국어는 학습 내용(상대역 대사 · 판정 낱말)이라 문구표가 아니라 이 한 선언에 모읍니다
+ * 6화의 가짜 대본 — 한국어는 학습 내용(상대역 대사 · 판정 낱말 · 교정 · 받아 적은 말)이라 문구표가 아니라 이 한 선언에 모읍니다
  * (`devtools/ui-copy-literals/policy.mjs`의 학습 콘텐츠 허용 목록).
  */
 export const FAKE_CAFE_SCRIPT = {
@@ -40,15 +47,41 @@ export const FAKE_CAFE_SCRIPT = {
     ko: "죄송해요, 뒤에 손님이 기다리셔서요. 다음에 또 오세요!",
     en: "Sorry, there are customers waiting. Please come again!",
   },
-  /** 「더 자연스러운 말」 교정을 받는 표현과 고친 표현(부록 B). */
-  better: { from: "가지고 가요", to: "포장이요", meaning: "To go, please." },
+  /** 턴 교정 — 고치기(틀린 말)와 더 나은 표현(맞지만 더 자연스러운 말, 점수와 무관). */
+  fixes: [
+    {
+      kind: "better",
+      from: "가지고 가요",
+      to: "포장이요",
+      reason: "At a café, 포장이요 is the usual way to say take-out.",
+    },
+    {
+      kind: "correction",
+      from: "카드으로",
+      to: "카드로",
+      reason: "After a vowel, use 로 instead of 으로.",
+    },
+  ] as readonly FakeFix[],
+  /** 고치기 묶음의 한 줄(채점자의 `focus[].reason` 흉내). */
+  focusReason: "After a vowel, use 로.",
   orderRetry: { ko: "아이스 아메리카노 한 잔 주세요.", meaning: "One iced americano, please." },
+  /** 마이크를 누를 때마다 차례로 받아 적는 말(서버 판단 흉내) — 둘째는 확신도가 낮아 입력 칸에서 확인합니다. */
+  heard: [
+    { kind: "heard", text: "아이스 아메리카노 한 잔 주세요.", autoSend: true, reason: "ok" },
+    { kind: "heard", text: "가지고 가요.", autoSend: false, reason: "low_confidence" },
+    { kind: "heard", text: "카드로 할게요.", autoSend: true, reason: "ok" },
+  ] as readonly MissionTranscript[],
 } as const;
 
 export function goalsReachedBy(text: string): readonly string[] {
   return missionStartFixture.goals
     .map((goal) => goal.id)
     .filter((id) => (FAKE_CAFE_SCRIPT.goalWords[id] ?? []).some((word) => text.includes(word)));
+}
+
+/** 이 글에 붙을 턴 교정 — 대본의 표현이 들었으면 그것, 아니면 없음. */
+export function fakeFixOf(text: string): FakeFix | null {
+  return FAKE_CAFE_SCRIPT.fixes.find((fix) => text.includes(fix.from)) ?? null;
 }
 
 /** 상대역의 답 — 끝이면 마무리 대사, 아니면 방금 이룬 목표에 맞춘 말, 아무것도 못 이뤘으면 되돌리는 말. */
@@ -60,6 +93,8 @@ export function fakeReplyOf(reached: readonly string[], ended: MissionEndReason 
     (last === undefined ? undefined : FAKE_CAFE_SCRIPT.replies[last]) ?? FAKE_CAFE_SCRIPT.nudge
   );
 }
+
+const tenth = (value: number): number => Math.round(value * 10) / 10;
 
 /** PRD §3.7의 점수식 — 서버가 계산하는 것을 가짜가 같은 식으로 흉내 냅니다. */
 export function fakeTotalScore(
@@ -78,25 +113,38 @@ export function fakeTotalScore(
   );
 }
 
+export type FakeCorrection = {
+  readonly original: string;
+  readonly corrected: string;
+  readonly kind: "correction" | "better";
+  readonly items: readonly { original: string; corrected: string; reason: string }[];
+};
+
 export type FakePlayRecord = {
   readonly conversationId: string;
   /** 이룬 목표 id → 근거가 된 학습자 발화. */
   readonly done: ReadonlyMap<string, string>;
   readonly hintsUsed: number;
-  readonly corrections: readonly { readonly original: string; readonly corrected: string }[];
+  readonly corrections: readonly FakeCorrection[];
   readonly utterances: readonly string[];
+  readonly endReason: MissionEndReason;
 };
 
 const ACCURACY = 85;
 
 export function buildFakeReport(play: FakePlayRecord, best: number | null): MissionReport {
-  const goals = missionStartFixture.goals.map((goal) => ({
-    id: goal.id,
-    required: goal.required,
-    label: goal.label,
-    done: play.done.has(goal.id),
-    evidence: play.done.get(goal.id) ?? null,
-  }));
+  const goals = missionStartFixture.goals.map((goal) => {
+    const done = play.done.has(goal.id);
+    const example = missionHintExamples[goal.id];
+    return {
+      id: goal.id,
+      required: goal.required,
+      label: goal.label,
+      done,
+      evidence: play.done.get(goal.id) ?? null,
+      tip: done || example === undefined ? null : { ko: example.ko, meaning: example.meaning },
+    };
+  });
   const expressions = missionReportFixture.expressions.map((entry) => ({
     ...entry,
     used: play.utterances.some((text) =>
@@ -108,6 +156,7 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
     expressions.length === 0
       ? 100
       : (100 * expressions.filter((entry) => entry.used).length) / expressions.length;
+  const { weights } = missionReportFixture;
   const total = fakeTotalScore(task, ACCURACY, expression, play.hintsUsed);
   const success = goals.every((goal) => !goal.required || goal.done);
   const retry = expressions
@@ -117,23 +166,51 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
     )
     .filter((entry) => entry !== undefined)
     .slice(0, 3);
+  const fixes = play.corrections.filter((entry) => entry.kind === "correction");
+  const strength = play.done.get("order");
   return {
     ...missionReportFixture,
     conversationId: play.conversationId,
     outcome: success ? "success" : "fail",
-    endReason: success ? "goals" : "turn_limit",
+    endReason: play.endReason,
     totalScore: total,
     taskScore: task,
     accuracyScore: ACCURACY,
     expressionScore: expression,
     hintsUsed: play.hintsUsed,
+    scoreParts: {
+      task: tenth(weights.task * task),
+      accuracy: tenth(weights.accuracy * ACCURACY),
+      expression: tenth(weights.expression * expression),
+      hintPenalty: weights.hintPenalty * play.hintsUsed,
+    },
+    headline: success
+      ? missionReportFixture.headline
+      : "You got started — the order isn't finished yet.",
     goals,
     expressions,
-    corrections: play.corrections.map((entry) => ({ ...entry, kind: "better" as const })),
+    corrections: play.corrections.map((entry) => ({ ...entry, items: [...entry.items] })),
+    focus:
+      fixes.length === 0
+        ? []
+        : [
+            {
+              examples: fixes.map(({ original, corrected }) => ({ original, corrected })),
+              reason: FAKE_CAFE_SCRIPT.focusReason,
+            },
+          ],
+    strengths:
+      strength === undefined
+        ? []
+        : (missionReportFixture.strengths ?? []).map((entry) => ({
+            ...entry,
+            quote: strength,
+          })),
     retry,
     summary: success
       ? missionReportFixture.summary
       : "You got part of the way. Try paying before the time runs out.",
+    nextStep: missionReportFixture.nextStep,
     bestScore: best === null ? total : Math.max(best, total),
   };
 }

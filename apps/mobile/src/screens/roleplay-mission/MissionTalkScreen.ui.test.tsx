@@ -1,7 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render } from "@lynx-js/react/testing-library";
 
-import { recognized, stubSpeechHost } from "../../lib/speech-host.test-support";
 import { MissionTalkScreen } from "./MissionTalkScreen";
 import {
   A1,
@@ -12,27 +11,32 @@ import {
   insets,
   maybe,
   sessionAfter,
+  settle,
   startedActions,
   tapButton,
   tapDialogAction,
   tapRound,
   typeInto,
+  voicePorts,
 } from "./mission-ui.test-support";
 import type { MissionInputMode, MissionSessionState } from "./roleplay-mission.contract";
 
 // `ui` 계층(MT-UI1 ~): 미션 대화 화면을 실제 컴포넌트로 — 국면별 렌더(진입 대사 · 입력 중 · 끝 · 채점 중), 목표 체크리스트의
-// 접근성 이름, 보내기 · 마이크(받아 적은 글 그대로) · 힌트 카드(그대로 쓰기) · 그만두기 확인. 상태는 순수 리듀서로 만든다.
+// 접근성 이름, 보내기 · 마이크(서버 받아 적기 → 바로 보냄) · 힌트 카드(그대로 쓰기) · 그만두기 확인, 계속하기 / 끝내기 · 성공 뒤
+// 그만두기 · 더 나은 표현 카드. 음성의 다른 가지는 `MissionTalkVoice.ui.test.tsx`. 상태는 순수 리듀서로 만든다.
 
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
 });
 
-function mount(state: MissionSessionState) {
+function mount(state: MissionSessionState, voice = voicePorts()) {
   const onSend = vi.fn<(text: string, mode: MissionInputMode) => void>();
   const onHint = vi.fn<() => void>();
   const onDismissHint = vi.fn<() => void>();
   const onQuit = vi.fn<() => void>();
+  const onKeepGoing = vi.fn<() => void>();
+  const onFinish = vi.fn<() => void>();
   render(
     <MissionTalkScreen
       insets={insets}
@@ -42,9 +46,12 @@ function mount(state: MissionSessionState) {
       onHint={onHint}
       onDismissHint={onDismissHint}
       onQuit={onQuit}
+      onKeepGoing={onKeepGoing}
+      onFinish={onFinish}
+      voice={voice}
     />,
   );
-  return { onSend, onHint, onDismissHint, onQuit };
+  return { onSend, onHint, onDismissHint, onQuit, onKeepGoing, onFinish, voice };
 }
 
 const talking = sessionAfter(startedActions);
@@ -115,6 +122,8 @@ test("MT-UI4 이룬 목표는 체크되고 낭독이 done, 교정 카드는 내 
   );
   expect(id("roleplay-mission-turns-left")).toHaveTextContent("9 turns left");
   expect(id("messenger-chat-fix-card")).toHaveAttribute("data-kind", "better");
+  expect(id("roleplay-mission-better-card")).toContainElement(id("messenger-chat-fix-card"));
+  expect(id("messenger-chat-fix-card")).toHaveTextContent("MORE NATURAL");
   expect(id("roleplay-mission-log")).toHaveTextContent("네, 포장해 드릴게요.");
 });
 
@@ -130,14 +139,23 @@ test("MT-UI5 보내지 못한 글은 Not sent와 다시 보내기 — 누르면 
   expect(onSend).toHaveBeenCalledWith("안녕", "voice");
 });
 
-test("MT-UI6 마이크 — 받아 적은 글을 그대로 voice로 보낸다, 듣는 중 안내가 선다", () => {
-  const host = stubSpeechHost({ result: () => null });
-  const { onSend } = mount(talking);
+test("MT-UI6 마이크 — 눌러 녹음 · 눌러 끝, 서버가 받아 적어 확신이 높으면 바로 voice로 보낸다", async () => {
+  const voice = voicePorts({
+    source: { heard: [{ kind: "heard", text: "카드로 할게요", autoSend: true, reason: "ok" }] },
+  });
+  const { onSend } = mount(talking, voice);
   fireEvent.tap(id("roleplay-mission-mic"), {});
+  await settle();
   expect(id("roleplay-mission-mic")).toHaveAttribute("data-listening", "true");
-  expect(id("roleplay-mission-composer-note")).toHaveTextContent("Listening…");
-  host.pending[0]?.(recognized("카드로 할게요"));
+  expect(id("roleplay-mission-mic")).toHaveAttribute("accessibility-label", "Stop");
+  expect(id("roleplay-mission-composer-note")).toHaveTextContent("Listening… 0:00");
+  expect(voice.device.recording()).toBe(true);
+  fireEvent.tap(id("roleplay-mission-mic"), {});
+  expect(id("roleplay-mission-mic")).toHaveAttribute("data-transcribing", "true");
+  expect(id("roleplay-mission-composer-note")).toHaveTextContent("Transcribing…");
+  await settle();
   expect(onSend).toHaveBeenCalledWith("카드로 할게요", "voice");
+  expect(maybe("roleplay-mission-composer-note")).not.toBeInTheDocument();
 });
 
 test("MT-UI7 힌트 단추 → 부름, 펼친 카드는 한국어 · 로마자 · 뜻 · 감점 안내, Use this는 입력 칸을 채운다", () => {
@@ -214,4 +232,85 @@ test("MT-UI10 그만두기 — 확인 다이얼로그, Keep going이면 머물�
   tapRound("roleplay-mission-talk-quit");
   tapDialogAction("quit");
   expect(onQuit).toHaveBeenCalledTimes(1);
+});
+
+const requiredDoneTurn = [
+  ...startedActions,
+  { type: "send", text: "카드로 할게요", inputMode: "text" } as const,
+  event("start", { userMessageId: U1, assistantMessageId: A1 }),
+  event("delta", { segment: 0, kind: "speech", text: "네, 카드 받았습니다." }),
+  event("mission", {
+    goals: [
+      { id: "order", done: true },
+      { id: "pay", done: true },
+    ],
+    turnsLeft: 7,
+    ended: null,
+    requiredDone: true,
+  }),
+  event("done", { assistantMessageId: A1, creditsSpent: 0, balance: null }),
+];
+
+test("MT-UI11 필수를 이루면 Mission success! 카드 · 위 띠의 성공 표시 — Keep going · Finish", () => {
+  const state = sessionAfter(requiredDoneTurn);
+  const { onKeepGoing, onFinish } = mount(state);
+  expect(id("roleplay-mission-success-card")).toHaveTextContent("Mission success!");
+  expect(id("roleplay-mission-turns-left")).toHaveTextContent("7 turns left · Mission success");
+  expect(maybe("roleplay-mission-finish-button")).not.toBeInTheDocument();
+  tapButton("roleplay-mission-success-continue");
+  expect(onKeepGoing).toHaveBeenCalledTimes(1);
+  tapButton("roleplay-mission-success-finish");
+  expect(onFinish).toHaveBeenCalledTimes(1);
+});
+
+test("MT-UI12 카드를 닫으면 입력 줄 위에 Finish 글 단추가 남고, 누르면 끝내기", () => {
+  const { onFinish } = mount(sessionAfter([...requiredDoneTurn, { type: "continue" }]));
+  expect(maybe("roleplay-mission-success-card")).not.toBeInTheDocument();
+  expect(id("roleplay-mission-finish-button")).toHaveTextContent("Finish");
+  fireEvent.tap(id("roleplay-mission-finish-button"), {});
+  expect(onFinish).toHaveBeenCalledTimes(1);
+  expect(id("roleplay-mission-turns-left")).toHaveAttribute("data-success", "true");
+});
+
+test("MT-UI13 성공 뒤 그만두기 — 대화상자 문구가 끝내기로 바뀐다", () => {
+  const { onQuit } = mount(sessionAfter([...requiredDoneTurn, { type: "continue" }]));
+  tapRound("roleplay-mission-talk-quit");
+  expect(id("roleplay-mission-quit-dialog")).toHaveTextContent("Finish this mission?");
+  expect(id("roleplay-mission-quit-dialog")).toHaveTextContent(
+    "You've done the required goals, so we'll score your conversation and show your report.",
+  );
+  tapDialogAction("quit");
+  expect(onQuit).toHaveBeenCalledTimes(1);
+});
+
+test("MT-UI14 끝내기로 닫히면 끝 줄이 Mission complete!", () => {
+  mount(sessionAfter([...requiredDoneTurn, { type: "finish-requested" }]));
+  expect(id("roleplay-mission-talk")).toHaveAttribute("data-phase", "ended");
+  expect(id("roleplay-mission-status")).toHaveTextContent("Mission complete!");
+  expect(maybe("roleplay-mission-success-card")).not.toBeInTheDocument();
+});
+
+test("MT-UI15 고치기 카드는 지금 모양(FIX) — 더 나은 표현 틀이 없다", () => {
+  mount(
+    sessionAfter([
+      ...startedActions,
+      { type: "send", text: "카드으로 할게요", inputMode: "text" },
+      event("start", { userMessageId: U1, assistantMessageId: A1 }),
+      event("delta", { segment: 0, kind: "speech", text: "네." }),
+      event("correction", {
+        userMessageId: U1,
+        status: "ok",
+        kind: "correction",
+        original: "카드으로 할게요",
+        corrected: "카드로 할게요",
+        items: [{ original: "카드으로", corrected: "카드로", reason: "Use 로 after a vowel." }],
+        better: null,
+        meaning: null,
+      }),
+      event("done", { assistantMessageId: A1, creditsSpent: 0, balance: null }),
+    ]),
+  );
+  expect(id("messenger-chat-fix-card")).toHaveAttribute("data-kind", "correction");
+  expect(id("messenger-chat-fix-card")).toHaveTextContent("FIX");
+  expect(maybe("roleplay-mission-better-card")).not.toBeInTheDocument();
 });

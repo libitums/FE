@@ -54,6 +54,7 @@ import { learnerProfileTh } from "./ui-copy-th-profile";
 import { ticketsTh } from "./ui-copy-th-tickets";
 import { plansTh } from "./ui-copy-th-plans";
 import { roleplayStoryTh } from "./ui-copy-th-roleplay-story";
+import { roleplayMissionTh } from "./ui-copy-roleplay-mission-th-my";
 import {
   commonTh,
   journeyMapTh,
@@ -117,6 +118,7 @@ export const uiCopyTh: UiCopy = {
   tickets: ticketsTh,
   plans: plansTh,
   roleplayStory: roleplayStoryTh,
+  roleplayMission: roleplayMissionTh,
   appUpdate: appUpdateTh,
   storyMessenger: storyMessengerTh,
   messengerChat: messengerChatTh,

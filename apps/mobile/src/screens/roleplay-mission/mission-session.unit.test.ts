@@ -279,13 +279,19 @@ describe("mission 이벤트 읽기", () => {
       goals: [{ id: "pay", done: true }],
       turnsLeft: 3,
       ended: null,
+      requiredDone: false,
     });
   });
 
   test("MS-U15 정의에 없는 목표 id는 무시하고, 바뀐 것이 없으면 같은 배열", () => {
     const goals = missionStartFixture.goals;
     expect(
-      mergeGoals(goals, { goals: [{ id: "dance", done: true }], turnsLeft: 1, ended: null }),
+      mergeGoals(goals, {
+        goals: [{ id: "dance", done: true }],
+        turnsLeft: 1,
+        ended: null,
+        requiredDone: false,
+      }),
     ).toBe(goals);
   });
 });

@@ -1,14 +1,13 @@
 // 미션 출처의 가짜 구현입니다 — 계약 fixture의 6화 「커피 주문」 한 판을 끝까지 결정적으로 돌립니다.
-// 학습자 글의 낱말로 목표를 이루고(서버 상태 줄의 흉내), 점수는 PRD §3.7의 식으로 계산합니다. 테스트는 가지를 고릅니다 —
-// 시작 거절(엽전 부족 등) · 채점 실패(한 번 / 늘) · 턴 오류. 서버 구현은 같은 포트(`MissionSource`)로 나중에 붙습니다.
+// 학습자 글의 낱말로 목표를 이루고(서버 상태 줄의 흉내, `mission-fake-turn.ts`), 점수는 PRD §3.7의 식으로 계산합니다. 필수를 이룬
+// 판은 끝내기 · 그만두기 모두 채점하고(ADR-0177), 채점 대기 판(`pendingReports`)도 하나 만들 수 있습니다. 받아 적기 · 합성은 대본의
+// 말을 차례로 돌려줍니다. 테스트는 가지를 고릅니다 — 시작 거절 · 채점 실패(한 번 / 늘) · 턴 오류 · 받아 적기 · 합성 실패.
 
-import {
-  buildFakeReport,
-  FAKE_CAFE_SCRIPT,
-  fakeReplyOf,
-  goalsReachedBy,
-} from "./mission-fake-rules";
+import { buildFakeReport, FAKE_CAFE_SCRIPT } from "./mission-fake-rules";
+import { fakeTurn, requiredDoneOf } from "./mission-fake-turn";
+import type { FakePlay, FakeTurnEvent } from "./mission-fake-turn";
 import { missionHintExamples, missionListFixture, missionStartFixture } from "./mission-fixture";
+import type { MissionTranscript } from "./mission-voice.contract";
 import type {
   MissionFinishResponse,
   MissionList,
@@ -24,20 +23,14 @@ export type FakeMissionOptions = {
   readonly grading?: "graded" | "fail-once" | "fail-always";
   /** 이 낱말이 든 턴은 스트림 오류로 끝납니다(배달 실패 가지). */
   readonly failTurnOn?: string;
+  /** 필수를 이룬 채 방치된 판 하나를 채점 대기(`pendingReports`)로 둡니다. */
+  readonly pendingReport?: boolean;
+  /** 받아 적기 결과를 차례로(끝나면 처음부터). 없으면 대본의 말(`FAKE_CAFE_SCRIPT.heard`). */
+  readonly heard?: readonly MissionTranscript[];
+  /** 합성이 늘 실패합니다(조용히 — 글자만). */
+  readonly ttsFails?: boolean;
   /** 비동기 한 걸음 — 앱은 지연 있는 타이머, 테스트는 즉시 실행하는 스케줄러를 줍니다. */
   readonly schedule?: (task: () => void) => void;
-};
-
-type Play = {
-  readonly id: string;
-  readonly done: Map<string, string>;
-  readonly utterances: string[];
-  readonly corrections: { original: string; corrected: string }[];
-  turnsLeft: number;
-  hintsLeft: number;
-  hintsUsed: number;
-  closed: boolean;
-  gradingAttempts: number;
 };
 
 const FAKE_DELAY_MS = 450;
@@ -48,8 +41,31 @@ const defaultSchedule = (task: () => void): void => {
 const BASE_ID = 0x3e4f5a6b7c81;
 const conversationIdOf = (index: number): string =>
   `6c2d8f3b-5d2e-4a8f-8b62-${(BASE_ID + index).toString(16).padStart(12, "0")}`;
-const messageIdOf = (play: Play, turn: number, who: "u" | "a"): string =>
-  `${play.id.slice(0, 24)}${(turn * 2 + (who === "u" ? 0 : 1)).toString(16).padStart(12, "0")}`;
+
+const newPlay = (id: string): FakePlay => ({
+  id,
+  done: new Map(),
+  utterances: [],
+  corrections: [],
+  turnsLeft: missionStartFixture.turnLimit,
+  hintsLeft: missionStartFixture.hintsLeft,
+  hintsUsed: 0,
+  ended: null,
+  closed: false,
+  gradingAttempts: 0,
+});
+
+/** 채점 대기 판 — 주문 · 결제(필수 둘)를 이룬 채 방치돼 닫힌 판. */
+function pendingPlay(id: string): FakePlay {
+  const play = newPlay(id);
+  const lines = [FAKE_CAFE_SCRIPT.orderRetry.ko, missionHintExamples.pay?.ko ?? ""];
+  play.done.set("order", lines[0] ?? "");
+  play.done.set("pay", lines[1] ?? "");
+  play.utterances.push(...lines);
+  play.turnsLeft -= lines.length;
+  play.closed = true;
+  return play;
+}
 
 export function createFakeMissionSource(options: FakeMissionOptions = {}): MissionSource {
   const schedule = options.schedule ?? defaultSchedule;
@@ -57,13 +73,54 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
     return new Promise((resolve) => schedule(() => resolve(value())));
   }
   const list = options.list ?? missionListFixture;
-  const plays = new Map<string, Play>();
+  const plays = new Map<string, FakePlay>();
+  const pending = new Set<string>();
   let best = list.missions.find((item) => item.id === "u06-cafe")?.best?.totalScore ?? null;
+  let heardIndex = 0;
+  if (options.pendingReport === true) {
+    const play = pendingPlay(conversationIdOf(0));
+    plays.set(play.id, play);
+    pending.add(play.id);
+  }
 
-  const goalOrder = missionStartFixture.goals;
+  const grade = (play: FakePlay): MissionFinishResponse => {
+    play.closed = true;
+    pending.delete(play.id);
+    play.gradingAttempts += 1;
+    const failing =
+      options.grading === "fail-always" ||
+      (options.grading === "fail-once" && play.gradingAttempts === 1);
+    if (failing)
+      return { status: "grading_failed", conversationId: play.id, retryable: true, refunded: true };
+    const report = buildFakeReport(
+      {
+        conversationId: play.id,
+        done: play.done,
+        hintsUsed: play.hintsUsed,
+        corrections: play.corrections,
+        utterances: play.utterances,
+        endReason: play.ended ?? "finish",
+      },
+      best,
+    );
+    best = report.bestScore;
+    return { status: "graded", report };
+  };
 
   return {
-    list: () => later(() => list),
+    list: () =>
+      later(() =>
+        pending.size === 0
+          ? list
+          : {
+              ...list,
+              pendingReports: [...pending].map((conversationId) => ({
+                conversationId,
+                missionId: missionStartFixture.missionId,
+                endedAt: "2026-11-23T09:30:00+09:00",
+              })),
+            },
+      ),
     start: (missionId) =>
       later(() => {
         const item = list.missions.find((entry) => entry.id === missionId);
@@ -72,17 +129,7 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
         // 가짜는 6화 한 편만 돌립니다. 다른 미션 · 잠긴 미션은 서버처럼 `not_available`.
         if (item === undefined || !item.unlocked || missionId !== missionStartFixture.missionId)
           return { kind: "rejected", code: "not_available" };
-        const play: Play = {
-          id: conversationIdOf(plays.size),
-          done: new Map(),
-          utterances: [],
-          corrections: [],
-          turnsLeft: missionStartFixture.turnLimit,
-          hintsLeft: missionStartFixture.hintsLeft,
-          hintsUsed: 0,
-          closed: false,
-          gradingAttempts: 0,
-        };
+        const play = newPlay(conversationIdOf(plays.size));
         plays.set(play.id, play);
         return {
           kind: "started",
@@ -99,74 +146,13 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
     sendTurn: (request, listener) => {
       const play = plays.get(request.conversationId);
       let cancelled = false;
-      const queue: (readonly [string, unknown])[] = [];
+      const queue: FakeTurnEvent[] = [];
       if (play === undefined || play.closed || play.turnsLeft === 0) {
         queue.push(["error", { code: "conversation_closed", retryable: false }]);
       } else if (options.failTurnOn !== undefined && request.text.includes(options.failTurnOn)) {
         queue.push(["error", { code: "upstream_unavailable", retryable: true }]);
       } else {
-        play.turnsLeft -= 1;
-        play.utterances.push(request.text);
-        const turn = play.utterances.length;
-        const reached = goalsReachedBy(request.text).filter((id) => !play.done.has(id));
-        for (const id of reached) play.done.set(id, request.text);
-        const allRequired = goalOrder.every((goal) => !goal.required || play.done.has(goal.id));
-        const ended = allRequired ? "goals" : play.turnsLeft === 0 ? "turn_limit" : null;
-        if (ended !== null) play.closed = true;
-        const reply = fakeReplyOf(reached, ended);
-        const userMessageId = messageIdOf(play, turn, "u");
-        const assistantMessageId = messageIdOf(play, turn, "a");
-        const { better: fix } = FAKE_CAFE_SCRIPT;
-        const better = request.text.includes(fix.from);
-        if (better) play.corrections.push({ original: fix.from, corrected: fix.to });
-        queue.push(
-          [
-            "start",
-            {
-              contractVersion: 1,
-              conversationId: play.id,
-              userMessageId,
-              assistantMessageId,
-              speechLevel: "polite",
-            },
-          ],
-          ["delta", { segment: 0, kind: "speech", text: reply.ko }],
-          ["translation", { segment: 0, text: reply.en }],
-          [
-            "correction",
-            better
-              ? {
-                  userMessageId,
-                  status: "ok",
-                  kind: "better",
-                  original: request.text,
-                  corrected: request.text.replace(fix.from, fix.to),
-                  items: [],
-                  better: null,
-                  meaning: fix.meaning,
-                }
-              : {
-                  userMessageId,
-                  status: "none",
-                  kind: null,
-                  original: request.text,
-                  corrected: null,
-                  items: [],
-                  better: null,
-                  meaning: null,
-                },
-          ],
-          [
-            "mission",
-            {
-              conversationId: play.id,
-              goals: goalOrder.map((goal) => ({ id: goal.id, done: play.done.has(goal.id) })),
-              turnsLeft: play.turnsLeft,
-              ended,
-            },
-          ],
-          ["done", { assistantMessageId, creditsSpent: 0, balance: list.price.balance }],
-        );
+        queue.push(...fakeTurn(play, request.text, list.price.balance));
       }
       const step = (): void => {
         if (cancelled) return;
@@ -186,7 +172,9 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
     hint: (conversationId) =>
       later(() => {
         const play = plays.get(conversationId);
-        const ordered = [...goalOrder].sort((a, b) => Number(b.required) - Number(a.required));
+        const ordered = [...missionStartFixture.goals].sort(
+          (a, b) => Number(b.required) - Number(a.required),
+        );
         const goal = ordered.find((entry) => play !== undefined && !play.done.has(entry.id));
         const example = goal === undefined ? undefined : missionHintExamples[goal.id];
         if (
@@ -205,31 +193,41 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
         };
       }),
     finish: (conversationId, abandon) =>
-      later((): MissionFinishResponse => {
-        const play = plays.get(conversationId);
-        if (play === undefined || abandon) {
-          if (play !== undefined) play.closed = true;
-          return { status: "abandoned", conversationId };
-        }
-        play.closed = true;
-        play.gradingAttempts += 1;
-        const failing =
-          options.grading === "fail-always" ||
-          (options.grading === "fail-once" && play.gradingAttempts === 1);
-        if (failing)
-          return { status: "grading_failed", conversationId, retryable: true, refunded: true };
-        const report = buildFakeReport(
-          {
-            conversationId,
-            done: play.done,
-            hintsUsed: play.hintsUsed,
-            corrections: play.corrections,
-            utterances: play.utterances,
-          },
-          best,
-        );
-        best = report.bestScore;
-        return { status: "graded", report };
+      new Promise<MissionFinishResponse>((resolve, reject) =>
+        schedule(() => {
+          const play = plays.get(conversationId);
+          if (play === undefined) {
+            resolve({ status: "abandoned", conversationId });
+            return;
+          }
+          // 필수를 이룬 판은 끝내기 · 그만두기 모두 채점(ADR-0177). 필수 전이면 그만둠, 열린 판을 그냥 채점하려 하면 거절.
+          if (requiredDoneOf(play) || play.ended !== null) {
+            resolve(grade(play));
+            return;
+          }
+          if (abandon) {
+            play.closed = true;
+            resolve({ status: "abandoned", conversationId });
+            return;
+          }
+          reject(new Error("mission_not_ended"));
+        }),
+      ),
+    transcribe: () =>
+      later((): MissionTranscript => {
+        const script = options.heard ?? FAKE_CAFE_SCRIPT.heard;
+        const next = script[heardIndex % Math.max(1, script.length)];
+        heardIndex += 1;
+        return next ?? { kind: "failed", code: "empty" };
       }),
+    speak: (_conversationId, request) =>
+      later(() =>
+        options.ttsFails === true
+          ? { kind: "failed" as const }
+          : {
+              kind: "audio" as const,
+              url: `fake://tts/${request.kind === "message" ? request.messageId : encodeURIComponent(request.text)}`,
+            },
+      ),
   };
 }

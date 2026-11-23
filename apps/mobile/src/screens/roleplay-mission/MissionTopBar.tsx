@@ -19,11 +19,13 @@ export type MissionTopBarProps = {
   readonly imageUrl: string | null;
   readonly goals: readonly MissionGoalState[];
   readonly turnsLeft: number;
+  /** 필수 목표를 다 이뤘다(성공 확정) — 남은 턴 뒤에 「Mission success」가 붙고 카드를 닫아도 남습니다. */
+  readonly success: boolean;
   readonly onQuit: () => void;
 };
 
 /**
- * 대화 화면의 위 띠입니다 — 장면 그림(작게, 그늘 아래) · 그만두기 · 제목과 남은 턴 · 목표 체크리스트(필수/선택).
+ * 대화 화면의 위 띠입니다 — 장면 그림(작게, 그늘 아래) · 그만두기 · 제목과 남은 턴(성공 확정이면 성공 표시) · 목표 체크리스트(필수/선택).
  * 머리는 롤플레이 대화의 머리와 같은 단추 · 글꼴이고, 목표 줄은 새로 그린 임시 구성입니다(스펙 「디자인 확인 필요」).
  */
 export function MissionTopBar({
@@ -32,6 +34,7 @@ export function MissionTopBar({
   imageUrl,
   goals,
   turnsLeft,
+  success,
   onQuit,
 }: MissionTopBarProps): ReactNode {
   const copy = useUiCopy().roleplayMission;
@@ -68,8 +71,14 @@ export function MissionTopBar({
           >
             {title}
           </text>
-          <text className="mission-talk-turns" data-testid={ids.turnsLeft}>
-            {copy.turnsLeft(turnsLeft)}
+          <text
+            className="mission-talk-turns"
+            data-testid={ids.turnsLeft}
+            data-success={success ? "true" : "false"}
+          >
+            {success
+              ? `${copy.turnsLeft(turnsLeft)} · ${copy.extra.success.mark}`
+              : copy.turnsLeft(turnsLeft)}
           </text>
         </view>
       </view>

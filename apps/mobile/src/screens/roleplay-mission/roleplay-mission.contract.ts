@@ -1,4 +1,4 @@
-// 롤플레이 미션(ADR-0160) 화면 셋 — 미리보기 · 대화 · 리포트 — 의 타입 전용 계약입니다. 구현 · JSX를 두지 않습니다.
+// 롤플레이 미션(ADR-0160 · ADR-0177) 화면 셋 — 미리보기 · 대화 · 리포트 — 의 타입 전용 계약입니다. 구현 · JSX를 두지 않습니다.
 // 서버 모양은 계약 패키지(`@libitums/companion-contract`)의 타입을 그대로 씁니다 — `import type`이라 번들에 들지 않습니다
 // (zod 스키마는 앱 번들에 넣지 않습니다, 메신저 `companion-parse.ts`와 같은 이유). 정본은 PRD `docs/specs/ai-companion-mission.md` §4.
 
@@ -17,6 +17,13 @@ import type {
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { ChatCorrection } from "../messenger-chat/chat-feedback.contract";
 import type { TurnState } from "../messenger-chat/companion-turn";
+import type {
+  MissionAudioClip,
+  MissionAudioDevice,
+  MissionSpeakRequest,
+  MissionSpeech,
+  MissionTranscript,
+} from "./mission-voice.contract";
 
 export type {
   MissionEndReason,
@@ -77,8 +84,25 @@ export type MissionSource = {
   /** 턴 하나를 보냅니다. 돌려받은 함수는 스트림을 끊습니다(화면을 떠날 때). */
   readonly sendTurn: (request: MissionTurnRequest, listener: MissionTurnListener) => () => void;
   readonly hint: (conversationId: string) => Promise<MissionHintResult>;
-  /** 몇 번 불러도 같은 결과입니다 — 채점 실패 뒤 다시 부르면 채점만 다시 돕니다(PRD §3.6). */
+  /**
+   * 몇 번 불러도 같은 결과입니다 — 채점 실패 뒤 다시 부르면 채점만 다시 돕니다(PRD §3.6). 필수 목표를 이룬 판은 `abandon`이어도
+   * 끝내기와 같고(채점 · 리포트), 채점 대기 판(`pendingReports`)도 이것으로 채점합니다.
+   */
   readonly finish: (conversationId: string, abandon: boolean) => Promise<MissionFinishResponse>;
+  /** 녹음을 받아 적습니다(제안 엔드포인트 `mission-stt` — ElevenLabs Scribe, `kor`). 실패는 `failed`로 돌려줍니다(던지지 않음). */
+  readonly transcribe: (
+    conversationId: string,
+    clip: MissionAudioClip,
+  ) => Promise<MissionTranscript>;
+  /** 상대역 답 · 힌트 예문을 합성합니다(제안 엔드포인트 `mission-tts` — `eleven_v4_turbo`). 실패는 `failed`(조용히). */
+  readonly speak: (conversationId: string, request: MissionSpeakRequest) => Promise<MissionSpeech>;
+};
+
+/** 대화 화면이 쓰는 음성 포트 — 서버 쪽 둘(출처)과 기기 쪽(녹음 · 재생). */
+export type MissionVoicePorts = {
+  readonly device: MissionAudioDevice;
+  readonly transcribe: MissionSource["transcribe"];
+  readonly speak: MissionSource["speak"];
 };
 
 // ------------------------------------------------------------------ 판의 상태
@@ -103,6 +127,8 @@ export type MissionLine =
   | {
       readonly kind: "them";
       readonly id: string;
+      /** 이 말풍선이 든 상대역 메시지의 서버 id(진입 대사 · 답) — 다시 듣기 · 자동 재생의 합성 요청에 씁니다. */
+      readonly messageId: string | null;
       readonly ko: string;
       readonly translation: string | null;
     }
@@ -139,6 +165,10 @@ export type MissionSessionState = {
   readonly hint: MissionHintResponse | null;
   readonly hintLoading: boolean;
   readonly endReason: MissionEndReason | null;
+  /** 필수 목표를 모두 이뤘는가(`mission` 이벤트의 `requiredDone`) — 성공 확정. 판이 열려 있으면 계속하기 / 끝내기. */
+  readonly requiredDone: boolean;
+  /** 「Mission success!」 카드 — 아직 안 띄움 · 떠 있음 · 닫음(한 판에 한 번). */
+  readonly successPrompt: "none" | "shown" | "dismissed";
   readonly report: MissionReport | null;
   readonly gradingFailure: { readonly refunded: boolean; readonly retryable: boolean } | null;
 };
@@ -154,6 +184,12 @@ export type MissionSessionAction =
   | { readonly type: "hint-received"; readonly value: MissionHintResponse }
   | { readonly type: "hint-unavailable" }
   | { readonly type: "hint-dismissed" }
+  /** 「Mission success!」 카드의 Keep going — 카드만 닫고 대화는 이어집니다. */
+  | { readonly type: "continue" }
+  /** 끝내기(카드 · 입력 줄 위 Finish · 성공 뒤 그만두기) — 끝 이유 `finish`로 닫고 결선이 채점합니다. */
+  | { readonly type: "finish-requested" }
+  /** 채점 대기 판(`pendingReports`)의 리포트를 엽니다 — 미리보기에서 곧장 채점으로. */
+  | { readonly type: "pending-opened"; readonly conversationId: string }
   | { readonly type: "grading-requested" }
   | { readonly type: "finished"; readonly value: MissionFinishResponse }
   | { readonly type: "finish-failed" }
@@ -188,8 +224,13 @@ export type MissionTalkScreenProps = {
   readonly onSend: (text: string, inputMode: MissionInputMode) => void;
   readonly onHint: () => void;
   readonly onDismissHint: () => void;
-  /** 그만두기 — 확인 뒤 부릅니다(리포트 없이 나감). */
+  /** 그만두기 — 확인 뒤 부릅니다. 필수 전이면 리포트 없이 나가고, 필수를 이뤘으면 끝내기(채점 → 리포트)입니다. */
   readonly onQuit: () => void;
+  /** 「Mission success!」 카드의 Keep going. */
+  readonly onKeepGoing: () => void;
+  /** 끝내기 — 카드의 Finish · 입력 줄 위 Finish. */
+  readonly onFinish: () => void;
+  readonly voice: MissionVoicePorts;
 };
 
 export type MissionReportScreenProps = {

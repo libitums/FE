@@ -3,6 +3,9 @@
 // 미션은 스위치(`ROLEPLAY_MISSION_READY`) 뒤라 지금 사용자에게 보이지 않습니다.
 
 import { n } from "./ui-copy-en-plural";
+import { missionExtraEn, type MissionExtraCopy } from "./ui-copy-roleplay-mission-extra";
+
+export type { MissionExtraCopy };
 
 export type MissionStartErrorKey =
   | "insufficient_credits"
@@ -49,7 +52,7 @@ export type RoleplayMissionCopy = {
   readonly quitBody: string;
   readonly quitConfirm: string;
   readonly quitCancel: string;
-  readonly ended: Readonly<Record<"goals" | "turn_limit", string>>;
+  readonly ended: Readonly<Record<"goals" | "turn_limit" | "finish", string>>;
   readonly grading: string;
   readonly report: {
     readonly success: string;
@@ -75,6 +78,8 @@ export type RoleplayMissionCopy = {
     readonly refunded: string;
     readonly retryGrading: string;
   };
+  /** 2026-11-23 서버 계약 뒤 더한 칸 — 계속하기 / 끝내기 · 성공 뒤 그만두기 · 음성 · 리포트 새 구역(`ui-copy-roleplay-mission-extra.ts`). */
+  readonly extra: MissionExtraCopy;
 };
 
 export const roleplayMissionEn: RoleplayMissionCopy = {
@@ -124,7 +129,7 @@ export const roleplayMissionEn: RoleplayMissionCopy = {
   quitBody: "You won't get a report, and this play still counts.",
   quitConfirm: "Quit",
   quitCancel: "Keep going",
-  ended: { goals: "Mission complete!", turn_limit: "Out of turns" },
+  ended: { goals: "Mission complete!", turn_limit: "Out of turns", finish: "Mission complete!" },
   grading: "Scoring your conversation…",
   report: {
     success: "Mission complete",
@@ -150,4 +155,5 @@ export const roleplayMissionEn: RoleplayMissionCopy = {
     refunded: "We gave back what you paid for this play.",
     retryGrading: "Try again",
   },
+  extra: missionExtraEn,
 };

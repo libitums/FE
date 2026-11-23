@@ -1,0 +1,66 @@
+/* 롤플레이 미션 — 2026-11-23 더한 요소(ADR-0177): 입력 줄 위 끝내기 · 받아 적은 글 확인, 상대역 말 다시 듣기, 힌트 예문 듣기,
+   더 나은 표현 카드. 시안이 없어 최소 모양입니다 — 값은 같은 화면의 토큰만 씁니다(ADR-0014 D1). 움직임이 없습니다(ADR-0053). */
+
+.mission-composer-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-16);
+}
+
+.mission-composer-check {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 상대역 말풍선 옆 다시 듣기 — 말풍선 아래 오른쪽 작은 단추. */
+.mission-talk-theirs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-4);
+}
+
+.mission-talk-replay {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.mission-talk-replay-playing {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.mission-talk-replay-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.mission-hint-ko-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 더 나은 표현 카드 — 틀렸다는 인상을 주지 않게 고치기 카드와 다른 바탕 · 점선 테두리 · 흐린 제목. */
+.mission-better .my-message-fix-card {
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: dashed;
+  border-color: var(--libitum-color-gray-400);
+  background-color: var(--libitum-color-background-secondary);
+}
+
+.mission-better .my-message-better {
+  color: var(--libitum-color-fg-neutral-muted);
+}

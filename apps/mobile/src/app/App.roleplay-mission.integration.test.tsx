@@ -16,6 +16,7 @@ import {
   createFakeMissionSource,
   type FakeMissionOptions,
 } from "../screens/roleplay-mission/mission-fake-source";
+import { createFakeAudioDevice } from "../screens/roleplay-mission/mission-fake-voice";
 import {
   id,
   maybe,
@@ -26,8 +27,9 @@ import {
 } from "../screens/roleplay-mission/mission-ui.test-support";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 
-// 롤플레이 미션(ADR-0160)을 App 한 트리에서 봅니다 — 스위치 · 목록 항목 · 미리보기 → 대화 → 채점 → 리포트 → 다시 하기 / 목록,
-// 그만두기, 채점 실패 → 다시 시도. 출처는 가짜(계약 fixture)이고 대역은 경계뿐입니다 — `StorageModule` · `fetch`.
+// 롤플레이 미션(ADR-0160 · ADR-0177)을 App 한 트리에서 봅니다 — 스위치 · 목록 항목 · 미리보기 → 대화 → 성공 카드 · 끝내기 → 채점 →
+// 리포트 → 다시 하기 / 목록, 그만두기(필수 전 · 성공 뒤), 채점 실패 → 다시 시도, 채점 대기 판, 음성 한 턴. 출처 · 기기 음성은
+// 가짜(계약 fixture)이고 대역은 경계뿐입니다 — `StorageModule` · `fetch`.
 
 function base64Url(value: unknown): string {
   return btoa(JSON.stringify(value)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -70,6 +72,7 @@ async function boot(mission: FakeMissionOptions | null): Promise<void> {
             list: testList,
             ...mission,
           }),
+          device: createFakeAudioDevice({ schedule: () => undefined }),
         },
   );
   store.clear();
@@ -144,7 +147,7 @@ test("[MI1] 스위치가 꺼져 있으면 목록에 미션 항목이 없다 — 
   expect(maybe("roleplay-list-item-mission-u06-cafe")).not.toBeInTheDocument();
 });
 
-test("[MI2] 목록 → 미리보기 → 대화 세 턴 → 자동 채점 → 리포트 → 다시 하기 → 목록으로", async () => {
+test("[MI2] 목록 → 미리보기 → 대화 세 턴 → 성공 카드 → 끝내기 → 채점 → 리포트 → 다시 하기 → 목록으로", async () => {
   await boot({});
   expect(id("roleplay-list-item-form-mission-u06-cafe")).toHaveTextContent(
     "Mission · 4 goals · Best 73",
@@ -164,10 +167,15 @@ test("[MI2] 목록 → 미리보기 → 대화 세 턴 → 자동 채점 → 리
   await say("가지고 가요.");
   expect(id("messenger-chat-fix-card")).toHaveAttribute("data-kind", "better");
   await say("카드로 할게요.");
+  expect(id("roleplay-mission-success-card")).toHaveTextContent("Mission success!");
+  expect(id("roleplay-mission-turns-left")).toHaveTextContent("7 turns left · Mission success");
+  tapButton("roleplay-mission-success-finish");
+  await flush();
   await flush();
 
   expect(id("roleplay-mission-report-outcome")).toHaveTextContent("Mission complete");
   expect(id("roleplay-mission-report-score")).toHaveTextContent("73 points");
+  expect(id("roleplay-mission-report-better")).toHaveTextContent("포장이요.");
   tapButton("roleplay-mission-report-play-again");
   expect(id("roleplay-mission-preview")).toBeInTheDocument();
   tapRound("roleplay-mission-preview-back");
@@ -190,6 +198,9 @@ test("[MI4] 채점 실패 → 값을 돌려줬다는 안내 → 다시 시도 �
   await openAndStart();
   await say("아메리카노 주세요");
   await say("카드로 할게요");
+  tapButton("roleplay-mission-success-continue");
+  fireEvent.tap(id("roleplay-mission-finish-button"), {});
+  await flush();
   await flush();
   expect(id("roleplay-mission-report-failed")).toHaveTextContent("We gave back what you paid");
   tapButton("roleplay-mission-report-retry-grading");
@@ -202,4 +213,40 @@ test("[MI5] 엽전이 모자라면 미리보기에 까닭이 서고 대화로 �
   await openAndStart();
   expect(id("roleplay-mission-preview-error")).toHaveAttribute("data-code", "insufficient_credits");
   expect(maybe("roleplay-mission-talk")).not.toBeInTheDocument();
+});
+
+test("[MI6] 성공 뒤 그만두기는 끝내기 — 채점해 리포트를 보인다", async () => {
+  await boot({});
+  await openAndStart();
+  await say("아메리카노 주세요");
+  await say("카드로 할게요");
+  tapRound("roleplay-mission-talk-quit");
+  expect(id("roleplay-mission-quit-dialog")).toHaveTextContent("Finish this mission?");
+  tapDialogAction("quit");
+  await flush();
+  await flush();
+  expect(id("roleplay-mission-report-outcome")).toHaveTextContent("Mission complete");
+});
+
+test("[MI7] 채점 대기 판 — 미션을 열면 미리보기 대신 채점 → 리포트, 다시 하기는 미리보기", async () => {
+  await boot({ pendingReport: true });
+  fireEvent.tap(id("roleplay-list-item-mission-u06-cafe"), {});
+  await flush();
+  await flush();
+  expect(id("roleplay-mission-report-outcome")).toHaveTextContent("Mission complete");
+  tapButton("roleplay-mission-report-play-again");
+  expect(id("roleplay-mission-preview")).toBeInTheDocument();
+});
+
+test("[MI8] 음성 한 턴 — 마이크로 말하면 서버가 받아 적어 바로 보내고 목표가 이뤄진다", async () => {
+  await boot({});
+  await openAndStart();
+  fireEvent.tap(id("roleplay-mission-mic"), {});
+  await flush();
+  fireEvent.tap(id("roleplay-mission-mic"), {});
+  await flush();
+  await flush();
+  await flush();
+  expect(id("roleplay-mission-log")).toHaveTextContent("아이스 아메리카노 한 잔 주세요.");
+  expect(id("roleplay-mission-goal-order")).toHaveAttribute("data-done", "true");
 });

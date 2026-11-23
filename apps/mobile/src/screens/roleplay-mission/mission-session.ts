@@ -1,12 +1,12 @@
-// 미션 한 판의 순수 상태 기계입니다(PRD §3.3 ~ §3.6) — UI를 import하지 않습니다.
-// 턴의 SSE는 메신저 턴 리듀서(`applyTurnEvent`)로 접고, 그 리듀서가 모르는 `mission` 이벤트(목표 진척 · 남은 턴 · 끝)만 여기서 읽습니다.
+// 미션 한 판의 순수 상태 기계입니다(PRD §3.3 ~ §3.6, 파이프라인 문서 §10.4) — UI를 import하지 않습니다.
+// 턴의 SSE는 메신저 턴 리듀서(`applyTurnEvent`)로 접고, 그 리듀서가 모르는 `mission` 이벤트(목표 진척 · 남은 턴 · 끝 · 필수 달성)만
+// 여기서 읽습니다. 필수를 이룬 채 판이 열려 있으면 「Mission success!」 카드(계속하기 / 끝내기)를 한 번 띄웁니다.
 // 변화가 없으면 같은 참조를 돌려줍니다 — 늦게 온 응답 · 두 번 누른 버튼이 상태를 흔들지 않습니다.
 
 import { applyTurnEvent, endTurn, initialTurnState } from "../messenger-chat/companion-turn";
 import type { TurnState } from "../messenger-chat/companion-turn";
+import { mergeGoals, missionProgressOf } from "./mission-progress";
 import type {
-  MissionEndReason,
-  MissionGoalState,
   MissionLine,
   MissionSessionAction,
   MissionSessionState,
@@ -31,59 +31,11 @@ export function initialMissionSession(missionId: string): MissionSessionState {
     hint: null,
     hintLoading: false,
     endReason: null,
+    requiredDone: false,
+    successPrompt: "none",
     report: null,
     gradingFailure: null,
   };
-}
-
-/** `mission` 이벤트의 값 — 모양이 틀리면 `null`(버립니다). */
-export type MissionProgress = {
-  readonly goals: readonly { readonly id: string; readonly done: boolean }[];
-  readonly turnsLeft: number;
-  readonly ended: MissionEndReason | null;
-};
-
-const recordOf = (value: unknown): Record<string, unknown> | null =>
-  typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-
-export function missionProgressOf(data: string): MissionProgress | null {
-  let payload: Record<string, unknown> | null;
-  try {
-    payload = recordOf(JSON.parse(data) as unknown);
-  } catch {
-    return null;
-  }
-  if (payload === null || !Array.isArray(payload.goals)) return null;
-  const turnsLeft = payload.turnsLeft;
-  if (typeof turnsLeft !== "number" || !Number.isInteger(turnsLeft) || turnsLeft < 0) return null;
-  const ended = payload.ended === "goals" || payload.ended === "turn_limit" ? payload.ended : null;
-  if (payload.ended !== null && ended === null) return null;
-  const goals = payload.goals.flatMap((raw) => {
-    const goal = recordOf(raw);
-    return goal !== null && typeof goal.id === "string" && typeof goal.done === "boolean"
-      ? [{ id: goal.id, done: goal.done }]
-      : [];
-  });
-  return { goals, turnsLeft, ended };
-}
-
-/** 목표는 한 번 이루면 되돌리지 않습니다(PRD §3.4). 정의에 없는 id는 버립니다. */
-export function mergeGoals(
-  goals: readonly MissionGoalState[],
-  progress: MissionProgress,
-): readonly MissionGoalState[] {
-  const done = new Set(progress.goals.filter((goal) => goal.done).map((goal) => goal.id));
-  const changed = goals.some((goal) => !goal.done && done.has(goal.id));
-  return changed
-    ? goals.map((goal) => (done.has(goal.id) ? { ...goal, done: true } : goal))
-    : goals;
-}
-
-/** 필수 목표를 모두 이뤘는가 — 성공의 유일한 기준입니다(PRD §0.7). */
-export function requiredGoalsDone(goals: readonly MissionGoalState[]): boolean {
-  return goals.every((goal) => !goal.required || goal.done);
 }
 
 const updateMine = (
@@ -108,6 +60,7 @@ function closeTurn(state: MissionSessionState, turn: TurnState): MissionSessionS
   const replies: MissionLine[] = turn.bubbles.map((bubble, index) => ({
     kind: "them",
     id: `${replyId}:${String(index)}`,
+    messageId: turn.assistantMessageId,
     ko: bubble.ko,
     translation: bubble.en === "" ? null : bubble.en,
   }));
@@ -131,11 +84,18 @@ function onTurnEvent(state: MissionSessionState, event: string, data: string): M
   if (event === "mission") {
     const progress = missionProgressOf(data);
     if (progress !== null) {
+      const endReason = progress.ended ?? state.endReason;
+      const requiredDone = state.requiredDone || progress.requiredDone;
       next = {
         ...state,
         goals: mergeGoals(state.goals, progress),
         turnsLeft: Math.min(state.turnsLeft, progress.turnsLeft),
-        endReason: progress.ended ?? state.endReason,
+        endReason,
+        requiredDone,
+        successPrompt:
+          requiredDone && endReason === null && state.successPrompt === "none"
+            ? "shown"
+            : state.successPrompt,
       };
     }
   }
@@ -167,6 +127,7 @@ export function missionSessionReducer(
           {
             kind: "them",
             id: value.opening.messageId,
+            messageId: value.opening.messageId,
             ko: value.opening.ko,
             translation: value.opening.translation ?? value.opening.en,
           },
@@ -226,6 +187,31 @@ export function missionSessionReducer(
       return state.hintLoading ? { ...state, hintLoading: false, hintsLeft: 0 } : state;
     case "hint-dismissed":
       return state.hint === null ? state : { ...state, hint: null };
+    case "continue":
+      return state.successPrompt === "shown" ? { ...state, successPrompt: "dismissed" } : state;
+    case "finish-requested":
+      // 답을 기다리는 중의 끝내기는 그만두기 확인에서만 옵니다 — 결선이 스트림을 끊고 부릅니다.
+      return (state.phase === "talking" || state.phase === "awaiting") && canFinishOpen(state)
+        ? {
+            ...state,
+            phase: "ended",
+            endReason: "finish",
+            successPrompt: "dismissed",
+            hint: null,
+            hintLoading: false,
+            turn: null,
+            turnLineId: null,
+          }
+        : state;
+    case "pending-opened":
+      return state.phase === "preview"
+        ? {
+            ...state,
+            phase: "grading",
+            conversationId: action.conversationId,
+            gradingFailure: null,
+          }
+        : state;
     case "grading-requested":
       return state.phase === "ended" || state.phase === "grading-failed"
         ? { ...state, phase: "grading", gradingFailure: null }
@@ -277,6 +263,14 @@ export function canSendMission(state: MissionSessionState): boolean {
   return state.phase === "talking" && state.turnsLeft > 0;
 }
 
+const canFinishOpen = (state: MissionSessionState): boolean =>
+  state.requiredDone && state.endReason === null;
+
+/** 끝내기를 누를 수 있는가 — 내 차례이고 필수를 다 이뤘고 판이 열려 있을 때. */
+export function canFinishMission(state: MissionSessionState): boolean {
+  return state.phase === "talking" && canFinishOpen(state);
+}
+
 /** 힌트 버튼을 누를 수 있는가 — 대화 중이고 남은 힌트가 있고 받는 중이 아닐 때. */
 export function canAskHint(state: MissionSessionState): boolean {
   return (
@@ -285,3 +279,6 @@ export function canAskHint(state: MissionSessionState): boolean {
     !state.hintLoading
   );
 }
+
+export { mergeGoals, missionProgressOf, requiredGoalsDone } from "./mission-progress";
+export type { MissionProgress } from "./mission-progress";

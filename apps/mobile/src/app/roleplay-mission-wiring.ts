@@ -5,6 +5,8 @@
 import { useEffect, useState } from "@lynx-js/react";
 
 import { createFakeMissionSource } from "../screens/roleplay-mission/mission-fake-source";
+import { createFakeAudioDevice } from "../screens/roleplay-mission/mission-fake-voice";
+import type { MissionAudioDevice } from "../screens/roleplay-mission/mission-voice.contract";
 import type {
   MissionList,
   MissionSource,
@@ -14,6 +16,8 @@ import { ROLEPLAY_MISSION_READY } from "../screens/roleplay-mission/roleplay-mis
 let enabledOverride: boolean | null = null;
 let sourceOverride: MissionSource | null = null;
 let singleton: MissionSource | null = null;
+let deviceOverride: MissionAudioDevice | null = null;
+let deviceSingleton: MissionAudioDevice | null = null;
 const listeners = new Set<() => void>();
 
 /** 미션 항목 · 화면을 켜는가 — 상수 스위치. 테스트 · 개발 미리보기만 덮어씁니다. */
@@ -33,13 +37,31 @@ export function roleplayMissionSource(): MissionSource {
   return singleton;
 }
 
-/** 테스트 · 개발 미리보기 전용 — 스위치와 출처를 끼웁니다. 인자 없이 부르면 되돌립니다. */
+/**
+ * 기기 녹음 · 재생의 자리입니다 — 아직 호스트 모듈이 없습니다(파이프라인 문서 §10.2 ⑤). 붙일 때 이 함수가 `lib/`의 접점 파일
+ * (모듈마다 파일 하나, ADR-0017 D3 — 녹음 모듈 새로, 재생은 `AudioPlaybackModule`의 주소 재생)로 `MissionAudioDevice`를 만듭니다.
+ */
+const hostAudioDevice = (): MissionAudioDevice | null => null;
+
+export function roleplayMissionAudioDevice(): MissionAudioDevice {
+  if (deviceOverride !== null) return deviceOverride;
+  deviceSingleton ??= hostAudioDevice() ?? createFakeAudioDevice();
+  return deviceSingleton;
+}
+
+/** 테스트 · 개발 미리보기 전용 — 스위치와 출처 · 기기 음성을 끼웁니다. 인자 없이 부르면 되돌립니다. */
 export function setRoleplayMissionForTest(
-  override: { readonly enabled: boolean; readonly source?: MissionSource } | null = null,
+  override: {
+    readonly enabled: boolean;
+    readonly source?: MissionSource;
+    readonly device?: MissionAudioDevice;
+  } | null = null,
 ): void {
   enabledOverride = override?.enabled ?? null;
   sourceOverride = override?.source ?? null;
+  deviceOverride = override?.device ?? null;
   singleton = null;
+  deviceSingleton = null;
 }
 
 /** 판이 끝났습니다(리포트를 받음) — 목록의 최고 기록을 다시 읽게 알립니다. */
