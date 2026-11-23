@@ -139,17 +139,20 @@ describe("안내를 이미 본 사용자", () => {
     expect(seen()).toContain("snapshot");
   });
 
-  test("MG-UI12 Skip은 받지 않고 끝낸다. 제안이 없으면 안내가 서지 않고 알약은 보통 가격", async () => {
+  test("MG-UI12 예시 단계에도 건너뛰기가 없다 — 알약을 눌러야 끝난다. 제안이 없으면 안내가 서지 않고 알약은 보통 가격", async () => {
     const offered = serverSource(true);
     const first = memoryStore(["list", "room"]);
     mountChat({ source: offered.source, roomId: "duksu", guideStore: first.store });
     await flush();
-    fireEvent.tap(screen.getByTestId(ids.guideCoachSkip), { eventType: "catchEvent" });
-    expect(coach()).toBeNull();
+    expect(screen.queryByTestId(ids.guideCoachSkip)).toBeNull();
+    expect(screen.queryByTestId(ids.guideCoachNext)).toBeNull();
+    // 말풍선 · 막을 눌러도 넘어가지 않는다.
+    fireEvent.tap(screen.getByTestId(ids.guideCoach), { eventType: "catchEvent" });
+    expect(coach()?.getAttribute("data-step")).toBe("sample");
     expect(offered.claim).not.toHaveBeenCalled();
-    expect(first.seen()).toContain("snapshot");
-    expect(pill().textContent).toContain("35");
+    expect(first.seen()).not.toContain("snapshot");
     cleanup();
+    resetSampleOfferMemoryForTests();
 
     const none = serverSource(false);
     mountChat({

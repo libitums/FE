@@ -1,6 +1,6 @@
 // 덕수쌤 방 첫 입장 코치마크의 상태입니다(2026-11-13). 첫 인사가 도착하고 입력 중이 아니며 방 위에 다른 겹침(생년 시트 ·
 // 사이드바 · 대화상자)이 없을 때 한 번 뜹니다 — 로그가 비어 있으면 무엇을 가리키는지 모르고, 생년 시트가 먼저 뜨면 그 뒤에
-// 묻혔습니다(기기 확인). 겹침이 다시 열리면 숨었다가 닫히면 같은 단계로 돌아옵니다. 끝내거나 Skip하면 기기에 남깁니다.
+// 묻혔습니다(기기 확인). 겹침이 다시 열리면 숨었다가 닫히면 같은 단계로 돌아옵니다. 끝까지 누르면 기기에 남깁니다 — 건너뛸 수 없습니다(사용자 결정 2026-11-23).
 // 예시 스냅샷 단계(ADR-0146 추가): 서버가 제안할 때만 서고, 안내를 이미 본 사람에게는 그 단계만 따로 한 번 뜹니다. 사진 알약을
 // 누르면 예시를 받고 끝납니다(`takeSample`).
 
@@ -27,8 +27,8 @@ export type RoomGuide = {
   readonly step: GuideStep | null;
   /** 안내를 이미 본 사람에게 예시 단계만 뜬 것 — 「1 of 1」 대신 「New」. */
   readonly sampleOnly: boolean;
+  /** 다음 단계로 — 마지막이면 끝. 예시 단계에서는 무동작(사진 알약을 눌러야 끝납니다). 건너뛰기는 없습니다. */
   readonly next: () => void;
-  readonly skip: () => void;
   /** 예시 단계에서 사진 알약을 눌렀습니다 — 안내를 끝내고 예시를 받습니다. */
   readonly takeSample: () => void;
 };
@@ -77,18 +77,17 @@ export function useRoomGuide(
   const shown = !ended && ready && steps.length > 0 && !covered && server && greeted;
   const step = shown ? (steps[index] ?? null) : null;
   const taking = useRef(false);
-  /** `sampleSeen` — 예시 단계를 본 것으로 적는가(받기는 결과를 본 뒤에 적습니다). */
-  const end = (outcome: "done" | "skipped", sampleSeen: boolean) => {
+  /** 안내를 끝냅니다(건너뛰기가 없어 늘 끝까지 본 것). 예시 단계는 여기서 적지 않습니다 — 받은 뒤에 적습니다. */
+  const end = () => {
     emit({
       name: "messenger_guide_finished",
       surface: "chat",
       part: roomSeen ? "snapshot" : "room",
-      outcome,
+      outcome: "done",
     });
     store.markSeen("room");
     // 푸시 · 새 친구 시트로 덕수쌤 방에 먼저 온 사용자가 목록에서 「Chat with 덕수쌤」을 또 보지 않게.
     store.markSeen("list");
-    if (sampleSeen && steps.includes("sample")) store.markSeen("snapshot");
     setEnded(true);
   };
   return {
@@ -97,17 +96,15 @@ export function useRoomGuide(
     step,
     sampleOnly: roomSeen,
     next: () => {
-      // 예시 단계는 알약을 누르거나 Skip해야 끝납니다.
+      // 예시 단계는 사진 알약을 눌러야 끝납니다.
       if (step === "sample") return;
-      if (index >= steps.length - 1) end("done", false);
+      if (index >= steps.length - 1) end();
       else setIndex(index + 1);
     },
-    // 넘겼으면(예시 단계까지 갔든 아니든) 다시 권하지 않습니다.
-    skip: () => end("skipped", true),
     takeSample: () => {
       if (step !== "sample" || sample === undefined || taking.current) return;
       taking.current = true;
-      end("done", false);
+      end();
       // 받은 뒤에야 본 것으로 적습니다 — 받지 못하면 다음에 방에 올 때 다시 권합니다.
       void sample.claim(roomId).then((received) => {
         if (received) store.markSeen("snapshot");
