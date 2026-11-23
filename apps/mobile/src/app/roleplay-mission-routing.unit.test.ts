@@ -1,7 +1,10 @@
 import { describe, expect, test } from "vitest";
 
 import { uiCopyEn } from "../lib/ui-copy-en";
-import { roleplayItemSubtitle } from "../screens/roleplay-list/roleplay-list";
+import {
+  roleplayItemAccessibilityLabel,
+  roleplayItemSubtitle,
+} from "../screens/roleplay-list/roleplay-list";
 import type { RoleplaySection } from "../screens/roleplay-list/roleplay-list.contract";
 import { missionListFixture } from "../screens/roleplay-mission/mission-fixture";
 import { missionPriceLine } from "../screens/roleplay-mission/mission-model";
@@ -48,8 +51,32 @@ describe("미션 목록 항목", () => {
       missionId: "u06-cafe",
       goalCount: 4,
       bestScore: 73,
+      reportBadge: null,
     });
     expect(other?.items).toHaveLength(1);
+  });
+
+  test("MR-U2b 채점 대기 판이 있는 미션 항목만 「Report ready」 — 낭독 이름에도 붙는다", () => {
+    const pendingList = {
+      ...missionListFixture,
+      pendingReports: [
+        {
+          conversationId: "6c2d8f3b-5d2e-4a8f-8b62-3e4f5a6b7c81",
+          missionId: "u06-cafe",
+          endedAt: null,
+        },
+      ],
+    };
+    const [cafe] = withMissionItems([section("u06-cafe")], pendingList, content);
+    const [story, mission] = cafe?.items ?? [];
+    if (story === undefined || mission === undefined) throw new Error("items");
+    expect(mission).toMatchObject({ reportBadge: "ready" });
+    expect(roleplayItemAccessibilityLabel(mission, false, uiCopyEn)).toBe(
+      "Order a coffee, Mission · 4 goals · Best 73, Report ready",
+    );
+    expect(roleplayItemAccessibilityLabel(story, false, uiCopyEn)).toBe(
+      "Coffee, Roleplay · 3 lines",
+    );
   });
 
   test("MR-U3 카드 둘째 줄 — 목표 수와 최고 기록(없으면 생략)", () => {
@@ -61,6 +88,7 @@ describe("미션 목록 항목", () => {
       title: "Order a coffee",
       goalCount: 4,
       imageUrl: null,
+      reportBadge: null,
     } as const;
     expect(roleplayItemSubtitle({ ...base, bestScore: 73 }, uiCopyEn)).toBe(
       "Mission · 4 goals · Best 73",

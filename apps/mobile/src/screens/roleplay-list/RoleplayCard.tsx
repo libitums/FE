@@ -10,6 +10,7 @@ import {
   roleplayItemAccessibilityLabel,
   roleplayItemSubtitle,
 } from "./roleplay-list";
+import { MissionReportReadyBadge } from "../roleplay-mission/MissionReportReadyBadge";
 import type { RoleplayCardProps } from "./roleplay-list.contract";
 
 import "./roleplay-card.css";
@@ -76,6 +77,9 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
         <text className="roleplay-card-form" data-testid={`roleplay-list-item-form-${item.unitId}`}>
           {roleplayItemSubtitle(item, copy)}
         </text>
+        {item.form === "mission" && item.reportBadge !== null ? (
+          <MissionReportReadyBadge missionId={item.missionId} state={item.reportBadge} />
+        ) : null}
       </view>
       {locked ? (
         <view

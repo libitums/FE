@@ -3,8 +3,12 @@ import { cleanup, render } from "@lynx-js/react/testing-library";
 
 import { createFakeMissionSource } from "./mission-fake-source";
 import { missionListFixture } from "./mission-fixture";
-import { missionReportBadgeOf, pendingReportOf } from "./mission-report-ready";
-import { missionReportBadgeText, MissionReportReadyBadge } from "./MissionReportReadyBadge";
+import {
+  missionReportBadgeOf,
+  missionReportBadgeText,
+  pendingReportOf,
+} from "./mission-report-ready";
+import { MissionReportReadyBadge } from "./MissionReportReadyBadge";
 import { id } from "./mission-ui.test-support";
 import { roleplayMissionEn } from "../../lib/ui-copy-roleplay-mission";
 

@@ -153,6 +153,7 @@ test("[MI2] 목록 → 미리보기 → 대화 세 턴 → 성공 카드 → 끝
     "Mission · 4 goals · Best 73",
   );
   expect(id("roleplay-list-item-mission-u06-cafe")).toHaveAttribute("data-locked", "false");
+  expect(maybe("roleplay-mission-report-ready-u06-cafe")).not.toBeInTheDocument();
   expect(id("roleplay-list-item-mission-u06-cafe")).toHaveAttribute(
     "accessibility-label",
     "Order a coffee, Mission · 4 goals · Best 73",
@@ -230,6 +231,11 @@ test("[MI6] 성공 뒤 그만두기는 끝내기 — 채점해 리포트를 보�
 
 test("[MI7] 채점 대기 판 — 미션을 열면 미리보기 대신 채점 → 리포트, 다시 하기는 미리보기", async () => {
   await boot({ pendingReport: true });
+  expect(id("roleplay-mission-report-ready-u06-cafe")).toHaveTextContent("Report ready");
+  expect(id("roleplay-list-item-mission-u06-cafe")).toHaveAttribute(
+    "accessibility-label",
+    "Order a coffee, Mission · 4 goals · Best 73, Report ready",
+  );
   fireEvent.tap(id("roleplay-list-item-mission-u06-cafe"), {});
   await flush();
   await flush();

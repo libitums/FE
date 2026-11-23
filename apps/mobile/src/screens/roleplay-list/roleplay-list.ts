@@ -3,6 +3,7 @@
 import type { Motion } from "@libitums/ui-lynx/motion";
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
+import { missionReportBadgeText } from "../roleplay-mission/mission-report-ready";
 import type {
   PremiumRoleplayItem,
   PremiumRoleplayLock,
@@ -34,7 +35,11 @@ export function roleplayItemAccessibilityLabel(
   locked: boolean,
   copy: UiCopy,
 ): string {
-  const name = `${item.title}, ${roleplayItemSubtitle(item, copy)}`;
+  const badge =
+    item.form === "mission" && item.reportBadge !== null
+      ? `, ${missionReportBadgeText(item.reportBadge, copy.roleplayMission)}`
+      : "";
+  const name = `${item.title}, ${roleplayItemSubtitle(item, copy)}${badge}`;
   return locked ? copy.common.locked(name) : name;
 }
 

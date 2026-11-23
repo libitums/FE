@@ -7,6 +7,7 @@ import type { LearnerProfile } from "../lib/placeholder-fill";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import type { RoleplaySection } from "../screens/roleplay-list/roleplay-list.contract";
+import { missionReportBadgeOf } from "../screens/roleplay-mission/mission-report-ready";
 import type { MissionList } from "../screens/roleplay-mission/roleplay-mission.contract";
 import type { EpisodeContent } from "./episode-content";
 import { useRoleplayMissions } from "./roleplay-mission-wiring";
@@ -59,6 +60,7 @@ export function withMissionItems(
           title: mission.title.en,
           goalCount: mission.goals.length,
           bestScore: mission.best?.totalScore ?? null,
+          reportBadge: missionReportBadgeOf(missions, mission.id),
           imageUrl: firstCoverImageOf(content, mission.episodeId),
         })),
       ],

@@ -2,6 +2,8 @@
 // **판별자는 `form`입니다** — 목록이 보이는 것이 곧 형태라서 이름이 그 뜻을 말하게 합니다.
 // 롤플레이 항목은 본편 에피소드의 이야기 롤플레이(`story`)와, 스위치가 켜졌을 때 그 아래 서는 미션(`mission`, ADR-0160)입니다.
 
+import type { MissionReportBadgeState } from "../roleplay-mission/mission-report-ready";
+
 export type RoleplayUnitForm = "story" | "mission";
 
 /**
@@ -34,6 +36,11 @@ export type MissionRoleplayItem = {
   readonly goalCount: number;
   /** 이 미션 최고 점수. 해 본 적이 없으면 `null`. */
   readonly bestScore: number | null;
+  /**
+   * 채점 대기 판(`pendingReports`, ADR-0177)의 표시 — 둘째 줄 아래 「Report ready」 알약. 없으면 `null`(지금 카드 그대로).
+   * 누르면 미션 route가 곧장 채점 → 리포트로 엽니다.
+   */
+  readonly reportBadge: MissionReportBadgeState | null;
   readonly imageUrl: string | null;
 };
 
