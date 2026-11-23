@@ -148,6 +148,27 @@ test("LS4c. 끝 알림이 오지 않아도(호스트 없음) 안전망 시간 �
   }
 });
 
+test("LS4d. 끝 알림이 오면 안전망 타이머도 걷힌다 · 화면을 떠나면 남은 타이머가 없다(리뷰 #567)", () => {
+  vi.useFakeTimers();
+  try {
+    const { play } = mount();
+    fireEvent.tap(cell(0), {});
+    expect(vi.getTimerCount()).toBe(1);
+    finish(play, 0);
+    expect(vi.getTimerCount()).toBe(0);
+    fireEvent.tap(cell(1), {});
+    expect(vi.getTimerCount()).toBe(1);
+    const clear = vi.spyOn(globalThis, "clearTimeout");
+    act(() => {
+      cleanup();
+    });
+    expect(clear).toHaveBeenCalled();
+    play.mock.calls[1]?.[1]?.();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
 test("LS7. 누른 뒤에도 낭독 이름은 그대로 — 「heard」를 붙이지 않는다", () => {
   const { play } = mount();
   fireEvent.tap(cell(0), {});

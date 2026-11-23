@@ -20,9 +20,15 @@ export function usePlayingLetter(
   const [playing, setPlaying] = useState<string | null>(null);
   const turn = useRef(0);
   const fallback = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearFallback = (): void => {
+    if (fallback.current !== null) clearTimeout(fallback.current);
+    fallback.current = null;
+  };
+  // 화면을 떠나면 차례를 넘겨 늦게 온 끝 알림 · 안전망이 상태를 바꾸지 않게 합니다(리뷰 #567).
   useEffect(
     () => () => {
-      if (fallback.current !== null) clearTimeout(fallback.current);
+      turn.current += 1;
+      clearFallback();
     },
     [],
   );
@@ -30,10 +36,13 @@ export function usePlayingLetter(
     turn.current += 1;
     const mine = turn.current;
     const stop = () => {
-      if (turn.current === mine) setPlaying(null);
+      if (turn.current !== mine) return;
+      // 끝 알림이 먼저 오면 안전망도 걷습니다 — 끝난 뒤 타이머가 남지 않게(리뷰 #567).
+      clearFallback();
+      setPlaying(null);
     };
     setPlaying(letter);
-    if (fallback.current !== null) clearTimeout(fallback.current);
+    clearFallback();
     fallback.current = setTimeout(stop, PLAYING_LETTER_FALLBACK_MS);
     play(source, stop);
   };
