@@ -10,6 +10,11 @@
 -- 6. 기록 읽기(`message_json`)의 내 메시지에 스토리 인용 `story`를 싣는다.
 -- 7. 알림 후보 `companion_story_push_candidates(now, limit)` · 선톡 푸시 문의 `pushedToday` — 선톡과 합쳐 하루(현지) 한 번.
 
+-- 스토리 알림 배정 줄의 인물 · 스토리(검수 A15). 다른 묶음은 null.
+alter table public.push_campaign_sends
+  add column if not exists character_id text check (character_id is null or length(character_id) between 1 and 80),
+  add column if not exists story_id uuid;
+
 alter table companion.settings
   add column if not exists friend_stories text not null default 'off' check (friend_stories in ('off', 'testers', 'on')),
   add column if not exists story_push text not null default 'off' check (story_push in ('off', 'testers', 'on'));
@@ -144,12 +149,14 @@ returns text language sql stable as $$
 $$;
 revoke all on function companion.user_timezone(uuid) from public;
 
--- 오늘(현지 — 시간대를 모르면 UTC) 보낸 알림이 있는가. `p_series`가 null이면 모든 묶음(자동 캠페인 포함), 아니면 그 묶음만. 대조군은 세지 않는다.
+-- 오늘(현지 — 시간대를 모르면 UTC) 보낸 알림이 있는가. `p_series`가 null이면 모든 묶음(자동 캠페인 포함), 아니면 그 묶음만.
+-- 대조군은 세지 않는다 — 스토리 묶음(「스토리」 · 「스토리 시험」)만 대조군 줄도 센다(검수 A2): 스토리 대조군이 같은 날 선톡 푸시를 받으면
+-- 「스토리 알림을 받은 쪽 vs 안 받은 쪽」 비교가 「스토리 알림 vs 선톡 알림」이 되어 버린다.
 create function companion.pushed_today(p_user_id uuid, p_now timestamptz, p_series text[] default null)
 returns boolean language sql stable as $$
   select exists (
     select 1 from public.push_campaign_sends s
-    where s.user_id = p_user_id and s."group" = 'sent'
+    where s.user_id = p_user_id and (s."group" = 'sent' or s.series in ('스토리', '스토리 시험'))
       and (p_series is null or s.series = any (p_series))
       and s.run_at >= (
         date_trunc('day', p_now at time zone coalesce(companion.user_timezone(p_user_id), 'UTC'))
@@ -419,7 +426,12 @@ as $$
     'name', coalesce(x.persona->>'name', x.character_id),
     'line', x.line_ko,
     'mode', (select value from mode),
-    'tester', x.tester
+    'tester', x.tester,
+    -- 알림 문구 언어(검수 B1) — 학습 프로필의 나라, 없으면 마지막 지역. 모르면 null(영어).
+    'country', coalesce(
+      (select lp.country_code from public.learner_profiles lp where lp.user_id = x.user_id),
+      (select p.last_region from companion.profiles p where p.user_id = x.user_id)
+    )
   )), '[]'::jsonb)
   from (
     select pr.* from pairs pr, mode

@@ -42,11 +42,18 @@ export function useStoryReply(
       surface: "chat",
       characterId: quote.characterId,
       via,
-      free: free ? "yes" : "no",
+      free,
     });
 
   const freeSent = (characterId: string) => {
-    emit({ name: "chat_message_sent", surface: "chat", characterId, paid: false, cost: "0" });
+    emit({
+      name: "chat_message_sent",
+      surface: "chat",
+      characterId,
+      paid: false,
+      cost: "0",
+      storyFree: true,
+    });
     return true;
   };
 

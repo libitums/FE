@@ -4,11 +4,14 @@ import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories
 
 export const messengerChatStoriesId: FriendStoriesCopy = {
   language: "id",
+  // 낭독 조각 잇기 — 언어마다 구분자(감사 다국어 minor 9).
+  listSeparator: ", ",
+  labelSeparator: ": ",
   rowTitle: "Cerita",
   watchAll: "Lihat semua",
   watchAllLabel: "Lihat semua cerita",
   age: (age) =>
-    age.unit === "now" ? "baru saja" : age.unit === "m" ? `${age.value} mnt` : `${age.value} j`,
+    age.unit === "now" ? "baru saja" : age.unit === "m" ? `${age.value} mnt` : `${age.value} jam`,
   seen: "Dilihat",
   newBadge: "Baru",
   friendLabel: (name, age, seen) => `Cerita ${name}, ${age}${seen ? ", sudah dilihat" : ", baru"}`,
@@ -40,7 +43,6 @@ export const messengerChatStoriesId: FriendStoriesCopy = {
     caption: (name) => `Kamu membalas cerita ${name}`,
     storyMeta: (age) => (age === null ? "Cerita" : `Cerita · ${age}`),
     replying: (name) => `Membalas cerita ${name}`,
-    removeQuote: "Hapus cerita",
-    quoteLabel: (name, line) => `Cerita ${name}: ${line}`,
+    removeQuote: "Lepas kutipan",
   },
 };

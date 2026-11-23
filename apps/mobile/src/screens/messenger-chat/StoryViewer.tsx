@@ -12,7 +12,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { announce } from "../../lib/accessibility";
 import { restoreAccessibilityFocus } from "./chat-input-focus";
-import { storyAgeOf, viewerStep } from "./friend-stories";
+import { spokenOf, storyAgeOf, viewerStep } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { localizedLine } from "./suggested-friends";
 import {
@@ -48,18 +48,20 @@ export function StoryViewer({
   onSaveWord,
   onMeet,
   onClose,
+  onSkip,
   covered = false,
 }: StoryViewerProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const [index, setIndex] = useState(Math.min(Math.max(0, start), items.length - 1));
   const [paused, setPaused] = useState(false);
-  useLayerBack(onClose);
+  useLayerBack(() => onClose("back"));
   const item = items[index];
 
   const step = (action: "next" | "prev" | "tick") => {
     const next = viewerStep({ index, count: items.length }, action);
-    if (next === "close") return onClose();
+    if (action === "next") onSkip?.();
+    if (next === "close") return onClose("completed");
     setIndex(next.index);
   };
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
@@ -79,7 +81,10 @@ export function StoryViewer({
   useEffect(() => {
     const current = items[index];
     if (current === undefined) return undefined;
-    const line = `${copy.viewer.label(current.name)}, ${copy.viewer.progress(index + 1, items.length)}`;
+    const line = spokenOf(copy.listSeparator, [
+      copy.viewer.label(current.name),
+      copy.viewer.progress(index + 1, items.length),
+    ]);
     if (opened.current) announce(line);
     opened.current = true;
     const handle = setTimeout(() => restoreAccessibilityFocus(ids.name), NEXT_FRAME_MS);
@@ -129,7 +134,12 @@ export function StoryViewer({
         }}
       >
         <view className="story-viewer-head">
-          <IconButton testId={ids.close} icon={cross} label={copy.viewer.close} onTap={onClose} />
+          <IconButton
+            testId={ids.close}
+            icon={cross}
+            label={copy.viewer.close}
+            onTap={() => onClose("closed")}
+          />
           <IconButton
             testId={ids.pause}
             icon={paused ? play : pause}
@@ -155,7 +165,10 @@ export function StoryViewer({
             id={ids.name}
             data-testid={ids.name}
             accessibility-element={true}
-            accessibility-label={`${copy.viewer.label(item.name)}, ${copy.viewer.progress(index + 1, items.length)}`}
+            accessibility-label={spokenOf(copy.listSeparator, [
+              copy.viewer.label(item.name),
+              copy.viewer.progress(index + 1, items.length),
+            ])}
           >
             {item.name}
           </text>

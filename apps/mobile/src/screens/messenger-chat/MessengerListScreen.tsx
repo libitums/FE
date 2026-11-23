@@ -21,6 +21,7 @@ import { useChatSnapshot } from "./use-chat-source";
 import { useCoinBalance } from "./use-coin-balance";
 import { useSuggestedFriends } from "./use-suggested-friends";
 import { useFriendStories } from "./use-friend-stories";
+import { useRowImpressions } from "./use-row-impressions";
 import { useGuestGate } from "./use-guest-gate";
 import { canBrowseChats } from "./messenger-access";
 
@@ -87,6 +88,14 @@ export function MessengerListScreen({
     suggested,
     covered: coinShopOpen || suggested.layerOpen,
     onOpenRoom,
+  });
+
+  // 맨 위 줄의 노출 — 실제로 그린 줄만(감사 A5).
+  useRowImpressions({
+    rowShown: isSuggestedRowShown(guideShown),
+    story: friendStories.rowStats,
+    suggestedCount: suggested.rowCount,
+    pending: friendStories.rowPending,
   });
 
   // 겹침(엽전 상점 · 첫 입장 안내 · 추천 친구 시트 · 친구 찾기)을 합친 값 하나만, 바뀔 때 바깥에 알립니다 — 겹침끼리 바뀌는 사이에

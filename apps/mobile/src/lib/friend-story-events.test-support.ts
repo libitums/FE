@@ -5,4 +5,5 @@ export const friendStoryEventNames = [
   "friend_story_viewed",
   "friend_story_replied",
   "friend_story_word_saved",
+  "friend_story_closed",
 ] as const;

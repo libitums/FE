@@ -5,15 +5,18 @@ import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories
 
 export const messengerChatStoriesMy: FriendStoriesCopy = {
   language: "my",
+  // 낭독 조각 잇기 — 언어마다 구분자(감사 다국어 minor 9).
+  listSeparator: "၊ ",
+  labelSeparator: ": ",
   rowTitle: "စတိုရီများ",
   watchAll: "အားလုံးကြည့်ရန်",
   watchAllLabel: "စတိုရီအားလုံး ကြည့်ရန်",
   age: (age) =>
-    age.unit === "now" ? "ခုနက" : age.unit === "m" ? `${age.value} မိနစ်` : `${age.value} နာရီ`,
+    age.unit === "now" ? "ယခုလေးတင်" : age.unit === "m" ? `${age.value} မိနစ်` : `${age.value} နာရီ`,
   seen: "ကြည့်ပြီး",
   newBadge: "အသစ်",
   friendLabel: (name, age, seen) => `${name} ရဲ့ စတိုရီ၊ ${age}${seen ? "၊ ကြည့်ပြီး" : "၊ အသစ်"}`,
-  unmetLabel: (name) => `${name} ရဲ့ စတိုရီ၊ သူငယ်ချင်းအသစ်`,
+  unmetLabel: (name) => `${name} ရဲ့ စတိုရီ၊ သူငယ်ချင်းသစ်`,
   findFriends: "သူငယ်ချင်း ရှာရန်",
   findFriendsLabel: "သူငယ်ချင်း ရှာရန်",
   listPreview: (line) => `စတိုရီအသစ် · ${line}`,
@@ -33,7 +36,7 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
     freeReply: "ပထမဆုံး ပြန်စာ အခမဲ့",
     replyPlaceholder: (name) => `${name} ကို ပြန်စာရေးရန်…`,
     replyChipLabel: (text) => `ပြန်စာ: ${text}`,
-    newFriend: "သူငယ်ချင်းအသစ်",
+    newFriend: "သူငယ်ချင်းသစ်",
     addAndReply: "သူငယ်ချင်းထည့်ပြီး ပြန်စာရေးရန်",
     seeHowToMeet: "တွေ့ပုံ ကြည့်ရန်",
   },
@@ -41,7 +44,6 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
     caption: (name) => `${name} ရဲ့ စတိုရီကို သင် ပြန်စာရေးခဲ့သည်`,
     storyMeta: (age) => (age === null ? "စတိုရီ" : `စတိုရီ · ${age}`),
     replying: (name) => `${name} ရဲ့ စတိုရီကို ပြန်စာရေးနေသည်`,
-    removeQuote: "စတိုရီ ဖယ်ရန်",
-    quoteLabel: (name, line) => `${name} ရဲ့ စတိုရီ: ${line}`,
+    removeQuote: "ကိုးကားချက် ဖယ်ရန်",
   },
 };

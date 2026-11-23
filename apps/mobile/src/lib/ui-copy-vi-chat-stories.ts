@@ -4,6 +4,9 @@ import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories
 
 export const messengerChatStoriesVi: FriendStoriesCopy = {
   language: "vi",
+  // 낭독 조각 잇기 — 언어마다 구분자(감사 다국어 minor 9).
+  listSeparator: ", ",
+  labelSeparator: ": ",
   rowTitle: "Tin",
   watchAll: "Xem tất cả",
   watchAllLabel: "Xem tất cả tin",
@@ -15,8 +18,8 @@ export const messengerChatStoriesVi: FriendStoriesCopy = {
   unmetLabel: (name) => `Tin của ${name}, bạn mới`,
   findFriends: "Tìm bạn",
   findFriendsLabel: "Tìm bạn",
-  listPreview: (line) => `Tin mới · ${line}`,
-  listRowLabel: (name, line) => `${name}, tin mới: ${line}. Mở tin`,
+  listPreview: (line) => `Vừa đăng tin · ${line}`,
+  listRowLabel: (name, line) => `${name}, vừa đăng tin: ${line}. Mở tin`,
   viewer: {
     label: (name) => `Tin của ${name}`,
     progress: (index, count) => `Tin ${index} trên ${count}`,
@@ -40,7 +43,6 @@ export const messengerChatStoriesVi: FriendStoriesCopy = {
     caption: (name) => `Bạn đã trả lời tin của ${name}`,
     storyMeta: (age) => (age === null ? "Tin" : `Tin · ${age}`),
     replying: (name) => `Đang trả lời tin của ${name}`,
-    removeQuote: "Bỏ tin",
-    quoteLabel: (name, line) => `Tin của ${name}: ${line}`,
+    removeQuote: "Bỏ trích dẫn",
   },
 };

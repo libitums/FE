@@ -97,18 +97,34 @@
 - **하루 한 번 합산**: 스토리 알림은 현지 하루 시작 뒤 **어떤 묶음이든**(자동 캠페인 포함) 보낸(`group = 'sent'`) 줄이 있으면 보내지 않는다. 선톡 푸시는
   `companion_proactive_push_gate`가 더 돌려주는 `pushedToday`(묶음 「선톡」 · 「스토리」 · 「스토리 시험」)가 참이면 `daily_cap`으로 건너뛴다 — 선톡의 기존 동작을
   덜 바꾸려고 셈 범위를 그 셋으로 좁혔다. 현지 시간대를 모르면(스토리 알림은 이때 보내지 않음) 선톡 쪽은 UTC 하루로 센다.
+- **대조군도 그날 선톡 푸시를 막는다**(검수 A2): 스토리 묶음(「스토리」 · 「스토리 시험」)은 대조군(`control`) 줄도 「오늘 이미 받음」으로 센다
+  (`companion.pushed_today`). 대조군이 같은 날 선톡 푸시를 받으면 비교가 「스토리 알림 vs 없음」이 아니라 「스토리 알림 vs 선톡 알림」이 된다. 다른 묶음
+  (선톡 · 자동 캠페인)의 대조군은 그대로 세지 않는다.
+- **문구 A/B는 없다**: 받는 쪽 variant는 늘 `a`이고, 실험은 대조군 30%(알림 없음)만이다.
 - 자동 캠페인의 72시간 쉬는 시간은 스토리 알림에 걸지 않는다(걸면 학습 캠페인 뒤 사흘 동안 스토리 알림이 막힌다). 스토리 · 선톡 줄이 같은 표에 남으므로
   반대 방향(스토리 알림 뒤 캠페인)은 캠페인의 72시간 판정이 그대로 막는다.
 - 목적지 = `{ kind: "companion-chat", characterId, story: true }` — 옛 앱은 그 방을 열고(뒤로 맞음), 새 앱은 그 인물의 살아 있는 스토리를 연다(없으면 방).
-- 미리보기: 제목 = 인물 이름(`persona.name`), 본문 = 「posted a story — <한국어 한 줄>」(한 줄이 40자를 넘으면 39자 + …). 목적지에 variant는 싣지 않는다.
+- 미리보기: 제목 = 인물 이름(`persona.name`), 본문 = 받는 사람 나라의 언어(검수 B1 — 후보가 학습 프로필 나라, 없으면 마지막 지역을 싣고 예고 캠페인과
+  같은 표 `storyLanguageFor`로 고른다: 말레이시아 → 인도네시아어, 미얀마 → 미얀마어, 모르면 영어) + 한국어 한 줄(번역하지 않음, 40자를 넘으면 39자 + …).
+  en 「posted a story — …」 · es 「publicó una historia — …」 · id 「membagikan cerita — …」 · ja 「ストーリーを投稿しました — …」 · vi 「vừa đăng tin — …」 ·
+  th 「โพสต์สตอรี่ใหม่ — …」 · my 「စတိုရီအသစ် တင်လိုက်ပါပြီ — …」. 기록 줄의 `lang`도 그 언어. 목적지에 variant는 싣지 않는다.
+- 기록 줄은 인물 · 스토리를 남긴다(검수 A15): `push_campaign_sends.character_id` · `story_id`(새 칸, null 허용 — 다른 묶음은 null). 대조군 줄도 남긴다.
 
-### D8. 제품 이벤트 넷(ADR-0029 「D3 목적 구분」)
+### D8. 제품 이벤트 다섯(ADR-0029 「D3 목적 구분」, 감사 2026-11-23 개정)
 
-- `friend_story_row_viewed { count, unseen }` — 스토리 줄이 처음 보일 때 목록 마운트당 한 번.
-- `friend_story_viewed { characterId, met: yes | no, from: row | list | watch_all | push }` — 보기에서 스토리 하나가 설 때마다.
-- `friend_story_replied { characterId, via: chip | typed, free: yes | no }` — 인용이 실린 글을 보낼 때(무료 여부는 앱이 본 `freeReply`, 정본은 서버).
+- `friend_story_row_viewed { count, unseen }` — **줄 단위.** 스토리 줄이 실제로 그려졌을 때 목록 마운트당 한 번. 판정은 목록 화면 한 곳
+  (`use-row-impressions.ts`): 첫 입장 안내로 줄 자리가 숨으면 내지 않고, 스토리 첫 읽기가 끝나기 전에는 추천 줄 노출(`suggested_friend_viewed`)도
+  세지 않는다(곧 스토리 줄로 바뀔 수 있어서). 스토리 줄이 추천 줄을 대신하면 `suggested_friend_viewed`는 나지 않는다.
+- `friend_story_viewed { characterId, met: boolean, from: row | list | watch_all | push, index, total }` — **장 단위.** 보기에서 한 장이 설 때마다
+  (`index` = 몇째 장, 1부터 · `total` = 그 보기의 장 수, 10진 문자열).
+- `friend_story_closed { shown, total, skipped, reason: completed | closed | back | replied }` — 보기가 닫힐 때 한 번. `shown` = 선 장 수,
+  `skipped` = 다음 탭으로 넘긴 수, `reason` = 끝까지 넘김 · 닫기 단추 · 시스템 뒤로 · 칩/답장 칸/Add friend and reply로 대화방.
+- `friend_story_replied { characterId, via: chip | typed, free: boolean }` — 인용이 실린 글을 보낼 때(무료 여부는 앱이 본 `freeReply`, 정본은 서버).
+  무료로 보낸 글의 `chat_message_sent`에는 `storyFree: true`(앱 힌트 — 정본은 서버 `companion.story_replies.free`).
 - `friend_story_word_saved { characterId }`.
-- PostHog만(Airbridge로 보내지 않음). 안 만난 친구 추가는 기존 `suggested_friend_added`(`from: story` 추가).
+- 알림을 눌러 연 `push_notification_opened { target: companion-chat }`에는 스토리 알림일 때 `story: true`.
+- PostHog만(Airbridge로 보내지 않음). 안 만난 친구는 기존 `suggested_friend_opened` · `suggested_friend_added`를 쓰고 `from`으로 연 곳을 가른다 —
+  스토리 줄의 추천 아바타 `story_row`, 보기의 Add friend and reply `story_viewer`. `met` · `free`는 불리언(초안이라 데이터 단절 없음).
 
 ## 대가
 

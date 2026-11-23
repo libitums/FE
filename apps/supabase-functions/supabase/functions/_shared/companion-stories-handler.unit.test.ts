@@ -132,6 +132,47 @@ function setup(options: {
   return { call, requests, bodyOf, logs, outbound };
 }
 
+test("SH1b. 본문은 받는 사람 나라의 언어(일곱) — 제목은 인물 이름, 나라를 모르면 영어(검수 B1)", () => {
+  const plan = (country: string | null) =>
+    storyPushPlan({
+      mode: "on",
+      tester: false,
+      userId: pick(false),
+      name: "정윤경",
+      line,
+      country,
+    });
+  const bodies = Object.fromEntries(
+    ["US", "MX", "ID", "JP", "VN", "TH", "MM", "MY", null].map((country) => {
+      const p = plan(country);
+      return [String(country), { lang: p?.lang, body: p?.body, title: p?.title }];
+    }),
+  );
+  expect(bodies).toEqual({
+    US: { lang: "en", body: `posted a story — ${line}`, title: "정윤경" },
+    MX: { lang: "es", body: `publicó una historia — ${line}`, title: "정윤경" },
+    ID: { lang: "id", body: `membagikan cerita — ${line}`, title: "정윤경" },
+    JP: { lang: "ja", body: `ストーリーを投稿しました — ${line}`, title: "정윤경" },
+    VN: { lang: "vi", body: `vừa đăng tin — ${line}`, title: "정윤경" },
+    TH: { lang: "th", body: `โพสต์สตอรี่ใหม่ — ${line}`, title: "정윤경" },
+    MM: { lang: "my", body: `စတိုရီအသစ် တင်လိုက်ပါပြီ — ${line}`, title: "정윤경" },
+    MY: { lang: "id", body: `membagikan cerita — ${line}`, title: "정윤경" },
+    null: { lang: "en", body: `posted a story — ${line}`, title: "정윤경" },
+  });
+});
+
+test("SH1c. 후보의 나라로 기록 · 발송 언어를 정한다(검수 B1)", async () => {
+  const userId = pick(false);
+  const t = setup({ candidates: [candidate(userId, { country: "JP" })] });
+  await t.call();
+  expect(t.bodyOf("/rest/v1/push_campaign_sends")).toEqual([
+    [expect.objectContaining({ lang: "ja", body: `ストーリーを投稿しました — ${line}` })],
+  ]);
+  expect(t.bodyOf("/functions/v1/send-push")).toEqual([
+    expect.objectContaining({ title: "정윤경", body: `ストーリーを投稿しました — ${line}` }),
+  ]);
+});
+
 test("SH2. 올리고 → 후보 → 받는 사람은 배정 기록 뒤 send-push(그 사람 하나 · 목적지 companion-chat + story)", async () => {
   const userId = pick(false);
   const t = setup({ candidates: [candidate(userId)] });
@@ -166,6 +207,8 @@ test("SH2. 올리고 → 후보 → 받는 사람은 배정 기록 뒤 send-push
         story_step: null,
         title: "정윤경",
         body: `posted a story — ${line}`,
+        character_id: "yoonkyung",
+        story_id: candidate(userId).storyId,
       },
     ],
   ]);

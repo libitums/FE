@@ -5,11 +5,14 @@ import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories
 
 export const messengerChatStoriesTh: FriendStoriesCopy = {
   language: "th",
+  // 낭독 조각 잇기 — 언어마다 구분자(감사 다국어 minor 9).
+  listSeparator: " ",
+  labelSeparator: ": ",
   rowTitle: "สตอรี่",
   watchAll: "ดูทั้งหมด",
   watchAllLabel: "ดูสตอรี่ทั้งหมด",
   age: (age) =>
-    age.unit === "now" ? "เมื่อกี้" : age.unit === "m" ? `${age.value} นาที` : `${age.value} ชม.`,
+    age.unit === "now" ? "เมื่อสักครู่" : age.unit === "m" ? `${age.value} นาที` : `${age.value} ชม.`,
   seen: "ดูแล้ว",
   newBadge: "ใหม่",
   friendLabel: (name, age, seen) => `สตอรี่ของ ${name}, ${age}${seen ? ", ดูแล้ว" : ", ใหม่"}`,
@@ -41,7 +44,6 @@ export const messengerChatStoriesTh: FriendStoriesCopy = {
     caption: (name) => `คุณตอบกลับสตอรี่ของ ${name}`,
     storyMeta: (age) => (age === null ? "สตอรี่" : `สตอรี่ · ${age}`),
     replying: (name) => `กำลังตอบกลับสตอรี่ของ ${name}`,
-    removeQuote: "เอาสตอรี่ออก",
-    quoteLabel: (name, line) => `สตอรี่ของ ${name}: ${line}`,
+    removeQuote: "เอาข้อความอ้างอิงออก",
   },
 };

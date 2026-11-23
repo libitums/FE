@@ -62,7 +62,7 @@ test("FS-UI9. 칩 말이면 방이 서자마자 인용과 함께 보내고 내 �
       name: "friend_story_replied",
       characterId: "mina",
       via: "chip",
-      free: "yes",
+      free: true,
     }),
   );
 });
@@ -78,7 +78,7 @@ test("FS-UI9. 답장 칸이면 인용 띠가 서고, 다음에 보내는 글에 
   expect(sent[0]).toMatchObject({ text: { ko: "안" }, story: { storyId: "st-mina" } });
   expect(screen.queryByTestId(ids.quoteBar)).toBeNull();
   expect(sink.mock.calls.map(([e]) => e)).toContainEqual(
-    expect.objectContaining({ name: "friend_story_replied", via: "typed", free: "no" }),
+    expect.objectContaining({ name: "friend_story_replied", via: "typed", free: false }),
   );
   // 띠가 떨어진 뒤의 글에는 인용이 없다.
   tapKeys(...KEYS_AN);
@@ -104,7 +104,7 @@ test("FS-UI9. 무료 칩은 chat_message_sent(paid false · cost 0)를 내고, �
   const sink = vi.fn();
   mountChat({ eventSink: sink, tier: "free", trial: createTrialStore(0), coinBalance: 0 });
   expect(sink.mock.calls.map(([e]) => e)).toContainEqual(
-    expect.objectContaining({ name: "chat_message_sent", paid: false, cost: "0" }),
+    expect.objectContaining({ name: "chat_message_sent", paid: false, cost: "0", storyFree: true }),
   );
   cleanup();
   putStoryReplyHandoff(handoff("괜찮아요?", false));

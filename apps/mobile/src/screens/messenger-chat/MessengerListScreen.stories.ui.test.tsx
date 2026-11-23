@@ -120,7 +120,13 @@ test("FS-UI7. 친구 스토리 → 보기(본 것 표시 · viewed) → 칩 → 
   expect(screen.getByTestId(ids.viewer)).not.toBeNull();
   expect(markSeen).toHaveBeenCalledWith("st-mina", live[0]?.expiresAt, STORY_NOW);
   expect(events().filter((e) => e.name === "friend_story_viewed")).toEqual([
-    expect.objectContaining({ characterId: "mina", met: "yes", from: "row" }),
+    expect.objectContaining({
+      characterId: "mina",
+      met: true,
+      from: "row",
+      index: "1",
+      total: "1",
+    }),
   ]);
   tapId(ids.chip(0));
   expect(screen.queryByTestId(ids.viewer)).toBeNull();
@@ -155,7 +161,7 @@ test("FS-UI7. 알림으로 연 인물의 스토리가 서면 그 보기를 연�
   const { events } = await mount(live);
   expect(screen.getByTestId(ids.viewer)).not.toBeNull();
   expect(events().filter((e) => e.name === "friend_story_viewed")).toEqual([
-    expect.objectContaining({ characterId: "daeun", met: "no", from: "push" }),
+    expect.objectContaining({ characterId: "daeun", met: false, from: "push" }),
   ]);
 });
 
@@ -221,7 +227,7 @@ test("FS-UI7. 스토리 줄의 추천 아바타 → 프로필 시트(from story)
   tapId(suggestedIds.avatar("daeun"));
   expect(screen.getByTestId(suggestedIds.sheet)).not.toBeNull();
   expect(events().filter((e) => e.name === "suggested_friend_opened")).toEqual([
-    expect.objectContaining({ characterId: "daeun", from: "story" }),
+    expect.objectContaining({ characterId: "daeun", from: "story_row" }),
   ]);
   tapId(suggestedIds.sheetLater);
   tapId(ids.findFriends);
@@ -235,6 +241,34 @@ test("FS-UI7. 안 만난 친구 스토리 → Add friend and reply → 추가 ·
   expect(onOpenRoom).toHaveBeenCalledWith("daeun");
   expect(takeStoryReplyHandoff("daeun")).toMatchObject({ roomId: "daeun", text: null });
   expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([
-    expect.objectContaining({ characterId: "daeun", from: "story", via: "free" }),
+    expect.objectContaining({ characterId: "daeun", from: "story_viewer", via: "free" }),
   ]);
+});
+
+test("FS-UI10. 보기를 닫으면 friend_story_closed 한 번 — 본 장 · 전체 · 건너뜀 · 까닭(감사 A4)", async () => {
+  const { events } = await mount(live);
+  tapId(ids.watchAll);
+  expect(events().filter((e) => e.name === "friend_story_viewed")).toEqual([
+    expect.objectContaining({ index: "1", total: "1", from: "watch_all" }),
+  ]);
+  tapId(ids.close);
+  expect(events().filter((e) => e.name === "friend_story_closed")).toEqual([
+    expect.objectContaining({ shown: "1", total: "1", skipped: "0", reason: "closed" }),
+  ]);
+});
+
+test("FS-UI10. 마지막 장에서 다음을 누르면 completed, 그 탭은 skipped로 센다", async () => {
+  const { events } = await mount(live);
+  tapId(ids.watchAll);
+  tapId(ids.next);
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(events().filter((e) => e.name === "friend_story_closed")).toEqual([
+    expect.objectContaining({ shown: "1", total: "1", skipped: "1", reason: "completed" }),
+  ]);
+});
+
+test("FS-UI11. 스토리 줄이 추천 줄을 대신하면 suggested_friend_viewed는 없고 row_viewed는 한 번(감사 A5)", async () => {
+  const { events } = await mount(live);
+  expect(events().filter((e) => e.name === "friend_story_row_viewed")).toHaveLength(1);
+  expect(events().filter((e) => e.name === "suggested_friend_viewed")).toEqual([]);
 });

@@ -60,7 +60,6 @@ export function useSuggestedFriends({
   const [filter, setFilter] = useState<DirectoryFilter>(ALL);
   const [toast, setToast] = useState<SuggestedFriendToastValue | null>(null);
   const toastKey = useRef(0);
-  const viewedSent = useRef(false);
   const [offers, setOffers] = useState<readonly EarlyAccessListing[]>([]);
   // 첫 값은 이 계정에서 마지막으로 읽은 목록 — 탭에 다시 들어올 때 새 친구가 늦게 끼어 줄이 바뀌지 않게(ADR-0164 D2 개정).
   const [visible, setVisible] = useState<readonly VisibleFriend[] | null>(
@@ -122,13 +121,6 @@ export function useSuggestedFriends({
   const all = port === undefined ? [] : suggestedFriendsOf(input);
   const row = suggestedRowOf(all);
   const layerOpen = sheet !== null || directoryOpen || ack.open;
-
-  // 줄이 처음 보일 때 목록 마운트당 한 번(제품 이벤트 — 효과에서 보냄).
-  useEffect(() => {
-    if (viewedSent.current || row.length === 0) return;
-    viewedSent.current = true;
-    emit({ name: "suggested_friend_viewed", surface: "chat", count: String(row.length) });
-  }, [row.length]);
 
   const showToast = (text: string, model: SuggestedFriendSheetModel) => {
     toastKey.current += 1;
@@ -192,9 +184,9 @@ export function useSuggestedFriends({
   function meet(friend: SuggestedFriend, onAdded: () => void) {
     "background only";
     if (port === undefined) return;
-    if (friend.status !== "addable") return openSheet(modelOfFriend(friend), "story");
+    if (friend.status !== "addable") return openSheet(modelOfFriend(friend), "story_viewer");
     if (onBlocked !== undefined) return onBlocked();
-    startAdd({ model: modelOfFriend(friend), from: "story" }, onAdded);
+    startAdd({ model: modelOfFriend(friend), from: "story_viewer" }, onAdded);
   }
 
   function handleEarly() {
@@ -242,6 +234,7 @@ export function useSuggestedFriends({
   const directory = directoryOpen ? directoryOf({ ...input, filter }) : null;
 
   return {
+    rowCount: row.length,
     all,
     openFriend: (friend, from) => openSheet(modelOfFriend(friend), from),
     meet,

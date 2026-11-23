@@ -68,20 +68,20 @@ export type SuggestedFriendEvent =
       readonly name: "suggested_friend_opened";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory" | "story";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
     })
   | (Common & {
       readonly name: "suggested_friend_added";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory" | "story";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
       readonly via: "free" | "early";
     })
   | (Common & {
       readonly name: "early_access_tapped";
       readonly characterId: string;
       readonly price: string;
-      readonly from: "row" | "directory" | "story";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
     })
   /** 먼저 만나기 RPC가 끝났습니다(ADR-0162 D5) — 누른 뒤 한 번. unlocked = 이미 산 인물(already) 포함, failed = 제안 없음 · 오류. */
   | (Common & {
@@ -97,6 +97,8 @@ export type ChatCoinEvent =
       readonly characterId: string;
       readonly paid: boolean;
       readonly cost: string;
+      /** 스토리 첫 답장 무료로 보냄(ADR-0177 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
+      readonly storyFree?: true;
     })
   | (Common & {
       readonly name: "chat_media_requested";

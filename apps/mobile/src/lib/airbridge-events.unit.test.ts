@@ -58,10 +58,10 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0166⟩ 비회원 로그인 권유 `chat_sign_in_prompt_closed`가 더해져 70 · 67이다.
   // ⟨ADR-0176⟩ 입장 선택 이벤트 셋이 더해져 73 · 70이다(Airbridge로 나가지 않음 — 가입 완료는 `entry_completed` 그대로).
   // ⟨ADR-0177 D8⟩ 친구 스토리 이벤트 넷이 더해져 77 · 74다(Airbridge로 나가지 않음 — PostHog만).
-  test("AB3. 이름 77개는 표의 74개와 매핑되는 셋으로 나뉜다", () => {
+  test("AB3. 이름 78개는 표의 75개와 매핑되는 셋으로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(74);
-    expect(allEventNames).toHaveLength(77);
+    expect(tableNames.size).toBe(75);
+    expect(allEventNames).toHaveLength(78);
     expect(
       [...tableNames, "entry_completed", "episode_final_passed", "pack_purchased"].sort(),
     ).toEqual([...allEventNames].sort());

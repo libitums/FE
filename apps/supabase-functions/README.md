@@ -848,12 +848,14 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   예약이 있으면 건너뛴다(정의에서 그 줄만 바꿈 — 줄이 없으면 마이그레이션이 멈춘다). `begin_turn`은 같은 메시지의 예약을 그대로 쓴다(체험을 쓰지 않음).
   턴이 실패해 예약이 풀리면(정리 작업 포함) 무료가 다시 산다.
 - 인용: `companion.message_json`이 유저 메시지에 `story { id, characterId, line, imagePath, postedAt }`(아니면 null)를 싣는다(정의에서 한 줄 더함).
-- 알림 `companion-stories`(매시 5분): 올림 → `companion_story_push_candidates(now, 200)` → 사람마다 계획(on: 대조군 30% · 받는 쪽 제목 = 이름 · 본문
-  `posted a story — <한 줄 40자>`) → `push_campaign_sends`(묶음 `스토리` · 세그먼트 `friend-story`, 시험 계정 단계는 묶음 `스토리 시험`)에 먼저 기록 →
+- 알림 `companion-stories`(매시 5분): 올림 → `companion_story_push_candidates(now, 200)`(후보에 나라 `country`) → 사람마다 계획(on: 대조군 30% ·
+  문구 A/B 없음(variant a) · 받는 쪽 제목 = 이름 · 본문은 나라의 언어 일곱(`storyLanguageFor` — en es id ja vi th my) + 한국어 한 줄 40자) →
+  `push_campaign_sends`(묶음 `스토리` · 세그먼트 `friend-story` · 새 칸 `character_id` · `story_id`, 시험 계정 단계는 묶음 `스토리 시험`)에 먼저 기록 →
   `send-push` 목적지 `{ kind: "companion-chat", characterId, story: true }`(옛 앱은 방을 연다).
   후보: 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) ·
   **오늘(현지) 보낸 알림 없음 — 모든 묶음**(선톡 · 스토리 · 자동 캠페인). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
-- 테스트: `migrations/friend-stories.integration.test.ts`(FS1 ~ FS19) · `_shared/companion-stories-handler.unit.test.ts`(SH1 ~ SH4) ·
+  `companion.pushed_today`는 스토리 묶음만 **대조군 줄도** 센다 — 스토리 대조군이 같은 날 선톡 푸시를 받지 않게(비교가 공정하게). 다른 묶음은 보낸 줄만.
+- 테스트: `migrations/friend-stories.integration.test.ts`(FS1 ~ FS20) · `_shared/companion-stories-handler.unit.test.ts`(SH1 ~ SH5) ·
   `chat-send-handler.unit.test.ts`(CSS1 ~ CSS3) · `companion-proactive-push.unit.test.ts`(PP9) · `send-push-body.unit.test.ts`(SP1) · 계약 `chat-send.unit.test.ts`(CS3e).
 
 **적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**

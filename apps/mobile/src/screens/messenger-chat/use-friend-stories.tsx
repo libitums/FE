@@ -8,7 +8,12 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { useChatEvents } from "./chat-events";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import { listStoryOf, storyRowOf, viewerItemsOf, type ViewerOpen } from "./friend-stories";
-import type { FriendStoriesPort, FriendStory, StoryViewerItem } from "./friend-stories.contract";
+import type {
+  FriendStoriesPort,
+  FriendStory,
+  StoryCloseReason,
+  StoryViewerItem,
+} from "./friend-stories.contract";
 import { FriendStoriesRow } from "./FriendStoriesRow";
 import {
   putStoryReplyHandoff,
@@ -16,11 +21,16 @@ import {
   takePendingStoryOpen,
 } from "./story-reply-handoff";
 import { StoryViewer } from "./StoryViewer";
+import type { StoryRowStats } from "./use-row-impressions";
 import type { SuggestedFriendsUi } from "./use-suggested-friends";
 
 export type FriendStoriesUi = {
   /** 스토리 줄 — 스토리가 하나도 없으면(읽기 전 · 못 읽음 · 빈 목록 · 포트 없음) null이고 목록은 추천 줄을 씁니다(D2). */
   readonly row: ReactNode;
+  /** 줄이 서면 칸 수 · 안 본 수(노출 이벤트 — 목록 화면이 셉니다, 감사 A5), 아니면 null. */
+  readonly rowStats: StoryRowStats | null;
+  /** 첫 읽기가 아직 안 끝났는가 — 그동안 추천 줄 노출을 세지 않습니다(곧 스토리 줄로 바뀔 수 있어서, 감사 A5). */
+  readonly rowPending: boolean;
   /** 보기 층 — 스크롤 밖에 둡니다. */
   readonly layer: ReactNode;
   readonly layerOpen: boolean;
@@ -61,7 +71,6 @@ export function useFriendStories({
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [pendingVersion, setPendingVersion] = useState(0);
   useEffect(() => subscribePendingStoryOpen(() => setPendingVersion((value) => value + 1)), []);
-  const rowViewedSent = useRef(false);
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
 
   // 목록 마운트마다 한 번 읽습니다 — 포트 객체가 렌더마다 같아도(결선이 같은 객체를 줌) 그때의 함수를 씁니다(추천 친구 리뷰 #503과 같은 꼴).
@@ -100,19 +109,6 @@ export function useFriendStories({
     return true;
   };
 
-  // 스토리 줄이 처음 보일 때 목록 마운트당 한 번(제품 이벤트 — 효과에서 보냄).
-  const unseenCount = row.friends.filter((entry) => !entry.seen).length;
-  useEffect(() => {
-    if (rowViewedSent.current || !hasStories) return;
-    rowViewedSent.current = true;
-    emit({
-      name: "friend_story_row_viewed",
-      surface: "chat",
-      count: String(row.friends.length + row.unmet.length),
-      unseen: String(unseenCount),
-    });
-  }, [hasStories]);
-
   // 알림(`story: true`)으로 들어왔으면 읽기가 끝난 뒤 그 인물의 스토리를, 없으면 열린 방을 엽니다(D7).
   useEffect(() => {
     if (loadCount === 0 && port !== undefined) return;
@@ -123,18 +119,36 @@ export function useFriendStories({
     if (room !== undefined && room.access.kind === "open") onOpenRoom(room.roomId);
   }, [loadCount, port === undefined ? pendingVersion : -1]);
 
-  const close = () => setViewer(null);
+  // 보기 한 번의 장 기록 — 닫힐 때 `friend_story_closed` 한 번(감사 A4).
+  const session = useRef({ shown: new Set<string>(), skipped: 0 });
+  const close = (reason: StoryCloseReason | "replied") => {
+    if (viewer !== null)
+      emit({
+        name: "friend_story_closed",
+        surface: "chat",
+        shown: String(session.current.shown.size),
+        total: String(viewer.items.length),
+        skipped: String(session.current.skipped),
+        reason,
+      });
+    session.current = { shown: new Set(), skipped: 0 };
+    setViewer(null);
+  };
 
   function handleShown(item: StoryViewerItem) {
     "background only";
     port?.seen.markSeen(item.story.id, item.story.expiresAt, Date.now());
     setSeenVersion((version) => version + 1);
+    session.current.shown.add(item.story.id);
+    const items = viewer?.items ?? [];
     emit({
       name: "friend_story_viewed",
       surface: "chat",
       characterId: item.story.characterId,
-      met: item.unmet === null ? "yes" : "no",
+      met: item.unmet === null,
       from: viewer?.from ?? "row",
+      index: String(items.indexOf(item) + 1),
+      total: String(items.length),
     });
   }
 
@@ -158,7 +172,7 @@ export function useFriendStories({
 
   function handleReply(item: StoryViewerItem, text: string | null) {
     "background only";
-    close();
+    close("replied");
     handOff(item, text);
   }
 
@@ -167,19 +181,26 @@ export function useFriendStories({
     const friend = item.unmet;
     if (friend === null) return;
     suggested.meet(friend, () => {
-      close();
+      close("replied");
       handOff(item, null);
     });
   }
 
   return {
+    rowPending: port !== undefined && loadCount === 0,
+    rowStats: hasStories
+      ? {
+          count: row.friends.length + row.unmet.length,
+          unseen: row.friends.filter((entry) => !entry.seen).length,
+        }
+      : null,
     row: !hasStories ? null : (
       <FriendStoriesRow
         row={row}
         now={now}
         onOpenFriend={(entry) => open({ from: "friend", characterId: entry.story.characterId })}
         onOpenUnmet={(entry) => open({ from: "unmet", characterId: entry.story.characterId })}
-        onOpenSuggested={(friend) => suggested.openFriend(friend, "story")}
+        onOpenSuggested={(friend) => suggested.openFriend(friend, "story_row")}
         onWatchAll={() => open({ from: "watch_all" })}
         onFindFriends={suggested.openDirectory}
       />
@@ -205,6 +226,9 @@ export function useFriendStories({
           }
           onMeet={handleMeet}
           onClose={close}
+          onSkip={() => {
+            session.current.skipped += 1;
+          }}
         />
       ),
     layerOpen: viewer !== null,

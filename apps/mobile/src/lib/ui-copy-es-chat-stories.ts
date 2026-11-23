@@ -4,6 +4,9 @@ import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories
 
 export const messengerChatStoriesEs: FriendStoriesCopy = {
   language: "es",
+  // 낭독 조각 잇기 — 언어마다 구분자(감사 다국어 minor 9).
+  listSeparator: ", ",
+  labelSeparator: ": ",
   rowTitle: "Historias",
   watchAll: "Ver todas",
   watchAllLabel: "Ver todas las historias",
@@ -12,7 +15,7 @@ export const messengerChatStoriesEs: FriendStoriesCopy = {
   seen: "Vista",
   newBadge: "Nueva",
   friendLabel: (name, age, seen) => `Historia de ${name}, ${age}${seen ? ", vista" : ", nueva"}`,
-  unmetLabel: (name) => `Historia de ${name}, nuevo amigo`,
+  unmetLabel: (name) => `Historia de ${name}, nueva amistad`,
   findFriends: "Buscar amigos",
   findFriendsLabel: "Buscar amigos",
   listPreview: (line) => `Nueva historia · ${line}`,
@@ -32,15 +35,14 @@ export const messengerChatStoriesEs: FriendStoriesCopy = {
     freeReply: "La primera respuesta es gratis",
     replyPlaceholder: (name) => `Responder a ${name}…`,
     replyChipLabel: (text) => `Responder: ${text}`,
-    newFriend: "NUEVO AMIGO",
+    newFriend: "NUEVA AMISTAD",
     addAndReply: "Agregar y responder",
-    seeHowToMeet: "Cómo conocerle",
+    seeHowToMeet: "Ver cómo conocerse",
   },
   reply: {
     caption: (name) => `Respondiste a la historia de ${name}`,
     storyMeta: (age) => (age === null ? "Historia" : `Historia · ${age}`),
     replying: (name) => `Respondiendo a la historia de ${name}`,
-    removeQuote: "Quitar historia",
-    quoteLabel: (name, line) => `Historia de ${name}: ${line}`,
+    removeQuote: "Quitar cita",
   },
 };

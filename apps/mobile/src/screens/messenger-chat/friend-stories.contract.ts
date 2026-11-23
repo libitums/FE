@@ -86,6 +86,8 @@ export type StoryAge =
   | { readonly unit: "m"; readonly value: number }
   | { readonly unit: "h"; readonly value: number };
 
+export type StoryCloseReason = "completed" | "closed" | "back";
+
 /** 보기 화면의 한 장 — 이름 · 얼굴은 대화 스냅숏의 방, 안 만난 친구는 추천 친구(소개 · 상태)를 함께 받습니다. */
 export type StoryViewerItem = {
   readonly story: FriendStory;
@@ -119,6 +121,10 @@ export type StoryReplyHandoff = {
 /** `UiCopy.messengerChat.stories`. 인물 이름 · 한국어 한 줄은 그대로, 뜻은 스토리 데이터가 줍니다. */
 export type FriendStoriesCopy = {
   readonly language: string;
+  /** 낭독 조각 사이 구분자(감사 다국어 minor 9 — 컴포넌트가 「, 」를 박지 않게). */
+  readonly listSeparator: string;
+  /** 「머리: 본문」의 쌍점. */
+  readonly labelSeparator: string;
   readonly rowTitle: string;
   readonly watchAll: string;
   readonly watchAllLabel: string;
@@ -155,7 +161,6 @@ export type FriendStoriesCopy = {
     readonly storyMeta: (age: string | null) => string;
     readonly replying: (name: string) => string;
     readonly removeQuote: string;
-    readonly quoteLabel: (name: string, line: string) => string;
   };
 };
 
@@ -184,7 +189,10 @@ export type StoryViewerProps = {
   readonly onSaveWord: (item: StoryViewerItem) => void;
   /** 안 만난 친구 — 추가하고 답장(추가 가능) 또는 프로필 시트(잠김). */
   readonly onMeet: (item: StoryViewerItem) => void;
-  readonly onClose: () => void;
+  /** 닫힘 — 끝까지 넘김(completed) · 닫기 단추(closed) · 시스템 뒤로(back). */
+  readonly onClose: (reason: StoryCloseReason) => void;
+  /** 다음 탭으로 넘김(건너뜀 세기). */
+  readonly onSkip?: () => void;
   /** 위에 시트가 떠 있는가 — 그동안 낭독에서 가리고 멈춥니다. */
   readonly covered?: boolean;
 };

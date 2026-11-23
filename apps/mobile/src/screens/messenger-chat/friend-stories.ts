@@ -10,6 +10,7 @@ import type {
   StoryViewerItem,
   UnmetStoryEntry,
 } from "./friend-stories.contract";
+import { joinSpoken } from "../../lib/ui-copy-chat-parts";
 import type { SuggestedFriend } from "./suggested-friends";
 
 export type StoryRowInput = {
@@ -176,4 +177,9 @@ export function myTextLine(
     text: { ko: text, en: "" },
     ...(story === undefined ? {} : { story }),
   };
+}
+
+/** 낭독 조각을 그 언어의 구분자로 잇습니다(빈 조각은 건너뜀) — 구분자는 문구표가 줍니다(감사 다국어 minor 9). */
+export function spokenOf(separator: string, parts: readonly string[]): string {
+  return joinSpoken(parts, separator);
 }

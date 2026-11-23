@@ -5,7 +5,7 @@ import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
 
 import { useUiCopy } from "../../lib/ui-copy";
-import { storyAgeOf } from "./friend-stories";
+import { spokenOf, storyAgeOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type ChatStoryQuote } from "./friend-stories.contract";
 import { StoryImageContext } from "./story-image-context";
 
@@ -35,7 +35,10 @@ export function StoryQuoteCard({ quote, name, now }: StoryQuoteCardProps): React
       className="story-quote"
       data-testid={ids.quote}
       accessibility-element={true}
-      accessibility-label={`${caption}: ${quote.line}, ${copy.reply.storyMeta(age)}`}
+      accessibility-label={spokenOf(copy.listSeparator, [
+        spokenOf(copy.labelSeparator, [caption, quote.line]),
+        copy.reply.storyMeta(age),
+      ])}
     >
       <text className="story-quote-caption" accessibility-elements-hidden={true}>
         {caption}
@@ -61,7 +64,7 @@ export function StoryQuoteBar({ quote, name, onRemove }: StoryQuoteBarProps): Re
       <view
         className="story-quote-bar-body"
         accessibility-element={true}
-        accessibility-label={`${copy.reply.replying(name)}: ${quote.line}`}
+        accessibility-label={spokenOf(copy.labelSeparator, [copy.reply.replying(name), quote.line])}
       >
         <text className="story-quote-bar-title" accessibility-elements-hidden={true}>
           {copy.reply.replying(name)}

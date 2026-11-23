@@ -93,6 +93,7 @@ export type AnalyticsEventName =
   | "friend_story_viewed"
   | "friend_story_replied"
   | "friend_story_word_saved"
+  | "friend_story_closed"
   | "more_menu_opened"
   | "more_menu_item_clicked"
   | "letters_cell_tapped"

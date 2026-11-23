@@ -4,6 +4,9 @@ import type { FriendStoriesCopy } from "../screens/messenger-chat/friend-stories
 
 export const messengerChatStoriesEn: FriendStoriesCopy = {
   language: "en",
+  // 낭독 조각 잇기 — 언어마다 구분자(감사 다국어 minor 9).
+  listSeparator: ", ",
+  labelSeparator: ": ",
   rowTitle: "Stories",
   watchAll: "Watch all",
   watchAllLabel: "Watch all stories",
@@ -39,7 +42,6 @@ export const messengerChatStoriesEn: FriendStoriesCopy = {
     caption: (name) => `You replied to ${name}'s story`,
     storyMeta: (age) => (age === null ? "Story" : `Story · ${age}`),
     replying: (name) => `Replying to ${name}'s story`,
-    removeQuote: "Remove story",
-    quoteLabel: (name, line) => `${name}'s story: ${line}`,
+    removeQuote: "Remove quote",
   },
 };

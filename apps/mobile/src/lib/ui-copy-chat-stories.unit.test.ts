@@ -8,6 +8,7 @@ import { messengerChatStoriesMy } from "./ui-copy-my-chat-stories";
 import { messengerChatStoriesTh } from "./ui-copy-th-chat-stories";
 import { messengerChatStoriesVi } from "./ui-copy-vi-chat-stories";
 import { uiCopyFor } from "./ui-copy";
+import { placeholderProblems } from "./ui-copy-placeholder.test-support";
 import { scriptLeaves } from "./ui-copy-script.test-support";
 
 // `unit` 계층(FS-U13): 친구 스토리 문구 일곱 언어(ADR-0177) — 빈 글이 없고, 영어 밖 표는 영어를 그대로 두지 않으며, 문구표에 걸려 있다.
@@ -48,4 +49,14 @@ describe("FS-U13 친구 스토리 문구", () => {
     expect(uiCopyFor("en").messengerChat.stories).toBe(messengerChatStoriesEn);
     expect(uiCopyFor("th").messengerChat.stories.rowTitle).toBe(messengerChatStoriesTh.rowTitle);
   });
+
+  test.each(Object.entries(tables))(
+    "%s — 여러 표본 인자에서 자리표시자(이름 · 글)가 빠지지 않고 빈 글이 없다(감사)",
+    (_language, table) => {
+      expect(placeholderProblems(table, messengerChatStoriesEn)).toEqual({
+        missing: [],
+        empty: [],
+      });
+    },
+  );
 });

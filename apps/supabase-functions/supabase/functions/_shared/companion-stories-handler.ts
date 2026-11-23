@@ -11,6 +11,7 @@ import type { ChatSendEnv, ChatSendLogEntry } from "./chat-send.contract.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 import { mapLimited } from "./map-limited.ts";
+import { storyLanguageFor } from "./push-campaign-locale.ts";
 import { inHoldout } from "./push-campaign-text.ts";
 import { serviceKeyHeaders } from "./service-key.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
@@ -32,11 +33,25 @@ export const STORY_PUSH_CONCURRENCY = 8;
 
 export type StoryPushMode = "off" | "testers" | "on";
 
+/**
+ * 본문 — 받는 사람 나라의 언어(일곱, 검수 B1). 제목이 인물 이름이라 본문은 「올렸다」로 시작하고 한국어 한 줄은 번역하지 않는다.
+ * 나라 → 언어는 예고 캠페인과 같은 표(`storyLanguageFor` — 말레이시아는 인도네시아어, 미얀마는 미얀마어).
+ */
+const STORY_PUSH_BODY: Readonly<Record<string, (line: string) => string>> = {
+  en: (line) => `posted a story — ${line}`,
+  es: (line) => `publicó una historia — ${line}`,
+  id: (line) => `membagikan cerita — ${line}`,
+  ja: (line) => `ストーリーを投稿しました — ${line}`,
+  vi: (line) => `vừa đăng tin — ${line}`,
+  th: (line) => `โพสต์สตอรี่ใหม่ — ${line}`,
+  my: (line) => `စတိုရီအသစ် တင်လိုက်ပါပြီ — ${line}`,
+};
+
 export type StoryPushPlan = {
   readonly group: "sent" | "control";
   readonly variant: "a" | null;
   readonly series: string;
-  readonly lang: "en";
+  readonly lang: string;
   readonly title: string;
   readonly body: string;
 };
@@ -48,6 +63,8 @@ export function storyPushPlan(input: {
   readonly userId: string;
   readonly name: string;
   readonly line: string;
+  /** 받는 사람 나라(학습 프로필) — 모르면 영어. */
+  readonly country?: string | null;
 }): StoryPushPlan | null {
   if (input.mode === "off") return null;
   if (input.mode === "testers" && !input.tester) return null;
@@ -57,13 +74,16 @@ export function storyPushPlan(input: {
   const chars = [...input.line.replace(/\s+/gu, " ").trim()];
   const line =
     chars.length <= LINE_MAX ? chars.join("") : `${chars.slice(0, LINE_MAX - 1).join("")}…`;
+  const lang = storyLanguageFor(input.country ?? null);
+  const body = STORY_PUSH_BODY[lang] ?? STORY_PUSH_BODY["en"]!;
   return {
     group,
+    // 문구 A/B는 없다 — 받는 쪽은 늘 a, 대조군(기록만)만 둔다.
     variant: group === "control" ? null : "a",
     series: experiment ? STORY_PUSH_SERIES : STORY_PUSH_TEST_SERIES,
-    lang: "en",
+    lang: STORY_PUSH_BODY[lang] === undefined ? "en" : lang,
     title: [...input.name.trim()].slice(0, 100).join("") || "DURU",
-    body: `posted a story — ${line}`,
+    body: body(line),
   };
 }
 
@@ -75,6 +95,7 @@ type Candidate = {
   readonly line: string;
   readonly mode: StoryPushMode;
   readonly tester: boolean;
+  readonly country: string | null;
 };
 type Outcome = {
   readonly userId: unknown;
@@ -104,6 +125,7 @@ function candidateOf(raw: unknown): Candidate | null {
     line: row["line"] as string,
     mode,
     tester: row["tester"] === true,
+    country: typeof row["country"] === "string" ? row["country"] : null,
   };
 }
 
@@ -138,6 +160,9 @@ async function pushOne(deps: StoriesDeps, env: ChatSendEnv, candidate: Candidate
           story_step: null,
           title: plan.title,
           body: plan.body,
+          // 어느 인물 · 어느 스토리의 알림인가(검수 A15) — 대조군 줄도 남긴다.
+          character_id: candidate.characterId,
+          story_id: candidate.storyId,
         },
       ]),
     });

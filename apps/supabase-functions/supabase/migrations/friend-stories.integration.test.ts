@@ -183,6 +183,7 @@ type Candidate = {
   line: string;
   mode: string;
   tester: boolean;
+  country: string | null;
 };
 const candidates = async () =>
   (await server.query("select public.companion_story_push_candidates(now(), 50) as c")).rows[0]
@@ -548,6 +549,7 @@ test("FS16. 알림 후보 — 스위치 · 기기 · 방 · 현지 시각 · 답
     line: "mina-01 한 줄",
     mode: "on",
     tester: false,
+    country: expect.stringMatching(/^[A-Z]{2}$/),
   });
 
   await settings("story_push = 'testers'");
@@ -641,15 +643,50 @@ test("FS18c. 스토리 스위치가 꺼지거나 시험 계정만이면 알림 �
   expect(await candidates()).toEqual([]);
 });
 
-test("FS19. 선톡 푸시 문이 pushedToday를 돌려준다 — 선톡 · 스토리 묶음의 보낸 줄만", async () => {
+test("FS19. 선톡 푸시 문이 pushedToday를 돌려준다 — 선톡은 보낸 줄만, 스토리 묶음은 대조군 줄도(검수 A2), 다른 캠페인은 세지 않음", async () => {
   type Gate = { pushedToday: boolean; mode: string };
   const gate = async () =>
     (await server.query("select public.companion_proactive_push_gate($1, 'mina') as g", [member]))
       .rows[0].g as Gate;
   expect((await gate()).pushedToday).toBe(false);
-  await sent(member, "스토리", "now()", "control");
+  await sent(member, "선톡", "now()", "control");
   await sent(member, "tutorial-rest", "now()");
   expect((await gate()).pushedToday).toBe(false);
-  await sent(member, "스토리", "now() - interval '1 minute'");
+  await sent(member, "선톡", "now() - interval '1 minute'");
   expect(await gate()).toMatchObject({ pushedToday: true, mode: "off" });
+});
+
+test("FS19b. 스토리 대조군도 그날 선톡 푸시를 막는다 — 대조군이 선톡을 받으면 스토리 알림 효과 비교가 어긋난다(검수 A2)", async () => {
+  type Gate = { pushedToday: boolean };
+  const gate = async () =>
+    (await server.query("select public.companion_proactive_push_gate($1, 'mina') as g", [member]))
+      .rows[0].g as Gate;
+  await sent(member, "스토리", "now() - interval '1 minute'", "control");
+  expect((await gate()).pushedToday).toBe(true);
+  await db.admin.query("delete from public.push_campaign_sends");
+  await sent(member, "스토리 시험", "now() - interval '1 minute'", "control");
+  expect((await gate()).pushedToday).toBe(true);
+  await db.admin.query("delete from public.push_campaign_sends");
+  await sent(member, "스토리", "now() - interval '3 days'", "control");
+  expect((await gate()).pushedToday).toBe(false);
+});
+
+test("FS20. 스토리 알림 배정 줄은 인물 · 스토리를 남긴다 — push_campaign_sends.character_id · story_id(검수 A15, 다른 묶음은 null)", async () => {
+  await pool("mina-01", "mina");
+  const story = await live("mina", "mina-01", "2 hours");
+  await db.admin.query(
+    `insert into public.push_campaign_sends (run_at, series, segment, user_id, "group", variant, lang, title, body, character_id, story_id)
+     values (now(), '스토리', 'friend-story', $1, 'sent', 'a', 'ja', '미나', 'b', 'mina', $2)`,
+    [member, story],
+  );
+  await sent(member, "선톡");
+  const rows = (
+    await db.admin.query(
+      "select series, character_id, story_id from public.push_campaign_sends order by id",
+    )
+  ).rows;
+  expect(rows).toEqual([
+    { series: "스토리", character_id: "mina", story_id: story },
+    { series: "선톡", character_id: null, story_id: null },
+  ]);
 });
