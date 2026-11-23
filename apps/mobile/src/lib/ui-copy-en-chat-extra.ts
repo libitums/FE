@@ -4,11 +4,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaEn } from "./ui-copy-en-chat-media";
 import { messengerChatAlbumEn } from "./ui-copy-en-chat-album";
 import { messengerChatSuggestedEn } from "./ui-copy-en-chat-suggested";
+import { messengerChatStoriesEn } from "./ui-copy-en-chat-stories";
 
 export const messengerChatExtraEn: MessengerChatExtraCopy = {
   media: messengerChatMediaEn,
   album: messengerChatAlbumEn,
   suggested: messengerChatSuggestedEn,
+  stories: messengerChatStoriesEn,
   access: {
     signInTitle: "Text the people you meet",
     signInBody:

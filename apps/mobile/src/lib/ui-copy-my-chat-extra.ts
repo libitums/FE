@@ -5,11 +5,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaMy } from "./ui-copy-my-chat-media";
 import { messengerChatAlbumMy } from "./ui-copy-my-chat-album";
 import { messengerChatSuggestedMy } from "./ui-copy-my-chat-suggested";
+import { messengerChatStoriesMy } from "./ui-copy-my-chat-stories";
 
 export const messengerChatExtraMy: MessengerChatExtraCopy = {
   media: messengerChatMediaMy,
   album: messengerChatAlbumMy,
   suggested: messengerChatSuggestedMy,
+  stories: messengerChatStoriesMy,
   access: {
     signInTitle: "တွေ့ခဲ့တဲ့ သူတွေနဲ့ စာပို့ပါ",
     signInBody: "သင့်ဇာတ်လမ်းထဲက လူတွေနဲ့ ကိုရီးယားလို စကားပြောရန် အခမဲ့ အကောင့်ဖွင့်ပါ။ သင့်တိုးတက်မှု မပျောက်ပါဘူး။",

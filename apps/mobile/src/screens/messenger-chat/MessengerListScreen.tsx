@@ -16,9 +16,12 @@ import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
 import type { SuggestedFriendsProps } from "./suggested-friends.contract";
+import type { FriendStoriesProps } from "./friend-stories.contract";
 import { useChatSnapshot } from "./use-chat-source";
 import { useCoinBalance } from "./use-coin-balance";
 import { useSuggestedFriends } from "./use-suggested-friends";
+import { useFriendStories } from "./use-friend-stories";
+import { useRowImpressions } from "./use-row-impressions";
 import { useGuestGate } from "./use-guest-gate";
 import { canBrowseChats } from "./messenger-access";
 
@@ -40,7 +43,8 @@ export function MessengerListScreen({
   onSignIn,
   guideStore = deviceGuideStore,
   friends,
-}: MessengerListScreenProps & SuggestedFriendsProps): ReactNode {
+  stories,
+}: MessengerListScreenProps & SuggestedFriendsProps & FriendStoriesProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
@@ -77,10 +81,28 @@ export function MessengerListScreen({
     onShortOfCoins: openCoinShop,
   });
 
+  // 친구 스토리(ADR-0178) — 스토리가 있으면 추천 줄 자리에 스토리 줄, 보기는 목록 위 층. 손님 · 접근 불가는 포트가 없습니다.
+  const friendStories = useFriendStories({
+    port: canBrowseChats(access) && access !== "preview" ? stories : undefined,
+    rooms,
+    suggested,
+    covered: coinShopOpen || suggested.layerOpen,
+    onOpenRoom,
+  });
+
+  // 맨 위 줄의 노출 — 실제로 그린 줄만(감사 A5).
+  useRowImpressions({
+    rowShown: isSuggestedRowShown(guideShown),
+    story: friendStories.rowStats,
+    suggestedCount: suggested.rowCount,
+    pending: friendStories.rowPending,
+  });
+
   // 겹침(엽전 상점 · 첫 입장 안내 · 추천 친구 시트 · 친구 찾기)을 합친 값 하나만, 바뀔 때 바깥에 알립니다 — 겹침끼리 바뀌는 사이에
   // 닫힘이 끼어 전역 머리가 다시 읽히지 않게(접근성 리뷰 W3). 마운트 때의 첫 false는 보내지 않고, 열린 채 화면이 내려가면 닫힘을
   // 한 번 더 알립니다(전역 머리가 가려진 채 남지 않게 — `useScreenLayer`와 같은 목적).
-  const layerOpen = coinShopOpen || guideShown || suggested.layerOpen || guest.open;
+  const layerOpen =
+    coinShopOpen || guideShown || suggested.layerOpen || guest.open || friendStories.layerOpen;
   const onLayerChangeRef = useRef(onLayerChange);
   const sentRef = useRef(false);
   useEffect(() => {
@@ -147,15 +169,23 @@ export function MessengerListScreen({
           >
             <view className="messenger-list-list" data-testid={ids.list}>
               {/* 안내 중에는 추천 줄을 빼 원본 첫 줄이 떠 있는 덕수쌤 줄 자리에 섭니다. */}
-              {isSuggestedRowShown(guideShown) ? suggested.row : null}
+              {isSuggestedRowShown(guideShown) ? (friendStories.row ?? suggested.row) : null}
               {ordered.map((room) => (
-                <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
+                <ChatListRow
+                  key={room.roomId}
+                  room={room}
+                  now={now}
+                  onOpen={onOpenRoom}
+                  story={friendStories.listStory(room.counterpart.id)}
+                  onOpenStory={() => friendStories.openFromList(room.counterpart.id)}
+                />
               ))}
             </view>
           </scroll-view>
         )}
       </view>
       <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
+      {friendStories.layer}
       {suggested.layers}
       {guest.layer}
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}

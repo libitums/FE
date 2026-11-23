@@ -20,7 +20,7 @@ function labelOf(friend: SuggestedFriend, copy: SuggestedFriendsCopy): string {
     : copy.earlyLabel(name, unlockEpisode, friend.offer.price);
 }
 
-function SuggestedAvatar({
+export function SuggestedAvatar({
   friend,
   onOpen,
 }: {

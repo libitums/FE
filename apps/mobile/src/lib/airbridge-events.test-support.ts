@@ -3,6 +3,7 @@ import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./
 import { entryPathEventExamples, entryPathEventNames } from "./entry-path-events.test-support";
 import { planEventExamples } from "./purchase-intent.test-support";
 import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
+import { friendStoryEventNames } from "./friend-story-events.test-support";
 
 /** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
@@ -76,6 +77,7 @@ export const allEventNames = [
   "suggested_friend_added",
   "early_access_tapped",
   "early_access_completed",
+  ...friendStoryEventNames,
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 

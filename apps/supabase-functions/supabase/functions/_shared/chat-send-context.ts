@@ -12,6 +12,7 @@ import type {
 import type { Choice } from "./chat-send-choice.ts";
 import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
+import type { TurnStory } from "./chat-send-story.ts";
 import type { ChatSendRequest } from "./companion-contract/index.ts";
 import { effectiveRomanceTier, romanceLine } from "./companion-safety.ts";
 import type { UsageCollector } from "./companion-usage.ts";
@@ -36,6 +37,8 @@ export type TurnContext = {
   historyKeep: number;
   /** 이 턴의 LLM 사용량 — `llm`이 기록하는 곳. 저장 meta의 `usage`가 된다. */
   usage: UsageCollector;
+  /** 친구 스토리 답장(ADR-0178) — 요청에 `story_id`가 있었을 때의 판정 결과 · 한 줄. 없으면 null · 생략. */
+  story?: TurnStory | null;
 };
 
 /** 이 턴의 적용 수위(ADR-0164 — 성인이 아니면 standard)와 로맨스 선(ADR-0168). */

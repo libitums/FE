@@ -35,6 +35,47 @@ export const suggestedFriendEventExamples = [
     characterId: "jaemin",
     outcome: "short",
   },
+  // 친구 스토리(ADR-0178 D8) — 같은 메신저 목록 · 방에서 납니다. PostHog만.
+  {
+    name: "friend_story_row_viewed",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    count: "4",
+    unseen: "2",
+  },
+  {
+    name: "friend_story_viewed",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "mina",
+    met: true,
+    from: "row",
+    index: "1",
+    total: "3",
+  },
+  {
+    name: "friend_story_closed",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    shown: "2",
+    total: "3",
+    skipped: "1",
+    reason: "closed",
+  },
+  {
+    name: "friend_story_replied",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "mina",
+    via: "chip",
+    free: true,
+  },
+  {
+    name: "friend_story_word_saved",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "mina",
+  },
   // 비회원 로그인 권유(ADR-0166) — 같은 메신저 목록 · 방에서 납니다.
   {
     name: "chat_sign_in_prompt_closed",

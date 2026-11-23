@@ -85,6 +85,9 @@ Accept: text/event-stream
 
 - ⟨2026-11-10⟩ 선택 칸 둘 더: `suggestion { message_id, index }` — 추천 답변 칩을 탭해 보냄(§2.6). `replaces_message_id` — 고쳐서 다시 보내기,
   고칠 마지막 유저 메시지 id(§2.8). 이것이 있으면 칩 표시는 보지 않는다.
+- ⟨2026-11-23 ADR-0178⟩ 선택 칸 `story_id`(uuid) — 친구 스토리 답장. 관문 **전에** 서버용 `companion_claim_story_reply`로 첫 답장 무료를 판정하고
+  (스토리마다 계정당 한 번 — 그 메시지에 금액 0 예약을 먼저 둔다), 인용을 남기며(목록 Message의 `story`), 이번 턴 지시(directive)에 그 스토리 한 줄을 싣는다.
+  판정 실패 · 스위치 off · 없는 스토리는 보통 턴이다. 로그 한 줄 끝에 `story=<결과>`. 계약 판은 그대로.
 
 - 피드백 방식은 요청에 싣지 않는다. 프로필의 값(§3 `companion_save_profile`)을 쓴다. 바꾼 방식은 다음 턴부터다.
 - 대화는 [제안] **캐릭터당 하나**다(O14). 첫 턴에 서버가 만든다. 그래서 요청에 대화 id가 없다.
@@ -346,6 +349,7 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_get_wallet()` | M4 | — | `{ sub, subExpiresAt, grant, paid, trialRemaining }` — `trialRemaining`은 20261216부터 합산 체험의 남은 수 | `28000` |
 | `companion_friends()` | 2026-11-19 | — | `{ friends: [{ id, romanceTier }] }` — 이 학습자에게 보이는 추천 친구만, 순서대로(`romanceTier`는 인물의 수위 `open` · `standard`) | `28000` |
 | `companion_ack_adult()` | 2026-11-19 | — | `{ ok, adultAck }` — 생년상 성인일 때만 동의를 남기고 참. 나이 모름 · 미성년자 · 프로필 없음은 `{ ok: false, adultAck: false }` | `28000` |
+| `companion_friend_stories()` | 2026-11-23 (ADR-0178) | — | `{ stories: [{ id, characterId, postedAt, expiresAt, imagePath, line: { ko, roman, meaning }, word: { episodeId, ref } \| null, replies: string[], freeReply }] }` — 살아 있는 스토리만 올린 시각 최근 순. 스위치 `settings.friend_stories`(off 빈 목록 기본 · testers · on) · 숨긴 친구 · 꺼진 인물을 거른다. `freeReply` = 이 사람이 그 스토리의 첫 답장 무료를 아직 쓰지 않음(무료 턴이 실패해 예약이 풀렸으면 다시 참) | `28000` |
 | `companion_list_media(p_character_id text, p_kind text, p_before timestamptz, p_limit int)` | 2026-11-13 | 앨범 — complete만, 최신부터. null이면 전부, `p_limit` 1 ~ 50 | `{ items: Media[], hasMore }` | `28000` · `22023` |
 | `companion_get_media(p_ids uuid[], p_message_ids uuid[])` | 2026-11-13 | 내 media id 또는 메시지 id로, 모든 상태, 합 100개까지 | `Media[]`(최신부터) | `28000` · `22023` |
 
@@ -384,6 +388,8 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
   "segments": [{ "kind": "speech", "text": "…" }],   // role=assistant일 때
   "notice": null,                         // role=notice일 때 { kind } — §4 notice와 같은 모양
   "feedback": null,                       // role=user일 때 §4 correction의 본문, 없으면 null
+  // ⟨20261228 ADR-0178⟩ role=user이고 story_id를 실어 보냈을 때만, 아니면 null(옛 서버는 칸 없음)
+  "story": { "id": "uuid", "characterId": "yoonkyung", "line": "…", "imagePath": "content/images/…", "postedAt": "…Z" },
   "createdAt": "2026-11-08T09:00:00Z"
 }
 ```
@@ -407,6 +413,10 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_expire_sub_credits(p_now)` | M4 | 구독 크레딧 소멸(pg_cron) |
 | `companion_media_begin(p_user_id, p_message_id, p_kind, p_again, p_now)` | 2026-11-13 | 스냅샷 · 음성 요청 — 자격 · 판정 · 저장본 · 동시 1 · 하루 상한 · 예약 · pending 행 · 작업 입력(§2.9) |
 | `companion_media_finish(p_media_id, p_status, p_result, p_now)` | 2026-11-13 | 백그라운드 작업의 끝 — complete면 확정, blocked · failed면 해제. 이미 닫힌 행이면 `closed` |
+| `companion_post_stories(p_now)` | 2026-11-23 (ADR-0178) | 친구 스토리 올림(`companion-stories`, pg_cron 매시) — 인물마다 UTC 하루 하나, 올림 시각(UTC 01 ~ 10시, id 해시)이 지났을 때 가장 적게 올린 묶음 줄(같으면 id 순). 24시간 산다. `{ posted: [{ storyId, characterId, poolId }] }` |
+| `companion_claim_story_reply(p_user_id, p_story_id, p_character_id, p_client_message_id, p_now)` | 2026-11-23 (ADR-0178) | chat-send `story_id` — 지갑을 잠그고 첫 답장 무료 판정 · 인용 기록. `{ result: free \| used \| expired \| not_found \| off, story: { line, wordKo, imagePath, postedAt } \| null }`. free면 그 메시지에 금액 0 예약(관문 엽전 판정 · `begin_turn`이 그대로 씀). 같은 메시지 재전송은 같은 줄 |
+| `companion_story_push_candidates(p_now, p_limit)` | 2026-11-23 (ADR-0178) | 스토리 알림 후보 `[{ userId, storyId, characterId, name, line, mode, tester }]` — 스위치 `settings.story_push` · 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) · 오늘(현지) 보낸 알림 없음(모든 묶음). 사람마다 가장 새 스토리 하나 |
+| `companion_proactive_push_gate(p_user_id, p_character_id)` | 2026-11-22 · 2026-11-23 | 선톡 푸시 문 `{ mode, tester, hasDevice, hasRoom, pushedToday }` — `pushedToday`(ADR-0178): 오늘(현지) 선톡 · 스토리 묶음 알림이 나감 → 선톡 푸시 `daily_cap` |
 
 - `learning_progress`는 RLS를 켜고 정책이 없어 본인 RPC로만 읽힌다. `companion_learning_context`는 `security definer`로 그 표를 읽는다.
 - §6에서 접두사 없이 부른 이름(`reserve_credits` 등)은 이 표의 `public.companion_*` 함수다.
