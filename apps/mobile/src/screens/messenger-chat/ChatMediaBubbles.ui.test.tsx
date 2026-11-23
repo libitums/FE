@@ -137,9 +137,10 @@ test("MC-UI23. 사진 pending: 서버가 「그리는 중」이라 하면 곧바
   expect(text()).toContain("미나 is choosing the best shot…");
   advance(6000); // 17초
   expect(text()).toContain("Almost there…");
-  expect(screen.getByTestId("pp").getAttribute("class")).toContain(
-    "messenger-chat-photo-pending-3x2",
-  );
+  // 상자 크기는 그 요소의 인라인 스타일로 겁니다 — 선 채로 비율이 도착해도 확실히 바뀌게.
+  const box = screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton");
+  expect(box?.getAttribute("style")).toContain("240px");
+  expect(box?.getAttribute("style")).toContain("160px");
 });
 
 test("MC-UI23. 사진 pending: 서버 단계는 문구를 뒤로 돌리지 않는다 — 이미 지난 단계보다 낮으면 그대로, 「구상 중」도 시간대로 넘어간다", () => {
@@ -170,9 +171,8 @@ test("MC-UI23. 사진 pending: 「구상 중」이 길어져도 첫 문구에 �
 
 test("MC-UI23. 사진 pending: 비율을 모르면 지금 상자(3:4) 그대로", () => {
   render(<PhotoPendingBubble name="미나" testId="pp" />);
-  expect(screen.getByTestId("pp").getAttribute("class")).not.toContain(
-    "messenger-chat-photo-pending-",
-  );
+  const box = screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton");
+  expect(box?.getAttribute("style") ?? "").not.toContain("px");
 });
 
 test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {

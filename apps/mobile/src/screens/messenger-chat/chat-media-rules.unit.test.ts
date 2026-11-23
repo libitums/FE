@@ -8,6 +8,7 @@ import {
   mediaLineKey,
   mediaLineOf,
   refreshedPendingLine,
+  withPendingStage,
   pendingStartOfMedia,
   mediaPollDelay,
   mediaTargetOf,
@@ -62,6 +63,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   aspect: null,
   failure: null,
   createdAt: 5,
+  stage: null,
   ...over,
 });
 
@@ -367,5 +369,22 @@ describe("서버가 알려 주는 진행 단계(ADR-0146 개정 2026-11-23)", ()
     expect(
       refreshedPendingLine([placed], media({ status: "complete", stage: null }), target, 12),
     ).toBeNull();
+  });
+
+  test("CM-U6f 서버 단계는 앞으로만 — 이미 「그리는 중」 · 비율을 실은 줄은 낮은 단계 · 빈 단계의 행이 와도 그대로다(리뷰 #552)", () => {
+    const drawing = mediaLineOf(media({ stage: "drawing", aspect: "3:2" }), target, null, 9, 4);
+    expect(refreshedPendingLine([drawing], media({ stage: "preparing" }), target, 12)).toBeNull();
+    expect(refreshedPendingLine([drawing], media({ stage: null }), target, 12)).toBeNull();
+    // 줄을 통째로 다시 놓는 길(요청 응답 · 다시 열기)도 놓인 줄의 단계 · 비율을 잇는다.
+    const rebuilt = mediaLineOf(media({ stage: "preparing" }), target, null, 20, 4);
+    expect(withPendingStage([drawing], rebuilt)).toMatchObject({
+      serverStage: "drawing",
+      aspect: "3:2",
+      startedAt: 4,
+    });
+    // 더 나아간 단계는 그대로 받고, 놓인 줄이 없으면 손대지 않는다.
+    const preparing = mediaLineOf(media({ stage: "preparing" }), target, null, 9, 4);
+    expect(withPendingStage([preparing], drawing)).toEqual(drawing);
+    expect(withPendingStage([], rebuilt)).toBe(rebuilt);
   });
 });

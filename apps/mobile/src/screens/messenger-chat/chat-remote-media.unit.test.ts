@@ -44,6 +44,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   aspect: null,
   failure: null,
   createdAt: 1_000,
+  stage: null,
   ...over,
 });
 

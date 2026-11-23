@@ -73,7 +73,8 @@ function WaveBars(): ReactNode {
   );
 }
 
-// 사진 pending — 도착할 3:4 사진과 같은 180 × 240 상자. 묶음 전체가 상태 한 줄로 읽히고, 반짝임은 움직임 줄이기에서 멈춥니다.
+// 사진 pending — 기본은 3:4 사진과 같은 180 × 240 상자, 서버가 비율을 먼저 알려 주면 그 크기(ADR-0146 개정 2026-11-23).
+// 묶음 전체가 상태 한 줄로 읽히고, 반짝임은 움직임 줄이기에서 멈춥니다.
 export function PhotoPendingBubble({
   name,
   testId,
@@ -88,15 +89,18 @@ export function PhotoPendingBubble({
   // 기준은 기다린 시간 — 서버가 「그리는 중」이라 하면 적어도 둘째 문구로 당깁니다(내려가지 않음).
   const counted = usePendingStage(PHOTO_STAGE_MARKS, startedAt);
   const stage = serverStage === "drawing" ? Math.max(counted, DRAWING_MIN_STAGE) : counted;
-  const box = aspect === undefined ? "" : ` ${PENDING_ASPECT_CLASS[aspect]}`;
+  const box = aspect === undefined ? undefined : PHOTO_BOX[aspect];
   return (
     <view
-      className={`messenger-chat-photo-pending${box}${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
+      className={`messenger-chat-photo-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={label}
     >
-      <view className="messenger-chat-photo-skeleton">
+      <view
+        className="messenger-chat-photo-skeleton"
+        {...(box === undefined ? {} : { style: box })}
+      >
         <view className="messenger-chat-photo-disc">
           <svg
             className="messenger-chat-icon-sm"
@@ -117,9 +121,10 @@ export function PhotoPendingBubble({
   );
 }
 
-const PENDING_ASPECT_CLASS = {
-  "3:2": "messenger-chat-photo-pending-3x2",
-  "1:1": "messenger-chat-photo-pending-1x1",
+/** 만드는 중인 상자의 크기 — 도착한 서버 사진(`chat-media.css`의 3x2 · 1x1)과 같은 값입니다. 비율을 모르면 기본 180 × 240. */
+const PHOTO_BOX = {
+  "3:2": { width: "240px", height: "160px" },
+  "1:1": { width: "200px", height: "200px" },
 } as const;
 
 const ASPECT_CLASS = {

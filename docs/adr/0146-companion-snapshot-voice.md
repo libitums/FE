@@ -185,12 +185,13 @@
 - 문구는 일곱 언어(en · es · id · ja · vi · th · my) — 원어민 검수 전. 번들 천장은 그대로다(#542로 번들이 줄어 이 변경은 천장 안에 든다 — 처음 올렸던 천장 변경은 뺐다).
 - 테스트: `media-pending-stage.unit.test.ts` MPS-U1 ~ U5 · `chat-remote-send.unit.test.ts` CM-U20 · `chat-media-rules.unit.test.ts` CM-U6a · `chat-media-rules.unit.test.ts` CM-U6c · `chat-remote-media.unit.test.ts` CM-U9a · CM-U11c · `ui-copy-chat-pending.unit.test.ts` MPS-C1 · `ChatMediaBubbles.ui.test.tsx` MC-UI21 · MC-UI22 · `ui-copy-en.unit.test.ts`.
 
-## 추가 ⟨2026-11-23⟩ — 앱은 서버 단계가 오면 그것을 기준으로, 없으면 시간 추정 [사용자]
+## 추가 ⟨2026-11-23⟩ — 앱의 기준은 기다린 시간, 서버 단계는 문구를 앞으로만 당긴다 [사용자]
 
 - **계기**: 대기 문구 단계(위 「추가 ⟨2026-11-22⟩」)는 앱이 기다린 시간으로 추정한다. 같은 날 서버가 실제 단계 · 비율을 알려 주는 개정(브랜치 `feat/companion-snapshot-stage`, PR #551 — 머지 보류)이 따로 정해져, 두 결정이 같은 말풍선에서 만난다. 사용자 결정 2026-11-23: 둘을 합친다.
 - **규칙 ⟨리뷰 #552로 고침⟩**: 기준은 늘 **기다린 시간**(요청한 때부터 0 · 5 · 11 · 17초)이고, 서버 단계는 문구를 **앞으로만** 당긴다 — `drawing`이면 적어도 둘째 문구(「taking the picture…」). `preparing`은 문구를 묶지 않는다. 처음에는 「`preparing`이면 첫 문구에 머물고 `drawing`을 처음 본 때부터 다시 센다」로 했으나, 다시 읽기 간격이 40초 뒤 늘어나 첫 문구에 오래 멈출 수 있고, 늦게 온 응답이 문구를 뒤로 돌리며, 방을 나갔다 들어오면 거의 끝난 사진이 둘째 문구부터 다시 세는 문제가 있어 바꿨다. `stage`가 없으면(옛 서버 · 가짜 방 · 음성) 시간 추정만 쓴다. 문구는 새로 만들지 않는다.
-- **비율**: 대기 행에 `aspect`가 있으면(그리기 시작부터) 자리표시자 상자를 도착할 사진과 같은 크기(3:2 240 × 160 · 1:1 200 × 200)로 맞춘다 — 크기 규칙은 도착한 사진과 한 선택자를 같이 쓴다. 없으면 지금 상자(180 × 240). 상자 크기는 대기 중에 한 번 바뀐다(말풍선은 다시 서지 않는다).
+- **비율**: 대기 행에 `aspect`가 있으면(그리기 시작부터) 자리표시자 상자를 도착할 사진과 같은 크기(3:2 240 × 160 · 1:1 200 × 200)로 맞춘다 — 선 채로 비율이 도착해도 확실히 바뀌게 그 요소의 인라인 스타일로 건다. 없으면 지금 상자(180 × 240). 상자 크기는 대기 중에 한 번 바뀌어 목록이 그때 한 번 움직인다(도착할 때 대신).
+- **앞으로만**: 대기 줄은 한 번 실은 「그리는 중」과 비율을 낮은 단계 · 빈 단계의 행이 와도 지우지 않는다(다시 읽기 · 요청 응답 · 다시 열기 모두).
 - **다시 읽기**: 지금 간격 그대로다(처음 40초는 2초, 그 뒤 늘어남). 아직 만드는 중인 행의 단계 · 비율이 놓인 줄과 달라졌을 때만 대기 줄을 고친다(시작 시각은 넘긴다).
 - **넣지 않은 것**: 진행 막대(서버 쪽 「앱 인계」의 선택 항목), 서버 `stageAt`(서버 시계라 쓰지 않는다 — 기기 시계만), 서버 단계 전용 문구(「장면을 구상하는 중…」 · 「그리는 중…」).
 - **순서**: 이 앱 변경은 서버 개정 없이도 안전하다(칸이 없으면 지금처럼 보인다). 서버 개정이 배포되면 그때부터 실제 단계를 따른다.
-- **테스트**: `companion-media-parse.unit.test.ts` CM-U1d · `chat-media-rules.unit.test.ts` CM-U6d · U6e · `chat-remote-media.unit.test.ts` CM-U9d · `ChatMediaBubbles.ui.test.tsx` MC-UI23.
+- **테스트**: `companion-media-parse.unit.test.ts` CM-U1d · `chat-media-rules.unit.test.ts` CM-U6d ~ U6f · `chat-remote-media.unit.test.ts` CM-U9d · `ChatMediaBubbles.ui.test.tsx` MC-UI23.
