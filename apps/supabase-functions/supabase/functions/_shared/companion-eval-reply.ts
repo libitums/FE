@@ -31,6 +31,8 @@ export type ReplyEvalCase = {
   readonly romanceTier?: "open" | "standard";
   readonly l1?: string | null;
   readonly speechLevel?: SpeechLevel | null;
+  /** 친밀도 숫자(ADR-0180). 생략하면 구간 줄 없음. */
+  readonly intimacy?: number;
   readonly characterId?: string;
   readonly character?: { readonly name: string; readonly role?: string | null } | null;
   readonly history?: readonly FeedbackHistoryEntry[];
@@ -116,6 +118,7 @@ export async function evalReply(input: {
     speechLevel,
     ageBand,
     romanceTier: item.romanceTier ?? "standard",
+    ...(item.intimacy === undefined ? {} : { intimacy: item.intimacy }),
     l1: item.l1 ?? null,
     expressions,
     summary: item.summary ?? null,

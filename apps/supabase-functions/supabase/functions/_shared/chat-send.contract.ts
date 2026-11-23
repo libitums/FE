@@ -251,6 +251,8 @@ export type BegunTurn = {
   readonly conversationId: string;
   readonly userMessageId: string;
   readonly speechLevel: SpeechLevel;
+  /** 이 인물과의 친밀도 숫자(ADR-0180, 마이그레이션 `20270103120000`). 옛 DB면 없다 — 프롬프트의 친밀도 구간 줄이 빠진다. */
+  readonly intimacy?: number;
   readonly persona: PersonaCard | null;
   readonly summary: string | null;
   readonly history: readonly {
