@@ -48,6 +48,8 @@ final class SpeechRecognitionController {
   /** Last answered pack check; null until asked. A pack that is downloading is asked again. */
   private String cachedPack;
   private SpeechRecognizer downloader;
+  /** Pack checks still waiting for the system; destroy() releases them since it also drops their timeouts. */
+  private final List<SpeechRecognizer> packProbes = new ArrayList<>();
   private ProgressSink progressSink;
 
   private static final class Active {
@@ -157,6 +159,7 @@ final class SpeechRecognitionController {
           "Host was destroyed");
       settlePermissions();
       releaseDownloader();
+      releasePackProbes();
       main.removeCallbacksAndMessages(null);
     });
   }
@@ -180,10 +183,12 @@ final class SpeechRecognitionController {
         callback.invoke(packPayload(SpeechRecognitionRoute.PACK_UNKNOWN));
         return;
       }
+      packProbes.add(probe);
       boolean[] settled = { false };
       SpeechModelSupport.PackCallback settle = pack -> {
         if (settled[0]) return;
         settled[0] = true;
+        packProbes.remove(probe);
         release(probe);
         rememberPack(pack);
         callback.invoke(packPayload(pack));
@@ -408,6 +413,11 @@ final class SpeechRecognitionController {
   private void releaseDownloader() {
     release(downloader);
     downloader = null;
+  }
+
+  private void releasePackProbes() {
+    for (SpeechRecognizer probe : packProbes) release(probe);
+    packProbes.clear();
   }
 
   private void settlePermissions() {
