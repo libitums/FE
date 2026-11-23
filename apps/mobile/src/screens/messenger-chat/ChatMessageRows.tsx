@@ -143,7 +143,12 @@ function RowBody({
     case "photo-pending":
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
-          <PhotoPendingBubble name={counterpart.name} testId={ids.photoPending} />
+          <PhotoPendingBubble
+            name={counterpart.name}
+            testId={ids.photoPending}
+            key={message.startedAt ?? 0}
+            {...(message.startedAt === undefined ? {} : { startedAt: message.startedAt })}
+          />
         </ChatIncomingRow>
       );
     case "photo":
@@ -162,7 +167,12 @@ function RowBody({
     case "voice-pending":
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
-          <VoicePendingBubble name={counterpart.name} testId={ids.voicePending} />
+          <VoicePendingBubble
+            name={counterpart.name}
+            testId={ids.voicePending}
+            key={message.startedAt ?? 0}
+            {...(message.startedAt === undefined ? {} : { startedAt: message.startedAt })}
+          />
         </ChatIncomingRow>
       );
     case "voice":

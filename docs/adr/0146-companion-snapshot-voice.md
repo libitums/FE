@@ -173,3 +173,14 @@
 - 끝난 뒤 보기까지: 17초 사진 25초 → 18초, 4초 음성 5초 → 4초. 읽는 횟수: 17초 5번 → 9번, 60초 8번 → 24번, 상한 11분까지 약 48번. 가벼운 조회(`companion_get_media`)라 받아들인다.
 - 서버가 끝남을 밀어 주는 길(SSE · 실시간)은 없다 — 만들면 다시 읽기를 줄일 수 있다(이번에는 하지 않음).
 - 테스트: CM-U7a(간격) · CM-U7c(끝난 뒤 2초 안) · CM-U7d(횟수 상한).
+
+## 추가 ⟨2026-11-22⟩ — 대기 말풍선의 글을 단계로 [사용자]
+
+- **사용자 결정 2026-11-22**: 사진 · 음성을 기다리는 동안 같은 한 줄만 보여 멈춘 것처럼 보였다(운영 2026-11-17 ~ 22: 사진 중간값 18.9초 · 느린 10% 21.8초 · 최대 26.3초,
+  음성 중간값 4.0초). 보이는 글을 단계로 나눈다 — 사진 넷(0 · 5 · 11 · 17초: picking a moment → taking the picture → choosing the best shot → Almost there),
+  음성 둘(0 · 2.5초: recording a voice message → sending it).
+- 서버는 진행 단계를 주지 않는다 — 앱이 기다린 시간으로 넘긴다(`media-pending-stage.ts`). 마지막 단계는 도착할 때까지 남아, 오래 걸려도 틀린 말이 되지 않는다.
+- 시작 시각은 **기기 시계로만** 잡는다(리뷰 #541) — 대기 줄이 처음 놓일 때 기기 시계를 `startedAt`으로 싣고, 자리표시자가 서버 줄로 바뀌어도(id · `at`이 서버 것) 그 값을 넘긴다. 방을 나갔다 들어와도 그만큼 지난 단계에서 선다. 줄의 `at`은 서버 방에서 서버 시계라 쓰지 않는다(기기 시계가 어긋나면 단계가 틀린다). 앱을 다시 켜 서버에서 대기 중인 것을 처음 발견하면 그때부터 센다. 말풍선이 설 때 「이미 기다린 시간」을 한 번 정하고(시작 시각이 앞날이면 0) 그 뒤로는 타이머가 불릴 때마다 흐른 시간을 더한다 — 기다리는 중에 시계가 뒤로 가도 멈추지 않고(타이머가 기다린 만큼으로 친다) 늦어지는 것이 쌓이지 않는다. 응답 전에 같은 대상에 다시 요청해도 처음 요청한 때부터 센다. 다시 읽기 상한(11분)은 따로 잰다(`tracked.since`). 시연용 가짜 방은 음성이 2.5초에 도착해 둘째 문구가 거의 보이지 않는다 — 문구 시각은 운영 실측에 맞춘다.
+- 낭독 줄(`accessibility-label`)은 단계와 상관없이 지금 한 줄(`list.sendingPhoto` · `list.recordingVoice`) 그대로다 — 스크린리더가 단계마다 다시 읽지 않게.
+- 문구는 일곱 언어(en · es · id · ja · vi · th · my) — 원어민 검수 전. 번들 천장은 그대로다(#542로 번들이 줄어 이 변경은 천장 안에 든다 — 처음 올렸던 천장 변경은 뺐다).
+- 테스트: `media-pending-stage.unit.test.ts` MPS-U1 ~ U5 · `chat-remote-send.unit.test.ts` CM-U20 · `chat-media-rules.unit.test.ts` CM-U6a · `chat-media-rules.unit.test.ts` CM-U6c · `chat-remote-media.unit.test.ts` CM-U9a · CM-U11c · `ui-copy-chat-pending.unit.test.ts` MPS-C1 · `ChatMediaBubbles.ui.test.tsx` MC-UI21 · MC-UI22 · `ui-copy-en.unit.test.ts`.

@@ -62,8 +62,8 @@ export type MessengerChatCopy = {
     readonly back: string;
     readonly settings: string;
     readonly typing: (name: string) => string;
-    readonly sendingPhoto: (name: string) => string;
-    readonly recordingVoice: (name: string) => string;
+    readonly photoPending: (name: string) => readonly [string, string, string, string];
+    readonly voicePending: (name: string) => readonly [string, string];
     readonly photoLabel: (name: string) => string;
     readonly voiceLabel: (name: string, duration: string, ko: string, en: string) => string;
     readonly play: string;

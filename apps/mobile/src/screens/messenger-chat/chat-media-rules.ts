@@ -124,19 +124,23 @@ export function placeMediaLine(messages: readonly ChatMessage[], line: ChatMessa
   return [...messages.slice(0, at + 1), line, ...messages.slice(at + 1)];
 }
 
-/** 서버 결과 → 로그 줄. complete인데 URL이 없으면 사진은 빈 면, 음성은 재생이 꺼진 말풍선입니다. */
+/**
+ * 서버 결과 → 로그 줄. complete인데 URL이 없으면 사진은 빈 면, 음성은 재생이 꺼진 말풍선입니다.
+ * 대기 줄은 `startedAt`(기기 시계 — 요청한 때, 모르면 지금)을 싣습니다. 대기 문구의 단계가 여기서부터 셉니다.
+ */
 export function mediaLineOf(
   media: RemoteMedia,
   target: ChatMediaTarget,
   url: string | null,
   now: number,
+  startedAt: number = now,
 ): ChatMessage {
   const kind: ChatMediaKind = media.kind === "snapshot" ? "photo" : "voice";
   const id = mediaLineId(target.messageId, kind, media.id);
   const at = Number.isFinite(media.createdAt) ? media.createdAt : now;
   switch (media.status) {
     case "pending":
-      return { id, at, kind: kind === "photo" ? "photo-pending" : "voice-pending" };
+      return { id, at, kind: kind === "photo" ? "photo-pending" : "voice-pending", startedAt };
     case "complete":
       return kind === "photo"
         ? {
@@ -186,4 +190,31 @@ export function collapseMediaResults(messages: readonly ChatMessage[]): ChatMess
     placed.add(key);
     return [latest.get(key) ?? message];
   });
+}
+
+/**
+ * 그 id의 대기 줄이 실은 시작 시각(기기 시계) — 대기 줄이 아니거나 없으면 null. 이미 놓인 줄의 값이 먼저입니다:
+ * 줄을 다시 놓을 때 이 값을 넘겨 단계가 처음으로 돌아가지 않게 합니다(다시 읽기 상한의 `tracked.since`와는 따로 잽니다).
+ */
+export function pendingStartedAt(messages: readonly ChatMessage[], id: string): number | null {
+  const line = messages.find((message) => message.id === id);
+  if (line === undefined || (line.kind !== "photo-pending" && line.kind !== "voice-pending"))
+    return null;
+  return line.startedAt ?? null;
+}
+
+/**
+ * 그 매체의 대기 줄이 실은 시작 시각 — 서버 줄(`mediaId`)이 먼저, 없으면 같은 대상의 자리표시자(`~req`, 요청 응답이 아직 안 온 때).
+ * 둘 다 없으면 null.
+ */
+export function pendingStartOfMedia(
+  messages: readonly ChatMessage[],
+  targetId: string,
+  media: ChatMediaKind,
+  mediaId: string,
+): number | null {
+  return (
+    pendingStartedAt(messages, mediaLineId(targetId, media, mediaId)) ??
+    pendingStartedAt(messages, mediaLineId(targetId, media, "req"))
+  );
 }
