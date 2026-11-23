@@ -172,10 +172,15 @@ export type CatalogEpisodeSectionProps = {
   readonly clearedUnit?: MapClearedUnit | null;
   /** 표지 받기 표시(ADR-0165). 없으면 `none`. */
   readonly coverDownload?: CoverDownloadState;
+  readonly divider?: CatalogSectionDivider; // 기본 "above"
 };
+
+/** 구획 위 구분선입니다 — 가를 앞 에피소드가 없는 첫 구획만 `none`입니다(사용자 결정 2026-11-22). */
+export type CatalogSectionDivider = "above" | "none";
 
 export type CatalogUnavailableSectionProps = {
   readonly section: CatalogUnavailableSection;
+  readonly divider?: CatalogSectionDivider; // 기본 "above"
 };
 
 export type CatalogCoverMapItemProps = {
@@ -185,6 +190,8 @@ export type CatalogCoverMapItemProps = {
   readonly status: JourneyMapNodeStatus;
   readonly onSelect: (episodeId: string) => void;
   readonly layer?: SpecialUnitMapLayer; // 기본 "map"
+  /** 안내 겹(`layer="guide"`)으로 들린 일러스트 자리를 눌렀을 때 — 가림막을 누른 것과 같은 뜻입니다. */
+  readonly onTapBackdrop?: () => void;
   /** 안내 말풍선 자리입니다. */
   readonly children?: ReactNode;
   /** 노드 뒤 일러스트. 없거나 null이면 노드만 섭니다. */

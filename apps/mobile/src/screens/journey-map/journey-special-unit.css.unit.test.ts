@@ -3,6 +3,16 @@ import { resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
+import { getSpecialUnitContract } from "@libitums/ui-lynx/special-unit";
+import {
+  compositeOver,
+  contrastRatio,
+  cssDeclaration,
+  parseCssColor,
+  rgbaInValue,
+  tokenColorValue,
+} from "../../lib/wcag-contrast.test-support";
+
 // `unit` 계층: 한 줄 라벨(제목)의 톤 색 · 타이포 · 안내 겹 규칙이 CSS 텍스트에 있는지만 봅니다
 // (선례: journey-map-row.css.unit.test.ts).
 
@@ -79,13 +89,59 @@ describe("first-unit-guide.css", () => {
     expect(guideCss).not.toContain("[data-");
   });
 
-  // 스크림 합성색 위에서 Face가 1.503:1까지 떨어집니다. 흰 Halo가 Face 옆을 흰색으로 두면 Face ↔ 흰색
-  // 3.016:1 · 흰색 ↔ 스크림 4.533:1입니다(접근성 점검 U1). Active Halo 규칙(클래스 둘)보다 구체도가 높아야 합니다.
-  test("SC9. 안내 겹의 배지는 Halo가 흰색이고 선택자 클래스가 셋이다", () => {
-    const selector =
-      ".journey-special-unit-guided .ui-lynx-special-unit .ui-lynx-special-unit-halo";
-    expect(bodyOf(guideCss, selector)).toContain("background-color: var(--libitum-color-white)");
-    expect(selector.match(/\./g)).toHaveLength(3);
+  // 사용자 결정 2026-11-22(ADR-0068 적용 기록) — 들린 노드는 안내를 닫았을 때와 같은 모양입니다.
+  test("SC9. 안내 겹은 배지의 Halo · 면 · 두께를 덮어쓰지 않는다", () => {
+    expect(rulesOf(guideCss).filter((rule) => /ui-lynx-special-unit/.test(rule.selector))).toEqual(
+      [],
+    );
+  });
+
+  // 흰 테가 빠져 Face ↔ 가림막은 1.503:1입니다. 알아보는 단서로 남는 두 대비는 지킵니다.
+  test("SC10. 안내 겹에서 별 ↔ Face는 3:1, 라벨 ↔ 가림막은 4.5:1 이상이다", () => {
+    const tokenRgb = (value: string) => parseCssColor(tokenColorValue(value)).rgb;
+    const star = getSpecialUnitContract(
+      { id: "cover", accessibilityLabel: "Intro", status: "available" },
+      "standard",
+    ).iconColor;
+    const face = tokenRgb("var(--libitum-color-brand-primary)");
+    expect(contrastRatio(parseCssColor(star).rgb, face)).toBeGreaterThanOrEqual(3);
+
+    const scrim = rgbaInValue(
+      cssDeclaration(
+        bodyOf(guideCss, ".first-unit-map-scrim .ui-lynx-overlay"),
+        "background-color",
+      ),
+    );
+    if (scrim === undefined) throw new Error("가림막 색이 없습니다");
+    const label = colorOf(
+      bodyOf(
+        guideCss,
+        ".journey-special-unit-guided .journey-special-unit-label .journey-special-unit-title",
+      ),
+    );
+    const veiled = compositeOver(scrim, tokenRgb("var(--libitum-color-background-primary)"));
+    expect(contrastRatio(tokenRgb(label ?? ""), veiled)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // Android는 들린 상자(래퍼 · 노드 묶음)마다 네이티브 View라 그 밖에 선 글에는 TalkBack 초점이 가지 않습니다
+  // (GL10t, 2026-11-22 기기 red). 두 상자가 글 몫만큼 아래로 커지고, 같은 만큼의 음수 여백으로 배치는 그대로입니다.
+  test("SC11. 들린 두 상자는 안내 글을 품고, 배치 · 글 자리는 그대로다", () => {
+    const px = (selector: string, property: string): number =>
+      Number.parseFloat(cssDeclaration(bodyOf(guideCss, selector), property) ?? "NaN");
+    const wrapper = ".catalog-cover-illustrated-guided";
+    const item = ".catalog-cover-illustrated-guided .journey-special-unit-guided";
+    const room = px(wrapper, "padding-bottom");
+
+    // 글 위 24 + 상하 안쪽 24 · 24 + 글 네 줄(줄 60 — 미얀마어 · 큰 글자)
+    expect(room).toBeGreaterThanOrEqual(24 + 24 + 24 + 4 * 60);
+    expect(px(wrapper, "margin-bottom")).toBe(-room);
+    expect(px(item, "padding-bottom")).toBe(room);
+    expect(px(item, "margin-bottom")).toBe(-room);
+    // 노드 묶음이 124 폭이면 초점이 글 가운데만 잡습니다.
+    expect(px(item, "width")).toBe(px(".first-unit-map-tooltip", "width"));
+    expect(px(".catalog-cover-illustrated-guided .first-unit-map-tooltip", "margin-top")).toBe(
+      24 - room,
+    );
   });
 });
 

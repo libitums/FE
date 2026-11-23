@@ -5,6 +5,7 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 import type { MapScrollTarget } from "./journey-map-next-unit";
 import { mapScrollDurationMs } from "./journey-map-scroll-animation";
 import type { MapGlider } from "./use-map-glide";
+import { rememberMapScroll } from "./journey-map-scroll-memory";
 import {
   headerCardId,
   measureRectsWithOptional,
@@ -161,6 +162,8 @@ export function useAutoScrollToNext({
         scrollTop: scrollTop.current,
       });
       dispatchCorrection({ type: "sent", domId: pending, offset });
+      // 제자리로의 이동은 스크롤 소식을 내지 않습니다 — 연 자리를 여기서 적어야 돌아온 맵이 다시 움직이지 않습니다(AS10b).
+      if (Math.abs(offset - scrollTop.current) <= autoScrollTolerance) rememberMapScroll(offset);
       moveTo(offset);
     });
   }, [targetDomId, blocked]);

@@ -187,6 +187,25 @@ describe("두 길", () => {
     expect(sinceEntry(events)).toEqual(["entry_path_selected:story", "entry_completed"]);
   });
 
+  test("EBI1′. 그 가이드는 내장 매니페스트의 표지 그림까지 들고, 첫 구획 위에 구분선이 없고, 그림을 누르면 닫힌다", async () => {
+    await reachEntry();
+    await jumpIn();
+
+    const lifted = screen.getByTestId("catalog-cover-illustrated-u00-tutorial");
+    expect(lifted.classList.contains("catalog-cover-illustrated-guided")).toBe(true);
+    expect(
+      screen
+        .getByTestId("catalog-section-u00-tutorial")
+        .querySelectorAll(".episode-pending-divider").length,
+    ).toBe(0);
+
+    fireEvent.tap(lifted, {});
+    await settle();
+
+    expect(present("first-unit-guide-map")).toBe(false);
+    expect(present("episode-intro-screen")).toBe(false);
+  });
+
   test("EBI2. 기초부터 → 글자 → 합치기 → 준비 완료 → 같은 가이드. 완주는 마지막에 한 번", async () => {
     const { events } = await reachEntry();
 

@@ -203,6 +203,39 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(second.filter((call) => call.method === "scrollTo")).toEqual([scrollToCall(490, true)]);
   });
 
+  // 같은 자리로의 `scrollTo`는 스크롤 소식을 내지 않습니다 — 위 여백을 뺀 뒤 큰 화면에서는 첫 유닛들의 자리가 0입니다.
+  test("AS10b. 옮길 것이 없던 자리도 연 자리로 기억해, 진행이 늘어 돌아와도 움직이지 않는다", () => {
+    // 410 + 50 − 460 = 0 — 지금 자리가 목적지입니다.
+    const host = stubHost({ rects: { ...asRects(), [unitSelector]: unitRect(410) } });
+    const first = mount(atTwo());
+    expect(host.scrollTos()).toEqual([scrollToCall(0, true)]);
+
+    act(() => {
+      first.unmount();
+    });
+    const callsBefore = host.calls.length;
+    mount(atThree());
+
+    expect(host.calls.slice(callsBefore).filter((call) => call.method === "scrollTo")).toEqual([]);
+  });
+
+  test("AS10c. 자동 스크롤이 잠긴 지도도 말풍선의 제자리 이동을 연 자리로 기억한다", () => {
+    const host = stubHost({ rects: { ...asRects(), [unitSelector]: unitRect(410) } });
+    const first = mount(mapScreen());
+    touchMap();
+    rerender(first, atTwo());
+    tapTarget();
+    expect(host.scrollTos()).toEqual([scrollToCall(0, true)]);
+
+    act(() => {
+      first.unmount();
+    });
+    const callsBefore = host.calls.length;
+    mount(atThree());
+
+    expect(host.calls.slice(callsBefore).filter((call) => call.method === "scrollTo")).toEqual([]);
+  });
+
   /** 지도 내용이 놓였다는 소식 — 가이드의 맨 위 맞춤은 이 뒤에만 나갑니다(DURU-ANDROID-F). */
   const laidOut = () =>
     act(() => {

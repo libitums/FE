@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, test, vi } from "vitest";
 
 import { bundledContentImageUrl, bundledContentImages } from "./bundled-content-images";
@@ -58,6 +61,18 @@ describe("bundledContentImages", () => {
       expect(typeof value).toBe("string");
       expect(value).toMatch(/\.webp$/);
     }
+  });
+
+  // 첫 유닛 안내가 표지 그림을 어두운 가림막 위로 올립니다 — 바탕이 있으면 흰 네모가 됩니다(ADR-0099 적용 기록 2026-11-22).
+  test("BI4. 튜토리얼 표지는 바탕을 뺀 780 × 582 투명 webp이고 100,000 B 이하다", () => {
+    const file = readFileSync(
+      resolve(process.cwd(), "src/assets/content/covers/u00-tutorial.webp"),
+    );
+    expect(file.subarray(8, 16).toString("latin1")).toBe("WEBPVP8X");
+    expect((file[20] ?? 0) & 0x10).toBe(0x10);
+    expect(file.readUIntLE(24, 3) + 1).toBe(780);
+    expect(file.readUIntLE(27, 3) + 1).toBe(582);
+    expect(file.byteLength).toBeLessThanOrEqual(100_000);
   });
 
   test("BI2. 표에 있는 경로는 표의 값을, 선두 content/ · 모르는 경로 · 빈 문자열은 null을 낸다", () => {
