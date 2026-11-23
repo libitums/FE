@@ -9,6 +9,7 @@ import { fakeTimers } from "./chat-fixture-timers.test-support";
 import { companionSeed } from "./companion-roster";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import type { GuidePart, GuideStore } from "./messenger-guide";
+import { resetSampleOfferMemoryForTests } from "./use-room-guide";
 
 // `ui` 계층(MG-UI10 ~ UI13): 예시 스냅샷 안내(ADR-0146 추가, 시안 「스냅샷 안내」 2026-11-23) — 방 코치마크가 사진 알약을 가리키고,
 // 그 알약을 누르면 결제 확인 없이 예시 사진을 받는다. 안내를 이미 본 사람에게는 그 단계만 「New」로 한 번.
@@ -46,12 +47,12 @@ const sampleMedia: RemoteMedia = {
   stage: null,
 };
 
-function serverSource(offered: boolean) {
-  const claim = vi.fn(async (): Promise<MediaRequestResult> => ({
-    kind: "accepted",
-    media: sampleMedia,
-    cached: false,
-  }));
+function serverSource(offered: boolean, result?: MediaRequestResult) {
+  const timers = fakeTimers();
+  const claim = vi.fn(
+    async (): Promise<MediaRequestResult> =>
+      result ?? { kind: "accepted", media: sampleMedia, cached: false },
+  );
   const media: ChatMediaRemote = {
     request: vi.fn(async (): Promise<MediaRequestResult> => ({ kind: "failed" })),
     load: async () => [],
@@ -80,10 +81,10 @@ function serverSource(offered: boolean) {
   const source = createFixtureChatSource({
     imageUrlOf: () => null,
     seed: { ...companionSeed(), birthYear: { kind: "set", year: 2000 } },
-    timers: fakeTimers(),
+    timers,
     remote,
   });
-  return { source, claim, media };
+  return { source, claim, media, timers };
 }
 
 const coach = () => screen.queryByTestId(ids.guideCoach);
@@ -95,6 +96,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   clearBackHandlers();
+  resetSampleOfferMemoryForTests();
 });
 
 describe("안내를 이미 본 사용자", () => {
@@ -115,20 +117,26 @@ describe("안내를 이미 본 사용자", () => {
   });
 
   test("MG-UI11 알약을 누르면 결제 확인 없이 예시를 받고 안내가 끝난다 — 다시 뜨지 않는다", async () => {
-    const { source, claim } = serverSource(true);
+    const { source, claim, timers } = serverSource(true);
     const { store, seen } = memoryStore(["list", "room"]);
     mountChat({ source, roomId: "duksu", guideStore: store });
     await flush();
     fireEvent.tap(pill(), {});
+    // 다시 그리기 전에 한 번 더 눌러도 한 번만 받는다.
+    fireEvent.tap(pill(), {});
     await flush();
+    expect(claim).toHaveBeenCalledTimes(1);
     expect(claim).toHaveBeenCalledWith(A1);
     expect(coach()).toBeNull();
     expect(screen.queryByTestId(ids.askDialog)).toBeNull();
-    expect(seen()).toContain("snapshot");
-    // 대기 말풍선이 바로 선다.
+    // 대기 말풍선이 바로 선다. 알약은 원래 가격으로.
     expect(screen.getByTestId(ids.photoPending)).toBeTruthy();
-    // 알약은 원래 가격으로.
     expect(pill().textContent).toContain("35");
+    // 받기가 끝나기 전에는 본 것으로 적지 않는다 — 사진이 도착한 뒤에 적는다.
+    expect(seen()).not.toContain("snapshot");
+    act(() => timers.advance(1500));
+    await flush();
+    expect(seen()).toContain("snapshot");
   });
 
   test("MG-UI12 Skip은 받지 않고 끝낸다. 제안이 없으면 안내가 서지 않고 알약은 보통 가격", async () => {
@@ -155,9 +163,24 @@ describe("안내를 이미 본 사용자", () => {
   });
 });
 
+describe("받지 못한 경우", () => {
+  test("MG-UI14 받기에 실패하면 본 것으로 적지 않는다 — 다음에 방에 오면 다시 권한다", async () => {
+    const { source, timers } = serverSource(true, { kind: "failed" });
+    const { store, seen } = memoryStore(["list", "room"]);
+    mountChat({ source, roomId: "duksu", guideStore: store });
+    await flush();
+    fireEvent.tap(pill(), {});
+    await flush();
+    act(() => timers.advance(1500));
+    await flush();
+    expect(coach()).toBeNull();
+    expect(seen()).not.toContain("snapshot");
+  });
+});
+
 describe("처음 온 사용자", () => {
   test("MG-UI13 chat → ideas 뒤에 예시 단계가 「3 of 3」으로 이어지고, 받으면 방 · 목록 · 예시 안내를 모두 본 것으로 적는다", async () => {
-    const { source, claim } = serverSource(true);
+    const { source, claim, timers } = serverSource(true);
     const { store, seen } = memoryStore();
     mountChat({ source, roomId: "duksu", guideStore: store });
     await flush();
@@ -167,6 +190,8 @@ describe("처음 온 사용자", () => {
     expect(coach()?.getAttribute("data-step")).toBe("sample");
     expect(coach()?.textContent).toContain("3 of 3");
     fireEvent.tap(pill(), {});
+    await flush();
+    act(() => timers.advance(1500));
     await flush();
     expect(claim).toHaveBeenCalledTimes(1);
     expect(coach()).toBeNull();

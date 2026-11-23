@@ -379,8 +379,9 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     });
     expect(await offered.source.sampleSnapshot?.offered("duksu")).toBe(true);
     expect(offered.port.sample?.offer).toHaveBeenCalledWith("duksu");
+    // 예시 포트가 없는 원격에서는 출처도 예시 길을 내놓지 않는다 — 안내가 답을 기다리지 않게.
     const none = await opened();
-    expect(await none.source.sampleSnapshot?.offered("duksu")).toBe(false);
+    expect(none.source.sampleSnapshot).toBeUndefined();
   });
 
   test("CM-U31 받기 — 곧바로 대기 줄, 잠깐 뒤 예시 사진 · 「이번 것은 무료」 줄. 잔액은 읽지 않는다(값 없음)", async () => {
@@ -413,5 +414,15 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     expect(await done).toBe(false);
     expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "request-failed" });
     expect(env.lines().some((m) => m.kind === "photo" || m.kind === "photo-pending")).toBe(false);
+  });
+
+  test("CM-U33 서버가 주지 않기로 했으면(다른 기기에서 이미 씀 · 예시 꺼짐) 「연결 확인」이 아니라 「지금은 쓸 수 없음」 줄이 선다", async () => {
+    const env = await opened({
+      sample: sampleOf({ kind: "refused", notice: "not-eligible", until: null }),
+    });
+    const done = env.source.sampleSnapshot?.claim("duksu");
+    await env.advance(1_500);
+    expect(await done).toBe(false);
+    expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "unavailable" });
   });
 });

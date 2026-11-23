@@ -77,6 +77,11 @@ beforeEach(async () => {
     "insert into companion.media_samples (character_id, storage_path, aspect) values ('duksu', $1, '3:2')",
     [SAMPLE],
   );
+  // 대화할 수 있는 계정(생년을 밝힌 성인) — 예시 받기는 메시지와 같은 판정을 거친다.
+  await db.admin.query(
+    "insert into companion.profiles (user_id, birth_year, age_source) values ($1, 1990, 'self')",
+    [learner],
+  );
   await signIn(app, learner);
 });
 
@@ -160,4 +165,39 @@ test("MS6. 권한 — 비로그인은 부를 수 없고, 예시 표는 앱 역�
     code: "42501",
   });
   await anon.end();
+});
+
+test("MS7. 운영의 고아 파일 조회는 예시 파일을 내놓지 않는다(지우면 모든 예시가 빈 사진이 된다)", async () => {
+  await db.admin.query("delete from storage.objects");
+  await db.admin.query(
+    "insert into storage.objects (bucket_id, name) values ('companion-media', $1), ('companion-media', $2)",
+    [SAMPLE, `${learner}/stray.png`],
+  );
+  const orphans = (await server.query("select public.companion_media_orphans(10) as o")).rows[0]
+    .o as string[];
+  expect(orphans).toEqual([`${learner}/stray.png`]);
+});
+
+test("MS8. 대화를 쓰지 못하는 계정(14세 미만 · 일시 차단)은 예시를 받지 못하고, 엽전이 0이어도 그 밖의 계정은 받는다", async () => {
+  const id = await message(learner);
+  await db.admin.query(
+    "update companion.profiles set birth_year = extract(year from now())::int - 12 where user_id = $1",
+    [learner],
+  );
+  expect((await claim(id)).result).toBe("not_offered");
+  await db.admin.query("update companion.profiles set birth_year = 1990 where user_id = $1", [
+    learner,
+  ]);
+  await db.admin.query(
+    `insert into companion.moderation_state (user_id, blocked_until) values ($1, now() + interval '1 hour')
+     on conflict (user_id) do update set blocked_until = excluded.blocked_until`,
+    [learner],
+  );
+  expect((await claim(id)).result).toBe("not_offered");
+  await db.admin.query(
+    "update companion.moderation_state set blocked_until = null where user_id = $1",
+    [learner],
+  );
+  // 지갑이 비어 있어도(엽전 0) 받는다.
+  expect((await claim(id)).result).toBe("ok");
 });

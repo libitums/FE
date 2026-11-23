@@ -3,7 +3,7 @@
 // 놓는 일(자리표시자 · 서버 줄 · 회색 줄)은 서버 사진과 같은 도구를 씁니다(`chat-remote-media.ts`가 넘김).
 
 import type { RoomState } from "./chat-fixture-room";
-import type { ChatMediaRemote, ChatMediaTarget } from "./chat-media.contract";
+import type { ChatMediaRemote, ChatMediaTarget, MediaRequestResult } from "./chat-media.contract";
 import { mediaLineId, mediaTargetOf } from "./chat-media-rules";
 import type { MediaSenderDeps } from "./chat-remote-send";
 
@@ -32,10 +32,27 @@ export function sampleSnapshotMethods(
     const room = live(roomId);
     return room !== null && room.access.kind === "open" ? room : null;
   };
-  const refuse = (room: RoomState, reqId: string, target: ChatMediaTarget): boolean => {
-    replace(room, reqId, noticeLine(room, target, "photo", "request-failed"));
+  /** 받은 결과를 대화에 놓습니다 — 사진 + 「이번 것은 무료」 줄, 아니면 회색 안내 줄. */
+  const settle = async (
+    room: RoomState,
+    reqId: string,
+    target: ChatMediaTarget,
+    result: MediaRequestResult,
+  ): Promise<boolean> => {
+    if (!alive(room)) return false;
+    if (result.kind !== "accepted" || result.media.status !== "complete") {
+      // 서버가 주지 않기로 했으면(다른 기기에서 이미 씀 · 예시 꺼짐) 다시 해 보라고 하지 않습니다.
+      const notice = result.kind === "failed" ? "request-failed" : "unavailable";
+      replace(room, reqId, noticeLine(room, target, "photo", notice));
+      changed(room);
+      return false;
+    }
+    // 값이 없으니 잔액을 읽지 않습니다(`cached`).
+    await accept(room, reqId, target, "photo", { media: result.media, cached: true });
+    if (!alive(room)) return false;
+    put(room, noticeLine(room, target, "photo", "sample-gift"));
     changed(room);
-    return false;
+    return true;
   };
   return {
     offered: async (roomId) => {
@@ -52,17 +69,13 @@ export function sampleSnapshotMethods(
       const at = now();
       put(room, { id: reqId, at, kind: "photo-pending", startedAt: at });
       changed(room);
-      const waited = new Promise<void>((resolve) => schedule(room, SAMPLE_WAIT_MS, resolve));
-      const [result] = await Promise.all([sample.claim(target.messageId), waited]);
-      if (!alive(room)) return false;
-      if (result.kind !== "accepted" || result.media.status !== "complete")
-        return refuse(room, reqId, target);
-      // 값이 없으니 잔액을 읽지 않습니다(`cached`).
-      await accept(room, reqId, target, "photo", { media: result.media, cached: true });
-      if (!alive(room)) return false;
-      put(room, noticeLine(room, target, "photo", "sample-gift"));
-      changed(room);
-      return true;
+      const result = await sample.claim(target.messageId);
+      // 「만드는 중」을 적어도 `SAMPLE_WAIT_MS`는 보입니다. 타이머는 방의 것이라 방이 비워지면 함께 사라집니다(자리표시자도 없어짐).
+      const remaining = SAMPLE_WAIT_MS - (now() - at);
+      if (remaining <= 0) return settle(room, reqId, target, result);
+      return new Promise<boolean>((resolve) =>
+        schedule(room, remaining, () => void settle(room, reqId, target, result).then(resolve)),
+      );
     },
   };
 }

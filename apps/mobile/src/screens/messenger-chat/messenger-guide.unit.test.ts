@@ -3,7 +3,6 @@ import { describe, expect, test } from "vitest";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import {
   guideSeenFrom,
-  guideSteps,
   roomGuideSteps,
   hasNewFriend,
   messengerTabBadge,
@@ -50,11 +49,6 @@ describe("하단 탭 NEW", () => {
 });
 
 describe("코치마크 단계 · 기록", () => {
-  test("MG-U2 사진 · 음성이 서버에 이어지기 전에는 그 단계를 건너뛴다", () => {
-    expect(guideSteps({ mediaReady: false })).toEqual(["chat", "ideas"]);
-    expect(guideSteps({ mediaReady: true })).toEqual(["chat", "ideas", "media"]);
-  });
-
   test("MG-U3 본 안내 기록 읽기 — 없거나 깨졌으면 빈 기록, 모르는 값은 버림", () => {
     expect(guideSeenFrom(null)).toEqual([]);
     expect(guideSeenFrom("not json")).toEqual([]);

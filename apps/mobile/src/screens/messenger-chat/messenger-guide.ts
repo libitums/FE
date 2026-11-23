@@ -12,9 +12,6 @@ export type GuidePart = "list" | "room" | "snapshot";
 
 /** 안내를 맡는 인물 방입니다(서버 모드 인물 표의 덕수쌤). 없으면 안내가 서지 않습니다. */
 export const GUIDE_ROOM_ID = "duksu";
-/** 사진 · 음성이 서버에 이어지면 true — 그 전에는 코치마크의 사진 · 음성 단계를 건너뜁니다. */
-export const MESSENGER_MEDIA_READY = false;
-
 export const messengerTabVisitedStorageKey = "libitum.messenger.tab-visited";
 export const messengerGuideSeenStorageKey = "libitum.messenger.guide-seen";
 
@@ -26,10 +23,6 @@ export function messengerTabBadge(input: { visited: boolean; newFriend: boolean 
 /** 열 수 있는 계정의 열린 방 가운데 아직 안 연 새 친구(isNew)가 있나 — 손님 · 시험 계정 아님은 방을 못 열어 늘 false. */
 export function hasNewFriend(rooms: readonly ChatRoomSummary[], access: MessengerAccess): boolean {
   return access !== "sign-in" && rooms.some((room) => room.isNew && room.access.kind === "open");
-}
-
-export function guideSteps(input: { mediaReady: boolean }): readonly GuideStep[] {
-  return input.mediaReady ? ["chat", "ideas", "media"] : ["chat", "ideas"];
 }
 
 /**
