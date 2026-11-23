@@ -250,3 +250,16 @@ test("[MI8] 음성 한 턴 — 마이크로 말하면 서버가 받아 적어 �
   expect(id("roleplay-mission-log")).toHaveTextContent("아이스 아메리카노 한 잔 주세요.");
   expect(id("roleplay-mission-goal-order")).toHaveAttribute("data-done", "true");
 });
+
+test("[MI9] 채점 대기 판의 채점이 실패하면 실패 안내 → 다시 시도(채점 중) → 리포트", async () => {
+  await boot({ pendingReport: true, grading: "fail-once" });
+  fireEvent.tap(id("roleplay-list-item-mission-u06-cafe"), {});
+  await flush();
+  await flush();
+  expect(id("roleplay-mission-report-failed")).toHaveTextContent("We couldn't score this");
+  tapButton("roleplay-mission-report-retry-grading");
+  expect(id("roleplay-mission-report-failed")).toHaveTextContent("Scoring your conversation…");
+  await flush();
+  await flush();
+  expect(id("roleplay-mission-report-outcome")).toHaveTextContent("Mission complete");
+});

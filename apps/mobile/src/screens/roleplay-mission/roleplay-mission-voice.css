@@ -64,3 +64,24 @@
 .mission-better .my-message-better {
   color: var(--libitum-color-fg-neutral-muted);
 }
+
+/* 목록 카드의 「Report ready」 — 카드 둘째 줄(label-s · 흰 글)과 같은 글꼴의 작은 알약. 준비됨은 브랜드 면, 채점 중은 흐린 면. */
+.mission-report-badge {
+  align-self: flex-start;
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(26, 28, 32, 0.72);
+}
+
+.mission-report-badge-ready {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.mission-report-badge-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}

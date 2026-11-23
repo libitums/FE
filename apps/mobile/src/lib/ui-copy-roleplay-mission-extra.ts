@@ -27,6 +27,8 @@ export type MissionExtraCopy = {
     readonly replay: string;
     readonly hintListen: string;
   };
+  /** 목록 카드의 채점 대기 판 표시(`pendingReports`) — 리포트 준비됨 · 채점 중. */
+  readonly reportReady: { readonly ready: string; readonly grading: string };
   readonly report: {
     readonly scoreParts: string;
     readonly partTask: string;
@@ -68,6 +70,7 @@ export const missionExtraEn: MissionExtraCopy = {
     replay: "Play again",
     hintListen: "Listen",
   },
+  reportReady: { ready: "Report ready", grading: "Scoring…" },
   report: {
     scoreParts: "How your score adds up",
     partTask: "Goals",
@@ -109,6 +112,7 @@ export const missionExtraEs: MissionExtraCopy = {
     replay: "Escuchar otra vez",
     hintListen: "Escuchar",
   },
+  reportReady: { ready: "Informe listo", grading: "Puntuando…" },
   report: {
     scoreParts: "Cómo se suma tu puntuación",
     partTask: "Objetivos",
@@ -150,6 +154,7 @@ export const missionExtraJa: MissionExtraCopy = {
     replay: "もう一度聞く",
     hintListen: "聞く",
   },
+  reportReady: { ready: "レポート準備完了", grading: "採点中…" },
   report: {
     scoreParts: "スコアの内訳",
     partTask: "目標",

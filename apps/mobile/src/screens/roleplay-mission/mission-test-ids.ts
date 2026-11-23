@@ -59,6 +59,7 @@ export const missionTestIds = {
   reportStrengths: id("report-strengths"),
   reportBetter: id("report-better"),
   reportNextStep: id("report-next-step"),
+  reportReady: (missionId: string): string => id(`report-ready-${missionId}`),
   reportPlayAgain: id("report-play-again"),
   reportExit: id("report-exit"),
   reportFailed: id("report-failed"),

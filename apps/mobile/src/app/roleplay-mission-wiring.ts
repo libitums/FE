@@ -33,7 +33,8 @@ const serverMissionSource = (): MissionSource | null => null;
 
 export function roleplayMissionSource(): MissionSource {
   if (sourceOverride !== null) return sourceOverride;
-  singleton ??= serverMissionSource() ?? createFakeMissionSource();
+  // 개발 미리보기의 가짜는 채점 대기 판 하나를 둡니다 — 「Report ready」 → 곧장 리포트 흐름이 돕니다.
+  singleton ??= serverMissionSource() ?? createFakeMissionSource({ pendingReport: true });
   return singleton;
 }
 
