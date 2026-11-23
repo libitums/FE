@@ -9,15 +9,9 @@
   gap: var(--libitum-layout-gap-block);
   /* 좌우 여백이 없습니다 — 카드 줄이 화면 오른쪽 끝까지 흘러 「옆에 더 있다」를
      보여 줍니다(Figma 76-692). 좌우 여백은 제목과 구획 머리와 카드 줄이 각자 집니다. */
-  /* 위 여백은 화면 여백에 전역 머리(`.app-header`) 몫을 더한 것입니다 — 머리가 이 화면
-     위에 겹치므로 더하지 않으면 제목이 칩 · 알림 버튼에 가립니다. 머리 높이는 44pt(알림
-     버튼 기준)지만 값은 옛 40pt에 열 간격을 더한 그대로라 간격이 4 좁습니다(여정 맵의 `.journey-map-screen-map`과 같은 수).
-     shorthand(`padding: calc(…) 0 …`)로 적으면 Lynx가 선언 전체를 버려(기기에서 확인)
-     longhand로 나눠 적습니다. */
-  padding-top: calc(
-    var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-32) +
-      var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
-  );
+  /* 전역 머리(칩 줄)가 없습니다(사용자 결정 2026-11-23 — 메신저 목록 · 순위와 같은 규칙) — 제목이 셸이 비운
+     안전 영역 바로 아래, 화면 위 여백만큼 떨어져 섭니다. */
+  padding-top: var(--libitum-layout-screen-padding-top);
   padding-bottom: var(--libitum-layout-screen-padding-bottom);
   background: var(--libitum-color-background-primary);
   /* 안내(`.roleplay-list-premium-notice`)가 이 상자를 기준으로 절대 배치됩니다. */
@@ -35,11 +29,11 @@
 .roleplay-list-screen-title {
   padding: 0 var(--libitum-layout-screen-padding-x);
   color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
   /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어듭니다.
      형제(`.roleplay-list-screen-scroll`)는 `flex: 1`이라 basis가 0이라 shrink를
      흡수하지 않으므로, 이 상자가 유일한 축소 대상이 돼 잘릴 수 있습니다(FE ADR-0020
