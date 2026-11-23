@@ -433,6 +433,25 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     expect(env.port.request).not.toHaveBeenCalled();
   });
 
+  test("CM-U35 목록 미리보기 — 마지막 줄이 회색 안내(「이번 것은 무료」)여도 그 앞의 음성 · 사진이 보인다(빈 줄이 아니다)", async () => {
+    const voice = media({
+      kind: "voice",
+      status: "complete",
+      path: "samples/duksu-guide-voice-01.mp3",
+    });
+    const env = await opened({
+      sample: sampleOf({ kind: "accepted", media: voice, cached: false }),
+    });
+    const done = env.source.sampleSnapshot?.claim("duksu", "voice");
+    await env.advance(1_500);
+    await done;
+    expect(env.lines().at(-1)?.kind).toBe("media-notice");
+    const row = env.source.snapshot().rooms.find((room) => room.roomId === "duksu");
+    expect(row?.lastMessage?.kind).toBe("voice");
+    // 시각 · 정렬은 실제 마지막 줄 그대로.
+    expect(row?.updatedAt).toBe(env.lines().at(-1)?.at);
+  });
+
   test("CM-U32 받지 못하면 대기 줄이 회색 안내로 바뀌고 false — 사진 · 무료 줄은 서지 않는다", async () => {
     const env = await opened({ sample: sampleOf({ kind: "failed" }) });
     const done = env.source.sampleSnapshot?.claim("duksu");
