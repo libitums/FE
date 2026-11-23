@@ -7,6 +7,7 @@ import {
   flagOf,
   medalOf,
   moreToTopThree,
+  shownEndsAt,
   weekEndsAt,
   rankingViewOf,
   zoneBefore,
@@ -131,4 +132,20 @@ test("RK-U32. 이번 주가 끝나는 때 — 다음 월요일 00:00 UTC(서버 
   expect(weekEndsAt(Date.parse("2026-11-22T23:59:59Z"))).toBe("2026-11-23T00:00:00Z");
   // 해가 바뀌어도.
   expect(weekEndsAt(Date.parse("2026-12-30T12:00:00Z"))).toBe("2027-01-04T00:00:00Z");
+});
+
+test("RK-U33. 머리의 남은 날 줄이 쓸 끝 시각 — 서버 값이 먼저, 못 읽었으면 기기에서 센 값, 비회원 · 숨김은 null", () => {
+  const now = Date.parse("2026-11-20T10:00:00Z");
+  const local = "2026-11-23T00:00:00Z";
+  expect(shownEndsAt({ kind: "loading" }, now)).toBe(local);
+  expect(shownEndsAt({ kind: "error" }, now)).toBe(local);
+  expect(shownEndsAt({ kind: "offline" }, now)).toBe(local);
+  expect(shownEndsAt({ kind: "not-joined", endsAt: "2026-11-30T00:00:00Z" }, now)).toBe(
+    "2026-11-30T00:00:00Z",
+  );
+  expect(
+    shownEndsAt({ kind: "ready", board: { ...board, endsAt: "2026-12-07T00:00:00Z" } }, now),
+  ).toBe("2026-12-07T00:00:00Z");
+  expect(shownEndsAt({ kind: "guest" }, now)).toBeNull();
+  expect(shownEndsAt({ kind: "hidden" }, now)).toBeNull();
 });

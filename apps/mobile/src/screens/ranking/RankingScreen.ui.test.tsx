@@ -394,7 +394,17 @@ test("RK-UI30. 머리의 남은 날 줄은 읽기 전부터 서 있다 — 불�
   mount({ kind: "error" });
   expect(text(ids.ends)).toBe("Ends in 3 days");
   cleanup();
+  mount({ kind: "offline" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  cleanup();
+  // 서버 값이 오면 그 값 — 기기에서 센 값(11-23)과 다른 주.
+  mount({ kind: "not-joined", endsAt: "2026-11-30T00:00:00Z" });
+  expect(text(ids.ends)).toBe("Ends in 10 days");
+  cleanup();
   // 비회원 · 숨김은 순위에 들지 않으므로 지금처럼 없다.
   mount({ kind: "guest" });
+  expect(screen.queryByTestId(ids.ends)).toBeNull();
+  cleanup();
+  mount({ kind: "hidden" });
   expect(screen.queryByTestId(ids.ends)).toBeNull();
 });

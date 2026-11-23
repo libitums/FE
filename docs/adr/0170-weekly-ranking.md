@@ -101,7 +101,7 @@
 ### D14. 머리가 읽은 뒤에 밀리지 않게 ⟨2026-11-23 사용자 기기 확인⟩
 - **계기**: 기기에서 순위 탭에 들어올 때 「Ends in 7 days」 줄이 보드를 읽은 뒤에야 생겨, 그 아래(보드 전환 · 목록)가 눈에 보이게 밀렸다.
 - **결정**: 남은 날 줄은 읽기 전부터 세운다 — 끝 시각을 서버와 같은 규칙(다음 월요일 00:00 UTC)으로 기기에서 센다(`weekEndsAt`). 서버 값이 오면 그 값을 쓴다. 줄 높이는 그룹 알약(28)에 맞춰 고정해, 알약이 나중에 서도 높이가 달라지지 않는다. 비회원 · 숨김 화면은 지금처럼 줄이 없다.
-- **테스트**: `ranking-rules.unit.test.ts` RK-U32, `RankingScreen.ui.test.tsx` RK-UI30.
+- **테스트**: `ranking-rules.unit.test.ts` RK-U32 · U33, `RankingScreen.ui.test.tsx` RK-UI30, `App.ranking.integration.test.tsx` RK-I7, 기기 `docs/e2e/weekly-ranking.md` WR-E9(줄 높이 · 밀림은 배치라 기기에서만 본다).
 
 ## 버린 대안
 1. **(나) More 메뉴 줄의 순위** — 시안 비교에서 (가)가 가장 잘 보여 사용자가 골랐다.
