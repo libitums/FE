@@ -46,6 +46,7 @@ describe("결과 한 건 · 목록", () => {
       aspect: null,
       failure: null,
       createdAt: Date.parse("2026-11-15T10:19:00.000Z"),
+      stage: null,
     });
     const done = remoteMediaOf(
       row({ status: "complete", path: `u/${M1}.png`, aspect: "3:2", kind: "snapshot" }),
@@ -66,6 +67,17 @@ describe("결과 한 건 · 목록", () => {
     expect(remoteMediaOf(row({ messageId: null }))).toBeNull();
     expect(remoteMediaOf(null)).toBeNull();
     expect(remoteMediaOf(row({ aspect: "16:9" }))?.aspect).toBeNull();
+  });
+
+  test("CM-U1d 진행 단계(ADR-0146 개정 2026-11-23) — preparing · drawing만 받고, 없거나(옛 서버) 모르는 값은 null", () => {
+    expect(remoteMediaOf(row({ stage: "preparing" }))?.stage).toBe("preparing");
+    expect(remoteMediaOf(row({ stage: "drawing", aspect: "3:2" }))).toMatchObject({
+      stage: "drawing",
+      aspect: "3:2",
+    });
+    expect(remoteMediaOf(row())?.stage).toBeNull();
+    expect(remoteMediaOf(row({ stage: "polishing" }))?.stage).toBeNull();
+    expect(remoteMediaOf(row({ stage: null }))?.stage).toBeNull();
   });
 
   test("CM-U1c 목록은 배열만 — 틀린 줄은 버리고, 깨진 본문 · 배열 아님은 null", () => {

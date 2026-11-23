@@ -140,7 +140,18 @@ export function mediaLineOf(
   const at = Number.isFinite(media.createdAt) ? media.createdAt : now;
   switch (media.status) {
     case "pending":
-      return { id, at, kind: kind === "photo" ? "photo-pending" : "voice-pending", startedAt };
+      if (kind === "voice") return { id, at, kind: "voice-pending", startedAt };
+      // 서버가 단계를 알려 주면 싣습니다 — 「그리는 중」부터는 도착할 사진의 비율도.
+      return {
+        id,
+        at,
+        kind: "photo-pending",
+        startedAt,
+        ...(media.stage === "preparing" || media.stage === "drawing"
+          ? { serverStage: media.stage }
+          : {}),
+        ...(media.stage === "drawing" && media.aspect !== null ? { aspect: media.aspect } : {}),
+      };
     case "complete":
       return kind === "photo"
         ? {
@@ -217,4 +228,62 @@ export function pendingStartOfMedia(
     pendingStartedAt(messages, mediaLineId(targetId, media, mediaId)) ??
     pendingStartedAt(messages, mediaLineId(targetId, media, "req"))
   );
+}
+
+/**
+ * 다시 놓을 대기 줄에 놓인 줄의 서버 단계 · 비율을 잇습니다 — **앞으로만**(리뷰 #552): 이미 「그리는 중」을 본 줄은 낮은 단계나
+ * 빈 단계의 행이 와도 그대로이고, 비율도 한 번 알면 지우지 않습니다. 놓인 줄이 없으면 그대로.
+ */
+export function withPendingStage(messages: readonly ChatMessage[], line: ChatMessage): ChatMessage {
+  if (line.kind !== "photo-pending") return line;
+  const placed = messages.find((message) => message.id === line.id);
+  if (placed === undefined || placed.kind !== "photo-pending") return line;
+  const serverStage = placed.serverStage === "drawing" ? "drawing" : line.serverStage;
+  const aspect = line.aspect ?? placed.aspect;
+  return {
+    ...line,
+    ...(serverStage === undefined ? {} : { serverStage }),
+    ...(aspect === undefined ? {} : { aspect }),
+  };
+}
+
+/**
+ * 다시 읽은 대기 행으로 고친 대기 줄 — 서버 단계 · 비율이 놓인 줄보다 나아갔을 때만(ADR-0146 개정 2026-11-23). 시작 시각은 그대로
+ * 넘깁니다. 줄이 없거나 달라진 것이 없으면 null. 줄에 무엇을 싣는지는 `mediaLineOf`만 정합니다.
+ */
+export function refreshedPendingLine(
+  messages: readonly ChatMessage[],
+  row: RemoteMedia,
+  target: ChatMediaTarget,
+  now: number,
+): ChatMessage | null {
+  if (row.status !== "pending" || row.kind !== "snapshot") return null;
+  const id = mediaLineId(target.messageId, "photo", row.id);
+  const placed = messages.find((message) => message.id === id);
+  if (placed === undefined || placed.kind !== "photo-pending") return null;
+  const next = withPendingStage(
+    messages,
+    mediaLineOf(row, target, null, now, placed.startedAt ?? now),
+  );
+  if (next.kind !== "photo-pending") return null;
+  return next.serverStage === placed.serverStage && next.aspect === placed.aspect ? null : next;
+}
+
+/** 서버가 답하지 않은 채 상한을 넘긴 매체 — 실패로 닫을 때 쓰는 빈 행입니다. */
+export function lostMediaOf(
+  id: string,
+  targetId: string,
+  media: ChatMediaKind,
+  now: number,
+): RemoteMedia {
+  return {
+    id,
+    messageId: targetId,
+    kind: remoteKindOf(media),
+    status: "failed",
+    path: null,
+    aspect: null,
+    failure: null,
+    createdAt: now,
+  };
 }

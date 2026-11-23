@@ -148,6 +148,8 @@ function RowBody({
             testId={ids.photoPending}
             key={message.startedAt ?? 0}
             {...(message.startedAt === undefined ? {} : { startedAt: message.startedAt })}
+            {...(message.serverStage === undefined ? {} : { serverStage: message.serverStage })}
+            {...(message.aspect === undefined ? {} : { aspect: message.aspect })}
           />
         </ChatIncomingRow>
       );

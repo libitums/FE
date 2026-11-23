@@ -40,6 +40,7 @@ export function remoteMediaOf(raw: unknown): RemoteMedia | null {
   if (!KINDS.includes(kind) || !STATUSES.includes(status) || !Number.isFinite(createdAt))
     return null;
   const aspect = record?.aspect;
+  const stage = record?.stage;
   return {
     id,
     messageId,
@@ -49,6 +50,7 @@ export function remoteMediaOf(raw: unknown): RemoteMedia | null {
     aspect: aspect === "3:2" || aspect === "1:1" ? aspect : null,
     failure: stringOf(record?.failure),
     createdAt,
+    stage: stage === "preparing" || stage === "drawing" ? stage : null,
   };
 }
 

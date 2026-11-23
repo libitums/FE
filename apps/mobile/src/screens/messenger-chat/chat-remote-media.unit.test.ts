@@ -44,6 +44,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   aspect: null,
   failure: null,
   createdAt: 1_000,
+  stage: null,
   ...over,
 });
 
@@ -218,6 +219,35 @@ describe("저장본 · 거절 · 연결 실패", () => {
     env.source.requestMedia("duksu", "voice");
     await flush();
     expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "unavailable" });
+  });
+});
+
+describe("서버 진행 단계", () => {
+  test("CM-U9d 다시 읽을 때 단계가 drawing으로 바뀌면 대기 줄에 단계 · 비율이 실리고, 시작 시각은 그대로다", async () => {
+    const env = await opened({
+      request: { kind: "accepted", media: media({ stage: "preparing" }), cached: false },
+      loads: [
+        [], // 방을 열 때 resume
+        [media({ stage: "drawing", aspect: "3:2" })], // 2초
+        [media({ stage: "drawing", aspect: "3:2" })], // 3초 뒤
+      ],
+    });
+    env.source.requestMedia("duksu", "photo"); // 기기 시계 1,000
+    await flush();
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 1_000,
+      serverStage: "preparing",
+    });
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 1_000,
+      serverStage: "drawing",
+      aspect: "3:2",
+    });
+    await env.advance(3_000);
+    expect(env.lines().at(-1)).toMatchObject({ startedAt: 1_000, serverStage: "drawing" });
   });
 });
 

@@ -25,7 +25,7 @@ export type ChatMessage =
       readonly text: ChatText;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
-  | (ChatMessageBase & ChatPendingStart & { readonly kind: "photo-pending" })
+  | (ChatMessageBase & ChatPendingStart & ChatPendingStage & { readonly kind: "photo-pending" })
   | (ChatMessageBase & { readonly kind: "photo" } & ChatPhotoBody)
   | (ChatMessageBase & ChatPendingStart & { readonly kind: "voice-pending" })
   | (ChatMessageBase & {
@@ -152,7 +152,7 @@ import type {
 } from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129) · 채팅 단어(ADR-0170)
 import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
-import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
+import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =

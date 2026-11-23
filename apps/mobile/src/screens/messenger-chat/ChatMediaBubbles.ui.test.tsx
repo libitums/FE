@@ -117,6 +117,64 @@ test("MC-UI22. 사진 pending: 기다리는 중에 기기 시계가 뒤로 가�
   expect(screen.getByTestId("pp").textContent).toContain("미나 is choosing the best shot…");
 });
 
+// 서버 단계는 문구를 **앞으로만** 당긴다(리뷰 #552) — 기준은 늘 기다린 시간이고, 「그리는 중」이면 적어도 둘째 문구다.
+test("MC-UI23. 사진 pending: 서버가 「그리는 중」이라 하면 곧바로 「taking the picture…」, 그 뒤는 기다린 시간대로, 상자는 그 비율", () => {
+  render(
+    <PhotoPendingBubble
+      name="미나"
+      testId="pp"
+      startedAt={Date.now() - 3000}
+      serverStage="drawing"
+      aspect="3:2"
+    />,
+  );
+  const text = () => screen.getByTestId("pp").textContent ?? "";
+  expect(text()).toContain("미나 is taking the picture…");
+  // 단계마다 다시 그린 뒤 다음 타이머가 걸리므로 나눠 돌립니다.
+  advance(2100); // 요청부터 5초 — 이미 둘째 문구
+  expect(text()).toContain("미나 is taking the picture…");
+  advance(6000); // 11초
+  expect(text()).toContain("미나 is choosing the best shot…");
+  advance(6000); // 17초
+  expect(text()).toContain("Almost there…");
+  // 상자 크기는 그 요소의 인라인 스타일로 겁니다 — 선 채로 비율이 도착해도 확실히 바뀌게.
+  const box = screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton");
+  expect(box?.getAttribute("style")).toContain("240px");
+  expect(box?.getAttribute("style")).toContain("160px");
+});
+
+test("MC-UI23. 사진 pending: 서버 단계는 문구를 뒤로 돌리지 않는다 — 이미 지난 단계보다 낮으면 그대로, 「구상 중」도 시간대로 넘어간다", () => {
+  const startedAt = Date.now() - 12_000;
+  const view = render(<PhotoPendingBubble name="미나" testId="pp" startedAt={startedAt} />);
+  const text = () => screen.getByTestId("pp").textContent ?? "";
+  expect(text()).toContain("미나 is choosing the best shot…");
+  // 늦게 온 응답이 「구상 중」 · 「그리는 중」이어도 내려가지 않는다(다시 세우지 않음).
+  view.rerender(
+    <PhotoPendingBubble name="미나" testId="pp" startedAt={startedAt} serverStage="preparing" />,
+  );
+  expect(text()).toContain("미나 is choosing the best shot…");
+  view.rerender(
+    <PhotoPendingBubble name="미나" testId="pp" startedAt={startedAt} serverStage="drawing" />,
+  );
+  expect(text()).toContain("미나 is choosing the best shot…");
+  advance(5100);
+  expect(text()).toContain("Almost there…");
+});
+
+test("MC-UI23. 사진 pending: 「구상 중」이 길어져도 첫 문구에 멈추지 않는다", () => {
+  render(
+    <PhotoPendingBubble name="미나" testId="pp" startedAt={Date.now()} serverStage="preparing" />,
+  );
+  advance(5100);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is taking the picture…");
+});
+
+test("MC-UI23. 사진 pending: 비율을 모르면 지금 상자(3:4) 그대로", () => {
+  render(<PhotoPendingBubble name="미나" testId="pp" />);
+  const box = screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton");
+  expect(box?.getAttribute("style") ?? "").not.toContain("px");
+});
+
 test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {
   render(<VoicePendingBubble name="미나" testId="vp" />);
   const text = () => screen.getByTestId("vp").textContent ?? "";
