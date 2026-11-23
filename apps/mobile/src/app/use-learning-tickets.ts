@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import { motion as motionTokens } from "@libitums/design-tokens";
 import { motionDurationMs } from "@libitums/ui-lynx/motion";
 
-import { ticketStatusAt } from "../lib/learning-tickets";
+import { ticketPriceCoins, ticketStatusAt } from "../lib/learning-tickets";
 import type { TicketLedger, TicketStatus } from "../lib/learning-tickets";
 import { ticketPurchaseClient, ticketRequestId } from "../lib/ticket-purchase-api";
 import type { TicketPurchase } from "../lib/ticket-purchase-api";
@@ -145,11 +145,18 @@ export function useLearningTickets(
       buy: options.buy ?? ((requestId) => ticketPurchaseClient().buy(requestId)),
       onBalance: reportServerBalance,
       requestId: () => ticketRequestId(),
-    }).then(({ more, outcome, price }) => {
-      buying.current = false;
-      show(more);
-      eventSink?.({ name: "ticket_more_tapped", surface, result: outcome, price: String(price) });
-    });
+    })
+      // 흐름 안 어디서든 던지면 실패로 봅니다 — 「사는 중」에 갇혀 버튼이 영영 눌리지 않게 두지 않습니다(리뷰 #562).
+      .catch(() => ({
+        more: { kind: "failed" } as const,
+        outcome: "failed" as const,
+        price: ticketPriceCoins,
+      }))
+      .then(({ more, outcome, price }) => {
+        buying.current = false;
+        show(more);
+        eventSink?.({ name: "ticket_more_tapped", surface, result: outcome, price: String(price) });
+      });
   };
 
   const gate = createTicketStart({
