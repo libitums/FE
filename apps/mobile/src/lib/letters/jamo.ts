@@ -76,12 +76,13 @@ export function jamoSoundOf(letter: string): string {
 export function jamoClipOf(letter: string): string | null {
   if (letter.length !== 1) return null;
   const initial = INITIALS.indexOf(letter);
-  if (initial >= 0) {
-    const roman = INITIAL_ROMAN[initial] ?? "";
-    return roman === "" ? "hangul-v-a" : `hangul-c-${roman}-sound`;
-  }
+  if (initial === SILENT) return "hangul-v-a";
+  // 표가 어긋나 로마자가 비면 반쪽 이름을 만들지 않고 null — 칸은 「소리 없음」으로 섭니다.
+  const consonant = initial >= 0 ? INITIAL_ROMAN[initial] : undefined;
+  if (consonant !== undefined && consonant !== "") return `hangul-c-${consonant}-sound`;
   const medial = MEDIALS.indexOf(letter);
-  return medial >= 0 ? `hangul-v-${MEDIAL_ROMAN[medial] ?? ""}` : null;
+  const vowel = medial >= 0 ? MEDIAL_ROMAN[medial] : undefined;
+  return vowel !== undefined && vowel !== "" ? `hangul-v-${vowel}` : null;
 }
 
 /** 받침 없는 음절의 (초성, 중성) 번호. 아니면 null. */
