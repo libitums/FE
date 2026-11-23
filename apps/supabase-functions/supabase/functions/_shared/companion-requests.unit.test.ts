@@ -38,6 +38,7 @@ const warmthOf = (...args: Parameters<typeof prompt>) =>
 test("RQ1. 친밀도 구간 — 0 · 15 · 35 · 60에서 바뀌고, 숫자가 없으면 없다", () => {
   expect(warmthBands.map((band) => band.from)).toEqual([0, 15, 35, 60]);
   expect(warmthBand(undefined)).toBeNull();
+  expect(warmthBand(-5)).toBe(warmthBands[0].rule);
   expect(warmthBand(0)).toBe(warmthBands[0].rule);
   expect(warmthBand(14)).toBe(warmthBands[0].rule);
   expect(warmthBand(15)).toBe(warmthBands[1].rule);
@@ -114,7 +115,7 @@ test("RQ5. 평가 세트 — 자주 오는 요청 세트가 스키마를 지나�
   expect(bodySchema.safeParse({ kind: "moderation", cases: moderation.cases }).success).toBe(true);
   const geonwooSet = companionEvalSets.find((set) => set.id === "common-requests-geonwoo")!;
   expect(bodySchema.safeParse({ kind: "reply", cases: geonwooSet.cases }).success).toBe(true);
-  expect(geonwooSet.cases.map((item) => item.intimacy).filter((value) => value !== undefined)).toEqual([
-    3, 25, 45, 45,
-  ]);
+  expect(
+    geonwooSet.cases.map((item) => item.intimacy).filter((value) => value !== undefined),
+  ).toEqual([3, 25, 45, 45]);
 });

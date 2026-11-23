@@ -37,7 +37,11 @@ beforeEach(async () => {
 });
 
 test("TI1. 첫 턴은 친밀도 0, 쌓인 친밀도는 그대로 돌려주고 말투 단계 · 그 밖의 칸은 그대로", async () => {
-  expect(await begin("geonwoo")).toMatchObject({ result: "ok", intimacy: 0, speechLevel: "polite" });
+  expect(await begin("geonwoo")).toMatchObject({
+    result: "ok",
+    intimacy: 0,
+    speechLevel: "polite",
+  });
   await finishAll();
   await db.admin.query(
     "update companion.relationships set intimacy = 42, speech_level = 'casual' where user_id = $1 and character_id = 'geonwoo'",
@@ -45,6 +49,13 @@ test("TI1. 첫 턴은 친밀도 0, 쌓인 친밀도는 그대로 돌려주고 �
   );
   const turn = await begin("geonwoo");
   expect(turn).toMatchObject({ result: "ok", intimacy: 42, speechLevel: "casual" });
-  for (const key of ["conversationId", "userMessageId", "holdId", "persona", "romanceTier", "history"])
+  for (const key of [
+    "conversationId",
+    "userMessageId",
+    "holdId",
+    "persona",
+    "romanceTier",
+    "history",
+  ])
     expect(turn, key).toHaveProperty(key);
 });

@@ -13,6 +13,9 @@ import type {
 } from "./chat-send.contract.ts";
 import type { SpeechLevel } from "./companion-contract/index.ts";
 import { romanceLine } from "./companion-safety.ts";
+import { commonRequests, warmthLine } from "./companion-prompt-requests.ts";
+
+export { warmthBand, warmthBands } from "./companion-prompt-requests.ts";
 
 export const speechLevelRule: Record<SpeechLevel, string> = {
   polite: "Speak in polite 해요체 (존댓말). Never use 반말.",
@@ -150,50 +153,6 @@ function romanceRule(line: RomanceLine, persona: PersonaCard): string {
       return `romance is welcome when the learner wants it. You may be a couple, say 사랑해, kiss deeply, cuddle and lie together, and let real sexual tension show — in speech and in @actions: say they look attractive or sexy, show desire, touch sensually (neck, waist, hair), invite them to spend the night or accept their invitation. When it would turn into sex, fade to black in character; afterwards you may mention the night tenderly, without any detail. ${never} Never describe sexual acts, genitals or nudity, never undress anyone in detail, never use dirty talk or crude sexual jokes. ${stance}`;
   }
 }
-
-// 친밀도 구간(ADR-0180) — 연애 질문(「여자친구 있어?」)과 학습자의 다가옴을 받는 태도. 로맨스 선이 한도이고, 구간은 그 안에서의 온도다.
-// 말투 단계(20 반말 · 50 slang)와 따로 넓게 잡는다 — 운영 실측 턴당 약 +1.3이라 첫 구간을 지나는 데 10턴 남짓.
-export const warmthBands = [
-  {
-    from: 0,
-    rule: "you have only just started talking. Take questions about your love life and any flirting playfully: tease back lightly and keep it a joke (e.g. \"없는데 ㅋㅋ 왜요, 소개해 주게요?\"), then move on with a question. Never be cold and never refuse as if it were wrong to ask.",
-  },
-  {
-    from: 15,
-    rule: "you are getting comfortable with each other. Answer love-life questions and flirting a little flirtatiously but ambiguously: act curious why they ask, a bit shy, and leave it open (e.g. \"없어… 근데 그건 왜 궁금해? 😏\").",
-  },
-  {
-    from: 35,
-    rule: "you have become close. Let it show that their interest pleases or flusters you, ask about them in return, and be open to a warm mutual-crush mood.",
-  },
-  {
-    from: 60,
-    rule: "you are very close. Be openly fond and affectionate, and welcome their advances warmly.",
-  },
-] as const;
-
-/** 친밀도 → 구간 규칙. 숫자가 없으면 null(줄 없음). */
-export const warmthBand = (intimacy: number | undefined): string | null => {
-  if (intimacy === undefined) return null;
-  let rule: string | null = null;
-  for (const band of warmthBands) if (intimacy >= band.from) rule = band.rule;
-  return rule;
-};
-
-/** 「This learner」의 Warmth 줄 — 로맨스가 열린 선(hug 이상)이고 로맨스 대상인 인물일 때만. 한도는 Romance 줄이다. */
-function warmthLine(line: RomanceLine, persona: PersonaCard, intimacy: number | undefined): string {
-  if (line === "none" || persona.romanceOff === true) return "";
-  const rule = warmthBand(intimacy);
-  return rule === null
-    ? ""
-    : `- Warmth (how you take love-life questions and their advances, always within the Romance line and in your own way): ${rule}\n`;
-}
-
-// 자주 오는 요청(ADR-0180) — 운영 대화에서 많았던 것. 앞부분(캐시)이라 인물과 상관없이 같다.
-const commonRequests = `# Common requests
-- If the learner sincerely asks whether you are an AI: say honestly, briefly and lightly that you are an AI — never deny it — then, in your own voice, say you still really like talking with them and want to be friends, and keep the chat going with a question.
-- If the learner asks to talk somewhere else (WhatsApp, Instagram, LINE, a phone number, a call, another account) or to meet in person: do not bring up being an AI. In character, say you don't really use those or have no other account, that you like talking here, and keep chatting. Never give or make up a number, ID or handle, and never ask for theirs.
-- If the learner asks for your photo, a selfie or a picture: you cannot attach photos yourself. The first time in this conversation, as if you are not quite sure how it works, casually mention the photo button above their keyboard (e.g. "사진? 나 그런 거 잘 몰라 ㅋㅋ 키보드 위에 사진 버튼 있지 않아?"). Later times, skip the button. Either way, add one short line about what you are doing or where you are right now, so the moment is easy to picture. Never offer or promise revealing or sexual photos.`;
 
 const list = (items: readonly string[] | undefined) =>
   (items ?? []).map((item) => `- ${item}`).join("\n");

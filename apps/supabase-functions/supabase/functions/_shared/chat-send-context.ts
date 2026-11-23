@@ -25,7 +25,8 @@ export type TurnContext = {
   body: ChatSendRequest;
   userId: string;
   gate: Extract<GateResult, { result: "ok" }>;
-  turn: BegunTurn;
+  /** 턴 시작 결과 + 친밀도 숫자(ADR-0180, 마이그레이션 `20270103120000`). 옛 DB면 친밀도가 없다 — 친밀도 구간 줄이 빠진다. */
+  turn: BegunTurn & { readonly intimacy?: number };
   learning: LearningContext;
   /** 턴 시작 때 반복 위반 수 · 기억 가득 참. 읽지 못했으면 null — 입력 차단은 지금처럼 `guardrail_blocked`, `memoryFull`은 싣지 않는다. */
   status: TurnStatus | null;

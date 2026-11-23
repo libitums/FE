@@ -96,8 +96,8 @@
 
 ## 구현
 
-- 함수(`_shared`): `companion-prompt.ts`(`warmthBands` · `warmthBand` · Warmth 줄 · 「Common requests」 · Romance none 줄 · `stateLine` 증감 기준 · `PromptInput.intimacy`) ·
-  `companion-safety.ts`(개인정보 규칙 · 연애 질문 통과) · `chat-send.contract.ts`(`BegunTurn.intimacy`) · `chat-send-turn.ts` · 평가 `companion-eval-{schema,reply}.ts`(`intimacy`).
+- 함수(`_shared`): `companion-prompt-requests.ts`(`warmthBands` · `warmthBand` · Warmth 줄 · 「Common requests」) · `companion-prompt.ts`(Romance none 줄 · `stateLine` 증감 기준 · `PromptInput.intimacy`) ·
+  `companion-safety.ts`(개인정보 규칙 · 연애 질문 통과) · `chat-send-context.ts`(`TurnContext.turn.intimacy`) · `chat-send-turn.ts` · 평가 `companion-eval-{schema,reply}.ts`(`intimacy`).
 - DB: `20270103120000_companion_turn_intimacy.sql` — `companion.begin_turn_base`가 `intimacy`를 더 돌려준다.
 - 평가 세트(`companion-eval-sets-requests.ts`): 검사 `common-requests-moderation`(CQ1 ~ CQ20 — 운영에서 막혔던 글 그대로 + 막아야 하는 것), 답장 `common-requests-geonwoo`
   (CR1 ~ CR8 — 친밀도 구간 셋 · 나이 모름 · AI · WhatsApp · 사진 처음 · 두 번째) · `common-requests-duksu`(CD1 ~ CD5).
