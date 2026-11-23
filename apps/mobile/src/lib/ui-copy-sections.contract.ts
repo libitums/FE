@@ -9,6 +9,7 @@
 // (`SettingsNavTarget`)만 타입으로 import합니다(`ui-copy-settings.contract.ts`) — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
 import type { StreakRewardCopy } from "./ui-copy-streak-reward";
+import type { PurchaseWaitCopy } from "./ui-copy-purchase-wait.contract";
 import type { LearningActivityForm } from "./learning-form";
 import type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";
 import type { AnswerResult } from "./answer-result";
@@ -65,9 +66,10 @@ export type CommonCopy = {
   };
 };
 
+type ShellTab = "journey" | "roleplay" | "messenger" | "ranking" | "settings"; // 하단 탭 다섯(ADR-0170)
 /** 탭 루트의 머리 · 바텀 네비게이션 · 루트 에러 경계입니다. */
 export type ShellCopy = {
-  readonly tabs: Readonly<Record<"journey" | "roleplay" | "messenger" | "settings", string>>;
+  readonly tabs: Readonly<Record<ShellTab, string>>;
   /** 하단 탭 NEW 배지(메신저 첫 입장 · 새 친구, 2026-11-13) — 배지 글자와 탭 낭독. */
   readonly tabNew: { readonly badge: string; readonly spoken: string };
   readonly notifications: string;
@@ -268,6 +270,8 @@ export type ProfileCopy = {
 export type CoinPackId = "bundle" | "pouch" | "big";
 
 export type CoinShopCopy = {
+  /** 엽전 수의 세 자리 묶음 기호(`formatCoinCount`) — 그 언어의 관례(es · id · vi 「.」, en · ja 「,」). */
+  readonly digitSeparator: string;
   readonly title: string;
   readonly subtitle: string;
   /** 보유 카드의 작은 머리말입니다. 카드 낭독은 `balance`입니다. */
@@ -287,6 +291,10 @@ export type CoinShopCopy = {
   /** 머리 엽전 칩이 상점을 여는 버튼일 때의 이름입니다. */
   readonly openShop: (count: number) => string;
   readonly notice: { readonly title: string; readonly description: string };
+  /** 결제가 실패했을 때(취소 아님) 사기 버튼 아래 한 줄입니다. */
+  readonly purchaseFailed: string;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 위 알약 · 산 팩 줄 · 스켈레톤 칩 이름. */
+  readonly purchaseWait: PurchaseWaitCopy;
 };
 
 export type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";

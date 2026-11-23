@@ -1,0 +1,154 @@
+/* 더보기 메뉴 카드(ADR-0169, 시안 MoreSheet) — 토큰만 씁니다(ADR-0014 D1).
+   바깥 막은 화면 전체를 덮는 투명 면이라 지도가 어두워지지 않고, 누르면 닫힙니다(바 위를 눌러도 닫힘). 카드는 바
+   바로 위 8에 뜹니다 — 좌우 16, 흰 면 · radius-lg · shadow-s3, 바 뒤에서 위로 약 0.2초(d4 · enter) 올라옵니다.
+   카드는 묶음(.app-navigator) 상자 **안**의 흐름 자식입니다 — 바 앞에 서서 묶음을 위로 키웁니다. 묶음 밖(바 위에 절대 배치)에
+   두면 묶음 경계에서 잘려 iOS · Android 모두 화면에도 접근성 트리에도 나오지 않았고, 묶음 `overflow: visible`이나 `z-index`로는
+   풀리지 않았습니다(기기 확인 2026-11-20, more-menu-in-bounds.unit.test). */
+
+.more-menu-catch {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+}
+
+/* 카드 자리 — 둘레가 바와의 간격 8 · 좌우 16이고, 위 16은 그림자 s3(아래 4 · 흐림 16)가 묶음 위 경계에서 잘리지 않게 하는 몫입니다.
+   투명하고, 누르면 닫힙니다(묶음이 바깥 막보다 위라 이 둘레는 막이 받지 못합니다). */
+.more-menu-slot {
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-16) var(--libitum-spacing-8);
+}
+
+.more-menu {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+  animation: more-menu-rise var(--libitum-motion-duration-d4) var(--libitum-motion-easing-enter);
+}
+
+/* 움직임 줄이기 — 올라오지 않고 바로 섭니다. */
+.more-menu-motion-reduced {
+  animation: none;
+}
+
+@keyframes more-menu-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--libitum-spacing-24));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 줄 — SettingsCell 값(높이 72 · 패딩 16/20 · 간격 12 · 눌림 gray-100), 줄 사이 gray-300 선. */
+.more-menu-row {
+  min-height: 72px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-20);
+  background-color: var(--libitum-color-white);
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+}
+
+.more-menu-row:first-child {
+  border-top-width: 0;
+}
+
+.more-menu-row:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.more-menu-icon {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.more-menu-icon-brand {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.more-menu-icon-neutral {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.more-menu-icon-svg {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.more-menu-glyph {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.more-menu-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.more-menu-title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+}
+
+.more-menu-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.more-menu-description {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* NEW 태그 — 바 탭 NEW와 같은 brand-primary 알약(흰 글 3.02, ADR-0113 D8). */
+.more-menu-tag {
+  height: 18px;
+  display: flex;
+  align-items: center;
+  padding-left: var(--libitum-spacing-6);
+  padding-right: var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.more-menu-tag-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.more-menu-arrow {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

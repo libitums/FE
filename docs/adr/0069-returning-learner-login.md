@@ -110,7 +110,7 @@
 | 2 | 판정 대기(D4) — 그동안 누른 소셜 버튼은 `requesting`, 코드 검증 버튼은 `verifying` 그대로 |
 | 3 | 프로필 동기화 시작(D3) |
 | 4a 맵 | UI 언어 결정 · 저장(D5) → **`entry_returning_learner_entered { method }`** → `enterApp` → `syncPushDevice({ ask: true })`(기다리지 않음) |
-| 4b 언어 선택 | `entry_screen_viewed("language-select")` → `push(language-select)` — 이후 지금 흐름 그대로(`entry_completed` · `ask: true`는 여정 입장 시작에서) |
+| 4b 언어 선택 | `entry_screen_viewed("language-select")` → `push(language-select)` — 이후 지금 흐름 그대로(`entry_completed` · ~~`ask: true`~~ `ask: false`는 입장에서 ⟨2026-11-22 [ADR-0176](0176-entry-basics-choice.md) D5 — 묻기는 첫 스토리 뒤⟩) |
 
 - 바로 맵 경로에서 `entry_completed` · `entry_screen_viewed(language-select · journey-entry)`는 **나지 않는다** [추론 — 요구사항].
 - 알림: 새 설치는 미요청이라 시스템 다이얼로그가 맵 위에 한 번 뜬다. 이미 정해진 설치(로그아웃 뒤 같은 기기)는 다이얼로그 없이 등록만 한다 — ADR-0034 D4 「미요청일 때만 묻는다」 그대로.

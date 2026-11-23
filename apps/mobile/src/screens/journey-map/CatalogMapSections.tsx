@@ -28,6 +28,7 @@ export function CatalogMapSections({
   onCheckNew,
   coverImageUrlOf,
   clearedUnit = null,
+  coverDownloads = {},
 }: CatalogMapSectionsProps): ReactNode {
   const comingSoon = catalogComingSoonOrdinal(sections);
   const target = guide?.visible === true ? mapGuideTargetOf(sections) : null;
@@ -37,6 +38,8 @@ export function CatalogMapSections({
       {sections.map((section, index) => {
         // 안내가 떠 있는 동안 대상이 아닌 구획(준비 중 · 잠김 포함)은 낭독에서 가립니다.
         const covered = guiding && section.episodeId !== target;
+        // 첫 구획 위에는 가를 에피소드가 없습니다(사용자 결정 2026-11-22).
+        const divider = index === 0 ? "none" : "above";
         if (section.kind === "catalog-ready") {
           return (
             <view
@@ -57,6 +60,8 @@ export function CatalogMapSections({
                 onSelectUnit={onSelectUnit}
                 {...(coverImageUrlOf === undefined ? {} : { coverImageUrlOf })}
                 clearedUnit={clearedUnit}
+                coverDownload={coverDownloads[section.episodeId] ?? { kind: "none" }}
+                divider={divider}
               />
             </view>
           );
@@ -73,10 +78,11 @@ export function CatalogMapSections({
               <CatalogComingSoonSection
                 ordinal={section.ordinal}
                 episodeId={section.episodeId}
+                divider={divider}
                 {...(onTapPending === undefined ? {} : { onTap: onTapPending })}
               />
             ) : (
-              <CatalogUnavailableSection section={section} />
+              <CatalogUnavailableSection section={section} divider={divider} />
             )}
           </view>
         );

@@ -136,7 +136,49 @@ test("[CS-B1] 결제를 열 수 있으면 사기 → 그 팩의 스토어 결제
   });
   expect(buyButton().getAttribute("data-loading")).toBe("false");
   expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
-  expect(events).toEqual([expect.objectContaining({ name: "purchase_intent", preview: false })]);
+  // 결제 성공이면 엽전 팩 결제 이벤트 한 번(ADR-0063) — 스토어 상품이 없어 금액은 비어 Airbridge로는 나가지 않습니다.
+  expect(events).toEqual([
+    expect.objectContaining({ name: "purchase_intent", preview: false }),
+    expect.objectContaining({ name: "pack_purchased", product: "duru.coins.1200.v1", price: "" }),
+  ]);
+  resetPurchaseContextForTests();
+});
+
+test("[CS-B4] 결제 성공 → pack_purchased 한 번(스토어 금액 · 통화 · 거래 id), 취소 · 실패는 없음", async () => {
+  const events: { name: string }[] = [];
+  const results: PurchaseResult[] = [
+    { kind: "cancelled" },
+    { kind: "failed" },
+    { kind: "purchased", productId: "duru.coins.1200.v1", transactionId: "2000000812345678" },
+  ];
+  const buy = vi.fn<(productId: string) => Promise<PurchaseResult>>(
+    async () => results.shift() ?? { kind: "failed" },
+  );
+  setPurchaseContext({
+    region: "US",
+    sink: (event) => events.push(event),
+    canBuy: true,
+    buy,
+    offers: [{ productId: "duru.coins.1200.v1", price: "$4.99", amount: 4.99, currency: "USD" }],
+  });
+  render(<CoinShopScreen {...fixture()} surface="chat" />);
+  for (let i = 0; i < 3; i += 1)
+    await act(async () => {
+      fireEvent.tap(buyButton(), {});
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  const bought = events.filter((event) => event.name === "pack_purchased");
+  expect(bought).toEqual([
+    {
+      name: "pack_purchased",
+      surface: "chat",
+      daysSinceFirstOpen: expect.any(String),
+      product: "duru.coins.1200.v1",
+      price: "4.99",
+      currency: "USD",
+      transactionId: "2000000812345678",
+    },
+  ]);
   resetPurchaseContextForTests();
 });
 
@@ -152,4 +194,33 @@ test("[CS-U5] 닫기 → onClose", () => {
   );
 
   expect(props.onClose).toHaveBeenCalledTimes(1);
+});
+
+test("[CS-B2] 결제가 실패하면 버튼 아래 짧은 안내(막지 않음) — 취소면 아무것도 없고, 다시 사면 안내가 걷힌다", async () => {
+  const results: PurchaseResult[] = [
+    { kind: "cancelled" },
+    { kind: "failed" },
+    { kind: "cancelled" },
+  ];
+  const buy = vi.fn<(productId: string) => Promise<PurchaseResult>>(
+    async () => results.shift() ?? { kind: "cancelled" },
+  );
+  setPurchaseContext({ region: "US", sink: () => {}, canBuy: true, buy });
+  render(<CoinShopScreen {...fixture()} />);
+  const tapBuy = () =>
+    act(async () => {
+      fireEvent.tap(buyButton(), {});
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+  await tapBuy();
+  expect(screen.queryByTestId("coin-shop-screen-failed")).toBeNull();
+  await tapBuy();
+  expect(screen.getByTestId("coin-shop-screen-failed")).toHaveTextContent(
+    "The purchase didn't go through",
+  );
+  expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
+  await tapBuy();
+  expect(screen.queryByTestId("coin-shop-screen-failed")).toBeNull();
+  resetPurchaseContextForTests();
 });

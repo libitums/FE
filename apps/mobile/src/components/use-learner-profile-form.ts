@@ -69,7 +69,7 @@ export function useLearnerProfileForm(input: {
     nameIssueMessage,
     countryIssue: visibleLearnerCountryIssue(draft, port),
     selectedCountry: draft.countryCode === null ? null : port.byCode(draft.countryCode),
-    preview: learnerProfilePreviewFor(draft, port),
+    preview: learnerProfilePreviewFor(draft, port, copy.language),
     rows: draft.view === "picker" ? learnerCountryRowsOf(port, draft.query, draft.countryCode) : [],
     onEvent,
     submit,

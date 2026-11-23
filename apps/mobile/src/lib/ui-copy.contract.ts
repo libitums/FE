@@ -4,6 +4,7 @@
 // **학습 콘텐츠는 여기 없습니다.** 이 앱은 한국어를 배우는 앱이라 대사 · 예문 · 보기 ·
 // 받아쓰기 대상은 늘 한국어이고, 문구표는 그 둘레의 UI 문구만 집니다.
 
+import type { MoreCopy } from "./ui-copy-more.contract";
 import type { AssembledHintCopy } from "./ui-copy-assembled-hint";
 import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 import type { AuthFailureCopy } from "./auth-failure";
@@ -39,6 +40,8 @@ import type { TypingCopy } from "../screens/typing/typing.contract";
 import type { VocabCardCopy } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-picture";
 import type { FeedbackCopy } from "./feedback.contract";
+import type { RankingCopy } from "../screens/ranking/ranking.contract";
+import type { SignupRewardCopy } from "./ui-copy-signup-reward";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
   AppUpdateCopy,
@@ -126,6 +129,12 @@ export type UiCopy = {
   readonly login: LoginCopy;
   readonly verificationCode: VerificationCodeCopy;
   readonly authFailure: AuthFailureCopy;
+  /** 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천(ADR-0169). */
+  readonly more: MoreCopy;
+  /** 주간 순위 · 채팅 단어(ADR-0170). */
+  readonly ranking: RankingCopy;
+  /** 가입 보상 카드 · 모달(ADR-0174). */
+  readonly signupReward: SignupRewardCopy;
 };
 
 /**

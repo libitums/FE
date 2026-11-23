@@ -1,7 +1,9 @@
 # ADR-0033 — 법률 문서(개인정보 처리방침 · 이용약관)를 앱 안 브라우저로 연다
 
 - 상태: **채택** — 목적지 URL과 여는 방식은 사용자 결정이다(2026-09-30).
+- ⟨2026-11-20⟩ **D1의 목적지가 Notion에서 우리 도메인 랜딩으로 바뀌었다** — `privacy-policy` → `https://k-duru.com/privacy/`, `terms-of-use` → `https://k-duru.com/terms/`(영어 기준본). 정본은 저장소 `apps/landing/src/legal/`(ADR-0167, PR #495). 앱 화면 언어(en · es · id · ja · vi · th · my) 중 번역본(ko)이 있는 언어가 없어 언어별 주소는 두지 않는다. 여는 방식(앱 안 브라우저 · 호스트 고정 표 · JS는 이름만)은 그대로다. 이 주소는 iOS 1.2.0 (26)부터이고, 그 전 빌드는 계속 Notion을 연다 — Notion 두 페이지를 새 본문과 같게 두거나 새 주소를 안내해야 한다.
 - 날짜: 2026-09-30
+- ⟨2026-11-18⟩ **D1의 「문서는 Notion 공개 페이지」가 [ADR-0167](0167-legal-documents-on-own-domain.md)로 바뀐다** — 정본이 저장소(`apps/landing/src/legal/`)로 옮겨 오고 랜딩의 `/privacy/` · `/terms/`에 선다. **앱이 여는 주소(아래 D1의 표)는 후속 PR까지 Notion 그대로다.**
 - 다루는 축: **호스트 네이티브 능력**(ADR-0017의 축 — 아홉째 모듈) · **나가는 외부 이동의 목적지**(ADR-0026 D4 ·
   ADR-0028 D4의 축)
 - 대체하는 것:
@@ -30,8 +32,8 @@
 
 | `LegalDocument` | URL |
 |---|---|
-| `privacy-policy` | `https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402` |
-| `terms-of-use` | `https://gregarious-pharaoh-bb6.notion.site/DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468` |
+| `privacy-policy` | ~~`https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402`~~ → ⟨2026-11-20⟩ `https://k-duru.com/privacy/` |
+| `terms-of-use` | ~~`https://gregarious-pharaoh-bb6.notion.site/DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468`~~ → ⟨2026-11-20⟩ `https://k-duru.com/terms/` |
 
 - 정본은 `apps/ios/Host/LegalDocumentModule.swift`의 `LegalDocumentURL.table`이다. **JS는 URL을 모른다** — 문서
   이름(`LegalDocument`)만 넘기고, 호스트가 표에서 찾는다. 표에 없는 이름 · 문자열이 아닌 값 · `https`가 아닌 주소는

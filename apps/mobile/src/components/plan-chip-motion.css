@@ -1,0 +1,19 @@
+/* 구독 성공 고리의 반짝임(ADR-0160 · 시안 T6b) — 한 번 나타났다 옅어집니다. 움직임 줄이기에서는 이 클래스가 붙지 않아 고리가
+   알림이 떠 있는 동안 그대로 섭니다. */
+
+@keyframes plan-chip-ring-pulse {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.35;
+  }
+}
+
+.plan-chip-ring-pulse {
+  animation: plan-chip-ring-pulse var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-easing) both;
+}

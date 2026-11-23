@@ -1,6 +1,7 @@
 // 메신저 탭의 결선입니다(messenger-chat-ui spec §7.1 · §11). 대화 출처는 앱 프로세스 싱글턴이고(1단계 가짜 —
 // 로그아웃 · 계정 삭제와 무관), 이동 콜백은 `dispatch`를 화면 밖에 둡니다. 배경 전용 라이브러리를 값으로 가져오지 않습니다.
 
+import { reportServerBalance, setServerBalanceListener } from "./server-balance-report";
 import type { Dispatch } from "@lynx-js/react";
 
 import {
@@ -9,12 +10,13 @@ import {
 } from "../screens/messenger-chat/chat-fixture-source";
 import { loadAuthSession } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
-import { isTesterAccessActive } from "../lib/tester-access";
+import { chatUnlimited } from "../lib/unlimited-tickets";
 import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
 import { companionL1Sync } from "../screens/messenger-chat/companion-l1-sync";
 import type { ChatMediaHooks } from "../screens/messenger-chat/chat-media.contract";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import { companionSeed } from "../screens/messenger-chat/companion-roster";
+import { GUEST_PREVIEW_MODE, isGuestPreview, localSeedOptions } from "./guest-preview";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
   deviceBirthYearStore,
@@ -65,8 +67,7 @@ export type MessengerChatWiring = {
 type ImageUrlOf = (relativePath: string) => string | null;
 
 let singleton: FixtureChatSource | null = null;
-/** 지금 출처의 모드 — 「fixture」 또는 「server:<사용자 id>」. 바뀌면 출처를 새로 만듭니다(계정 전환 · 시험 표시). */
-let singletonKey = "";
+let singletonKey = ""; // 출처 모드 — fixture · guest-preview · server:<id>, 바뀌면 출처를 새로(계정 전환 · 시험 표시)
 /** 서버 사진 · 음성의 바깥 알림(ADR-0146 「앱 연결」) — 앱 세션이 등록합니다(머리 엽전 칩 · 제품 이벤트). 출처는 이 등록부를 부릅니다. */
 let mediaHooks: ChatMediaHooks | null = null;
 /** 서버 모드의 원격 포트입니다(ADR-0137). 앱 진입점이 끼우고, 테스트는 끼우지 않아 늘 가짜 출처입니다. */
@@ -143,12 +144,11 @@ let testSeed: ChatFixtureSeed | undefined;
 /** 앱 세션이 서버 사진 · 음성 알림을 등록합니다(null = 해제). 출처를 새로 만들지 않습니다. */
 export function setMessengerMediaHooks(hooks: ChatMediaHooks | null): void {
   mediaHooks = hooks;
+  setServerBalanceListener(hooks?.onBalance ?? null);
 }
 
-/** 구매 뒤 다시 읽은 서버 지갑 잔액을 머리 엽전 칩에 알립니다(ADR-0144 2단계) — 세션이 등록한 알림이 없으면 버립니다. */
-export function reportServerBalance(balance: number): void {
-  mediaHooks?.onBalance?.(balance);
-}
+/** 구매 뒤 다시 읽은 서버 지갑 잔액을 머리 엽전 칩에 알립니다(ADR-0144 2단계) — 자리는 `server-balance-report.ts`입니다. */
+export { reportServerBalance };
 
 /** 출처에 넘기는 알림 — 부를 때마다 지금 등록된 것을 봅니다(출처는 앱 프로세스 싱글턴, 세션은 바뀜). */
 const forwardedMediaHooks: ChatMediaHooks = {
@@ -164,7 +164,7 @@ export function setMessengerChatRemote(factory: (() => ChatRemote) | null): void
 }
 
 /** 로그인한 회원이면 서버 모드(사용자마다), 아니면 가짜 — 2026-11-17부터 시험 계정이 아니어도 엽니다(ADR-0128). */
-function sourceKey(): string {
+export function sourceKey(): string {
   if (remoteFactory === null || testSeed !== undefined) return GUEST_ACCOUNT_KEY;
   const token = loadAuthSession()?.accessToken;
   const userId = token === undefined ? null : authUserIdFrom(token);
@@ -181,14 +181,17 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
   const replaced = latestImageUrlOf !== null && latestImageUrlOf !== imageUrlOf;
   latestImageUrlOf = imageUrlOf;
   const key = sourceKey();
-  if (singleton !== null && key !== singletonKey) {
+  // 비회원 미리보기(ADR-0166) — 회원과 같은 인물 방을 서버 없이. 회원 · 테스트 씨앗과 출처를 나눠 계정이 바뀌면 새로 만듭니다.
+  const guest = key === GUEST_ACCOUNT_KEY && testSeed === undefined && isGuestPreview();
+  const mode = guest ? GUEST_PREVIEW_MODE : key;
+  if (singleton !== null && mode !== singletonKey) {
     singleton.dispose();
     singleton = null;
     stopL1Sync();
     trialSingleton = null; // 체험 수는 계정마다 — 새 출처의 지갑 읽기가 다시 채웁니다
   }
   if (singleton === null) {
-    singletonKey = key;
+    singletonKey = mode;
     const remote = key === "fixture" || remoteFactory === null ? null : remoteFactory();
     // 번역 · 교정 설명이 학습자 화면 언어로 오게 서버 프로필 l1을 맞춥니다(가짜 방은 할 일 없음).
     stopL1Sync = companionL1Sync(remote?.profile, loadUiLanguage, onUiLanguageSaved);
@@ -207,9 +210,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
         ? { replyIdeasStore: deviceReplyIdeasStore(key) }
         : {}),
       ...(remote === null
-        ? testSeed === undefined
-          ? {}
-          : { seed: testSeed }
+        ? localSeedOptions(testSeed, guest)
         : // 다시 켠 뒤 목록 미리보기 — 열린 방의 서버 기록을 미리 읽습니다(2026-11-17).
           { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks, previewOnStart: true }),
     });
@@ -248,7 +249,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       source: messengerChatSource(args.imageUrlOf),
       wallet: messengerChatWallet(args.coinCount ?? 0),
       trial: messengerChatTrial(),
-      tier: storeOverride?.tier ?? (isTesterAccessActive() ? "unlimited" : "free"),
+      tier: storeOverride?.tier ?? (chatUnlimited() ? "unlimited" : "free"),
       now: clockNow,
       eventSink: args.eventSink ?? null,
       onOpenChatRoom: (roomId) => {

@@ -2,6 +2,7 @@
 // 새 사용자는 튜토리얼(u00) 최종을 끝낸 뒤, 기존 사용자는 업데이트 뒤 첫 여정 맵에서 서버 지급(한 번)을 받고 모달을 봅니다.
 
 import type { CatalogProgress } from "../lib/catalog-progress";
+import type { CoinClaim } from "../lib/coin-wallet-api";
 import { getItem, isStorageAvailable, setItem } from "../lib/storage";
 import { progressUserId } from "./pending-learning-progress";
 
@@ -38,6 +39,23 @@ export function launchStep(input: {
   if (!idle || record === null) return null;
   if (!record.coinsShown) return "coins";
   if (chatOpen && !record.chatShown) return "chat";
+  return null;
+}
+
+/**
+ * 지급 응답 뒤 새로 적을 출시 기록 — 이미 기록이 있으면 null. 기존 회원은 처음 받은 보너스로 엽전 모달 → 채팅 모달. 새 계정(ADR-0174)은
+ * 출시 보너스가 없고 가입 보상 모달을 이미 봤으므로 엽전 모달은 본 것으로 적고 채팅 모달만 남깁니다 — 학습 보상은 칩의 서버 잔액으로만
+ * 보입니다(손님 때 기기 칩이 레슨마다 이미 세던 값이라 새로 알릴 것이 없습니다).
+ */
+export function launchRecordAfterClaim(
+  claim: CoinClaim,
+  existing: LaunchRecord | null,
+): LaunchRecord | null {
+  if (existing !== null) return null;
+  if (claim.bonus > 0)
+    return { learning: claim.learning, bonus: claim.bonus, coinsShown: false, chatShown: false };
+  if (claim.newAccount)
+    return { learning: claim.learning, bonus: 0, coinsShown: true, chatShown: false };
   return null;
 }
 

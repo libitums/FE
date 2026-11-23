@@ -36,6 +36,30 @@ export const companionProfileSchema = z.object({
   replySuggestions: z.boolean(),
   /** 스냅샷에 그릴 학습자 뒷모습(20261128) — 기본 `female`, `hidden`이면 손 · 어깨만. 저장은 `companion_save_profile`의 `p_snapshot_self`. */
   snapshotSelf: snapshotSelfSchema,
+  /**
+   * 성인 확인 동의(20261216, ADR-0164) — 동의가 있고 지금 생년상 성인일 때만 참. 동의는 `companion_ack_adult()`. 생년이 성인이 아니게
+   * 바뀌면 서버가 동의를 지운다. 완화 수위(open) 친구는 이것과 생년상 성인이 모두 있어야 완화 수위로 대화한다.
+   * 선택 칸이다 — 마이그레이션(20261216) 전 서버와 이 칸을 모르는 옛 앱이 깨지지 않게(없으면 false로 읽는다).
+   */
+  adultAck: z.optional(z.boolean()),
+});
+
+/** 인물의 로맨스 수위(ADR-0164). `open`은 인물의 성격이고, 실제 적용은 서버가 학습자(생년상 성인 + 성인 확인 동의)로 정한다. */
+export const romanceTierSchema = z.enum(["open", "standard"]);
+
+/**
+ * `companion_friends()`의 반환입니다(20261216). 이 학습자에게 보이는(대화할 수 있는) 추천 친구 id와 인물의 수위, 순서대로.
+ * 출시 스위치(`settings.friends_mode`)가 off이거나 시험 계정 전용인데 시험 계정이 아니면 빈 목록. 생년으로 미성년자가 확인된 학습자에게는
+ * `open` 친구가 없다. 친구를 추가하는 것은 무료 · 무제한이고, 추가한 상태는 앱(계정별 기기)이 쥔다.
+ */
+export const companionFriendsResponseSchema = z.object({
+  friends: z.array(z.object({ id: z.string(), romanceTier: romanceTierSchema })),
+});
+
+/** `companion_ack_adult()`의 반환입니다(20261216). 생년상 성인일 때만 동의를 남기고 `ok`가 참. 나이 모름 · 미성년자는 거짓 · 거짓. */
+export const companionAckAdultResponseSchema = z.object({
+  ok: z.boolean(),
+  adultAck: z.boolean(),
 });
 
 export const characterAvailabilitySchema = z.enum([
@@ -133,7 +157,7 @@ export const companionMemoryListSchema = z.object({
   full: z.boolean(),
 });
 
-/** `companion_get_wallet()`의 반환입니다(M4). 버킷별 잔액과 덕수쌤 체험 남은 수, 티어입니다. */
+/** `companion_get_wallet()`의 반환입니다(M4). 버킷별 잔액과 체험 남은 수(20261216부터 모든 인물이 함께 쓰는 합산 수), 티어입니다. */
 export const companionWalletSchema = z.object({
   tier: z.enum(["free", "premium"]),
   sub: z.int().check(z.nonnegative()),
@@ -170,6 +194,9 @@ export type CompanionMemory = z.infer<typeof companionMemorySchema>;
 export type CompanionMemoryList = z.infer<typeof companionMemoryListSchema>;
 export type CompanionWallet = z.infer<typeof companionWalletSchema>;
 export type CompanionProfile = z.infer<typeof companionProfileSchema>;
+export type RomanceTier = z.infer<typeof romanceTierSchema>;
+export type CompanionFriendsResponse = z.infer<typeof companionFriendsResponseSchema>;
+export type CompanionAckAdultResponse = z.infer<typeof companionAckAdultResponseSchema>;
 export type ProactivePref = z.infer<typeof proactivePrefSchema>;
 export type CompanionCharacter = z.infer<typeof companionCharacterSchema>;
 export type RatingReason = z.infer<typeof ratingReasonSchema>;

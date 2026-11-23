@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { legacyPassedRecord, legacyPassedSeed } from "./test-helpers/progress-seed";
 import { lessonPlan } from "./test-helpers/episode-format-harness";
 import { solveActivity } from "./test-helpers/episode-format-solvers";
@@ -58,8 +59,7 @@ async function boot(host: HostInsets, withIntroDone = true): Promise<void> {
 }
 
 const tap = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
-const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
-  tap(`ui-lynx-bottom-navigator-item-${tab}`);
+const openTab = (tab: "journey" | "roleplay"): void => tap(`ui-lynx-bottom-navigator-item-${tab}`);
 
 function pressBack(): void {
   act(() => {
@@ -91,7 +91,7 @@ test("[II2] 3버튼 · 롤플레이 탭과 설정 탭도 같은 여백과 바닥
   expect(shellPaddingBottom()).toBe("48px");
   expect(floorHeight()).toBe("48px");
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.queryByTestId("roleplay-list-screen-title")).not.toBeInTheDocument();
   expect(shellPaddingBottom()).toBe("48px");
   expect(floorHeight()).toBe("48px");
@@ -214,13 +214,13 @@ test("[II11] iOS · 여정 맵: 셸 위 여백 0px, 칩은 안전 영역 아래(
 
   expect(screen.getByTestId("app-shell").style.paddingTop).toBe("0px");
   expect(styleOf("app-header")).toMatch(/top:\s*71px/);
-  expect(styleOf("journey-map-screen-map")).toMatch(/padding-top:\s*271px/);
+  expect(styleOf("journey-map-screen-map")).toMatch(/padding-top:\s*123px/);
 });
 
 test("[II12] iOS · 다른 탭 루트는 셸이 위 여백을 그대로 잡고 칩은 기본 자리다", async () => {
   await boot(ios);
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("app-shell").style.paddingTop).toBe("59px");
   expect(styleOf("app-header")).toMatch(/top:\s*12px/);
 

@@ -15,13 +15,28 @@ import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { voiceDurationLabel } from "./chat-rules";
 import { SLOP_SMALL } from "./hit-slop";
 import type { ChatText } from "./chat-source.contract";
-import { chatMediaTestIds as mediaIds } from "./chat-media.contract";
+import { chatMediaTestIds as mediaIds, type ChatPendingStage } from "./chat-media.contract";
+import {
+  DRAWING_MIN_STAGE,
+  PHOTO_STAGE_MARKS,
+  stageLine,
+  VOICE_STAGE_MARKS,
+} from "./media-pending-stage";
+import { usePendingStage } from "./use-pending-stage";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./messenger-chat.css";
 import "./chat-media.css";
 
-export type PhotoPendingBubbleProps = { readonly name: string; readonly testId: string };
+/** 대기 말풍선 둘의 공통 props. */
+export type PendingBubbleProps = {
+  readonly name: string;
+  readonly testId: string;
+  /** 대기 줄이 실은 시작 시각(기기 시계, `message.startedAt`) — 다시 서도 그만큼 지난 단계에서 섭니다. 없으면 말풍선이 선 때. */
+  readonly startedAt?: number;
+};
+/** 서버가 알려 준 단계 · 비율을 더 받습니다 — 단계는 문구를 앞으로만 당기고, 비율은 상자를 도착할 사진 크기로 맞춥니다. */
+export type PhotoPendingBubbleProps = PendingBubbleProps & ChatPendingStage;
 export type PhotoBubbleProps = {
   readonly src: string | null;
   /** 서버 사진의 비율 · AI 표시(ADR-0146 「앱 연결」) — 없으면 3:4 · 표시 없음. */
@@ -32,7 +47,8 @@ export type PhotoBubbleProps = {
   /** 누르면 사진 보기를 엽니다(ADR-0150 2026-11-17 추가). 그림이 없으면(src null) 누를 수 없습니다. */
   readonly onOpen?: () => void;
 };
-export type VoicePendingBubbleProps = { readonly name: string; readonly testId: string };
+export type VoicePendingBubbleProps = PendingBubbleProps;
+
 export type VoiceBubbleProps = {
   /** 0이면 모름 — 길이 글자를 그리지 않습니다. */
   readonly durationMs: number;
@@ -57,11 +73,23 @@ function WaveBars(): ReactNode {
   );
 }
 
-// 사진 pending — 도착할 3:4 사진과 같은 180 × 240 상자. 묶음 전체가 상태 한 줄로 읽히고, 반짝임은 움직임 줄이기에서 멈춥니다.
-export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): ReactNode {
-  const copy = useUiCopy().messengerChat.room;
+// 사진 pending — 기본은 3:4 사진과 같은 180 × 240 상자, 서버가 비율을 먼저 알려 주면 그 크기(ADR-0146 개정 2026-11-23).
+// 묶음 전체가 상태 한 줄로 읽히고, 반짝임은 움직임 줄이기에서 멈춥니다.
+export function PhotoPendingBubble({
+  name,
+  testId,
+  startedAt,
+  serverStage,
+  aspect,
+}: PhotoPendingBubbleProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const label = copy.sendingPhoto(name);
+  // 낭독 줄은 단계가 바뀌어도 그대로 — 스크린리더가 5초마다 다시 읽지 않게 합니다.
+  const label = chat.list.sendingPhoto(name);
+  // 기준은 기다린 시간 — 서버가 「그리는 중」이라 하면 적어도 둘째 문구로 당깁니다(내려가지 않음).
+  const counted = usePendingStage(PHOTO_STAGE_MARKS, startedAt);
+  const stage = serverStage === "drawing" ? Math.max(counted, DRAWING_MIN_STAGE) : counted;
+  const box = aspect === undefined ? undefined : PHOTO_BOX[aspect];
   return (
     <view
       className={`messenger-chat-photo-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
@@ -69,7 +97,10 @@ export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): R
       accessibility-element={true}
       accessibility-label={label}
     >
-      <view className="messenger-chat-photo-skeleton">
+      <view
+        className="messenger-chat-photo-skeleton"
+        {...(box === undefined ? {} : { style: box })}
+      >
         <view className="messenger-chat-photo-disc">
           <svg
             className="messenger-chat-icon-sm"
@@ -84,11 +115,17 @@ export function PhotoPendingBubble({ name, testId }: PhotoPendingBubbleProps): R
         <view className="messenger-chat-shimmer" />
       </view>
       <text className="messenger-chat-status" accessibility-element={false}>
-        {label}
+        {stageLine(chat.room.photoPending(name), stage)}
       </text>
     </view>
   );
 }
+
+/** 만드는 중인 상자의 크기 — 도착한 서버 사진(`chat-media.css`의 3x2 · 1x1)과 같은 값입니다. 비율을 모르면 기본 180 × 240. */
+const PHOTO_BOX = {
+  "3:2": { width: "240px", height: "160px" },
+  "1:1": { width: "200px", height: "200px" },
+} as const;
 
 const ASPECT_CLASS = {
   "3:2": "messenger-chat-photo-3x2",
@@ -148,10 +185,15 @@ export function PhotoBubble({
 }
 
 // 음성 pending — 재생 자리 원 · 회색 파형 · 아래 상태 한 줄. 도착과 같은 폭 220입니다.
-export function VoicePendingBubble({ name, testId }: VoicePendingBubbleProps): ReactNode {
-  const copy = useUiCopy().messengerChat.room;
+export function VoicePendingBubble({
+  name,
+  testId,
+  startedAt,
+}: VoicePendingBubbleProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const label = copy.recordingVoice(name);
+  const label = chat.list.recordingVoice(name);
+  const stage = usePendingStage(VOICE_STAGE_MARKS, startedAt);
   return (
     <view
       className={`messenger-chat-voice-pending${reducedMotion ? " messenger-chat-skeleton-still" : ""}`}
@@ -164,7 +206,7 @@ export function VoicePendingBubble({ name, testId }: VoicePendingBubbleProps): R
         <WaveBars />
       </view>
       <text className="messenger-chat-status" accessibility-element={false}>
-        {label}
+        {stageLine(chat.room.voicePending(name), stage)}
       </text>
       <view className="messenger-chat-shimmer" />
     </view>

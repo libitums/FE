@@ -38,6 +38,12 @@ export type ChatRoomDockProps = {
   readonly birthYear: ChatBirthYear;
   /** 첫 입장 코치마크가 가리키는 부품(2026-11-13) — 바깥 상자 클래스로 고리를 겁니다. */
   readonly guideClass?: string;
+  /** 예시 스냅샷 단계(ADR-0146 추가) — 있으면 사진 알약이 「FREE」로 서고, 누르면 결제 확인 대신 이것을 부릅니다. */
+  readonly onTakeSample?: () => void;
+  /** 예시 음성 단계 — 있으면 음성 알약이 「FREE」로 서고, 누르면 결제 확인 대신 이것을 부릅니다. */
+  readonly onTakeVoiceSample?: () => void;
+  /** 비회원(ADR-0166) — 보기가 없어도 전구를 켜 두고 누르면 관문(send 권유)으로 갑니다(2026-11-20). */
+  readonly guest?: boolean;
 };
 
 /** 상대의 마지막 텍스트 글(한국어)입니다. 없으면 null — 보기 판의 인용이 됩니다. */
@@ -62,6 +68,9 @@ export function ChatRoomDock({
   aboveComposer,
   birthYear,
   guideClass = "",
+  onTakeSample,
+  onTakeVoiceSample,
+  guest = false,
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
@@ -121,11 +130,17 @@ export function ChatRoomDock({
             voiceAvailability={mediaAvailabilityOf(mediaRoom, "voice")}
             name={thread.counterpart.name}
             moreState={menuOpen ? "open" : "closed"}
-            onSnapshot={() =>
-              dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } })
+            photoFree={onTakeSample !== undefined}
+            onSnapshot={
+              onTakeSample ??
+              (() =>
+                dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } }))
             }
-            onSnapVoice={() =>
-              dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "voice" } })
+            voiceFree={onTakeVoiceSample !== undefined}
+            onSnapVoice={
+              onTakeVoiceSample ??
+              (() =>
+                dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "voice" } }))
             }
             onMore={() =>
               menuOpen
@@ -137,7 +152,7 @@ export function ChatRoomDock({
         {aboveComposer}
         <ComposerRow
           state={state}
-          ideasDisabled={thread.ideas.length === 0}
+          ideasDisabled={!guest && thread.ideas.length === 0}
           sendEnabled={canSend(state.text)}
           sendCost={sendCost}
           onIdeas={() => dispatch({ type: ideasOpen ? "type-myself" : "open-ideas" })}

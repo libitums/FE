@@ -30,6 +30,9 @@ const events: readonly AnalyticsEvent[] = [
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_completed" },
   { name: "entry_returning_learner_entered", method: "google" },
+  { name: "entry_path_selected", path: "basics" },
+  { name: "entry_basics_step_completed", step: "ready" },
+  { name: "entry_basics_skipped", step: "compose" },
   { name: "app_update_required_shown", platform: "android", build: "6", minBuild: "7" },
   { name: "notifications_opened" },
   { name: "notification_item_tapped", notificationId: "n-1", target: "roleplay-list" },
@@ -93,9 +96,9 @@ describe("episode_content_refreshed", () => {
 });
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 24개 · 모양 25개를 다 덮는다", () => {
-    expect(events).toHaveLength(25);
-    expect(new Set(events.map((e) => e.name)).size).toBe(24);
+  test("AE1: 표가 이름 27개 · 모양 28개를 다 덮는다", () => {
+    expect(events).toHaveLength(28);
+    expect(new Set(events.map((e) => e.name)).size).toBe(27);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -209,10 +212,41 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0143⟩ 연속 학습 보상 `streak_reward_collected`가 더해져 61이다.
   // ⟨ADR-0144⟩ 요금제 `plans_viewed` · `plan_selected`가 더해져 63이다.
   // ⟨ADR-0146 앱 연결⟩ 사진 · 음성 결과 `chat_media_completed`가 더해져 64다.
-  test("AN1. 이벤트 이름은 65개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0159⟩ 온보딩 `onboarding_step_viewed` · `onboarding_started`가 더해져 67이다.
+  // ⟨ADR-0160⟩ 하나의 상점 탭 전환 `shop_tab_switched`가 더해져 68이다.
+  // ⟨ADR-0162⟩ 추천 친구 `suggested_friend_viewed` · `suggested_friend_added` · `early_access_tapped`가 더해져 71이다.
+  // ⟨ADR-0162 D5⟩ 먼저 만나기 결과 `early_access_completed`가 더해져 72다.
+  // ⟨ADR-0063 2026-11-19⟩ 엽전 팩 결제 `pack_purchased`가 더해져 73이다.
+  // ⟨ADR-0164⟩ 추천 친구 프로필 열기 `suggested_friend_opened`가 더해져 74다(PostHog만).
+  // ⟨ADR-0166⟩ 비회원 로그인 권유 `chat_sign_in_prompt_closed`가 더해져 75다.
+  // ⟨ADR-0169⟩ 더보기 · Letters · 단어장 · Letters 추천 이벤트 열이 더해져 85다.
+  // ⟨ADR-0170⟩ 주간 순위 `ranking_opened` · `ranking_board_switched` · `ranking_own_row_viewed` · `chat_words_earned` ·
+  // `ranking_hide_toggled`가 더해져 90이다.
+  // ⟨ADR-0169 즐겨찾기 개정⟩ 단어 별 `wordbook_star_toggled` · 걸러보기 `wordbook_filter_switched`가 더해져 92다.
+  // ⟨ADR-0174⟩ 가입 보상 `signup_reward_card_shown` · `signup_reward_card_tapped` · `signup_reward_shown`이 더해져 95다.
+  // ⟨ADR-0175⟩ 푸시 캠페인 보상 `push_reward_claimed` · `push_reward_failed`가 더해져 97이다.
+  // ⟨ADR-0176⟩ 입장 선택 `entry_path_selected` · `entry_basics_step_completed` · `entry_basics_skipped`가 더해져 100이다.
+  test("AN1. 이벤트 이름은 100개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(65);
+    expect(names).toHaveLength(100);
+    expect(names).toContain("entry_path_selected");
+    expect(names).toContain("entry_basics_step_completed");
+    expect(names).toContain("entry_basics_skipped");
+    expect(names).toContain("push_reward_claimed");
+    expect(names).toContain("wordbook_star_toggled");
+    expect(names).toContain("wordbook_filter_switched");
+    expect(names).toContain("signup_reward_shown");
+    expect(names).toContain("chat_sign_in_prompt_closed");
+    expect(names).toContain("suggested_friend_opened");
+    expect(names).toContain("pack_purchased");
+    expect(names).toContain("early_access_completed");
+    expect(names).toContain("suggested_friend_viewed");
+    expect(names).toContain("suggested_friend_added");
+    expect(names).toContain("early_access_tapped");
+    expect(names).toContain("onboarding_step_viewed");
+    expect(names).toContain("onboarding_started");
+    expect(names).toContain("shop_tab_switched");
     expect(names).toContain("chat_media_completed");
     expect(names).toContain("plans_viewed");
     expect(names).toContain("plan_selected");

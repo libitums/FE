@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 import { messengerChatAlbumVi } from "./ui-copy-vi-chat-album";
+import { messengerChatSuggestedVi } from "./ui-copy-vi-chat-suggested";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
   media: messengerChatMediaVi,
   album: messengerChatAlbumVi,
+  suggested: messengerChatSuggestedVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:
       "Tạo tài khoản miễn phí để trò chuyện bằng tiếng Hàn với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ.",
     signIn: "Đăng ký hoặc đăng nhập",
+    promptTitle: "Đăng nhập để gửi tin nhắn",
+    promptBody:
+      "Tạo tài khoản miễn phí để trò chuyện với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ.",
+    promptLater: "Để sau",
+    promptKeepBody: "Tạo tài khoản miễn phí để giữ Yeopjeon và vé của bạn.",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
   chatSettings: {
@@ -132,11 +139,17 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       ideas: "Không biết nói gì? Chạm vào bóng đèn cạnh ô nhập để xem gợi ý trả lời.",
       media:
         "Bạn cũng có thể nhờ mình gửi ảnh hoặc tin nhắn thoại bằng các nút phía trên bàn phím.",
+      sample:
+        "Muốn xem mình đang làm gì không? Chạm Snapshot, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
+      voice:
+        "Muốn nghe giọng mình không? Chạm Giọng nói nhanh, mình sẽ đọc tin nhắn đó. Lần đầu mình cũng tặng.",
     },
     next: "Tiếp",
     done: "Đã hiểu",
     skip: "Bỏ qua",
     stepOf: (step, total) => `${step}/${total}`,
+    newTag: "Mới",
+    free: "MIỄN PHÍ",
   },
   launch: {
     newTag: "MỚI",

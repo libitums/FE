@@ -261,6 +261,16 @@ test("MC-U28. en messengerChat 문구 표본(spec §8)", () => {
   expect(m.list.typing("Mina")).toBe("Mina is typing…");
   expect(m.list.sendingPhoto("Mina")).toBe("Mina is sending a picture…");
   expect(m.list.recordingVoice("Mina")).toBe("Mina is recording a voice message…");
+  expect(m.room.photoPending("Mina")).toEqual([
+    "Mina is picking a moment…",
+    "Mina is taking the picture…",
+    "Mina is choosing the best shot…",
+    "Almost there…",
+  ]);
+  expect(m.room.voicePending("Mina")).toEqual([
+    "Mina is recording a voice message…",
+    "Mina is sending it…",
+  ]);
   expect(m.list.lockedCondition(4)).toBe("Play Episode 4 to start chatting");
   expect(m.list.unreadLabel(3)).toBe("3 unread");
   expect(m.time.today(10, 24)).toBe("10:24");

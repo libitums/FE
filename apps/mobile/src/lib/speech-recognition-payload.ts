@@ -3,12 +3,19 @@
 // 모양을 믿지 않습니다. 읽는 자리를 아래 넷으로 모읍니다 — 열여섯 개 키를 각자
 // 방어하면 같은 판단이 열여섯 벌이 되고, 한 벌만 고쳐지는 날이 옵니다.
 
+import { speechKoreanPack } from "./speech-korean-pack";
 import type {
+  SpeechFallback,
   SpeechPermissionState,
   SpeechResult,
   SpeechResultStatus,
   SpeechStatus,
 } from "./speech-recognition-types";
+
+// 모르는 낱말은 `none`입니다 — iOS · 옛 Android 호스트는 이 키를 싣지 않고, 되돌아가지 않았습니다.
+function speechFallback(value: unknown): SpeechFallback {
+  return value === "pack-missing" || value === "on-device-error" ? value : "none";
+}
 
 function field(payload: unknown, key: string): unknown {
   if (typeof payload !== "object" || payload === null || Array.isArray(payload)) {
@@ -116,5 +123,8 @@ export function speechResult(payload: unknown): SpeechResult {
     errorDomain: stringField(payload, "errorDomain"),
     errorCode: numberField(payload, "errorCode"),
     errorMessage: stringField(payload, "errorMessage"),
+    koreanPack: speechKoreanPack(field(payload, "koreanPack")),
+    fallback: speechFallback(field(payload, "fallback")),
+    fallbackErrorCode: numberField(payload, "fallbackErrorCode"),
   };
 }

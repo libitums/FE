@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useLynxGlobalEventListener, useRef } from "@lynx-js/react";
 
 import { takeOpenedPushTarget } from "../lib/push-notifications";
+import { notePushRewardOpen } from "../lib/push-reward-open";
 import type { PushNotificationTarget } from "../screens/notifications/notifications.contract";
 import { pushTargetFrom } from "./push-target";
 
@@ -24,7 +25,10 @@ export function useOpenedPush(
       // 꺼내는 사이 앱 구간을 벗어났으면(로그아웃 등) 열지 않습니다 — 진입 구간 스택을 건드리지 않게요(ADR-0127 리뷰 W5).
       if (!latest.current.inApp) return;
       const target = pushTargetFrom(raw);
-      if (target !== null) latest.current.onOpenPushTarget(target);
+      if (target === null) return;
+      // 보상 캠페인 신호(ADR-0175) — 여정 맵 목적지면 지도 안내가 claim을 묻습니다.
+      notePushRewardOpen(target);
+      latest.current.onOpenPushTarget(target);
     });
   }, []);
 

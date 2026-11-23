@@ -25,7 +25,7 @@ test("MP-U1 My profile은 메신저 스택에 프로필을 쌓고, 한 칸 뒤�
 
   expect(nav.tab).toBe("messenger");
   expect(currentScreen(nav)).toEqual({ name: "profile" });
-  expect(nav.stacks.settings).toEqual(initialNav.stacks.settings);
+  expect(nav.stacks.more).toEqual(initialNav.stacks.more);
 
   nav = navReducer(nav, { type: "back" });
   expect(nav.stacks.messenger).toEqual(roomStack);

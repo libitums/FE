@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ANSWER_ECHO_DELAY_MS,
+  advanceAfterAnswerMs,
   answerEchoCueOf,
   autoPlayAudioOf,
   listenCueOf,
@@ -34,7 +36,31 @@ describe("listenCueOf", () => {
 
 describe("answerEchoCueOf", () => {
   it("QA2. 정답 뒤 재생 갈래이고 판정이 났고 자동 재생이 켜지면 키에 :echo가 붙는다", () => {
-    expect(answerEchoCueOf("3", echo, true, "on")).toEqual({ key: "3:echo", source: echo.source });
+    expect(answerEchoCueOf("3", echo, true, "on")).toEqual({
+      key: "3:echo",
+      source: echo.source,
+      delayMs: ANSWER_ECHO_DELAY_MS,
+    });
+  });
+
+  it("QD1. 정답 뒤 음성은 판정 효과음(0.74초)이 끝난 뒤에 시작한다", () => {
+    expect(ANSWER_ECHO_DELAY_MS).toBeGreaterThanOrEqual(750);
+    expect(ANSWER_ECHO_DELAY_MS).toBeLessThanOrEqual(1000);
+    expect(answerEchoCueOf("3", echo, true, "on")?.delayMs).toBe(ANSWER_ECHO_DELAY_MS);
+  });
+
+  it("QD2. 정답 음성을 단 듣기 갈래(대답 고르기)는 판정 뒤 그 정답 음성 신호를 낸다", () => {
+    const reply: ListenAudio = {
+      ...listen,
+      echo: { kind: "answer-echo", source: "https://cdn/audio/u01-water/reply.m4a" },
+    };
+    expect(answerEchoCueOf("3", reply, true, "on")).toEqual({
+      key: "3:echo",
+      source: "https://cdn/audio/u01-water/reply.m4a",
+      delayMs: ANSWER_ECHO_DELAY_MS,
+    });
+    expect(answerEchoCueOf("3", reply, false, "on")).toBeNull();
+    expect(answerEchoCueOf("3", reply, true, "off")).toBeNull();
   });
 
   it("QA3. 판정 전이면 null이다", () => {
@@ -88,5 +114,29 @@ describe("standaloneLessonAudio", () => {
         slowReplayCount: 0,
       }),
     ).not.toThrow();
+  });
+});
+
+describe("advanceAfterAnswerMs — 저절로 넘어가는 틈", () => {
+  it("QD3. 정답 음성 길이를 알면 틈 + 길이 + 꼬리까지 기다린다(기본보다 짧아지지 않는다)", () => {
+    const long: AnswerEchoAudio = { ...echo, speechMs: 3110 };
+    expect(advanceAfterAnswerMs(2500, long, "on")).toBe(ANSWER_ECHO_DELAY_MS + 3110 + 400);
+    expect(advanceAfterAnswerMs(2500, { ...echo, speechMs: 600 }, "on")).toBe(2500);
+  });
+
+  it("QD4. 대답 고르기의 정답 음성도 같은 규칙이다", () => {
+    const reply: ListenAudio = { ...listen, echo: { ...echo, speechMs: 2000 } };
+    expect(advanceAfterAnswerMs(2500, reply, "on")).toBe(ANSWER_ECHO_DELAY_MS + 2000 + 400);
+  });
+
+  it("QD5. 길이를 모르거나 · 정답 음성이 없거나 · 자동 재생이 꺼지면 기본값이다", () => {
+    expect(advanceAfterAnswerMs(2500, echo, "on")).toBe(2500);
+    expect(advanceAfterAnswerMs(2500, listen, "on")).toBe(2500);
+    expect(advanceAfterAnswerMs(2500, null, "on")).toBe(2500);
+    expect(advanceAfterAnswerMs(2500, { ...echo, speechMs: 3110 }, "off")).toBe(2500);
+  });
+
+  it("QD6. 아주 긴 녹음이어도 6초를 넘겨 기다리지 않는다", () => {
+    expect(advanceAfterAnswerMs(2500, { ...echo, speechMs: 20000 }, "on")).toBe(6000);
   });
 });

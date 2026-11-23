@@ -1,15 +1,26 @@
 // 말하기 문항 한 번의 국면 · 조작 · 마이크 상태를 정하는 순수 규칙입니다. UI를 import하지 않습니다.
 
-import type { SpeechResult } from "./speech-recognition";
+import type { SpeechFallback, SpeechKoreanPack, SpeechResult } from "./speech-recognition";
 import type { UiCopy } from "./ui-copy.contract";
 
 /** 들을 수 없는 까닭 — 권한 · 인식기(잠김) / iOS 받아쓰기 꺼짐(재시도) / 그 한 번의 실패. */
 export type SpeechUnavailableReason = "blocked" | "dictation-off" | "failed";
 
-/** 인식 한 번(또는 시작하지 못함)의 결말입니다. */
+/** 인식기가 결과를 올린 시도의 진단 — 측정 이벤트가 싣습니다(오류 코드 · 네트워크로 되돌아감 · 한국어 팩). */
+export type SpeechDiagnostic = {
+  readonly errorCode: number;
+  readonly fallback: SpeechFallback;
+  readonly koreanPack: SpeechKoreanPack;
+};
+
+/** 인식 한 번(또는 시작하지 못함)의 결말입니다. 인식기가 결과를 올렸으면 `diagnostic`이 있습니다. */
 export type SpeechAttemptOutcome =
-  | { readonly kind: "heard"; readonly text: string }
-  | { readonly kind: "unavailable"; readonly reason: SpeechUnavailableReason };
+  | { readonly kind: "heard"; readonly text: string; readonly diagnostic?: SpeechDiagnostic }
+  | {
+      readonly kind: "unavailable";
+      readonly reason: SpeechUnavailableReason;
+      readonly diagnostic?: SpeechDiagnostic;
+    };
 
 /** 말하기 문항 하나의 국면입니다. */
 export type SpeechAttemptPhase =
@@ -43,16 +54,22 @@ const dictationOffCode = 201;
  * `recognized`는 빈 글자도 `heard`입니다.
  */
 export function speechAttemptOutcomeOf(result: SpeechResult): SpeechAttemptOutcome {
+  const diagnostic: SpeechDiagnostic = {
+    errorCode: result.errorCode,
+    fallback: result.fallback,
+    koreanPack: result.koreanPack,
+  };
   if (result.status === "recognized") {
-    return { kind: "heard", text: result.text };
+    return { kind: "heard", text: result.text, diagnostic };
   }
   if (result.errorDomain === dictationOffDomain && result.errorCode === dictationOffCode) {
-    return { kind: "unavailable", reason: "dictation-off" };
+    return { kind: "unavailable", reason: "dictation-off", diagnostic };
   }
-  if (result.status === "permission-denied" || result.status === "recognizer-unavailable") {
-    return speechBlocked;
-  }
-  return { kind: "unavailable", reason: "failed" };
+  const reason =
+    result.status === "permission-denied" || result.status === "recognizer-unavailable"
+      ? "blocked"
+      : "failed";
+  return { kind: "unavailable", reason, diagnostic };
 }
 
 /** blocked 결말이면 blocked, 아니면 그대로(blocked는 open으로 돌아가지 않습니다). */

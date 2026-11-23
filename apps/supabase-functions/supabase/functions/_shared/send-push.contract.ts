@@ -13,12 +13,15 @@ import type { FcmServiceAccount } from "./fcm.ts";
  * (`apps/mobile/src/lib/push-target.ts`). 두 앱이 같은 모양을 각자 적습니다(ADR-0004 D4).
  */
 export type PushTarget =
-  | { readonly kind: "journey-map" }
+  // 보상 캠페인이면 캠페인 id(ADR-0175) — 앱이 claim RPC에 싣고 서버가 수신자 표로 검증합니다.
+  | { readonly kind: "journey-map"; readonly campaignId?: string }
   | { readonly kind: "notifications" }
   | { readonly kind: "roleplay-list" }
   | { readonly kind: "messenger"; readonly unitId: string }
   | { readonly kind: "phone-call"; readonly unitId: string }
-  | { readonly kind: "visual-novel"; readonly unitId: string };
+  | { readonly kind: "visual-novel"; readonly unitId: string }
+  // 선톡 방(ADR-0127) — 앱이 인물 id 형식을 다시 검증합니다. `variant`는 미리보기 A/B의 칸입니다.
+  | { readonly kind: "companion-chat"; readonly characterId: string; readonly variant?: "a" | "b" };
 
 // ------------------------------------------------------------------ HTTP 계약
 

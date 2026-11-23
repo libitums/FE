@@ -20,6 +20,7 @@
   - 진행 스냅숏(`catalogProgress` ∪ `coinUnits`)의 끝낸 유닛마다 `learning_reward`(5 — 앱 `COINS_PER_LESSON`도 10 → 5). 에피소드 표지(intro) · 막간(INT)은 제외. (사용자, 에피소드, 유닛)마다 한 번 — 엽전 제도 전에 깬 유닛도 소급되고, 새 레슨을 깨고 다시 부르면 그 유닛만 더해진다.
   - ⟨2026-11-14⟩ 지급 대상은 서버 표 `companion.content_units`(배포 콘텐츠에 있는 유닛)에 있는 쌍으로 좁혀졌다 — 임의 키 위조 차단([ADR-0148](0148-coin-claim-valid-units.md)).
   - 출시 보너스 `launch_bonus`(100), 사용자마다 한 번.
+  - ⟨2026-11-21 사용자 결정 — [ADR-0174](0174-signup-welcome-reward.md) D8⟩ **출시 보너스는 기존 회원만**: 가입 보상 기준 시각(`signup_reward_since`) 뒤에 만든 계정은 출시 보너스 대신 가입 보상 100(`companion_claim_signup_reward`)을 받는다. 그런 계정에는 엽전 모달을 띄우지 않고 채팅 모달만(응답 `newAccount`). 학습 보상은 그대로.
   - 돌려주는 값: 이번 호출에서 더한 학습 보상 · 보너스 · 지갑.
 
 ### D2. 앱

@@ -30,6 +30,10 @@ export const messengerChatMediaJa: ChatMediaCopy = {
           : "このメッセージはボイスメッセージにできません。";
       case "unavailable":
         return "写真とボイスメッセージは今は使えません。";
+      case "sample-gift":
+        return photo
+          ? "今の1枚はサービスです！次のSnapshotからはYeopjeonを使います。"
+          : "今の1回はサービスです！次のスナップボイスからはYeopjeonを使います。";
       default:
         return "リクエストを送れませんでした。接続を確認してもう一度お試しください。";
     }

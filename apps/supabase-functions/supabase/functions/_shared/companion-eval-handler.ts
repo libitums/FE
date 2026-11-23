@@ -27,6 +27,7 @@ import { evalSuggestions } from "./companion-eval-suggest.ts";
 import type { CandidateRecord } from "./companion-suggest-select.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
+import { tierRomanceLine } from "./companion-safety.ts";
 import { bodySchema, type EvalCase, type EvalKind, evalModels } from "./companion-eval-schema.ts";
 
 export { evalModels };
@@ -156,6 +157,7 @@ function runCase(
         text: item.text,
         context: item.context ?? null,
         ageBand: item.ageBand ?? "adult",
+        romanceLine: item.romanceLine ?? tierRomanceLine(item.ageBand ?? "adult", item.romanceTier),
         signal,
       }),
     );

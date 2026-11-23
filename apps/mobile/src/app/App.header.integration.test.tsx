@@ -1,3 +1,4 @@
+import { goToTabRoot, openSettingsFromMore } from "./test-helpers/more-menu";
 import { u01OpenSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
@@ -16,13 +17,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test("[AH-I1] 탭 루트 넷 중 메신저를 뺀 셋에는 머리와 바텀 네비게이션이 함께 서고, 메신저 루트에는 머리가 없다(사용자 결정 2026-11-09)", async () => {
+test("[AH-I1] 탭 루트 넷 중 여정 · 설정에는 머리와 바텀 네비게이션이 함께 서고, 메신저 · 롤플레이 루트에는 머리가 없다(사용자 결정 2026-11-09 · 2026-11-23)", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   for (const tab of ["journey", "roleplay", "messenger", "settings"] as const) {
-    fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
+    goToTabRoot(tab);
     expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
-    if (tab === "messenger") {
+    if (tab === "messenger" || tab === "roleplay") {
       expect(screen.queryByTestId("app-header")).not.toBeInTheDocument();
       expect(screen.queryByTestId("top-bar-streak")).not.toBeInTheDocument();
     } else {
@@ -58,10 +59,14 @@ test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
-test("[AH-I5] 롤플레이에서 Plus 예고를 숨겨도 머리는 그대로 보인다", async () => {
+test("[AH-I5] 롤플레이 탭은 칩 줄 없이 자기 제목만 쓰고, 여정으로 돌아가면 머리가 다시 선다(사용자 결정 2026-11-23)", async () => {
   await renderSignedInApp(<App progressSeed={finishedTutorial} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-  expect(screen.queryByTestId("roleplay-list-section-premium-tutorial")).not.toBeInTheDocument();
+  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
+  expect(screen.queryByTestId("app-header")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("top-bar-streak")).not.toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
@@ -69,7 +74,7 @@ test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남�
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  openSettingsFromMore();
 
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
@@ -85,10 +90,10 @@ function expectTopBarShape(): void {
   }
 }
 
-test("[NBI1] 머리가 있는 탭 루트 셋(메신저 제외)은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
+test("[NBI1] 머리가 있는 탭 루트 둘(여정 · 설정)은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
-  for (const tab of ["journey", "roleplay", "settings"] as const) {
-    fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
+  for (const tab of ["journey", "settings"] as const) {
+    goToTabRoot(tab);
     expectTopBarShape();
   }
 

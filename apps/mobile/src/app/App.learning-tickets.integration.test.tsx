@@ -63,6 +63,9 @@ const env = {
   saves: [] as Record<string, unknown>[],
   events: [] as EpisodeIntroEvent[],
   load: async (): Promise<Reply> => ok(null),
+  /** 엽전으로 1장 사기(RPC `companion_buy_ticket`)의 답 · 받은 요청 본문입니다. */
+  buy: async (): Promise<Reply> => ok({ result: "bought", price: 20, wallet: { balance: 80 } }),
+  buys: [] as Record<string, unknown>[],
 };
 
 async function flush(): Promise<void> {
@@ -81,6 +84,8 @@ async function boot(load: () => Promise<Reply>, seed: Record<string, string> = {
   env.saves = [];
   env.events = [];
   env.load = load;
+  env.buys = [];
+  env.buy = async () => ok({ result: "bought", price: 20, wallet: { balance: 80 } });
   vi.stubGlobal("NativeModules", {
     StorageModule: {
       get: (key: string) => env.store.get(key) ?? null,
@@ -108,12 +113,15 @@ async function boot(load: () => Promise<Reply>, seed: Record<string, string> = {
     const name = url.split("/rest/v1/rpc/")[1] ?? url;
     const body = init?.body === undefined ? {} : (JSON.parse(init.body) as Record<string, unknown>);
     if (name === "save_learning_progress") env.saves.push(body);
+    if (name === "companion_buy_ticket") env.buys.push(body);
     const reply: Reply =
       name === "load_learning_progress"
         ? await env.load()
-        : name === "learning_streak" || name === "record_learning_days"
-          ? { status: 200, body: "0" }
-          : { status: 204, body: "" };
+        : name === "companion_buy_ticket"
+          ? await env.buy()
+          : name === "learning_streak" || name === "record_learning_days"
+            ? { status: 200, body: "0" }
+            : { status: 204, body: "" };
     return { status: reply.status, text: async () => reply.body };
   });
   vi.useFakeTimers();
@@ -209,30 +217,35 @@ test("[IT3] 0장에서 새 레슨은 열리지 않고 대화상자 · tickets_ra
   expect(screen.queryByTestId("learning-shell")).not.toBeInTheDocument();
 });
 
-test("[IT4] 대화상자에서 Get more → 오늘 1장, Start lesson이 막혔던 레슨을 연다", async () => {
+test("[IT4] 대화상자에서 Get 1 ticket → 엽전 20으로 1장(서버 요청 id), Start lesson이 막혔던 레슨을 연다", async () => {
   await boot(async () => ok(drainedProgressOf([])));
   startStep("S1");
   tap("out-of-tickets-more");
+  await flush();
+  expect(env.buys).toHaveLength(1);
+  expect(String(env.buys[0]?.["p_request_id"])).toMatch(/^[0-9a-f-]{36}$/);
   expect(env.events.filter((e) => e.name === "ticket_more_tapped")).toEqual([
-    { name: "ticket_more_tapped", surface: "out_of_tickets", granted: true },
+    { name: "ticket_more_tapped", surface: "out_of_tickets", result: "bought", price: "20" },
   ]);
-  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("free ticket");
+  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("1 ticket added.");
   tap("out-of-tickets-start");
   expect(screen.queryByTestId("out-of-tickets")).not.toBeInTheDocument();
   finishTicketDrop();
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
 });
 
-test("[IT5] 칩 → 모달: 가득이면 Get more가 채우지 않고 안내만, 시간이 지나면 칸이 다시 찬다", async () => {
+test("[IT5] 칩 → 모달: 가득이면 Get 1 ticket이 서버를 부르지 않고 안내만, 시간이 지나면 칸이 다시 찬다", async () => {
   await boot(async () => ok(progressOf([])));
   tap("top-bar-tickets");
   expect(screen.getByTestId("ticket-modal-value")).toHaveTextContent("3");
   tap("ticket-modal-more");
+  await flush();
   expect(screen.getByTestId("ticket-modal-more-notice")).toHaveTextContent(
-    "More ways to get tickets are coming soon.",
+    "Your tickets are already full.",
   );
+  expect(env.buys).toEqual([]);
   expect(env.events.filter((e) => e.name === "ticket_more_tapped")).toEqual([
-    { name: "ticket_more_tapped", surface: "ticket_modal", granted: false },
+    { name: "ticket_more_tapped", surface: "ticket_modal", result: "full", price: "20" },
   ]);
   fireEvent.tap(
     within(screen.getByTestId("ticket-modal-back")).getByTestId("ui-lynx-round-button"),
@@ -339,4 +352,56 @@ test("[IT11] 티켓으로 연 레슨을 나갔다 다시 열면 또 쓰지 않�
   expect(chip()).toHaveTextContent("2");
   const saved = env.saves.at(-1)?.["p_progress"] as { ticketUnits?: unknown } | undefined;
   expect(saved?.ticketUnits).toEqual({ [u01]: ["S1"] });
+});
+
+// 엽전으로 1장 사기(사용자 결정 2026-11-23) — 모자람 · 서버 실패는 원장을 그대로 두고 안내만, 사는 중의 연타는 한 번만 보냅니다.
+test("[IT12] 엽전이 모자라면 칩 그대로 · 모자란 수 안내 · Start lesson 없음", async () => {
+  await boot(async () => ok(drainedProgressOf([])));
+  env.buy = async () => ok({ result: "short", price: 20, shortBy: 8, wallet: { balance: 12 } });
+  startStep("S1");
+  tap("out-of-tickets-more");
+  await flush();
+  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent(
+    "Not enough coins. You need 8 more.",
+  );
+  expect(screen.queryByTestId("out-of-tickets-start")).not.toBeInTheDocument();
+  expect(chip()).toHaveTextContent("0");
+  expect(env.events.filter((e) => e.name === "ticket_more_tapped")).toEqual([
+    { name: "ticket_more_tapped", surface: "out_of_tickets", result: "short", price: "20" },
+  ]);
+});
+
+test("[IT13] 서버가 실패하면 안내만, 다시 누르면 새 요청 id로 다시 산다", async () => {
+  await boot(async () => ok(drainedProgressOf([])));
+  env.buy = async () => down;
+  startStep("S1");
+  tap("out-of-tickets-more");
+  await flush();
+  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent(
+    "Couldn't get a ticket. Please try again.",
+  );
+  env.buy = async () => ok({ result: "bought", price: 20, wallet: { balance: 80 } });
+  tap("out-of-tickets-more");
+  await flush();
+  expect(env.buys).toHaveLength(2);
+  expect(env.buys[0]?.["p_request_id"]).not.toBe(env.buys[1]?.["p_request_id"]);
+  expect(screen.getByTestId("out-of-tickets-start")).toBeInTheDocument();
+});
+
+test("[IT14] 사는 중에 또 눌러도 서버에는 한 번만 보낸다", async () => {
+  await boot(async () => ok(drainedProgressOf([])));
+  let answer: (reply: Reply) => void = () => {};
+  env.buy = () =>
+    new Promise<Reply>((resolve) => {
+      answer = resolve;
+    });
+  startStep("S1");
+  tap("out-of-tickets-more");
+  await flush();
+  tap("out-of-tickets-more");
+  await flush();
+  expect(env.buys).toHaveLength(1);
+  answer(ok({ result: "bought", price: 20, wallet: { balance: 80 } }));
+  await flush();
+  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("1 ticket added.");
 });

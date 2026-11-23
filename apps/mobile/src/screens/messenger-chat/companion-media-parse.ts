@@ -8,6 +8,7 @@ import type {
   RemoteMedia,
   RemoteMediaKind,
   RemoteMediaStatus,
+  SampleOffer,
 } from "./chat-media.contract";
 import { nextUtcMidnight } from "./chat-media-rules";
 
@@ -40,6 +41,7 @@ export function remoteMediaOf(raw: unknown): RemoteMedia | null {
   if (!KINDS.includes(kind) || !STATUSES.includes(status) || !Number.isFinite(createdAt))
     return null;
   const aspect = record?.aspect;
+  const stage = record?.stage;
   return {
     id,
     messageId,
@@ -49,6 +51,7 @@ export function remoteMediaOf(raw: unknown): RemoteMedia | null {
     aspect: aspect === "3:2" || aspect === "1:1" ? aspect : null,
     failure: stringOf(record?.failure),
     createdAt,
+    stage: stage === "preparing" || stage === "drawing" ? stage : null,
   };
 }
 
@@ -162,4 +165,26 @@ export function mediaPageFrom(
     return media === null ? [] : [media];
   });
   return { items, hasMore: raw.hasMore };
+}
+
+/** `companion_sample_snapshot_offer` 본문 — `{ available, voice }`. 참일 때만 제안합니다(못 읽으면 둘 다 거짓). */
+export function sampleOfferFrom(bodyText: string | null): SampleOffer {
+  const raw = recordOf(parse(bodyText));
+  return { snapshot: raw?.available === true, voice: raw?.voice === true };
+}
+
+/**
+ * `companion_claim_sample_snapshot` 본문 → 받음 · 거절 · 실패. `ok` · `already`는 받음(already는 저장본), 서버가 주지 않기로 한
+ * 경우(`not_offered` · `no_sample` · …)는 거절, 본문이 깨졌거나 사진이 없으면 실패입니다.
+ */
+export function sampleClaimFrom(bodyText: string | null): MediaRequestResult {
+  const raw = recordOf(parse(bodyText));
+  const result = stringOf(raw?.result);
+  if (result === null) return { kind: "failed" };
+  if (result !== "ok" && result !== "already")
+    return { kind: "refused", notice: "not-eligible", until: null };
+  const media = remoteMediaOf(raw?.media);
+  return media === null
+    ? { kind: "failed" }
+    : { kind: "accepted", media, cached: result === "already" };
 }

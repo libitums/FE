@@ -10,7 +10,7 @@ import { previewRemoteRooms } from "./chat-remote-preview";
 import { remoteWalletSync } from "./chat-remote-wallet";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage } from "./chat-source.contract";
-import { renderTurn, withCorrection } from "./chat-remote-notes";
+import { renderTurn, withHistoryNotes } from "./chat-remote-notes";
 import { hasReplyAfter, mergeLog, sameIdeas, serverCopyOf } from "./chat-log-merge";
 import { turnOutcomeOf, type TurnOutcome } from "./companion-outcome";
 import { applyTurnEvent, initialTurnState, type TurnState } from "./companion-turn";
@@ -61,10 +61,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       room.messages = room.messages.filter((m) => m.id !== id && m.id !== `${id}~failed`);
     }
     room.messages = mergeLog(room.messages, history.messages);
-    let notes = room.notes;
-    for (const [id, card] of Object.entries(history.corrections))
-      notes = withCorrection(notes, id, card);
-    room.notes = notes;
+    room.notes = withHistoryNotes(room.notes, history);
     if (room.pendingReplies === 0 && !sameIdeas(room.remoteIdeas, history.ideas))
       room.remoteIdeas = history.ideas;
     if (room.recovery === "stalled" && recoveryTargets.get(room)?.(history.messages) === true)
@@ -296,5 +293,6 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     controls,
     requestMedia: media.request,
     remake: media.remake,
+    sample: media.sample,
   };
 }

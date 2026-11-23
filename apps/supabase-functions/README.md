@@ -375,7 +375,7 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 표기 메모)를 `Names`로 넘긴다 — 시스템 글은 그대로라 캐시된다. 실패 · 개수 틀림이면 제한 시간의 1/3 이상 남았을 때 한 번 다시 시도한다.
 
 **선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
-판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
+판정은 `companion.proactive_skip_reason` 하나(이유 off · no_timezone · quiet_hours · hour · daily_cap · gap · spacing):
 
 | | 하루 횟수 | 마지막 메시지 뒤 | 직전 선톡 뒤 | 선호 시각 |
 |---|---|---|---|---|
@@ -681,3 +681,150 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 (20261108 ~ 20261211, 특히 20261112 크레딧 · 20261111 `moderation_state` · `settings`) **뒤에** 적용한다. 20261129보다 번호가 뒤라 20261129를 나중에
 올리면 `db push`에 `--include-all`이 필요하다. 적용 전에는 운영 도구 화면이 「적용 전」(`{deployed:false}`)으로 뜬다. 플레이그라운드는 시험 계정만
 고르므로 바뀌는 것이 없다.
+
+### 2차 — 시험 계정 페이지 · 엽전 지급 고르기 · 대화 조각 (20261213)
+
+운영 도구 마이그레이션 넷(20261213 · 20261214 · 20261215 · 20261227)의 번호는 같은 날짜의 다른 마이그레이션과 겹치지 않게 `…130000`이다.
+운영 상태(2026-11-23): 20261213 · 20261227은 SQL 편집기로 적용했고, 20261214(20261227이 대신한다) · 20261215는 적용하지 않았다.
+
+`migrations/20261213130000_ops_admin_testers.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A. 20261212의 공통 규칙(`p_actor` · 열람/쓰기 기록 ·
+`service_role`만 · `not_a_tester`는 `{ok:false}` + `refused`) 그대로다.
+
+- 바뀌는 것: UserRow에 `paid`(스토어 이벤트가 있거나 원장에 `purchase` · `subscription` 지급 — 시험 계정 잔액 맞추기 `operator`는 세지 않음, 구독 표가
+  없으면 원장만) · `ops_user_conversation`이 메시지마다 `segments` · `ops_grant_credits`의 메모가 늘 필수(`invalid_memo`).
+- 새 RPC 10개(합 32개): `ops_search_users`(검색어 · 국가 · 시험 계정 · 티어 · 가입일, `total`) · `ops_countries`(기록 안 함) · `ops_list_testers` ·
+  `ops_tester_state` · `ops_set_tester`(`raw_app_meta_data.duru_tester` 켜기 · 지우기 — 앱은 로그인 토큰에서 읽어 다시 열면 반영. 해제하면 운영자가
+  넣은 등급 — 플랜의 `ops` · `ops_tester` 행과 옛 등급 source `ops_admin` · `playground` — 도 지우고 `removed:{plans, tier}`로 알린다) ·
+  `ops_tester_set_profile`(`companion_operator_set_profile`과 같은 뜻, 칸마다 `invalid_<칸>`, 스냅샷 셀피는 `female` · `male` · `hidden`) ·
+  `ops_tester_set_learning_scope` · `ops_tester_set_intimacy`(0 ~ 10000 — 턴은 하한 0만 둔다, 말투는 턴과 같은 문턱으로 다시 계산) ·
+  `ops_tester_set_plan`(`plan_entitlements`에 `ops_tester` · `ops` · sandbox 행, 표가 없으면 `plans_unavailable`, 그 플랜에 스토어 행이 있으면
+  켜기 · 끄기 모두 `store_plan`(refused), 다시 켤 때 활성 운영 행의 `period_started_at`은 그대로 — 플랜 엽전이 다시 나가지 않게) · `ops_tester_reset_learning`.
+- **학습 초기화의 코인 수령**: 원장(`credit_ledger`)은 트리거 · 외래 키가 없어 지울 수는 있지만, 지우면 지갑 합 = 원장 합이 깨지고 지급 기록이 사라진다.
+  그래서 지우지 않고 수령 지급(reason `learning` · `launch_bonus` · `streak`)의 `ref_id` 끝에 `|reset@<epoch ms>`를 붙인다 — `companion.grant_once`가
+  같은 `ref_id`를 찾지 못해 다시 준다. 이미 받은 엽전은 지갑에 남는다(필요하면 잔액 맞추기로 내린다). 앱 기기의 진도는 앱에서 로그아웃해야 지워진다.
+- 테스트: `migrations/ops-admin-testers.integration.test.ts`(구독 표가 있을 때 · 없을 때).
+
+**운영 적용은 사람이 한다.** 20261212 **뒤에** 적용한다. SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261213130000`. 다시 적용해도 같다(`create or replace`). 20261212를 이 파일 뒤에 다시 적용하면
+UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파일도 다시 적용한다. ops_admin 2차(시험 계정 페이지)는 이 파일이 있어야 뜬다.
+
+### 정렬 — 「전체」 사용자 둘러보기 (20261214)
+
+`migrations/20261214130000_ops_admin_sort.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
+
+- `ops_search_users`에 `p_sort`(`created_at` · `last_sign_in_at` · `email` · `balance` · `country`, 기본 `created_at`) · `p_dir`(`asc` · `desc`, 기본 `desc`).
+  목록 밖 값은 `invalid_sort` · `invalid_dir`. 빈 값은 늘 뒤, 같은 값은 id 순, email은 대소문자 무시, 잔액은 지갑이 없으면 0. 열람 기록 detail에는
+  기본 정렬이 아닐 때만 `sort` · `dir`.
+- 인수 꼴이 바뀌어 옛 함수를 `drop` 하고 새로 만든다. 새 인수는 기본값이 있어 옛 호출도 그대로 된다 — ops_admin은 기본 정렬이면 `p_sort` · `p_dir`을
+  보내지 않고, 이 파일이 없어 함수를 못 찾으면 정렬 없이 다시 불러 「DB 업데이트 뒤에 됩니다」로 알린다.
+- 테스트: `migrations/ops-admin-sort.integration.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261213 **뒤에** 적용한다. SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261214130000`. 다시 적용해도 같다. 20261213을 이 파일 뒤에 다시 적용하면 옛 인수 꼴 함수가 함께 남아
+이름만으로 부를 때 `is not unique`가 나니, 그때는 이 파일도 다시 적용한다.
+
+### 판정 메시지 (20261215)
+
+`migrations/20261215130000_ops_admin_moderation.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §F.
+
+- 새 RPC `ops_user_moderation(p_actor, p_user, p_limit 기본 50(1~200), p_before)` — 사용자 상세 「신고 · 판정」에서 판정마다 어떤 메시지였는지 본다.
+  `{items: [{id, at, stage, category, action, messageId, characterId, message, reply}], hasMore}` 최신순, `allow`는 뺀다(타임라인과 같다).
+- 턴 저장 RPC는 판정을 사용자 메시지에 단다. `message`는 그 사용자 메시지(`{id, role, text(2000자에서 자름), status, at}`),
+  `reply`는 그 턴의 캐릭터 답(`reply_to`가 그 메시지인 답 중 가장 늦은 것, `{id, status, hidden, segments, at}`). 판정이 캐릭터 답에 달려 있으면
+  `reply`가 그 답이고 `message`는 `reply_to`로 찾는다. 메시지가 없으면 null.
+- 한 턴의 판정은 같은 시각에 들어간다. `p_before`(쪽 마지막 `at`)로 넘길 때 갈라지지 않게 쪽 끝 시각과 같은 판정은 다 넣는다(그래서 `limit`보다 많을 수 있다).
+- 열람 기록 `view` · `user_moderation`, detail `{limit, before?}`. 메시지 내용을 보니 대화 열람(`user_conversation`)처럼 남긴다.
+- 테스트: `migrations/ops-admin-moderation.integration.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261214 **뒤에** 적용한다(실제로 기대는 것은 20261212의 `ops` 도우미뿐이다). SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261215130000`. 다시 적용해도 같다(`create or replace`). 이 파일이 없으면 ops_admin은 판정 목록을
+메시지 없이 옛 모양으로 보이고 「DB 업데이트(20261215) 뒤에 보입니다」로 알린다.
+
+### 에셋 수 — 「전체」를 스냅샷 · 음성 수로 정렬 (20261227)
+
+`migrations/20261227130000_ops_admin_media_counts.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
+
+- `ops_search_users`의 줄마다 `snapshots` · `voices` — 그 사용자의 `companion.media` 중 완료(`status = 'complete'`)인 스냅샷 · 음성 수(없으면 0,
+  막힘 · 실패 · 만드는 중은 세지 않는다). `p_sort`에 `snapshots` · `voices`(`p_dir` asc · desc, 같은 수는 id 순).
+- 세는 범위: `companion.media` 전체를 묶어 세지 않는다. 보이는 줄(많아야 `p_limit`)만 `LATERAL`로 사용자마다 세고(`media_album_idx`),
+  에셋 수로 정렬할 때만 조건에 맞은 사용자 모두를 센다.
+- 인수 꼴은 20261214 그대로(11개)다. 다른 꼴이 남으면 이름만으로 부를 때 겹치므로 둘 다 `drop` 한다: 20261213의 꼴(9개 — 20261214를 적용하지 않은 DB)과
+  이 파일의 첫 판(13개, `p_min_snapshots` · `p_min_voices`). 그래서 20261214를 건너뛴 DB에도 그대로 적용된다(이 함수가 20261214의 정렬을 모두 담는다).
+- ops_admin은 이 파일이 없는 DB에서 수를 「-」로 보이고, 그 정렬(`invalid_sort`)은 기본 정렬로 다시 불러 「DB 업데이트(20261227) 뒤에 됩니다」로 알린다.
+- 테스트: `migrations/ops-admin-media-counts.integration.test.ts`.
+
+**운영은 2026-11-23에 SQL 편집기로 적용했다**(20261214 없이 20261213 위에). `supabase migration repair --status applied 20261227130000`으로 기록한다.
+다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
+번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
+
+## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
+
+`migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
+`companion.settings.friends_mode`(`off` · `testers` 기본 · `on`), 무료 체험을 모든 인물 합산으로, 완화 수위(open — 인물 open + 생년상 성인 + 성인 확인 동의
+`profiles.adult_ack_at`). 앱 RPC `companion_friends()` · `companion_ack_adult()`, 프로필 `adultAck`. 판정 · 맥락이 적용 수위 `romanceTier`를 싣는다.
+
+- 함수: `companion-safety.ts`(`effectiveRomanceTier` · `outputCheckRequired` · open 검사 선) · `companion-prompt.ts`(친구 소개 · 스토리 밖 · 배경 · 성격 · 사투리 ·
+  open 수위선) — open 턴은 답을 출력 검사한 뒤 내보낸다. 스냅샷 그림 규칙은 수위로 넓히지 않는다(추천 답변 칩은 ADR-0168에서 선을 따르게 됐다).
+- 평가: `companion-eval`의 `GET ?docs=1`이 `evalSets`(친구 페르소나 유지 · 로맨스 수위 경계, `_shared/companion-eval-sets*.ts`)를 더 준다.
+- 플레이그라운드(운영자, 서버 키 · 시험 계정만): `companion_operator_set_adult_ack(p_user_id, p_ack)` → `{ result: ok · not_adult, adultAck, ageBand }`
+  (켜기는 생년상 성인만). 생년은 기존 `companion_operator_set_profile`. `companion_inspect_testers().adultAck`, `companion_inspect_memory(…).access`
+  (`friendsMode` · `tester` · `ageBand` · `adultAck` · `kind` · `personaTier` · `romanceTier` · `romanceReason` · `visible` · `hiddenReason`).
+  `companion_operator_reset`은 동의를 지우지 않는다. SSE `done`과 저장 meta(첫 인사 · 선톡 · 거절)가 적용 수위 `romanceTier`를 싣는다.
+- 운영에서 친구를 모두에게 열기: `update companion.settings set friends_mode = 'on'`. 끄기: `'off'`(대화 중이던 친구도 `not_available`).
+- 테스트: `migrations/companion-friends.integration.test.ts`(FR1 ~ FR9) · `_shared/companion-friends.unit.test.ts`(FT1 ~ FT12).
+
+## 로맨스 선 사다리 (20261218, ADR-0168)
+
+적용 로맨스 선 `none < hug < kiss < close < open`을 `romanceLine(ageBand, romanceTier, persona, speechLevel)`(`companion-safety.ts`)이 정한다 —
+스토리 인물 · 동의 없는 open 인물은 hug, 추천 친구 standard(다은 · 건우)는 말투 단계로 hug(존댓말) · kiss(반말) · close(slang), open 인물 + 성인 + 동의는
+open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 차단). 검사 · 시스템 프롬프트 · 추천 답변 칩 · 평가 채점이 같은 선을 따른다. 출력 검사는 그대로
+성인이 아니거나 open일 때만.
+
+- 트래킹: 검사가 허용한 로맨스를 `allow` + `romance`, open의 성적 긴장을 `allow` + `sexual`로 남긴다(`companion.moderation_events`). 턴 · 첫 인사 · 선톡 ·
+  거절의 저장 meta에 `romanceLine`.
+- `migrations/20261218120000_companion_romance_ladder.sql` — 다은 · 건우의 `persona.romance`만 고친다(정본 `docs/content/companion-friends.json`).
+- 평가: 검사 세트 `romance-line-moderation`(TL1 ~ TL15), 케이스 칸 `romanceLine`(검사 · 칩).
+
+**배포 순서**: 이 마이그레이션(20261212 **뒤**, 다시 적용해도 같다) → `chat-send` · `companion-greet` · `companion-proactive` · `companion-suggest` · `companion-eval` ·
+`companion-snapshot` → 앱. 함수를 먼저 올리면 판정에 `romanceTier`가 없어 모두 standard로 돈다(안전한 쪽). 에셋(기준 그림 `seoyeon-ref.png` 등 · 목소리
+`voiceId`)은 아직 없어 친구의 스냅샷 · 음성은 `not_configured`다 — 에셋을 올린 뒤 `companion.characters.media`를 채운다.
+
+## AI 대화 나이 하한 만 14세 (20261217)
+
+`migrations/20261217120000_companion_age_floor_14.sql` — `companion.turn_gate_base`의 하한을 13 → 14로 올린다(한국 개인정보보호법 · 처리방침 7절).
+정의를 통째로 다시 쓰지 않고 지금 정의에서 하한 한 줄만 바꾼다(운영 정의가 저장소와 어긋난 적이 있어). 이미 14면 아무것도 하지 않는다. [CH2]
+
+## 주간 순위 (20261220, ADR-0170)
+
+`migrations/20261220120000_weekly_ranking.sql` — 회원 주간 순위(월 00:00 UTC 시즌). 스키마 `ranking`(RLS 켬, anon · authenticated는 스키마 · 표 권한
+없음 — 앱은 RPC만, 모든 사용자 열은 `auth.users` CASCADE).
+
+- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 15 · `group_max` 18 — 20261227, 처음은 25 · 30) · `groups` · `members`(주 × 사용자) ·
+  `lesson_passes`(사용자 평생 한 번) · `chat_words`(주 1번) · `preferences`(숨기기) · `rewards`(정산 기록).
+- 배정 `ranking.join_week`: 그 주에 처음 점수를 얻을 때. 구간 = 가입 나이(<14일 · <60일 · 그 밖) × 지금까지 통과한 콘텐츠 유닛(0~9 · 10~39 · 40+),
+  같은 구간에서 숨기지 않은 인원이 목표 미만이고 전체가 상한 미만인 가장 오래된 그룹, 없으면 새 그룹(구간마다 advisory lock).
+- 레슨 점수: `public.learning_progress` AFTER INSERT/UPDATE 트리거 — 새 스냅숏의 catalogProgress에서 처음 보이는 (에피소드, 유닛) 가운데
+  `companion.content_units`에 있는 것만. 저장 RPC는 그대로다. **새 에피소드를 올릴 때 `content_units`를 채우지 않으면 그 유닛은 순위에도 안 센다.**
+- 채팅 단어 점수: `chat-send`가 피드백 카드의 `learnedUsed` 가운데 `voca:`를 `ranking_record_chat_words`(서버 키)로 센다
+  (`_shared/chat-send-chat-words.ts`). 교정이 짚은 단어는 pending. 결과는 SSE `correction`과 저장 카드의 `chatWords`. 입력 검사에 걸린 메시지는 세지 않는다.
+- 앱 RPC(authenticated): `ranking_board(p_board: 'lessons' | 'chat_words')` → `{ state: ranked · not_joined · hidden, board, endsAt, groupSize, reward,
+  rows[{rank, name, country, episode, score, me}], me, next }`(user id · 이메일 없음) · `ranking_preferences()` · `ranking_set_hidden(p_hidden)` → `{ hidden }`.
+- 서버 RPC(service_role만): `ranking_record_chat_words(…)` · `ranking_settle_week(p_week)`(보상이 꺼졌으면 0, 켜졌으면 그룹 · 보드마다 1~3위
+  (점수 > 0, 숨김 제외)에 `companion.grant_once(…, 'ranking', '주:보드:사용자')`).
+- 테스트: `migrations/weekly-ranking.integration.test.ts`(WR-D1 ~ D10) · `_shared/chat-send-chat-words.unit.test.ts`(CWS-U1 ~ U5) ·
+  `chat-send-handler.unit.test.ts`(CWS-H1 · H2).
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다)**
+
+1. 마이그레이션: `supabase db push`(연결된 프로젝트, 20261217 **뒤**) 또는 SQL 편집기에서 `20261220120000_weekly_ranking.sql` 전체를 한 번 실행.
+   한 번만 적용한다(`create schema ranking`이라 다시 실행하면 실패한다). 확인: `select * from ranking.settings;`(한 줄, reward_enabled false) ·
+   `select tgname from pg_trigger where tgname = 'ranking_lesson_passes';`.
+2. 함수: `supabase functions deploy chat-send`(계약 사본 `_shared/companion-contract` 포함). 함수를 먼저 올리면 RPC가 실패해 `chat_words_failed`
+   로그만 남고 카드에 `chatWords`가 없다(턴 영향 없음) — 그래도 순서는 마이그레이션 → 함수.
+3. 예약: SQL 편집기에서 `supabase/cron/ranking.sql`을 한 번 실행(pg_cron, 매주 월 00:05 UTC에 지난주 정산). 확인:
+   `select jobname, schedule from cron.job where jobname = 'ranking-settle-week';`.
+4. 앱(순위 탭)을 낸다.
+
+보상 켜기(사용자 결정 뒤): `update ranking.settings set reward_enabled = true, reward_amount = 30;`(액수는 결정값). 끄기: `reward_enabled = false`.
+지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
+그룹 크기(지금 15 · 18, ADR-0170 D13): `update ranking.settings set group_target = 15, group_max = 18;`(이미 배정된 그룹은 그대로). 주 중간에 목표를 내리면 그 주의 남은 참가자는 작은 새 그룹에 들어가므로 주 경계(월 00:00 UTC) 직전에 바꾼다. 그룹이 작아지면 그룹 수가 늘어 상위 3 보상 지급 총량도 는다(25 → 15명이면 약 1.7배) — 보상을 켜기 전에 액수를 다시 본다.

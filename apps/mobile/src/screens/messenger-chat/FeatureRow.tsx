@@ -17,8 +17,18 @@ export type MoreButtonState = "closed" | "open";
 
 /** 꺼진 알약(서버 방의 wait · pending · done)은 흐리고 탭을 받지 않으며, 낭독에 까닭을 붙입니다. */
 type PillState = { readonly availability?: ChatMediaAvailability; readonly name?: string };
-export type SnapshotPillProps = PillState & { readonly price: number; readonly onTap: () => void };
-export type SnapVoicePillProps = PillState & { readonly price: number; readonly onTap: () => void };
+export type SnapshotPillProps = PillState & {
+  readonly price: number;
+  readonly onTap: () => void;
+  /** 예시 스냅샷 단계(ADR-0146 추가) — 가격 자리에 「FREE」가 서고 꺼진 상태여도 누를 수 있습니다. */
+  readonly free?: boolean;
+};
+export type SnapVoicePillProps = PillState & {
+  readonly price: number;
+  readonly onTap: () => void;
+  /** 예시 음성 단계 — 가격 자리에 「FREE」가 서고 꺼진 상태여도 누를 수 있습니다. */
+  readonly free?: boolean;
+};
 export type MoreButtonProps = { readonly state: MoreButtonState; readonly onTap: () => void };
 export type FeatureRowProps = {
   readonly photoPrice: number;
@@ -32,6 +42,10 @@ export type FeatureRowProps = {
   readonly onSnapshot: () => void;
   readonly onSnapVoice: () => void;
   readonly onMore: () => void;
+  /** 예시 스냅샷 단계 — 사진 알약이 「FREE」로 섭니다. */
+  readonly photoFree?: boolean;
+  /** 예시 음성 단계 — 음성 알약이 「FREE」로 섭니다. */
+  readonly voiceFree?: boolean;
 };
 
 // 기능 알약 줄 — 알약 둘(가로 스크롤)과 오른쪽 고정 「…」. 알약은 명시 변형 둘이고 가격은 화폐 아이콘 없이 수만 그립니다.
@@ -45,6 +59,8 @@ export function FeatureRow({
   onSnapshot,
   onSnapVoice,
   onMore,
+  photoFree = false,
+  voiceFree = false,
 }: FeatureRowProps): ReactNode {
   return (
     <view className="messenger-chat-features" data-testid={ids.featureRow}>
@@ -59,12 +75,14 @@ export function FeatureRow({
             availability={photoAvailability}
             name={name}
             onTap={onSnapshot}
+            free={photoFree}
           />
           <SnapVoicePill
             price={voicePrice}
             availability={voiceAvailability}
             name={name}
             onTap={onSnapVoice}
+            free={voiceFree}
           />
         </view>
       </scroll-view>
@@ -78,11 +96,14 @@ export function SnapshotPill({
   availability = "ready",
   name = "",
   onTap,
+  free = false,
 }: SnapshotPillProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const copy = chat.features;
-  const off = availability !== "ready";
-  const label = copy.pillLabel(copy.snapshot, price);
+  const off = !free && availability !== "ready";
+  const label = free
+    ? `${copy.snapshot}, ${chat.guide.free}`
+    : copy.pillLabel(copy.snapshot, price);
   return (
     <view
       className={`messenger-chat-pill messenger-chat-pill-snapshot${off ? " messenger-chat-pill-off" : ""}`}
@@ -102,7 +123,7 @@ export function SnapshotPill({
     >
       <svg className="messenger-chat-icon-xs" content={camera} current-color={color.white} />
       <text className="messenger-chat-pill-name">{copy.snapshot}</text>
-      <text className="messenger-chat-pill-price">{String(price)}</text>
+      <text className="messenger-chat-pill-price">{free ? chat.guide.free : String(price)}</text>
     </view>
   );
 }
@@ -112,11 +133,14 @@ export function SnapVoicePill({
   availability = "ready",
   name = "",
   onTap,
+  free = false,
 }: SnapVoicePillProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const copy = chat.features;
-  const off = availability !== "ready";
-  const label = copy.pillLabel(copy.snapVoice, price);
+  const off = !free && availability !== "ready";
+  const label = free
+    ? `${copy.snapVoice}, ${chat.guide.free}`
+    : copy.pillLabel(copy.snapVoice, price);
   return (
     <view
       className={`messenger-chat-pill messenger-chat-pill-voice${off ? " messenger-chat-pill-off" : ""}`}
@@ -136,7 +160,7 @@ export function SnapVoicePill({
     >
       <svg className="messenger-chat-icon-xs" content={mic} current-color={color.fg.brand} />
       <text className="messenger-chat-pill-name">{copy.snapVoice}</text>
-      <text className="messenger-chat-pill-price">{String(price)}</text>
+      <text className="messenger-chat-pill-price">{free ? chat.guide.free : String(price)}</text>
     </view>
   );
 }

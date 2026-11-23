@@ -1,15 +1,19 @@
 // 메신저 출처가 컴패니언 서버에 닿는 포트입니다(ADR-0137). 서버 JSON은 순수 해석기(`companion-parse.ts`)가 앱 모양으로 풀고,
 // 출처(`chat-fixture-remote.ts`)는 이 포트만 압니다. 어떤 호출도 던지지 않습니다 — 실패는 null · onEnd로 옵니다.
 
-import type { ChatCorrection } from "./chat-feedback.contract";
+import type { EarlyAccessRemote } from "./early-access-parse";
+import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
+import type { VisibleFriend } from "./friend-catalog.contract";
 
 /** 서버 기록 한 쪽을 앱 모양으로 푼 값입니다. 오래된 것부터, 숨김 메시지는 빠져 있습니다. */
 export type RemoteHistory = {
   readonly messages: readonly ChatMessage[];
   /** 내 글 id → 서버 교정 카드(고칠 것이 있을 때만). */
   readonly corrections: Readonly<Record<string, ChatCorrection>>;
+  /** 내 글 id → 그 글로 얻은 채팅 단어(ADR-0170). 옛 서버 · 옛 테스트 원격이면 없음. */
+  readonly chatWords?: Readonly<Record<string, ChatWordsResult>>;
   /** 마지막 캐릭터 메시지에 저장된 추천 답변 — 없으면 null. */
   readonly ideas: readonly ChatReplyIdea[] | null;
 };
@@ -55,6 +59,18 @@ export type ChatRemote = {
    * null. 없으면(옛 테스트 원격) 서버 방은 비우지 못합니다.
    */
   readonly clearChat?: (characterId: string) => Promise<"cleared" | "busy" | null>;
+  /** 엽전 먼저 만나기(20261213, ADR-0162 D5) — 제안 목록 · 열기. 없으면(옛 테스트 원격) 꺼짐. */
+  readonly earlyAccess?: EarlyAccessRemote;
+  /** 추천 친구(20261216, ADR-0164) — 보이는 친구 · 성인 확인. 없으면(옛 테스트 원격) 추천 친구가 서지 않습니다. */
+  readonly friends?: CompanionFriendsRemote;
+};
+
+/** 추천 친구 RPC — 어떤 호출도 던지지 않습니다. */
+export type CompanionFriendsRemote = {
+  /** `companion_friends()` — 이 학습자에게 보이는 친구(서버 순서). 못 읽으면 null. */
+  readonly visible: () => Promise<readonly VisibleFriend[] | null>;
+  /** `companion_ack_adult()` — 동의가 남았으면 true, 생년상 성인이 아니면 false, 못 부르면 null. */
+  readonly ackAdult: () => Promise<boolean | null>;
 };
 
 /** 서버 지갑 — 잔액(sub + grant + paid)과 체험 인물의 체험 남은 수(칸이 없거나 틀리면 null). */
@@ -69,6 +85,8 @@ export type ChatProfileRemote = {
   readonly load: () => Promise<{
     readonly birthYear: number | null;
     readonly replySuggestions?: boolean | null;
+    /** 성인 확인 동의(ADR-0164) — 칸이 없으면(옛 서버) false. */
+    readonly adultAck?: boolean;
   } | null>;
   /** `companion_save_profile(p_birth_year, p_age_source = "self")` — 성공하면 true. 건너뜀은 서버에 적을 칸이 없습니다. */
   readonly saveBirthYear: (year: number) => Promise<boolean>;

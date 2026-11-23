@@ -12,6 +12,7 @@ import type {
 } from "../screens/word-choice/word-choice-questions";
 import { wordChoiceEn } from "../lib/ui-copy-en-learning";
 import { wordChoiceItem } from "./catalog-choice-map";
+import { catalogRecordedEchoOf } from "./catalog-item-audio";
 import { choiceRomanizationsOf, englishOf, koOf, latinOf } from "./catalog-item-text";
 import type {
   CatalogItemPort,
@@ -146,5 +147,6 @@ export function cultureCheckItemOf(
       item.options.map((option) => option.roman),
     ),
     culture,
+    audio: catalogRecordedEchoOf(item, port),
   });
 }

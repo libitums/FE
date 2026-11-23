@@ -8,7 +8,7 @@ test("SS-U1 여정 · 롤플레이는 학습, 메신저는 채팅, 설정 · 진
   expect(surfaceOfTab("journey")).toBe("learning");
   expect(surfaceOfTab("roleplay")).toBe("learning");
   expect(surfaceOfTab("messenger")).toBe("chat");
-  expect(surfaceOfTab("settings")).toBeNull();
+  expect(surfaceOfTab("more")).toBeNull();
   expect(surfaceOfTab(null)).toBeNull();
 });
 

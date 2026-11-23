@@ -46,7 +46,7 @@ describe("defaultBackDecision", () => {
   it("BD5. 설정 탭 루트는 여정 탭 루트로 가는 navigate다", () => {
     const nav: Nav = {
       ...initialNav,
-      tab: "settings",
+      tab: "more",
       stacks: { ...initialNav.stacks, journey: journeyWithNotifications },
     };
     const decision = defaultBackDecision(nav);
@@ -67,8 +67,8 @@ describe("defaultBackDecision", () => {
   it("BD7. 설정 탭 스택 [설정, 프로필]은 leave다(navigate가 아니다)", () => {
     const nav: Nav = {
       ...initialNav,
-      tab: "settings",
-      stacks: { ...initialNav.stacks, settings: [{ name: "settings" }, { name: "profile" }] },
+      tab: "more",
+      stacks: { ...initialNav.stacks, more: [{ name: "settings" }, { name: "profile" }] },
     };
     expect(defaultBackDecision(nav)).toEqual({ kind: "leave" });
   });
@@ -78,7 +78,8 @@ describe("defaultBackDecision", () => {
     journey: [{ name: "journey-map" }],
     roleplay: [{ name: "roleplay-list" }],
     messenger: [{ name: "messenger-list" }],
-    settings: [{ name: "settings" }],
+    ranking: [{ name: "ranking", board: "lessons" }],
+    more: [{ name: "settings" }],
   };
   const room: Screen = { name: "messenger-chat", roomId: "mina" };
 
@@ -102,12 +103,13 @@ describe("defaultBackDecision", () => {
     expect(back.stacks.messenger).toEqual([{ name: "messenger-list" }]);
   });
 
-  it("BD10. initialNav.stacks 는 키가 정확히 넷이다(MC-U27)", () => {
+  it("BD10. initialNav.stacks 는 키가 정확히 다섯이다(MC-U27 · ADR-0170)", () => {
     expect(Object.keys(initialNav.stacks).sort()).toEqual([
       "journey",
       "messenger",
+      "more",
+      "ranking",
       "roleplay",
-      "settings",
     ]);
   });
 });

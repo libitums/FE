@@ -186,7 +186,7 @@ describe("onSelectGuestSignInMethod", () => {
     session: sessionFor(sub),
   });
 
-  test("GW4. 성공이면 이관 → 세션 저장 → 이벤트 → 프로필 동기화 → 설정 루트 → 알림 ask 순서이고 판정은 지나지 않는다", async () => {
+  test("GW4. 성공이면 이관 → 세션 저장 → 이벤트 → 프로필 동기화 → 연 자리로(back, ADR-0166) → 알림 ask 순서이고 판정은 지나지 않는다", async () => {
     signInMock.mockResolvedValue(signedIn("u1"));
     const { wiring, args } = build();
 
@@ -198,11 +198,11 @@ describe("onSelectGuestSignInMethod", () => {
       "storeSignedInSession",
       "event:entry_login_method_selected:google",
       "syncLearnerProfile",
-      "dispatch:backToRoot",
+      "dispatch:back",
       "syncPushDevice:ask=true",
     ]);
     expect(outcome).toEqual({ status: "signed-in" });
-    expect(actions).toEqual([{ type: "backToRoot" }]);
+    expect(actions).toEqual([{ type: "back" }]);
     expect(storeMock).toHaveBeenCalledWith(
       sessionFor("u1"),
       expect.objectContaining({
@@ -249,7 +249,7 @@ describe("onSelectGuestSignInMethod", () => {
       "storeSignedInSession",
       "event:entry_login_method_selected:google",
       "syncLearnerProfile",
-      "dispatch:backToRoot",
+      "dispatch:back",
       "syncPushDevice:ask=true",
     ]);
     expect(outcome).toEqual({ status: "signed-in" });

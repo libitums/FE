@@ -79,6 +79,8 @@ export type SyllableTileProps = {
   readonly interaction: SyllableTileInteraction;
   /** 창고 타일의 로마자 줄(글자 위)입니다(ADR-0153). */
   readonly romanization?: string;
+  /** 고민 힌트(ADR-0177) — 다음 정답인 창고 타일에 브랜드 색 그림자가 섭니다. */
+  readonly nudged?: boolean;
   readonly onTap: (index: number) => void;
 };
 

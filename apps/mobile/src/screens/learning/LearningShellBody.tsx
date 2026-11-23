@@ -44,6 +44,8 @@ export type LearningShellBodyProps = {
    * 가린 아래 내용을 밀어 올려 볼 수 있게 합니다 — 끝에만 더하므로 서 있던 내용은 움직이지 않습니다.
    */
   readonly panelRoom?: boolean;
+  /** 문항 장면에서도 무대가 남는 세로를 받습니다(`LearningShellProps.fillStage`). */
+  readonly fill?: boolean;
 };
 
 /**
@@ -67,6 +69,7 @@ export function LearningShellBody({
   scene,
   actions,
   panelRoom = false,
+  fill = false,
 }: LearningShellBodyProps): ReactNode {
   const room = panelRoom ? (
     <view className="learning-shell-panel-room" data-testid="learning-shell-panel-room" />
@@ -75,7 +78,7 @@ export function LearningShellBody({
   // `scroll-bar-enable={false}`보다 앞에 와야 lint:scroll-bars를 지납니다(ADR-0055 D1).
   const attributes = questionTransitionAttributes(transition);
   const stageCarriesTransition = arrangement === "split";
-  const sceneClasses = learningShellSceneClasses(arrangement, scene, actions);
+  const sceneClasses = learningShellSceneClasses(arrangement, scene, actions, fill);
   const stage = (
     <view
       className={

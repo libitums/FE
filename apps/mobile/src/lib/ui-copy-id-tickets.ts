@@ -33,6 +33,8 @@ export const ticketsId: TicketsCopy = {
     endsDate: (date) => `Berakhir ${date}`,
     daysLeft: (days) => `${String(days)} hari lagi`,
     dayProgress: (left, total) => `${String(left)} dari ${String(total)} hari`,
+    hoursLeft: (hours) => `${String(hours)} jam lagi`,
+    hourProgress: (left, total) => `${String(left)} dari ${String(total)} jam`,
     activeMessage: "Mulai pelajaran apa pun tanpa tiket.",
     endingMessage: "Setelah itu, pelajaran memakai tiket lagi.\nSemua progresmu tetap tersimpan.",
     manage: "Kelola langganan",
@@ -51,10 +53,14 @@ export const ticketsId: TicketsCopy = {
     message:
       "Setiap pelajaran memakai satu tiket.\nTiket yang terpakai terisi kembali dalam 1 jam.",
   },
-  getMore: "Dapatkan lebih banyak tiket",
+  getMore: "Dapatkan 1 tiket",
+  getMoreLabel: (price) => `Dapatkan 1 tiket seharga ${String(price)} koin`,
   moreNotice: {
-    granted: "Cara lain untuk mendapatkan tiket segera hadir. Ini tiket gratis untuk hari ini!",
-    notGranted: "Cara lain untuk mendapatkan tiket segera hadir.",
+    bought: "1 tiket ditambahkan.",
+    short: (more) => `Koin tidak cukup. Kamu butuh ${String(more)} lagi.`,
+    full: "Tiketmu sudah penuh.",
+    signIn: "Masuk untuk memakai koin.",
+    failed: "Gagal mendapatkan tiket. Coba lagi.",
   },
   outOfTickets: {
     title: "Tiket habis",

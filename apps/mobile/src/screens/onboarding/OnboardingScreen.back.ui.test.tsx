@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { backHandlers } from "../../lib/back-handler";
 import { OnboardingScreen } from "./OnboardingScreen";
@@ -23,11 +23,11 @@ function pressBack(): boolean {
   return handled;
 }
 
+// 카드 영역을 왼쪽으로 밀어 다음 스텝으로 갑니다(ADR-0159 — 다음 버튼 없음).
 function next() {
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
+  const pager = screen.getByTestId("onboarding-screen-pager");
+  fireEvent.touchstart(pager, { touches: [{ pageX: 300, pageY: 200 }] });
+  fireEvent.touchmove(pager, { touches: [{ pageX: 220, pageY: 204 }] });
 }
 
 test("[US19] 둘째 스텝 → 뒤로가기는 data-step을 0으로 · onComplete 0회(뒤로 버튼과 같다)", () => {

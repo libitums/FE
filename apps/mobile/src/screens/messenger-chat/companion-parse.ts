@@ -2,6 +2,7 @@
 // 계약 패키지(`@libitums/companion-contract`)의 zod 스키마는 앱 번들에 넣지 않습니다(번들 상한) — 같은 모양을 손으로 봅니다.
 
 import type { ChatCorrection, ChatCorrectionItem } from "./chat-feedback.contract";
+import { historyChatWordsOf } from "./companion-chat-words";
 import type { RemoteGreeting, RemoteHistory, RemoteSendFailure } from "./chat-remote.contract";
 import type {
   ChatCorrectionChange,
@@ -203,13 +204,20 @@ function messagesOf(raw: Json): {
   return { messages, corrections, ideas };
 }
 
-/** `companion_load_profile` 본문 → 생년. 행이 없으면 JSON null(생년 없음), 못 읽거나 틀린 본문이면 null. */
-export function profileFrom(
-  bodyText: string | null,
-): { readonly birthYear: number | null; readonly replySuggestions: boolean | null } | null {
+/**
+ * `companion_load_profile` 본문 → 생년 · 추천 답변 설정 · 성인 확인 동의(ADR-0164, 칸이 없으면 false). 행이 없으면 JSON null(생년
+ * 없음), 못 읽거나 틀린 본문이면 null.
+ */
+export function profileFrom(bodyText: string | null): {
+  readonly birthYear: number | null;
+  readonly replySuggestions: boolean | null;
+  readonly adultAck: boolean;
+} | null {
   const raw = parse(bodyText);
   if (raw === null) {
-    return bodyText?.trim() === "null" ? { birthYear: null, replySuggestions: null } : null;
+    return bodyText?.trim() === "null"
+      ? { birthYear: null, replySuggestions: null, adultAck: false }
+      : null;
   }
   const record = recordOf(raw);
   if (record === null) return null;
@@ -218,6 +226,7 @@ export function profileFrom(
   return {
     birthYear: typeof year === "number" && Number.isInteger(year) ? year : null,
     replySuggestions: typeof replies === "boolean" ? replies : null,
+    adultAck: record["adultAck"] === true,
   };
 }
 
@@ -238,7 +247,8 @@ export function clearOutcomeFrom(bodyText: string | null): "cleared" | "busy" | 
 export function historyFrom(bodyText: string | null): RemoteHistory | null {
   const raw = recordOf(parse(bodyText));
   if (raw === null || !Array.isArray(raw.messages)) return null;
-  return messagesOf(raw);
+  const chatWords = historyChatWordsOf(raw.messages); // 채팅 단어가 있는 기록만 칸을 둡니다(ADR-0170)
+  return Object.keys(chatWords).length === 0 ? messagesOf(raw) : { ...messagesOf(raw), chatWords };
 }
 
 export function greetingFrom(bodyText: string | null, now: number): RemoteGreeting | null {

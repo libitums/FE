@@ -65,3 +65,7 @@ apps/android/app/revenuecat.properties
 
 # vitest 샤드 blob (CI의 Tests 잡이 합친다)
 blob-reports/
+
+# 글자 소리 올리기(ADR-0173) — 운영 정보 파일 원문 · 합친 판은 올릴 때마다 새로 받습니다
+devtools/content/letters-audio/manifest.live.json
+devtools/content/letters-audio/manifest.merged.json

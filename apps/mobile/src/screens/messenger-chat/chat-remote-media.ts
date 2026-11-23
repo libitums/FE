@@ -1,5 +1,4 @@
 // 출처의 서버 사진 · 음성입니다(ADR-0146 「앱 연결」) — 요청 → 자리표시자 → 상태 다시 읽기 → 결과 줄 · 회색 줄. 던지지 않습니다.
-//
 // - 다시 읽기는 방이 열려 있을 때만, 방마다 한 줄(세대 gen — 새로 시작하면 옛 틱은 조용히 끝남), 간격은 `mediaPollDelay`.
 //   방을 나가면 다음 틱이 읽지 않고 멈추고, 다시 열면 `resume`이 메시지 id로 서버에 물어 이어 갑니다.
 // - 엽전은 서버 지갑입니다 — 예약(202) · 확정/해제(결과) 뒤 잔액을 읽어 `hooks.onBalance`로 내보냅니다(앱 지갑에서 빼지 않음).
@@ -14,17 +13,21 @@ import type {
   RemoteMedia,
 } from "./chat-media.contract";
 import type { ChatRemakeResult } from "./chat-album.contract";
+import { sampleSnapshotMethods, type SampleSnapshotMethods } from "./chat-remote-sample";
 import { mediaSender } from "./chat-remote-send";
 import {
   collapseMediaResults,
   MEDIA_POLL_LIMIT_MS,
   mediaAvailabilityOf,
   mediaLineId,
+  lostMediaOf,
   mediaLineOf,
+  pendingStartOfMedia,
+  refreshedPendingLine,
   mediaPollDelay,
   mediaTargetOf,
   placeMediaLine,
-  remoteKindOf,
+  withPendingStage,
 } from "./chat-media-rules";
 import type { ChatRemote } from "./chat-remote.contract";
 import type { ChatMediaKind, ChatMessage } from "./chat-source.contract";
@@ -43,6 +46,7 @@ type Tracked = {
   readonly target: ChatMediaTarget;
   readonly media: ChatMediaKind;
   readonly since: number;
+  readonly startedAt: number; // 대기 문구 단계의 출발(기기 시계, 요청한 때) — 다시 읽기 상한의 `since`와 따로
 };
 type MediaRoom = {
   gen: number;
@@ -65,6 +69,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     media: ChatMediaKind,
   ) => Promise<ChatRemakeResult>;
   readonly resume: (room: RoomState) => void;
+  readonly sample: SampleSnapshotMethods;
 } {
   const { live, changed, now, isOpen, schedule, hooks } = deps;
   const port = deps.remote.media;
@@ -118,13 +123,17 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     });
   };
 
-  const lineFor = async (media: RemoteMedia, target: ChatMediaTarget): Promise<ChatMessage> => {
+  const lineFor = async (
+    media: RemoteMedia,
+    target: ChatMediaTarget,
+    since?: number,
+  ): Promise<ChatMessage> => {
     let url: string | null = null;
     if (media.status === "complete" && media.path !== null && port !== undefined) {
       url = urls.get(media.id) ?? (await port.sign(media.path));
       if (url !== null) urls.set(media.id, url);
     }
-    return mediaLineOf(media, target, url, now());
+    return mediaLineOf(media, target, url, now(), since);
   };
 
   const poll = (room: RoomState) => {
@@ -144,6 +153,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     const rows = await port.load({ ids: [...state.tracked.keys()] });
     if (!current()) return;
     let settled = false;
+    let staged = false;
     for (const [id, tracked] of [...state.tracked]) {
       const row = rows?.find((media) => media.id === id);
       if (row !== undefined && row.status !== "pending") {
@@ -156,37 +166,24 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
       } else if (now() - tracked.since > MEDIA_POLL_LIMIT_MS) {
         // 서버도 곧 만료(failed · expired)로 닫으며 예약을 풉니다 — 앱은 기다림을 그만둡니다.
         state.tracked.delete(id);
-        const line = mediaLineOf(
-          { ...(row ?? placeholder(id, tracked)), status: "failed" },
-          tracked.target,
-          null,
-          now(),
-        );
-        put(room, line);
+        const lost = lostMediaOf(id, tracked.target.messageId, tracked.media, now());
+        put(room, mediaLineOf({ ...(row ?? lost), status: "failed" }, tracked.target, null, now()));
         emit(room, tracked.media, "failed");
         settled = true;
+      } else if (row !== undefined) {
+        // 아직 만드는 중 — 서버 단계 · 비율이 달라졌으면 대기 줄을 고칩니다(ADR-0146 개정 2026-11-23).
+        const fresh = refreshedPendingLine(room.messages, row, tracked.target, now());
+        if (fresh !== null) put(room, fresh);
+        staged = staged || fresh !== null;
       }
     }
-    if (settled) {
-      changed(room);
-      readBalance();
-    }
+    if (settled || staged) changed(room);
+    if (settled) readBalance();
     if (state.tracked.size > 0 && current() && isOpen(roomIdOf(room))) {
       state.step += 1;
       schedule(room, mediaPollDelay(state.step), () => void tick(room, gen));
     }
   };
-
-  const placeholder = (id: string, tracked: Tracked): RemoteMedia => ({
-    id,
-    messageId: tracked.target.messageId,
-    kind: remoteKindOf(tracked.media),
-    status: "pending",
-    path: null,
-    aspect: null,
-    failure: null,
-    createdAt: now(),
-  });
 
   /** 받은 요청의 결과를 놓습니다 — pending이면 추적 · 다시 읽기, 아니면 결과 줄. 새로 만든(202) 것이면 잔액을 읽습니다. */
   const accept = async (
@@ -196,31 +193,23 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     media: ChatMediaKind,
     result: { readonly media: RemoteMedia; readonly cached: boolean },
   ) => {
-    const line = await lineFor(result.media, target);
+    const placed = pendingStartOfMedia(room.messages, target.messageId, media, result.media.id);
+    const startedAt = placed ?? now();
+    const line = await lineFor(result.media, target, startedAt);
     if (!alive(room)) return;
-    replace(room, reqId, line);
+    replace(room, reqId, withPendingStage(room.messages, line));
     if (result.media.status === "pending") {
       const state = stateOf(room);
       if (!state.tracked.has(result.media.id))
-        state.tracked.set(result.media.id, { target, media, since: now() });
+        state.tracked.set(result.media.id, { target, media, since: now(), startedAt });
       poll(room);
     }
     changed(room);
     if (!result.cached) readBalance();
   };
 
-  const send = mediaSender({
-    port,
-    now,
-    alive,
-    put,
-    replace,
-    changed,
-    noticeLine,
-    accept,
-    emit,
-    readBalance,
-  });
+  const ops = { port, now, alive, put, replace, changed, noticeLine, accept, emit, readBalance };
+  const send = mediaSender(ops);
 
   const request = (roomId: string, media: ChatMediaKind) => {
     const room = live(roomId);
@@ -267,19 +256,21 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
         if (target === null) continue;
         const media = kindOf(row);
         const tracked = state.tracked.get(row.id);
+        const placed = pendingStartOfMedia(room.messages, target.messageId, media, row.id);
+        const startedAt = placed ?? tracked?.startedAt ?? now();
         if (row.status === "pending" && tracked === undefined)
-          state.tracked.set(row.id, { target, media, since: now() });
+          state.tracked.set(row.id, { target, media, since: now(), startedAt });
         if (row.status !== "pending" && tracked !== undefined) {
           state.tracked.delete(row.id);
           emit(room, media, row.status);
           settled = true;
         }
-        const line = await lineFor(row, target);
+        const line = await lineFor(row, target, startedAt);
         if (!alive(room)) return;
         // 기다리는 동안 새 세대(다시 열기 · 새 요청)가 시작됐으면 「준비 중」 자리표시자로 되돌리지 않습니다 — 새 세대가 같은 행을
         // 다시 놓습니다. 끝난 결과는 누가 놓아도 같아 그대로 둡니다(리뷰 #442).
         if (state.gen !== gen && row.status === "pending") continue;
-        put(room, line);
+        put(room, withPendingStage(room.messages, line));
       }
       changed(room);
       if (settled) readBalance();
@@ -287,5 +278,5 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     })();
   };
 
-  return { request, remake, resume };
+  return { request, remake, resume, sample: sampleSnapshotMethods({ ...ops, live, schedule }) };
 }

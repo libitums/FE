@@ -13,5 +13,16 @@ public final class AirbridgeEventNamesTest {
     assertEquals("airbridge.achieveLevel", AirbridgeCategory.ACHIEVE_LEVEL);
     assertEquals("level", AirbridgeAttribute.LEVEL);
     assertEquals("label", AirbridgeAttribute.LABEL);
+    // 2026-11-19 엽전 팩 결제 Order Complete.
+    assertEquals("airbridge.ecommerce.order.completed", AirbridgeCategory.ORDER_COMPLETED);
+    assertEquals("value", AirbridgeAttribute.VALUE);
+    assertEquals("currency", AirbridgeAttribute.CURRENCY);
+    assertEquals("transactionID", AirbridgeAttribute.TRANSACTION_ID);
+    assertEquals("products", AirbridgeAttribute.PRODUCTS);
+    assertEquals("productID", AirbridgeAttribute.PRODUCT_ID);
+    assertEquals("name", AirbridgeAttribute.PRODUCT_NAME);
+    assertEquals("price", AirbridgeAttribute.PRODUCT_PRICE);
+    assertEquals("quantity", AirbridgeAttribute.PRODUCT_QUANTITY);
+    assertEquals("currency", AirbridgeAttribute.PRODUCT_CURRENCY);
   }
 }

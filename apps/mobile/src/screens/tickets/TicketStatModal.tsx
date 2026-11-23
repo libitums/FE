@@ -6,6 +6,7 @@ import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { infinityIcon } from "../../components/infinity-icon";
 import { ticketIcon } from "../../components/ticket-icon";
 import { ticketCapacity, ticketClock } from "../../lib/learning-tickets";
 import type { TicketSlot, TicketStatus } from "../../lib/learning-tickets";
@@ -29,6 +30,10 @@ export type TicketStatModalProps = {
   readonly more: TicketMoreResult;
   readonly onGetMore: () => void;
   readonly onClose: () => void;
+  /** 「∞ Go unlimited · 가격/mo」 줄(ADR-0160 · 시안 T1b) — 요금제 결선이 있을 때만. 가격을 모르면 null. */
+  readonly goUnlimited?: { readonly price: string | null; readonly onPress: () => void };
+  /** 위에 대화상자(비회원 로그인 권유)가 떠 있으면 참 — 모달을 낭독에서 숨깁니다(ADR-0166, 2026-11-20). */
+  readonly covered?: boolean;
 };
 
 function slotTime(slot: TicketSlot, readyLabel: string): string {
@@ -40,6 +45,8 @@ export function TicketStatModal({
   more,
   onGetMore,
   onClose,
+  goUnlimited,
+  covered = false,
 }: TicketStatModalProps): ReactNode {
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const alive = useMotion() === "standard";
@@ -57,6 +64,7 @@ export function TicketStatModal({
     <view
       className="journey-stat-modal ticket-modal"
       data-testid="ticket-modal"
+      accessibility-elements-hidden={covered ? true : undefined}
       data-statusbar={lightStatusBarIcons}
       event-through={false}
       style={{
@@ -77,6 +85,8 @@ export function TicketStatModal({
         </view>
       </view>
 
+      {/* 머리와 숫자 사이 여백 — 아래 안내 줄이 서면(엽전으로 1장의 결과) 줄어들어 버튼이 화면 안에 남습니다. */}
+      <view className="ticket-modal-top-gap" />
       <view
         className={`ticket-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
         accessibility-element={true}
@@ -113,6 +123,30 @@ export function TicketStatModal({
           </view>
         )}
       </view>
+
+      {goUnlimited === undefined ? null : (
+        <view
+          className="ticket-modal-go-unlimited"
+          data-testid="ticket-modal-go-unlimited"
+          flatten={false}
+          accessibility-element={true}
+          accessibility-traits="button"
+          accessibility-label={copy.plans.shop.goUnlimited(goUnlimited.price)}
+          bindtap={() => {
+            "background only";
+            goUnlimited.onPress();
+          }}
+        >
+          <svg
+            className="ticket-modal-go-unlimited-icon"
+            content={infinityIcon}
+            current-color={color.brand.secondary}
+          />
+          <text className="ticket-modal-go-unlimited-label">
+            {copy.plans.shop.goUnlimited(goUnlimited.price)}
+          </text>
+        </view>
+      )}
 
       <view className="journey-stat-modal-spacer" />
 

@@ -1,7 +1,6 @@
 // `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never` 망라가 여기 섭니다 —
 // 값은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
-import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
 import { AccountProfileScreen } from "../screens/profile/AccountProfileScreen";
@@ -9,9 +8,9 @@ import { FeedbackScreen } from "../screens/feedback/FeedbackScreen";
 import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
 import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen";
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
-import { SettingsScreen } from "../screens/settings/SettingsScreen";
-import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
+import { RankingRoute, SettingsRoute } from "./render-ranking";
 import type { Screen } from "./nav-state";
+import { renderDevProbe } from "./render-dev-probe";
 import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
 import { renderCatalogStory } from "./render-catalog-story";
@@ -29,9 +28,11 @@ import {
   renderMessengerList,
   messengerAccessFor,
 } from "./render-messenger-chat";
+import { canBrowseChats } from "../screens/messenger-chat/messenger-access";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import { renderPlans } from "./render-plans";
+import { renderMoreScreen } from "./render-more";
 import type { ScreenWiring } from "./screen-wiring";
 
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
@@ -55,8 +56,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "chat-settings":
     case "chat-memories":
     case "chat-album": {
-      if (messengerAccessFor(wiring) !== "open") return renderMessengerList(wiring, null);
-      if (screen.name === "messenger-chat") return renderMessengerChat(screen.roomId, wiring);
+      // 비회원 미리보기(ADR-0166)는 방까지 — 대화 설정 · 기억 · 앨범은 회원만(방 메뉴가 권유로 막음).
+      const access = messengerAccessFor(wiring);
+      if (screen.name === "messenger-chat" && canBrowseChats(access))
+        return renderMessengerChat(screen.roomId, wiring);
+      if (access !== "open" || screen.name === "messenger-chat")
+        return renderMessengerList(wiring, null);
       if (screen.name === "chat-settings") return renderChatSettings(wiring);
       if (screen.name === "chat-album")
         return renderChatAlbum(screen.roomId, screen.characterName, wiring);
@@ -79,7 +84,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     }
     case "settings":
       return (
-        <SettingsScreen
+        <SettingsRoute
+          ranking={wiring.ranking}
           onSelectNavTarget={wiring.onSelectNavTarget}
           learnerProfileSummary={learnerSettingsSummary(wiring)}
           languageSummary={entryLanguageLabel(wiring.entryLanguage)}
@@ -99,8 +105,24 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           }
         />
       );
+    case "ranking":
+      return (
+        <RankingRoute
+          key={screen.board}
+          board={screen.board}
+          ranking={wiring.ranking}
+          onSignIn={wiring.onSignIn}
+        />
+      );
     case "plans":
       return renderPlans(screen, wiring);
+    // 더보기 메뉴의 화면들(ADR-0169).
+    case "letters":
+    case "letters-compose":
+    case "wordbook":
+    case "wordbook-word":
+    case "wordbook-review":
+      return renderMoreScreen(screen, wiring);
     case "profile":
       return <AccountProfileScreen onExit={wiring.onExitProfile} />;
     case "learner-profile":
@@ -132,7 +154,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onExit={wiring.onExitNotifications}
         />
       );
-    // 진입 흐름 화면 여덟입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
+    // 진입 흐름 화면들입니다 — 스플래시부터 여정 입구 · 입장 전 기초(ADR-0176)까지가 한 흐름이라
     // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":
     case "onboarding":
@@ -142,6 +164,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "learner-country":
     case "language-select":
     case "journey-entry":
+    case "entry-basics-letters":
+    case "entry-basics-compose":
+    case "entry-basics-ready":
     case "update-required":
       return renderEntryScreen(screen, wiring);
     case "catalog-cover":
@@ -155,12 +180,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return renderCatalogFlow(screen, wiring);
     // `never` 망라가 이 case를 강제합니다. 결선이 없습니다 — 탐침 화면은 props도
     // 콜백도 받지 않습니다. **아무 코드도 이 화면을 push하지 않습니다** — 닿으려면
-    // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav`)를 바꿔 끼웁니다.
+    // `navigation.ts`가 둔 개발용 부팅 상태(`handwritingProbeNav` · `speechProbeNav`)를 바꿔 끼웁니다.
+    // dev 빌드에서만 그립니다 — release는 `__DEV__`가 `false`라 이 호출과 탐침 코드가 번들에서
+    // 빠집니다(`render-dev-probe.tsx`, ADR-0171). `__DEV__ ?` 삼항을 풀지 않습니다(DP-S2).
     case "handwriting-probe":
-      return <HandwritingProbeScreen />;
-    // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**
     case "speech-probe":
-      return <SpeechProbeScreen />;
+      return __DEV__ ? renderDevProbe(screen.name) : null;
     case "roleplay-story":
     case "roleplay-story-complete":
       return renderRoleplayStory(screen, wiring);
@@ -202,6 +227,9 @@ export function renderJourneyMap(wiring: ScreenWiring, active: boolean) {
             ? {}
             : { onCheckNew: wiring.onCheckNewStories }),
           coverImageUrlOf: wiring.episodeContent.imageUrlOf,
+          ...(wiring.catalogCoverDownloads === undefined
+            ? {}
+            : { coverDownloads: wiring.catalogCoverDownloads }),
         }}
       />
     </NewFriendMapHost>

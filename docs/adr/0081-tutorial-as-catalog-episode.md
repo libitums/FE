@@ -208,3 +208,10 @@
   - 호스트는 `/` 없는 이름 하나만 받으므로 `level-3/u00-tutorial/d-01-r2` → `level-3-u00-tutorial-d-01-r2.m4a`로 잇는다. 표는 `bundled-content-audio.ts` 하나, `bundled-content-audio.unit.test.ts`가 표 = 내장 u00의 소리 id · 각 파일이 폴더에 있음을 본다. **내장 u00을 다시 갈 때는 이 표와 파일도 맞춘다.**
   - 재생 주소는 받아 둔 파일(`file://`)이 먼저, 없으면 내장 이름이다(원격으로는 여전히 내려가지 않는다). 받기 차례는 내장 소리를 이미 있는 것으로 보고 받지 않는다.
   - 네이티브 리소스라 `main.lynx.bundle` 크기는 그대로다.
+
+## 적용 기록 ⟨2026-11-22 — 안내 글을 눌러도 시작된다⟩
+
+- **사용자 결정**(2026-11-22): D6의 「말풍선을 누르면 안내를 닫고 표지 시작」을 기기에서 실제로 되게 한다.
+- **원인**: `FirstUnitMapTooltip`이 감싼 ui-lynx `Tooltip`은 누를 수 없는 말풍선이라 `event-through={true}`다. 그 속성은 터치를 Lynx에 보내지 않고 자손에 상속돼, 바깥의 `bindtap`에도 가림막에도 닿지 않았다(main `cefe0fff`도 iOS · Android에서 무반응). 속성 하나만 뺀 확인용 빌드에서 두 플랫폼 모두 글 탭으로 스토리가 열려 인과를 확인했다. jsdom은 이 속성을 흉내 내지 않아 탭 테스트(MU6)는 green이었다.
+- **고침**: 공용 `Tooltip`의 계약(트리거를 가로채지 않음)은 바꾸지 않는다 — 이 글은 단추이므로 앱이 글 상자를 직접 그린다(`first-unit-map-tooltip-body` · `-message`, 모양 그대로 — Tooltip의 CSS는 앱이 싣지 않았다). 앱에서 `Tooltip` 소비는 0이 됐다.
+- **낭독**: 글 상자 하나가 요소다(`flatten={false}` · `accessibility-enable-tap` · trait `button` · 이름 = 문구). 들린 상자 밖에 서면 Android TalkBack 초점이 가지 않아 상자가 글을 품는다([ADR-0099](0099-episode-cover-illustration.md) 적용 기록). ui GA9 · GA10 · unit SC11, 기기 [여정 맵 e2e](../e2e/journey-map.md) GL5t · GL10.

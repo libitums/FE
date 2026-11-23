@@ -59,6 +59,8 @@ export type SentenceOrderQuestion = {
   readonly instruction?: string;
   /** 줄 배치의 읽기 줄입니다. 없으면 로마자를 보이지 않습니다. */
   readonly reading?: SentenceOrderReading;
+  /** 정답 문장의 학습자 언어 뜻입니다(듣고 조립의 판정 뒤 공개). 없으면 뜻 줄이 없습니다. */
+  readonly meaning?: string;
   /** 창고 조각마다 영어 뜻 줄입니다. 있으면 길이 = `chips.length`입니다. */
   readonly chipMeanings?: readonly string[];
   /** 문항 음성입니다 — 듣기 조립은 듣기 갈래, 문장 순서는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */

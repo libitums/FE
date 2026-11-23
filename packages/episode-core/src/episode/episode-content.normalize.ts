@@ -36,6 +36,13 @@ export function maybe<K extends string, V>(key: K, value: V | undefined): { [P i
 export const nonEmpty = (value: string | undefined): string | undefined =>
   value === undefined || value === "" ? undefined : value;
 
+/** 와이어 `feedback.audio_url`(콘텐츠 수준 5) → 모델 `answerAudioUrl`. 없거나 비면 키가 없습니다(ADR-0172). */
+export function answerAudioOf(feedback: { audio_url?: string | undefined } | undefined): {
+  answerAudioUrl?: string;
+} {
+  return maybe("answerAudioUrl", nonEmpty(feedback?.audio_url));
+}
+
 /** zod `path` 배열을 와이어 경로 `steps[0].items[3].options`로 잇습니다. */
 export function formatPath(path: readonly PropertyKey[]): string {
   return path.reduce<string>((acc, segment) => {

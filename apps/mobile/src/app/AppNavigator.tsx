@@ -7,6 +7,8 @@ import type { Tab } from "./navigation";
 // 가로채는 기기에서 탭 바 밑에 덧대는 바닥 면을 그립니다. 판정은 하지 않습니다:
 // `floorHeight`는 `shellBottomLayout`의 결과를 받아 그리기만 합니다.
 // `floorHeight`가 0이면 바닥 면 요소를 만들지 않습니다(iOS · 제스처의 트리가 수정 전과 같습니다).
+// 더보기 메뉴 카드(ADR-0169)는 `children`으로 받아 바 **앞** 흐름 자식으로 그립니다 — 묶음이 위로 자라 카드가 묶음 상자 안,
+// 바 바로 위에 섭니다. 묶음 밖(바 위 절대 배치)에 두면 묶음 경계에서 잘려 보이지 않았습니다(fix/more-menu-clipped).
 
 export type AppNavigatorProps = {
   readonly tab: Tab;
@@ -17,6 +19,10 @@ export type AppNavigatorProps = {
   readonly floorHeight: number;
   /** 탭 NEW 배지(메신저 첫 입장 · 새 친구). 없으면 배지 없음. */
   readonly badges?: Partial<Record<Tab, "new">>;
+  /** 더보기 메뉴가 열려 있는가(ADR-0169) — ⋯ → ×, 동그라미 brand-strong. */
+  readonly moreOpen?: boolean;
+  /** 바 위에 뜨는 더보기 메뉴 카드(열렸을 때만) — 바 앞에 그립니다. */
+  readonly children?: ReactNode;
 };
 
 export function AppNavigator({
@@ -25,14 +31,17 @@ export function AppNavigator({
   obscured,
   floorHeight,
   badges,
+  moreOpen = false,
+  children,
 }: AppNavigatorProps): ReactNode {
   return (
     <view
-      className="app-navigator"
+      className={moreOpen ? "app-navigator app-navigator-more-open" : "app-navigator"}
       data-testid="app-navigator"
       accessibility-elements-hidden={obscured}
     >
-      <BottomNavigator tab={tab} onSelectTab={onSelectTab} badges={badges} />
+      {children}
+      <BottomNavigator tab={tab} onSelectTab={onSelectTab} badges={badges} moreOpen={moreOpen} />
       {floorHeight > 0 ? (
         <view
           className="app-navigator-floor"

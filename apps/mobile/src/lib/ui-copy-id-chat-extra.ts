@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaId } from "./ui-copy-id-chat-media";
 import { messengerChatAlbumId } from "./ui-copy-id-chat-album";
+import { messengerChatSuggestedId } from "./ui-copy-id-chat-suggested";
 
 export const messengerChatExtraId: MessengerChatExtraCopy = {
   media: messengerChatMediaId,
   album: messengerChatAlbumId,
+  suggested: messengerChatSuggestedId,
   access: {
     signInTitle: "Kirim pesan ke orang yang kamu temui",
     signInBody:
       "Buat akun gratis untuk mengobrol dalam bahasa Korea dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
     signIn: "Daftar atau masuk",
+    promptTitle: "Masuk untuk mengirim pesan",
+    promptBody:
+      "Buat akun gratis untuk mengobrol dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
+    promptLater: "Nanti saja",
+    promptKeepBody: "Buat akun gratis untuk menyimpan Yeopjeon dan tiketmu.",
   },
   pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
   chatSettings: {
@@ -131,11 +138,17 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       chat: "Tulis dalam bahasa Korea lalu kirim. Aku akan membalas, dan pensil di bawah pesanmu menunjukkan cara mengatakannya dengan lebih baik.",
       ideas: "Bingung mau bilang apa? Ketuk lampu di samping kotak pesan untuk ide balasan.",
       media: "Kamu juga bisa minta foto atau pesan suara lewat tombol di atas keyboard.",
+      sample:
+        "Mau lihat aku lagi apa? Ketuk Snapshot dan aku kirim foto. Yang pertama gratis dariku.",
+      voice:
+        "Mau dengar suaraku? Ketuk Suara kilat dan aku bacakan pesan itu. Yang pertama juga gratis dariku.",
     },
     next: "Berikutnya",
     done: "Mengerti",
     skip: "Lewati",
     stepOf: (step, total) => `${step} dari ${total}`,
+    newTag: "Baru",
+    free: "GRATIS",
   },
   launch: {
     newTag: "BARU",

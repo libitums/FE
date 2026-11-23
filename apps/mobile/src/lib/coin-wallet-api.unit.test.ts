@@ -14,7 +14,14 @@ describe("응답", () => {
       learning: 370,
       bonus: 100,
       balance: 470,
+      newAccount: false,
     });
+    // 새 계정(ADR-0174) — 출시 보너스 없이 학습 보상만, 서버가 새 계정이라고 알린다. 옛 서버(칸 없음)는 거짓.
+    expect(
+      coinClaimFrom(
+        JSON.stringify({ learning: 10, bonus: 0, newAccount: true, wallet: { balance: 110 } }),
+      ),
+    ).toEqual({ learning: 10, bonus: 0, balance: 110, newAccount: true });
     expect(
       coinClaimFrom(JSON.stringify({ learning: -1, bonus: 0, wallet: { balance: 0 } })),
     ).toBeNull();
@@ -40,7 +47,7 @@ describe("요청", () => {
         };
       },
     });
-    expect(await ok.claim()).toEqual({ learning: 0, bonus: 100, balance: 100 });
+    expect(await ok.claim()).toEqual({ learning: 0, bonus: 100, balance: 100, newAccount: false });
     expect(urls).toEqual(["https://example.supabase.co/rest/v1/rpc/companion_claim_coins"]);
     expect(
       await createCoinClient({

@@ -1,0 +1,388 @@
+/* 주간 순위 화면(ADR-0170). 토큰은 CSS 커스텀 프로퍼티로만 씁니다(ADR-0014 D1) — 시안 hex와의 대응은 디자인 기록에.
+   전역 머리가 없는 탭 루트라(메신저 목록과 같은 규칙) 제목이 셸이 비운 안전 영역 바로 아래에서 시작합니다.
+   shorthand에 calc가 섞이면 Lynx가 선언을 버리므로 longhand로 적습니다. */
+/* 아래 여백은 바텀 네비게이션 몫입니다 — 바 묶음이 셸 위에 겹치므로(app.css의 `.app-navigator`) 이 여백이 없으면
+   내 줄 고정 칸 · 안내 · 자리 줄이 바 밑에 깔립니다(fix/ranking-bottom-under-nav). 값은 바 높이 68pt(위 8 + 항목 48 +
+   아래 12)로 다른 탭 루트와 같습니다. 목록이 아니라 화면 뿌리에 두는 것은 맨 아래가 스크롤이 아닌 고정 칸이라서입니다 —
+   스크롤은 고정 칸 위에서 끝나고, 고정 칸 · 안내 · 자리 줄이 모두 바 위에서 끝나야 합니다. */
+.ranking-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+  background-color: var(--libitum-color-background-primary);
+}
+
+.ranking-top {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-layout-screen-padding-top);
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-bottom: var(--libitum-spacing-12);
+  padding-left: var(--libitum-layout-screen-padding-x);
+}
+
+.ranking-title {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+}
+
+/* 높이는 그룹 알약(28)에 맞춰 고정 — 알약이 읽은 뒤에 서도 줄 높이가 달라지지 않습니다(아래가 밀리지 않게). */
+.ranking-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+}
+
+.ranking-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+  height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.ranking-group-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.ranking-group-text,
+.ranking-zone {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.ranking-group-text {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ranking-ends,
+.ranking-sub,
+.ranking-unit {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 바로 위 사람과의 차이(「N more to pass NAME」) — 고정 내 줄에서 브랜드 글 · 굵게(ADR-0170 D11). 내 줄 바탕(background-elevated) 위 대비 5.0. */
+.ranking-sub-gap {
+  color: var(--libitum-color-fg-brand);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+}
+
+/* 보드 전환 — 회색 바탕 위 흰 알약이 선택. 칸 높이 40 + hit-slop 위아래 2 = 44. */
+.ranking-boards {
+  display: flex;
+  flex-direction: row;
+  padding: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-200);
+}
+
+.ranking-board {
+  flex: 1;
+  height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ranking-board-on {
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s1);
+}
+
+.ranking-board-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+/* 선택은 흰 알약 + 브랜드 글 — 바탕 대비가 낮아(1.1) 글 색으로도 가른다(접근성 W2). */
+.ranking-board-on .ranking-board-text {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ranking-scroll {
+  flex: 1;
+}
+
+/* 스크롤의 유일한 직계 자식(ADR-0022 D4) — scroll-view 안은 linear라 간격은 줄 상자의 아래 여백이 집니다. */
+.ranking-list {
+  padding-top: var(--libitum-spacing-4);
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-bottom: var(--libitum-spacing-12);
+  padding-left: var(--libitum-layout-screen-padding-x);
+}
+
+/* overflow visible — 내 줄 강조(커짐 · 고리, `ranking-motion.css`)가 줄 상자 밖으로 조금 넘칩니다. 목록의 좌우 여백 안이라 스크롤 밖으로는 나가지 않습니다. */
+.ranking-item {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--libitum-spacing-8);
+  overflow: visible;
+}
+
+/* 상위 3과 내 근처 사이 생략(ADR-0170 D11) — 세로 점 셋. 글자가 아니라 점이라 문구 · 낭독이 없습니다(순위 숫자가 건너뜀을 말함). 점은 fg-neutral-subtle — 바탕 대비 3.4(비텍스트 3 이상, 접근성 S1). */
+.ranking-gap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+}
+
+.ranking-gap-dot {
+  width: var(--libitum-spacing-4);
+  height: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.ranking-zone {
+  color: var(--libitum-color-fg-neutral-muted);
+  padding-top: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-8);
+}
+
+.ranking-row {
+  min-height: var(--libitum-spacing-64);
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-white);
+}
+
+.ranking-row-me {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.ranking-row-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-16);
+  padding-bottom: var(--libitum-spacing-12);
+  padding-left: var(--libitum-spacing-16);
+}
+
+.ranking-rank,
+.ranking-medal {
+  width: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  flex-shrink: 0;
+}
+
+.ranking-rank {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+}
+
+.ranking-rank-me {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ranking-medal {
+  height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.ranking-medal-gold {
+  background-color: var(--libitum-color-feedback-warning);
+}
+
+/* 흰 글 대비 4.5 이상(gray-700은 3.4라 바꿈 — 접근성 W1). */
+.ranking-medal-silver {
+  background-color: var(--libitum-color-fg-neutral-muted);
+}
+
+.ranking-medal-bronze {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ranking-medal-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+}
+
+/* 금 바탕(#FFC500)에 흰 글은 대비가 낮아 진한 글을 씁니다. */
+.ranking-medal-text-gold {
+  color: var(--libitum-color-gray-950);
+}
+
+.ranking-face {
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* 아바타 색(ADR-0170 D10, 사용자 요청 「배경 색 랜덤으로 알록달록 · 글자는 흰색」) — 번호는 이름 해시(`avatarToneOf`)라 사람마다 고정.
+   이니셜(label-m 12px 700, 작은 글)이라 흰 글 대비 4.5 이상만 둡니다(unit RK-U14). 토큰에 있는 색은 토큰, 없는 색상(파랑 · 보라 ·
+   분홍 · 청록 · 황토 · 올리브)은 시안 Ranking 보드 값을 4.5가 넘게 어둡게 한 디자인 값입니다(시안 → 쓴 값 · 대비):
+   0 #3B6FE0 그대로 4.63 · 1 #2FA36B → feedback-correct-text 7.00 · 2 #9B59D0 → #8E4FC8 5.12 · 3 #E0507A → #C43C66 5.02 ·
+   4 #1F9AA8 → #167A86 5.05 · 5 #D98E04 → #9E6200 5.00 · 6 #6B7A8F → gray-800 6.62 · 7 #C2553A → brand-strong 5.46 · 8 #5A8F3E → #4A7A33 5.09.
+   이니셜이 없어 사람 모양이 그려지는 아바타(`-content-placeholder`)는 회색 바탕 그대로 둡니다 — 회색 아이콘이 색 바탕에 묻힙니다. */
+.ranking-face .ui-lynx-avatar-initials {
+  color: var(--libitum-color-white);
+}
+
+.ranking-face-tone-0 .ui-lynx-avatar-content-initials {
+  background-color: #3b6fe0;
+}
+
+.ranking-face-tone-1 .ui-lynx-avatar-content-initials {
+  background-color: var(--libitum-color-feedback-correct-text);
+}
+
+.ranking-face-tone-2 .ui-lynx-avatar-content-initials {
+  background-color: #8e4fc8;
+}
+
+.ranking-face-tone-3 .ui-lynx-avatar-content-initials {
+  background-color: #c43c66;
+}
+
+.ranking-face-tone-4 .ui-lynx-avatar-content-initials {
+  background-color: #167a86;
+}
+
+.ranking-face-tone-5 .ui-lynx-avatar-content-initials {
+  background-color: #9e6200;
+}
+
+.ranking-face-tone-6 .ui-lynx-avatar-content-initials {
+  background-color: var(--libitum-color-gray-800);
+}
+
+.ranking-face-tone-7 .ui-lynx-avatar-content-initials {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ranking-face-tone-8 .ui-lynx-avatar-content-initials {
+  background-color: #4a7a33;
+}
+
+.ranking-flag {
+  position: absolute;
+  right: calc(var(--libitum-spacing-4) * -1);
+  bottom: calc(var(--libitum-spacing-4) * -1);
+  font-size: var(--libitum-typography-label-l-font-size);
+}
+
+.ranking-name {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+}
+
+.ranking-name-text,
+.ranking-score-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+}
+
+.ranking-name-text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ranking-score {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* 내 줄 고정 칸 — 탭 바 바로 위. */
+.ranking-pin {
+  flex-shrink: 0;
+  padding-top: var(--libitum-spacing-8);
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-bottom: var(--libitum-spacing-8);
+  padding-left: var(--libitum-layout-screen-padding-x);
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-background-primary);
+}
+
+.ranking-notice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-32);
+  padding-left: var(--libitum-spacing-32);
+}
+
+.ranking-notice-title {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.ranking-notice-body {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 불러오는 중 — 줄 자리 다섯(움직임 없음). */
+.ranking-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding-right: var(--libitum-layout-screen-padding-x);
+  padding-left: var(--libitum-layout-screen-padding-x);
+}
+
+.ranking-placeholder {
+  height: var(--libitum-spacing-64);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}

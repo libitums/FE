@@ -9,7 +9,7 @@ import type {
   PersonaCard,
   Segment,
 } from "./chat-send.contract.ts";
-import type { TurnContext } from "./chat-send-context.ts";
+import { type TurnContext, turnRomanceLine } from "./chat-send-context.ts";
 import type { ModerationRecord } from "./chat-send-finish.ts";
 import { chipTarget } from "./chat-send-learning.ts";
 import { defaultLlmTimeoutMs, startReply } from "./chat-send-reply.ts";
@@ -19,7 +19,7 @@ import type { LearningTarget } from "./companion-learning.ts";
 import { recoveryDirective, refusalTopic } from "./companion-llm-prompts.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 
-/** 동기 출력 검사 — 결과를 검사 목록에 더합니다. 검사 실패는 거부(턴이 `upstream_unavailable`로). */
+/** 동기 출력 검사 — 결과를 검사 목록에 더합니다. 검사 실패는 거부(턴이 `upstream_unavailable`로). 완화 수위(open) 턴도 여기를 지난다. */
 export function outputChecker(context: TurnContext, moderation: ModerationRecord[]) {
   const { deps, llm, body, gate } = context;
   return async (segments: readonly Segment[]): Promise<ModerationVerdict> => {
@@ -28,6 +28,7 @@ export function outputChecker(context: TurnContext, moderation: ModerationRecord
       text: segmentsToPlain(segments),
       context: body.text,
       ageBand: gate.ageBand,
+      romanceLine: turnRomanceLine(context),
       signal: AbortSignal.timeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs),
     });
     moderation.push({
@@ -86,7 +87,7 @@ export async function recoverReply(
     readonly check: (segments: readonly Segment[]) => Promise<ModerationVerdict>;
   },
 ) {
-  const directive = recoveryDirective(refusalTopic(input.category));
+  const directive = recoveryDirective(refusalTopic(input.category, turnRomanceLine(context)));
   const reply = startReply(context, input.history, input.system, input.abort, directive);
   try {
     const result = await reply.done;

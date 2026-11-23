@@ -86,6 +86,7 @@ test("[GE5b] 로그인 사용자의 설정은 Chats(2026-11-17 일반 회원 개
       "show-choice-romanization",
       "vibration",
       "chats",
+      "ranking-hidden",
       "plans",
       "profile",
       "learner-profile",
@@ -140,7 +141,7 @@ test("[GE6] 「로그인」 행은 비회원 버튼 없는 로그인 화면을 �
 
   expect(present("settings-screen-title")).toBe(true);
   expect(present("login-screen-title")).toBe(false);
-  expect(navigatorItems()).toHaveLength(4);
+  expect(navigatorItems()).toHaveLength(5); // 탭 다섯(ADR-0170)
 });
 
 // ------------------------------------------------------------------------- GE10

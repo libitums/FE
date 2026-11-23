@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaEs } from "./ui-copy-es-chat-media";
 import { messengerChatAlbumEs } from "./ui-copy-es-chat-album";
+import { messengerChatSuggestedEs } from "./ui-copy-es-chat-suggested";
 
 export const messengerChatExtraEs: MessengerChatExtraCopy = {
   media: messengerChatMediaEs,
   album: messengerChatAlbumEs,
+  suggested: messengerChatSuggestedEs,
   access: {
     signInTitle: "Escríbeles a las personas de tus historias",
     signInBody:
       "Crea una cuenta gratis para chatear en coreano con las personas de tus historias. Tu progreso se conserva.",
     signIn: "Regístrate o inicia sesión",
+    promptTitle: "Inicia sesión para enviar mensajes",
+    promptBody:
+      "Crea una cuenta gratis para chatear con las personas de tus historias. Tu progreso se conserva.",
+    promptLater: "Ahora no",
+    promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
   chatSettings: {
@@ -140,11 +147,17 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
         "¿No sabes qué decir? Toca la bombilla junto al cuadro de mensaje para ver ideas de respuesta.",
       media:
         "También puedes pedirme una foto o un mensaje de voz con los botones sobre el teclado.",
+      sample:
+        "¿Quieres ver qué estoy haciendo? Toca Snapshot y te envío una foto. La primera va por mi cuenta.",
+      voice:
+        "¿Quieres oírlo con mi voz? Toca Nota de voz y te leo ese mensaje. El primero también va por mi cuenta.",
     },
     next: "Siguiente",
     done: "Entendido",
     skip: "Omitir",
     stepOf: (step, total) => `${step} de ${total}`,
+    newTag: "Nuevo",
+    free: "GRATIS",
   },
   launch: {
     newTag: "NUEVO",

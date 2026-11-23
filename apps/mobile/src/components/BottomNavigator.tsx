@@ -10,7 +10,8 @@
 import flag from "@libitums/icons/lynx/flag-03";
 import friends from "@libitums/icons/lynx/friends";
 import message from "@libitums/icons/lynx/message";
-import settings from "@libitums/icons/lynx/settings";
+import cross from "@libitums/icons/lynx/cross";
+import trophy from "@libitums/icons/lynx/trophy";
 
 import { BottomNavigator as UiBottomNavigator } from "@libitums/ui-lynx/bottom-navigator";
 import type { BottomNavigatorItem } from "@libitums/ui-lynx/bottom-navigator";
@@ -20,6 +21,7 @@ import type { ReactNode } from "@lynx-js/react";
 import type { Tab } from "../app/navigation";
 import { playSound } from "../lib/sound-effects";
 import { useUiCopy } from "../lib/ui-copy";
+import { moreIcon } from "./more-icon";
 
 import "./bottom-navigator.css";
 
@@ -28,6 +30,8 @@ export type BottomNavigatorProps = {
   onSelectTab: (tab: Tab) => void;
   /** 탭 NEW 배지(2026-11-13) — 글자 배지, 낭독은 탭 이름 뒤 「, new」. */
   badges?: Partial<Record<Tab, "new">>;
+  /** 더보기 메뉴가 열려 있는가(ADR-0169) — 열린 동안 ⋯는 ×(brand-strong)이고 이름이 「Close menu」입니다. */
+  moreOpen?: boolean;
 };
 
 // 항목은 모듈 내부 상수입니다. export하지 않고 props로도 받지 않습니다 — 네 탭은
@@ -40,7 +44,10 @@ const tabs: readonly { readonly id: Tab; readonly icon: string }[] = [
   { id: "journey", icon: flag },
   { id: "roleplay", icon: friends },
   { id: "messenger", icon: message },
-  { id: "settings", icon: settings },
+  { id: "ranking", icon: trophy },
+  // 마지막은 늘 더보기 동그라미(ADR-0169) — 아이콘은 그릴 때 열림에 따라 ⋯ / ×. 새 탭은 이 줄 앞에 한 줄 더하고
+  // `Tab` · `initialNav.stacks` · 탭 이름표에 같은 id를 더합니다. 다섯이면 ui-lynx가 양끝 맞춤(항목 56)으로 놓습니다.
+  { id: "more", icon: moreIcon },
 ];
 
 // 탭 이름은 문구표에서 옵니다 — 언어가 바뀌면 항목을 다시 짓습니다.
@@ -48,11 +55,13 @@ function itemsFor(
   labels: Readonly<Record<Tab, string>>,
   badges: Partial<Record<Tab, "new">>,
   newCopy: { readonly badge: string; readonly spoken: string },
+  moreOpen: boolean,
 ): readonly (BottomNavigatorItem & {
   readonly id: Tab;
 })[] {
   return tabs.map((tab) => ({
     ...tab,
+    ...(tab.id === "more" ? { variant: "action" as const, icon: moreOpen ? cross : moreIcon } : {}),
     accessibilityLabel: labels[tab.id],
     timingFlag: `libitum:navigation:${tab.id}`,
     ...(badges[tab.id] === "new"
@@ -77,11 +86,20 @@ export function BottomNavigator({
   tab,
   onSelectTab,
   badges = {},
+  moreOpen = false,
 }: BottomNavigatorProps): ReactNode {
   const copy = useUiCopy();
+  // 탭 이름표 넷 — 더보기는 열린 동안 「Close menu」(×). 설정 탭 이름(`shell.tabs.settings`)은 더보기 메뉴의 Settings 줄이 씁니다.
+  const labels: Readonly<Record<Tab, string>> = {
+    journey: copy.shell.tabs.journey,
+    roleplay: copy.shell.tabs.roleplay,
+    messenger: copy.shell.tabs.messenger,
+    ranking: copy.shell.tabs.ranking,
+    more: moreOpen ? copy.more.menu.close : copy.more.menu.tab,
+  };
   return (
     <UiBottomNavigator
-      items={itemsFor(copy.shell.tabs, badges, copy.shell.tabNew)}
+      items={itemsFor(labels, badges, copy.shell.tabNew, moreOpen)}
       selectedId={tab}
       bindselect={(id) => {
         const next = toTab(id);

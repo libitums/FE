@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -73,8 +74,7 @@ const cell = (id: string): HTMLElement =>
   within(screen.getByTestId(`ui-lynx-settings-group-item-${id}`)).getByTestId(
     "ui-lynx-settings-cell",
   );
-const openSettings = (): void =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+const openSettings = (): void => openSettingsFromMore();
 
 afterEach(() => {
   cleanup();

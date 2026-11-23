@@ -6,15 +6,11 @@ import {
   loadAllowedEpisodes,
   loadMobileDataPolicy,
 } from "../lib/download-policy";
-import { isCatalogEpisodeComplete, type CatalogProgress } from "../lib/catalog-progress";
+import type { CatalogProgress } from "../lib/catalog-progress";
 import { episodeOpenGate } from "../lib/episode-open-gate";
 import { catalogFreshness, type CatalogFreshness } from "../lib/manifest-check";
 import { readNetworkProperties } from "../lib/network-status";
-import {
-  openEpisodeForPrefetch,
-  prefetchWindowIds,
-  setPrefetchWindow,
-} from "../lib/prefetch-window";
+import { openEpisodeForPrefetch, setPrefetchWindow } from "../lib/prefetch-window";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import { AllClearedSheet } from "../screens/download-sheet/AllClearedSheet";
 import { catalogAllCleared } from "../screens/journey-map/catalog-all-cleared";
@@ -22,7 +18,11 @@ import type {
   DownloadSheetState,
   DownloadSheetTarget,
 } from "../screens/download-sheet/download-sheet.contract";
-import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import type {
+  CatalogMapSection,
+  CoverDownloads,
+} from "../screens/journey-map/catalog-map.contract";
+import { catalogCoverDownloadsOf, catalogPrefetchWindowOf } from "./cover-download-state";
 import { DownloadGateLayer, type OpenDownloadSheet } from "./download-gate-layer";
 import {
   assetTargetOf,
@@ -47,7 +47,11 @@ export type DownloadGate = {
   readonly freshness: CatalogFreshness | undefined;
   /** 맨 끝 카드의 「새 이야기 확인」 — 모두 끝낸 뒤 시트를 엽니다. */
   readonly openAllCleared: () => void;
+  /** 사용자 차례인 편의 표지 받기 표시(ADR-0165). 받기 훅이 없으면 빈 표. */
+  readonly coverDownloads: CoverDownloads;
 };
+
+const noCoverDownloads: CoverDownloads = {};
 
 const isOfflineNow = () => readNetworkProperties().network === "offline";
 
@@ -63,7 +67,7 @@ export function useDownloadGate(
   },
   atMapRoot: boolean,
   /** 진행을 다 읽었는가 — 읽는 동안의 변화를 「끝낸 순간」으로 세지 않습니다. */
-  progress: { readonly hasLoadedProgress: boolean },
+  progress: { readonly hasLoadedProgress: boolean; readonly legacyTutorialPassed?: boolean },
   /** 「설정 바꾸기」 — 설정 탭 루트로 간 뒤 설정 › 다운로드를 쌓습니다. */
   nav: { readonly openDownloadSettings: () => void },
 ): DownloadGate {
@@ -90,24 +94,49 @@ export function useDownloadGate(
   }, [loaded, allCleared, atMapRoot, controls, checkedAt]);
 
   // 미리 받기 창(ADR-0157)을 진행에서 셉니다 — 편을 끝내 창이 밀리면 받기 차례를 다시 돌려 다음 편을 받습니다.
+  // 맵 순서에는 「준비 중」 편도 듭니다(D1) — 마지막으로 끝낸 편 다음 편이 본문 전이어도 창에 듭니다.
   const catalogProgress = catalog.catalogProgress;
-  const windowKey = useMemo(() => {
-    const ready = sections.flatMap((s) => (s.kind === "catalog-ready" ? [s] : []));
-    return prefetchWindowIds(
-      ready.map((s) => s.episodeId),
-      (id) => {
-        const section = ready.find((s) => s.episodeId === id);
-        return section !== undefined
-          ? isCatalogEpisodeComplete(catalogProgress, id, section.completionKeys)
-          : false;
-      },
-    ).join(",");
-  }, [sections, catalogProgress]);
+  const windowKey = useMemo(
+    () => catalogPrefetchWindowOf(sections, catalogProgress).join(","),
+    [sections, catalogProgress],
+  );
   useEffect(() => {
     // 맵 구획이 아직 없으면(콘텐츠를 읽기 전) 창을 정하지 않습니다 — 받기 차례는 새 사용자 창을 씁니다.
     if (windowKey === "") return;
     if (setPrefetchWindow(windowKey.split(",")) && loaded) controls?.requestSync();
   }, [windowKey, loaded, controls]);
+
+  // 표지 받기 표시(ADR-0165) — 저장소 · 연결을 읽으므로 effect(백그라운드)에서 셉니다.
+  const [coverDownloads, setCoverDownloads] = useState<CoverDownloads>(noCoverDownloads);
+  const legacyTutorialPassed = progress.legacyTutorialPassed ?? false;
+  useEffect(() => {
+    if (controls === undefined || !controls.tracksAssets()) return;
+    const network = readNetworkProperties();
+    const policy = loadMobileDataPolicy();
+    const allowed = loadAllowedEpisodes();
+    const next = catalogCoverDownloadsOf(
+      sections,
+      { legacyTutorialPassed, progress: catalogProgress },
+      {
+        gateOf: (episodeId) =>
+          episodeOpenGate({
+            assetsComplete: false,
+            isTutorial: episodeId === TUTORIAL_EPISODE_ID,
+            network,
+            policy,
+            allowed: isDownloadAllowed(allowed, episodeId, { kind: "episode" }),
+          }),
+        assetsComplete: (episodeId) => controls.assetsComplete(episodeId, { kind: "episode" }),
+        scheduled: controls.assetsScheduled,
+        bytes: controls.assetsBytes,
+        syncing: controls.syncing,
+        activity: controls.assetActivity,
+      },
+    );
+    setCoverDownloads((previous) =>
+      JSON.stringify(previous) === JSON.stringify(next) ? previous : next,
+    );
+  }, [controls, sections, catalogProgress, legacyTutorialPassed]);
 
   const guard = useCallback<DownloadGuard>(
     (target, open) => {
@@ -168,7 +197,7 @@ export function useDownloadGate(
       <DownloadGateLayer sheet={sheet} controls={controls} nav={nav} close={() => setSheet(null)} />
     );
   const openAllCleared = useCallback(() => setSheet({ kind: "all-cleared" }), []);
-  return { guard, layer, freshness, openAllCleared };
+  return { guard, layer, freshness, openAllCleared, coverDownloads };
 }
 
 // 화면 결선의 카탈로그 시작에 받기 문지기를 겹칩니다. 티켓 문지기 바깥에 둡니다 — 받지 않기로 하면 티켓을 쓰지 않습니다.
@@ -178,6 +207,7 @@ export function withDownloadGate<W extends ScreenWiring>(wiring: W, gate: Downlo
   return {
     ...wiring,
     ...(gate.freshness === undefined ? {} : { catalogFreshness: gate.freshness }),
+    catalogCoverDownloads: gate.coverDownloads,
     onCheckNewStories: gate.openAllCleared,
     onStartCatalogCover: (episodeId) => {
       "background only";

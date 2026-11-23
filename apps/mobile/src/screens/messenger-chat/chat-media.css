@@ -6,7 +6,8 @@
   opacity: var(--libitum-opacity-disabled);
 }
 
-/* 서버 사진 — 3:2(240 × 160) · 1:1(200 × 200). 모서리는 기존 3:4 사진과 같습니다. */
+/* 서버 사진 — 3:2(240 × 160) · 1:1(200 × 200). 모서리는 기존 3:4 사진과 같습니다. 만드는 중인 상자도 같은 크기를 씁니다
+   (`ChatMediaBubbles.tsx`의 `PHOTO_BOX` — 선 채로 비율이 도착해도 확실히 바뀌게 인라인 스타일로 겁니다. 값을 바꾸면 같이 바꿉니다). */
 .messenger-chat-photo-3x2 {
   width: 240px;
   height: 160px;

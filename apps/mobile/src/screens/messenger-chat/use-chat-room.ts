@@ -36,6 +36,7 @@ import { chatFeedbackTestIds } from "./chat-feedback.contract";
 import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { useChatSnapshot, useChatThread } from "./use-chat-source";
+import { useEntryBirthYear } from "./use-entry-birth-year";
 import { usePhoneKeyboardHeight } from "./use-phone-keyboard-height";
 
 export type UseChatRoomProps = {
@@ -47,6 +48,8 @@ export type UseChatRoomProps = {
   readonly onExit: () => void;
   /** 보내기 관문입니다(턴 · 엽전). 거짓이면 글을 그대로 두고 아무것도 보내지 않습니다. 기본은 늘 참. */
   readonly authorizeSend?: () => boolean;
+  /** 비회원(ADR-0166) — 방을 열 때 생년을 묻지 않습니다(2026-11-20). */
+  readonly guest?: boolean;
 };
 
 export type ChatRoomApi = {
@@ -94,6 +97,7 @@ export function useChatRoom({
   edges,
   onExit,
   authorizeSend,
+  guest = false,
 }: UseChatRoomProps): ChatRoomApi {
   // 키보드 규칙은 마운트 때 한 번만 읽습니다(앞으로 나올 때 다시 읽기는 2단계).
   const [plan] = useState(() => keyboardPlanFor("chat", keyboardProbe.presence()));
@@ -118,14 +122,7 @@ export function useChatRoom({
     return () => source.closeRoom(roomId);
   }, [source, roomId]);
 
-  // 생년을 아직 묻지 않았으면 첫 대화 전에 묻습니다(ADR-0125). 방을 열 때 한 번만 봅니다.
-  useEffect(() => {
-    if (source.snapshot().birthYear.kind !== "unasked") return;
-    rawDispatch({
-      type: "open-overlay",
-      overlay: { kind: "birth-year", selected: null, from: "room" },
-    });
-  }, [source, roomId]);
+  useEntryBirthYear(source, roomId, guest, rawDispatch); // 생년 시트(ADR-0125) — 비회원은 묻지 않음
 
   // 휴대폰 입력 초점은 입력 칸이 켜진 상태(user-interaction-enabled)가 그려진 **뒤** 다음 프레임에 보냅니다(리뷰 #2 · #3).
   // 그리기 전에 부르면 아직 꺼진 입력 칸이라 무시되고, 다시 마운트 직전 칸에는 초점이 가 버립니다.

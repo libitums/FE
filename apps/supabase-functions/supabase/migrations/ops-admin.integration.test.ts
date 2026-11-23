@@ -97,7 +97,8 @@ describe("구독 표가 있는 DB", () => {
          where n.nspname = 'public' and p.proname like 'ops\\_%'`,
       )
     ).rows;
-    expect(functions.length).toBe(22);
+    // 20261212의 22개 + 20261213(2차)의 10개 + 20261215(판정 메시지)의 1개.
+    expect(functions.length).toBe(33);
     for (const f of functions) {
       expect({
         sig: f.sig,
@@ -175,6 +176,7 @@ describe("구독 표가 있는 DB", () => {
       tier: "free",
       balance: 42,
       blockedUntil: null,
+      paid: false,
     });
     expect(Number.isNaN(Date.parse(row.createdAt))).toBe(false);
 
@@ -540,6 +542,7 @@ describe("구독 표가 있는 DB", () => {
         role: "assistant",
         origin: "turn",
         text: "안녕!",
+        segments: [],
         status: "complete",
         creditsSpent: 3,
         createdAt: expect.any(String),
@@ -685,7 +688,7 @@ describe("구독 표가 있는 DB", () => {
       ),
     ).rejects.toThrow(/invalid_memo/);
     await expect(
-      rpc(server, "ops_grant_credits", [ACTOR, [real], 10, "cs", null, null], ["", "uuid[]"]),
+      rpc(server, "ops_grant_credits", [ACTOR, [real], 10, "cs", "보상", null], ["", "uuid[]"]),
     ).rejects.toThrow(/invalid_request_id/);
 
     const logs = await auditRows(db);

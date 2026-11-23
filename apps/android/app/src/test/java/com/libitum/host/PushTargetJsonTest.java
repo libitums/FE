@@ -26,6 +26,14 @@ public class PushTargetJsonTest {
     assertFalse(target.hasKey("url"));
   }
 
+  // 보상 캠페인 알림의 캠페인 id(ADR-0175). 형식 검증은 JS가 한다.
+  @Test public void carriesRewardCampaignId() {
+    JavaOnlyMap target = PushNotificationController.targetFromJson(
+        "{\"kind\":\"journey-map\",\"campaignId\":\"202611211930-story-next-ab12\"}");
+    assertEquals("journey-map", target.getString("kind"));
+    assertEquals("202611211930-story-next-ab12", target.getString("campaignId"));
+  }
+
   @Test public void rejectsBadShapes() {
     assertNull(PushNotificationController.targetFromJson("{\"characterId\":\"mina\"}"));
     assertNull(PushNotificationController.targetFromJson("not json"));

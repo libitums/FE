@@ -2,6 +2,7 @@ import type { DeliveryItem } from "./episode-content.schema";
 import type { LearningItem, Text } from "./episode-content.model";
 import { toAddedItem } from "./episode-content.items-added";
 import {
+  answerAudioOf,
   itemBaseOf,
   maybe,
   nonEmpty,
@@ -97,6 +98,14 @@ export function toItem(item: DeliveryItem): LearningItem {
         answers: toTexts(item.answers),
       };
     case "IMG_MATCH":
+      return {
+        ...base,
+        type: item.type,
+        prompt: toText(item.prompt),
+        stimulus: toStimulus(item.stimulus),
+        options: item.options.map(toOption),
+        ...answerAudioOf(item.feedback),
+      };
     case "TRANSLATE_TO_EN":
       return {
         ...base,
@@ -113,6 +122,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         ...maybe("stimulus", item.stimulus && toStimulus(item.stimulus)),
         tiles: toTexts(item.tiles),
         answers: toTexts(item.answers),
+        ...answerAudioOf(item.feedback),
       };
     case "LISTEN_SELECT":
       return {
@@ -153,6 +163,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         prompt: toText(item.prompt),
         ...maybe("stimulus", item.stimulus && toStimulus(item.stimulus)),
         answers: toTexts(item.answers),
+        ...answerAudioOf(item.feedback),
       };
     case "DICTATION":
       return {

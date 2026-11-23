@@ -17,6 +17,20 @@ describe("SP1 pushTargetFrom", () => {
 
   test("모르는 kind · 유닛 없는 유닛 목적지 · URL은 버린다", () => {
     expect(pushTargetFrom({ kind: "url", unitId: "https://x" })).toBeNull();
+  });
+
+  test("선톡 방(ADR-0127) — 인물 id 형식만 받고, 변형은 a · b만 남긴다", () => {
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", variant: "a" })).toEqual({
+      kind: "companion-chat",
+      characterId: "mina",
+      variant: "a",
+    });
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", variant: "z" })).toEqual({
+      kind: "companion-chat",
+      characterId: "mina",
+    });
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "Mina!" })).toBeNull();
+    expect(pushTargetFrom({ kind: "companion-chat" })).toBeNull();
     expect(pushTargetFrom({ kind: "phone-call" })).toBeNull();
     expect(pushTargetFrom({ kind: "visual-novel", unitId: "" })).toBeNull();
     expect(pushTargetFrom({ kind: "messenger", unitId: "x".repeat(101) })).toBeNull();
@@ -89,5 +103,36 @@ describe("SP3 reengagementMessageFor", () => {
     expect(three.target).toEqual({ kind: "journey-map" });
     expect(seven.target).toEqual({ kind: "journey-map" });
     expect(three.title).not.toBe(seven.title);
+  });
+});
+
+describe("SP4 보상 캠페인 id(ADR-0175)", () => {
+  test("여정 맵의 캠페인 id는 남기고, 형식이 틀리면 칸만 버린다", () => {
+    expect(
+      pushTargetFrom({ kind: "journey-map", campaignId: "202611211930-story-next-ab12" }),
+    ).toEqual({ kind: "journey-map", campaignId: "202611211930-story-next-ab12" });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: "a b" })).toEqual({
+      kind: "journey-map",
+    });
+    expect(pushTargetFrom({ kind: "journey-map", campaignId: "x".repeat(81) })).toEqual({
+      kind: "journey-map",
+    });
+    expect(pushTargetFrom({ kind: "notifications", campaignId: "c1" })).toEqual({
+      kind: "notifications",
+    });
+  });
+
+  test("공지 본문에 실린 캠페인 id가 목적지에 남는다", () => {
+    expect(
+      sendPushBodyFrom(
+        JSON.stringify({
+          kind: "announcement",
+          audience: { userIds: [userId] },
+          title: "t",
+          body: "b",
+          target: { kind: "journey-map", campaignId: "c1" },
+        }),
+      ),
+    ).toMatchObject({ target: { kind: "journey-map", campaignId: "c1" } });
   });
 });

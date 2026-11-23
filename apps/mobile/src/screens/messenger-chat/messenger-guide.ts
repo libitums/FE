@@ -5,14 +5,13 @@ import { getItem, isStorageAvailable, setItem } from "../../lib/storage";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { MessengerAccess } from "./messenger-access";
 
-export type GuideStep = "chat" | "ideas" | "media";
-export type GuidePart = "list" | "room";
+/** `sample` — 사진 단추를 가리키고, 누르면 예시 스냅샷을 무료로 한 장 받는 단계(ADR-0146 추가). */
+export type GuideStep = "chat" | "ideas" | "media" | "sample" | "voice";
+/** `snapshot` — 예시 스냅샷 단계를 봤는가(안내를 이미 본 사람에게 그 단계만 따로 한 번 보이려고 따로 적습니다). */
+export type GuidePart = "list" | "room" | "snapshot" | "voice";
 
 /** 안내를 맡는 인물 방입니다(서버 모드 인물 표의 덕수쌤). 없으면 안내가 서지 않습니다. */
 export const GUIDE_ROOM_ID = "duksu";
-/** 사진 · 음성이 서버에 이어지면 true — 그 전에는 코치마크의 사진 · 음성 단계를 건너뜁니다. */
-export const MESSENGER_MEDIA_READY = false;
-
 export const messengerTabVisitedStorageKey = "libitum.messenger.tab-visited";
 export const messengerGuideSeenStorageKey = "libitum.messenger.guide-seen";
 
@@ -23,14 +22,33 @@ export function messengerTabBadge(input: { visited: boolean; newFriend: boolean 
 
 /** 열 수 있는 계정의 열린 방 가운데 아직 안 연 새 친구(isNew)가 있나 — 손님 · 시험 계정 아님은 방을 못 열어 늘 false. */
 export function hasNewFriend(rooms: readonly ChatRoomSummary[], access: MessengerAccess): boolean {
-  return access === "open" && rooms.some((room) => room.isNew && room.access.kind === "open");
+  return access !== "sign-in" && rooms.some((room) => room.isNew && room.access.kind === "open");
 }
 
-export function guideSteps(input: { mediaReady: boolean }): readonly GuideStep[] {
-  return input.mediaReady ? ["chat", "ideas", "media"] : ["chat", "ideas"];
+/**
+ * 방 안내의 단계 — 새 사용자는 chat · ideas, 서버가 예시 스냅샷을 제안하면 sample이 붙습니다. 안내를 이미 본 사람은 제안되고
+ * 예시 단계를 아직 안 봤을 때 sample만 한 번. 그 밖에는 빈 목록(안내 없음).
+ */
+export function roomGuideSteps(input: {
+  readonly roomSeen: boolean;
+  readonly snapshotSeen: boolean;
+  readonly offered: boolean;
+  /** 예시 음성 단계(스냅샷 다음) — 봤는가 · 서버가 제안하는가. 없으면 서지 않습니다. */
+  readonly voiceSeen?: boolean;
+  readonly voiceOffered?: boolean;
+}): readonly GuideStep[] {
+  const samples: GuideStep[] = [];
+  if (input.offered && !input.snapshotSeen) samples.push("sample");
+  if (input.voiceOffered === true && input.voiceSeen !== true) samples.push("voice");
+  return input.roomSeen ? samples : ["chat", "ideas", ...samples];
 }
 
-const PARTS: readonly GuidePart[] = ["list", "room"];
+/** 알약을 눌러야 끝나는 단계(예시 사진 · 예시 음성) — 「다음」 단추가 없고 아무 데나 눌러도 넘어가지 않습니다. */
+export function isSampleStep(step: GuideStep | null): step is "sample" | "voice" {
+  return step === "sample" || step === "voice";
+}
+
+const PARTS: readonly GuidePart[] = ["list", "room", "snapshot", "voice"];
 
 export function guideSeenFrom(raw: string | null): readonly GuidePart[] {
   if (raw === null || raw === "") return [];
@@ -92,3 +110,11 @@ export type GuideStore = {
 };
 
 export const deviceGuideStore: GuideStore = { unseen: guideUnseen, markSeen: markGuideSeen };
+
+/**
+ * 추천 친구 줄(ADR-0162)을 목록 위에 세울지. 떠 있는 덕수쌤 줄은 위치를 재지 않고 원본 첫 줄 자리(머리 바로 아래)에 서므로
+ * (ADR-0139 D2), 목록 안내가 떠 있는 동안 추천 줄이 끼면 원본 줄이 밀려 어긋납니다.
+ */
+export function isSuggestedRowShown(listGuideShown: boolean): boolean {
+  return !listGuideShown;
+}
