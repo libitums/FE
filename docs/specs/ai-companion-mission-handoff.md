@@ -3,7 +3,7 @@
 2026-11-18 ~ 19에 2단계 「롤플레이 미션」의 서버 · 시험 환경 · 화면 초안을 **브랜치에서만** 만들었다. 이 문서는 그 결과를 한곳에 모은 것이다 —
 어디에 무엇이 있는지, 어떻게 돌려 보는지, 넣어야 하는 환경 변수, 그리고 **사용자가 정해야 하는 것**.
 
-- 기획: [2단계 PRD](ai-companion-mission.md) · [ADR-0177](../adr/0177-companion-mission.md)
+- 기획: [2단계 PRD](ai-companion-mission.md) · [ADR-0178](../adr/0178-companion-mission.md)
 - **main에는 아무것도 머지하지 않았다. 운영 DB에 적용한 것도, 배포한 것도, 진짜 유료 API를 부른 것도 없다.**
 - 이 문서는 임시 메모다. 결정이 끝나면 내용을 PRD · ADR로 옮기고 지운다.
 
@@ -11,9 +11,9 @@
 
 | 저장소 | 브랜치 | 내용 | 검증 |
 |---|---|---|---|
-| FE | `feat/companion-mission` (PR #496) | PRD + ADR-0177 | CI 통과 |
+| FE | `feat/companion-mission` (PR #496) | PRD + ADR-0178 | CI 통과 |
 | FE | `feat/companion-mission-core` | 미션 코어 — 계약 · 미션 파일 둘 · 프롬프트 틀 · 상태 전이 · 점수식 · 채점 · 힌트 · 실험실 번들 | `pnpm verify` |
-| FE | `feat/companion-mission-db` | 마이그레이션 `20261226120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
+| FE | `feat/companion-mission-db` | 마이그레이션 `20270102120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
 | FE | **`feat/companion-mission-server`** | 위 둘을 합치고 Edge Function을 이은 **통합 브랜치** — `mission-start` · `chat-send` 미션 갈래 · `mission-hint` · `mission-finish` · 미션 올리기 스크립트. 이 문서가 여기 있다 | `pnpm verify` |
 | FE | `feat/companion-mission-app` | 앱 화면 초안(mock 데이터, 스위치 뒤) — §6 | `pnpm verify` |
 | FE | **`feat/companion-mission-e2e-int`** (2026-11-23) | 위 서버 통합 위에 세 갈래를 합친 것 — 답 · 페르소나 · 가드레일 · 연출 지시 · 목표 판정(`e2e-reply`, A), 채점 · 리포트 새 칸(`e2e-report`, C), 작별 인사 · 교정 비한글 거르개 · 미션 장면의 메뉴와 값(version 2). 단계 · 수치 · 앱 인계 · 사용자 결정은 [미션 파이프라인](ai-companion-mission-pipeline.md) | `pnpm verify` |
@@ -166,7 +166,7 @@ DEEPGRAM_API_KEY=
 21. 힌트 문장을 만들다 실패해도 힌트 수는 이미 줄어 있다(SQL이 먼저 센다). 돌려줄지.
 22. 끝났는데 채점하지 않고 방치된 판은 리포트 없이 닫히고 값은 확정된다.
 23. 실험실에는 「끝내고 채점」 버튼이 있다(앱에서는 필수를 못 이룬 채 그만두면 리포트가 없다 — 실험실만의 편의). 필수를 이룬 뒤의 끝내기는 앱에도 있다(`finish`, 아래).
-    - **판이 끝나는 규칙을 바꿨다**(2026-11-23, ADR-0177 D6). 필수만 이루면 판은 닫히지 않고 「성공 확정」(`requiredDone`)으로 이어진다. 닫히는 때는 모든 목표(`goals`) · 턴 상한(`turn_limit`) · 필수 뒤 끝내기(`finish`). 1화 편의점이 봉투 · 결제 두 답으로 닫혀 영수증 · 다른 물건 묻기에 닿지 못하던 것을 실험실에서 찾았다. 실험실은 번들의 `transitions.endRule` · `fixtures`(`required_done`) · `finishFixtures` · `prompts.requiredStatusWords`를 따른다.
+    - **판이 끝나는 규칙을 바꿨다**(2026-11-23, ADR-0178 D6). 필수만 이루면 판은 닫히지 않고 「성공 확정」(`requiredDone`)으로 이어진다. 닫히는 때는 모든 목표(`goals`) · 턴 상한(`turn_limit`) · 필수 뒤 끝내기(`finish`). 1화 편의점이 봉투 · 결제 두 답으로 닫혀 영수증 · 다른 물건 묻기에 닿지 못하던 것을 실험실에서 찾았다. 실험실은 번들의 `transitions.endRule` · `fixtures`(`required_done`) · `finishFixtures` · `prompts.requiredStatusWords`를 따른다.
 
 ### 4.5 손대지 않고 남긴 것
 24. 운영 도구(`ops_admin`)의 캐릭터별 메시지 수에 미션 메시지가 섞인다. `companion_operator_reset`은 그 캐릭터의 미션 판도 지운다(시험 계정 전용).
@@ -183,7 +183,7 @@ DEEPGRAM_API_KEY=
 ### 4.7 앞서 올린 PR에 남아 있는 것
 32. #495 법률 문서: 시행일 · 「대화를 AI 학습에 쓰지 않는다」 약속 · Sentry 보존 기간 · Notion 두 페이지 맞추기 · 이용약관의 낡은 내용.
 33. #498 턴 로그: 운영 적용 순서 · 방침 문장과 시행일 · 스토어 표시 · 기기 모델(네이티브 모듈 필요).
-34. 번호 — main 받기(2026-11-22)에서 미션을 ADR 0160 → **0177**, 마이그레이션 20261214 → **20261226**으로 옮겼다(main에 0160 구독 입구 · 0176 입장 선택, 20261214 구독 대기 · 20261225 선톡 푸시가 먼저 들어옴). main에는 0159(온보딩) · 0167(법률 문서) · 마이그레이션 20261213(early access)이 이미 있어, #495 법률 문서의 ADR 0159와 #498 턴 로그의 ADR 0161 · 마이그레이션 20261213도 머지할 때 옮겨야 한다(0161은 아직 main에 비어 있다).
+34. 번호 — main 받기(2026-11-22)에서 미션을 ADR 0160 → **0177**, 마이그레이션 20261214 → **20261226**으로 옮겼다(main에 0160 구독 입구 · 0176 입장 선택, 20261214 구독 대기 · 20261225 선톡 푸시가 먼저 들어옴). main에는 0159(온보딩) · 0167(법률 문서) · 마이그레이션 20261213(early access)이 이미 있어, #495 법률 문서의 ADR 0159와 #498 턴 로그의 ADR 0161 · 마이그레이션 20261213도 머지할 때 옮겨야 한다(0161은 아직 main에 비어 있다). ⟨2026-11-23⟩ main 받기에서 다시 ADR 0177 → **0178**(main에 0177 고민 힌트), 마이그레이션 20261226 → **20270102**(main에 20261227 ~ 20261231, 열린 PR #498이 20270101)로 옮겼다 — 미션이 main의 함수(`companion_media_orphans` · `companion_release_stale_holds`)를 다시 정의하므로 main의 것보다 뒤에 적용돼야 한다.
 
 ## 5. 확인하지 못한 것
 

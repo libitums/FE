@@ -227,7 +227,7 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
         goalSource:
           "판정 성공: 목표 = 지난 달성 ∪ 판정. 판정 실패(오류 · 시간 초과): 목표 = 지난 달성 ∪ 상태 줄 goals_done. closing · off_task는 상태 줄(판정의 off_task는 기록만).",
       },
-      // 코드 쪽 거르개(ADR-0177 D13, mission-guards.ts) — 더한 칸.
+      // 코드 쪽 거르개(ADR-0178 D13, mission-guards.ts) — 더한 칸.
       guards: {
         defaultFarewells,
         farewellRule:

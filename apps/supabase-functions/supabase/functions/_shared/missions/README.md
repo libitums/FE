@@ -1,4 +1,4 @@
-# 미션 파일 (ADR-0177 D4)
+# 미션 파일 (ADR-0178 D4)
 
 롤플레이 미션의 **정본은 이 폴더의 JSON 파일들**입니다. 스크립트가 서버 표 `companion.missions`(`definition jsonb`)로 올리고, DB를 손으로 고치지 않습니다.
 

@@ -79,9 +79,15 @@ export function albumMethods(deps: AlbumDeps): ChatAlbumPort {
       return { kind: "refused", notice: "not-eligible" };
     const pendingId = messageId();
     const photo = old.kind === "photo";
+    const requestedAt = now();
     room.messages = room.messages.map((m): ChatMessage =>
       m.id === old.id
-        ? { id: pendingId, at: now(), kind: photo ? "photo-pending" : "voice-pending" }
+        ? {
+            id: pendingId,
+            at: requestedAt,
+            kind: photo ? "photo-pending" : "voice-pending",
+            startedAt: requestedAt,
+          }
         : m,
     );
     if (photo) room.pendingPhotos += 1;

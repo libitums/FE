@@ -15,6 +15,8 @@ export type ChatCounterpart = {
 };
 
 type ChatMessageBase = { readonly id: string; readonly at: number };
+/** 대기 줄이 처음 놓인 때(**기기 시계**) — 대기 문구의 단계가 여기서부터 셉니다. `at`은 서버 방에서 서버 시계라 쓰지 않습니다. */
+type ChatPendingStart = { readonly startedAt?: number };
 
 export type ChatMessage =
   | (ChatMessageBase & {
@@ -23,9 +25,9 @@ export type ChatMessage =
       readonly text: ChatText;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
-  | (ChatMessageBase & { readonly kind: "photo-pending" })
+  | (ChatMessageBase & ChatPendingStart & ChatPendingStage & { readonly kind: "photo-pending" })
   | (ChatMessageBase & { readonly kind: "photo" } & ChatPhotoBody)
-  | (ChatMessageBase & { readonly kind: "voice-pending" })
+  | (ChatMessageBase & ChatPendingStart & { readonly kind: "voice-pending" })
   | (ChatMessageBase & {
       readonly kind: "voice";
       /** 0이면 모름(서버 음성) — 길이를 그리지 않습니다. */
@@ -96,9 +98,11 @@ export type ChatRoomSummary = {
   readonly roomId: string;
   readonly counterpart: ChatCounterpart;
   readonly access: ChatRoomAccess;
+  /** 목록이 미리보기로 쓰는 줄 — 보통 마지막 줄, 맨 끝이 사진 · 음성 안내 줄이면 그 앞의 줄(`lastPreviewLine`). */
   readonly lastMessage: ChatMessage | null;
   readonly unread: number;
   readonly activity: ChatRoomActivity;
+  /** `lastMessage`의 시각(없으면 0) — 목록의 시각 · 정렬. */
   readonly updatedAt: number;
   /** 방금 해금돼 아직 열어 보지 않은 방(목록 NEW 줄). */
   readonly isNew: boolean;
@@ -150,8 +154,9 @@ import type {
 } from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129) · 채팅 단어(ADR-0170)
 import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
-import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
+import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
+import type { SampleSnapshotMethods } from "./chat-remote-sample";
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -204,6 +209,8 @@ export type ChatSource = {
   readonly sendText: (roomId: string, text: string) => void;
   /** 잔액은 줄지 않습니다(결제 없음). */
   readonly requestMedia: (roomId: string, media: ChatMediaKind) => void;
+  /** 예시 스냅샷(ADR-0146 추가) — 안내에서 무료로 한 장. 서버 모드가 아니면 없습니다(안내의 예시 단계가 서지 않음). */
+  readonly sampleSnapshot?: SampleSnapshotMethods;
   readonly regenerateIdeas: (roomId: string) => void;
   readonly setAutoIdeas: (roomId: string, on: boolean) => void;
   readonly setStoryPoint: (roomId: string, storyPointId: string) => void;

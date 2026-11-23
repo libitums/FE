@@ -44,7 +44,7 @@ export const turnRomance = (context: Pick<TurnContext, "gate" | "turn">) => ({
   line: turnRomanceLine(context),
 });
 
-/** 로맨스 선이 읽는 값만 — 미션 턴(ADR-0177)은 인물 · 수위 없이 넘긴다. */
+/** 로맨스 선이 읽는 값만 — 미션 턴(ADR-0178)은 인물 · 수위 없이 넘긴다. */
 export type RomanceContext = {
   readonly gate: Pick<TurnContext["gate"], "ageBand" | "romanceTier">;
   readonly turn: Pick<BegunTurn, "persona" | "speechLevel">;

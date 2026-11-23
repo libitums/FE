@@ -172,7 +172,7 @@ Accept: text/event-stream
 | `{ user_id, character_id, force? }` | 한 대화(플레이그라운드). `force`는 빈도 규칙만 건너뛴다 — 연령 · 지역은 건너뛰지 않는다 |
 
 - 빈도 규칙은 `companion.proactive_skip_reason` 하나가 판정한다(PRD §3.8 표). 응답 `outcomes[].result`가 `sent` 또는 건너뛴 이유
-  (`off` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` · `not_allowed_for_age` · `no_conversation` · `blocked` · `failed` 등)다.
+  (`off` · `no_timezone` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` · `not_allowed_for_age` · `no_conversation` · `blocked` · `failed` 등)다.
 - 연령 · 지역: 성인, 또는 지역을 알고 미국이 아닌 미성년자만 후보다. 나이 모름은 후보가 아니다.
 - 선톡은 유저 입력 없이 나가므로 **연령과 상관없이 동기 출력 검사를 지난 것만** 저장한다. L1 번역을 붙여 저장한다. 차감하지 않는다.
 
@@ -194,7 +194,7 @@ Accept: text/event-stream
 | 미국 12 ~ 17세 | 푸시 없음. 후보 단계에서 이미 빠지지만 푸시 쪽에서도 연령 규칙을 다시 지킨다 |
 | 조용한 시간 | 현지 22:00 ~ 08:00 금지. 후보 판정이 이미 지키지만 재시도 · 지연 발송이 이 시간에 떨어지지 않게 한다 |
 | 유저 설정 | `proactive_pref = off`면 선톡도 푸시도 없다. 앱의 알림 권한 · 기기 등록(`push_devices`)이 없으면 보내지 않는다 |
-| 실패 | 푸시 실패가 **저장된 메시지를 되돌리지 않는다.** 결과는 `outcomes`에 따로 적는다(예 `push: "sent" \| "no_device" \| "failed"`) |
+| 실패 | 푸시 실패가 **저장된 메시지를 되돌리지 않는다.** 결과는 `outcomes`에 따로 적는다(예 `push: "sent" \| "no_device" \| "no_room" \| "failed"`) |
 
 **걸 자리**
 

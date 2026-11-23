@@ -35,6 +35,7 @@ export function CatalogEpisodeSection({
   coverImageUrlOf,
   clearedUnit = null,
   coverDownload = { kind: "none" },
+  divider = "above",
 }: CatalogEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   const guided = guide !== null;
@@ -68,7 +69,9 @@ export function CatalogEpisodeSection({
           segments={footprints.segments}
           enteringFrom={footprints.enteringFrom}
         />,
-        <view key="divider" className="episode-pending-divider" />,
+        ...(divider === "above"
+          ? [<view key="divider" className="episode-pending-divider" />]
+          : []),
         <MapUnitRow key="cover" kind="solo">
           <MapUnitCell
             domId={catalogUnitDomId(section.episodeId, CATALOG_INTRO_KEY)}
@@ -80,6 +83,7 @@ export function CatalogEpisodeSection({
               status={coverStatus}
               onSelect={startCover}
               layer={guided ? "guide" : "map"}
+              {...(guided ? { onTapBackdrop: guide.dismiss } : {})}
               illustration={illustration}
               download={coverDownload}
             >

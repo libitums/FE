@@ -28,7 +28,11 @@ function mount(options: MountOptions = {}) {
   render(
     <LettersComposeScreen
       romanization="shown"
-      sound={{ sourceOf: (s) => (options.silent === true ? null : `src:${s}`), play }}
+      sound={{
+        sourceOf: (s) => (options.silent === true ? null : `src:${s}`),
+        letterSourceOf: () => null,
+        play,
+      }}
       autoPlay={options.autoPlay}
       onExit={onExit}
       onAnswered={onAnswered}
@@ -278,7 +282,7 @@ test("CS18. 틈 안에 결선이 포트를 새로 만들어 다시 그려도 틈
   const ui = (play: (source: string) => void) => (
     <LettersComposeScreen
       romanization="shown"
-      sound={{ sourceOf: (s) => `src:${s}`, play }}
+      sound={{ sourceOf: (s) => `src:${s}`, letterSourceOf: () => null, play }}
       onExit={() => {}}
     />
   );

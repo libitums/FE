@@ -1,6 +1,6 @@
--- AI 컴패니언 2단계 — 롤플레이 미션 DB(PRD docs/specs/ai-companion-mission.md §3 · §5 · §6, ADR-0177).
+-- AI 컴패니언 2단계 — 롤플레이 미션 DB(PRD docs/specs/ai-companion-mission.md §3 · §5 · §6, ADR-0178).
 --
--- 미션 한 판 = `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행). 컴패니언 대화와 섞이지 않는다(ADR-0177 D2) —
+-- 미션 한 판 = `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행). 컴패니언 대화와 섞이지 않는다(ADR-0178 D2) —
 -- 기존 SQL의 `kind = 'companion'` 조건과 `conversations_companion_uniq`(kind = 'companion'만)는 그대로 두고, 미션의 턴 · 끝은
 -- 이 파일의 미션 전용 함수가 한다(D3 — `companion_begin_turn` · `companion_finish_turn`에 분기를 넣지 않는다).
 --
@@ -1934,7 +1934,8 @@ as $$
   where id = p_call_id
 $$;
 
--- 20261130 판 + `mission-tts/` 제외 한 줄. 미션 합성 캐시(media 행 없이 사용자 사이에서 공유하는 파일)를 「주인 없는 파일」로 세지 않는다.
+-- 20261229(예시 파일 `samples/` 제외) 판 + `mission-tts/` 제외 한 줄. 미션 합성 캐시(media 행 없이 사용자 사이에서 공유하는 파일)를
+-- 「주인 없는 파일」로 세지 않는다.
 create or replace function public.companion_media_orphans(p_limit integer)
 returns jsonb
 language plpgsql
@@ -1952,6 +1953,7 @@ begin
     select coalesce(jsonb_agg(x.name order by x.name), '[]'::jsonb) from (
       select o.name from storage.objects o
       where o.bucket_id = 'companion-media'
+        and o.name not like 'samples/%'
         and o.name not like 'mission-tts/%'
         and not exists (select 1 from companion.media m where m.storage_path = o.name)
       order by o.name limit $1

@@ -138,11 +138,17 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       chat: "韓国語で書いて送ってください。私が返信し、メッセージの下の鉛筆でより良い言い方がわかります。",
       ideas: "何を言えばいいか迷ったら、入力欄の横の電球をタップすると返信のヒントが出ます。",
       media: "キーボードの上のボタンで、写真やボイスメッセージもお願いできます。",
+      sample:
+        "今なにをしているか見てみますか？Snapshotをタップすると写真を送ります。最初の1枚はサービスです。",
+      voice:
+        "声でも聞いてみますか？スナップボイスをタップするとそのメッセージを読み上げます。最初の1回はこちらもサービスです。",
     },
     next: "次へ",
     done: "わかりました",
     skip: "スキップ",
     stepOf: (step, total) => `${step} / ${total}`,
+    newTag: "新機能",
+    free: "無料",
   },
   launch: {
     newTag: "NEW",

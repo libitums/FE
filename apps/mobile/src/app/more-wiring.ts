@@ -18,6 +18,7 @@ import {
 } from "../lib/session-options";
 import { wordbookCountsOf, withAnswer, withStarred, type Wordbook } from "../lib/wordbook";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
+import { jamoClipOf } from "../lib/letters/jamo";
 import { letterAudioSourceOf } from "../screens/letters/letters-audio";
 import type { LetterSoundPort } from "../screens/letters/letters.contract";
 import type { WordbookFilter, WordSoundPort } from "../screens/wordbook/wordbook.contract";
@@ -84,6 +85,7 @@ export function moreWiring(args: MoreWiringArgs): MoreWiring {
     romanization: choiceRomanizationOf(args.sessionOptions),
     letterSound: {
       sourceOf: (syllable) => letterAudioSourceOf(syllable, episodeContent),
+      letterSourceOf: jamoClipOf,
       play: (source) => void playAudio(source, noop),
     },
     autoPlay: autoPlayAudioOf(args.sessionOptions),

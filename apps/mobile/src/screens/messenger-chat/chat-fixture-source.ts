@@ -219,6 +219,10 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     },
     sendText,
     requestMedia,
+    // 예시 포트가 없는 원격에서는 내놓지 않습니다 — 방 안내가 답을 기다리지 않게.
+    ...(remoteRoom === null || options.remote?.media?.sample === undefined
+      ? {}
+      : { sampleSnapshot: remoteRoom.sample }),
     regenerateIdeas: (roomId) => {
       const room = live(roomId);
       if (room === null) return;

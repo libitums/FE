@@ -2,7 +2,7 @@
 
 import type { MissionLlmStep } from "./mission-llm.contract.ts";
 
-/** LLM 호출 단계 — 사용량 기록의 이름. 미션 채점 · 힌트(ADR-0177)도 같은 기록에 남긴다. */
+/** LLM 호출 단계 — 사용량 기록의 이름. 미션 채점 · 힌트(ADR-0178)도 같은 기록에 남긴다. */
 export type LlmStep =
   | "reply"
   | "moderation_input"

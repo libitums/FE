@@ -30,6 +30,10 @@ export const messengerChatMediaId: ChatMediaCopy = {
           : "Pesan ini tidak bisa dijadikan pesan suara.";
       case "unavailable":
         return "Foto dan pesan suara belum tersedia saat ini.";
+      case "sample-gift":
+        return photo
+          ? "Yang itu gratis dariku! Snapshot berikutnya memakai Yeopjeon kamu."
+          : "Yang itu gratis dariku! Suara kilat berikutnya memakai Yeopjeon kamu.";
       default:
         return "Permintaanmu tidak terkirim. Periksa koneksi lalu coba lagi.";
     }

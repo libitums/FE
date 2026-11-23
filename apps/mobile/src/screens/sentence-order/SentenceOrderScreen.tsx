@@ -27,6 +27,7 @@ import { tileRomanizationsShown } from "../../components/assembled-hint/assemble
 import { SentenceOrderListenHeader } from "./SentenceOrderListenHeader";
 import { SentenceOrderListenReveal } from "./SentenceOrderListenReveal";
 import { useSentenceOrderAnnouncements } from "./use-sentence-order-announcements";
+import { useSentenceOrderNudge } from "./use-sentence-order-nudge";
 import { SentenceOrderTextHeader } from "./SentenceOrderTextHeader";
 import {
   canPlaceChip,
@@ -116,6 +117,8 @@ export function SentenceOrderActivity({
   );
 
   useSentenceOrderAnnouncements(result, state.questionIndex, state.phase, complete, copy);
+  const busy = guide.visible || hint.open || listen.playback === "playing";
+  const nudgedIndex = useSentenceOrderNudge(question, state, busy);
 
   // 안내가 떠 있는 동안은 조각이 움직이지 않습니다 — 겹침 층에만 기대지 않습니다.
   const toggle = (chipIndex: number) => {
@@ -233,6 +236,7 @@ export function SentenceOrderActivity({
         bankInteraction={bankInteraction}
         romanizations={romanizations}
         onHint={question.hint !== undefined && state.phase !== "checked" ? hint.openSheet : null}
+        nudgedIndex={nudgedIndex}
         onToggle={toggle}
         onPlaceDialogueChip={placeDialogueChip}
       />

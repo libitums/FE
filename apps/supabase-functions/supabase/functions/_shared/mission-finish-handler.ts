@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-finish` — 판을 닫고 채점해 리포트를 돌려줍니다(ADR-0177, PRD §3.3 ③ · §3.6 · §3.7).
+// `POST /functions/v1/mission-finish` — 판을 닫고 채점해 리포트를 돌려줍니다(ADR-0178, PRD §3.3 ③ · §3.6 · §3.7).
 //
 // 흐름: 인증 → 본문(`missionFinishRequestSchema`) → `companion_mission_close`의 네 결과:
 //   (close는 필수 목표를 모두 이룬 진행 중인 판을 학습자의 끝내기로 보고 `finish`로 닫은 뒤 채점 재료를 준다)

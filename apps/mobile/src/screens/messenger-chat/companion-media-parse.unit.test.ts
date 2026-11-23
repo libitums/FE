@@ -4,6 +4,8 @@ import {
   mediaListFrom,
   mediaRequestFrom,
   remoteMediaOf,
+  sampleClaimFrom,
+  sampleOfferFrom,
   signedUrlFrom,
   walletBalanceFrom,
   walletOf,
@@ -46,6 +48,7 @@ describe("결과 한 건 · 목록", () => {
       aspect: null,
       failure: null,
       createdAt: Date.parse("2026-11-15T10:19:00.000Z"),
+      stage: null,
     });
     const done = remoteMediaOf(
       row({ status: "complete", path: `u/${M1}.png`, aspect: "3:2", kind: "snapshot" }),
@@ -66,6 +69,17 @@ describe("결과 한 건 · 목록", () => {
     expect(remoteMediaOf(row({ messageId: null }))).toBeNull();
     expect(remoteMediaOf(null)).toBeNull();
     expect(remoteMediaOf(row({ aspect: "16:9" }))?.aspect).toBeNull();
+  });
+
+  test("CM-U1d 진행 단계(ADR-0146 개정 2026-11-23) — preparing · drawing만 받고, 없거나(옛 서버) 모르는 값은 null", () => {
+    expect(remoteMediaOf(row({ stage: "preparing" }))?.stage).toBe("preparing");
+    expect(remoteMediaOf(row({ stage: "drawing", aspect: "3:2" }))).toMatchObject({
+      stage: "drawing",
+      aspect: "3:2",
+    });
+    expect(remoteMediaOf(row())?.stage).toBeNull();
+    expect(remoteMediaOf(row({ stage: "polishing" }))?.stage).toBeNull();
+    expect(remoteMediaOf(row({ stage: null }))?.stage).toBeNull();
   });
 
   test("CM-U1c 목록은 배열만 — 틀린 줄은 버리고, 깨진 본문 · 배열 아님은 null", () => {
@@ -202,5 +216,53 @@ describe("walletOf (CP-U6)", () => {
     expect(walletOf(JSON.stringify({ grant: 5, paid: 10, trialRemaining: 3 }))).toBeNull();
     expect(walletOf(null)).toBeNull();
     expect(walletOf("not json")).toBeNull();
+  });
+});
+
+describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 장)", () => {
+  test("CM-U4a 제안 — available · voice가 true일 때만 참, 깨진 본문 · 다른 모양은 둘 다 거짓", () => {
+    expect(sampleOfferFrom('{"available":true,"voice":true}')).toEqual({
+      snapshot: true,
+      voice: true,
+    });
+    // 음성 칸이 없는 앞 서버 답.
+    expect(sampleOfferFrom('{"available":true}')).toEqual({ snapshot: true, voice: false });
+    expect(sampleOfferFrom('{"available":false,"voice":true}')).toEqual({
+      snapshot: false,
+      voice: true,
+    });
+    expect(sampleOfferFrom('{"available":"yes","voice":1}')).toEqual({
+      snapshot: false,
+      voice: false,
+    });
+    expect(sampleOfferFrom(null)).toEqual({ snapshot: false, voice: false });
+    expect(sampleOfferFrom("nope")).toEqual({ snapshot: false, voice: false });
+  });
+
+  test("CM-U4b 받기 — ok · already는 받음(already는 cached), 서버가 막으면 거절(not-eligible), 깨진 본문은 실패", () => {
+    const media = row({ status: "complete", path: "samples/duksu-guide-01.png", aspect: "3:2" });
+    expect(sampleClaimFrom(JSON.stringify({ result: "ok", media }))).toMatchObject({
+      kind: "accepted",
+      cached: false,
+      media: { status: "complete", path: "samples/duksu-guide-01.png", aspect: "3:2" },
+    });
+    expect(sampleClaimFrom(JSON.stringify({ result: "already", media }))).toMatchObject({
+      kind: "accepted",
+      cached: true,
+    });
+    for (const result of [
+      "not_offered",
+      "no_sample",
+      "not_eligible",
+      "forbidden",
+      "message_not_found",
+    ])
+      expect(sampleClaimFrom(JSON.stringify({ result }))).toEqual({
+        kind: "refused",
+        notice: "not-eligible",
+        until: null,
+      });
+    expect(sampleClaimFrom(JSON.stringify({ result: "ok" }))).toEqual({ kind: "failed" });
+    expect(sampleClaimFrom(null)).toEqual({ kind: "failed" });
   });
 });

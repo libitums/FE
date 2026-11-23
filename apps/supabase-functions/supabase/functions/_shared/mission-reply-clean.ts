@@ -1,4 +1,4 @@
-// 미션 상대역 답 다듬기(ADR-0177 D13 · D14) — 학습자 화면 · TTS로 나가기 전에 코드가 거르는 셋. 순수 함수입니다.
+// 미션 상대역 답 다듬기(ADR-0178 D13 · D14) — 학습자 화면 · TTS로 나가기 전에 코드가 거르는 셋. 순수 함수입니다.
 //
 // 1. 혼잣말(D14): Haiku(effort low)가 답 안에 영어로 「Wait — I must follow the director's note … Revise: …」 같은 생각 · 수정 과정을
 //    쓰고 이어서 고쳐 쓴 답을 내는 일이 있었다(조율자 QA). 메타 줄(라틴 낱말 3개 이상 연속, 또는 메타 낱말)을 찾으면 그 줄과
@@ -153,7 +153,7 @@ export function cleanReply(
       if (offer.stripped) issues.push("offer");
       out = offer.segments;
     }
-    // 학습자가 먼저 꺼내야 하는 것(예: 가격)을 상대역이 먼저 말한 문장(ADR-0177 D15).
+    // 학습자가 먼저 꺼내야 하는 것(예: 가격)을 상대역이 먼저 말한 문장(ADR-0178 D15).
     const withheld = stripPatterns(out, withheldPatterns(mission, doneAfter));
     if (withheld.stripped) issues.push("withhold");
     out = withheld.segments;

@@ -1,7 +1,17 @@
 import { describe, expect, test } from "vitest";
 
 import type { RankingBoard, RankingRow } from "../../lib/ranking.contract";
-import { chatStripOf, daysLeft, flagOf, medalOf, rankingViewOf, zoneBefore } from "./ranking-rules";
+import {
+  chatStripOf,
+  daysLeft,
+  flagOf,
+  medalOf,
+  moreToTopThree,
+  shownEndsAt,
+  weekEndsAt,
+  rankingViewOf,
+  zoneBefore,
+} from "./ranking-rules";
 
 // `unit` 계층(ADR-0170 RK-U1 ~ U6): 순위 화면의 순수 규칙.
 
@@ -101,4 +111,41 @@ describe("ranking-rules", () => {
     expect(chatStripOf({ status: "hidden" })).toBeNull();
     expect(chatStripOf(null)).toBeNull();
   });
+});
+
+test("RK-U30. 3위까지 남은 점수(D13) — 3위 점수를 넘는 데 필요한 만큼(+1), 이미 3위 안이거나 3위가 없으면 null", () => {
+  const rows = [row(1), row(2), row(3), row(4), row(5, true)]; // 점수 39 · 38 · 37 · 36 · 35
+  const mine = { ...board, rows, me: { rank: 5, score: 35 } };
+  expect(moreToTopThree(mine)).toBe(3);
+  expect(moreToTopThree({ ...mine, me: { rank: 3, score: 37 } })).toBeNull();
+  expect(
+    moreToTopThree({ ...mine, rows: [row(1), row(2, true)], me: { rank: 2, score: 38 } }),
+  ).toBeNull();
+  // 서버가 3위 줄을 주지 않았으면(작은 그룹) 말하지 않는다.
+  expect(moreToTopThree({ ...mine, rows: [row(1), row(5, true)] })).toBeNull();
+});
+
+test("RK-U32. 이번 주가 끝나는 때 — 다음 월요일 00:00 UTC(서버 `endsAt`과 같은 값). 읽기 전에도 「Ends in N days」를 그린다", () => {
+  expect(weekEndsAt(Date.parse("2026-11-20T10:00:00Z"))).toBe("2026-11-23T00:00:00Z");
+  // 월요일 00:00 UTC 정각은 새 주의 시작 — 끝은 일주일 뒤.
+  expect(weekEndsAt(Date.parse("2026-11-23T00:00:00Z"))).toBe("2026-11-30T00:00:00Z");
+  expect(weekEndsAt(Date.parse("2026-11-22T23:59:59Z"))).toBe("2026-11-23T00:00:00Z");
+  // 해가 바뀌어도.
+  expect(weekEndsAt(Date.parse("2026-12-30T12:00:00Z"))).toBe("2027-01-04T00:00:00Z");
+});
+
+test("RK-U33. 머리의 남은 날 줄이 쓸 끝 시각 — 서버 값이 먼저, 못 읽었으면 기기에서 센 값, 비회원 · 숨김은 null", () => {
+  const now = Date.parse("2026-11-20T10:00:00Z");
+  const local = "2026-11-23T00:00:00Z";
+  expect(shownEndsAt({ kind: "loading" }, now)).toBe(local);
+  expect(shownEndsAt({ kind: "error" }, now)).toBe(local);
+  expect(shownEndsAt({ kind: "offline" }, now)).toBe(local);
+  expect(shownEndsAt({ kind: "not-joined", endsAt: "2026-11-30T00:00:00Z" }, now)).toBe(
+    "2026-11-30T00:00:00Z",
+  );
+  expect(
+    shownEndsAt({ kind: "ready", board: { ...board, endsAt: "2026-12-07T00:00:00Z" } }, now),
+  ).toBe("2026-12-07T00:00:00Z");
+  expect(shownEndsAt({ kind: "guest" }, now)).toBeNull();
+  expect(shownEndsAt({ kind: "hidden" }, now)).toBeNull();
 });

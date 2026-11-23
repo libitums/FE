@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
-import { speechSkipReasonOf } from "../../lib/item-answer";
+import { speechItemReportOf } from "../../lib/item-answer";
 import type { ReactNode } from "@lynx-js/react";
-
-import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
 import { SpeechWaves } from "../../components/SpeechWaves";
-import { TextRoles } from "../../components/TextRoles";
 import { useSpeechAttempt } from "../../components/use-speech-attempt";
 import { announce, announceCompletion } from "../../lib/accessibility";
-import { romanizationSegmentsOf } from "../../lib/romanization-segments";
 import { stopAudio } from "../../lib/audio";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -39,6 +35,9 @@ import {
 } from "./speak-word";
 import type { SpeakWordActivityProps } from "./speak-word.contract";
 import { SpeakWordPicture } from "./SpeakWordPicture";
+import { SpeakWordSecondary } from "./SpeakWordSecondary";
+import { revealSpeakWordHint, speakWordHintId } from "./speak-word-hint-scroll";
+import * as Hint from "./speak-word-hint";
 import { useSpeakWordPicture } from "./use-speak-word-picture";
 
 import "./speak-word-activity.css";
@@ -76,6 +75,12 @@ export function SpeakWordActivity({
       : speakWordControlsOf(phase, picture.state);
   const hint = question == null ? null : speakWordHintOf(phase, copy);
   const dictationOff = phase.kind === "unavailable" && phase.reason === "dictation-off";
+  const answerHint = Hint.useSpeakWordHint(question, state.questionIndex);
+  const report = (outcome: Parameters<typeof speechItemReportOf>[1]): void =>
+    onItemAnswered?.({
+      ...speechItemReportOf(state.questionIndex, outcome, density, phase),
+      ...Hint.hintUsedOf(answerHint),
+    });
 
   // 판정이 난 국면(들음)에서 정답 음성을 1.0으로 한 번 들려 줍니다. 불가 · 건너뜀에서는 내지 않습니다.
   const autoPlay = (lessonAudio ?? standaloneLessonAudio(initialSessionOptions)).autoPlay;
@@ -87,7 +92,7 @@ export function SpeakWordActivity({
   // 마이크가 켜진 동안의 화면 낭독은 인식기에 그대로 들어갑니다.
   useEffect(() => {
     if (result !== null && question != null) {
-      onItemAnswered?.({ questionIndex: state.questionIndex, outcome: result, density });
+      report(result);
       announce(speakWordResultAnnouncement(question, result, copy));
     } else if (phase.kind === "unavailable") {
       const content = dictationOff ? copy.speaking.dictationDisabled : hint;
@@ -126,12 +131,7 @@ export function SpeakWordActivity({
         attempt.stop();
         return;
       case "skip":
-        onItemAnswered?.({
-          questionIndex: state.questionIndex,
-          outcome: "skipped",
-          density,
-          skipReason: speechSkipReasonOf(phase),
-        });
+        report("skipped");
         // 레슨 중간 활동의 마지막 문항이면 완료 카드 없이 곧바로 결과를 올립니다.
         if (handsOff) finish([...state.heard, null]);
         else dispatch({ type: "skip" });
@@ -184,19 +184,7 @@ export function SpeakWordActivity({
 
   const secondaryNode =
     secondary === null ? undefined : (
-      <view
-        className="speak-word-activity-secondary"
-        data-testid="speak-word-secondary"
-        data-control={secondary}
-      >
-        <Button
-          label={labelOf(secondary)}
-          variant="outline"
-          size="xl"
-          width="hug"
-          bindtap={handleSecondary}
-        />
-      </view>
+      <SpeakWordSecondary control={secondary} label={labelOf(secondary)} onTap={handleSecondary} />
     );
 
   // 완료면 주 버튼이 결과를 올립니다. 그 밖에는 국면별 조작입니다.
@@ -208,90 +196,96 @@ export function SpeakWordActivity({
         : { label: labelOf(primary), run: () => run(primary) };
 
   return (
-    <LearningShell
-      form="speak-word"
-      questionIndex={counter.questionIndex}
-      questionCount={counter.questionCount}
-      complete={complete}
-      instruction={
-        question == null
-          ? copy.speakWord.instruction
-          : speakWordInstructionOf(question, phase, copy)
-      }
-      onExit={onExit}
-      actionLabel={action?.label}
-      onAction={action?.run}
-      advance={advance}
-      verdict={result ?? undefined}
-      scrollCard
-      // 셸은 주 버튼이 있어야 버튼 행을 그립니다 — 그림 로딩 중에는 주 버튼이 없어 보조 `Skip`이 작업 영역에 섭니다.
-      secondaryAction={action === undefined ? undefined : secondaryNode}
-      workspace={
-        question == null ? undefined : (
-          <>
-            {/* 파형은 카드 밖입니다 — 카드와 아래 버튼 사이 남는 자리에 서고 칸 하한이 56입니다. 녹음 아이콘과 아래 주
-                버튼이 같은 시작 · 중지 동작을 제공하며, 그림이 서기 전에는 꺼집니다. */}
-            <view className="speak-word-activity-waves-slot">
-              <SpeechWaves
-                testId="speak-word-waves"
-                state={picture.state === "loading" ? "off" : speechWavesStateOf(phase)}
-                label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
-                onTap={handleWaves}
-              />
-            </view>
-            <view className="speak-word-activity-hint-slot">
-              {hint === null ? null : (
-                <text className="speak-word-activity-hint" data-testid="speak-word-hint">
-                  {hint}
-                </text>
-              )}
-            </view>
-            {action === undefined ? secondaryNode : null}
-          </>
-        )
-      }
-      card={
-        <view
-          className="speak-word-activity-content"
-          data-testid="speak-word-content"
-          data-questionindex={state.questionIndex}
-          data-phase={phase.kind}
-          data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
-        >
-          {question == null ? (
-            <LearningActivityComplete
-              questionCount={questions.length}
-              lesson={lesson}
-              testId="speak-word-complete"
-            />
-          ) : (
+    <>
+      <LearningShell
+        form="speak-word"
+        questionIndex={counter.questionIndex}
+        questionCount={counter.questionCount}
+        complete={complete}
+        instruction={
+          question == null
+            ? copy.speakWord.instruction
+            : speakWordInstructionOf(question, phase, copy)
+        }
+        onExit={onExit}
+        actionLabel={action?.label}
+        onAction={action?.run}
+        advance={advance}
+        verdict={result ?? undefined}
+        scrollCard
+        // 셸은 주 버튼이 있어야 버튼 행을 그립니다 — 그림 로딩 중에는 주 버튼이 없어 보조 `Skip`이 작업 영역에 섭니다.
+        secondaryAction={action === undefined ? undefined : secondaryNode}
+        workspace={
+          question == null ? undefined : (
             <>
-              <SpeakWordPicture
-                url={question.pictureUrl}
-                ratio={density === "compact" ? "4-3" : "5-4"}
-                meaning={question.meaning}
-                state={picture.state}
-                onLoad={picture.onLoad}
-                onError={picture.onError}
-              />
-              {/* 정답 로마자 줄입니다 — 영어 뜻은 그림의 낭독 이름 · 실패 대체 글자에 남아 줄이 없습니다. 판정이 나면 이
-                  줄 자리에 정답 상자가 섭니다(맞아도 보입니다 — 발음을 한 번 더 확인합니다). */}
-              {result !== null ? (
-                <AnswerReveal
-                  testId="speak-word-reveal"
-                  text={speakWordRevealText(question, copy)}
+              {/* 파형은 카드 밖입니다 — 카드와 아래 버튼 사이 남는 자리에 서고 칸 하한이 56입니다. 녹음 아이콘과 아래 주
+                버튼이 같은 시작 · 중지 동작을 제공하며, 그림이 서기 전에는 꺼집니다. */}
+              <view className="speak-word-activity-waves-slot">
+                <SpeechWaves
+                  testId="speak-word-waves"
+                  state={picture.state === "loading" ? "off" : speechWavesStateOf(phase)}
+                  label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
+                  onTap={handleWaves}
                 />
-              ) : question.romanization === null ? null : (
-                <TextRoles.Romanization
-                  segments={romanizationSegmentsOf(question.romanization, undefined)}
-                  size="m"
-                  testId="speak-word-romanization"
-                />
-              )}
+              </view>
+              <view className="speak-word-activity-hint-slot">
+                {hint === null ? null : (
+                  <text
+                    id={speakWordHintId}
+                    className="speak-word-activity-hint"
+                    data-testid="speak-word-hint"
+                    bindlayoutchange={
+                      phase.kind === "unavailable" ? revealSpeakWordHint : undefined
+                    }
+                  >
+                    {hint}
+                  </text>
+                )}
+              </view>
+              {action === undefined ? secondaryNode : null}
             </>
-          )}
-        </view>
-      }
-    />
+          )
+        }
+        card={
+          <view
+            className="speak-word-activity-content"
+            data-testid="speak-word-content"
+            data-questionindex={state.questionIndex}
+            data-phase={phase.kind}
+            data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
+          >
+            {question == null ? (
+              <LearningActivityComplete
+                questionCount={questions.length}
+                lesson={lesson}
+                testId="speak-word-complete"
+              />
+            ) : (
+              <>
+                <Hint.SpeakWordHintButton hint={answerHint} phase={phase} />
+                <SpeakWordPicture
+                  url={question.pictureUrl}
+                  ratio={density === "compact" ? "4-3" : "5-4"}
+                  meaning={question.meaning}
+                  state={picture.state}
+                  onLoad={picture.onLoad}
+                  onError={picture.onError}
+                />
+                {/* 판정 전 정답 로마자는 「Hint → 정답 보기」로만 섭니다(사용자 결정 2026-11-23, ADR-0084 적용 기록). 판정이
+                  나면 정답 상자(낱말 · 로마자)가 섭니다(맞아도 보입니다 — 발음을 한 번 더 확인합니다). */}
+                <Hint.SpeakWordHintLine hint={answerHint} judged={result !== null} />
+                {result === null ? null : (
+                  <AnswerReveal
+                    testId="speak-word-reveal"
+                    text={speakWordRevealText(question, copy)}
+                  />
+                )}
+              </>
+            )}
+          </view>
+        }
+      />
+      <Hint.SpeakWordHintSheet hint={answerHint} />
+    </>
   );
 }

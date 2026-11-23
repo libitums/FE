@@ -1,4 +1,4 @@
-// 롤플레이 미션(ADR-0177)의 음성 두 창구 — `mission-stt`(받아 적기) · `mission-tts`(상대역 말 · 힌트 예문 합성)입니다.
+// 롤플레이 미션(ADR-0178)의 음성 두 창구 — `mission-stt`(받아 적기) · `mission-tts`(상대역 말 · 힌트 예문 합성)입니다.
 // 벤더는 서버가 부르는 ElevenLabs(STT Scribe · TTS `eleven_v4_turbo`)이고, 앱은 키를 갖지 않습니다(파이프라인 문서 §6 · §10).
 // 앱 화면 초안의 임시 타입(`mission-voice.contract.ts`의 `MissionTranscript` · `MissionSpeakRequest` · `MissionSpeech`)을 이 모양으로 바꿔 끼웁니다.
 import { z } from "zod/mini";

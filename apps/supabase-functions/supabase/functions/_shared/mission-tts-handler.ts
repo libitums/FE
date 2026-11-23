@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-tts` — 이 판의 상대역 메시지(진입 대사 포함) · 힌트 예문을 상대역 목소리로 읽는다(파이프라인 문서 §6, ADR-0177).
+// `POST /functions/v1/mission-tts` — 이 판의 상대역 메시지(진입 대사 포함) · 힌트 예문을 상대역 목소리로 읽는다(파이프라인 문서 §6, ADR-0178).
 //
 // 흐름: 인증 → 본문(`missionTtsRequestSchema` — 메시지 id 또는 힌트 번호만, 글은 받지 않는다) →
 //   `companion_mission_voice_begin`(소유 · 판당 · 하루 상한 · 서버가 DB에서 읽을 글을 꺼냄: 말 조각만, 행동 지문 제외) →

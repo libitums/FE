@@ -187,6 +187,25 @@ describe("두 길", () => {
     expect(sinceEntry(events)).toEqual(["entry_path_selected:story", "entry_completed"]);
   });
 
+  test("EBI1′. 그 가이드는 내장 매니페스트의 표지 그림까지 들고, 첫 구획 위에 구분선이 없고, 그림을 누르면 닫힌다", async () => {
+    await reachEntry();
+    await jumpIn();
+
+    const lifted = screen.getByTestId("catalog-cover-illustrated-u00-tutorial");
+    expect(lifted.classList.contains("catalog-cover-illustrated-guided")).toBe(true);
+    expect(
+      screen
+        .getByTestId("catalog-section-u00-tutorial")
+        .querySelectorAll(".episode-pending-divider").length,
+    ).toBe(0);
+
+    fireEvent.tap(lifted, {});
+    await settle();
+
+    expect(present("first-unit-guide-map")).toBe(false);
+    expect(present("episode-intro-screen")).toBe(false);
+  });
+
   test("EBI2. 기초부터 → 글자 → 합치기 → 준비 완료 → 같은 가이드. 완주는 마지막에 한 번", async () => {
     const { events } = await reachEntry();
 
@@ -295,18 +314,18 @@ describe("두 길", () => {
 });
 
 describe("글자 소리", () => {
-  test("EBI7. 음성 정보 파일이 없으면 듣기를 약속하지 않는다", async () => {
+  test("EBI7. 음성 정보 파일이 없어도 자모 소리는 앱 내장 녹음이라 듣기를 약속한다(2026-11-23)", async () => {
     await reachEntry();
     startBasics();
 
-    expect(screen.getByTestId("entry-basics-lead").textContent).not.toContain("Tap a letter");
+    expect(screen.getByTestId("entry-basics-lead").textContent).toContain("Tap a letter");
     expect(screen.getByTestId("entry-basics-letter-0-speaker")).toHaveAttribute(
       "data-audio",
-      "unavailable",
+      "ready",
     );
   });
 
-  test("EBI8. 파일이 올라온 뒤에는 코드 변경 없이 약속하고 들린다", async () => {
+  test("EBI8. 버킷에 음절 소리가 올라와 있어도 자모 칸은 그 자모의 내장 녹음을 낸다", async () => {
     const play = vi.fn<(source: string, done: (result: unknown) => void) => void>();
     const uploaded = manifestTextOf(
       Object.fromEntries(
@@ -325,9 +344,7 @@ describe("글자 소리", () => {
 
     expect(screen.getByTestId("entry-basics-lead").textContent).toContain("Tap a letter");
     fireEvent.tap(screen.getByTestId("entry-basics-letter-0"), {});
-    expect(play.mock.calls.map((call) => call[0])).toEqual([
-      expect.stringContaining("/audio/letters/ga.m4a"),
-    ]);
+    expect(play.mock.calls.map((call) => call[0])).toEqual(["hangul-c-g-sound"]);
   });
 });
 

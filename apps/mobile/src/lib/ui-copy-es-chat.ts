@@ -37,8 +37,16 @@ export const messengerChatEs: MessengerChatCopy = {
     back: "Volver a los chats",
     settings: "Ajustes del chat",
     typing: (name) => `${name} está escribiendo`,
-    sendingPhoto: (name) => `${name} está enviando una foto…`,
-    recordingVoice: (name) => `${name} está grabando un mensaje de voz…`,
+    photoPending: (name) => [
+      `${name} está eligiendo el momento…`,
+      `${name} está tomando la foto…`,
+      `${name} está eligiendo la mejor toma…`,
+      "Ya casi está…",
+    ],
+    voicePending: (name) => [
+      `${name} está grabando un mensaje de voz…`,
+      `${name} lo está enviando…`,
+    ],
     photoLabel: (name) => `Foto de ${name}`,
     voiceLabel: (name, duration, ko, en) => `${name}: mensaje de voz ${duration}, ${ko}, ${en}`,
     play: "Reproducir",

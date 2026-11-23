@@ -375,7 +375,7 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 표기 메모)를 `Names`로 넘긴다 — 시스템 글은 그대로라 캐시된다. 실패 · 개수 틀림이면 제한 시간의 1/3 이상 남았을 때 한 번 다시 시도한다.
 
 **선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
-판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
+판정은 `companion.proactive_skip_reason` 하나(이유 off · no_timezone · quiet_hours · hour · daily_cap · gap · spacing):
 
 | | 하루 횟수 | 마지막 메시지 뒤 | 직전 선톡 뒤 | 선호 시각 |
 |---|---|---|---|---|
@@ -645,10 +645,10 @@ supabase functions serve --no-verify-jwt                                        
 되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
 
-### 롤플레이 미션 코어 (2단계, ADR-0177)
+### 롤플레이 미션 코어 (2단계, ADR-0178)
 
 에피소드 하나에 묶인 짧은 과업 대화의 **순수 층**이다 — DB · 네트워크 · Deno에 닿지 않고, 핸들러(`mission-start` · `chat-send`의 미션 갈래 ·
-`mission-hint` · `mission-finish`)와 SQL은 따로 들어온다. 기획: [PRD](../../docs/specs/ai-companion-mission.md) · [ADR-0177](../../docs/adr/0177-companion-mission.md).
+`mission-hint` · `mission-finish`)와 SQL은 따로 들어온다. 기획: [PRD](../../docs/specs/ai-companion-mission.md) · [ADR-0178](../../docs/adr/0178-companion-mission.md).
 
 | 파일(`_shared/`) | 하는 일 |
 |---|---|
@@ -664,7 +664,7 @@ supabase functions serve --no-verify-jwt                                        
 | `mission-env.ts` | 모델 이름 `missionModelsFrom` · 출력 토큰 상한 |
 | `mission-bundle.ts` · `mission-fixtures.ts` · `mission-transition-fixtures.ts` | 실험실 번들 만들기와 그 사례(단위 테스트와 같은 것) |
 
-**판이 끝나는 규칙**(2026-11-23 바뀜 — ADR-0177 D6): 판은 **모든 목표**(필수 + 선택)를 이루면 `goals`, 학습자 턴이 상한에 닿으면 `turn_limit`,
+**판이 끝나는 규칙**(2026-11-23 바뀜 — ADR-0178 D6): 판은 **모든 목표**(필수 + 선택)를 이루면 `goals`, 학습자 턴이 상한에 닿으면 `turn_limit`,
 필수를 모두 이룬 뒤 학습자가 끝내기(`mission-finish`, `abandon` 없이)를 누르면 `finish`로 닫힌다. 필수만 이룬 판은 닫히지 않는다 — 「성공 확정」
 (`mission` 이벤트 · 상태의 `requiredDone: true`)이고 대화가 이어진다. 선택 목표가 없는 미션은 필수를 이루는 순간 `goals`. 성공 = 필수 목표 모두
 (끝난 까닭과 무관 — 필수 뒤 턴 상한도 성공). 필수를 못 이룬 끝내기는 지금처럼 `mission_not_ended`(그만두기는 `abandon: true`).
@@ -717,6 +717,8 @@ COMPANION_MISSION_HINT_MODEL=       # 힌트 모델 id. 비워 두면 claude-hai
 - 환경 변수(값은 비워 둔다): `COMPANION_MISSION_STT_MODEL` · `COMPANION_MISSION_TTS_MODEL` · `COMPANION_MISSION_TTS_VOICE` · `COMPANION_MISSION_STT_ZERO_RETENTION` ·
   `COMPANION_MISSION_AUTOSEND_{CONF_MIN,CONF_MEAN,MIN_SECONDS,HANGUL_MIN,WITHOUT_CONFIDENCE}`. 키는 1단계와 같은 `ELEVENLABS_API_KEY`.
 - 배포: `supabase functions deploy mission-stt` · `supabase functions deploy mission-tts`(`verify_jwt = false`) — 미션 마이그레이션 적용 뒤.
+- 임포트 맵: 미션 함수 다섯(`mission-start` · `mission-hint` · `mission-finish` · `mission-stt` · `mission-tts`)은 `chat-send`와 같은 `deno.json`을 둔다.
+  `_shared/function-import-maps.unit.test.ts`가 함수마다 `index.ts`에서 따라간 외부 import(`zod/mini` · `@anthropic-ai/sdk` …)가 그 폴더 `deno.json`에 있는지 본다.
 
 ## revenuecat-webhook — 구독 · 엽전 팩(ADR-0144)
 
@@ -754,6 +756,81 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 (20261108 ~ 20261211, 특히 20261112 크레딧 · 20261111 `moderation_state` · `settings`) **뒤에** 적용한다. 20261129보다 번호가 뒤라 20261129를 나중에
 올리면 `db push`에 `--include-all`이 필요하다. 적용 전에는 운영 도구 화면이 「적용 전」(`{deployed:false}`)으로 뜬다. 플레이그라운드는 시험 계정만
 고르므로 바뀌는 것이 없다.
+
+### 2차 — 시험 계정 페이지 · 엽전 지급 고르기 · 대화 조각 (20261213)
+
+운영 도구 마이그레이션 넷(20261213 · 20261214 · 20261215 · 20261227)의 번호는 같은 날짜의 다른 마이그레이션과 겹치지 않게 `…130000`이다.
+운영 상태(2026-11-23): 20261213 · 20261227은 SQL 편집기로 적용했고, 20261214(20261227이 대신한다) · 20261215는 적용하지 않았다.
+
+`migrations/20261213130000_ops_admin_testers.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A. 20261212의 공통 규칙(`p_actor` · 열람/쓰기 기록 ·
+`service_role`만 · `not_a_tester`는 `{ok:false}` + `refused`) 그대로다.
+
+- 바뀌는 것: UserRow에 `paid`(스토어 이벤트가 있거나 원장에 `purchase` · `subscription` 지급 — 시험 계정 잔액 맞추기 `operator`는 세지 않음, 구독 표가
+  없으면 원장만) · `ops_user_conversation`이 메시지마다 `segments` · `ops_grant_credits`의 메모가 늘 필수(`invalid_memo`).
+- 새 RPC 10개(합 32개): `ops_search_users`(검색어 · 국가 · 시험 계정 · 티어 · 가입일, `total`) · `ops_countries`(기록 안 함) · `ops_list_testers` ·
+  `ops_tester_state` · `ops_set_tester`(`raw_app_meta_data.duru_tester` 켜기 · 지우기 — 앱은 로그인 토큰에서 읽어 다시 열면 반영. 해제하면 운영자가
+  넣은 등급 — 플랜의 `ops` · `ops_tester` 행과 옛 등급 source `ops_admin` · `playground` — 도 지우고 `removed:{plans, tier}`로 알린다) ·
+  `ops_tester_set_profile`(`companion_operator_set_profile`과 같은 뜻, 칸마다 `invalid_<칸>`, 스냅샷 셀피는 `female` · `male` · `hidden`) ·
+  `ops_tester_set_learning_scope` · `ops_tester_set_intimacy`(0 ~ 10000 — 턴은 하한 0만 둔다, 말투는 턴과 같은 문턱으로 다시 계산) ·
+  `ops_tester_set_plan`(`plan_entitlements`에 `ops_tester` · `ops` · sandbox 행, 표가 없으면 `plans_unavailable`, 그 플랜에 스토어 행이 있으면
+  켜기 · 끄기 모두 `store_plan`(refused), 다시 켤 때 활성 운영 행의 `period_started_at`은 그대로 — 플랜 엽전이 다시 나가지 않게) · `ops_tester_reset_learning`.
+- **학습 초기화의 코인 수령**: 원장(`credit_ledger`)은 트리거 · 외래 키가 없어 지울 수는 있지만, 지우면 지갑 합 = 원장 합이 깨지고 지급 기록이 사라진다.
+  그래서 지우지 않고 수령 지급(reason `learning` · `launch_bonus` · `streak`)의 `ref_id` 끝에 `|reset@<epoch ms>`를 붙인다 — `companion.grant_once`가
+  같은 `ref_id`를 찾지 못해 다시 준다. 이미 받은 엽전은 지갑에 남는다(필요하면 잔액 맞추기로 내린다). 앱 기기의 진도는 앱에서 로그아웃해야 지워진다.
+- 테스트: `migrations/ops-admin-testers.integration.test.ts`(구독 표가 있을 때 · 없을 때).
+
+**운영 적용은 사람이 한다.** 20261212 **뒤에** 적용한다. SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261213130000`. 다시 적용해도 같다(`create or replace`). 20261212를 이 파일 뒤에 다시 적용하면
+UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파일도 다시 적용한다. ops_admin 2차(시험 계정 페이지)는 이 파일이 있어야 뜬다.
+
+### 정렬 — 「전체」 사용자 둘러보기 (20261214)
+
+`migrations/20261214130000_ops_admin_sort.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
+
+- `ops_search_users`에 `p_sort`(`created_at` · `last_sign_in_at` · `email` · `balance` · `country`, 기본 `created_at`) · `p_dir`(`asc` · `desc`, 기본 `desc`).
+  목록 밖 값은 `invalid_sort` · `invalid_dir`. 빈 값은 늘 뒤, 같은 값은 id 순, email은 대소문자 무시, 잔액은 지갑이 없으면 0. 열람 기록 detail에는
+  기본 정렬이 아닐 때만 `sort` · `dir`.
+- 인수 꼴이 바뀌어 옛 함수를 `drop` 하고 새로 만든다. 새 인수는 기본값이 있어 옛 호출도 그대로 된다 — ops_admin은 기본 정렬이면 `p_sort` · `p_dir`을
+  보내지 않고, 이 파일이 없어 함수를 못 찾으면 정렬 없이 다시 불러 「DB 업데이트 뒤에 됩니다」로 알린다.
+- 테스트: `migrations/ops-admin-sort.integration.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261213 **뒤에** 적용한다. SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261214130000`. 다시 적용해도 같다. 20261213을 이 파일 뒤에 다시 적용하면 옛 인수 꼴 함수가 함께 남아
+이름만으로 부를 때 `is not unique`가 나니, 그때는 이 파일도 다시 적용한다.
+
+### 판정 메시지 (20261215)
+
+`migrations/20261215130000_ops_admin_moderation.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §F.
+
+- 새 RPC `ops_user_moderation(p_actor, p_user, p_limit 기본 50(1~200), p_before)` — 사용자 상세 「신고 · 판정」에서 판정마다 어떤 메시지였는지 본다.
+  `{items: [{id, at, stage, category, action, messageId, characterId, message, reply}], hasMore}` 최신순, `allow`는 뺀다(타임라인과 같다).
+- 턴 저장 RPC는 판정을 사용자 메시지에 단다. `message`는 그 사용자 메시지(`{id, role, text(2000자에서 자름), status, at}`),
+  `reply`는 그 턴의 캐릭터 답(`reply_to`가 그 메시지인 답 중 가장 늦은 것, `{id, status, hidden, segments, at}`). 판정이 캐릭터 답에 달려 있으면
+  `reply`가 그 답이고 `message`는 `reply_to`로 찾는다. 메시지가 없으면 null.
+- 한 턴의 판정은 같은 시각에 들어간다. `p_before`(쪽 마지막 `at`)로 넘길 때 갈라지지 않게 쪽 끝 시각과 같은 판정은 다 넣는다(그래서 `limit`보다 많을 수 있다).
+- 열람 기록 `view` · `user_moderation`, detail `{limit, before?}`. 메시지 내용을 보니 대화 열람(`user_conversation`)처럼 남긴다.
+- 테스트: `migrations/ops-admin-moderation.integration.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261214 **뒤에** 적용한다(실제로 기대는 것은 20261212의 `ops` 도우미뿐이다). SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261215130000`. 다시 적용해도 같다(`create or replace`). 이 파일이 없으면 ops_admin은 판정 목록을
+메시지 없이 옛 모양으로 보이고 「DB 업데이트(20261215) 뒤에 보입니다」로 알린다.
+
+### 에셋 수 — 「전체」를 스냅샷 · 음성 수로 정렬 (20261227)
+
+`migrations/20261227130000_ops_admin_media_counts.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
+
+- `ops_search_users`의 줄마다 `snapshots` · `voices` — 그 사용자의 `companion.media` 중 완료(`status = 'complete'`)인 스냅샷 · 음성 수(없으면 0,
+  막힘 · 실패 · 만드는 중은 세지 않는다). `p_sort`에 `snapshots` · `voices`(`p_dir` asc · desc, 같은 수는 id 순).
+- 세는 범위: `companion.media` 전체를 묶어 세지 않는다. 보이는 줄(많아야 `p_limit`)만 `LATERAL`로 사용자마다 세고(`media_album_idx`),
+  에셋 수로 정렬할 때만 조건에 맞은 사용자 모두를 센다.
+- 인수 꼴은 20261214 그대로(11개)다. 다른 꼴이 남으면 이름만으로 부를 때 겹치므로 둘 다 `drop` 한다: 20261213의 꼴(9개 — 20261214를 적용하지 않은 DB)과
+  이 파일의 첫 판(13개, `p_min_snapshots` · `p_min_voices`). 그래서 20261214를 건너뛴 DB에도 그대로 적용된다(이 함수가 20261214의 정렬을 모두 담는다).
+- ops_admin은 이 파일이 없는 DB에서 수를 「-」로 보이고, 그 정렬(`invalid_sort`)은 기본 정렬로 다시 불러 「DB 업데이트(20261227) 뒤에 됩니다」로 알린다.
+- 테스트: `migrations/ops-admin-media-counts.integration.test.ts`.
+
+**운영은 2026-11-23에 SQL 편집기로 적용했다**(20261214 없이 20261213 위에). `supabase migration repair --status applied 20261227130000`으로 기록한다.
+다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
+번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
 
 ## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 
@@ -797,7 +874,7 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 `migrations/20261220120000_weekly_ranking.sql` — 회원 주간 순위(월 00:00 UTC 시즌). 스키마 `ranking`(RLS 켬, anon · authenticated는 스키마 · 표 권한
 없음 — 앱은 RPC만, 모든 사용자 열은 `auth.users` CASCADE).
 
-- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 25 · `group_max` 30) · `groups` · `members`(주 × 사용자) ·
+- 표: `settings`(한 줄 — `reward_enabled` 기본 false · `reward_amount` 30 · `group_target` 15 · `group_max` 18 — 20261227, 처음은 25 · 30) · `groups` · `members`(주 × 사용자) ·
   `lesson_passes`(사용자 평생 한 번) · `chat_words`(주 1번) · `preferences`(숨기기) · `rewards`(정산 기록).
 - 배정 `ranking.join_week`: 그 주에 처음 점수를 얻을 때. 구간 = 가입 나이(<14일 · <60일 · 그 밖) × 지금까지 통과한 콘텐츠 유닛(0~9 · 10~39 · 40+),
   같은 구간에서 숨기지 않은 인원이 목표 미만이고 전체가 상한 미만인 가장 오래된 그룹, 없으면 새 그룹(구간마다 advisory lock).
@@ -825,12 +902,12 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 
 보상 켜기(사용자 결정 뒤): `update ranking.settings set reward_enabled = true, reward_amount = 30;`(액수는 결정값). 끄기: `reward_enabled = false`.
 지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
-그룹 크기: `update ranking.settings set group_target = 25, group_max = 30;`(이미 배정된 그룹은 그대로).
+그룹 크기(지금 15 · 18, ADR-0170 D13): `update ranking.settings set group_target = 15, group_max = 18;`(이미 배정된 그룹은 그대로). 주 중간에 목표를 내리면 그 주의 남은 참가자는 작은 새 그룹에 들어가므로 주 경계(월 00:00 UTC) 직전에 바꾼다. 그룹이 작아지면 그룹 수가 늘어 상위 3 보상 지급 총량도 는다(25 → 15명이면 약 1.7배) — 보상을 켜기 전에 액수를 다시 본다.
 
-## 롤플레이 미션 DB — 컴패니언 2단계 (20261226)
+## 롤플레이 미션 DB — 컴패니언 2단계 (20270102)
 
-`migrations/20261226120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
-([ADR-0177](../../docs/adr/0177-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
+`migrations/20270102120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
+([ADR-0178](../../docs/adr/0178-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
 컴패니언 쪽 SQL의 `kind = 'companion'` 조건 · 캐릭터당 고유 색인은 그대로 둬 미션 행이 기록 · 선톡 · 요약 · 기억 · 대화 비우기 · 첫 인사에
 섞이지 않는다(D2). 턴의 SQL은 미션 전용 함수다 — `companion_begin_turn` · `companion_finish_turn`은 바뀌지 않는다(D3).
 
@@ -861,18 +938,18 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 
 **운영 적용은 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 운영 DB에는 적용하지 않는다(PRD §0.9).** 정리된 뒤의 순서:
 
-1. 앞의 컴패니언 마이그레이션(20261108 ~ 20261212, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유) **뒤에** 적용한다. `supabase db push --dry-run`으로
+1. 앞의 마이그레이션 모두(20261108 ~ 20261231, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유 · 20261229 ~ 20261230 미디어 표본) **뒤에** 적용한다. `supabase db push --dry-run`으로
    이 파일만 올라가는지 보고 `supabase db push`, 또는 SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
-   `supabase migration repair --status applied 20261226120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
+   `supabase migration repair --status applied 20270102120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
 2. 미션 파일을 올리는 스크립트로 `companion_upsert_mission`을 부른다(파일마다 한 번, 다시 불러도 같다).
 3. `cron/companion-mission.sql`을 SQL 편집기에서 한 번 실행한다.
 4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
 
 되돌리기: `select cron.unschedule('companion-close-stale-missions')`, 스위치를 끈다. 표 · 칸은 지우지 않는다(판 · 결과가 원장과 이어져 있다).
 
-## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0177)
+## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0178)
 
-미션 코어(`_shared/mission-*.ts`)와 미션 DB(20261226)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
+미션 코어(`_shared/mission-*.ts`)와 미션 DB(20270102)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
 진입 `index.ts`, 인증은 사용자 토큰 또는 플레이그라운드 경로(`Authorization: Bearer <서버 키>` + `x-companion-user-id`), `config.toml`의
 `verify_jwt = false`, 요청마다 로그 한 줄(`mission_start` · `mission_hint` · `mission_finish`, 턴은 `chat_send … mission …`).
 LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고,

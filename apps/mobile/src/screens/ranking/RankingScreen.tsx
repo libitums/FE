@@ -10,10 +10,19 @@ import { Button } from "@libitums/ui-lynx/button";
 import type { RankingBoard, RankingBoardKind } from "../../lib/ranking.contract";
 import { useUiCopy } from "../../lib/ui-copy";
 import { rankingTestIds as ids, type RankingScreenProps } from "./ranking.contract";
-import { daysLeft, nearMeItems, zoneBefore, type RankingView } from "./ranking-rules";
-import { Face, RankBadge, Row } from "./RankingRows";
+import {
+  daysLeft,
+  moreToTopThree,
+  nearMeItems,
+  shownEndsAt,
+  zoneBefore,
+  type RankingView,
+} from "./ranking-rules";
+import { itemInClass, pulseClass, useReducedMotion, useRisingScore } from "./ranking-motion";
+import { Face, PulseRing, RankBadge, Row } from "./RankingRows";
 
 import "./ranking-screen.css";
+import "./ranking-motion.css";
 
 const GROUP_ICON = trophy.replace(/currentColor/g, color.fg.brand);
 const BOARDS: readonly RankingBoardKind[] = ["lessons", "chat-words"];
@@ -21,15 +30,24 @@ const SLOP = { top: "2px", bottom: "2px", left: "0px", right: "0px" } as const;
 const PLACEHOLDERS = [0, 1, 2, 3, 4] as const;
 const GAP_DOTS = [0, 1, 2] as const;
 
-function MyRow({ board }: { readonly board: RankingBoard }) {
+function MyRow({
+  board,
+  shownScore,
+}: {
+  readonly board: RankingBoard;
+  readonly shownScore: number;
+}) {
   const copy = useUiCopy().ranking;
+  const reduced = useReducedMotion();
   const mine = board.rows.find((row) => row.me);
   const gap = board.next === null ? copy.first : copy.morePass(board.next.more, board.next.name);
-  const unit = copy.unit(board.kind, board.me.score);
+  // 세는 동안에도 보이는 수와 단위가 맞게 — 보이는 숫자로 고릅니다(리뷰 #549). 낭독 줄은 줄곧 지금 점수 · 그 단위입니다(리뷰 #550).
+  const unit = copy.unit(board.kind, shownScore);
+  const spokenUnit = copy.unit(board.kind, board.me.score);
   return (
     <view className="ranking-pin">
       <view
-        className="ranking-row ranking-row-me"
+        className={`ranking-row ranking-row-me${pulseClass(reduced)}`}
         data-testid={ids.me}
         flatten={false}
         accessibility-element={true}
@@ -37,7 +55,7 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
           board.me.rank,
           copy.you,
           gap,
-          `${board.me.score} ${unit}`,
+          `${board.me.score} ${spokenUnit}`,
         )}
       >
         <view className="ranking-row-inner" accessibility-elements-hidden={true}>
@@ -50,17 +68,27 @@ function MyRow({ board }: { readonly board: RankingBoard }) {
             </text>
           </view>
           <view className="ranking-score">
-            <text className="ranking-score-text">{String(board.me.score)}</text>
+            <text className="ranking-score-text" data-testid={ids.meScore}>
+              {String(shownScore)}
+            </text>
             <text className="ranking-unit">{unit}</text>
           </view>
         </view>
+        <PulseRing />
       </view>
     </view>
   );
 }
 
-function List({ board }: { readonly board: RankingBoard }) {
+function List({
+  board,
+  shownScore,
+}: {
+  readonly board: RankingBoard;
+  readonly shownScore: number;
+}) {
   const copy = useUiCopy().ranking;
+  const reduced = useReducedMotion();
   // 그룹 전체가 아니라 상위 3 · 내 근처만(ADR-0170 D11). 구역 줄은 그려지는 줄끼리 셉니다 — 생략 뒤 첫 줄 앞이 「Keep climbing」.
   const items = nearMeItems(board.rows);
   const shown = items.flatMap((item) => (item.kind === "row" ? [item.row] : []));
@@ -71,13 +99,14 @@ function List({ board }: { readonly board: RankingBoard }) {
       scroll-orientation="vertical"
       scroll-bar-enable={false}
     >
-      <view className="ranking-list">
-        {items.map((item) => {
+      {/* 보드가 바뀌면 목록을 새로 세워 차례 등장이 다시 돕니다(D12). */}
+      <view key={board.kind} className="ranking-list">
+        {items.map((item, index) => {
           if (item.kind === "gap")
             return (
               <view
                 key="gap"
-                className="ranking-gap"
+                className={`ranking-gap${itemInClass(index, reduced)}`}
                 data-testid={ids.gap}
                 accessibility-elements-hidden={true}
               >
@@ -89,21 +118,49 @@ function List({ board }: { readonly board: RankingBoard }) {
           const row = item.row;
           const zone = zoneBefore(shown, shown.indexOf(row));
           return (
-            <view key={`${row.rank}-${row.name}`} className="ranking-item">
+            <view
+              key={`${row.rank}-${row.name}`}
+              className={`ranking-item${itemInClass(index, reduced)}`}
+            >
               {zone === null ? null : (
                 <text
                   className="ranking-zone"
                   data-testid={zone === "top" ? ids.zoneTop : ids.zoneClimb}
                 >
-                  {zone === "top" ? copy.zoneTop(board.reward) : copy.zoneClimb}
+                  {zone === "top"
+                    ? copy.zoneTop(board.reward)
+                    : copy.zoneClimb(moreToTopThree(board))}
                 </text>
               )}
-              <Row row={row} board={board} />
+              <Row
+                row={row}
+                board={board}
+                {...(row.me && shownScore !== board.me.score ? { shownScore } : {})}
+              />
             </view>
           );
         })}
       </view>
     </scroll-view>
+  );
+}
+
+/** 목록 + 고정된 내 줄 — 내 점수의 숫자 오름을 한 번 세어 두 줄에 같은 값을 줍니다(D12). 보드마다 새로 섭니다. */
+function ReadyBoard({
+  board,
+  seenScore,
+  onScoreCounted,
+}: {
+  readonly board: RankingBoard;
+  readonly seenScore: number | null;
+  readonly onScoreCounted: (() => void) | undefined;
+}) {
+  const shownScore = useRisingScore(board.me.score, seenScore, onScoreCounted);
+  return (
+    <>
+      <List board={board} shownScore={shownScore} />
+      <MyRow board={board} shownScore={shownScore} />
+    </>
   );
 }
 
@@ -161,9 +218,9 @@ function Loading() {
 export function RankingScreen(props: RankingScreenProps): ReactNode {
   const { view, board, nowMs, onSelectBoard } = props;
   const copy = useUiCopy().ranking;
-  const endsAt =
-    view.kind === "ready" ? view.board.endsAt : view.kind === "not-joined" ? view.endsAt : null;
   const switchable = view.kind !== "guest" && view.kind !== "hidden";
+  // 남은 날 줄은 읽기 전부터 세웁니다 — 읽은 뒤에 줄이 생기며 아래가 밀리지 않게.
+  const endsAt = shownEndsAt(view, nowMs);
   return (
     <view className="ranking-screen" data-testid={ids.screen}>
       <view className="ranking-top">
@@ -227,10 +284,16 @@ export function RankingScreen(props: RankingScreenProps): ReactNode {
           </view>
         ) : null}
       </view>
-      {view.kind === "ready" ? <List board={view.board} /> : null}
+      {view.kind === "ready" ? (
+        <ReadyBoard
+          key={view.board.kind}
+          board={view.board}
+          seenScore={props.seenScore ?? null}
+          onScoreCounted={props.onScoreCounted}
+        />
+      ) : null}
       {view.kind === "loading" ? <Loading /> : null}
       <Notice view={view} props={props} />
-      {view.kind === "ready" ? <MyRow board={view.board} /> : null}
     </view>
   );
 }

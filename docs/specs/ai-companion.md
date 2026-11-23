@@ -33,7 +33,7 @@
 
 | 항목 | 언제 | 비고 |
 |---|---|---|
-| 롤플레이 미션(자유 미션 · 채점 · 미션 리포트) | 2단계 | 컴패니언 엔진(페르소나 · 교정)을 같이 쓴다. `conversations.kind`에 자리만 남긴다. ⟨2026-11-18⟩ [2단계 PRD](ai-companion-mission.md) · [ADR-0177](../adr/0177-companion-mission.md) — 페르소나 카드는 바탕 네 칸만 읽고 상대역 설명은 미션 파일이 든다 |
+| 롤플레이 미션(자유 미션 · 채점 · 미션 리포트) | 2단계 | 컴패니언 엔진(페르소나 · 교정)을 같이 쓴다. `conversations.kind`에 자리만 남긴다. ⟨2026-11-18⟩ [2단계 PRD](ai-companion-mission.md) · [ADR-0178](../adr/0178-companion-mission.md) — 페르소나 카드는 바탕 네 칸만 읽고 상대역 설명은 미션 파일이 든다 |
 | 발음 피드백 · 서버 STT · 발음 평가 API | 2단계 | 1단계 음성 입력은 기기 내장 STT의 글자만 받는다 |
 | 탭 재생 음성(TTS) | **M4 이후, 이미지 생성과 함께** → 2026-11-13 구현(작업 중) | 2026-11-08 결정. 위키 01은 v1 크레딧 행동에 넣었지만 1단계 마일스톤에서 뺐다. 「음성」 단건으로 만들었다 — [스냅샷 · 음성](ai-companion-snapshot.md) |
 | 이미지 생성 · 캐릭터 음성 메시지 | v2 → 스냅샷은 2026-11-13 구현(작업 중) | 메시지 한 장면 → 이미지 한 장(「스냅샷」, 유저가 누를 때만)은 [스냅샷 · 음성](ai-companion-snapshot.md). 캐릭터가 먼저 보내는 음성 · 이미지 메시지는 여전히 v2 |
@@ -397,7 +397,7 @@ duru-curation 정렬이 끝난 뒤 붙인다(위키 06 「curation 정렬」).
 | 조용한 시간 | 현지 22:00 ~ 08:00에는 보내지 않는다 |
 | 전체 하루 상한 | 2(`settings.proactive_daily_cap`) — 유저 설정보다 앞선다 |
 | 예약 작업 | 매시간. 한 번 돌 때 유저마다 후보 하나(가장 오래 조용한 대화) |
-| 건너뛴 이유 | `companion.proactive_skip_reason`이 `off` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` 중 하나를 낸다 |
+| 건너뛴 이유 | `companion.proactive_skip_reason`이 `off` · `no_timezone` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` 중 하나를 낸다. 현지 시각은 프로필 시간대 → 지역 → 학습 프로필의 나라 순으로 찾고, 저녁 창(`settings.proactive_evening_from` · `_to`, 운영 19 ~ 21시)이 켜져 있으면 시각을 정하지 않은 사람에게는 그 시각대에만 보낸다(20261226) |
 | 플레이그라운드 `force` | 빈도 규칙을 모두 건너뛴다. **연령 · 지역 규칙은 건너뛰지 않는다** |
 
 - 저장한 선톡에는 푸시를 붙인다(2026-11-22, ADR-0127 「서버 쪽」) — 스위치 `settings.proactive_push`(off 기본 · testers · on), 대조군 30% · 미리보기 A/B. 푸시가 꺼져 있거나 기기가 없으면 앱은 다음 조회 때 본다.

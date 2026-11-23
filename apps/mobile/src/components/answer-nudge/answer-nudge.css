@@ -1,0 +1,32 @@
+/* 고민 힌트(ADR-0177) — 다음 정답 조각에 번지는 브랜드 색 그림자. 토큰은 CSS 커스텀 프로퍼티로 소비합니다(ADR-0014 D1).
+   알파 색 토큰이 없어 brand-primary(#F46B18)에 불투명도를 곱한 값을 rgba로 적습니다(coin-shop의 고리와 같은 방식). */
+
+/* 조각 바깥 상자 — 고요한 그림자가 섭니다. 이 그림자는 움직이지 않습니다. 테두리 색은 조각의 CSS가 자기 클래스와 묶어
+   정합니다(`.sentence-order-chip-bank.answer-nudge-target` 등) — 조각의 회색 테두리 규칙에 순서로 지지 않게. */
+.answer-nudge-target {
+  position: relative;
+  overflow: visible;
+  box-shadow: 0 var(--libitum-spacing-2) var(--libitum-spacing-8) rgba(244, 107, 24, 0.22);
+}
+
+/* 숨 쉬는 빛 — 그림자를 진 빈 층의 불투명도만 오갑니다. 다섯 번(5초) 오간 뒤 켜진 채로 멈춥니다 — 홀수 번이라 끝이 켜진 쪽입니다(WCAG 2.2.2의 5초 안). */
+.answer-nudge-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--libitum-radius-md);
+  box-shadow: 0 var(--libitum-spacing-4) var(--libitum-spacing-16) rgba(244, 107, 24, 0.4);
+  animation: answer-nudge-breathe var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-easing) 5 alternate both;
+}
+
+@keyframes answer-nudge-breathe {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

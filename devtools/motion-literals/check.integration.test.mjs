@@ -37,6 +37,8 @@ const sheetMotionFiles = [
 // 틀린 문제 다시 풀기 시작 배지의 튀어 듦 scale(1.06)(ADR-0058 적용 기록).
 const reviewBadge = "apps/mobile/src/screens/learning/lesson-review-badge.css";
 const unlimitedShine = "apps/mobile/src/components/unlimited-ticket-chip-motion.css";
+// 주간 순위 화면의 등장 연출(사용자 결정 2026-11-22, ADR-0170 D12).
+const rankingMotion = "apps/mobile/src/screens/ranking/ranking-motion.css";
 
 function runCheck(scriptPath) {
   const result = spawnSync(process.execPath, [scriptPath], { encoding: "utf8" });
@@ -72,7 +74,7 @@ test("[LM1′] 저장소 전체(CSS + 소스, scale-literal 포함)에 lint:moti
   assert.equal(status, 0, output);
 });
 
-test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 · 문화 카드 뒤집기 · 등장 모션 두 파일 · 다시 풀기 배지 · 무제한 칩 빛 훑기이고 모두 실제로 존재한다", () => {
+test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 · 문화 카드 뒤집기 · 등장 모션 두 파일 · 다시 풀기 배지 · 무제한 칩 빛 훑기 · 순위 모션이고 모두 실제로 존재한다", () => {
   const allowlist = JSON.parse(readFileSync(path.join(here, "allowlist.json"), "utf8"));
   assert.deepEqual(
     allowlist.map((entry) => entry.path),
@@ -83,6 +85,7 @@ test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 ·
       ...sheetMotionFiles,
       reviewBadge,
       unlimitedShine,
+      rankingMotion,
     ],
   );
   for (const file of [
@@ -92,6 +95,7 @@ test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 ·
     ...sheetMotionFiles,
     reviewBadge,
     unlimitedShine,
+    rankingMotion,
   ]) {
     assert.ok(readFileSync(path.join(repoRoot, file), "utf8").length > 0, file);
   }
@@ -143,6 +147,7 @@ test("[LM3′] allowlist에서 narrative-background.css를 빼면 그 파일의 
     ...sheetMotionFiles.map((file) => ({ path: file, reason: "등장 모션 연출 값(ADR-0077)" })),
     { path: reviewBadge, reason: "다시 풀기 배지 튀어 듦(ADR-0058)" },
     { path: unlimitedShine, reason: "무제한 칩 빛 훑기 주기(ADR-0115)" },
+    { path: rankingMotion, reason: "순위 화면 등장 연출 값(ADR-0170 D12)" },
   ]);
   try {
     for (const root of roots) {

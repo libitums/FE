@@ -7,6 +7,9 @@ import {
   mediaLineId,
   mediaLineKey,
   mediaLineOf,
+  refreshedPendingLine,
+  withPendingStage,
+  pendingStartOfMedia,
   mediaPollDelay,
   mediaTargetOf,
   nextUtcMidnight,
@@ -60,6 +63,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   aspect: null,
   failure: null,
   createdAt: 5,
+  stage: null,
   ...over,
 });
 
@@ -165,10 +169,16 @@ describe("로그 줄", () => {
   const target = { messageId: A1, text: { ko: "반가워요", en: "Nice to meet you" } };
 
   test("CM-U6a 상태마다 줄 모양", () => {
+    // 대기 줄은 기기 시계의 시작 시각(`startedAt`)을 싣는다 — 넘겨받지 못하면 지금(리뷰 #541). `at`은 서버 시각 그대로.
     expect(mediaLineOf(media(), target, null, 9)).toEqual({
       id: mediaLineId(A1, "photo", M1),
       at: 5,
       kind: "photo-pending",
+      startedAt: 9,
+    });
+    expect(mediaLineOf(media(), target, null, 9, 4)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 4,
     });
     expect(
       mediaLineOf(
@@ -281,5 +291,100 @@ describe("다시 읽기 간격", () => {
     expect(nextUtcMidnight(Date.parse("2026-11-15T00:00:00.000Z"))).toBe(
       Date.parse("2026-11-16T00:00:00.000Z"),
     );
+  });
+});
+
+test("CM-U6c 대기 줄의 시작 시각 찾기 — 서버 줄이 먼저, 없으면 같은 대상의 자리표시자(~req), 둘 다 없으면 null(리뷰 #541)", () => {
+  const req: ChatMessage = {
+    id: mediaLineId(A1, "photo", "req"),
+    at: 1,
+    kind: "photo-pending",
+    startedAt: 100,
+  };
+  const server: ChatMessage = {
+    id: mediaLineId(A1, "photo", M1),
+    at: 5,
+    kind: "photo-pending",
+    startedAt: 40,
+  };
+  expect(pendingStartOfMedia([req], A1, "photo", M1)).toBe(100);
+  expect(pendingStartOfMedia([req, server], A1, "photo", M1)).toBe(40);
+  expect(pendingStartOfMedia([req], A1, "voice", M1)).toBeNull();
+  expect(pendingStartOfMedia([], A1, "photo", M1)).toBeNull();
+});
+
+describe("서버가 알려 주는 진행 단계(ADR-0146 개정 2026-11-23)", () => {
+  const target = { messageId: A1, text: { ko: "반가워요", en: "Nice to meet you" } };
+
+  test("CM-U6d 대기 줄 — 단계가 없으면(옛 서버) 칸이 없고, preparing은 단계만, drawing은 단계와 비율을 싣는다", () => {
+    expect(mediaLineOf(media(), target, null, 9, 4)).toEqual({
+      id: mediaLineId(A1, "photo", M1),
+      at: 5,
+      kind: "photo-pending",
+      startedAt: 4,
+    });
+    expect(mediaLineOf(media({ stage: "preparing" }), target, null, 9, 4)).toEqual({
+      id: mediaLineId(A1, "photo", M1),
+      at: 5,
+      kind: "photo-pending",
+      startedAt: 4,
+      serverStage: "preparing",
+    });
+    expect(mediaLineOf(media({ stage: "drawing", aspect: "3:2" }), target, null, 9, 4)).toEqual({
+      id: mediaLineId(A1, "photo", M1),
+      at: 5,
+      kind: "photo-pending",
+      startedAt: 4,
+      serverStage: "drawing",
+      aspect: "3:2",
+    });
+    // 음성은 단계를 싣지 않는다.
+    expect(mediaLineOf(media({ kind: "voice", stage: "preparing" }), target, null, 9, 4)).toEqual({
+      id: mediaLineId(A1, "voice", M1),
+      at: 5,
+      kind: "voice-pending",
+      startedAt: 4,
+    });
+  });
+
+  test("CM-U6e 다시 읽은 대기 행 — 단계 · 비율이 달라졌을 때만 새 줄을 돌려준다(시작 시각은 그대로)", () => {
+    const placed = mediaLineOf(media({ stage: "preparing" }), target, null, 9, 4);
+    expect(refreshedPendingLine([placed], media({ stage: "preparing" }), target, 12)).toBeNull();
+    expect(
+      refreshedPendingLine([placed], media({ stage: "drawing", aspect: "1:1" }), target, 12),
+    ).toEqual({
+      id: mediaLineId(A1, "photo", M1),
+      at: 5,
+      kind: "photo-pending",
+      startedAt: 4,
+      serverStage: "drawing",
+      aspect: "1:1",
+    });
+    const drawing = mediaLineOf(media({ stage: "drawing", aspect: "1:1" }), target, null, 12, 4);
+    expect(
+      refreshedPendingLine([drawing], media({ stage: "drawing", aspect: "1:1" }), target, 30),
+    ).toBeNull();
+    // 줄이 로그에 없거나 대기 행이 아니면 아무것도 하지 않는다.
+    expect(refreshedPendingLine([], media({ stage: "drawing" }), target, 12)).toBeNull();
+    expect(
+      refreshedPendingLine([placed], media({ status: "complete", stage: null }), target, 12),
+    ).toBeNull();
+  });
+
+  test("CM-U6f 서버 단계는 앞으로만 — 이미 「그리는 중」 · 비율을 실은 줄은 낮은 단계 · 빈 단계의 행이 와도 그대로다(리뷰 #552)", () => {
+    const drawing = mediaLineOf(media({ stage: "drawing", aspect: "3:2" }), target, null, 9, 4);
+    expect(refreshedPendingLine([drawing], media({ stage: "preparing" }), target, 12)).toBeNull();
+    expect(refreshedPendingLine([drawing], media({ stage: null }), target, 12)).toBeNull();
+    // 줄을 통째로 다시 놓는 길(요청 응답 · 다시 열기)도 놓인 줄의 단계 · 비율을 잇는다.
+    const rebuilt = mediaLineOf(media({ stage: "preparing" }), target, null, 20, 4);
+    expect(withPendingStage([drawing], rebuilt)).toMatchObject({
+      serverStage: "drawing",
+      aspect: "3:2",
+      startedAt: 4,
+    });
+    // 더 나아간 단계는 그대로 받고, 놓인 줄이 없으면 손대지 않는다.
+    const preparing = mediaLineOf(media({ stage: "preparing" }), target, null, 9, 4);
+    expect(withPendingStage([preparing], drawing)).toEqual(drawing);
+    expect(withPendingStage([], rebuilt)).toBe(rebuilt);
   });
 });

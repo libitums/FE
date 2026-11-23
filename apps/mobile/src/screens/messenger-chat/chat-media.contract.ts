@@ -13,7 +13,9 @@ export type ChatMediaNotice =
   | "busy"
   | "no-coins"
   | "not-eligible"
-  | "unavailable";
+  | "unavailable"
+  /** 예시 스냅샷을 받은 뒤 서는 한 줄 — 「이번 것은 무료, 다음부터는 엽전」(ADR-0146 추가). */
+  | "sample-gift";
 
 /** 로그 줄 하나(사진 · 음성 결과 대신 서는 회색 줄). `until`은 상한이 풀리는 시각(ms) — limit만. */
 export type ChatMediaNoticeLine = {
@@ -43,6 +45,20 @@ export type RemoteMedia = {
   readonly aspect: "3:2" | "1:1" | null;
   readonly failure: string | null;
   readonly createdAt: number;
+  /**
+   * 만드는 중인 사진의 진행 단계(ADR-0146 개정 2026-11-23) — 장면 구상 `preparing` → 그리기 `drawing`. 끝났거나 옛 서버면 null · 없음.
+   * `drawing`부터는 `aspect`도 적혀 있습니다.
+   */
+  readonly stage?: "preparing" | "drawing" | null;
+};
+
+/**
+ * 대기 줄이 싣는 서버 진행 단계 · 비율(ADR-0146 개정 2026-11-23) — 없으면(옛 서버 · 가짜 방) 기다린 시간으로만 추정합니다.
+ * 단계는 문구를 앞으로만 당깁니다(「그리는 중」이면 적어도 둘째 문구). `aspect`는 도착할 사진의 비율입니다.
+ */
+export type ChatPendingStage = {
+  readonly serverStage?: NonNullable<RemoteMedia["stage"]>;
+  readonly aspect?: NonNullable<RemoteMedia["aspect"]>;
 };
 
 /** 앨범 RPC(`companion_list_media`)의 한 건 — 그때의 말 · 지난 대화 표시가 더 붙습니다(ADR-0150). */
@@ -83,7 +99,18 @@ export type ChatMediaRemote = {
   readonly saveSelf?: (self: ChatSnapshotSelf) => Promise<boolean>;
   /** 서버 지갑 잔액(sub + grant + paid) — 못 읽으면 null. */
   readonly balance: () => Promise<number | null>;
+  /**
+   * 예시 스냅샷 · 예시 음성(ADR-0146 추가) — 안내에서 무료로 하나씩. `offer`는 그 인물의 예시를 이 계정에 줄 수 있는가(못 읽으면 둘 다
+   * false), `claim`은 그 메시지에 예시를 받기(값 없음 · 엔진 없음, 종류마다 계정당 한 번). 없으면(옛 원격) 안내의 예시 단계가 서지 않습니다.
+   */
+  readonly sample?: {
+    readonly offer: (characterId: string) => Promise<SampleOffer>;
+    readonly claim: (messageId: string, kind: RemoteMediaKind) => Promise<MediaRequestResult>;
+  };
 };
+
+/** 서버가 이 계정에 줄 수 있는 예시 — 사진 · 음성 따로. */
+export type SampleOffer = { readonly snapshot: boolean; readonly voice: boolean };
 
 export type ChatMediaOutcome = "complete" | "blocked" | "failed" | "refused";
 export type ChatMediaSettled = {

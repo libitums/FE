@@ -7,6 +7,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { CatalogFreshness } from "../../lib/manifest-check";
 import { catalogSectionDomId } from "./catalog-map";
+import type { CatalogSectionDivider } from "./catalog-map.contract";
 
 import "./episode-pending.css";
 import "./catalog-coming-soon.css";
@@ -25,6 +26,7 @@ export type CatalogComingSoonSectionProps = {
   readonly freshness?: CatalogFreshness;
   /** 오래 확인 못 했을 때의 「새 이야기 확인」 — 모두 끝낸 뒤 시트를 엽니다. */
   readonly onCheckNew?: () => void;
+  readonly divider?: CatalogSectionDivider; // 기본 "above"
 };
 
 // 빈 지도의 줄입니다 — 표지 하나, 두 열 두 줄(실제 배치와 같습니다). 줄마다 조금씩 더 흐립니다.
@@ -39,6 +41,7 @@ export function CatalogComingSoonSection({
   onTap,
   freshness,
   onCheckNew,
+  divider = "above",
 }: CatalogComingSoonSectionProps): ReactNode {
   const copy = useUiCopy();
   const episodeLabel = copy.catalogMap.episodeLabel(ordinal);
@@ -66,7 +69,7 @@ export function CatalogComingSoonSection({
         ? { "accessibility-traits": "button", bindtap: () => onTap(episodeId) }
         : {})}
     >
-      <view className="episode-pending-divider" />
+      {divider === "above" ? <view className="episode-pending-divider" /> : null}
       <view className="catalog-coming-soon-stage" accessibility-elements-hidden={true}>
         <view className="catalog-coming-soon-ghosts">
           {ghostRows.map((row, depth) => (

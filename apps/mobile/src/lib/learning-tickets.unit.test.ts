@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  addBoughtTicket,
   fullTicketLedger,
-  grantFreeTicket,
   isFullTicketLedger,
   mergeTicketLedgers,
   spendTicket,
@@ -80,24 +80,27 @@ describe("칸", () => {
   });
 });
 
-describe("grantFreeTicket", () => {
-  test("TK7. 가득이 아니고 그날 처음이면 1장이 차고, 같은 날 두 번째는 null", () => {
+// 엽전으로 산 1장(사용자 결정 2026-11-23 — 하루 한 장 무료를 갈음). 날 제한은 없고 가득(3장)까지만 찹니다.
+describe("addBoughtTicket", () => {
+  test("TK7. 가득이 아니면 1장이 차고, 같은 날 다시 사도 또 찬다 — 가득이 될 때까지", () => {
     const empty = spent(spent(spent(fullTicketLedger, T0), T0), T0);
-    const granted = grantFreeTicket(empty, T0, "2027-01-15");
-    expect(granted).not.toBeNull();
-    expect(ticketStatusAt(granted as TicketLedger, T0).available).toBe(1);
-    expect(grantFreeTicket(granted as TicketLedger, T0, "2027-01-15")).toBeNull();
-    expect(grantFreeTicket(granted as TicketLedger, T0, "2027-01-16")).not.toBeNull();
+    const one = addBoughtTicket(empty, T0) as TicketLedger;
+    expect(ticketStatusAt(one, T0).available).toBe(1);
+    const two = addBoughtTicket(one, T0) as TicketLedger;
+    const three = addBoughtTicket(two, T0) as TicketLedger;
+    expect(ticketStatusAt(three, T0).available).toBe(3);
+    expect(addBoughtTicket(three, T0)).toBeNull();
   });
 
   test("TK8. 가득이면 null", () => {
-    expect(grantFreeTicket(fullTicketLedger, T0, "2027-01-15")).toBeNull();
+    expect(addBoughtTicket(fullTicketLedger, T0)).toBeNull();
   });
 
-  test("TK9. 받은 1장을 쓰면 다시 0장", () => {
+  test("TK9. 산 1장을 쓰면 다시 0장 · 하루 무료 기록(grantDay)은 건드리지 않는다", () => {
     const empty = spent(spent(spent(fullTicketLedger, T0), T0), T0);
-    const granted = grantFreeTicket(empty, T0, "2027-01-15") as TicketLedger;
-    expect(ticketStatusAt(spent(granted, T0), T0).available).toBe(0);
+    const bought = addBoughtTicket(empty, T0) as TicketLedger;
+    expect(bought.grantDay).toBe(empty.grantDay);
+    expect(ticketStatusAt(spent(bought, T0), T0).available).toBe(0);
   });
 });
 
@@ -108,9 +111,9 @@ describe("mergeTicketLedgers · ticketLedgerCovers", () => {
     expect(mergeTicketLedgers(fullTicketLedger, used)).toEqual(used);
   });
 
-  test("TK11. 한쪽이 무료 1장을 받고 다른 쪽이 그 전 상태면 받은 것이 남는다", () => {
+  test("TK11. 한쪽이 1장을 사고 다른 쪽이 그 전 상태면 산 것이 남는다", () => {
     const empty = spent(spent(spent(fullTicketLedger, T0), T0), T0);
-    const granted = grantFreeTicket(empty, T0, "2027-01-15") as TicketLedger;
+    const granted = addBoughtTicket(empty, T0) as TicketLedger;
     const merged = mergeTicketLedgers(empty, granted);
     expect(merged).toEqual(mergeTicketLedgers(granted, empty));
     expect(ticketStatusAt(merged, T0).available).toBe(1);

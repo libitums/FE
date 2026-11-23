@@ -1,6 +1,7 @@
 // 메신저 탭의 결선입니다(messenger-chat-ui spec §7.1 · §11). 대화 출처는 앱 프로세스 싱글턴이고(1단계 가짜 —
 // 로그아웃 · 계정 삭제와 무관), 이동 콜백은 `dispatch`를 화면 밖에 둡니다. 배경 전용 라이브러리를 값으로 가져오지 않습니다.
 
+import { reportServerBalance, setServerBalanceListener } from "./server-balance-report";
 import type { Dispatch } from "@lynx-js/react";
 
 import {
@@ -143,12 +144,11 @@ let testSeed: ChatFixtureSeed | undefined;
 /** 앱 세션이 서버 사진 · 음성 알림을 등록합니다(null = 해제). 출처를 새로 만들지 않습니다. */
 export function setMessengerMediaHooks(hooks: ChatMediaHooks | null): void {
   mediaHooks = hooks;
+  setServerBalanceListener(hooks?.onBalance ?? null);
 }
 
-/** 구매 뒤 다시 읽은 서버 지갑 잔액을 머리 엽전 칩에 알립니다(ADR-0144 2단계) — 세션이 등록한 알림이 없으면 버립니다. */
-export function reportServerBalance(balance: number): void {
-  mediaHooks?.onBalance?.(balance);
-}
+/** 구매 뒤 다시 읽은 서버 지갑 잔액을 머리 엽전 칩에 알립니다(ADR-0144 2단계) — 자리는 `server-balance-report.ts`입니다. */
+export { reportServerBalance };
 
 /** 출처에 넘기는 알림 — 부를 때마다 지금 등록된 것을 봅니다(출처는 앱 프로세스 싱글턴, 세션은 바뀜). */
 const forwardedMediaHooks: ChatMediaHooks = {

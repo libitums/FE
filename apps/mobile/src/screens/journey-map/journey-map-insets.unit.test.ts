@@ -17,6 +17,7 @@ import {
   mapBottomInset,
   sheetGap,
   sheetHeight,
+  specialUnitSize,
   stepSheetPlacement,
   stepUnitSize,
 } from "./journey-map-sheet";
@@ -27,12 +28,14 @@ import {
 // 기기 하나(874 높이)의 배치입니다. 스크롤 상자는 화면 전체이고 머리 띠는 64에서 110 높이로 섭니다.
 const screenHeight = 874;
 const bandTop = 64;
-const bandHeight = 110;
+const chipRowBottom = 12 + 44;
+// 말풍선이 열리는 맨 위 유닛은 표지 줄(표식 + 틈 4 + 줄 사이 24) 아래입니다 — 라벨 · 그림은 빼고 가장 낮게 잡습니다.
+const coverRowAtLeast = specialUnitSize + 4 + 24;
 
 describe("mapContentInsets", () => {
-  test("IN1. 위는 띠 위 + 어림 + 간격(200), 아래는 말풍선 · 바텀 내비 · 여유 · 간격의 합이다", () => {
-    expect(mapContentInsets.top).toBe(bandTop + headerBandHeightEstimate + headerBandGap);
-    expect(mapContentInsets.top).toBeGreaterThanOrEqual(bandTop + bandHeight + headerBandGap);
+  test("IN1. 위는 칩 줄 + 간격 8(64), 아래는 말풍선 · 바텀 내비 · 여유 · 간격의 합이다", () => {
+    // 칩 줄은 12에서 44 높이입니다. 띠 몫(112 + 24)을 위에 비워 두지 않습니다(사용자 결정 2026-11-22).
+    expect(mapContentInsets.top).toBe(chipRowBottom + 8);
     expect(mapContentInsets.bottom).toBe(sheetHeight + mapBottomInset + bottomMargin + sheetGap);
   });
 
@@ -69,9 +72,9 @@ describe("mapContentInsets", () => {
   });
 
   test.each([0, 110])(
-    "IN4. 내용 맨 위 유닛도 목적지가 0 이상이고 띠(손잡이 높이 %i) 아래에 선다",
+    "IN4. 말풍선이 열리는 맨 위 유닛도 목적지가 0 이상이고 띠(손잡이 높이 %i) 아래에 선다",
     (bandMeasuredHeight) => {
-      const unitTop = mapContentInsets.top;
+      const unitTop = mapContentInsets.top + coverRowAtLeast;
       const band = {
         top: bandTop,
         height: bandMeasuredHeight,
@@ -93,15 +96,27 @@ describe("mapContentInsets", () => {
       }
     },
   );
+
+  // 표지는 말풍선 없이 바로 시작하므로 띠를 피할 일이 없습니다 — 자동 스크롤은 맨 위에서 멈춥니다.
+  test("IN5. 맨 위 표지로 자동 스크롤해도 목적지는 0이다", () => {
+    const target = autoScrollDestination({
+      unit: { top: mapContentInsets.top, height: 160, centerX: 195, left: null, width: null },
+      scroll: { top: 0, height: screenHeight, centerX: null, left: null, width: null },
+      screen: { top: 0, height: screenHeight, centerX: null, left: null, width: null },
+      band: { top: bandTop, height: 0, centerX: null, left: 16, width: 358 },
+      scrollTop: 0,
+    });
+    expect(target).toBe(0);
+  });
 });
 
 // ⟨2026-10-19⟩ 맵은 상태 표시줄 뒤까지 스크롤한다(사용자 결정) — 셸이 위 안전 영역을 칠하지 않고, 맵이 그 높이를
-// 스스로 안쪽에 더한다. 칩 · 띠 · 첫 유닛은 예전과 같은 화면 자리에 서야 한다.
+// 스스로 안쪽에 더한다. ⟨2026-11-22⟩ 첫 내용은 칩 줄 바로 아래에서 선다(사용자 결정 — 위 여백 제거).
 describe("mapTopLayout", () => {
-  test("TL1. 안전 영역이 없으면 예전 배치 그대로다(화면 위 여백만 스크롤 안으로 옮긴다)", () => {
+  test("TL1. 안전 영역이 없으면 첫 내용은 칩 줄 + 간격 8(64)에서 선다", () => {
     expect(mapTopLayout(0)).toEqual({
       screenPaddingTop: 0,
-      mapPaddingTop: mapContentInsets.top + 12,
+      mapPaddingTop: 64,
       bandTop: 64,
       progressRowTop: 72,
       headerTop: 12,
@@ -119,10 +134,9 @@ describe("mapTopLayout", () => {
     expect(shifted.headerTop - base.headerTop).toBe(inset);
   });
 
-  test("TL3. 첫 내용의 화면 위치는 예전(셸 여백 + 화면 여백 12 + 맵 여백)과 같다", () => {
-    const inset = 59;
-    const before = inset + 12 + mapContentInsets.top;
-    const after = 0 + mapTopLayout(inset).screenPaddingTop + mapTopLayout(inset).mapPaddingTop;
-    expect(after).toBe(before);
+  test.each([0, 20, 59])("TL3. 안전 영역 %i에서 첫 내용과 칩 줄 사이는 8뿐이다", (inset) => {
+    const layout = mapTopLayout(inset);
+    const chipsBottom = layout.headerTop + 44;
+    expect(layout.screenPaddingTop + layout.mapPaddingTop - chipsBottom).toBe(8);
   });
 });

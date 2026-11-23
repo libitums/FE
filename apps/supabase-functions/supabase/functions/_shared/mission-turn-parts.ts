@@ -43,7 +43,7 @@ export function startMissionFeedback(context: MissionTurnContext, abort: AbortCo
     }),
   ])
     .then((value) => {
-      // 원문에 없는 한자 · 가나 등이 든 교정은 버린다(ADR-0177 D13 — 「마실게요」 → 「마实 할게요」).
+      // 원문에 없는 한자 · 가나 등이 든 교정은 버린다(ADR-0178 D13 — 「마실게요」 → 「마实 할게요」).
       const guarded = guardMissionFeedback(value, body.text);
       if (guarded.dropped.length > 0)
         deps.log({
@@ -70,7 +70,7 @@ type ReplyResult = {
 };
 
 /**
- * 답 다듬기(ADR-0177 D13 · D14, `mission-reply-clean.ts`) — 혼잣말 · 작별 인사 · 대신 묻기를 거른다. 이 턴에 판이 끝나는가는 판정(없으면
+ * 답 다듬기(ADR-0178 D13 · D14, `mission-reply-clean.ts`) — 혼잣말 · 작별 인사 · 대신 묻기를 거른다. 이 턴에 판이 끝나는가는 판정(없으면
  * 답의 상태 줄 goals_done)으로 본다 — 답의 closing은 믿지 않는다. 말이 하나도 안 남으면 `again()`으로 한 번만 다시 만들어 같은 거르기,
  * 그래도 안 남으면 혼잣말 탓이면 미션의 안전한 한 줄, 아니면 처음 답(혼잣말만 뺀 것) 그대로.
  */
@@ -97,7 +97,7 @@ export async function settleReply<T extends ReplyResult>(
       doneAfter,
     );
   };
-  // 순서 검사(ADR-0177 D15): 이번 말 뒤 상태로 정한 「꺼내야 할 목표」와 답의 자기 보고(opens)가 어긋나면 확정 지시로 한 번 다시.
+  // 순서 검사(ADR-0178 D15): 이번 말 뒤 상태로 정한 「꺼내야 할 목표」와 답의 자기 보고(opens)가 어긋나면 확정 지시로 한 번 다시.
   const after = (value: T) => {
     const doneAfter = doneFor(value);
     const added = doneAfter.some((id) => !progress.goalsDone.includes(id));

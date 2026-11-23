@@ -30,7 +30,11 @@ function mount(
   render(
     <LettersScreen
       romanization={options.romanization ?? "shown"}
-      sound={{ sourceOf: (s) => (available(s) ? `src:${s}` : null), play }}
+      sound={{
+        sourceOf: (s) => `src:${s}`,
+        letterSourceOf: (letter) => (available(letter) ? `clip:${letter}` : null),
+        play,
+      }}
       onPractice={onPractice}
       onCellTapped={onCellTapped}
     />,
@@ -73,15 +77,15 @@ test("LS3. 로마자 설정이 켜져 있으면 칸에 로마자, 꺼지면 없�
   expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k");
 });
 
-test("LS4. 누르면 자음 + ㅏ 소리 · 들은 칸 표시 · 이벤트 — 누른 칸이 켜진 채 남지 않는다", () => {
+test("LS4. 누르면 그 자모의 내장 소리 · 들은 칸 표시 · 이벤트 — 누른 칸이 켜진 채 남지 않는다", () => {
   const { play, onCellTapped } = mount();
   fireEvent.tap(cell(0), {});
-  expect(play).toHaveBeenCalledExactlyOnceWith("src:가");
+  expect(play).toHaveBeenCalledExactlyOnceWith("clip:ㄱ");
   expectNotLit(cell(0));
   expect(cell(0)).toHaveAttribute("data-heard", "true");
   expect(onCellTapped).toHaveBeenCalledWith("ㄱ", "consonants", "played");
   fireEvent.tap(cell(14), {});
-  expect(play).toHaveBeenLastCalledWith("src:아");
+  expect(play).toHaveBeenLastCalledWith("clip:ㅏ");
   expectNotLit(cell(0));
   expectNotLit(cell(14));
   expect(cell(0)).toHaveAttribute("data-heard", "true");

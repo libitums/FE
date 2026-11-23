@@ -32,7 +32,8 @@ export type LaunchEvent =
 export type MessengerGuideEvent =
   | (Common & {
       readonly name: "messenger_guide_finished";
-      readonly part: "list" | "room";
+      /** `snapshot` — 안내를 이미 본 사람에게 예시 스냅샷 단계만 뜬 것(ADR-0146 추가). */
+      readonly part: "list" | "room" | "snapshot";
       readonly outcome: "done" | "skipped";
     })
   | (Common & {

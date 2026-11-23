@@ -9,14 +9,21 @@ import {
   speechPhaseFor,
   speechWavesStateOf,
 } from "./speech-attempt";
-import type { SpeechAttemptOutcome, SpeechAttemptPhase, SpeechControl } from "./speech-attempt";
+import type {
+  SpeechAttemptOutcome,
+  SpeechAttemptPhase,
+  SpeechControl,
+  SpeechDiagnostic,
+} from "./speech-attempt";
 import { markedUiCopy } from "./ui-copy.test-support";
 
 // `unit` 계층: 인식 결과 → 결말 · 잠금 · 시작 국면 · 마이크 상태 · 조작 라벨의 입출력만 봅니다(순수 함수).
 
 function resultOf(
   status: SpeechResultStatus,
-  extra: Partial<Pick<SpeechResult, "text" | "errorDomain" | "errorCode">> = {},
+  extra: Partial<
+    Pick<SpeechResult, "text" | "errorDomain" | "errorCode" | "fallback" | "koreanPack">
+  > = {},
 ): SpeechResult {
   return {
     status,
@@ -35,6 +42,9 @@ function resultOf(
     errorDomain: "",
     errorCode: 0,
     errorMessage: "",
+    koreanPack: "unknown",
+    fallback: "none",
+    fallbackErrorCode: 0,
     ...extra,
   };
 }
@@ -44,46 +54,85 @@ const unavailable = (reason: "blocked" | "dictation-off" | "failed"): SpeechAtte
   kind: "unavailable",
   reason,
 });
+const diagnostic = (errorCode = 0): SpeechDiagnostic => ({
+  errorCode,
+  fallback: "none",
+  koreanPack: "unknown",
+});
+const heardFrom = (text: string): SpeechAttemptOutcome => ({
+  kind: "heard",
+  text,
+  diagnostic: diagnostic(),
+});
+const failedFrom = (
+  reason: "blocked" | "dictation-off" | "failed",
+  errorCode = 0,
+): SpeechAttemptOutcome => ({ kind: "unavailable", reason, diagnostic: diagnostic(errorCode) });
 const dictationOff = { errorDomain: "kLSRErrorDomain", errorCode: 201 } as const;
 
 describe("speechAttemptOutcomeOf", () => {
   const table: readonly (readonly [string, SpeechResult, SpeechAttemptOutcome])[] = [
-    ["recognized 카드", resultOf("recognized", { text: "카드" }), heard("카드")],
-    ["recognized 빈 글자도 heard", resultOf("recognized", { text: "" }), heard("")],
-    ["permission-denied", resultOf("permission-denied"), unavailable("blocked")],
-    ["recognizer-unavailable", resultOf("recognizer-unavailable"), unavailable("blocked")],
+    ["recognized 카드", resultOf("recognized", { text: "카드" }), heardFrom("카드")],
+    ["recognized 빈 글자도 heard", resultOf("recognized", { text: "" }), heardFrom("")],
+    ["permission-denied", resultOf("permission-denied"), failedFrom("blocked")],
+    ["recognizer-unavailable", resultOf("recognizer-unavailable"), failedFrom("blocked")],
     [
       "recognition-failed + kLSRErrorDomain 201",
       resultOf("recognition-failed", dictationOff),
-      unavailable("dictation-off"),
+      failedFrom("dictation-off", 201),
     ],
     [
       "permission-denied + kLSRErrorDomain 201 (도메인 판정이 먼저)",
       resultOf("permission-denied", dictationOff),
-      unavailable("dictation-off"),
+      failedFrom("dictation-off", 201),
     ],
     [
       "recognition-failed 다른 코드",
       resultOf("recognition-failed", { errorDomain: "kLSRErrorDomain", errorCode: 203 }),
-      unavailable("failed"),
+      failedFrom("failed", 203),
     ],
     [
       "recognition-failed 다른 도메인의 201",
       resultOf("recognition-failed", { errorDomain: "other", errorCode: 201 }),
-      unavailable("failed"),
+      failedFrom("failed", 201),
     ],
-    ["audio-failed", resultOf("audio-failed"), unavailable("failed")],
-    ["already-listening", resultOf("already-listening"), unavailable("failed")],
-    ["invalid-arguments", resultOf("invalid-arguments"), unavailable("failed")],
-    ["malformed", resultOf("malformed"), unavailable("failed")],
+    ["audio-failed", resultOf("audio-failed"), failedFrom("failed")],
+    ["already-listening", resultOf("already-listening"), failedFrom("failed")],
+    ["invalid-arguments", resultOf("invalid-arguments"), failedFrom("failed")],
+    ["malformed", resultOf("malformed"), failedFrom("failed")],
   ];
 
   test.each(table)("SA1. %s", (_name, result, expected) => {
     expect(speechAttemptOutcomeOf(result)).toEqual(expected);
   });
 
-  test("SA1. speechBlocked는 blocked 결말이다", () => {
+  test("SA1. speechBlocked는 blocked 결말이고 진단이 없다(인식기가 결과를 올리지 않았다)", () => {
     expect(speechBlocked).toEqual(unavailable("blocked"));
+    expect(speechBlocked).not.toHaveProperty("diagnostic");
+  });
+
+  test("SA1b. 진단은 오류 코드 · 되돌아감 · 한국어 팩을 결과에서 그대로 옮긴다", () => {
+    const failed = resultOf("recognition-failed", {
+      errorDomain: "android.speech.SpeechRecognizer",
+      errorCode: 13,
+      fallback: "on-device-error",
+      koreanPack: "available",
+    });
+    expect(speechAttemptOutcomeOf(failed)).toEqual({
+      kind: "unavailable",
+      reason: "failed",
+      diagnostic: { errorCode: 13, fallback: "on-device-error", koreanPack: "available" },
+    });
+    const recovered = resultOf("recognized", {
+      text: "카드",
+      fallback: "pack-missing",
+      koreanPack: "available",
+    });
+    expect(speechAttemptOutcomeOf(recovered)).toEqual({
+      kind: "heard",
+      text: "카드",
+      diagnostic: { errorCode: 0, fallback: "pack-missing", koreanPack: "available" },
+    });
   });
 });
 

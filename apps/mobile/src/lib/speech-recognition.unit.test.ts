@@ -148,3 +148,36 @@ test("오류 필드가 그대로 올라온다", () => {
   expect(result.errorCode).toBe(1110);
   expect(result.errorMessage).toBe("No speech detected");
 });
+
+// ------------------------------------------------------------------ 되돌아감 · 한국어 팩
+
+test("되돌아감 · 한국어 팩 · 되돌아가게 한 오류 코드가 그대로 올라온다", () => {
+  const result = speechResult({
+    status: "recognized",
+    requestedOnDevice: true,
+    supportsOnDevice: true,
+    requiresOnDevice: false,
+    onDevice: "not-guaranteed",
+    koreanPack: "available",
+    fallback: "on-device-error",
+    fallbackErrorCode: 13,
+  });
+
+  expect(result.koreanPack).toBe("available");
+  expect(result.fallback).toBe("on-device-error");
+  expect(result.fallbackErrorCode).toBe(13);
+  expect(result.onDevice).toBe("not-guaranteed");
+});
+
+test("팩 · 되돌아감이 없거나 모르는 낱말이면 unknown · none이다(iOS · 옛 호스트)", () => {
+  expect(speechResult({ status: "recognized" })).toMatchObject({
+    koreanPack: "unknown",
+    fallback: "none",
+    fallbackErrorCode: 0,
+  });
+  expect(speechResult({ koreanPack: "maybe", fallback: "server" })).toMatchObject({
+    koreanPack: "unknown",
+    fallback: "none",
+  });
+  expect(speechResult({ fallback: "pack-missing" }).fallback).toBe("pack-missing");
+});

@@ -1,4 +1,4 @@
-// 미션 턴의 상태 줄 해석과 판의 상태 전이(ADR-0177, PRD §3.4 · §3.6). 순수 함수입니다.
+// 미션 턴의 상태 줄 해석과 판의 상태 전이(ADR-0178, PRD §3.4 · §3.6). 순수 함수입니다.
 //
 // 모델 답은 컴패니언과 같은 조각 줄(`@speech` · `@action`) 뒤에 상태 줄 하나를 씁니다 —
 // `@state {"goals_done": ["order"], "off_task": false, "closing": false}`. 조각은 기존 해석기(`createSegmentSplitter`)가 나누고,
@@ -16,7 +16,7 @@ export type MissionTurnState = {
   readonly goalsDone: readonly string[];
   readonly offTask: boolean;
   readonly closing: boolean;
-  /** 이 답이 꺼낸 목표(상대역의 자기 보고 — 순서 검사, ADR-0177 D15). 없거나 모르는 값이면 null. */
+  /** 이 답이 꺼낸 목표(상대역의 자기 보고 — 순서 검사, ADR-0178 D15). 없거나 모르는 값이면 null. */
   readonly opens?: string | null;
 };
 

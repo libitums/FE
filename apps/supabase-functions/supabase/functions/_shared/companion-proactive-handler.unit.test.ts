@@ -288,7 +288,14 @@ test("PR7. 선톡 저장 meta에 적용 수위 — open은 성인일 때만, 옛
 
 test("PR8. 저장한 선톡에 푸시를 붙인다 — 결과를 outcome의 push로 알리고, 푸시가 실패해도 선톡은 sent다", async () => {
   const pushed = setup({
-    rpc: { companion_proactive_push_gate: { mode: "testers", tester: true, hasDevice: true } },
+    rpc: {
+      companion_proactive_push_gate: {
+        mode: "testers",
+        tester: true,
+        hasDevice: true,
+        hasRoom: true,
+      },
+    },
   });
   const result = await pushed.call(one);
   expect(result.outcomes[0]).toMatchObject({ result: "sent", push: "sent" });

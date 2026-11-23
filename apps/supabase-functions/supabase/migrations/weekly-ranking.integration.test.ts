@@ -112,6 +112,18 @@ beforeEach(async () => {
 });
 
 describe("주 · 배정", () => {
+  test("RK-I0. 그룹 크기 기본값은 목표 15명 · 상한 18명이다(20261227)", async () => {
+    const defaults = await db.admin.query(
+      `select column_name, column_default from information_schema.columns
+     where table_schema = 'ranking' and table_name = 'settings' and column_name in ('group_target', 'group_max')
+     order by column_name`,
+    );
+    expect(defaults.rows).toEqual([
+      { column_name: "group_max", column_default: "18" },
+      { column_name: "group_target", column_default: "15" },
+    ]);
+  });
+
   test("WR-D1 주는 UTC 월요일 00:00에 바뀐다 — 일요일 23:59와 월요일 00:00의 같은 단어는 두 주에 따로 센다", async () => {
     const week = async (at: string) =>
       (await sql("select ranking.week_of($1::timestamptz)::text as w", [at]))[0].w;

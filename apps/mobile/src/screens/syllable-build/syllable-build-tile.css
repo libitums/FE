@@ -34,6 +34,11 @@
   transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
 }
 
+/* 고민 힌트(ADR-0177) — 다음 정답 타일의 테두리는 브랜드 색. 클래스 둘을 묶어 위 회색 테두리를 이깁니다. */
+.syllable-tile-bank.answer-nudge-target {
+  border-color: var(--libitum-color-brand-primary);
+}
+
 .syllable-tile-bank .syllable-tile-label {
   color: var(--libitum-color-fg-neutral);
 }
