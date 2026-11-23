@@ -96,3 +96,14 @@ Maestro는 모의 로그인·진행 데이터로 `Say Your Hello` 말하기 화�
   끝나는지(오류 코드)는 확인하지 않았다 — 비행기 모드로 한 번 말해 `speechErrorCode`를 기록한다.
 - 내려받기(`downloadKoreanPack`)는 화면이 없어 실기에서 부르지 않았다 — 동의 화면 작업에서
   API 33 · 34+ 각각 확인한다.
+
+### 실패 안내가 작은 화면에서 접힌 아래에 숨음 ⟨2026-11-23⟩
+
+- 증상(main `f449e47b`, Pixel_8 Play 이미지 · 360×640dp · `assembleBundled` · u01-water S6-10 「카드」 진단 화면):
+  Speak → `LANGUAGE_PACK_ERROR`(13) → 버튼은 Skip 하나가 되지만 「Speech recognition isn't available right now. Tap Skip
+  to continue.」 줄이 그림 카드 · 파형 아래로 밀려 **아래로 끌어야 보였다.** 사용자는 까닭 없이 Skip만 봤다.
+- 고침: 안내 줄이 `unavailable` 국면에서 자리를 잡는 순간(`layoutchange`) 그 줄을 `scrollIntoView(block: end)`로
+  끌어온다(`speak-word-hint-scroll.ts`). 국면 효과에서 부른 첫 시도는 글자가 높이를 갖기 전이라 빈 칸까지만
+  내려가 두 줄 모두 가려졌다 — 그래서 배치 이벤트로 옮겼다. 들은 뒤의 「Tap the screen to continue」 줄은 끌어오지 않는다.
+- 같은 에뮬레이터에서 이 브랜치: Speak → 온라인 인식기로 되돌아가 듣는 상태(주황 파형 · Stop speaking)가 섰다.
+  Stop → 오디오가 없는 에뮬레이터라 실패 → 안내 두 줄이 Skip 바로 위에 보였다(스크롤 없이).

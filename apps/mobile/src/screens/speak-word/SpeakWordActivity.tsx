@@ -39,6 +39,7 @@ import {
 } from "./speak-word";
 import type { SpeakWordActivityProps } from "./speak-word.contract";
 import { SpeakWordPicture } from "./SpeakWordPicture";
+import { revealSpeakWordHint, speakWordHintId } from "./speak-word-hint-scroll";
 import { useSpeakWordPicture } from "./use-speak-word-picture";
 
 import "./speak-word-activity.css";
@@ -236,7 +237,12 @@ export function SpeakWordActivity({
             </view>
             <view className="speak-word-activity-hint-slot">
               {hint === null ? null : (
-                <text className="speak-word-activity-hint" data-testid="speak-word-hint">
+                <text
+                  id={speakWordHintId}
+                  className="speak-word-activity-hint"
+                  data-testid="speak-word-hint"
+                  bindlayoutchange={phase.kind === "unavailable" ? revealSpeakWordHint : undefined}
+                >
                   {hint}
                 </text>
               )}
