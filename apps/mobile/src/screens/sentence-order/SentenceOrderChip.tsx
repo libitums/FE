@@ -8,6 +8,10 @@ import {
   sentenceOrderChipClassName,
   sentenceOrderChipPlaceholderClassName,
 } from "./sentence-order";
+import {
+  ANSWER_NUDGE_TARGET_CLASS,
+  AnswerNudgeGlow,
+} from "../../components/answer-nudge/AnswerNudgeGlow";
 import { SentenceOrderResultMark } from "./SentenceOrderResultMark";
 import type { AnswerResult } from "../../lib/answer-result";
 import { playSound } from "../../lib/sound-effects";
@@ -32,6 +36,8 @@ export type SentenceOrderChipProps = {
   result?: AnswerResult | null;
   /** 창고 조각의 로마자 줄입니다(글자 위). 없으면 한 줄 조각입니다(ADR-0153). */
   romanization?: string;
+  /** 고민 힌트(ADR-0177) — 다음 정답인 창고 조각에 브랜드 색 그림자가 섭니다. */
+  nudged?: boolean;
   onTap: (index: number) => void;
 };
 
@@ -43,6 +49,7 @@ export function SentenceOrderChip({
   surface = "light",
   result = null,
   romanization,
+  nudged = false,
   onTap,
 }: SentenceOrderChipProps): ReactNode {
   const copy = useUiCopy();
@@ -56,7 +63,10 @@ export function SentenceOrderChip({
   const judged = placedOrdinal === null ? null : result;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
-  const reading = romanization === undefined ? "" : " sentence-order-chip-with-reading";
+  const glow = nudged && placedOrdinal === null;
+  const reading =
+    (romanization === undefined ? "" : " sentence-order-chip-with-reading") +
+    (glow ? ANSWER_NUDGE_TARGET_CLASS : "");
 
   return (
     <view
@@ -75,6 +85,7 @@ export function SentenceOrderChip({
       accessibility-traits={disabled ? "disabled" : "button"}
       bindtap={disabled ? undefined : handleTap}
     >
+      {glow ? <AnswerNudgeGlow /> : null}
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
       {romanization === undefined ? null : (
         <text className="tile-romanization" data-testid={`sentence-order-chip-${index}-roman`}>

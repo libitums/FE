@@ -1,6 +1,10 @@
 import type { ReactNode } from "@lynx-js/react";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
+import {
+  ANSWER_NUDGE_TARGET_CLASS,
+  AnswerNudgeGlow,
+} from "../../components/answer-nudge/AnswerNudgeGlow";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { syllableTileAccessibilityLabel } from "./syllable-build";
@@ -18,6 +22,7 @@ export function SyllableTile({
   slotCount,
   interaction,
   romanization,
+  nudged = false,
   onTap,
 }: SyllableTileProps): ReactNode {
   const copy = useUiCopy();
@@ -29,7 +34,8 @@ export function SyllableTile({
   };
   const variant = placedOrdinal === null ? "bank" : "placed";
   const reading = romanization === undefined ? "" : " syllable-tile-with-reading";
-  const base = `syllable-tile syllable-tile-${variant}${reading}`;
+  const glow = nudged && placedOrdinal === null;
+  const base = `syllable-tile syllable-tile-${variant}${reading}${glow ? ANSWER_NUDGE_TARGET_CLASS : ""}`;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
@@ -50,6 +56,7 @@ export function SyllableTile({
       accessibility-traits={interaction === "locked" ? "disabled" : "button"}
       bindtap={interaction === "locked" ? undefined : handleTap}
     >
+      {glow ? <AnswerNudgeGlow /> : null}
       {/* 보이는 이름을 지는 요소는 가리지 않습니다 — 글자에는 접근성 속성이 없습니다. */}
       {romanization === undefined ? null : (
         <text className="tile-romanization" data-testid={`syllable-build-tile-${index}-roman`}>
