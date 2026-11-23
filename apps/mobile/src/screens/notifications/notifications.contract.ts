@@ -77,6 +77,8 @@ export type PushNotificationTarget =
       readonly kind: "companion-chat";
       readonly characterId: string;
       readonly variant: PushPreviewVariant | null;
+      /** 친구 스토리 알림(ADR-0177 D7) — 새 앱은 그 인물의 스토리를 엽니다(없으면 방). 옛 앱은 이 칸을 모르고 방을 엽니다. */
+      readonly story?: true;
     };
 
 /** 선톡 푸시 미리보기 A/B(ADR-0127): a = 한국어 한 줄, b = 「{이름} sent you a message」. */

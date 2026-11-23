@@ -60,6 +60,8 @@ test("PG1. 스위치는 off가 기본이고 off · testers · on만 받는다", 
     tester: false,
     hasDevice: false,
     hasRoom: false,
+    // 20261228(ADR-0177 D7): 오늘(현지) 선톡 · 스토리 알림이 나갔는가 — 하루 한 번 합산.
+    pushedToday: false,
   });
   await db.admin.query("update companion.settings set proactive_push = 'testers'");
   expect(await gate(tester)).toEqual({
@@ -67,6 +69,7 @@ test("PG1. 스위치는 off가 기본이고 off · testers · on만 받는다", 
     tester: true,
     hasDevice: false,
     hasRoom: false,
+    pushedToday: false,
   });
   await db.admin.query("update companion.settings set proactive_push = 'on'");
   expect((await gate(member)).mode).toBe("on");

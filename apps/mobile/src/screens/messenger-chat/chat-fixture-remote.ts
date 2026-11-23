@@ -9,8 +9,9 @@ import { remoteGreetingMethods } from "./chat-remote-greeting";
 import { previewRemoteRooms } from "./chat-remote-preview";
 import { remoteWalletSync } from "./chat-remote-wallet";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
-import type { ChatMessage } from "./chat-source.contract";
+import type { ChatMessage, ChatSendOptions } from "./chat-source.contract";
 import { renderTurn, withHistoryNotes } from "./chat-remote-notes";
+import { myTextLine, storyIdIn } from "./friend-stories";
 import { hasReplyAfter, mergeLog, sameIdeas, serverCopyOf } from "./chat-log-merge";
 import { turnOutcomeOf, type TurnOutcome } from "./companion-outcome";
 import { applyTurnEvent, initialTurnState, type TurnState } from "./companion-turn";
@@ -186,8 +187,9 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     const placed = new Set<string>();
     const clientMessageId = clientIds.get(localId) ?? deps.uuid();
     clientIds.set(localId, clientMessageId);
+    const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0177 D5) — 다시 보내기에도 실림
     remote.openTurn(
-      { characterId: characterOf(room), text, clientMessageId },
+      { characterId: characterOf(room), text, clientMessageId, ...(storyId ? { storyId } : {}) },
       {
         onOpen: () => undefined,
         onEvent: (event, data) => {
@@ -228,15 +230,12 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     startTurn(room, next, text);
   };
 
-  const sendText = (roomId: string, text: string) => {
+  const sendText = (roomId: string, text: string, options?: ChatSendOptions) => {
     const room = live(roomId);
     const trimmed = text.trim();
     if (room === null || room.access.kind !== "open" || trimmed === "") return;
     const localId = `local-${deps.uuid()}`;
-    room.messages = [
-      ...room.messages,
-      { id: localId, at: now(), kind: "text", from: "me", text: { ko: trimmed, en: "" } },
-    ];
+    room.messages = [...room.messages, myTextLine(localId, now(), trimmed, options?.story)];
     // 앞에 보내지 못한 글이 있으면 순서가 섞이지 않게 그 뒤에 쌓습니다.
     if (room.unsent.length > 0) {
       room.unsent = [...room.unsent, localId];

@@ -11,6 +11,7 @@ import type {
   ChatNoticeKind,
   ChatReplyIdea,
 } from "./chat-source.contract";
+import { myTextOf } from "./friend-stories-parse";
 
 export type RemoteSegment = {
   readonly kind: string;
@@ -190,7 +191,7 @@ function messagesOf(raw: Json): {
       if (record.status === "failed") continue;
       const text = stringOf(record.text);
       if (text === null) continue;
-      messages.push({ id, at, kind: "text", from: "me", text: { ko: text, en: "" } });
+      messages.push(myTextOf(id, at, text, record.story)); // 스토리 답장이면 인용과 함께(ADR-0177 D5)
       const card = correctionOf(record.feedback);
       if (card !== null) corrections[id] = card;
     } else if (record.role === "assistant") {

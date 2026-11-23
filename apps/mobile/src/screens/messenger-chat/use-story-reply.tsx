@@ -1,0 +1,62 @@
+// 대화방의 친구 스토리 답장(ADR-0177 D5) — 보기가 남긴 넘김을 마운트 때 한 번 꺼내, 칩 말은 곧바로 인용과 함께 보내고 답장 칸이면
+// 입력 줄 위 인용 띠로 붙여 다음 글에 싣습니다. 보낼 때 `friend_story_replied`가 납니다.
+
+import { useEffect, useRef, useState } from "@lynx-js/react";
+import type { ReactNode } from "@lynx-js/react";
+
+import { useChatEvents } from "./chat-events";
+import type { ChatSendOptions, ChatSource } from "./chat-source.contract";
+import type { ChatStoryQuote } from "./friend-stories.contract";
+import { takeStoryReplyHandoff } from "./story-reply-handoff";
+import { StoryQuoteBar } from "./StoryQuote";
+
+type Attached = { readonly quote: ChatStoryQuote; readonly free: boolean };
+
+export type StoryReplyApi = {
+  /** 붙은 인용이 무료 안내인가 — 그렇다면 앱의 체험 · 엽전 관문을 지나지 않습니다(정본은 서버, D6). */
+  readonly freeAttached: () => boolean;
+  /** 입력 줄의 글을 보낼 때 한 번 — 인용을 꺼내고 띠를 뗍니다. 붙은 것이 없으면 undefined. */
+  readonly takeSendOptions: () => ChatSendOptions | undefined;
+  readonly bar: (name: string) => ReactNode;
+};
+
+export function useStoryReply(roomId: string, source: ChatSource): StoryReplyApi {
+  const { emit } = useChatEvents();
+  const [handoff] = useState(() => takeStoryReplyHandoff(roomId));
+  const [attached, setAttached] = useState<Attached | null>(() =>
+    handoff !== null && handoff.text === null ? { quote: handoff.quote, free: handoff.free } : null,
+  );
+  const attachedRef = useRef(attached);
+  attachedRef.current = attached;
+  const replied = (via: "chip" | "typed", { quote, free }: Attached) =>
+    emit({
+      name: "friend_story_replied",
+      surface: "chat",
+      characterId: quote.characterId,
+      via,
+      free: free ? "yes" : "no",
+    });
+
+  // 칩 말 — 방이 선 뒤 한 번, 인용과 함께 보냅니다.
+  useEffect(() => {
+    if (handoff === null || handoff.text === null) return;
+    source.sendText(roomId, handoff.text, { story: handoff.quote });
+    replied("chip", handoff);
+  }, []);
+
+  return {
+    freeAttached: () => attachedRef.current?.free === true,
+    takeSendOptions: () => {
+      const current = attachedRef.current;
+      if (current === null) return undefined;
+      attachedRef.current = null;
+      replied("typed", current);
+      setAttached(null);
+      return { story: current.quote };
+    },
+    bar: (name) =>
+      attached === null ? null : (
+        <StoryQuoteBar quote={attached.quote} name={name} onRemove={() => setAttached(null)} />
+      ),
+  };
+}

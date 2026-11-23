@@ -516,10 +516,16 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
     "screens/messenger-chat/messenger-guide.css",
     // 메신저 새 친구 시트(ADR-0117) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/new-friend.css",
+    // 친구 스토리 보기(ADR-0177) — 짙은 바탕 · 사진 그늘이라 밝은 아이콘 표지.
+    "screens/messenger-chat/story-viewer.css",
     // 추천 친구 프로필 시트(ADR-0162) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/suggested-sheet.css",
     "screens/tickets/tickets.css",
   ]);
+  assert.match(
+    JSON.stringify(fixedLayers["screens/messenger-chat/story-viewer.css"]),
+    /StoryViewer/,
+  );
   assert.match(
     JSON.stringify(fixedLayers["screens/messenger-chat/suggested-sheet.css"]),
     /default-scrim/,

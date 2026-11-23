@@ -2,6 +2,7 @@
 // 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
 // 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
+import type { FriendStoryEvent } from "./friend-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
 
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
@@ -67,20 +68,20 @@ export type SuggestedFriendEvent =
       readonly name: "suggested_friend_opened";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story";
     })
   | (Common & {
       readonly name: "suggested_friend_added";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story";
       readonly via: "free" | "early";
     })
   | (Common & {
       readonly name: "early_access_tapped";
       readonly characterId: string;
       readonly price: string;
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story";
     })
   /** 먼저 만나기 RPC가 끝났습니다(ADR-0162 D5) — 누른 뒤 한 번. unlocked = 이미 산 인물(already) 포함, failed = 제안 없음 · 오류. */
   | (Common & {
@@ -272,6 +273,7 @@ export type CompanionEvent =
   | MessengerGuideEvent
   | CompanionUnlockEvent
   | SuggestedFriendEvent
+  | FriendStoryEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

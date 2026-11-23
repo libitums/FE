@@ -12,17 +12,22 @@ import { ChatListNewBadge } from "./ChatListNewBadge";
 import type { ChatRowPreview, ChatTime } from "./chat-list";
 import { voiceDurationLabel } from "./chat-rules";
 import type { ChatRoomSummary } from "./chat-source.contract";
+import type { FriendStory } from "./friend-stories.contract";
 
 import "./messenger-list.css";
+import "./friend-stories.css";
 
 export type ChatListRowProps = {
   readonly room: ChatRoomSummary;
   /** 시간 표기 기준 시각(epoch ms)입니다. */
   readonly now: number;
   readonly onOpen: (roomId: string) => void;
+  /** 그 인물의 안 본 친구 스토리(ADR-0177 D3) — 안 읽은 메시지 · 진행 중 활동이 없을 때만 줄이 「New story」가 되고 누르면 스토리를 엽니다. */
+  readonly story?: FriendStory | null;
+  readonly onOpenStory?: () => void;
 };
 
-type PreviewTone = "activity" | "unread" | "muted" | "greeting";
+type PreviewTone = "activity" | "unread" | "muted" | "greeting" | "story";
 
 // 미리보기 한 줄의 글입니다. 대화 내용은 한국어 원문을 보입니다(번역은 방 안에서 봅니다).
 function previewText(preview: ChatRowPreview, name: string, copy: MessengerChatCopy): string {
@@ -73,14 +78,30 @@ function timeText(time: ChatTime, copy: MessengerChatCopy): string {
 }
 
 /** 채팅 목록의 한 줄입니다. 열린 줄만 버튼이고, 잠긴 줄은 조건을 읽어 주기만 합니다. */
-export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode {
+export function ChatListRow({
+  room,
+  now,
+  onOpen,
+  story = null,
+  onOpenStory,
+}: ChatListRowProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const { counterpart } = room;
   const locked = room.access.kind === "locked";
   const preview = chatRowPreview(room);
-  const text = previewText(preview, counterpart.name, copy);
-  const tone: PreviewTone =
-    preview.kind === "activity"
+  // 안 본 스토리 줄 — 메시지가 더 급하면(안 읽음 · 입력 중) 보통 줄 그대로입니다.
+  const storyRow =
+    story !== null &&
+    onOpenStory !== undefined &&
+    !locked &&
+    room.unread === 0 &&
+    preview.kind !== "activity";
+  const text = storyRow
+    ? copy.stories.listPreview(story.line.ko)
+    : previewText(preview, counterpart.name, copy);
+  const tone: PreviewTone = storyRow
+    ? "story"
+    : preview.kind === "activity"
       ? "activity"
       : preview.kind === "greeting"
         ? "greeting"
@@ -102,16 +123,19 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
         badge === null ? null : copy.list.unreadLabel(room.unread),
       );
   // 새 친구 줄은 낭독이 「New friend」로, 첫 인사 줄은 「New greeting」으로 시작합니다(알약은 숨깁니다).
-  const label = room.isNew
-    ? `${copy.list.newFriendLabel}, ${rowLabel}`
-    : isNew
-      ? `${copy.list.greetingLabel}, ${rowLabel}`
-      : rowLabel;
+  const label = storyRow
+    ? copy.stories.listRowLabel(counterpart.name, story.line.ko)
+    : room.isNew
+      ? `${copy.list.newFriendLabel}, ${rowLabel}`
+      : isNew
+        ? `${copy.list.greetingLabel}, ${rowLabel}`
+        : rowLabel;
 
   function handleTap() {
     "background only";
     if (locked) return;
     playSound("button");
+    if (storyRow) return onOpenStory?.();
     onOpen(room.roomId);
   }
 
@@ -127,7 +151,16 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
       bindtap={locked ? undefined : handleTap}
     >
       <view className="messenger-list-avatar">
-        <view className={locked ? "messenger-list-avatar-dim" : "messenger-list-avatar-face"}>
+        <view
+          className={
+            locked
+              ? "messenger-list-avatar-dim"
+              : storyRow
+                ? "messenger-list-story-ring"
+                : "messenger-list-avatar-face"
+          }
+          data-testid={storyRow ? `messenger-list-story-ring-${room.roomId}` : undefined}
+        >
           <Avatar
             imageSource={counterpart.avatarUrl ?? undefined}
             name={counterpart.name}

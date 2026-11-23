@@ -1,6 +1,7 @@
 // 선톡 푸시(companion-chat)를 누른 뒤의 이동입니다(ADR-0127) — 열 수 있는 방이면 그 방, 아니면 메신저 목록 + 안내.
 
 import type { ChatSource } from "../screens/messenger-chat/chat-source.contract";
+import { putPendingStoryOpen } from "../screens/messenger-chat/story-reply-handoff";
 import { tabRootActions } from "./nav-reducer";
 import type { NavAction } from "./nav-state";
 
@@ -20,9 +21,15 @@ export function companionPushActions(
   source: ChatSource,
   characterId: string,
   canOpenChats: boolean,
+  story = false,
 ): readonly NavAction[] {
   // 메신저를 쓸 수 없는 계정(ADR-0128)이면 메신저 탭 루트(그 계정의 안내)에서 멈춥니다 — 방 · 「열 수 없음」 안내를 띄우지 않는다.
   if (!canOpenChats) return tabRootActions("messenger");
+  // 친구 스토리 알림(ADR-0177 D7) — 목록까지 가서, 목록이 스토리를 읽은 뒤 그 인물의 스토리(없으면 열린 방)를 엽니다.
+  if (story) {
+    putPendingStoryOpen(characterId);
+    return tabRootActions("messenger");
+  }
   const roomId = companionRoomFor(source, characterId);
   const next: NavAction =
     roomId === null

@@ -20,6 +20,7 @@ import {
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 import { earlyOffersFrom, earlyUnlockFrom } from "../screens/messenger-chat/early-access-parse";
+import { friendStoriesFrom } from "../screens/messenger-chat/friend-stories-parse";
 import {
   adultAckFrom,
   visibleFriendsFrom,
@@ -90,6 +91,10 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
     friends: {
       visible: async () => visibleFriendsFrom(await call("/rest/v1/rpc/companion_friends", {})),
       ackAdult: async () => adultAckFrom(await call("/rest/v1/rpc/companion_ack_adult", {})),
+    },
+    // 친구 스토리(ADR-0177 D2) — 함수가 없는 서버(배포 전)는 404 → null(스토리 없음).
+    stories: {
+      list: async () => friendStoriesFrom(await call("/rest/v1/rpc/companion_friend_stories", {})),
     },
     clearChat: async (characterId) =>
       clearOutcomeFrom(
@@ -178,6 +183,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
                 client_message_id: request.clientMessageId,
                 text: request.text,
                 input_mode: "text",
+                ...(request.storyId === undefined ? {} : { story_id: request.storyId }),
               }),
             },
             {

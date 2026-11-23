@@ -3,7 +3,8 @@
 
 import { advanceIdeas, isOpenAccess, type RoomState } from "./chat-fixture-room";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
-import type { ChatMessage } from "./chat-source.contract";
+import { myTextLine } from "./friend-stories";
+import type { ChatMessage, ChatSendOptions } from "./chat-source.contract";
 
 export type LocalSendDeps = {
   readonly live: (roomId: string) => RoomState | null;
@@ -18,18 +19,12 @@ export type LocalSendDeps = {
 export function localSender(deps: LocalSendDeps) {
   const { live, now, messageId, changed, schedule } = deps;
   const timing = CHAT_PLACEHOLDERS.timing;
-  return (roomId: string, text: string): void => {
+  return (roomId: string, text: string, options?: ChatSendOptions): void => {
     const room = live(roomId);
     const trimmed = text.trim();
     if (room === null || !isOpenAccess(room) || trimmed === "") return;
     const sentId = messageId();
-    const sent: ChatMessage = {
-      id: sentId,
-      at: now(),
-      kind: "text",
-      from: "me",
-      text: { ko: trimmed, en: "" },
-    };
+    const sent: ChatMessage = myTextLine(sentId, now(), trimmed, options?.story);
     room.messages = [...room.messages, sent];
     room.pendingReplies += 1;
     changed(room);

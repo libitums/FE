@@ -1,0 +1,693 @@
+-- 친구 스토리 묶음 27줄(ADR-0177 D1) — 정본 `docs/content/friend-stories.json`(통합 테스트 FSP1이 같은지 본다).
+-- 인물 아홉 × 셋. 그림은 버킷에 이미 있는 콘텐츠 그림(에피소드 JSON이 쓰는 경로)만, 단어는 카탈로그 단어 카드의 voca ref.
+-- 다시 적용하면 같은 id의 줄을 정본 값으로 덮어쓴다(켬 · 만든 시각은 그대로). 운영에서 줄을 끄려면 `active = false`.
+
+insert into companion.story_pool (id, character_id, image_path, line_ko, line_roman, meaning, word, replies)
+select r.id, r.character_id, r.image_path, r.line_ko, r.line_roman, r.meaning, r.word, r.replies
+from jsonb_to_recordset('[
+ {
+  "id": "duksu-01",
+  "character_id": "duksu",
+  "image_path": "content/images/u05-baekban/post-2.webp",
+  "line_ko": "점심은 김치찌개예요. 조금 매워요!",
+  "line_roman": "jeomsimeun gimchijjigaeyeyo. jogeum maewoyo!",
+  "meaning": {
+   "en": "Kimchi stew for lunch. It''s a little spicy!",
+   "es": "De almuerzo, estofado de kimchi. ¡Pica un poco!",
+   "id": "Makan siang kimchi jjigae. Agak pedas!",
+   "ja": "お昼はキムチチゲです。ちょっと辛いです！",
+   "vi": "Bữa trưa là canh kimchi. Hơi cay một chút!",
+   "th": "มื้อกลางวันเป็นซุปกิมจิ เผ็ดนิดหน่อย!",
+   "my": "နေ့လယ်စာက ကင်မ်ချီဟင်းပါ။ နည်းနည်း စပ်တယ်!"
+  },
+  "word": {
+   "episodeId": "u05-baekban",
+   "ref": "voca:5f507d8e"
+  },
+  "replies": [
+   "맛있겠다!",
+   "저도 김치찌개 좋아해요",
+   "많이 매워요?"
+  ]
+ },
+ {
+  "id": "duksu-02",
+  "character_id": "duksu",
+  "image_path": "content/images/u09-subway/post-3.webp",
+  "line_ko": "광장시장에 왔어요. 사람이 정말 많아요!",
+  "line_roman": "gwangjangsijange wasseoyo. sarami jeongmal manayo!",
+  "meaning": {
+   "en": "I came to Gwangjang Market. There are so many people!",
+   "es": "Vine al mercado Gwangjang. ¡Hay muchísima gente!",
+   "id": "Aku datang ke Pasar Gwangjang. Ramai sekali!",
+   "ja": "広蔵市場に来ました。人が本当に多いです！",
+   "vi": "Mình đến chợ Gwangjang rồi. Đông người quá!",
+   "th": "มาตลาดควังจังแล้ว คนเยอะมากจริง ๆ!",
+   "my": "ကွမ်ဂျန်ဈေးကို ရောက်လာတယ်။ လူတွေ အရမ်းများတယ်!"
+  },
+  "word": {
+   "episodeId": "u03-mina",
+   "ref": "voca:eebef120"
+  },
+  "replies": [
+   "뭐 먹었어요?",
+   "저도 가고 싶어요!",
+   "재미있겠다!"
+  ]
+ },
+ {
+  "id": "duksu-03",
+  "character_id": "duksu",
+  "image_path": "content/images/u09-subway/cult-u09-line-color.webp",
+  "line_ko": "지하철 노선도, 색깔로 보면 쉬워요.",
+  "line_roman": "jihacheol noseondo, saekkkallo bomyeon swiwoyo.",
+  "meaning": {
+   "en": "The subway map is easy if you go by color.",
+   "es": "El mapa del metro es fácil si te guías por los colores.",
+   "id": "Peta kereta bawah tanah mudah kalau dilihat dari warnanya.",
+   "ja": "地下鉄の路線図は、色で見ると簡単ですよ。",
+   "vi": "Bản đồ tàu điện ngầm dễ lắm nếu nhìn theo màu.",
+   "th": "แผนที่รถไฟใต้ดิน ดูตามสีแล้วง่ายนะ",
+   "my": "မြေအောက်ရထားလမ်းကြောင်းမြေပုံက အရောင်နဲ့ကြည့်ရင် လွယ်တယ်။"
+  },
+  "word": {
+   "episodeId": "u09-subway",
+   "ref": "voca:066490bd"
+  },
+  "replies": [
+   "좋은 팁이에요!",
+   "저는 2호선이 좋아요",
+   "아직 어려워요"
+  ]
+ },
+ {
+  "id": "yoonkyung-01",
+  "character_id": "yoonkyung",
+  "image_path": "content/images/u02-checkin/post-3.webp",
+  "line_ko": "방 청소 끝! 오늘도 손님을 기다려요.",
+  "line_roman": "bang cheongso kkeut! oneuldo sonnimeul gidaryeoyo.",
+  "meaning": {
+   "en": "Done cleaning the rooms! Waiting for guests again today.",
+   "es": "¡Terminé de limpiar las habitaciones! Hoy también espero huéspedes.",
+   "id": "Selesai bersih-bersih kamar! Hari ini juga menunggu tamu.",
+   "ja": "部屋の掃除完了！今日もお客さんを待っています。",
+   "vi": "Dọn phòng xong rồi! Hôm nay lại chờ khách đến.",
+   "th": "ทำความสะอาดห้องเสร็จแล้ว! วันนี้ก็รอแขกอยู่นะ",
+   "my": "အခန်းသန့်ရှင်းရေး ပြီးပြီ! ဒီနေ့လည်း ဧည့်သည်တွေကို စောင့်နေတယ်။"
+  },
+  "word": {
+   "episodeId": "u02-checkin",
+   "ref": "voca:f8abac72"
+  },
+  "replies": [
+   "수고했어요!",
+   "방이 예뻐요",
+   "저도 묵고 싶어요"
+  ]
+ },
+ {
+  "id": "yoonkyung-02",
+  "character_id": "yoonkyung",
+  "image_path": "content/images/u10-laundry/pre-2.webp",
+  "line_ko": "비가 와서 빨래방에 왔어요.",
+  "line_roman": "biga waseo ppallaebange wasseoyo.",
+  "meaning": {
+   "en": "It''s raining, so I came to the laundromat.",
+   "es": "Está lloviendo, así que vine a la lavandería.",
+   "id": "Hujan, jadi aku ke laundromat.",
+   "ja": "雨が降っているので、コインランドリーに来ました。",
+   "vi": "Trời mưa nên mình ra tiệm giặt.",
+   "th": "ฝนตก เลยมาร้านซักผ้า",
+   "my": "မိုးရွာလို့ အဝတ်လျှော်ဆိုင်ကို လာခဲ့တယ်။"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:c50a06c2"
+  },
+  "replies": [
+   "우산 있어요?",
+   "비가 많이 와요?",
+   "수고해요!"
+  ]
+ },
+ {
+  "id": "yoonkyung-03",
+  "character_id": "yoonkyung",
+  "image_path": "content/images/u02-checkin/cult-u02-shoes.webp",
+  "line_ko": "집에 오면 신발을 벗어요.",
+  "line_roman": "jibe omyeon sinbareul beoseoyo.",
+  "meaning": {
+   "en": "When you come home, you take your shoes off.",
+   "es": "Al llegar a casa, uno se quita los zapatos.",
+   "id": "Kalau sampai di rumah, lepas sepatu ya.",
+   "ja": "家に帰ったら靴を脱ぎます。",
+   "vi": "Về nhà thì cởi giày ra nhé.",
+   "th": "พอกลับถึงบ้านก็ถอดรองเท้านะ",
+   "my": "အိမ်ရောက်ရင် ဖိနပ်ချွတ်ပါတယ်။"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:2ae10c08"
+  },
+  "replies": [
+   "네, 알아요!",
+   "저희 나라도 그래요",
+   "좋은 문화네요"
+  ]
+ },
+ {
+  "id": "mina-01",
+  "character_id": "mina",
+  "image_path": "content/images/u03-mina/post-2.webp",
+  "line_ko": "오늘 저녁은 유진식당! 같이 갈래요?",
+  "line_roman": "oneul jeonyeogeun yujinsikdang! gachi gallaeyo?",
+  "meaning": {
+   "en": "Dinner tonight is at Yujin Restaurant! Want to come?",
+   "es": "¡Esta noche cenamos en el restaurante Yujin! ¿Vienes?",
+   "id": "Makan malam hari ini di Restoran Yujin! Mau ikut?",
+   "ja": "今日の夕ご飯はユジン食堂！一緒に行きませんか？",
+   "vi": "Tối nay ăn ở quán Yujin! Đi cùng không?",
+   "th": "มื้อเย็นวันนี้ที่ร้านยูจิน! ไปด้วยกันไหม?",
+   "my": "ဒီည ညစာက ယူဂျင်စားသောက်ဆိုင်! အတူတူ သွားမလား?"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:d60529f4"
+  },
+  "replies": [
+   "좋아요!",
+   "몇 시예요?",
+   "뭐 먹어요?"
+  ]
+ },
+ {
+  "id": "mina-02",
+  "character_id": "mina",
+  "image_path": "content/images/u08-umbrella/post-2.webp",
+  "line_ko": "우산 없는데 비가 많이 와요…",
+  "line_roman": "usan eomneunde biga mani wayo…",
+  "meaning": {
+   "en": "I don''t have an umbrella, and it''s pouring…",
+   "es": "No tengo paraguas y está lloviendo mucho…",
+   "id": "Aku nggak bawa payung, tapi hujannya deras…",
+   "ja": "傘がないのに、雨がたくさん降っています…",
+   "vi": "Không có ô mà mưa to quá…",
+   "th": "ไม่มีร่ม แต่ฝนตกหนักมาก…",
+   "my": "ထီးမပါဘူး၊ မိုးကလည်း သည်းနေတယ်…"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:5a317574"
+  },
+  "replies": [
+   "괜찮아요?",
+   "편의점에 우산 있어요!",
+   "조심해요!"
+  ]
+ },
+ {
+  "id": "mina-03",
+  "character_id": "mina",
+  "image_path": "content/images/u08-umbrella/cult-u08-pajeon.webp",
+  "line_ko": "비 오는 날엔 파전이죠!",
+  "line_roman": "bi oneun naren pajeonijyo!",
+  "meaning": {
+   "en": "Rainy days call for pajeon!",
+   "es": "¡Los días de lluvia son para pajeon!",
+   "id": "Hari hujan paling cocok makan pajeon!",
+   "ja": "雨の日はやっぱりパジョンですよね！",
+   "vi": "Ngày mưa thì phải ăn pajeon chứ!",
+   "th": "วันฝนตกต้องพาจอนสิ!",
+   "my": "မိုးရွာတဲ့နေ့ဆို ပါဂျွန်ပဲပေါ့!"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:c50a06c2"
+  },
+  "replies": [
+   "맛있겠다!",
+   "저도 먹고 싶어요",
+   "파전이 뭐예요?"
+  ]
+ },
+ {
+  "id": "doyun-01",
+  "character_id": "doyun",
+  "image_path": "content/images/u06-cafe/pre-2-v2.webp",
+  "line_ko": "오늘도 끌림 문 열었어요! 커피 한 잔 어때요?",
+  "line_roman": "oneuldo kkeullim mun yeoreosseoyo! keopi han jan eottaeyo?",
+  "meaning": {
+   "en": "Cafe Kkeullim is open again today! How about a cup of coffee?",
+   "es": "¡Hoy también abrió Cafe Kkeullim! ¿Qué tal un café?",
+   "id": "Cafe Kkeullim buka lagi hari ini! Mau secangkir kopi?",
+   "ja": "今日もクルリム開店しました！コーヒー1杯いかがですか？",
+   "vi": "Hôm nay Kkeullim lại mở cửa rồi! Một ly cà phê nhé?",
+   "th": "วันนี้คาเฟ่คึลลิมก็เปิดแล้ว! กาแฟสักแก้วไหม?",
+   "my": "ဒီနေ့လည်း ကဲလ်လင်မ် ဆိုင်ဖွင့်ပြီ! ကော်ဖီတစ်ခွက် ဘယ်လိုလဲ?"
+  },
+  "word": {
+   "episodeId": "u06-cafe",
+   "ref": "voca:5e12a15c"
+  },
+  "replies": [
+   "좋아요!",
+   "아메리카노 주세요",
+   "오늘 갈게요!"
+  ]
+ },
+ {
+  "id": "doyun-02",
+  "character_id": "doyun",
+  "image_path": "content/images/u06-cafe/post-4.webp",
+  "line_ko": "창가 자리가 비었어요. 놀러 와요!",
+  "line_roman": "changga jariga bieosseoyo. nolleo wayo!",
+  "meaning": {
+   "en": "The window seat is free. Come hang out!",
+   "es": "El asiento junto a la ventana está libre. ¡Ven!",
+   "id": "Kursi dekat jendela kosong. Main ke sini!",
+   "ja": "窓際の席が空きました。遊びに来てください！",
+   "vi": "Chỗ cạnh cửa sổ trống rồi. Ghé chơi nhé!",
+   "th": "ที่นั่งริมหน้าต่างว่างแล้ว มาเที่ยวสิ!",
+   "my": "ပြတင်းပေါက်ဘေး ထိုင်ခုံ လွတ်နေတယ်။ လာလည်ပါ!"
+  },
+  "word": {
+   "episodeId": "u07-jaemin",
+   "ref": "voca:3e2a1ac0"
+  },
+  "replies": [
+   "지금 갈게요!",
+   "예쁘다!",
+   "몇 시까지 해요?"
+  ]
+ },
+ {
+  "id": "doyun-03",
+  "character_id": "doyun",
+  "image_path": "content/images/u06-cafe/cult-u06-pickup.webp",
+  "line_ko": "진동벨이 울리면 가지러 오세요!",
+  "line_roman": "jindongberi ullimyeon gajireo oseyo!",
+  "meaning": {
+   "en": "When the buzzer goes off, come pick it up!",
+   "es": "¡Cuando suene el avisador, ven a recogerlo!",
+   "id": "Kalau bel getarnya bunyi, ambil pesanannya ya!",
+   "ja": "呼び出しベルが鳴ったら、取りに来てください！",
+   "vi": "Khi chuông rung kêu thì đến lấy nhé!",
+   "th": "ถ้าเครื่องสั่นดัง ก็มารับได้เลย!",
+   "my": "တုန်ခါခေါင်းလောင်း မြည်ရင် လာယူပါ!"
+  },
+  "word": {
+   "episodeId": "u03-mina",
+   "ref": "voca:ff8c6497"
+  },
+  "replies": [
+   "네!",
+   "진동벨이 뭐예요?",
+   "알겠어요!"
+  ]
+ },
+ {
+  "id": "jaemin-01",
+  "character_id": "jaemin",
+  "image_path": "content/images/u07-jaemin/post-3.webp",
+  "line_ko": "카페에서 일해요. 조용해서 좋아요.",
+  "line_roman": "kapeeseo ilhaeyo. joyonghaeseo joayo.",
+  "meaning": {
+   "en": "Working at a cafe. It''s quiet, so I like it.",
+   "es": "Trabajo en un café. Me gusta porque es tranquilo.",
+   "id": "Kerja di kafe. Suka karena tenang.",
+   "ja": "カフェで仕事しています。静かでいいです。",
+   "vi": "Mình làm việc ở quán cà phê. Yên tĩnh nên thích lắm.",
+   "th": "ทำงานที่คาเฟ่ เงียบดี ชอบ",
+   "my": "ကော်ဖီဆိုင်မှာ အလုပ်လုပ်နေတယ်။ တိတ်ဆိတ်လို့ ကြိုက်တယ်။"
+  },
+  "word": {
+   "episodeId": "u07-jaemin",
+   "ref": "voca:5edf2b01"
+  },
+  "replies": [
+   "무슨 일 해요?",
+   "수고해요!",
+   "저도 카페 좋아해요"
+  ]
+ },
+ {
+  "id": "jaemin-02",
+  "character_id": "jaemin",
+  "image_path": "content/images/u09-subway/pre-2.webp",
+  "line_ko": "3호선 타고 집에 가요.",
+  "line_roman": "samhoseon tago jibe gayo.",
+  "meaning": {
+   "en": "Taking Line 3 home.",
+   "es": "Tomo la línea 3 para volver a casa.",
+   "id": "Naik Line 3 pulang ke rumah.",
+   "ja": "3号線に乗って家に帰ります。",
+   "vi": "Đi tuyến số 3 về nhà.",
+   "th": "นั่งสาย 3 กลับบ้าน",
+   "my": "လိုင်း ၃ စီးပြီး အိမ်ပြန်မယ်။"
+  },
+  "word": {
+   "episodeId": "u09-subway",
+   "ref": "voca:4bd6d512"
+  },
+  "replies": [
+   "조심히 가요!",
+   "오늘 어땠어요?",
+   "저도 3호선 타요"
+  ]
+ },
+ {
+  "id": "jaemin-03",
+  "character_id": "jaemin",
+  "image_path": "content/images/u04-directions/pre-1.webp",
+  "line_ko": "유진식당 가는 길. 오늘은 혼자 먹어요.",
+  "line_roman": "yujinsikdang ganeun gil. oneureun honja meogeoyo.",
+  "meaning": {
+   "en": "On my way to Yujin Restaurant. Eating alone today.",
+   "es": "Voy al restaurante Yujin. Hoy como solo.",
+   "id": "Lagi jalan ke Restoran Yujin. Hari ini makan sendiri.",
+   "ja": "ユジン食堂に行く途中。今日は一人で食べます。",
+   "vi": "Đang đi quán Yujin. Hôm nay ăn một mình.",
+   "th": "กำลังไปร้านยูจิน วันนี้กินคนเดียว",
+   "my": "ယူဂျင်စားသောက်ဆိုင် သွားနေတယ်။ ဒီနေ့ တစ်ယောက်တည်း စားမယ်။"
+  },
+  "word": {
+   "episodeId": "u05-baekban",
+   "ref": "voca:04d80623"
+  },
+  "replies": [
+   "맛있게 먹어요!",
+   "혼밥도 좋아요",
+   "뭐 먹어요?"
+  ]
+ },
+ {
+  "id": "seoyeon-01",
+  "character_id": "seoyeon",
+  "image_path": "content/images/u08-umbrella/pre-2.webp",
+  "line_ko": "비 오는 저녁, 작업하기 딱 좋아요.",
+  "line_roman": "bi oneun jeonyeok, jageophagi ttak joayo.",
+  "meaning": {
+   "en": "A rainy evening — perfect for working.",
+   "es": "Una tarde de lluvia: perfecta para trabajar.",
+   "id": "Sore yang hujan, pas banget buat kerja.",
+   "ja": "雨の夕方、作業にぴったりです。",
+   "vi": "Chiều tối mưa, hợp để làm việc ghê.",
+   "th": "เย็นวันฝนตก เหมาะกับการทำงานพอดี",
+   "my": "မိုးရွာတဲ့ ညနေ၊ အလုပ်လုပ်ဖို့ အကောင်းဆုံးပဲ။"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:d60529f4"
+  },
+  "replies": [
+   "뭐 그려요?",
+   "멋있다!",
+   "저는 비 싫어요"
+  ]
+ },
+ {
+  "id": "seoyeon-02",
+  "character_id": "seoyeon",
+  "image_path": "content/images/u06-cafe/cult-u06-aa.webp",
+  "line_ko": "겨울에도 아이스 아메리카노. 이상해요?",
+  "line_roman": "gyeoureado aiseu amerikano. isanghaeyo?",
+  "meaning": {
+   "en": "Iced americano even in winter. Is that weird?",
+   "es": "Americano con hielo incluso en invierno. ¿Es raro?",
+   "id": "Es americano bahkan di musim dingin. Aneh nggak?",
+   "ja": "冬でもアイスアメリカーノ。変ですか？",
+   "vi": "Mùa đông vẫn uống americano đá. Lạ không?",
+   "th": "หน้าหนาวก็ยังกินอเมริกาโน่เย็น แปลกไหม?",
+   "my": "ဆောင်းတွင်းမှာတောင် ရေခဲအမေရိကာနို။ ထူးဆန်းလား?"
+  },
+  "word": {
+   "episodeId": "u06-cafe",
+   "ref": "voca:00b7e048"
+  },
+  "replies": [
+   "저도 아이스!",
+   "안 추워요?",
+   "안 이상해요!"
+  ]
+ },
+ {
+  "id": "seoyeon-03",
+  "character_id": "seoyeon",
+  "image_path": "content/images/u10-laundry/cult-u10-unmanned.webp",
+  "line_ko": "새벽 두 시, 아이스크림 사러 가요.",
+  "line_roman": "saebyeok du si, aiseukeurim sareo gayo.",
+  "meaning": {
+   "en": "2 a.m., heading out to buy ice cream.",
+   "es": "Las 2 de la madrugada, voy a comprar helado.",
+   "id": "Jam 2 pagi, mau beli es krim.",
+   "ja": "夜中の2時、アイスを買いに行きます。",
+   "vi": "2 giờ sáng, đi mua kem đây.",
+   "th": "ตีสอง ไปซื้อไอศกรีม",
+   "my": "မနက် ၂ နာရီ၊ ရေခဲမုန့် သွားဝယ်မယ်။"
+  },
+  "word": {
+   "episodeId": "u04-directions",
+   "ref": "voca:67746a6b"
+  },
+  "replies": [
+   "안 자요?",
+   "저도 먹고 싶어요",
+   "무슨 맛 사요?"
+  ]
+ },
+ {
+  "id": "haejun-01",
+  "character_id": "haejun",
+  "image_path": "content/images/u04-directions/pre-2.webp",
+  "line_ko": "가게 문 열 시간이에요. 오늘도 좋은 노래 틀게요.",
+  "line_roman": "gage mun yeol siganieyo. oneuldo joeun norae teulgeyo.",
+  "meaning": {
+   "en": "Time to open the bar. I''ll play good songs again tonight.",
+   "es": "Es hora de abrir el bar. Hoy también pondré buena música.",
+   "id": "Waktunya buka bar. Malam ini aku putar lagu bagus lagi.",
+   "ja": "お店を開ける時間です。今日もいい曲をかけますね。",
+   "vi": "Đến giờ mở quán rồi. Hôm nay lại mở nhạc hay nhé.",
+   "th": "ได้เวลาเปิดร้านแล้ว วันนี้ก็จะเปิดเพลงเพราะ ๆ นะ",
+   "my": "ဆိုင်ဖွင့်ချိန် ရောက်ပြီ။ ဒီနေ့လည်း သီချင်းကောင်းကောင်း ဖွင့်ပေးမယ်။"
+  },
+  "word": {
+   "episodeId": "u10-laundry",
+   "ref": "voca:3f3559f8"
+  },
+  "replies": [
+   "무슨 노래요?",
+   "놀러 갈게요!",
+   "좋은 저녁 보내요"
+  ]
+ },
+ {
+  "id": "haejun-02",
+  "character_id": "haejun",
+  "image_path": "content/images/u01-water/post-1.webp",
+  "line_ko": "아침 산책. 날씨가 좋아요.",
+  "line_roman": "achim sanchaek. nalssiga joayo.",
+  "meaning": {
+   "en": "Morning walk. The weather''s nice.",
+   "es": "Paseo por la mañana. Hace buen tiempo.",
+   "id": "Jalan pagi. Cuacanya bagus.",
+   "ja": "朝の散歩。いい天気です。",
+   "vi": "Đi dạo buổi sáng. Trời đẹp quá.",
+   "th": "เดินเล่นตอนเช้า อากาศดี",
+   "my": "မနက်ခင်း လမ်းလျှောက်တယ်။ ရာသီဥတု သာယာတယ်။"
+  },
+  "word": {
+   "episodeId": "u08-umbrella",
+   "ref": "voca:1f67f7bc"
+  },
+  "replies": [
+   "날씨 좋다!",
+   "어디예요?",
+   "좋은 아침이에요!"
+  ]
+ },
+ {
+  "id": "haejun-03",
+  "character_id": "haejun",
+  "image_path": "content/images/u05-baekban/cult-u05-banchan.webp",
+  "line_ko": "밥 먹었어요? 저는 반찬 많이 먹었어요.",
+  "line_roman": "bap meogeosseoyo? jeoneun banchan mani meogeosseoyo.",
+  "meaning": {
+   "en": "Have you eaten? I had lots of side dishes.",
+   "es": "¿Ya comiste? Yo comí muchos acompañamientos.",
+   "id": "Sudah makan? Aku makan banyak lauk.",
+   "ja": "ご飯食べましたか？僕はおかずをたくさん食べました。",
+   "vi": "Ăn cơm chưa? Mình ăn nhiều món phụ lắm.",
+   "th": "กินข้าวหรือยัง? ผมกินกับข้าวเยอะเลย",
+   "my": "ထမင်းစားပြီးပြီလား? ကျွန်တော် ဟင်းလျာတွေ အများကြီး စားခဲ့တယ်။"
+  },
+  "word": {
+   "episodeId": "u05-baekban",
+   "ref": "voca:72257617"
+  },
+  "replies": [
+   "네, 먹었어요!",
+   "아직이요",
+   "맛있겠다!"
+  ]
+ },
+ {
+  "id": "daeun-01",
+  "character_id": "daeun",
+  "image_path": "content/images/u09-subway/pre-1.webp",
+  "line_ko": "지하철역 앞이에요. 비가 와요!",
+  "line_roman": "jihacheollyeok apieyo. biga wayo!",
+  "meaning": {
+   "en": "I''m in front of the subway station. It''s raining!",
+   "es": "Estoy frente a la estación de metro. ¡Está lloviendo!",
+   "id": "Aku di depan stasiun kereta. Hujan!",
+   "ja": "地下鉄の駅の前です。雨が降っています！",
+   "vi": "Mình đang trước ga tàu điện ngầm. Trời mưa!",
+   "th": "อยู่หน้าสถานีรถไฟใต้ดิน ฝนตก!",
+   "my": "မြေအောက်ရထားဘူတာရှေ့မှာ။ မိုးရွာနေတယ်!"
+  },
+  "word": {
+   "episodeId": "u09-subway",
+   "ref": "voca:835ca318"
+  },
+  "replies": [
+   "우산 있어요?",
+   "조심해요!",
+   "여기도 비 와요"
+  ]
+ },
+ {
+  "id": "daeun-02",
+  "character_id": "daeun",
+  "image_path": "content/images/u01-water/cult-u01-1plus1.webp",
+  "line_ko": "편의점 주스 원 플러스 원! 하나 줄까요?",
+  "line_roman": "pyeonuijeom juseu won peulleoseu won! hana julkkayo?",
+  "meaning": {
+   "en": "Buy-one-get-one juice at the convenience store! Want one?",
+   "es": "¡Jugo 2x1 en la tienda! ¿Te doy uno?",
+   "id": "Jus beli satu gratis satu di minimarket! Mau satu?",
+   "ja": "コンビニのジュース、1+1！一つあげましょうか？",
+   "vi": "Nước ép mua 1 tặng 1 ở cửa hàng tiện lợi! Cho bạn một chai nhé?",
+   "th": "น้ำผลไม้ซื้อ 1 แถม 1 ที่ร้านสะดวกซื้อ! เอาสักขวดไหม?",
+   "my": "စတိုးဆိုင်မှာ ဖျော်ရည် တစ်ခုဝယ် တစ်ခုလက်ဆောင်! တစ်ဗူး ပေးရမလား?"
+  },
+  "word": {
+   "episodeId": "u01-water",
+   "ref": "voca:3cc830ff"
+  },
+  "replies": [
+   "좋아요!",
+   "고마워요!",
+   "뭐 샀어요?"
+  ]
+ },
+ {
+  "id": "daeun-03",
+  "character_id": "daeun",
+  "image_path": "content/images/u07-jaemin/cult-u07-kagong.webp",
+  "line_ko": "카페에서 과제해요. 하기 싫어요…",
+  "line_roman": "kapeeseo gwajehaeyo. hagi sireoyo…",
+  "meaning": {
+   "en": "Doing homework at a cafe. I don''t want to…",
+   "es": "Hago la tarea en un café. No tengo ganas…",
+   "id": "Ngerjain tugas di kafe. Malas banget…",
+   "ja": "カフェで課題をしています。やりたくない…",
+   "vi": "Làm bài tập ở quán cà phê. Chẳng muốn làm chút nào…",
+   "th": "ทำการบ้านที่คาเฟ่ ไม่อยากทำเลย…",
+   "my": "ကော်ဖီဆိုင်မှာ အိမ်စာလုပ်နေတယ်။ မလုပ်ချင်ဘူး…"
+  },
+  "word": {
+   "episodeId": "u06-cafe",
+   "ref": "voca:e57cc4e2"
+  },
+  "replies": [
+   "힘내요!",
+   "같이 해요",
+   "무슨 과제예요?"
+  ]
+ },
+ {
+  "id": "geonwoo-01",
+  "character_id": "geonwoo",
+  "image_path": "content/images/u09-subway/cult-u09-tap-off.webp",
+  "line_ko": "카드 찍고 한강으로 출발!",
+  "line_roman": "kadeu jjikgo hangangeuro chulbal!",
+  "meaning": {
+   "en": "Tapped my card — off to the Han River!",
+   "es": "¡Pasé la tarjeta y rumbo al río Han!",
+   "id": "Tap kartu, berangkat ke Sungai Han!",
+   "ja": "カードをタッチして、漢江へ出発！",
+   "vi": "Quẹt thẻ rồi, xuất phát ra sông Hàn!",
+   "th": "แตะบัตรแล้ว ออกเดินทางไปแม่น้ำฮัน!",
+   "my": "ကတ်ထိပြီး ဟန်မြစ်ဆီ ထွက်မယ်!"
+  },
+  "word": {
+   "episodeId": "u01-water",
+   "ref": "voca:be2eb7e3"
+  },
+  "replies": [
+   "화이팅!",
+   "몇 킬로 뛰어요?",
+   "저도 가고 싶어요"
+  ]
+ },
+ {
+  "id": "geonwoo-02",
+  "character_id": "geonwoo",
+  "image_path": "content/images/u05-baekban/cult-u05-water.webp",
+  "line_ko": "물은 셀프! 운동 끝나고 물 많이 마셔요.",
+  "line_roman": "mureun selpeu! undong kkeunnago mul mani masyeoyo.",
+  "meaning": {
+   "en": "Water is self-serve! I drink lots of water after working out.",
+   "es": "¡El agua es autoservicio! Bebo mucha agua después de entrenar.",
+   "id": "Air ambil sendiri! Habis olahraga aku minum banyak air.",
+   "ja": "水はセルフ！運動の後は水をたくさん飲みます。",
+   "vi": "Nước tự lấy! Tập xong mình uống nhiều nước lắm.",
+   "th": "น้ำบริการตัวเอง! ออกกำลังกายเสร็จก็ดื่มน้ำเยอะ ๆ",
+   "my": "ရေက ကိုယ်တိုင်ယူ! လေ့ကျင့်ခန်းပြီးရင် ရေအများကြီး သောက်တယ်။"
+  },
+  "word": {
+   "episodeId": "u01-water",
+   "ref": "voca:e70ba1ce"
+  },
+  "replies": [
+   "수고했어요!",
+   "저도 물 마셔요",
+   "오늘 몇 킬로 뛰었어요?"
+  ]
+ },
+ {
+  "id": "geonwoo-03",
+  "character_id": "geonwoo",
+  "image_path": "content/images/u08-umbrella/cult-u08-cvs-umbrella.webp",
+  "line_ko": "비 와서 편의점 우산 샀어요. 오천 원!",
+  "line_roman": "bi waseo pyeonuijeom usan sasseoyo. ocheon won!",
+  "meaning": {
+   "en": "It rained, so I bought an umbrella at the convenience store. 5,000 won!",
+   "es": "Llovió, así que compré un paraguas en la tienda. ¡5.000 wones!",
+   "id": "Hujan, jadi beli payung di minimarket. 5.000 won!",
+   "ja": "雨なのでコンビニで傘を買いました。5千ウォン！",
+   "vi": "Mưa nên mua ô ở cửa hàng tiện lợi. 5.000 won!",
+   "th": "ฝนตกเลยซื้อร่มที่ร้านสะดวกซื้อ 5,000 วอน!",
+   "my": "မိုးရွာလို့ စတိုးဆိုင်မှာ ထီးဝယ်လိုက်တယ်။ ၅,၀၀၀ ဝမ်!"
+  },
+  "word": {
+   "episodeId": "u01-water",
+   "ref": "voca:289ede0e"
+  },
+  "replies": [
+   "비싸요!",
+   "저도 샀어요",
+   "조심해요!"
+  ]
+ }
+]'::jsonb) as r(
+  id text, character_id text, image_path text, line_ko text, line_roman text, meaning jsonb, word jsonb, replies jsonb
+)
+on conflict (id) do update set
+  character_id = excluded.character_id,
+  image_path = excluded.image_path,
+  line_ko = excluded.line_ko,
+  line_roman = excluded.line_roman,
+  meaning = excluded.meaning,
+  word = excluded.word,
+  replies = excluded.replies;

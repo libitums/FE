@@ -52,6 +52,9 @@ function serverRemote(): ChatRemote | null {
 }
 const earlyAccessRemote = (): EarlyAccessRemote | null => serverRemote()?.earlyAccess ?? null;
 
+/** 같은 서버 대화 포트 — 친구 스토리 결선(ADR-0177)도 이것을 씁니다. 끼워지지 않았으면 null. */
+export const companionServerRemote = (): ChatRemote | null => serverRemote();
+
 /** 테스트가 물었는지 표시를 메모리로 끼웁니다(null = 기기 저장, 계정마다). */
 export function setAdultAckAskedStoreForTests(store: AdultAckAskedStore | null): void {
   askedOverride = store;

@@ -4,11 +4,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 import { messengerChatAlbumVi } from "./ui-copy-vi-chat-album";
 import { messengerChatSuggestedVi } from "./ui-copy-vi-chat-suggested";
+import { messengerChatStoriesVi } from "./ui-copy-vi-chat-stories";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
   media: messengerChatMediaVi,
   album: messengerChatAlbumVi,
   suggested: messengerChatSuggestedVi,
+  stories: messengerChatStoriesVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:

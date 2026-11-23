@@ -4,11 +4,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaId } from "./ui-copy-id-chat-media";
 import { messengerChatAlbumId } from "./ui-copy-id-chat-album";
 import { messengerChatSuggestedId } from "./ui-copy-id-chat-suggested";
+import { messengerChatStoriesId } from "./ui-copy-id-chat-stories";
 
 export const messengerChatExtraId: MessengerChatExtraCopy = {
   media: messengerChatMediaId,
   album: messengerChatAlbumId,
   suggested: messengerChatSuggestedId,
+  stories: messengerChatStoriesId,
   access: {
     signInTitle: "Kirim pesan ke orang yang kamu temui",
     signInBody:

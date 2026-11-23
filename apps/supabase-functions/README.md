@@ -828,3 +828,39 @@ open(성적 긴장 · 장면 넘김까지, 노골적 묘사 · 음담패설은 �
 보상 켜기(사용자 결정 뒤): `update ranking.settings set reward_enabled = true, reward_amount = 30;`(액수는 결정값). 끄기: `reward_enabled = false`.
 지난 주를 소급하려면 `select public.ranking_settle_week('YYYY-MM-DD');`(그 주 월요일 — 이미 받은 사람은 다시 받지 않는다).
 그룹 크기(지금 15 · 18, ADR-0170 D13): `update ranking.settings set group_target = 15, group_max = 18;`(이미 배정된 그룹은 그대로). 주 중간에 목표를 내리면 그 주의 남은 참가자는 작은 새 그룹에 들어가므로 주 경계(월 00:00 UTC) 직전에 바꾼다. 그룹이 작아지면 그룹 수가 늘어 상위 3 보상 지급 총량도 는다(25 → 15명이면 약 1.7배) — 보상을 켜기 전에 액수를 다시 본다.
+
+## 친구 스토리 (20261228, ADR-0177)
+
+`migrations/20261228120000_friend_stories.sql`(표 · 함수) + `20261228130000_friend_stories_pool.sql`(묶음 내용 — 정본 `docs/content/friend-stories.json`) ·
+Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`(목적지 `story`) · `companion-proactive`(하루 한 번 합산) · 예약 `cron/friend-stories.sql`.
+
+- 스위치 둘(`companion.settings`, 기본 **off**): `friend_stories` — 올림 · 앱 읽기 · 무료 답장, `story_push` — 알림. 값은 off · testers(시험 계정만) · on.
+- 표(RLS 켬, 앱 직접 접근 없음): `story_pool`(인물 · 그림 경로 · 한 줄 · 로마자 · 뜻(en 필수) · 단어 `{episodeId, ref}` · 답장 칩 1 ~ 3 · 켬) ·
+  `stories`(인물 · UTC 날짜마다 하나, 24시간) · `story_replies`(사용자 · 클라이언트 메시지마다 — 인용 · `free`). 사용자 열은 `auth.users` CASCADE.
+- 올림 `companion_post_stories(now)`: 인물의 올림 시각(UTC 01 ~ 10시, `companion.story_post_hour` — id 해시)이 지났고 오늘 올린 것이 없으면 가장 적게 올린
+  묶음 줄(같으면 id 순). 묶음에 줄을 더하면 그 줄부터 나간다. `friend_stories = off`면 올리지 않는다.
+- 앱 읽기 `companion_friend_stories()`(authenticated) — 살아 있는 스토리 · `freeReply`.
+- 첫 답장 무료 `companion_claim_story_reply(…)`(서버 키 — chat-send가 관문 전에): 지갑 잠금 → 같은 메시지 줄이 있으면 그대로, 없으면 살아 있고 그 스토리의
+  무료 줄(예약이 풀리지 않은)이 없을 때 `free` + **금액 0 예약**. 관문(`turn_gate_base` · 구독 겉 `companion_turn_gate`)의 엽전 부족 판정은 그 메시지의
+  예약이 있으면 건너뛴다(정의에서 그 줄만 바꿈 — 줄이 없으면 마이그레이션이 멈춘다). `begin_turn`은 같은 메시지의 예약을 그대로 쓴다(체험을 쓰지 않음).
+  턴이 실패해 예약이 풀리면(정리 작업 포함) 무료가 다시 산다.
+- 인용: `companion.message_json`이 유저 메시지에 `story { id, characterId, line, imagePath, postedAt }`(아니면 null)를 싣는다(정의에서 한 줄 더함).
+- 알림 `companion-stories`(매시 5분): 올림 → `companion_story_push_candidates(now, 200)` → 사람마다 계획(on: 대조군 30% · 받는 쪽 제목 = 이름 · 본문
+  `posted a story — <한 줄 40자>`) → `push_campaign_sends`(묶음 `스토리` · 세그먼트 `friend-story`, 시험 계정 단계는 묶음 `스토리 시험`)에 먼저 기록 →
+  `send-push` 목적지 `{ kind: "companion-chat", characterId, story: true }`(옛 앱은 방을 연다).
+  후보: 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) ·
+  **오늘(현지) 보낸 알림 없음 — 모든 묶음**(선톡 · 스토리 · 자동 캠페인). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
+- 테스트: `migrations/friend-stories.integration.test.ts`(FS1 ~ FS19) · `_shared/companion-stories-handler.unit.test.ts`(SH1 ~ SH4) ·
+  `chat-send-handler.unit.test.ts`(CSS1 ~ CSS3) · `companion-proactive-push.unit.test.ts`(PP9) · `send-push-body.unit.test.ts`(SP1) · 계약 `chat-send.unit.test.ts`(CS3e).
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
+
+1. 마이그레이션: `20261228120000_friend_stories.sql` → `20261228130000_friend_stories_pool.sql`(20261227 **뒤**). 앞 것은 관문 · `message_json`
+   정의에서 줄을 바꾸며 바뀐 줄이 이미 있으면 그 단계를 건너뛴다(표 · 함수 만들기는 한 번만 적용). 확인:
+   `select friend_stories, story_push from companion.settings;`(off · off) · `select count(*) from companion.story_pool;`.
+2. 함수: `supabase functions deploy chat-send companion-proactive send-push companion-stories`(계약 사본 `_shared/companion-contract` 포함).
+   마이그레이션 전에 chat-send를 올리면 `story_id`가 온 턴은 판정 RPC가 실패해 보통 턴(`story=claim_failed`)이다 — 그래도 순서는 마이그레이션 → 함수.
+3. 예약: `supabase/cron/friend-stories.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈). 확인:
+   `select jobname, schedule from cron.job where jobname = 'companion-stories';`.
+4. 켜기: `update companion.settings set friend_stories = 'testers';` → 시험 계정으로 앱 확인 → `'on'`. 알림은 따로 `story_push = 'testers'` → `'on'`.
+   **알림은 스토리를 여는 새 앱이 충분히 깔린 뒤에 켠다** — 옛 앱은 알림을 누르면 그 방만 연다.
