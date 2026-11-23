@@ -221,6 +221,36 @@ describe("저장본 · 거절 · 연결 실패", () => {
   });
 });
 
+describe("서버 진행 단계", () => {
+  test("CM-U9d 다시 읽을 때 단계가 drawing으로 바뀌면 대기 줄에 단계 · 그리기 시작(기기 시계) · 비율이 실리고, 그 뒤로는 그대로다", async () => {
+    const env = await opened({
+      request: { kind: "accepted", media: media({ stage: "preparing" }), cached: false },
+      loads: [
+        [], // 방을 열 때 resume
+        [media({ stage: "drawing", aspect: "3:2" })], // 2초
+        [media({ stage: "drawing", aspect: "3:2" })], // 3초 뒤
+      ],
+    });
+    env.source.requestMedia("duksu", "photo"); // 기기 시계 1,000
+    await flush();
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 1_000,
+      serverStage: "preparing",
+    });
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 1_000,
+      serverStage: "drawing",
+      drawingAt: 3_000,
+      aspect: "3:2",
+    });
+    await env.advance(3_000);
+    expect(env.lines().at(-1)).toMatchObject({ serverStage: "drawing", drawingAt: 3_000 });
+  });
+});
+
 describe("방을 나가고 다시 열기 · 상한", () => {
   test("CM-U11a 나가면 다시 읽기가 멈추고, 다시 열면 메시지 id로 물어 결과를 놓는다", async () => {
     const env = await opened({

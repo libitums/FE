@@ -184,3 +184,13 @@
 - 낭독 줄(`accessibility-label`)은 단계와 상관없이 지금 한 줄(`list.sendingPhoto` · `list.recordingVoice`) 그대로다 — 스크린리더가 단계마다 다시 읽지 않게.
 - 문구는 일곱 언어(en · es · id · ja · vi · th · my) — 원어민 검수 전. 번들 천장은 그대로다(#542로 번들이 줄어 이 변경은 천장 안에 든다 — 처음 올렸던 천장 변경은 뺐다).
 - 테스트: `media-pending-stage.unit.test.ts` MPS-U1 ~ U5 · `chat-remote-send.unit.test.ts` CM-U20 · `chat-media-rules.unit.test.ts` CM-U6a · `chat-media-rules.unit.test.ts` CM-U6c · `chat-remote-media.unit.test.ts` CM-U9a · CM-U11c · `ui-copy-chat-pending.unit.test.ts` MPS-C1 · `ChatMediaBubbles.ui.test.tsx` MC-UI21 · MC-UI22 · `ui-copy-en.unit.test.ts`.
+
+## 추가 ⟨2026-11-23⟩ — 앱은 서버 단계가 오면 그것을 기준으로, 없으면 시간 추정 [사용자]
+
+- **계기**: 대기 문구 단계(위 「추가 ⟨2026-11-22⟩」)는 앱이 기다린 시간으로 추정한다. 같은 날 서버가 실제 단계 · 비율을 알려 주는 개정(브랜치 `feat/companion-snapshot-stage`, PR #551 — 머지 보류)이 따로 정해져, 두 결정이 같은 말풍선에서 만난다. 사용자 결정 2026-11-23: 둘을 합친다.
+- **규칙**: 서버가 `stage`를 주면 그것이 기준이다 — `preparing`이면 첫 문구(「picking a moment…」)에 머물고, `drawing`이면 앱이 그것을 처음 본 때(기기 시계)부터 「taking the picture…」 → 6초 「choosing the best shot…」 → 12초 「Almost there…」로 넘긴다(운영 그리기 13 ~ 17초). `stage`가 없으면(옛 서버 · 가짜 방 · 음성) 지금의 시간 추정 그대로다. 문구는 새로 만들지 않는다.
+- **비율**: 대기 행에 `aspect`가 있으면(그리기 시작부터) 자리표시자 상자를 도착할 사진과 같은 크기(3:2 240 × 160 · 1:1 200 × 200)로 맞춘다. 없으면 지금 상자(180 × 240).
+- **다시 읽기**: 2초 간격 그대로다. 아직 만드는 중인 행의 단계 · 비율이 놓인 줄과 달라졌을 때만 대기 줄을 고친다(시작 시각 · 이미 본 「그리는 중」 시각은 넘긴다).
+- **넣지 않은 것**: 진행 막대(서버 쪽 「앱 인계」의 선택 항목), 서버 `stageAt`(서버 시계라 쓰지 않는다 — 기기 시계만).
+- **순서**: 이 앱 변경은 서버 개정 없이도 안전하다(칸이 없으면 지금처럼 보인다). 서버 개정이 배포되면 그때부터 실제 단계를 따른다.
+- **테스트**: `companion-media-parse.unit.test.ts` CM-U1d · `chat-media-rules.unit.test.ts` CM-U6d · U6e · `chat-remote-media.unit.test.ts` CM-U9d · `ChatMediaBubbles.ui.test.tsx` MC-UI23.

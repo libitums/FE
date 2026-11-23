@@ -117,6 +117,42 @@ test("MC-UI22. 사진 pending: 기다리는 중에 기기 시계가 뒤로 가�
   expect(screen.getByTestId("pp").textContent).toContain("미나 is choosing the best shot…");
 });
 
+test("MC-UI23. 사진 pending: 서버가 「구상 중」이라 하면 시간이 지나도 첫 문구에 머문다(ADR-0146 개정 2026-11-23)", () => {
+  render(
+    <PhotoPendingBubble name="미나" testId="pp" startedAt={Date.now()} serverStage="preparing" />,
+  );
+  advance(20_000);
+  expect(screen.getByTestId("pp").textContent).toContain("미나 is picking a moment…");
+});
+
+test("MC-UI23. 사진 pending: 서버가 「그리는 중」이라 하면 그때부터 taking → choosing(6초) → Almost there(12초), 상자는 그 비율", () => {
+  render(
+    <PhotoPendingBubble
+      name="미나"
+      testId="pp"
+      startedAt={Date.now() - 3000}
+      serverStage="drawing"
+      drawingAt={Date.now()}
+      aspect="3:2"
+    />,
+  );
+  const text = () => screen.getByTestId("pp").textContent ?? "";
+  expect(text()).toContain("미나 is taking the picture…");
+  advance(6100);
+  expect(text()).toContain("미나 is choosing the best shot…");
+  advance(6000);
+  expect(text()).toContain("Almost there…");
+  expect(
+    screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton-3x2"),
+  ).not.toBeNull();
+});
+
+test("MC-UI23. 사진 pending: 비율을 모르면 지금 상자(3:4) 그대로", () => {
+  render(<PhotoPendingBubble name="미나" testId="pp" />);
+  expect(screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton-3x2")).toBeNull();
+  expect(screen.getByTestId("pp").querySelector(".messenger-chat-photo-skeleton-1x1")).toBeNull();
+});
+
 test("MC-UI22. 음성 pending: 2.5초 뒤 「… is sending it…」로 넘어간다", () => {
   render(<VoicePendingBubble name="미나" testId="vp" />);
   const text = () => screen.getByTestId("vp").textContent ?? "";

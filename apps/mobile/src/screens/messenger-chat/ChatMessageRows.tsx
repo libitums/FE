@@ -146,8 +146,11 @@ function RowBody({
           <PhotoPendingBubble
             name={counterpart.name}
             testId={ids.photoPending}
-            key={message.startedAt ?? 0}
+            key={`${message.serverStage ?? ""}:${message.drawingAt ?? message.startedAt ?? 0}`}
             {...(message.startedAt === undefined ? {} : { startedAt: message.startedAt })}
+            {...(message.serverStage === undefined ? {} : { serverStage: message.serverStage })}
+            {...(message.drawingAt === undefined ? {} : { drawingAt: message.drawingAt })}
+            {...(message.aspect === undefined ? {} : { aspect: message.aspect })}
           />
         </ChatIncomingRow>
       );

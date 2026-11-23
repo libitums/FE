@@ -17,6 +17,15 @@ export type ChatCounterpart = {
 type ChatMessageBase = { readonly id: string; readonly at: number };
 /** 대기 줄이 처음 놓인 때(**기기 시계**) — 대기 문구의 단계가 여기서부터 셉니다. `at`은 서버 방에서 서버 시계라 쓰지 않습니다. */
 type ChatPendingStart = { readonly startedAt?: number };
+/**
+ * 서버가 알려 준 사진의 진행 단계(ADR-0146 개정 2026-11-23) — 없으면(옛 서버 · 가짜 방) 기다린 시간으로 추정합니다.
+ * `drawingAt`은 앱이 「그리는 중」을 처음 본 때(기기 시계), `aspect`는 도착할 사진의 비율입니다.
+ */
+type ChatPendingStage = {
+  readonly serverStage?: "preparing" | "drawing";
+  readonly drawingAt?: number;
+  readonly aspect?: "3:2" | "1:1";
+};
 
 export type ChatMessage =
   | (ChatMessageBase & {
@@ -25,7 +34,7 @@ export type ChatMessage =
       readonly text: ChatText;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
-  | (ChatMessageBase & ChatPendingStart & { readonly kind: "photo-pending" })
+  | (ChatMessageBase & ChatPendingStart & ChatPendingStage & { readonly kind: "photo-pending" })
   | (ChatMessageBase & { readonly kind: "photo" } & ChatPhotoBody)
   | (ChatMessageBase & ChatPendingStart & { readonly kind: "voice-pending" })
   | (ChatMessageBase & {

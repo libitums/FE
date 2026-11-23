@@ -43,6 +43,11 @@ export type RemoteMedia = {
   readonly aspect: "3:2" | "1:1" | null;
   readonly failure: string | null;
   readonly createdAt: number;
+  /**
+   * 만드는 중인 사진의 진행 단계(ADR-0146 개정 2026-11-23) — 장면 구상 `preparing` → 그리기 `drawing`. 끝났거나 옛 서버면 null · 없음.
+   * `drawing`부터는 `aspect`도 적혀 있습니다.
+   */
+  readonly stage?: "preparing" | "drawing" | null;
 };
 
 /** 앨범 RPC(`companion_list_media`)의 한 건 — 그때의 말 · 지난 대화 표시가 더 붙습니다(ADR-0150). */
