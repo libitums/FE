@@ -24,7 +24,11 @@ function mount(audio: "available" | "missing" = "available") {
     <EntryBasicsComposeScreen
       romanization="shown"
       autoPlay="on"
-      sound={{ sourceOf: (s) => (audio === "missing" ? null : `src:${s}`), play }}
+      sound={{
+        sourceOf: (s) => (audio === "missing" ? null : `src:${s}`),
+        letterSourceOf: () => null,
+        play,
+      }}
       onNext={onNext}
       onBack={onBack}
       onSkip={onSkip}

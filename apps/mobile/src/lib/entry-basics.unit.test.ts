@@ -37,7 +37,7 @@ test("EB3. 준비 완료는 문제 순서(가 · 너 · 도)의 칸을 「너 �
 });
 
 test("EB4. 여섯 소리가 다 있을 때만 들을 수 있다고 약속한다", () => {
-  expect(lettersHearable((syllable) => `src:${syllable}`)).toBe(true);
-  expect(lettersHearable((syllable) => (syllable === "오" ? null : `src:${syllable}`))).toBe(false);
+  expect(lettersHearable((letter) => `clip:${letter}`)).toBe(true);
+  expect(lettersHearable((letter) => (letter === "ㅗ" ? null : `clip:${letter}`))).toBe(false);
   expect(lettersHearable(() => null)).toBe(false);
 });

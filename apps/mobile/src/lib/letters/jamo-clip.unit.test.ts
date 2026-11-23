@@ -1,0 +1,43 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, test } from "vitest";
+
+import { JAMO_GROUPS, jamoClipOf } from "./jamo";
+
+// `unit` 계층: 자모 칸을 누르면 나는 앱 내장 소리(2026-11-23). 녹음은 자음 18개(`c-<로마자>-sound`) · 모음 21개
+// (`v-<로마자>`)이고 호스트 음성 폴더에 `hangul-` 이름으로 싣습니다. ㅇ은 따로 녹음이 없어 지금처럼 「아」(모음 ㅏ)를 냅니다.
+
+const root = join(__dirname, "../../../../..");
+
+describe("자모 내장 소리", () => {
+  test("JC1. 자음은 그 자음의 소리, 모음은 그 모음의 소리", () => {
+    expect(jamoClipOf("ㄱ")).toBe("hangul-c-g-sound");
+    expect(jamoClipOf("ㄲ")).toBe("hangul-c-kk-sound");
+    expect(jamoClipOf("ㅊ")).toBe("hangul-c-ch-sound");
+    expect(jamoClipOf("ㅏ")).toBe("hangul-v-a");
+    expect(jamoClipOf("ㅢ")).toBe("hangul-v-ui");
+    expect(jamoClipOf("ㅝ")).toBe("hangul-v-wo");
+  });
+
+  test("JC2. ㅇ은 녹음이 없어 「아」(ㅏ)와 같은 소리", () => {
+    expect(jamoClipOf("ㅇ")).toBe("hangul-v-a");
+  });
+
+  test("JC3. 자모가 아니면 null", () => {
+    expect(jamoClipOf("가")).toBeNull();
+    expect(jamoClipOf("")).toBeNull();
+    expect(jamoClipOf("a")).toBeNull();
+  });
+
+  test("JC4. 자모표 40자 모두 소리가 있고, 그 파일이 호스트 음성 폴더에 있다", () => {
+    const letters = JAMO_GROUPS.flatMap((group) => group.letters.map((letter) => letter.letter));
+    expect(letters).toHaveLength(40);
+    for (const letter of letters) {
+      const clip = jamoClipOf(letter);
+      expect(clip, letter).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+      expect(existsSync(join(root, "apps/ios/Host/audio", `${String(clip)}.m4a`)), letter).toBe(
+        true,
+      );
+    }
+  });
+});

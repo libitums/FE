@@ -47,6 +47,6 @@ export const ENTRY_BASICS_WORDS: readonly EntryBasicsWord[] =
   }));
 
 /** 「눌러서 들어 보세요」라고 말해도 되는가 — 여섯 소리가 다 있을 때만입니다. */
-export function lettersHearable(sourceOf: (syllable: string) => string | null): boolean {
-  return ENTRY_BASICS_LETTERS.every(({ letter }) => sourceOf(jamoSoundOf(letter)) !== null);
+export function lettersHearable(letterSourceOf: (letter: string) => string | null): boolean {
+  return ENTRY_BASICS_LETTERS.every(({ letter }) => letterSourceOf(letter) !== null);
 }
