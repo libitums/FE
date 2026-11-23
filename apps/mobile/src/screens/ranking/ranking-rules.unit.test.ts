@@ -7,6 +7,7 @@ import {
   flagOf,
   medalOf,
   moreToTopThree,
+  weekEndsAt,
   rankingViewOf,
   zoneBefore,
 } from "./ranking-rules";
@@ -121,4 +122,13 @@ test("RK-U30. 3위까지 남은 점수(D13) — 3위 점수를 넘는 데 필요
   ).toBeNull();
   // 서버가 3위 줄을 주지 않았으면(작은 그룹) 말하지 않는다.
   expect(moreToTopThree({ ...mine, rows: [row(1), row(5, true)] })).toBeNull();
+});
+
+test("RK-U32. 이번 주가 끝나는 때 — 다음 월요일 00:00 UTC(서버 `endsAt`과 같은 값). 읽기 전에도 「Ends in N days」를 그린다", () => {
+  expect(weekEndsAt(Date.parse("2026-11-20T10:00:00Z"))).toBe("2026-11-23T00:00:00Z");
+  // 월요일 00:00 UTC 정각은 새 주의 시작 — 끝은 일주일 뒤.
+  expect(weekEndsAt(Date.parse("2026-11-23T00:00:00Z"))).toBe("2026-11-30T00:00:00Z");
+  expect(weekEndsAt(Date.parse("2026-11-22T23:59:59Z"))).toBe("2026-11-23T00:00:00Z");
+  // 해가 바뀌어도.
+  expect(weekEndsAt(Date.parse("2026-12-30T12:00:00Z"))).toBe("2027-01-04T00:00:00Z");
 });

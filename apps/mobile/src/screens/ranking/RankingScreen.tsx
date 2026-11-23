@@ -14,6 +14,7 @@ import {
   daysLeft,
   moreToTopThree,
   nearMeItems,
+  shownEndsAt,
   zoneBefore,
   type RankingView,
 } from "./ranking-rules";
@@ -217,9 +218,9 @@ function Loading() {
 export function RankingScreen(props: RankingScreenProps): ReactNode {
   const { view, board, nowMs, onSelectBoard } = props;
   const copy = useUiCopy().ranking;
-  const endsAt =
-    view.kind === "ready" ? view.board.endsAt : view.kind === "not-joined" ? view.endsAt : null;
   const switchable = view.kind !== "guest" && view.kind !== "hidden";
+  // 남은 날 줄은 읽기 전부터 세웁니다 — 읽은 뒤에 줄이 생기며 아래가 밀리지 않게.
+  const endsAt = shownEndsAt(view, nowMs);
   return (
     <view className="ranking-screen" data-testid={ids.screen}>
       <view className="ranking-top">
