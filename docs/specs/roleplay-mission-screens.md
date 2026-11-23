@@ -121,3 +121,23 @@ PRD §9 M10이 FE에 맡긴 것. 스위치 뒤 초안이라 **결선하지 않�
 - 시작 전 말하기 권한 확인(대본형 미리보기의 권한 모달) — 지금은 마이크를 누를 때 묻고, 거부면 입력 줄 안내만 선다.
 - 번들 — 스위치가 꺼져 있어도 +122 kB가 든다([성능 기록](../performance/reports/roleplay-mission-draft-01.md)). 가짜 출처 · fixture를 개발 빌드에만 두기, 번역 초안의 지연 적재를 서버 출처 전에 본다.
 - 판 도중 앱을 떠났다 돌아오는 경우(이어 하기 없음, PRD §0.6) — 지금은 route가 내려가면 판이 그대로 방치되고 서버 정리 작업이 닫는다.
+
+## 10. v2 — 서버 계약 2026-11-23 반영(ADR-0177, 파이프라인 문서 §10)
+
+- 정본: 서버 브랜치의 [파이프라인 문서](ai-companion-mission-pipeline.md) §10 「앱 인계」 · §6 음성 · §11 결정, [ADR-0177](../adr/0177-companion-mission.md). 참고 구현은 대시보드 「미션 플레이어」.
+- **계속하기 / 끝내기** — `mission` 이벤트의 `requiredDone`이 참이고 `ended`가 null이면 「Mission success!」 카드(Keep going / Finish, 한 판에 한 번 — `successPrompt`), 카드를 닫으면 입력 줄 위 힌트 옆에 Finish 글 단추, 위 띠의 남은 턴 뒤에 「· Mission success」. 끝내기 = 국면 `ended` · 끝 이유 `finish` → 결선이 `mission-finish`(`abandon` 없이).
+- **성공 뒤 그만두기 = 끝내기** — 대화상자 문구가 「Finish this mission?」으로 바뀌고 확인하면 채점 → 리포트. 필수 전이면 지금처럼 리포트 없이 나감.
+- **채점 대기 판** — 목록의 `pendingReports`에 이 미션의 판이 있으면 route를 열 때 미리보기 대신 곧장 `mission-finish` → 채점 중 → 리포트(`pending-opened`). 목록 화면에 「리포트 준비됨」 표시는 아직 없다([제안]).
+- **교정 카드 둘** — 고치기(`correction` · `l1_to_ko`)는 메신저 연필 카드 그대로, 더 나은 표현(`better`)은 같은 카드를 `.mission-better`로 감싸 다른 바탕 · 점선 테두리 · 흐린 제목.
+- **리포트 순서** — 히어로(+ 결과 한 줄) → 목표 → You could have said → 목표 표현 → 정확도 · 힌트 → How your score adds up → What went well → Key corrections → Sounds more natural → 고친 문장(고치기 중 Key corrections에 없는 것) → 다시 해 볼 표현 → 총평 → Next challenge. (선택) 칸이 없으면(옛 결과 행) 그 구역을 그리지 않는다(`MissionReportExtras.tsx`).
+- **음성** — 기기 음성 인식(`useSpeechAttempt`)을 쓰지 않는다. 포트 둘: 기기 `MissionAudioDevice`(녹음 16kHz WAV · 30초 상한 · 레벨, 주소 재생 · 멈춤 — **호스트 모듈 자리, 지금은 가짜** `mission-fake-voice.ts`)와 서버 `MissionSource.transcribe` · `speak`(제안 엔드포인트 `mission-stt` · `mission-tts`). 마이크는 눌러 시작 · 눌러 끝, 0.4초 미만은 버림, 받아 적은 글은 서버 `autoSend`가 참이면 바로 보내고 아니면 입력 칸 + 「Did I hear that right?」(한국어가 아니면 다른 안내) · 「Say it again」. 상대역 말(진입 대사 포함)은 새 메시지마다 한 번 자동 재생, 말풍선마다 다시 듣기, 마이크를 누르면 재생을 멈춤, 힌트 카드에 예문 듣기. 판이 끝나거나 그만두기 확인을 띄우면 녹음을 버린다. 순수 규칙 `mission-voice.ts`, 결선 `use-mission-voice.ts`.
+- **문구** — 새 칸은 `RoleplayMissionCopy.extra`(`ui-copy-roleplay-mission-extra*.ts`). 영어는 문서의 확정 문구(`voice.transcribing` 「Transcribing…」만 새로 씀), es · ja · id · vi · th · my는 번역 초안(원어민 검수 필요). 합치며 비어 있던 th · my의 미션 문구 전체도 초안으로 채웠다.
+- **아직 없음** — 실제 녹음 · 재생 호스트 모듈과 서버 출처 · 음성 엔드포인트, 앱이 백그라운드로 갈 때 재생 멈춤(호스트 이벤트 없음), 자동 재생 끄기 설정, 첫 말 조각에서 합성 시작(지금은 턴이 닫힐 때 — 서버가 답을 한꺼번에 보내 차이가 작다).
+
+| 계층 | 파일(v2에서 더함) | 무엇 |
+|---|---|---|
+| unit | `mission-session-continue.unit.test.ts` | 성공 카드 한 번 · 계속하기 · 끝내기 · 성공 뒤 그만두기(답 기다림 중 포함) · 옛 이벤트 · 채점 대기 판 |
+| unit | `mission-voice.unit.test.ts` | `autoSend` 판단 · 녹음 · 받아 적기 · 상한 안내 · 재생 상태 · 시간 표시 |
+| ui | `MissionTalkVoice.ui.test.tsx` | 확인 · 한국어 아님 · 실패 안내 넷 · 30초 상한 · 자동 재생 · 다시 듣기 · 끊고 말하기 · 합성 실패 · 힌트 듣기 · 그만두기 때 녹음 버림 |
+| ui | `MissionTalkScreen.ui.test.tsx` · `MissionReportScreen.ui.test.tsx`(더함) | 성공 카드 · Finish 글 단추 · 성공 뒤 대화상자 · 끝 줄 · 교정 카드 둘 · 리포트 새 구역 · 옛 결과 행 |
+| integration | `App.roleplay-mission.integration.test.tsx`(더함) | 성공 카드 → 끝내기 → 리포트, 성공 뒤 그만두기, 채점 대기 판, 음성 한 턴 |
