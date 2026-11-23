@@ -107,7 +107,7 @@ export const missionHintFixture: MissionHintResponse = {
 
 const evidence: Record<string, string> = {
   order: "아이스 아메리카노 한 잔 주세요.",
-  pay: "카드로 할게요.",
+  pay: "카드를 할게요.",
   stay: "가지고 가요.",
 };
 
@@ -145,7 +145,20 @@ export const missionReportFixture: MissionReport = {
       used: false,
     },
   ],
+  // 턴 교정 전부 — 고치기(correction · l1_to_ko)와 더 나은 표현(better). 앱은 better를 「Sounds more natural」에만 그린다.
   corrections: [
+    {
+      original: "카드를 할게요",
+      corrected: "카드로 할게요",
+      kind: "correction",
+      items: [
+        {
+          original: "카드를",
+          corrected: "카드로",
+          reason: "Use 로 to say how you pay.",
+        },
+      ],
+    },
     {
       original: "가지고 가요",
       corrected: "포장이요",
@@ -159,10 +172,11 @@ export const missionReportFixture: MissionReport = {
       ],
     },
   ],
+  // Key corrections — 고치기에서만(더 나은 표현은 들어가지 않는다, 서버가 코드로 보장).
   focus: [
     {
-      examples: [{ original: "가지고 가요", corrected: "포장이요" }],
-      reason: "At a café, say 포장이요 for take-out.",
+      examples: [{ original: "카드를 할게요", corrected: "카드로 할게요" }],
+      reason: "Use 로 after 카드 to say how you pay.",
     },
   ],
   strengths: [

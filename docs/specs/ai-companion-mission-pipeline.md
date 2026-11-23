@@ -368,7 +368,8 @@ Scribe로 받아 적고 → 플레이어의 스트리밍 턴(`turn-stream`, 답 
 | `mission-finish` | `abandon: true`의 뜻 | **필수 목표를 이룬 판이면 끝내기와 같다**(`status: "graded"`, 리포트, `endReason: "finish"`). 필수 전이면 지금처럼 `abandoned` |
 | 판 상태 `status` | `pending` | 채점 대기(위). 턴은 닫혀 있다(`mission_closed`) |
 | SSE `correction`(`kind`) | `correction` · `l1_to_ko` = **고치기**, `better` = **더 나은 표현** | 미션 턴의 교정은 둘로 갈린다(2026-11-23 사용자 결정). 고치기는 틀린 것(문법 · 어휘 · 화계 · 뜻 안 통함), 더 나은 표현은 틀리지 않았지만 더 자연스러운 말 — 점수와 무관. 미션 턴에서는 `better` 덧붙이기 칸은 비어 온다 |
-| 리포트 `corrections[].kind` | 위와 같음 | 「Key corrections」(`focus`)와 고친 문장 구역은 고치기에서만, 더 나은 표현은 따로 |
+| 리포트 `corrections[].kind` | 위와 같음 | `corrections`는 턴 교정 **전부**(고치기 + 더 나은 표현). 앱은 `kind === "better"`인 것을 「Sounds more natural」에만, 나머지를 고친 문장 구역에 그린다 |
+| 리포트 `focus` | 고치기만 | 「Key corrections」는 **서버가 코드로 고치기만** 담는다(채점자에게 고치기만 넘기고, 더 나은 표현을 가리키는 번호는 버리며, 빈 묶음은 뺀다 — `focusCorrections`). 앱은 focus를 그대로 그리면 된다(같은 문장이 두 구역에 겹치지 않는다) |
 | 리포트 `accuracyScore` | 화계 상한 | 장면의 기대 화계(미션 `counterpart.learnerRegister`, 두 미션 모두 존댓말)와 어긋난 학습자 턴의 비율로 상한 — 내내 50 · 절반 75 · 다섯 중 하나 90. 「네」 · 「카드요」처럼 화계가 드러나지 않는 말은 세지 않는다. 어긋났으면 `focus` 첫 묶음과 `summary`에 말투 이야기가 온다 |
 | 미션 정의(`missionDefinitionSchema`) | `counterpart.learnerRegister` · `learnerRegisterNote` · `farewells` · `noOffer` · `fallback`, `goals[].opener` · `cue` · `withhold` | 서버 거르개 · 연출 지시용. 앱 화면에는 쓰지 않는다(목록 · 카드 칸은 그대로) |
 

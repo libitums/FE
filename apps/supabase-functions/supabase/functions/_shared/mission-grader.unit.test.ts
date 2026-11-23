@@ -4,6 +4,7 @@ import { missionReportSchema } from "./companion-contract/index.ts";
 import { missionBrief, missionTranscript, transcriptFromHistory } from "./mission-context.ts";
 import {
   buildMissionReport,
+  focusCorrections,
   graderSchema,
   graderSystem,
   graderUser,
@@ -235,15 +236,38 @@ describe("채점 결과 다듬기", () => {
     expect(normalizeGrade(cafeMission, draft, { turnGoalsDone: [], hintsUsed: 0 }).focus).toEqual(
       [],
     );
+    // 번호는 고치기 목록 기준 — 더 나은 표현(kind better)은 Key corrections에 들어가지 않는다(2026-11-23).
     const report = buildMissionReport({
       ...reportInput(grade),
-      corrections: [{ original: "가지고 가요", corrected: "포장이요", kind: "better" }],
+      corrections: [
+        { original: "가지고 가요", corrected: "포장이요", kind: "better" },
+        { original: "한 잔 줘요", corrected: "한 잔 주세요", kind: "correction" },
+      ],
     });
     expect(report.focus).toEqual([
       {
-        examples: [{ original: "가지고 가요", corrected: "포장이요" }],
+        examples: [{ original: "한 잔 줘요", corrected: "한 잔 주세요" }],
         reason: "Say 포장이요 for take-out.",
       },
+    ]);
+    // 리포트의 corrections에는 둘 다(더 나은 표현은 화면의 「Sounds more natural」로)
+    expect(report.corrections.map((entry) => entry.kind)).toEqual(["better", "correction"]);
+  });
+
+  test("MG10. focus가 더 나은 표현을 가리키면 버리고, 빈 묶음은 뺀다", () => {
+    expect(
+      focusCorrections(
+        [
+          { refs: [1], reason: "better only" },
+          { refs: [1, 2], reason: "mixed" },
+        ],
+        [
+          { original: "봉투 필요 없어요", corrected: "봉투는 괜찮아요", kind: "better" },
+          { original: "카드를 할게요", corrected: "카드로 할게요", kind: "correction" },
+        ],
+      ),
+    ).toEqual([
+      { examples: [{ original: "카드를 할게요", corrected: "카드로 할게요" }], reason: "mixed" },
     ]);
   });
 });
