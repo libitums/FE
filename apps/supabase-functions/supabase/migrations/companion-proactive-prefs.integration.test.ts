@@ -257,3 +257,44 @@ test("PP9. 운영자 — 선톡 설정 셋을 바꾸고 시험 계정 목록에 
     ),
   ).rejects.toMatchObject({ code: "42501" });
 });
+
+// 20261226: 현지 시각을 학습 프로필의 나라로도 찾고, 저녁 창(settings.proactive_evening_from · _to)을 켜면 그 시각대에만 보낸다.
+test("PP10. 현지 저녁 — 학습 프로필의 나라로 시간대를 찾고, 저녁 창이 켜지면 그 시각대에만 · 시간대를 모르면 보내지 않는다", async () => {
+  const last = "2026-11-18T00:00:00Z";
+  await conversation("duksu", last);
+  await profile({ proactive_pref: "daily1" });
+  // 창이 꺼져 있고 시간대를 모르면 예전처럼 보낸다.
+  expect(await reason("2026-11-20T18:00:00Z", last)).toBeNull();
+
+  // 학습 프로필이 인도네시아 → 자카르타(UTC+7). 18:00Z = 현지 01시 → 조용한 시간.
+  await db.admin.query(
+    "insert into public.learner_profiles (user_id, name, country_code) values ($1, 'Ana', 'ID')",
+    [user],
+  );
+  expect(await reason("2026-11-20T18:00:00Z", last)).toBe("quiet_hours");
+  expect(await reason("2026-11-20T03:00:00Z", last)).toBeNull(); // 현지 10시 — 창이 꺼져 있으면 낮에도 보낸다
+
+  await db.admin.query(
+    "update companion.settings set proactive_evening_from = 19, proactive_evening_to = 21",
+  );
+  try {
+    expect(await reason("2026-11-20T03:00:00Z", last)).toBe("hour"); // 현지 10시
+    expect(await reason("2026-11-20T11:59:00Z", last)).toBe("hour"); // 18:59
+    expect(await reason("2026-11-20T12:00:00Z", last)).toBeNull(); // 19:00
+    expect(await reason("2026-11-20T14:59:00Z", last)).toBeNull(); // 21:59
+    expect(await reason("2026-11-20T15:00:00Z", last)).toBe("quiet_hours"); // 22:00
+    expect(await candidates("2026-11-20T12:00:00Z")).toHaveLength(1);
+    // 시각을 직접 정한 사람은 그 시각이 이긴다.
+    await profile({ proactive_hour: 9 });
+    expect(await reason("2026-11-20T02:00:00Z", last)).toBeNull(); // 현지 09시
+    expect(await reason("2026-11-20T12:00:00Z", last)).toBe("hour");
+    // 현지 시각을 모르면 보내지 않는다.
+    await profile({ proactive_hour: null });
+    await db.admin.query("delete from public.learner_profiles");
+    expect(await reason("2026-11-20T12:00:00Z", last)).toBe("no_timezone");
+  } finally {
+    await db.admin.query(
+      "update companion.settings set proactive_evening_from = null, proactive_evening_to = null",
+    );
+  }
+});

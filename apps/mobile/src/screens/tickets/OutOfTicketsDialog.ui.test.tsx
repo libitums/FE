@@ -4,12 +4,13 @@ import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-
 import { backHandlers } from "../../lib/back-handler";
 import {
   fullTicketLedger,
-  grantFreeTicket,
+  addBoughtTicket,
   spendTicket,
   ticketStatusAt,
 } from "../../lib/learning-tickets";
 import type { TicketLedger } from "../../lib/learning-tickets";
 import { OutOfTicketsDialog } from "./OutOfTicketsDialog";
+import type { TicketMoreResult } from "./tickets.contract";
 
 // `ui` 계층: 티켓 0에서 새 레슨을 열려 할 때 뜨는 가운데 대화상자(시안 E6m).
 
@@ -27,11 +28,7 @@ afterEach(() => {
   }
 });
 
-function renderDialog(
-  ledger: TicketLedger,
-  nowMs: number,
-  more = null as { granted: boolean } | null,
-) {
+function renderDialog(ledger: TicketLedger, nowMs: number, more: TicketMoreResult = null) {
   const handlers = { onGetMore: vi.fn(), onStartLesson: vi.fn(), onClose: vi.fn() };
   render(<OutOfTicketsDialog status={ticketStatusAt(ledger, nowMs)} more={more} {...handlers} />);
   return handlers;
@@ -59,23 +56,23 @@ test("[OT2] Back to map · 시스템 뒤로가기가 닫는다", () => {
   expect(onClose).toHaveBeenCalledTimes(2);
 });
 
-test("[OT3] Get more → onGetMore, 받았으면 안내 + Start lesson이 Get more 자리에", () => {
+test("[OT3] Get 1 ticket → onGetMore, 샀으면 안내 + Start lesson이 그 자리에", () => {
   const { onGetMore } = renderDialog(empty, T0);
   fireEvent.tap(screen.getByTestId("out-of-tickets-more"));
   expect(onGetMore).toHaveBeenCalledTimes(1);
   cleanup();
-  const granted = grantFreeTicket(empty, T0, "2027-01-15") as TicketLedger;
-  const after = renderDialog(granted, T0, { granted: true });
-  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("free ticket");
+  const bought = addBoughtTicket(empty, T0) as TicketLedger;
+  const after = renderDialog(bought, T0, { kind: "bought" });
+  expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("1 ticket added.");
   expect(screen.queryByTestId("out-of-tickets-more")).not.toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("out-of-tickets-start"));
   expect(after.onStartLesson).toHaveBeenCalledTimes(1);
 });
 
-test("[OT4] 받지 못했으면 안내만 서고 Start lesson은 없다", () => {
-  renderDialog(empty, T0, { granted: false });
+test("[OT4] 엽전이 모자라면 안내만 서고 Start lesson은 없다", () => {
+  renderDialog(empty, T0, { kind: "short", shortBy: 20 });
   expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent(
-    "More ways to get tickets are coming soon.",
+    "Not enough coins. You need 20 more.",
   );
   expect(screen.queryByTestId("out-of-tickets-start")).not.toBeInTheDocument();
 });

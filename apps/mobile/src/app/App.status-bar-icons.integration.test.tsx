@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -37,8 +38,7 @@ const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const tapRoundButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
-const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
-  tap(`ui-lynx-bottom-navigator-item-${tab}`);
+const openTab = (tab: "journey" | "roleplay"): void => tap(`ui-lynx-bottom-navigator-item-${tab}`);
 const catchTap = (id: string): void =>
   void fireEvent.tap(screen.getByTestId(id), { eventType: "catchEvent" });
 
@@ -94,10 +94,8 @@ function advanceSplash(): void {
 }
 
 function completeOnboarding(): void {
-  // 온보딩 세 스텝 — `onboarding-screen-next`는 스텝마다 같은 testid입니다.
-  tapButtonIn("onboarding-screen-next");
-  tapButtonIn("onboarding-screen-next");
-  tapButtonIn("onboarding-screen-next");
+  // 온보딩의 「Get started」는 어느 스텝에서든 곧바로 로그인입니다(ADR-0159).
+  tapButtonIn("onboarding-screen-start");
 }
 
 async function flush(): Promise<void> {
@@ -166,7 +164,7 @@ test("[IS1] 부팅(스플래시) → 온보딩 → 로그인: 표지 0 · 0 · 0
   expect(markers()).toBe(0);
 
   advanceSplash();
-  expect(screen.getByTestId("onboarding-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("onboarding-screen-start")).toBeInTheDocument();
   expect(markers()).toBe(0);
 
   completeOnboarding();
@@ -207,7 +205,7 @@ test("[IS4] 맵에서 연속 칩 → 지표 모달 → 닫기, 트로피 칩도 
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   expect(markers()).toBe(0);
 
-  openTab("settings");
+  openSettingsFromMore();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(markers()).toBe(0);
 });
@@ -243,7 +241,7 @@ test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
   expectJourneyEntryMarker();
 
-  tapButtonIn("journey-entry-screen-start");
+  tapButtonIn("journey-entry-screen-story");
   await flush();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-entry-screen-title")).not.toBeInTheDocument();
@@ -253,7 +251,7 @@ test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시
 test("[IS9] 설정의 로그아웃 확인창 · 학습 화면의 나가기 확인 · 로그인의 국가 시트를 연 상태: 0 (스크림 0.45는 표지가 없다)", async () => {
   // (a) 설정의 로그아웃 확인 Dialog
   await bootWithoutGuide(<App progressSeed={legacyPassedSeed} />);
-  openTab("settings");
+  openSettingsFromMore();
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-settings-group-item-sign-out")).getByTestId(
       "ui-lynx-settings-cell",

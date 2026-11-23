@@ -31,7 +31,7 @@ const baseStacks: Nav["stacks"] = initialNav.stacks;
 function nav(overrides: Partial<Nav>): Nav {
   return {
     entry: [],
-    tab: "settings",
+    tab: "more",
     stacks: baseStacks,
     ...overrides,
   };
@@ -83,18 +83,21 @@ describe("initialNav", () => {
     expect(activeStack(initialNav)).toEqual(initialNav.stacks.journey);
   });
 
-  it("I3. entry가 비어 있고 네 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
+  it("I3. entry가 비어 있고 다섯 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
     expect(initialNav.entry).toEqual([]);
     expect(initialNav.stacks.journey).toEqual([{ name: "journey-map" }]);
     expect(initialNav.stacks.roleplay).toEqual([{ name: "roleplay-list" }]);
     // MC-U26: 메신저 탭(셋째)의 루트는 대화 목록이다.
     expect(initialNav.stacks.messenger).toEqual([{ name: "messenger-list" }]);
-    expect(initialNav.stacks.settings).toEqual([{ name: "settings" }]);
+    // ADR-0170: 순위 탭(넷째)의 루트는 Lessons 보드다.
+    expect(initialNav.stacks.ranking).toEqual([{ name: "ranking", board: "lessons" }]);
+    expect(initialNav.stacks.more).toEqual([{ name: "settings" }]);
     expect(Object.keys(initialNav.stacks).sort()).toEqual([
       "journey",
       "messenger",
+      "more",
+      "ranking",
       "roleplay",
-      "settings",
     ]);
   });
 });
@@ -109,7 +112,7 @@ describe("navReducer", () => {
     expect(next.tab).toBe("journey");
     expect(next.stacks.journey).toEqual([{ name: "journey-map" }, { name: "settings" }]);
     expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
-    expect(next.stacks.settings).toEqual(baseStacks.settings);
+    expect(next.stacks.more).toEqual(baseStacks.more);
   });
 
   it("2. push / entry 있을 때 → entry에 쌓이고 탭 스택은 그대로다", () => {
@@ -193,29 +196,29 @@ describe("navReducer", () => {
   it("9. switchTab → tab이 바뀌고 깊이 2 이상 스택을 포함해 세 스택이 모두 보존된다 (왕복 포함)", () => {
     const deepStacks: Nav["stacks"] = {
       ...baseStacks,
-      settings: [{ name: "settings" }, { name: "roleplay-list" }],
+      more: [{ name: "settings" }, { name: "roleplay-list" }],
     };
-    const n = nav({ tab: "settings", stacks: deepStacks });
+    const n = nav({ tab: "more", stacks: deepStacks });
 
     const away = navReducer(n, { type: "switchTab", tab: "journey" });
 
     expect(away.tab).toBe("journey");
     expect(away.entry).toEqual([]);
     expect(away.stacks).toEqual(deepStacks);
-    expect(away.stacks.settings).toEqual([{ name: "settings" }, { name: "roleplay-list" }]);
+    expect(away.stacks.more).toEqual([{ name: "settings" }, { name: "roleplay-list" }]);
 
-    const back = navReducer(away, { type: "switchTab", tab: "settings" });
+    const back = navReducer(away, { type: "switchTab", tab: "more" });
 
-    expect(back.tab).toBe("settings");
+    expect(back.tab).toBe("more");
     expect(back.stacks).toEqual(deepStacks);
-    expect(back.stacks.settings).toEqual([{ name: "settings" }, { name: "roleplay-list" }]);
+    expect(back.stacks.more).toEqual([{ name: "settings" }, { name: "roleplay-list" }]);
     expect(back.stacks.journey).toEqual(deepStacks.journey);
   });
 
   it("10. switchTab / 이미 그 탭일 때 → 동일 참조를 돌려준다", () => {
-    const n = nav({ tab: "settings", stacks: baseStacks });
+    const n = nav({ tab: "more", stacks: baseStacks });
 
-    expect(navReducer(n, { type: "switchTab", tab: "settings" })).toBe(n);
+    expect(navReducer(n, { type: "switchTab", tab: "more" })).toBe(n);
   });
 
   it("11. enterApp → entry가 비고 tab·stacks는 그대로다. 이후 activeStack은 현재 탭 스택이다", () => {
@@ -230,7 +233,7 @@ describe("navReducer", () => {
   });
 
   it("12. enterApp / entry가 이미 비었을 때 → 동일 참조를 돌려준다", () => {
-    const n = nav({ entry: [], tab: "settings", stacks: baseStacks });
+    const n = nav({ entry: [], tab: "more", stacks: baseStacks });
 
     expect(navReducer(n, { type: "enterApp" })).toBe(n);
   });
@@ -241,9 +244,9 @@ describe("navReducer", () => {
   it("switchTab은 entry를 보지 않는다 — entry가 있어도 tab이 바뀐다", () => {
     const n = nav({ entry: [{ name: "roleplay-list" }], tab: "journey", stacks: baseStacks });
 
-    const next = navReducer(n, { type: "switchTab", tab: "settings" });
+    const next = navReducer(n, { type: "switchTab", tab: "more" });
 
-    expect(next.tab).toBe("settings");
+    expect(next.tab).toBe("more");
     expect(next.entry).toEqual([{ name: "roleplay-list" }]);
   });
 });
@@ -276,7 +279,7 @@ describe("navReducer — backToRoot", () => {
     expect(next.tab).toBe("journey");
     expect(next.entry).toEqual([]);
     expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
-    expect(next.stacks.settings).toEqual(baseStacks.settings);
+    expect(next.stacks.more).toEqual(baseStacks.more);
   });
 
   // 길이 2에서는 `back`(하나만 pop)과 `backToRoot`(루트까지 줄이기)의 결과가 우연히
@@ -284,14 +287,14 @@ describe("navReducer — backToRoot", () => {
   // 여기서 명시적으로 짓습니다.
   it("U2. entry 비었고 활성 스택 길이 2 → 루트 하나로 준다 (back과 결과가 같은 자리)", () => {
     const n = nav({
-      tab: "settings",
-      stacks: { ...baseStacks, settings: [{ name: "settings" }, { name: "roleplay-list" }] },
+      tab: "more",
+      stacks: { ...baseStacks, more: [{ name: "settings" }, { name: "roleplay-list" }] },
     });
 
     const next = navReducer(n, { type: "backToRoot" });
 
-    expect(next.stacks.settings).toEqual([{ name: "settings" }]);
-    expect(next.tab).toBe("settings");
+    expect(next.stacks.more).toEqual([{ name: "settings" }]);
+    expect(next.tab).toBe("more");
     expect(next.entry).toEqual([]);
   });
 
@@ -310,13 +313,13 @@ describe("navReducer — backToRoot", () => {
   });
 
   it("U4. entry 비었고 활성 스택 길이 1 → 동일 참조를 돌려준다", () => {
-    const n = nav({ tab: "settings", stacks: baseStacks });
+    const n = nav({ tab: "more", stacks: baseStacks });
 
     expect(navReducer(n, { type: "backToRoot" })).toBe(n);
   });
 
   it("U5. entry 길이 1 → 동일 참조를 돌려준다", () => {
-    const n = nav({ entry: [{ name: "roleplay-list" }], tab: "settings", stacks: baseStacks });
+    const n = nav({ entry: [{ name: "roleplay-list" }], tab: "more", stacks: baseStacks });
 
     expect(navReducer(n, { type: "backToRoot" })).toBe(n);
   });
@@ -372,7 +375,7 @@ describe("navReducer — 카탈로그 레슨 화면", () => {
       activityIndex: 0,
     });
     expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
-    expect(next.stacks.settings).toEqual(baseStacks.settings);
+    expect(next.stacks.more).toEqual(baseStacks.more);
     expect(next.entry).toEqual([]);
   });
 
@@ -399,10 +402,10 @@ describe("navReducer — 카탈로그 레슨 화면", () => {
   it("push 뒤 탭을 왕복해도 여정 스택에 학습 화면이 남는다", () => {
     const pushed = navReducer(journeyNav(), { type: "push", screen: lessonScreen });
 
-    const away = navReducer(pushed, { type: "switchTab", tab: "settings" });
+    const away = navReducer(pushed, { type: "switchTab", tab: "more" });
     const back = navReducer(away, { type: "switchTab", tab: "journey" });
 
-    expect(away.tab).toBe("settings");
+    expect(away.tab).toBe("more");
     expect(away.stacks.journey).toHaveLength(2);
     expect(back.tab).toBe("journey");
     expect(back.stacks.journey).toHaveLength(2);
@@ -501,10 +504,10 @@ describe("navReducer — 카탈로그 결과 화면", () => {
       screen: assessmentScreen,
     });
 
-    const away = navReducer(replaced, { type: "switchTab", tab: "settings" });
+    const away = navReducer(replaced, { type: "switchTab", tab: "more" });
     const back = navReducer(away, { type: "switchTab", tab: "journey" });
 
-    expect(away.tab).toBe("settings");
+    expect(away.tab).toBe("more");
     expect(away.stacks.journey).toHaveLength(2);
     expect(back.tab).toBe("journey");
     expect(back.stacks.journey).toHaveLength(2);
@@ -547,7 +550,7 @@ describe("roleplayScreenFor", () => {
     expect(next.stacks.roleplay).toEqual([{ name: "roleplay-list" }, expectedScreen]);
     expect(currentScreen(next)).toEqual(expectedScreen);
     expect(next.stacks.journey).toBe(baseStacks.journey);
-    expect(next.stacks.settings).toBe(baseStacks.settings);
+    expect(next.stacks.more).toBe(baseStacks.more);
   });
 
   it("N4. 이어서 backToRoot → 롤플레이 스택이 루트 하나로 돌아오고 여정 스택은 여전히 동일 참조다", () => {
@@ -571,7 +574,7 @@ describe("알림 route", () => {
     expect(next.stacks.journey).toEqual([{ name: "journey-map" }, { name: "notifications" }]);
     expect(currentScreen(next)).toEqual({ name: "notifications" });
     expect(next.stacks.roleplay).toBe(initialNav.stacks.roleplay);
-    expect(next.stacks.settings).toBe(initialNav.stacks.settings);
+    expect(next.stacks.more).toBe(initialNav.stacks.more);
   });
 
   // 알림 위에 쌓인 화면에서 backToRoot하면 여정 맵으로 돌아갑니다. 알림으로
@@ -602,7 +605,7 @@ describe("tabRootActions", () => {
   });
 
   it("NV4. 네 탭 각각에서 길이 2 — 첫째가 switchTab, 둘째가 backToRoot다", () => {
-    const tabs: readonly Tab[] = ["journey", "roleplay", "messenger", "settings"];
+    const tabs: readonly Tab[] = ["journey", "roleplay", "messenger", "more"];
 
     for (const tab of tabs) {
       const actions = tabRootActions(tab);
@@ -641,7 +644,7 @@ describe("tabRootActions", () => {
   });
 
   it("NV7. (가드) 부수효과 없음 — 같은 인자로 두 번 불러도 같은 값이고 입력 nav가 바뀌지 않는다", () => {
-    expect(tabRootActions("settings")).toEqual(tabRootActions("settings"));
+    expect(tabRootActions("more")).toEqual(tabRootActions("more"));
 
     const n = nav({ tab: "journey", stacks: baseStacks });
     const before = JSON.parse(JSON.stringify(n)) as Nav;
@@ -660,22 +663,22 @@ describe("tabRootActions", () => {
 // 자리입니다.
 describe("navReducer — 설정 탭의 새 route", () => {
   it("NV1. push(profile) → 설정 탭 스택에 쌓이고 다른 두 스택은 동일 참조다", () => {
-    const n = nav({ tab: "settings", stacks: baseStacks });
+    const n = nav({ tab: "more", stacks: baseStacks });
 
     const next = navReducer(n, { type: "push", screen: { name: "profile" } });
 
-    expect(next.stacks.settings).toEqual([{ name: "settings" }, { name: "profile" }]);
+    expect(next.stacks.more).toEqual([{ name: "settings" }, { name: "profile" }]);
     expect(next.stacks.journey).toBe(baseStacks.journey);
     expect(next.stacks.roleplay).toBe(baseStacks.roleplay);
   });
 
   it("NV3. 프로필을 push한 뒤 backToRoot → 설정 탭 스택이 [{ name: settings }]다", () => {
-    const n = nav({ tab: "settings", stacks: baseStacks });
+    const n = nav({ tab: "more", stacks: baseStacks });
     const pushed = navReducer(n, { type: "push", screen: { name: "profile" } });
 
     const next = navReducer(pushed, { type: "backToRoot" });
 
-    expect(next.stacks.settings).toEqual([{ name: "settings" }]);
+    expect(next.stacks.more).toEqual([{ name: "settings" }]);
   });
 });
 
@@ -769,7 +772,7 @@ describe("탐침 route 도달 경로 — 제품 부팅이 탐침에 닿지 않�
   for (const probe of probeBoots) {
     it(`NP3. ${probe.route} 부팅 상태의 나머지 탭 스택은 initialNav와 같다 — 여정 탭 한 자리만 바꾼다`, () => {
       expect(probe.boot.stacks.roleplay).toEqual(initialNav.stacks.roleplay);
-      expect(probe.boot.stacks.settings).toEqual(initialNav.stacks.settings);
+      expect(probe.boot.stacks.more).toEqual(initialNav.stacks.more);
     });
   }
 });

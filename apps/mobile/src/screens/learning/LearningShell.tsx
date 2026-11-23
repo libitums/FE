@@ -50,6 +50,7 @@ export function LearningShell({
   workspace,
   workspaceScrolls = true,
   scrollCard = false,
+  fillStage = false,
   stage = "card",
   secondaryAction: secondaryActionProp,
   actionLabel: actionLabelProp,
@@ -229,6 +230,7 @@ export function LearningShell({
         // 해설 판이 서면 버튼 행이 판 안(흐름 안)으로 들어옵니다 — 몸통이 떠 있는 버튼 몫을 따로 비우지 않아야 판 위에
         // 빈 띠가 남지 않습니다. 다시 도전 판(`steady`)은 떠 있는 자리에 겹쳐 서므로 몸통은 평소 그대로입니다.
         panelRoom={feedback?.steady === true}
+        fill={fillStage}
         actions={
           (actionsShown && actionsInFlow) || (feedback !== undefined && feedback.steady !== true)
             ? "in-flow"

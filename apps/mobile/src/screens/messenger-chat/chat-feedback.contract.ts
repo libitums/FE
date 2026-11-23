@@ -87,3 +87,11 @@ export const chatFeedbackTestIds = {
   sheetReport: feedback("rating-report"),
   sheetNote: feedback("rating-note"),
 } as const;
+
+/** 채팅 단어(ADR-0170) — 이번 메시지로 새로 센 배운 단어 · 교정이 짚어 아직 안 센 단어 · 이번 주 합. 서버 교정 카드의 `chatWords`. */
+export type ChatWord = { readonly id: string; readonly surface: string };
+export type ChatWordsResult = {
+  readonly counted: readonly ChatWord[];
+  readonly pending: readonly ChatWord[];
+  readonly weekTotal: number;
+};

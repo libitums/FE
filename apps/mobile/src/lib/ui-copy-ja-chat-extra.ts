@@ -3,15 +3,22 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaJa } from "./ui-copy-ja-chat-media";
 import { messengerChatAlbumJa } from "./ui-copy-ja-chat-album";
+import { messengerChatSuggestedJa } from "./ui-copy-ja-chat-suggested";
 
 export const messengerChatExtraJa: MessengerChatExtraCopy = {
   media: messengerChatMediaJa,
   album: messengerChatAlbumJa,
+  suggested: messengerChatSuggestedJa,
   access: {
     signInTitle: "出会った人とメッセージしよう",
     signInBody:
       "無料アカウントを作ると、ストーリーで出会った人たちと韓国語でチャットできます。これまでの進み具合も引き継がれます。",
     signIn: "登録またはログイン",
+    promptTitle: "メッセージを送るにはログインが必要です",
+    promptBody:
+      "無料アカウントを作ると、ストーリーで出会った人たちとチャットできます。これまでの進み具合も引き継がれます。",
+    promptLater: "今はしない",
+    promptKeepBody: "無料アカウントを作ると、Yeopjeonとチケットを保存できます。",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
   chatSettings: {
@@ -131,11 +138,17 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       chat: "韓国語で書いて送ってください。私が返信し、メッセージの下の鉛筆でより良い言い方がわかります。",
       ideas: "何を言えばいいか迷ったら、入力欄の横の電球をタップすると返信のヒントが出ます。",
       media: "キーボードの上のボタンで、写真やボイスメッセージもお願いできます。",
+      sample:
+        "今なにをしているか見てみますか？Snapshotをタップすると写真を送ります。最初の1枚はサービスです。",
+      voice:
+        "声でも聞いてみますか？スナップボイスをタップするとそのメッセージを読み上げます。最初の1回はこちらもサービスです。",
     },
     next: "次へ",
     done: "わかりました",
     skip: "スキップ",
     stepOf: (step, total) => `${step} / ${total}`,
+    newTag: "新機能",
+    free: "無料",
   },
   launch: {
     newTag: "NEW",

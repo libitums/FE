@@ -89,6 +89,12 @@ public final class MainActivity extends Activity {
     speechRecognition = new SpeechRecognitionController(this);
     builder.registerModule("SpeechRecognitionModule", SpeechRecognitionModule.class,
         speechRecognition);
+    // 한국어 인식 팩 내려받기 진행률(0~100)을 JS에 알린다(ADR-0017 2026-11-19 적용 기록).
+    speechRecognition.setProgressSink(percent -> {
+      JavaOnlyArray args = new JavaOnlyArray();
+      args.pushInt(percent);
+      sendChatStreamEvent("speechKoreanPackProgress", args);
+    });
     builder.registerModule("HandwritingTraceModule", HandwritingTraceModule.class);
     builder.registerModule("ContentFileModule", ContentFileModule.class);
     // 분석 이벤트에 싣는 연결 종류(ADR-0096). 이미 있는 ACCESS_NETWORK_STATE만 쓴다.

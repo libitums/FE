@@ -66,6 +66,20 @@ export const correctionDataSchema = z.object({
    * 칩을 그대로 보낸 메시지(`skipped`)에는 없다.
    */
   learnedUsed: z.optional(z.array(z.object({ id: z.string(), surface: z.string() }))),
+  /**
+   * 주간 순위 「Chat words」(ADR-0170) — 이 메시지에서 쓴 배운 단어(`voca:`)가 있을 때만. `learnedUsed` 가운데 단어만 본다.
+   * - `counted`: 이번에 새로 센 단어(이번 주 처음 바르게 씀). 앱은 내 말풍선 아래 「+N chat words」와 칩으로 보인다.
+   * - `pending`: 교정(`items[].original`)이 짚은 단어 가운데 이번 주에 아직 안 센 것 — 고쳐 다시 보내면 센다(회색 칩).
+   * - `weekTotal`: 이번 주 센 단어 수(이번 것 포함).
+   * 이미 이번 주에 센 단어는 어느 쪽에도 없다. 칩을 그대로 보낸 메시지(`skipped`)나 서버 기록이 실패하면 칸이 없다.
+   */
+  chatWords: z.optional(
+    z.object({
+      counted: z.array(z.object({ id: z.string(), surface: z.string() })),
+      pending: z.array(z.object({ id: z.string(), surface: z.string() })),
+      weekTotal: nonNegativeInt,
+    }),
+  ),
 });
 
 export const translationDataSchema = z.object({ segment: nonNegativeInt, text: z.string() });
@@ -126,6 +140,8 @@ export const doneDataSchema = z.object({
   creditsSpent: nonNegativeInt,
   balance: z.nullable(nonNegativeInt),
   refusal: z.optional(z.object({ stage: refusalStageSchema })),
+  /** 이번 턴의 적용 로맨스 수위(ADR-0164, 20261216 뒤 서버). 옛 서버는 보내지 않는다 — 없으면 standard로 본다. */
+  romanceTier: z.optional(z.enum(["open", "standard"])),
 });
 
 const eventOf = <Name extends string, Data extends z.ZodMiniType>(event: Name, data: Data) =>

@@ -1,7 +1,8 @@
-import { useReducer, useRef } from "@lynx-js/react";
+import { useEffect, useReducer, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
+import { WordStarButton } from "../../components/WordStarButton";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { LearningShell } from "../learning/LearningShell";
@@ -35,16 +36,28 @@ export function VocabCardActivity({
   onExit,
   onFinish,
   lesson,
+  star,
 }: VocabCardActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(vocabCardSessionReducer, initialVocabCardSessionState);
   const finished = useRef(false);
+  // 카드 별(ADR-0169 즐겨찾기 개정) — 처음 상태는 효과(배경 스레드)에서 한 번 읽고, 누르면 이 상태가 곧바로 바뀝니다. 읽기 전에는 별이 없습니다.
+  const [stars, setStars] = useState<readonly (boolean | null)[]>([]);
+  useEffect(() => {
+    if (star !== undefined) setStars(star.initial());
+  }, []);
 
   // 상한은 화면이 지킵니다 — 버튼이 `advance`일 때만 카드를 넘기므로 넘칠 일이 없지만, 문항이 줄어든
   // 뒤에도 던지지 않도록 마지막 카드에 붙입니다.
   const cardIndex = Math.min(state.cardIndex, Math.max(0, questions.length - 1));
   const card = questions[cardIndex];
   const step = vocabCardStepOf(lesson, cardIndex, questions.length);
+  const starred = stars[cardIndex] ?? null;
+  const toggleStar = (next: boolean): void => {
+    "background only";
+    setStars((prev) => prev.map((value, index) => (index === cardIndex ? next : value)));
+    star?.toggle(cardIndex, next);
+  };
 
   // 연타해도 결과는 한 번만 올라갑니다 — 부모가 화면을 걷기 전의 두 번째 탭을 막습니다.
   const finish = (): void => {
@@ -129,6 +142,23 @@ export function VocabCardActivity({
               >
                 {card.meaning}
               </text>
+
+              {/* 별은 뜻 아래 가운데, 흐름 안입니다 — 보이는 순서와 낭독 순서(표제어 → 뜻 → 별)가 같습니다. */}
+              {starred === null ? (
+                // 포트가 있는데 아직 읽기 전이면 별 자리(44)만 잡아 둡니다 — 효과 뒤 별이 서며 카드 높이가 바뀌지 않게(리뷰 W-1).
+                star !== undefined && stars.length === 0 ? (
+                  <view className="vocab-card-activity-star-slot" />
+                ) : null
+              ) : (
+                <view className="vocab-card-activity-star">
+                  <WordStarButton
+                    word={card.word}
+                    starred={starred}
+                    onToggle={toggleStar}
+                    testId="vocab-card-star"
+                  />
+                </view>
+              )}
             </>
           )}
         </view>

@@ -1,0 +1,231 @@
+/* 준비 완료(ADR-0176, 시안 Ready). 바탕 #FEFEFE는 시안이 쓴 `u00-tutorial.webp`의 옛 바탕색입니다 — 그림은
+   2026-11-22부터 투명판이지만(ADR-0099) 화면 색은 그대로 둡니다. 나머지는 토큰만 씁니다. */
+
+.entry-basics-ready {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fefefe;
+}
+
+.entry-basics-ready-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.entry-basics-ready-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: var(--libitum-spacing-48);
+  padding-left: var(--libitum-spacing-24);
+  padding-right: var(--libitum-spacing-24);
+}
+
+.entry-basics-ready-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+/* `<scroll-view>`의 직계 자식 하나가 간격을 집니다(ADR-0022 D4). */
+.entry-basics-ready-content {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* 위 32 — 「가」가 넘어갈 때 꼭대기가 스크롤 밖으로 잘리지 않게. */
+  padding: var(--libitum-spacing-32) var(--libitum-layout-screen-padding-x)
+    var(--libitum-spacing-16);
+}
+
+.entry-basics-ready-title {
+  flex-shrink: 0;
+  width: 100%;
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+}
+
+/* 칸 셋 + 물음표. 「가」가 위로 넘어가므로 자르지 않습니다. */
+.entry-basics-sentence {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--libitum-spacing-32);
+  overflow: visible;
+}
+
+/* 칸 사이 틈을 칸 안쪽 여백으로 둡니다 — 자리 한 칸 이동이 자기 폭의 100%입니다. 320pt 폭에서도 셋 + 물음표가 들고,
+   큰 글자에서는 칸이 글자만큼 넓어집니다(모자라면 접힘). */
+.entry-basics-word {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-width: calc(var(--libitum-spacing-80) + var(--libitum-spacing-4));
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--libitum-spacing-4);
+  padding-right: var(--libitum-spacing-4);
+}
+
+/* 이름을 지는 상자 — 안쪽 글만 나타납니다. */
+.entry-basics-ready-text {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.entry-basics-word-face {
+  width: 100%;
+  min-height: var(--libitum-spacing-96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-brand-primary);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.entry-basics-word-roman {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.entry-basics-word-glyph,
+.entry-basics-question {
+  color: var(--libitum-color-brand-strong);
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-spacing-48);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-spacing-64);
+}
+
+.entry-basics-question {
+  flex-shrink: 0;
+  padding-left: var(--libitum-spacing-2);
+}
+
+.entry-basics-meaning {
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: var(--libitum-spacing-16);
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+/* 780 × 582 그림을 잘리지 않게(aspectFit) — 폭 272 · 높이 204(4:3). */
+.entry-basics-plane-box,
+.entry-basics-plane {
+  flex-shrink: 0;
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-96) + var(--libitum-spacing-80));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-96) + var(--libitum-spacing-12));
+}
+
+.entry-basics-plane-box {
+  margin-top: var(--libitum-spacing-16);
+}
+
+.entry-basics-ready-body {
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: var(--libitum-spacing-8);
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.entry-basics-ready-footer {
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+}
+
+.entry-basics-ready-next .ui-lynx-button-surface {
+  min-height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+/* 재배열 전에는 자리만 잡습니다. */
+.entry-basics-reveal-waiting {
+  opacity: 0;
+}
+
+/* 재배열: 잠깐 멈춤(d7) 뒤 한 번(d9) — 합이 `READY_SETTLE_MS`입니다. 「가」(0)는 두 칸을 위로 넘어갑니다. */
+/* prettier-ignore */
+.entry-basics-word-from-0 {
+  animation: entry-basics-word-hop var(--libitum-motion-duration-d9) var(--libitum-motion-easing-easing) var(--libitum-motion-duration-d7) both;
+}
+
+/* prettier-ignore */
+.entry-basics-word-from-1,
+.entry-basics-word-from-2 {
+  animation: entry-basics-word-slide var(--libitum-motion-duration-d9) var(--libitum-motion-easing-easing) var(--libitum-motion-duration-d7) both;
+}
+
+/* prettier-ignore */
+.entry-basics-reveal-entering {
+  animation: entry-basics-reveal var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter) both;
+}
+
+/* prettier-ignore */
+.entry-basics-plane-entering {
+  animation: entry-basics-plane-arrive var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d6) both;
+}
+
+@keyframes entry-basics-word-hop {
+  from {
+    transform: translate(-200%, 0%);
+  }
+  50% {
+    transform: translate(-100%, -100%);
+  }
+  to {
+    transform: translate(0%, 0%);
+  }
+}
+
+@keyframes entry-basics-word-slide {
+  from {
+    transform: translate(100%, 0%);
+  }
+  to {
+    transform: translate(0%, 0%);
+  }
+}
+
+@keyframes entry-basics-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes entry-basics-plane-arrive {
+  from {
+    opacity: 0;
+    transform: translate(-16%, -8%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0%, 0%);
+  }
+}

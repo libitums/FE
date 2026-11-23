@@ -52,6 +52,7 @@ function setup(
   options: { context?: unknown; llm?: CompanionLlm; rpc?: Record<string, unknown> } = {},
 ) {
   const rpcs: Rpc[] = [];
+  const sends: Record<string, unknown>[] = [];
   const logs: ChatSendLogEntry[] = [];
   const outbound = async (request: OutboundRequest) => {
     if (request.url.includes("/auth/v1/admin/users"))
@@ -59,6 +60,10 @@ function setup(
         status: request.headers["apikey"] === serviceKey ? 200 : 401,
         text: async () => "{}",
       };
+    if (request.url.endsWith("/functions/v1/send-push")) {
+      sends.push(JSON.parse(request.body ?? "{}") as Record<string, unknown>);
+      return { status: 200, text: async () => JSON.stringify({ devices: 1, sent: 1 }) };
+    }
     const fn = request.url.split("/rpc/")[1]!;
     rpcs.push({ fn, args: JSON.parse(request.body ?? "{}") as Record<string, unknown> });
     const body =
@@ -90,7 +95,7 @@ function setup(
     return (await response.json()) as { processed: number; outcomes: Record<string, unknown>[] };
   };
   const save = () => rpcs.find((rpc) => rpc.fn === "companion_save_proactive")?.args;
-  return { call, rpcs, logs, save };
+  return { call, rpcs, logs, save, sends };
 }
 
 const one = { user_id: userId, character_id: "mina" };
@@ -230,4 +235,81 @@ test("PR5. 쉬는 대화의 기억 마저 뽑기 — 후보마다 묶음이 차�
     status: 200,
     outcome: "extracted=1/2",
   });
+});
+
+test("PR6. 선톡도 적용 수위를 싣는다 — open이면 프롬프트 · 출력 검사가 open, 숨긴 친구(allowed 거짓)는 보내지 않는다", async () => {
+  const base = fakeCompanionLlm();
+  const seen: { systems: string[]; tiers: (string | undefined)[] } = { systems: [], tiers: [] };
+  const llm: CompanionLlm = {
+    ...base,
+    async *reply(request) {
+      seen.systems.push(request.system);
+      yield* base.reply(request);
+    },
+    async moderate(request) {
+      seen.tiers.push(request.romanceLine);
+      return base.moderate(request);
+    },
+  };
+  const persona = { name: "권해준", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const open = setup({
+    llm,
+    context: context({ persona, romanceTier: "open", replySuggestions: false }),
+  });
+  expect((await open.call({ ...one, character_id: "haejun" })).outcomes[0]).toMatchObject({
+    result: "sent",
+  });
+  expect(seen.systems[0]).toContain("You may be a couple, say 사랑해");
+  expect(seen.tiers).toEqual(["open"]);
+  const hidden = setup({ context: context({ persona, allowed: false }) });
+  expect((await hidden.call({ ...one, character_id: "haejun" })).outcomes[0]).toMatchObject({
+    result: "not_allowed_for_age",
+  });
+  expect(hidden.save()).toBeUndefined();
+});
+
+test("PR7. 선톡 저장 meta에 적용 수위 — open은 성인일 때만, 옛 DB(수위 없음)는 standard", async () => {
+  const persona = { name: "권해준", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const cases: [Record<string, unknown>, string][] = [
+    [{ romanceTier: "open" }, "open"],
+    [{ romanceTier: "open", ageBand: "minor" }, "standard"],
+    [{}, "standard"],
+  ];
+  for (const [overrides, expected] of cases) {
+    const run = setup({ context: context({ persona, replySuggestions: false, ...overrides }) });
+    expect((await run.call({ ...one, character_id: "haejun" })).outcomes[0]).toMatchObject({
+      result: "sent",
+    });
+    expect(run.save()!["p_meta"], JSON.stringify(overrides)).toMatchObject({
+      romanceTier: expected,
+    });
+  }
+});
+
+test("PR8. 저장한 선톡에 푸시를 붙인다 — 결과를 outcome의 push로 알리고, 푸시가 실패해도 선톡은 sent다", async () => {
+  const pushed = setup({
+    rpc: {
+      companion_proactive_push_gate: {
+        mode: "testers",
+        tester: true,
+        hasDevice: true,
+        hasRoom: true,
+      },
+    },
+  });
+  const result = await pushed.call(one);
+  expect(result.outcomes[0]).toMatchObject({ result: "sent", push: "sent" });
+  expect(pushed.sends).toHaveLength(1);
+  expect(pushed.sends[0]).toMatchObject({
+    audience: { userIds: [userId] },
+    title: "미나",
+    target: { kind: "companion-chat", characterId: "mina" },
+  });
+
+  const off = setup();
+  expect((await off.call(one)).outcomes[0]).toMatchObject({ result: "sent", push: "off" });
+  expect(off.sends).toHaveLength(0);
+
+  const skipped = setup({ context: context({ skipReason: "backoff", unanswered: 1 }) });
+  expect((await skipped.call(one)).outcomes[0]).not.toHaveProperty("push");
 });

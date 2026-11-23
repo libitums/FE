@@ -1,12 +1,12 @@
 import { isCatalogUnitDone } from "./catalog-progress";
 import type { CatalogProgress, CatalogUnitKey } from "./catalog-progress";
-import { isTesterAccessActive } from "./tester-access";
+import { ticketsUnlimited } from "./unlimited-tickets";
 import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
 
 /**
  * 그 유닛을 시작할 때 쓰는 티켓 수 — 튜토리얼이거나 이미 끝낸 유닛이거나 이미 티켓을 쓰고 연 유닛(`ticketUnits`)이면
- * 0, 아니면 1입니다. 티켓으로 연 레슨을 중간에 나가도 다시 열 때 또 쓰지 않습니다. 시험 계정 · 막간 이야기 유닛은
- * 늘 0입니다(ADR-0085 · ADR-0088).
+ * 0, 아니면 1입니다. 티켓으로 연 레슨을 중간에 나가도 다시 열 때 또 쓰지 않습니다. 시험 계정 · 티켓 무제한 구독 · 막간
+ * 이야기 유닛은 늘 0입니다(ADR-0085 · ADR-0144 · ADR-0088).
  */
 export function catalogUnitTicketCost(
   progress: CatalogProgress,
@@ -15,7 +15,7 @@ export function catalogUnitTicketCost(
   ticketUnits: CatalogProgress = {},
   isStory = false,
 ): 0 | 1 {
-  if (episodeId === TUTORIAL_EPISODE_ID || isStory || isTesterAccessActive()) return 0;
+  if (episodeId === TUTORIAL_EPISODE_ID || isStory || ticketsUnlimited()) return 0;
   if (isCatalogUnitDone(ticketUnits, episodeId, unitKey)) return 0;
   return isCatalogUnitDone(progress, episodeId, unitKey) ? 0 : 1;
 }

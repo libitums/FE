@@ -1029,3 +1029,117 @@ test("L-ST2. 이미 오늘 한 날(일수가 그대로)이면 레슨을 끝내�
   await flush();
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
 });
+
+// ---------------------------------------------------------------- 더보기 · Letters 추천 · 단어장(ADR-0169)
+
+test("MM-L1. (ADR-0169) 단어 카드로 만난 voca 단어가 기기 단어장에 들고 더보기 메뉴 My words 줄의 수가 된다", async () => {
+  await boot({ progress: upTo() });
+  const plan = lessonPlan(u01, "S1");
+  const refs = new Set(
+    readyEntry(u01)
+      .episode.units.find((unit) => unit.id === "S1")!
+      .items.filter((item) => item.type === "VOCAB_CARD" && (item.ref ?? "").startsWith("voca:"))
+      .map((item) => item.ref),
+  );
+  expect(refs.size).toBeGreaterThan(0);
+
+  tapNode(u01, "S1");
+  solveLesson(plan, true);
+  exitResult();
+  await flush();
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-more"), {});
+  expect(screen.getByTestId("more-menu-row-wordbook").textContent).toContain(
+    `${refs.size} word${refs.size === 1 ? "" : "s"} · 0 to review`,
+  );
+});
+
+test("MM-L3. (ADR-0169 즐겨찾기 개정) 레슨 첫 단어 카드의 별 → wordbook_star_toggled(lesson_card), 레슨 뒤 My words Starred에 그 단어 하나", async () => {
+  const { events } = await boot({ progress: upTo() });
+  const plan = lessonPlan(u01, "S1");
+  expect(plan.activities[0]?.form).toBe("vocab-card");
+  const firstWord = (plan.activities[0] as { questions: readonly { word: string }[] }).questions[0]
+    ?.word;
+
+  tapNode(u01, "S1");
+  await flush();
+  const star = screen.getByTestId("vocab-card-star");
+  expect(star).toHaveAttribute("accessibility-label", `Star ${firstWord}`);
+  fireEvent.tap(star, {});
+  expect(screen.getByTestId("vocab-card-star")).toHaveAttribute("data-starred", "true");
+  expect(events.filter((event) => event.name === "wordbook_star_toggled")).toMatchObject([
+    { starred: true, source: "lesson_card" },
+  ]);
+  solveLesson(plan, true);
+  exitResult();
+  await flush();
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-more"), {});
+  fireEvent.tap(screen.getByTestId("more-menu-row-wordbook"), { eventType: "catchEvent" });
+  await flush();
+  fireEvent.tap(screen.getByTestId("wordbook-filter-starred"), {});
+  const rows = screen.queryAllByTestId(/^wordbook-row-\d+$/);
+  expect(rows).toHaveLength(1);
+  expect(rows[0]?.textContent).toContain(firstWord);
+});
+
+test("MM-L2. (ADR-0169) 레슨을 나가고 지도에 돌아오면 연출 지연 뒤 Letters 추천(실패 문구) — Learn → Letters · 선택 C", async () => {
+  const { events } = await boot({ progress: throughS9 });
+
+  tapNode(u01, "S9");
+  vi.useFakeTimers();
+  tapId("learning-shell-exit");
+  tapButtonIn("ui-lynx-dialog-action-leave");
+  await settleFake();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("letters-recommend")).toBeNull();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1200);
+  });
+  vi.useRealTimers();
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe(
+    "Reading the blocks feels hard?",
+  );
+  expect(events.filter((event) => event.name === "letters_recommend_shown")).toMatchObject([
+    { reason: "failed" },
+  ]);
+  tapButtonIn("ui-lynx-dialog-action-learn");
+  expect(screen.getByTestId("letters-screen")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
+    "accessibility-label",
+    "More, selected",
+  );
+});
+
+test("MM-L3. (ADR-0169) 한글 읽기를 어렵지 않게 끝낸 레슨 뒤에는 추천이 없다", async () => {
+  await boot({ progress: upTo() });
+  tapNode(u01, "S1");
+  vi.useFakeTimers();
+  solveLesson(lessonPlan(u01, "S1"), true);
+  exitResult();
+  await settleFake();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2000);
+  });
+  vi.useRealTimers();
+  expect(screen.queryByTestId("letters-recommend")).toBeNull();
+});
+
+// ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
+
+test("MM-L4. (ADR-0169 접근성 감사) 추천 대화상자가 선 동안 지도 · 바는 낭독에서 빠진다", async () => {
+  await boot({ progress: throughS9 });
+  tapNode(u01, "S9");
+  vi.useFakeTimers();
+  tapId("learning-shell-exit");
+  tapButtonIn("ui-lynx-dialog-action-leave");
+  await settleFake();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1200);
+  });
+  vi.useRealTimers();
+  expect(screen.getByTestId("letters-recommend")).toBeInTheDocument();
+  expect(screen.getByTestId("app-navigator")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "true",
+  );
+  expect(screen.getByTestId("app-header")).toHaveAttribute("accessibility-elements-hidden", "true");
+});

@@ -1,0 +1,296 @@
+/* 단어 자세히 · 오늘의 복습(ADR-0169) — 토큰만 씁니다. 큰 단어 카드는 흰 면 · radius-xl · shadow-s2, 단어는 brand-strong. */
+
+.wordbook-word,
+.wordbook-review {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-16) var(--libitum-spacing-24);
+  background-color: var(--libitum-color-background-primary);
+}
+
+.wordbook-word-head,
+.wordbook-review-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--libitum-spacing-12);
+}
+
+.wordbook-word-body {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-16);
+}
+
+.wordbook-word-card,
+.wordbook-review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s2);
+}
+
+.wordbook-word-ko,
+.wordbook-review-ko {
+  color: var(--libitum-color-brand-strong);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+}
+
+.wordbook-review-ko {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.wordbook-word-roman {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.wordbook-word-listen {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+  margin-top: var(--libitum-spacing-4);
+}
+
+.wordbook-pill {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.wordbook-pill-brand {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.wordbook-pill-off {
+  border-color: var(--libitum-color-border-disabled);
+  background-color: var(--libitum-color-gray-50);
+}
+
+.wordbook-pill-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+}
+
+.wordbook-pill-brand .wordbook-pill-label {
+  color: var(--libitum-color-white);
+}
+
+.wordbook-pill-off .wordbook-pill-label {
+  color: var(--libitum-color-fg-disabled);
+}
+
+.wordbook-word-rule {
+  align-self: stretch;
+  height: 1px;
+  margin: var(--libitum-spacing-8) 0;
+  background-color: var(--libitum-color-gray-300);
+}
+
+.wordbook-word-meaning {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  text-align: center;
+}
+
+.wordbook-word-story {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.wordbook-word-story-label,
+.wordbook-word-stat-label {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+}
+
+.wordbook-word-story-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.wordbook-word-story-sub {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.wordbook-word-stats {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.wordbook-word-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.wordbook-word-stat-value {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+}
+
+.wordbook-word-practice {
+  margin-top: var(--libitum-spacing-8);
+}
+
+/* 오늘의 복습 */
+.wordbook-review-progress {
+  flex: 1;
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.wordbook-review-fill {
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.wordbook-review-count {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+}
+
+.wordbook-review-badge {
+  align-self: center;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.wordbook-review-badge-label {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+}
+
+.wordbook-review-question {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.wordbook-review-choices {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.wordbook-choice {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.wordbook-choice-correct {
+  border-color: var(--libitum-color-feedback-correct);
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.wordbook-choice-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.wordbook-choice-label {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+}
+
+.wordbook-choice-mark {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+}
+
+.wordbook-choice-correct .wordbook-choice-mark {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.wordbook-choice-incorrect .wordbook-choice-mark {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.wordbook-review-spacer {
+  flex: 1;
+}
+
+.wordbook-feedback {
+  padding: var(--libitum-spacing-12) 14px;
+  border-radius: var(--libitum-radius-lg);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.wordbook-feedback-correct {
+  color: var(--libitum-color-feedback-correct-text);
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.wordbook-feedback-incorrect {
+  color: var(--libitum-color-fg-brand);
+  background-color: var(--libitum-color-background-elevated);
+}

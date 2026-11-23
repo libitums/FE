@@ -21,18 +21,19 @@ describe("tileReadingOf", () => {
   });
   test("AH3. 하나라도 비거나 타일이 없으면 만들지 않는다", () => {
     expect(tileReadingOf(["gam", undefined], "always")).toBeUndefined();
-    expect(tileReadingOf(["gam", ""], "review")).toBeUndefined();
+    expect(tileReadingOf(["gam", ""], "setting")).toBeUndefined();
     expect(tileReadingOf([], "always")).toBeUndefined();
   });
 });
 
 describe("tileRomanizationsShown", () => {
-  test("AH4. always는 늘, review는 다시 풀기에서만 보인다", () => {
+  test("AH4. always는 늘, setting은 보기 로마자 설정이 켜졌거나 다시 풀기일 때 보인다", () => {
     const always = { values: ["a"], shown: "always" } as const;
-    const review = { values: ["b"], shown: "review" } as const;
-    expect(tileRomanizationsShown(always, false)).toEqual(["a"]);
-    expect(tileRomanizationsShown(review, false)).toBeNull();
-    expect(tileRomanizationsShown(review, true)).toEqual(["b"]);
-    expect(tileRomanizationsShown(undefined, true)).toBeNull();
+    const setting = { values: ["b"], shown: "setting" } as const;
+    expect(tileRomanizationsShown(always, false, "hidden")).toEqual(["a"]);
+    expect(tileRomanizationsShown(setting, false, "shown")).toEqual(["b"]);
+    expect(tileRomanizationsShown(setting, false, "hidden")).toBeNull();
+    expect(tileRomanizationsShown(setting, true, "hidden")).toEqual(["b"]);
+    expect(tileRomanizationsShown(undefined, true, "shown")).toBeNull();
   });
 });

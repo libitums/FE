@@ -26,12 +26,22 @@ export type VocabCardSessionAction = { readonly type: "nextCard" };
 /** 아래 버튼이 하는 일입니다 — 다음 카드 / 다음 활동으로 넘김 / 결과 보기. */
 export type VocabCardStep = "advance" | "hand-off" | "finish";
 
+/** 카드 별(단어장 즐겨찾기, ADR-0169 즐겨찾기 개정) — 결선이 카드 순서대로 콘텐츠 ref를 압니다. */
+export type VocabCardStarPort = {
+  /** 카드마다 별이 달렸는지 — 효과(배경 스레드)에서 한 번 읽습니다. 별을 달 수 없는 카드는 null(별 단추 없음). */
+  readonly initial: () => readonly (boolean | null)[];
+  /** 별을 누름 — 바뀐 뒤 값. */
+  readonly toggle: (cardIndex: number, starred: boolean) => void;
+};
+
 export type VocabCardActivityProps = {
   readonly questions: readonly VocabCardQuestion[];
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 주지 않으면 이 활동이 한 세션입니다. */
   readonly lesson?: LessonPosition;
+  /** 주지 않으면 별 단추가 없습니다(다시 풀기 · 시험 화면). */
+  readonly star?: VocabCardStarPort;
 };
 
 export type VocabCardCopy = {
@@ -51,4 +61,5 @@ export type VocabCardTestId =
   | "vocab-card-word"
   | "vocab-card-romanization"
   | "vocab-card-meaning"
-  | "vocab-card-got-it";
+  | "vocab-card-got-it"
+  | "vocab-card-star";

@@ -1,0 +1,2 @@
+/* 추적 허용 안내(ATT) — Info.plist 기본 문구와 같다. ADR-0091 D6(2026-11-19 개정). */
+"NSUserTrackingUsageDescription" = "Allow tracking so we can measure which ads helped you find Duru. We never sell your data.";

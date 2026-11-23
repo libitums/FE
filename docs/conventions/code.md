@@ -391,6 +391,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   `ItemListenControls`)은 화면 폴더 사이 값 import가 막혀 있어 처음부터 `components/`에 두었고(화면 둘 이상 — 아래 「컴포넌트」), 옛 화면 훅
   `screens/listening/use-listening-playback.ts`는 지웠다. 순수 어휘 `lib/listen-pace.ts`(속도 · 0.85 한 자리) · `lib/question-audio.ts`(문항
   음성 두 갈래)는 새로 `lib/`에 섰다. 위 예외 표는 바뀌지 않았다.
+  ⟨2026-11-22⟩ **합치기 퀴즈도 올라왔다** — `screens/letters/compose-quiz.ts`의 본문이 `lib/letters/compose-quiz.ts`로, 그 훅 · 부품이
+  `components/`(`useComposeQuiz` · `ComposeQuizParts`)로 옮겨졌다(Letters › Practice · 입장 전 기초가 쓴다 — [ADR-0176](../adr/0176-entry-basics-choice.md) D3).
+  옛 경로는 재수출 한 줄로 남았다. 위 예외 표는 바뀌지 않았다.
 
 ([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md) ·
 [ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))
@@ -577,6 +580,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   복수형과 어순은 언어 표가 정한다.
 - 새 문구는 `ui-copy-sections.contract.ts`의 구획 타입에 키를 더하고 `ui-copy-en-*.ts`에 영어를 채운다.
   영어 밖 언어는 덮어쓰기라 빠진 키가 영어로 대체된다.
+- **메인 스레드에는 영어 표만 있다**(ADR-0031 D8). 언어별 표는 `uiCopyFor`로만 고른다 — 렌더 경로에서
+  `uiCopyVi` 같은 표나 `uiCopyCatalog`를 값 import하면 그 표가 메인 스레드 번들로 돌아온다. main-thread 함수에서
+  문구를 읽지 않는다.
 - **문구표 vs 데이터 곁 영어** — 콘텐츠 항목(유닛 · 스텝 · 문항 · 알림 · 약관 절)의 **id가 늘면 같이 느는
   텍스트**는 문구표가 아니라 그 데이터 곁의 영어 리터럴이다(이름 로마자 · 제목 · 뜻 풀이 보기 · 문화 노트 등).
 - **한글 리터럴 검사** — `pnpm lint:ui-copy`(`pnpm lint`의 잎)가 `apps/mobile/src`와 `packages/ui-lynx/src`에서

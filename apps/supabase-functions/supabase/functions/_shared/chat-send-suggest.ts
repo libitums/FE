@@ -14,11 +14,13 @@ import type {
   ChatSendDeps,
   CompanionLlm,
   PersonaCard,
+  RomanceTier,
   Segment,
 } from "./chat-send.contract.ts";
 import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
 import { historyFrom } from "./chat-send-reply.ts";
+import { offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { generateSuggestions, type SuggestOutcome } from "./companion-suggest-generate.ts";
 import type { SuggestRequest } from "./companion-suggest.contract.ts";
 import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
@@ -35,6 +37,7 @@ type SuggestTurnContext = {
     readonly replySuggestions?: boolean;
     readonly l1: string | null;
     readonly ageBand: AgeBand;
+    readonly romanceTier?: RomanceTier;
   };
   readonly turn: Pick<BegunTurn, "history" | "speechLevel" | "summary">;
   readonly status: TurnStatus | null;
@@ -68,6 +71,10 @@ export function startSuggestions(
     request: {
       character: { name: persona.name, role: persona.role ?? null },
       speechLevel: turn.speechLevel,
+      romanceLine: offeredRomanceLine(
+        romanceLine(gate.ageBand, gate.romanceTier, persona, turn.speechLevel),
+        persona,
+      ),
       l1: gate.l1,
       history: recentSuggestionHistory([
         ...historyFrom(turn),

@@ -13,7 +13,11 @@ const needsNotice = (kind: string): boolean => kind === "unavailable" || kind ==
 export function usePlanRequest(unavailable: string): {
   readonly notice: string | null;
   readonly pending: PlanRequestKind | null;
-  readonly run: (kind: PlanRequestKind, task: () => Promise<{ readonly kind: string }>) => void;
+  readonly run: (
+    kind: PlanRequestKind,
+    task: () => Promise<{ readonly kind: string }>,
+    onDone?: (result: { readonly kind: string }) => void,
+  ) => void;
 } {
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<PlanRequestKind | null>(null);
@@ -24,7 +28,11 @@ export function usePlanRequest(unavailable: string): {
     // 안내는 화면 아래에 생기므로 낭독으로도 한 번 알립니다.
     if (next !== null) announce(next);
   };
-  const run = (kind: PlanRequestKind, task: () => Promise<{ readonly kind: string }>) => {
+  const run = (
+    kind: PlanRequestKind,
+    task: () => Promise<{ readonly kind: string }>,
+    onDone?: (result: { readonly kind: string }) => void,
+  ) => {
     "background only";
     if (busy.current) return;
     // 탭 핸들러에서만 부릅니다(그리기 중이 아님).
@@ -33,7 +41,10 @@ export function usePlanRequest(unavailable: string): {
     setPending(kind);
     setNotice(null);
     void task()
-      .then((result) => show(needsNotice(result.kind) ? unavailable : null))
+      .then((result) => {
+        show(needsNotice(result.kind) ? unavailable : null);
+        onDone?.(result);
+      })
       .catch(() => show(unavailable))
       .finally(() => {
         busy.current = false;

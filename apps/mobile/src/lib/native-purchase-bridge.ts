@@ -81,12 +81,18 @@ function purchaseResultFrom(payload: unknown, requested: string): PurchaseResult
   switch (record?.["status"]) {
     case "purchased": {
       const id = record["productId"];
+      const transaction = record["transactionId"];
       return {
         kind: "purchased",
         productId: typeof id === "string" ? baseProductId(id) : requested,
+        ...(typeof transaction === "string" && transaction !== ""
+          ? { transactionId: transaction }
+          : {}),
       };
     }
+    // Play 보류 결제(현금 · 편의점 결제) — 스토어 시트가 안내하고, 결제가 끝나면 웹훅이 서버를 바꿉니다. 실패로 보이지 않습니다.
     case "cancelled":
+    case "pending":
       return { kind: "cancelled" };
     default:
       return { kind: "failed" };

@@ -86,7 +86,7 @@ export const playgroundScreens = {
     <JourneyEntryScreen
       safeArea={{ top: 0, bottom: 0 }}
       language="en"
-      onEnter={noop}
+      onSelectPath={noop}
       onBack={() => go("language-select")}
     />
   ),

@@ -1,6 +1,7 @@
 // 휴대폰 입력 초점 호출입니다(messenger-chat-ui spec §3.2 · §6.2). SelectorQuery invoke를 try/catch로 감싸,
 // 테스트 환경 · 요소 없음 · 네이티브가 모르는 메서드에서도 던지지 않습니다. 모두 부가 동작이라 실패는 조용히 둡니다.
 
+import { focusAccessibilityElement } from "../../lib/accessibility";
 import { PHONE_INPUT_ELEMENT_ID } from "./chat-input-id";
 
 type InvokeFailure = () => void;
@@ -57,5 +58,5 @@ export function clearPhoneInput(onFail?: InvokeFailure): void {
  */
 export function restoreAccessibilityFocus(testId: string): void {
   "background only";
-  invokeOn(`#${testId}`, "requestAccessibilityFocus", undefined);
+  focusAccessibilityElement(testId);
 }

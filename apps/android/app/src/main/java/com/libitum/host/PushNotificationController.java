@@ -157,7 +157,7 @@ final class PushNotificationController {
     return payload;
   }
 
-  private static final String[] TARGET_STRING_KEYS = {"unitId", "characterId", "variant"};
+  private static final String[] TARGET_STRING_KEYS = {"unitId", "characterId", "variant", "campaignId"};
 
   static JavaOnlyMap targetFromJson(String json) {
     if (json == null) return null;
@@ -167,7 +167,8 @@ final class PushNotificationController {
       if (source.length() > 0 && !(kind instanceof String)) return null;
       JavaOnlyMap target = new JavaOnlyMap();
       if (kind instanceof String) target.putString("kind", (String) kind);
-      // 아는 칸의 문자열만 옮긴다 — 검증은 JS(`push-target.ts`)가 한다. 선톡 방은 인물 id · 미리보기 A/B 칸(ADR-0127).
+      // 아는 칸의 문자열만 옮긴다 — 검증은 JS(`push-target.ts`)가 한다. 선톡 방은 인물 id · 미리보기 A/B 칸(ADR-0127),
+      // 보상 캠페인은 캠페인 id(ADR-0175).
       for (String key : TARGET_STRING_KEYS) {
         Object value = source.opt(key);
         if (value instanceof String) target.putString(key, (String) value);

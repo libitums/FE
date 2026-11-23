@@ -1,9 +1,10 @@
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import { fullTicketLedger, spendTicket, ticketStatusAt } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
+import { setPlanAccess } from "../lib/plan-access";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { ScreenWiring } from "./screen-wiring";
@@ -43,7 +44,8 @@ function setup(
   const tickets = {
     startWithTicket,
     status: ticketStatusAt(ledger, T0),
-  } as Pick<LearningTickets, "startWithTicket" | "status">;
+    header: {} as LearningTickets["header"],
+  } as Pick<LearningTickets, "startWithTicket" | "status" | "header">;
   const markTicketUnit = vi.fn();
   const progress = {
     ...emptyContractState,
@@ -117,5 +119,22 @@ describe("withLearningTickets — 티켓으로 연 유닛", () => {
   test("TK7. 결선은 티켓으로 연 유닛을 맵에 내린다", () => {
     const s = setup(opened, { ticketUnits: { "u01-water": ["S1"] } });
     expect(s.wired.catalogTicketUnits).toEqual({ "u01-water": ["S1"] });
+  });
+});
+
+afterEach(() => setPlanAccess(null));
+
+describe("withLearningTickets — 구독 무제한 티켓(ADR-0144 D2)", () => {
+  test("TK-PA. 서버 권한이 티켓 무제한이면 머리 칩은 무제한 · 결과 화면 남은 장수 줄 없음 · 0장이어도 열린다", () => {
+    setPlanAccess({ tier: "free", unlimitedTickets: true, entitlements: [] });
+    const { wired, onStartCatalogUnit, onOutOfTickets } = setup({
+      ...tutorialDoneProgress(),
+      "u01-water": ["intro"],
+    });
+    expect(wired.ticketChip?.unlimited).toBe(true);
+    expect(wired.ticketsLeft).toBeUndefined();
+    wired.onStartCatalogUnit("u01-water", "S1");
+    expect(onOutOfTickets).not.toHaveBeenCalled();
+    expect(onStartCatalogUnit).toHaveBeenCalledTimes(1);
   });
 });

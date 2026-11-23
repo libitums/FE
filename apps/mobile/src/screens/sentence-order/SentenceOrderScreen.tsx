@@ -1,16 +1,15 @@
 import { useUiCopy } from "../../lib/ui-copy";
-import { useEffect, useReducer } from "@lynx-js/react";
+import { useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { useListenAudio } from "../../components/use-listen-audio";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
-import { announce, announceCompletion } from "../../lib/accessibility";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
-import { initialSessionOptions } from "../../lib/session-options";
+import { initialSessionOptions, type ChoiceRomanization } from "../../lib/session-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
@@ -26,6 +25,9 @@ import {
 } from "../../components/assembled-hint/AssembledHint";
 import { tileRomanizationsShown } from "../../components/assembled-hint/assembled-hint.contract";
 import { SentenceOrderListenHeader } from "./SentenceOrderListenHeader";
+import { SentenceOrderListenReveal } from "./SentenceOrderListenReveal";
+import { useSentenceOrderAnnouncements } from "./use-sentence-order-announcements";
+import { useSentenceOrderNudge } from "./use-sentence-order-nudge";
 import { SentenceOrderTextHeader } from "./SentenceOrderTextHeader";
 import {
   canPlaceChip,
@@ -33,8 +35,6 @@ import {
   dialogueSpeakersOf,
   initialSentenceOrderSessionState,
   isSentenceOrderSessionComplete,
-  sentenceOrderAnnouncement,
-  sentenceOrderCompletionAnnouncement,
   sentenceOrderResultAt,
   sentenceOrderSessionReducer,
   sentenceOrderSessionResults,
@@ -45,6 +45,7 @@ import {
   sentenceOrderLayoutOf,
   sentenceOrderPlacedResultsOf,
   sentenceOrderReadingShown,
+  sentenceOrderRevealOf,
 } from "./sentence-order-layout";
 import type { SentenceOrderInteraction } from "./sentence-order-layout";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
@@ -72,8 +73,10 @@ export type SentenceOrderActivityProps = {
   readonly onItemAnswered?: ItemAnswerReporter;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
-  /** 레슨 끝 다시 풀기 화면입니다 — 듣고 조립의 조각 로마자가 여기서만 섭니다(ADR-0153). */
+  /** 레슨 끝 다시 풀기 화면입니다 — 듣고 조립의 조각 로마자가 설정과 관계없이 섭니다(ADR-0153). */
   readonly inReview?: boolean;
+  /** 보기 로마자 설정 — 듣고 조립의 조각 로마자 · 판정 뒤 정답 로마자가 따릅니다(ADR-0153 ⟨2026-11-20⟩). */
+  readonly choiceRomanization?: ChoiceRomanization;
 };
 
 export function SentenceOrderActivity({
@@ -85,6 +88,7 @@ export function SentenceOrderActivity({
   onItemAnswered,
   lessonAudio,
   inReview = false,
+  choiceRomanization = "shown",
 }: SentenceOrderActivityProps): ReactNode {
   const copy = useUiCopy();
   const density = useLearningDensity();
@@ -112,23 +116,9 @@ export function SentenceOrderActivity({
     answerEchoCueOf(audioKey, question?.audio, state.phase === "checked", audioLesson.autoPlay),
   );
 
-  // 채점 전이마다 한 번 판정을 낭독합니다.
-  useEffect(() => {
-    if (question == null || result === null) {
-      return;
-    }
-    announce(sentenceOrderAnnouncement(result, copy));
-    // 문항 순번 · 국면이 바뀔 때만 한 번 냅니다 — `question` · `result`는 그 둘에서 파생하므로
-    // 넣지 않습니다(넣으면 같은 채점을 다시 낭독할 수 있습니다).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.questionIndex, state.phase]);
-
-  useEffect(() => {
-    if (!complete) {
-      return;
-    }
-    announceCompletion(sentenceOrderCompletionAnnouncement(copy.common.seeResults, copy));
-  }, [complete]);
+  useSentenceOrderAnnouncements(result, state.questionIndex, state.phase, complete, copy);
+  const busy = guide.visible || hint.open || listen.playback === "playing";
+  const nudgedIndex = useSentenceOrderNudge(question, state, busy);
 
   // 안내가 떠 있는 동안은 조각이 움직이지 않습니다 — 겹침 층에만 기대지 않습니다.
   const toggle = (chipIndex: number) => {
@@ -207,27 +197,34 @@ export function SentenceOrderActivity({
       : null;
 
   const romanizations =
-    question == null ? null : tileRomanizationsShown(question.chipReading, inReview);
+    question == null
+      ? null
+      : tileRomanizationsShown(question.chipReading, inReview, choiceRomanization);
   const linesBody =
     question == null ? null : (
-      <SentenceOrderLines
-        chips={question.chips}
-        placedChipIndexes={state.placedChipIndexes}
-        results={placedResults}
-        interaction={interaction}
-        onReturn={toggle}
-        // 작은 화면에서 로마자로 창고가 커지면 답 줄을 하나로 줄여 Check가 화면 안에 섭니다(#448 기준).
-        compact={density === "compact" && romanizations !== null}
-        {...(hint.used === "show" && question.hint !== undefined && state.phase !== "checked"
-          ? { ghost: question.hint.ghost[0] }
-          : {})}
-      >
-        {question.audio?.kind === "listen" ? (
-          <SentenceOrderListenHeader control={listen} romanization={reading} />
-        ) : (
-          <SentenceOrderTextHeader prompt={question.prompt} romanization={reading} />
-        )}
-      </SentenceOrderLines>
+      <>
+        <SentenceOrderLines
+          chips={question.chips}
+          placedChipIndexes={state.placedChipIndexes}
+          results={placedResults}
+          interaction={interaction}
+          onReturn={toggle}
+          // 작은 화면에서 로마자로 창고가 커지면 답 줄을 하나로 줄여 Check가 화면 안에 섭니다(#448 기준).
+          compact={density === "compact" && romanizations !== null}
+          {...(hint.used === "show" && question.hint !== undefined && state.phase !== "checked"
+            ? { ghost: question.hint.ghost[0] }
+            : {})}
+        >
+          {question.audio?.kind === "listen" ? (
+            <SentenceOrderListenHeader control={listen} />
+          ) : (
+            <SentenceOrderTextHeader prompt={question.prompt} romanization={reading} />
+          )}
+        </SentenceOrderLines>
+        <SentenceOrderListenReveal
+          reveal={sentenceOrderRevealOf(question, state.phase, choiceRomanization)}
+        />
+      </>
     );
 
   const bank =
@@ -239,6 +236,7 @@ export function SentenceOrderActivity({
         bankInteraction={bankInteraction}
         romanizations={romanizations}
         onHint={question.hint !== undefined && state.phase !== "checked" ? hint.openSheet : null}
+        nudgedIndex={nudgedIndex}
         onToggle={toggle}
         onPlaceDialogueChip={placeDialogueChip}
       />

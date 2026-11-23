@@ -10,6 +10,11 @@
   gap: var(--libitum-spacing-24);
 }
 
+/* 탭이 다섯이 되면(랭킹 탭, 시안 RankingTab) 간격 대신 ui-lynx의 양끝 맞춤(항목 56)을 씁니다 — 좌우 여백 16은 위 규칙 그대로. */
+.app-navigator .ui-lynx-bottom-navigator-items-5 {
+  gap: 0;
+}
+
 /* 탭 NEW 배지(2026-11-13, 기기 확인 뒤 다시 — 사용자 결정 「단추 안 NEW 알약」). 아이콘 상자(32, 단추 64 × 48 가운데)의
    오른쪽 위 모서리 기준으로 단추 안쪽에 완전히 들어가게 둡니다 — 단추 밖으로 나가면 둥근 단추 모서리에서 잘려 보이지
    않았습니다. 알약(약 30 × 18)은 단추 x 32 ~ 62 · y 2 ~ 20, 아이콘 오른쪽 위를 살짝 덮습니다. 면은 목록 NEW 알약과
@@ -31,6 +36,11 @@
   border-style: solid;
   border-color: var(--libitum-color-white);
   background-color: var(--libitum-color-brand-primary);
+}
+
+/* 더보기 메뉴가 열린 동안(ADR-0169) ⋯ 동그라미는 ×와 함께 brand-strong입니다(시안 MoreSheet). */
+.app-navigator-more-open .ui-lynx-bottom-navigator-item-action .ui-lynx-bottom-navigator-surface {
+  background-color: var(--libitum-color-brand-strong);
 }
 
 .app-navigator .ui-lynx-bottom-navigator-badge-label {

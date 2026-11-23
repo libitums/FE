@@ -111,6 +111,15 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 
 Section 3(제3자) 표에는 Airbridge(AB180) 행을 더한다 — 기능 「advertising measurement and attribution」, 정보 「app install and usage events, device information, app-scoped identifiers, advertising ID (Android)」. Meta Platforms 행(ADR-0057 때의 초안)은 쓰지 않는다. ⚠ 「device model, operating system version, identifiers」는 SDK manifest와 공개 문서에서 옮긴 것이고 요청 본문을 열어 확인하지 않았다 — 게시 전에 값이 있는 빌드에서 대조한다. 매체(Meta · Google · TikTok)를 제3자로 따로 적을지는 사용자 판단이다.
 
+### RevenueCat → Airbridge (2026-11-19)
+
+[ADR-0144](adr/0144-subscriptions-revenuecat.md) 「Airbridge 기기 id」. 두 SDK가 모두 시작됐고 추적을 멈추지 않은 기기에서 호스트가 RevenueCat 고객에
+Airbridge 기기 id를 걸고 `collectDeviceIdentifiers()`를 부른다 — RevenueCat이 `$airbridgeDeviceId` · `$idfv` · `$ip`(추적을 허용한 기기는 `$idfa`)를
+고객 속성으로 받아, 구매 이벤트와 함께 Airbridge로 넘긴다. ATT 대화상자는 띄우지 않는다(허용 전에는 IDFA가 실리지 않는다).
+App Store 응답의 「기기 ID — 개발자 광고 · 추적 예」 범위 안이라 응답 칸은 바꾸지 않았다. **사용자 확인**: 처리방침의 광고 측정 문단에
+「구매 이벤트는 결제 처리자 RevenueCat이 Airbridge로 전달한다」를 더할지. Android는 광고 ID · IP가 같은 길로 간다 — Play 데이터 보안 양식의
+「기기 또는 기타 ID」(광고 · 마케팅, 제3자 공유)도 같은 판단이다.
+
 ### 공개 개인정보처리방침에 반영할 문안
 
 2026-10-01 공개 [DURU Privacy Policy](https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402)를 확인했다. 소셜 인증·PostHog·Apple Speech 설명은 있으나 서버 학습 기록·피드백·APNs 토큰이 누락되어 있다. 아래 문안은 코드 근거로 준비했으며 **공개 페이지에는 아직 반영하지 않았다**. 게시 시 effective date도 갱신한다.

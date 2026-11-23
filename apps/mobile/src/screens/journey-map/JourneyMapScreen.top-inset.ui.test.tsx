@@ -24,13 +24,13 @@ const style = (testId: string): string => screen.getByTestId(testId).getAttribut
 test("SB1. 안전 영역 높이만큼 첫 내용 · 띠 자리 · 로딩 줄이 내려오고, 화면 위 여백은 스크롤 안으로 옮겨진다", () => {
   renderMap(47);
   expect(style("journey-map-screen")).toMatch(/padding-top:\s*0px/);
-  expect(style("journey-map-screen-map")).toMatch(/padding-top:\s*259px/);
+  expect(style("journey-map-screen-map")).toMatch(/padding-top:\s*111px/);
   expect(style("journey-map-screen-header-anchor")).toMatch(/top:\s*111px/);
   expect(style("journey-map-screen-progress-row")).toMatch(/top:\s*119px/);
 });
 
-test("SB2. 안전 영역을 넘기지 않으면 0으로 본다 — 예전 배치와 같은 화면 자리", () => {
+test("SB2. 안전 영역을 넘기지 않으면 0으로 본다 — 첫 내용과 띠가 칩 줄 아래 64에서 시작한다", () => {
   renderMap();
-  expect(style("journey-map-screen-map")).toMatch(/padding-top:\s*212px/);
+  expect(style("journey-map-screen-map")).toMatch(/padding-top:\s*64px/);
   expect(style("journey-map-screen-header-anchor")).toMatch(/top:\s*64px/);
 });

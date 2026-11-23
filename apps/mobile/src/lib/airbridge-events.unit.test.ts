@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import type { AnalyticsEvent, AnalyticsEventSinks } from "./analytics.contract";
 import { airbridgeEventFrom, withAirbridgeEvents } from "./airbridge-events";
+import { packPurchasedExample } from "./purchase-intent.test-support";
 import {
   allEventNames,
   entryCompleted,
@@ -49,13 +50,57 @@ describe("airbridgeEventFrom", () => {
   });
 
   // ⟨ADR-0146 앱 연결⟩ `chat_media_completed`가 더해져 59 · 57이다.
-  test("AB3. 이름 60개는 표의 58개와 매핑되는 둘로 나뉜다", () => {
+  // ⟨ADR-0159⟩ 온보딩 이벤트 둘이 더해져 62 · 60이다. ⟨ADR-0160⟩ `shop_tab_switched`가 더해져 63 · 61이다.
+  // ⟨ADR-0162⟩ 추천 친구 이벤트 셋이 더해져 66 · 64다.
+  // ⟨ADR-0162 D5⟩ `early_access_completed`가 더해져 67 · 65다.
+  // ⟨ADR-0063 2026-11-19⟩ 엽전 팩 결제 `pack_purchased`가 더해져 68이고, 매핑되는 것은 셋이다(표는 65 그대로).
+  // ⟨ADR-0164⟩ 추천 친구 프로필 열기 `suggested_friend_opened`가 더해져 69 · 66이다(Airbridge로 나가지 않음 — PostHog만).
+  // ⟨ADR-0166⟩ 비회원 로그인 권유 `chat_sign_in_prompt_closed`가 더해져 70 · 67이다.
+  // ⟨ADR-0176⟩ 입장 선택 이벤트 셋이 더해져 73 · 70이다(Airbridge로 나가지 않음 — 가입 완료는 `entry_completed` 그대로).
+  test("AB3. 이름 73개는 표의 70개와 매핑되는 셋으로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(58);
-    expect(allEventNames).toHaveLength(60);
-    expect([...tableNames, "entry_completed", "episode_final_passed"].sort()).toEqual(
-      [...allEventNames].sort(),
-    );
+    expect(tableNames.size).toBe(70);
+    expect(allEventNames).toHaveLength(73);
+    expect(
+      [...tableNames, "entry_completed", "episode_final_passed", "pack_purchased"].sort(),
+    ).toEqual([...allEventNames].sort());
+  });
+
+  test("AB4. pack_purchased는 Order Complete { value · currency · transactionID · products[1] }이다", () => {
+    expect(airbridgeEventFrom(packPurchasedExample)).toStrictEqual({
+      category: "airbridge.ecommerce.order.completed",
+      semanticAttributes: {
+        value: 4.99,
+        currency: "USD",
+        transactionID: "2000000812345678",
+        products: [
+          {
+            productID: "duru.coins.1200.v1",
+            name: "duru.coins.1200.v1",
+            price: 4.99,
+            quantity: 1,
+            currency: "USD",
+          },
+        ],
+      },
+    });
+  });
+
+  test("AB5. 스토어 금액 · 통화를 모르면 보내지 않고, 거래 id가 없으면 그 속성만 뺀다", () => {
+    expect(airbridgeEventFrom({ ...packPurchasedExample, price: "" })).toBeNull();
+    expect(airbridgeEventFrom({ ...packPurchasedExample, price: "abc" })).toBeNull();
+    expect(airbridgeEventFrom({ ...packPurchasedExample, currency: "" })).toBeNull();
+    const noId = airbridgeEventFrom({ ...packPurchasedExample, transactionId: "" });
+    expect(noId?.category).toBe("airbridge.ecommerce.order.completed");
+    expect(Object.keys(noId?.semanticAttributes ?? {})).toEqual(["value", "currency", "products"]);
+  });
+
+  test("AB6. 통화 코드는 대문자 ISO로 맞춰 보낸다(스토어가 소문자로 줘도)", () => {
+    const event = airbridgeEventFrom({ ...packPurchasedExample, currency: "vnd" });
+    expect(event?.semanticAttributes).toMatchObject({
+      currency: "VND",
+      products: [expect.objectContaining({ currency: "VND" })],
+    });
   });
 
   test.each(unmappedEvents.map((e) => [e.name, e] as const))(

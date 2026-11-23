@@ -94,8 +94,8 @@ test("[GE2] 「비회원으로 계속」은 네트워크 없이 표식만 남기
   expect(present("language-select-screen-next")).toBe(true);
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButtonIn("language-select-screen-next");
-  expect(present("journey-entry-screen-start")).toBe(true);
-  tapButtonIn("journey-entry-screen-start");
+  expect(present("journey-entry-screen-story")).toBe(true);
+  tapButtonIn("journey-entry-screen-story");
   await flush();
 
   expect(present("journey-map-screen")).toBe(true);
@@ -117,6 +117,7 @@ test("[GE2] 「비회원으로 계속」은 네트워크 없이 표식만 남기
     "learner_profile_saved",
     "viewed:language-select",
     "viewed:journey-entry",
+    "entry_path_selected",
     "entry_completed",
   ]);
 });

@@ -49,4 +49,15 @@ public final class SpeechRecognitionModule extends LynxModule {
 
   /** Opens this app's system settings page, where the microphone permission lives. */
   @LynxMethod public void openSettings() { recognition.openSettings(); }
+
+  /** Answers {@code { koreanPack }} for the on-device ko-KR model (ADR-0017, 2026-11-19). */
+  @LynxMethod public void getKoreanPack(Callback callback) { recognition.getKoreanPack(callback); }
+
+  /**
+   * Hands the ko-KR model download to the system once the learner agreed; answers {@code { status,
+   * errorCode }} once and sends progress as the global event {@code speechKoreanPackProgress}.
+   */
+  @LynxMethod public void downloadKoreanPack(Callback callback) {
+    recognition.downloadKoreanPack(callback);
+  }
 }

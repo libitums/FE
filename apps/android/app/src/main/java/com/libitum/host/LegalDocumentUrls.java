@@ -1,11 +1,12 @@
 package com.libitum.host;
 
-/** The only destinations exposed to Lynx; keep them aligned with the iOS host's URL table. */
+/**
+ * The only destinations exposed to Lynx; keep them aligned with the iOS host's URL table.
+ * Since 2026-11-20 they are the English base pages on our landing domain (ADR-0167).
+ */
 final class LegalDocumentUrls {
-  private static final String PRIVACY_POLICY =
-      "https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402";
-  private static final String TERMS_OF_USE =
-      "https://gregarious-pharaoh-bb6.notion.site/DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468";
+  private static final String PRIVACY_POLICY = "https://k-duru.com/privacy/";
+  private static final String TERMS_OF_USE = "https://k-duru.com/terms/";
 
   private LegalDocumentUrls() {}
 

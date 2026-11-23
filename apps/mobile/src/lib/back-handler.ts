@@ -10,6 +10,8 @@ export type BackHandlerStack = {
   readonly add: (level: BackHandlerLevel, entry: BackHandlerEntry) => () => void;
   /** 가장 위 한 건을 부르고 `true`. 비어 있으면 아무것도 안 부르고 `false`. */
   readonly runTop: () => boolean;
+  /** 열려 있는 층(모달 · 시트 · 안내)이 있는가 — 시스템 권한 창을 그 위에 띄우지 않으려는 자리가 묻습니다(ADR-0176). */
+  readonly hasLayer: () => boolean;
 };
 
 type Record_ = { readonly level: BackHandlerLevel; readonly entry: BackHandlerEntry };
@@ -38,6 +40,7 @@ export function createBackHandlerStack(): BackHandlerStack {
         records = records.filter((candidate) => candidate !== record);
       };
     },
+    hasLayer: () => records.some((record) => record.level === "layer"),
     runTop: () => {
       const entry = top();
       if (entry === undefined) {

@@ -8,6 +8,10 @@ export type SpeechHostResult = {
   readonly text: string;
   readonly errorDomain?: string;
   readonly errorCode?: number;
+  /** Android 호스트만 싣습니다 — 한국어 팩 상태 · 네트워크로 되돌아감 · 되돌아가게 한 오류 코드. */
+  readonly koreanPack?: string;
+  readonly fallback?: string;
+  readonly fallbackErrorCode?: number;
 };
 
 export type SpeechHostOptions = {

@@ -257,35 +257,39 @@ describe("learnerProfilePreviewFor", () => {
   test("FM-6. 검증을 지난 이름과 표에서 찾은 나라를 포트에 넘긴다", () => {
     const port = portOf();
 
-    learnerProfilePreviewFor(draftOf({ name: " Emma ", countryCode: "FR" }), port);
+    learnerProfilePreviewFor(draftOf({ name: " Emma ", countryCode: "FR" }), port, "en");
 
-    expect(port.previewOf).toHaveBeenLastCalledWith("Emma", FR);
+    expect(port.previewOf).toHaveBeenLastCalledWith("Emma", FR, "en");
   });
 
   test("FM-6. 무효 이름은 없는 것으로 넘긴다 — 나라만 남는다", () => {
     const port = portOf();
 
-    const preview = learnerProfilePreviewFor(draftOf({ name: "{x}", countryCode: "FR" }), port);
+    const preview = learnerProfilePreviewFor(
+      draftOf({ name: "{x}", countryCode: "FR" }),
+      port,
+      "en",
+    );
 
-    expect(port.previewOf).toHaveBeenLastCalledWith(null, FR);
+    expect(port.previewOf).toHaveBeenLastCalledWith(null, FR, "en");
     expect(preview.kind).toBe("yours");
   });
 
   test("FM-6. 무효 이름에 나라도 없으면 example이다", () => {
     const port = portOf();
 
-    const preview = learnerProfilePreviewFor(draftOf({ name: "{x}" }), port);
+    const preview = learnerProfilePreviewFor(draftOf({ name: "{x}" }), port, "en");
 
-    expect(port.previewOf).toHaveBeenLastCalledWith(null, null);
+    expect(port.previewOf).toHaveBeenLastCalledWith(null, null, "en");
     expect(preview.kind).toBe("example");
   });
 
   test("FM-6. 표에 없는 코드는 나라 없음으로 넘긴다", () => {
     const port = portOf();
 
-    learnerProfilePreviewFor(draftOf({ name: "Emma", countryCode: "ZZ" }), port);
+    learnerProfilePreviewFor(draftOf({ name: "Emma", countryCode: "ZZ" }), port, "en");
 
-    expect(port.previewOf).toHaveBeenLastCalledWith("Emma", null);
+    expect(port.previewOf).toHaveBeenLastCalledWith("Emma", null, "en");
   });
 });
 

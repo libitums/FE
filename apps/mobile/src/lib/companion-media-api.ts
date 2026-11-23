@@ -9,6 +9,8 @@ import {
   mediaListFrom,
   mediaPageFrom,
   mediaRequestFrom,
+  sampleClaimFrom,
+  sampleOfferFrom,
   signedUrlFrom,
   walletBalanceFrom,
 } from "../screens/messenger-chat/companion-media-parse";
@@ -104,5 +106,24 @@ export function createCompanionMediaRemote(deps: CompanionMediaDeps): ChatMediaR
     },
     balance: async () =>
       walletBalanceFrom(bodyOf(await post("/rest/v1/rpc/companion_get_wallet", {}))),
+    sample: {
+      offer: async (characterId) =>
+        sampleOfferFrom(
+          bodyOf(
+            await post("/rest/v1/rpc/companion_sample_snapshot_offer", {
+              p_character_id: characterId,
+            }),
+          ),
+        ),
+      claim: async (messageId, kind) =>
+        sampleClaimFrom(
+          bodyOf(
+            await post("/rest/v1/rpc/companion_claim_sample_snapshot", {
+              p_message_id: messageId,
+              p_kind: kind,
+            }),
+          ),
+        ),
+    },
   };
 }

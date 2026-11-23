@@ -14,6 +14,17 @@ describe("createBackHandlerStack", () => {
     expect(createBackHandlerStack().runTop()).toBe(false);
   });
 
+  it("BH0. hasLayer는 열린 층이 있을 때만 참이다(알림 질문이 겹치지 않게 — ADR-0176)", () => {
+    const stack = createBackHandlerStack();
+    expect(stack.hasLayer()).toBe(false);
+    stack.add("screen", entryOf());
+    expect(stack.hasLayer()).toBe(false);
+    const close = stack.add("layer", entryOf());
+    expect(stack.hasLayer()).toBe(true);
+    close();
+    expect(stack.hasLayer()).toBe(false);
+  });
+
   it("BH2. screen 한 건이면 그것을 한 번 부르고 true다", () => {
     const stack = createBackHandlerStack();
     const screen = vi.fn<() => void>();

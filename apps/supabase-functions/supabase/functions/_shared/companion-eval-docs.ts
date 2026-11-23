@@ -23,6 +23,7 @@ import {
   proactiveDirective,
   stateLine,
 } from "./companion-prompt.ts";
+import { companionEvalSets } from "./companion-eval-sets.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 
@@ -89,6 +90,22 @@ export function promptDocs() {
       input: byAgeBand((ageBand) => moderationInstruction("input", ageBand)),
       output_sync: byAgeBand((ageBand) => moderationInstruction("output_sync", ageBand)),
     },
+    // 완화 수위(open, ADR-0164) — 성인에게만 적용된다(성인이 아니면 위의 연령대 글 그대로).
+    moderationOpen: {
+      input: moderationInstruction("input", "adult", "open"),
+      output_sync: moderationInstruction("output_sync", "adult", "open"),
+    },
+    // 추천 친구(standard)의 말투 단계 선(ADR-0168) — 반말이면 kiss, slang이면 close. 존댓말 단계는 위 성인 글(hug)과 같다.
+    moderationFriend: {
+      kiss: {
+        input: moderationInstruction("input", "adult", "kiss"),
+        output_sync: moderationInstruction("output_sync", "adult", "kiss"),
+      },
+      close: {
+        input: moderationInstruction("input", "adult", "close"),
+        output_sync: moderationInstruction("output_sync", "adult", "close"),
+      },
+    },
     translation: translationSystem(placeholder("l1"), placeholder("segment count")),
     memory: { adult: memorySystem(false), minor: memorySystem(true) },
     summary: summarySystem,
@@ -137,5 +154,7 @@ export async function companionDocs(
     settings,
     inspectAvailable: characters != null && settings != null,
     prompts: promptDocs(),
+    // 고정 평가 세트(추천 친구 페르소나 유지 · 로맨스 수위 경계) — 대시보드가 세트마다 POST로 돌린다.
+    evalSets: companionEvalSets,
   };
 }

@@ -82,6 +82,11 @@ function activityScreenOf(
         )
       : wiring.onFinishCatalogReview(episodeId, unitKey, review, results);
   const onExit = wiring.onExitCatalogSession;
+  // 단어 카드 활동이 끝나면 보인 카드를 단어장에 적고(ADR-0169) 평소처럼 잇습니다. 다시 풀기에는 카드가 없습니다.
+  const onCardsFinish: ActivityFinish = (results, skippedCount, skippedIndexes) => {
+    if (review === undefined) wiring.onCatalogCardsSeen(episodeId, itemRefs);
+    onFinish(results, skippedCount, skippedIndexes);
+  };
   const onItemAnswered = (report: ItemAnswerReport): void => {
     const ref = itemRefs[report.questionIndex];
     if (ref !== undefined) wiring.onCatalogItemAnswered(episodeId, unitKey, ref, report);
@@ -113,8 +118,9 @@ function activityScreenOf(
           lessonAudio={lessonAudio}
           cast={cast}
           onItemAnswered={onItemAnswered}
-          // 레슨 끝 다시 풀기에서만 듣고 조립의 조각 로마자가 섭니다(ADR-0153).
+          // 듣고 조립의 조각 로마자는 보기 로마자 설정을 따르고, 다시 풀기에서는 늘 섭니다(ADR-0153 ⟨2026-11-20⟩).
           inReview={review !== undefined}
+          choiceRomanization={choiceRomanizationOf(wiring.sessionOptions)}
         />
       );
     case "word-choice":
@@ -149,8 +155,20 @@ function activityScreenOf(
           key={key}
           questions={activity.questions}
           onExit={onExit}
-          onFinish={onFinish}
+          onFinish={onCardsFinish}
           lesson={lesson}
+          // 카드 별(단어장 즐겨찾기, ADR-0169 즐겨찾기 개정) — 카드 순번은 `itemRefs` 순번과 같습니다.
+          star={
+            review === undefined
+              ? {
+                  initial: () => wiring.catalogCardStars(episodeId, itemRefs),
+                  toggle: (cardIndex, starred) => {
+                    const ref = itemRefs[cardIndex];
+                    if (ref !== undefined) wiring.onCatalogCardStar(episodeId, ref, starred);
+                  },
+                }
+              : undefined
+          }
         />
       );
     case "pair-match":

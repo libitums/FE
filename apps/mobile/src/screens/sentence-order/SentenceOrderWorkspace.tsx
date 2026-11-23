@@ -17,6 +17,8 @@ export type SentenceOrderWorkspaceProps = {
   readonly romanizations: readonly string[] | null;
   /** 힌트 버튼을 세울지 — 문장 조립이고 채점 전일 때만입니다. */
   readonly onHint: (() => void) | null;
+  /** 고민 힌트가 켜진 창고 조각(ADR-0177) — 줄 배치에서만. */
+  readonly nudgedIndex: number | null;
   readonly onToggle: (chipIndex: number) => void;
   readonly onPlaceDialogueChip: (chipIndex: number) => void;
 };
@@ -30,6 +32,7 @@ export function SentenceOrderWorkspace({
   bankInteraction,
   romanizations,
   onHint,
+  nudgedIndex,
   onToggle,
   onPlaceDialogueChip,
 }: SentenceOrderWorkspaceProps): ReactNode {
@@ -53,6 +56,7 @@ export function SentenceOrderWorkspace({
         placedChipIndexes={state.placedChipIndexes}
         interaction={bankInteraction}
         romanizations={romanizations}
+        nudgedIndex={nudgedIndex}
         onTap={onToggle}
       />
     </view>

@@ -1,0 +1,148 @@
+---
+import "../styles/legal.css";
+
+import Base from "../layouts/Base.astro";
+import { legalDocument } from "../legal/documents";
+import { legalDocumentIds, legalLanguages, legalPathFor } from "../legal/legal-paths";
+import { buildHeadMeta, robotsIndexable } from "../seo/head-meta";
+import { pages, siteName } from "../site";
+import Footer from "./Footer.astro";
+import Header from "./Header.astro";
+import type { LegalPageProps } from "./landing.contract";
+import LegalText from "./LegalText.astro";
+
+type Props = LegalPageProps;
+
+const { id, language } = Astro.props;
+const document = legalDocument(id, language);
+const t = pages[language].copy;
+// 같은 문서의 언어판끼리 canonical · hreflang을 잇습니다. 배포 주소가 없으면 아무것도 내지 않습니다.
+const head = buildHeadMeta({
+  siteUrl: Astro.site?.origin ?? "",
+  language,
+  routes: legalLanguages.map((code) => ({
+    language: code,
+    path: legalPathFor(id, code),
+    locale: pages[code].locale,
+  })),
+  imagePath: pages[language].image,
+});
+const siblings = legalDocumentIds.filter((other) => other !== id);
+---
+
+<Base
+  language={language}
+  title={`${document.title} — ${siteName}`}
+  description={document.description}
+  robots={robotsIndexable}
+>
+  <Fragment slot="head">
+    {head.absolute && <link rel="canonical" href={head.absolute.canonical} />}
+    {
+      head.absolute?.alternates.map((alternate) => (
+        <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+      ))
+    }
+  </Fragment>
+  <Header language={language} t={t} variant="page" />
+  <main class="legal" id="main" data-testid="legal" data-legal-document={id}>
+    <article class="container container--narrow">
+      <ul class="legal__languages" data-testid="legal-languages">
+        {
+          legalLanguages.map((code) => (
+            <li>
+              <a
+                href={legalPathFor(id, code)}
+                lang={code}
+                hreflang={code}
+                aria-current={code === language ? "page" : undefined}
+              >
+                {pages[code].label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <h1 class="legal__title">{document.title}</h1>
+      <p class="legal__effective" data-testid="legal-effective">
+        {document.effectiveLabel}: <time datetime={document.effectiveIso}>{document.effectiveDate}</time>
+      </p>
+      {
+        document.translationNote !== "" && (
+          <p class="legal__note" data-testid="legal-translation-note">
+            {document.translationNote}
+          </p>
+        )
+      }
+      {
+        [{ heading: "", blocks: document.intro }, ...document.sections].map((section) => (
+          <section class="legal__section">
+            {section.heading !== "" && <h2>{section.heading}</h2>}
+            {section.blocks.map((block) => {
+              if (block.kind === "subheading") return <h3>{block.text}</h3>;
+              if (block.kind === "paragraph") {
+                return (
+                  <p>
+                    <LegalText text={block.text} />
+                  </p>
+                );
+              }
+              if (block.kind === "list") {
+                return (
+                  <ul>
+                    {block.items.map((item) => (
+                      <li>
+                        <LegalText text={item} />
+                      </li>
+                    ))}
+                  </ul>
+                );
+              }
+              return (
+                <div class="legal__table" role="region" aria-label={block.caption} tabindex="0">
+                  <table>
+                    <caption>{block.caption}</caption>
+                    <thead>
+                      <tr>
+                        {block.head.map((cell) => (
+                          <th scope="col">{cell}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {block.rows.map((row) => (
+                        <tr>
+                          {row.map((cell, index) =>
+                            index === 0 ? (
+                              <th scope="row">
+                                <LegalText text={cell} />
+                              </th>
+                            ) : (
+                              <td>
+                                <LegalText text={cell} />
+                              </td>
+                            ),
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+          </section>
+        ))
+      }
+      <ul class="legal__siblings" data-testid="legal-siblings">
+        {
+          siblings.map((other) => (
+            <li>
+              <a href={legalPathFor(other, language)}>{legalDocument(other, language).title}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </article>
+  </main>
+  <Footer language={language} t={t} variant="page" />
+</Base>

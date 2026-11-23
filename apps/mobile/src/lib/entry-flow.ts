@@ -14,6 +14,9 @@ export type EntryScreenName =
   | "learner-country"
   | "language-select"
   | "journey-entry"
+  | "entry-basics-letters"
+  | "entry-basics-compose"
+  | "entry-basics-ready"
   | "update-required";
 
 // 스플래시와 강제 업데이트 화면은 `entry_screen_viewed`를 내지 않습니다 — 뒤엣것은 자기 이벤트
@@ -77,8 +80,47 @@ export type AppUpdateRequiredEvent = {
   readonly minBuild: string;
 };
 
+/** 온보딩 스텝이 처음 보인 길 — 첫 화면 · 자동 넘김 · 밀기 · 뒤로(버튼 · 시스템 뒤로)(ADR-0159). */
+export type OnboardingStepVia = "start" | "auto" | "swipe" | "back";
+/** 온보딩 스텝 번호(1부터) — 분석 속성은 문자열 · 불리언뿐입니다. */
+export type OnboardingStepNumber = "1" | "2" | "3";
+/** 온보딩 스텝이 그 방문에서 처음 보였습니다 — 같은 스텝을 다시 보면 내지 않습니다. */
+export type OnboardingStepViewedEvent = {
+  readonly name: "onboarding_step_viewed";
+  readonly step: OnboardingStepNumber;
+  readonly via: OnboardingStepVia;
+};
+/** 「Get started」를 눌렀습니다 — 누른 스텝과 그 전에 자동 넘김이 있었는지입니다. */
+export type OnboardingStartedEvent = {
+  readonly name: "onboarding_started";
+  readonly step: OnboardingStepNumber;
+  readonly autoAdvanced: boolean;
+};
+export type OnboardingEvent = OnboardingStepViewedEvent | OnboardingStartedEvent;
+
+/** 여정 입장의 두 길 — 기초부터 · 바로 입장(ADR-0176). */
+export type EntryPath = "basics" | "story";
+export type EntryBasicsStep = "letters" | "compose" | "ready";
+/** 준비 완료에는 Skip이 없습니다. */
+export type EntryBasicsSkippableStep = Exclude<EntryBasicsStep, "ready">;
+export type EntryPathSelectedEvent = {
+  readonly name: "entry_path_selected";
+  readonly path: EntryPath;
+};
+export type EntryBasicsStepCompletedEvent = {
+  readonly name: "entry_basics_step_completed";
+  readonly step: EntryBasicsStep;
+};
+export type EntryBasicsSkippedEvent = {
+  readonly name: "entry_basics_skipped";
+  readonly step: EntryBasicsSkippableStep;
+};
+
 export type EntryEvent =
   | EntryScreenViewedEvent
+  | EntryPathSelectedEvent
+  | EntryBasicsStepCompletedEvent
+  | EntryBasicsSkippedEvent
   | EntryLoginMethodSelectedEvent
   | EntryCompletedEvent
   // 서버에 기록이 있는 계정이 언어 선택 · 여정 입장을 건너뛰고 맵으로 들어간 로그인입니다.
@@ -88,7 +130,9 @@ export type EntryEvent =
   // 로그인 화면의 방침 · 약관 링크입니다(ADR-0033). 설정 sink와 같은 모양입니다.
   | LegalDocumentOpenedEvent
   // 가입 직후 ② 나라에서의 저장입니다. 값(이름 · 나라)은 싣지 않습니다.
-  | LearnerProfileSavedEvent;
+  | LearnerProfileSavedEvent
+  // 온보딩 스텝 열람 · 「Get started」(ADR-0159).
+  | OnboardingEvent;
 export type EntryEventSink = ((event: EntryEvent) => void) | null;
 export type EntryAppProps = { readonly entryEventSink?: EntryEventSink };
 
@@ -106,6 +150,20 @@ export function entryLoginMethodSelectedEvent(
 // 허용하는 값이 이 하나뿐입니다 — "틀린 스텁"을 만들 여지가 타입 자체에 없습니다.
 export function entryCompletedEvent(): EntryCompletedEvent {
   return { name: "entry_completed" };
+}
+
+export function entryPathSelectedEvent(path: EntryPath): EntryPathSelectedEvent {
+  return { name: "entry_path_selected", path };
+}
+
+export function entryBasicsStepCompletedEvent(
+  step: EntryBasicsStep,
+): EntryBasicsStepCompletedEvent {
+  return { name: "entry_basics_step_completed", step };
+}
+
+export function entryBasicsSkippedEvent(step: EntryBasicsSkippableStep): EntryBasicsSkippedEvent {
+  return { name: "entry_basics_skipped", step };
 }
 
 export function entryReturningLearnerEnteredEvent(

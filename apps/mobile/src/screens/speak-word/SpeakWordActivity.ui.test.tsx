@@ -415,6 +415,8 @@ test("EV5. 판정은 문항당 한 번 보고되고 outcome · density가 실린
     questionIndex: 0,
     outcome: "correct",
     density: "regular",
+    // 인식기가 결과를 올렸으므로 진단이 실립니다 — 이 대역은 팩 · 되돌아감 키가 없는 호스트(iOS 모양)입니다.
+    speech: { errorCode: 0, fallback: "none", koreanPack: "unknown" },
   });
 });
 

@@ -322,15 +322,46 @@ describe("CatalogMapSections 줄 구조", () => {
   test("UG-C1. 레슨 8 구획의 직계 자식은 발자국 층 · 구분선 뒤에 줄 여섯이고 종류는 solo(표지), pair 넷, solo(최종)다", () => {
     mount();
 
-    const children = sectionChildren("u01-water");
+    const children = sectionChildren("u02-checkin");
     // 발자국 층(ADR-0100)은 0 × 0 절대 상자라 줄 배치에 끼지 않습니다 — 맨 앞에 섭니다.
     expect(classesOf(children[0])).toContain("map-footprints");
     expect(classesOf(children[1])).toContain("episode-pending-divider");
     expect(children.slice(2).map((child) => child.getAttribute("data-testid"))).toEqual(
       twoColumnKinds.map(() => "journey-map-row"),
     );
-    expect(rowKindsOf("u01-water")).toEqual(twoColumnKinds);
+    expect(rowKindsOf("u02-checkin")).toEqual(twoColumnKinds);
   });
+
+  // 첫 구획 위에는 가를 에피소드가 없습니다(사용자 결정 2026-11-22).
+  test("UG-C0. 구분선은 에피소드 사이에만 선다 — 첫 구획은 발자국 층 바로 뒤가 표지 줄이다", () => {
+    mount();
+
+    const first = sectionChildren("u01-water");
+    expect(classesOf(first[0])).toContain("map-footprints");
+    expect(classesOf(first[1])).toContain("journey-map-row-solo");
+    const catalog = screen.getByTestId("journey-map-screen-catalog");
+    expect(catalog.querySelectorAll(".episode-pending-divider").length).toBe(
+      catalog.children.length - 1,
+    );
+  });
+
+  test.each(["pending", "client-too-old"] as const)(
+    "UG-C0′. 첫 구획이 본문 없는 구획(%s)이어도 그 위 구분선이 없다",
+    (reason) => {
+      render(
+        <CatalogMapSections
+          sections={[unavailable("u00-x", 0, "Ep", reason), ready("u01-water", 1, "Ep")]}
+          gate={openGate}
+          onStartCover={vi.fn<(episodeId: string) => void>()}
+          onSelectUnit={vi.fn<(episodeId: string, unitKey: string, tapY: number) => void>()}
+        />,
+      );
+
+      const catalog = screen.getByTestId("journey-map-screen-catalog");
+      expect(catalog.children[0]?.querySelectorAll(".episode-pending-divider").length).toBe(0);
+      expect(catalog.children[1]?.querySelectorAll(".episode-pending-divider").length).toBe(1);
+    },
+  );
 
   test("UG-C2. 레슨 7 구획은 solo, pair 셋, orphan, solo다", () => {
     const sevenLessons: CatalogReadySection = {

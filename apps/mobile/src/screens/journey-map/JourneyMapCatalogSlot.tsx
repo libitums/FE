@@ -46,6 +46,9 @@ export function JourneyMapCatalogSlot({
           ? {}
           : { coverImageUrlOf: catalog.coverImageUrlOf })}
         clearedUnit={catalog.clearedUnit ?? null}
+        {...(catalog.coverDownloads === undefined
+          ? {}
+          : { coverDownloads: catalog.coverDownloads })}
       />
     </view>
   );

@@ -22,6 +22,7 @@ import {
   catalogReviewSummaryOf,
 } from "./catalog-review";
 import type { CatalogReview, CatalogReviewItem, CatalogReviewSummary } from "./catalog-review";
+import type { LearningTrail } from "./learning-trail";
 import type { NavAction } from "./nav-state";
 
 export type CatalogLessonFinish = {
@@ -64,6 +65,8 @@ export type CatalogLessonFinishDeps = {
     questionCount: number,
     review?: CatalogReviewSummary,
   ) => void;
+  /** 레슨 자취(ADR-0169) — 판정 · 다시 풀기의 또 틀림을 Letters 추천 신호로 적습니다. */
+  readonly learningTrail?: LearningTrail;
 };
 
 export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLessonFinish {
@@ -105,6 +108,7 @@ export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLesso
         skippedCount,
       ),
     );
+    deps.learningTrail?.lessonEnded(assessmentCompletesStep(verdict) ? "finished" : "failed");
     if (assessmentCompletesStep(verdict)) deps.markDone(episodeId, unitKey);
     deps.showComplete(episodeId, unitKey, results, skippedCount, judged, review);
   };
@@ -159,6 +163,12 @@ export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLesso
       if (!deps.claimFinish(`${episodeId}|${unitKey}|review|${String(attempt)}`)) return;
       // 문항 하나짜리 화면이라 결과도 많아야 하나입니다. 없으면 건너뜀(말하기를 못 씀)이고 놓침으로 칩니다.
       const { outcomes, next } = catalogReviewStep(review, results[0] ?? null);
+      // 첫 답에 틀린 문항을 다시 풀기에서 또 틀림 — 같은 문항 연속 틀림(Letters 추천 신호, ADR-0169).
+      if (results[0] === "incorrect") {
+        const item = review.queue[0];
+        const ref = plan.itemRefs[item.activityIndex]?.[item.questionIndex];
+        if (ref !== undefined) deps.learningTrail?.repeatWrong(ref.itemType);
+      }
       if (next !== null) {
         showReview(episodeId, unitKey, next);
         return;

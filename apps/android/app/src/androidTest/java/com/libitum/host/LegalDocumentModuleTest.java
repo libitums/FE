@@ -13,12 +13,8 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public final class LegalDocumentModuleTest {
   @Test public void namesResolveOnlyToTheTwoApprovedHttpsDestinations() {
-    assertEquals(
-        "https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402",
-        LegalDocumentUrls.forName("privacy-policy"));
-    assertEquals(
-        "https://gregarious-pharaoh-bb6.notion.site/DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468",
-        LegalDocumentUrls.forName("terms-of-use"));
+    assertEquals("https://k-duru.com/privacy/", LegalDocumentUrls.forName("privacy-policy"));
+    assertEquals("https://k-duru.com/terms/", LegalDocumentUrls.forName("terms-of-use"));
     assertNull(LegalDocumentUrls.forName("https://example.org"));
     assertNull(LegalDocumentUrls.forName("privacy-policy/extra"));
     assertNull(LegalDocumentUrls.forName(null));

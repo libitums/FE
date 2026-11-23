@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 
-import { clozeRomanizationOf, romanizationSegmentsOf } from "./romanization-segments";
+import {
+  clozeRomanizationMasked,
+  clozeRomanizationOf,
+  romanizationSegmentsOf,
+} from "./romanization-segments";
 
 describe("clozeRomanizationOf (RS1 ~ RS3)", () => {
   test("RS1: u00 S6 실데이터 — 빈칸을 정답 로마자로 채우고 그 범위를 낸다", () => {
@@ -60,5 +64,24 @@ describe("romanizationSegmentsOf (RS4)", () => {
     expect(romanizationSegmentsOf("annyeong", { start: 4, length: 10 })).toEqual(whole);
     expect(romanizationSegmentsOf("annyeong", { start: -1, length: 3 })).toEqual(whole);
     expect(romanizationSegmentsOf("annyeong", { start: 2, length: 0 })).toEqual(whole);
+  });
+});
+
+describe("clozeRomanizationMasked (RS5 · QA 2026-11-20)", () => {
+  test("정답 자리를 빈칸 표시로 되돌리고 나머지 로마자는 그대로다", () => {
+    const filled = clozeRomanizationOf("___! hangugeun cheoeumiseyo?", "annyeonghaseyo");
+    expect(clozeRomanizationMasked(filled.text, filled.emphasis)).toBe(
+      "___! hangugeun cheoeumiseyo?",
+    );
+  });
+
+  test("여러 토큰에 걸친 정답도 그 범위 전체가 빈칸 하나가 된다", () => {
+    const filled = clozeRomanizationOf("jeoneun ___ juseyo.", "ttatteuthan mul");
+    expect(clozeRomanizationMasked(filled.text, filled.emphasis)).toBe("jeoneun ___ juseyo.");
+  });
+
+  test("강조 범위가 없거나 어긋나면 글자를 바꾸지 않는다", () => {
+    expect(clozeRomanizationMasked("___ halgeyo.", undefined)).toBe("___ halgeyo.");
+    expect(clozeRomanizationMasked("annyeong", { start: 4, length: 10 })).toBe("annyeong");
   });
 });

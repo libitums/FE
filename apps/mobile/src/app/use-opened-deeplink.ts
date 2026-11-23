@@ -6,11 +6,11 @@ import { useCallback, useEffect, useLynxGlobalEventListener, useRef } from "@lyn
 
 import { takeOpenedDeeplink } from "../lib/deeplink-host";
 import { deeplinkTabFrom } from "./deeplink-target";
-import type { Tab } from "./nav-state";
+import type { DeeplinkTarget } from "./deeplink-target";
 
 export const deeplinkOpenedEventName = "airbridgeDeeplinkOpened";
 
-export function useOpenedDeeplink(inApp: boolean, openTab: (tab: Tab) => void): void {
+export function useOpenedDeeplink(inApp: boolean, openTab: (target: DeeplinkTarget) => void): void {
   const latest = useRef({ inApp, openTab });
   latest.current = { inApp, openTab };
 

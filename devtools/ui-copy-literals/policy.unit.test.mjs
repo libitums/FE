@@ -149,9 +149,24 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 15항목과 같다 — 지�
     "chat-fixture.ts#chatFixtureSeed",
     "chat-fixture-corrections.ts#chatFixtureCorrections",
     "companion-roster.ts#COMPANION_CHARACTERS",
+    // 추천 친구 넷의 이름 · 첫 말(ADR-0164).
+    "companion-friends-roster.ts#COMPANION_FRIENDS",
+    // 한글 자모표 · 합치기 퀴즈(ADR-0169).
+    "jamo.ts#JAMO_GROUPS",
+    "jamo.ts#INITIALS",
+    "jamo.ts#MEDIALS",
+    "jamo.ts#jamoSoundOf",
+    "jamo.ts#LETTERS_MENU_GLYPH",
+    "jamo.ts#RECOMMEND_ART",
+    "compose-quiz.ts#COMPOSE_ROUNDS",
+    "compose-quiz.ts#COMPOSE_TILES",
+    // 입장 전 기초의 글자 · 문장(ADR-0176).
+    "entry-basics.ts#FIRST_LETTERS",
+    "entry-basics.ts#SENTENCE_SYLLABLES",
+    "entry-basics.ts#ENTRY_BASICS_SENTENCE",
   ];
 
-  assert.equal(expected.length, 17);
+  assert.equal(expected.length, 29);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

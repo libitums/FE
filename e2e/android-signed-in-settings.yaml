@@ -28,7 +28,7 @@ env:
     direction: DOWN
 - tapOn: ${DOCUMENT_LABEL}
 - extendedWaitUntil:
-    visible: ".*gregarious-pharaoh-bb6.notion.site.*"
+    visible: ".*k-duru.com.*"
     timeout: 15000
 - pressKey: back
 - assertVisible: "Settings"

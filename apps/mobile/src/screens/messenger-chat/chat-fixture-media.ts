@@ -29,9 +29,15 @@ export function mediaRequester({
     if (room === null || !isOpenAccess(room)) return;
     const id = messageId();
     const photo = media === "photo";
+    const requestedAt = now();
     room.messages = [
       ...room.messages,
-      { id, at: now(), kind: photo ? "photo-pending" : "voice-pending" },
+      {
+        id,
+        at: requestedAt,
+        kind: photo ? "photo-pending" : "voice-pending",
+        startedAt: requestedAt,
+      },
     ];
     if (photo) room.pendingPhotos += 1;
     else room.pendingVoices += 1;

@@ -1,3 +1,4 @@
+import { openSettingsFromMore } from "./test-helpers/more-menu";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -210,8 +211,7 @@ const cell = (id: string): HTMLElement =>
   );
 const dialogAction = (id: string): HTMLElement =>
   within(screen.getByTestId(`ui-lynx-dialog-action-${id}`)).getByTestId("ui-lynx-button");
-const openSettings = (): void =>
-  void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+const openSettings = (): void => openSettingsFromMore();
 const onLogin = () =>
   vi.waitFor(() => expect(screen.getByTestId("login-screen-title")).toBeTruthy());
 const navigatorItems = (): HTMLElement[] =>
@@ -262,6 +262,8 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
             "remove:libitum.progress.cached.user-1",
             "remove:libitum.learning-days.pending.user-1",
             "remove:libitum.learner-profile.user-1",
+            "remove:libitum.wordbook.user-1",
+            "remove:libitum.push-prompt.user-1", // ADR-0176 — 첫 스토리 뒤 알림 질문 표식
           ]
         : []),
       `remove:${sessionKey}`,
@@ -345,7 +347,7 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 �
     {},
   );
   fireEvent.tap(
-    within(screen.getByTestId("journey-entry-screen-start")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button"),
     {},
   );
 

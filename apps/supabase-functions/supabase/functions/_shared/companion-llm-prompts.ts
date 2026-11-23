@@ -7,6 +7,7 @@ import type {
   FeedbackItem,
   FeedbackRequest,
   HistoryEntry,
+  RomanceLine,
   TranslationRequest,
 } from "./chat-send.contract.ts";
 import type { LearnedTarget, LearnedUse } from "./companion-feedback.contract.ts";
@@ -231,9 +232,22 @@ const refusalTopics: Record<string, string> = {
   personal_info: "personal contact details",
 };
 
-/** 검사 분류 → 거절 지시에 넣는 말. 모르는 분류는 「안전하지 않은 내용」. */
-export const refusalTopic = (category: string): string =>
-  refusalTopics[category] ?? "something unsafe";
+// 적용 로맨스 선(ADR-0168)마다 로맨스 · 성 분류에서 걸리는 것. hug는 위 기본 그대로다. none(성인이 아님)은 로맨스 자체가 걸리고,
+// kiss는 키스 · 껴안기 다음 스킨십, close · open은 키스 · 껴안기가 통과라 `romance`는 질투 · 밀어붙이기 · 갑작스러운 스킨십이다.
+// open의 `sexual`은 노골적 성 묘사 · 음담패설이다(성적 긴장은 통과).
+const lineRefusalTopics: Partial<Record<RomanceLine, Record<string, string>>> = {
+  none: { romance: "romance or flirting" },
+  kiss: { romance: "physical intimacy beyond a kiss or a hug" },
+  close: { romance: "pushy, possessive or out-of-nowhere romantic behaviour" },
+  open: {
+    sexual: "explicit sexual content or dirty talk",
+    romance: "pushy, possessive or out-of-nowhere romantic behaviour",
+  },
+};
+
+/** 검사 분류 → 거절 지시에 넣는 말. 모르는 분류는 「안전하지 않은 내용」. 로맨스 · 성 분류의 말은 적용 로맨스 선을 따른다. */
+export const refusalTopic = (category: string, line: RomanceLine = "hug"): string =>
+  lineRefusalTopics[line]?.[category] ?? refusalTopics[category] ?? "something unsafe";
 
 /**
  * 거절 답의 이번 답 지시(시스템 프롬프트의 `# For this reply`). 학습자의 걸린 글은 모델에 주지 않고 분류(`topic`)와 단계만 준다 —

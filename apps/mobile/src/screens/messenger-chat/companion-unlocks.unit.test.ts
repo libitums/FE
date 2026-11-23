@@ -51,10 +51,8 @@ describe("해금 JSON ↔ 앱 표", () => {
         continue;
       }
       expect(c.firstMessage?.ko.length, c.id).toBeGreaterThan(0);
-      expect(roster?.sheetOpening, c.id).toEqual({
-        ko: c.firstMessage?.ko[0],
-        en: c.firstMessage?.en[0],
-      });
+      expect(roster?.sheetOpening?.ko, c.id).toBe(c.firstMessage?.ko[0]);
+      expect(roster?.sheetOpening?.en, c.id).toBe(c.firstMessage?.en[0]);
     }
   });
 

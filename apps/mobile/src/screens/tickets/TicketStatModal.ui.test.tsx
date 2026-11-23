@@ -5,6 +5,7 @@ import { backHandlers } from "../../lib/back-handler";
 import { fullTicketLedger, spendTicket, ticketStatusAt } from "../../lib/learning-tickets";
 import type { TicketLedger } from "../../lib/learning-tickets";
 import { TicketStatModal } from "./TicketStatModal";
+import type { TicketMoreResult } from "./tickets.contract";
 
 // `ui` 계층: 머리 티켓 칩을 누르면 뜨는 전체 화면 모달(시안 E1).
 
@@ -19,11 +20,7 @@ afterEach(() => {
   }
 });
 
-function renderModal(
-  ledger: TicketLedger,
-  nowMs: number,
-  more = null as { granted: boolean } | null,
-) {
+function renderModal(ledger: TicketLedger, nowMs: number, more: TicketMoreResult = null) {
   const onGetMore = vi.fn();
   const onClose = vi.fn();
   render(
@@ -68,19 +65,36 @@ test("[TM3] 1장이면 제목이 단수", () => {
   expect(screen.getByTestId("ticket-modal-title")).not.toHaveTextContent("tickets");
 });
 
-test("[TM4] Get more tickets를 누르면 onGetMore, 결과에 따라 Coming soon 안내", () => {
+// 엽전으로 1장 사기(사용자 결정 2026-11-23) — 버튼에 값(엽전 20)이 서고, 결과마다 안내 한 줄입니다.
+test("[TM4] 버튼은 「Get 1 ticket」 + 엽전 20, 누르면 onGetMore", () => {
   const { onGetMore } = renderModal(used, T0);
+  const button = screen.getByTestId("ticket-modal-more");
+  expect(button).toHaveAttribute("accessibility-label", "Get 1 ticket for 20 coins");
+  expect(button).toHaveTextContent("Get 1 ticket");
+  expect(screen.getByTestId("ticket-modal-more-price")).toHaveTextContent("20");
   expect(screen.queryByTestId("ticket-modal-more-notice")).not.toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("ticket-modal-more"));
+  fireEvent.tap(button);
   expect(onGetMore).toHaveBeenCalledTimes(1);
-  cleanup();
-  renderModal(used, T0, { granted: true });
-  expect(screen.getByTestId("ticket-modal-more-notice")).toHaveTextContent("free ticket");
-  cleanup();
-  renderModal(used, T0, { granted: false });
-  expect(screen.getByTestId("ticket-modal-more-notice")).toHaveTextContent(
-    "More ways to get tickets are coming soon.",
-  );
+});
+
+test.each([
+  [{ kind: "bought" }, "1 ticket added."],
+  [{ kind: "short", shortBy: 8 }, "Not enough coins. You need 8 more."],
+  [{ kind: "full" }, "Your tickets are already full."],
+  [{ kind: "sign-in" }, "Sign in to use coins."],
+  [{ kind: "failed" }, "Couldn't get a ticket. Please try again."],
+] as const)("[TM4b] 결과 %o → 안내 「%s」", (more, notice) => {
+  renderModal(used, T0, more);
+  expect(screen.getByTestId("ticket-modal-more-notice")).toHaveTextContent(notice);
+});
+
+test("[TM4c] 사는 중에는 버튼이 눌리지 않고 안내가 없다 — 두 번 빠지지 않게", () => {
+  const { onGetMore } = renderModal(used, T0, { kind: "buying" });
+  const button = screen.getByTestId("ticket-modal-more");
+  expect(button).toHaveAttribute("data-busy", "true");
+  fireEvent.tap(button);
+  expect(onGetMore).not.toHaveBeenCalled();
+  expect(screen.queryByTestId("ticket-modal-more-notice")).not.toBeInTheDocument();
 });
 
 test("[TM5] 뒤로 버튼 · 시스템 뒤로가기가 닫는다", () => {

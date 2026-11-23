@@ -19,6 +19,7 @@ import {
   type MyMotion,
 } from "./my-message.contract";
 import { CorrectionCard } from "./CorrectionCard";
+import { ChatWordsEarned } from "./ChatWords";
 import { myBubbleLabelOf } from "./my-message-state";
 
 import "./my-message.css";
@@ -198,18 +199,28 @@ export function MyMessageRow({
   motion,
   onToggle,
   onResend,
+  chatWords,
 }: MyMessageRowProps): ReactNode {
   const copy = useUiCopy().messengerChat.myMessage;
   const label = myBubbleLabelOf(speaker, ko, view, copy.loadingMeaning);
   const toolRow = (
-    <Tools>
-      {tools.meaning === "hidden" ? null : (
-        <MeaningToolButton state={tools.meaning} onTap={() => onToggle("meaning")} />
+    <>
+      <Tools>
+        {tools.meaning === "hidden" ? null : (
+          <MeaningToolButton state={tools.meaning} onTap={() => onToggle("meaning")} />
+        )}
+        {tools.fix.kind === "shown" ? (
+          <FixToolButton
+            state={tools.fix.state}
+            dot={tools.fix.dot}
+            onTap={() => onToggle("fix")}
+          />
+        ) : null}
+      </Tools>
+      {chatWords === undefined || chatWords === null ? null : (
+        <ChatWordsEarned result={chatWords} />
       )}
-      {tools.fix.kind === "shown" ? (
-        <FixToolButton state={tools.fix.state} dot={tools.fix.dot} onTap={() => onToggle("fix")} />
-      ) : null}
-    </Tools>
+    </>
   );
   switch (view.kind) {
     case "closed":

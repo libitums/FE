@@ -22,8 +22,17 @@ import {
   optionalField,
   skippedItem,
 } from "./catalog-item-text";
-import { audioField, catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
+import {
+  audioField,
+  catalogAnswerEchoOf,
+  catalogListenAudioOf,
+  catalogRecordedEchoOf,
+  catalogReplySelectAudioOf,
+} from "./catalog-item-audio";
 import { shuffledOrder } from "./catalog-shuffle";
+
+// 그림 고르기는 줄 수 상한 때문에 따로 둡니다 — 소비자는 그대로 이 모듈에서 가져갑니다.
+export { pictureChoiceItemOf } from "./catalog-picture-map";
 
 type ItemOf<T extends LearningItem["type"]> = Extract<LearningItem, { type: T }>;
 
@@ -143,7 +152,7 @@ const correctIndex = (options: readonly Option[]): number =>
 /** 상대 대사에 답하는 보기 고르기입니다. */
 export function roleLineItemOf(
   item: ItemOf<"ROLE_LINE">,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   return wordChoiceItem(item, port, item.prompt, {
     prompt: koOf(port, item.context.ko),
@@ -156,6 +165,7 @@ export function roleLineItemOf(
       item.options.map((option) => option.roman),
     ),
     answerIndex: correctIndex(item.options),
+    audio: catalogRecordedEchoOf(item, port),
   });
 }
 
@@ -176,7 +186,7 @@ export function translateToEnItemOf(
 }
 
 /** 빈칸 채우기입니다 — 타일이 보기이고, 타일은 정답 순서로 실려 오므로 섞습니다. */
-export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): CatalogMappedItem {
+export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogLessonItemPort): CatalogMappedItem {
   const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
   const answer = item.answers[0] === undefined ? "" : koOf(port, item.answers[0].ko);
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
@@ -198,13 +208,14 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
       order.map((index) => item.tiles[index]?.roman),
     ),
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
+    audio: catalogRecordedEchoOf(item, port),
   });
 }
 
 /** 문장 속 빈칸을 고르는 단어 선택입니다(CLOZE_CHOICE). */
 export function clozeChoiceItemOf(
   item: ItemOf<"CLOZE_CHOICE">,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   return wordChoiceItem(item, port, item.prompt, {
     prompt: koOf(port, item.context.ko),
@@ -217,6 +228,7 @@ export function clozeChoiceItemOf(
       item.options.map((option) => option.roman),
     ),
     answerIndex: correctIndex(item.options),
+    audio: catalogRecordedEchoOf(item, port),
   });
 }
 
@@ -238,14 +250,14 @@ export function replySelectItemOf(
       item.options.map((option) => option.roman),
     ),
     answerIndex: correctIndex(item.options),
-    audio: catalogListenAudioOf(item, port),
+    audio: catalogReplySelectAudioOf(item, port),
   });
 }
 
 /** 조사를 고치거나 채우는 단어 선택입니다(PARTICLE_FILL · PARTICLE_SWAP). */
 export function particleItemOf(
   item: ItemOf<"PARTICLE_FILL" | "PARTICLE_SWAP">,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   const text = item.stimulus.text;
   if (text === undefined) return skippedItem(item, "malformed");
@@ -260,41 +272,6 @@ export function particleItemOf(
       item.options.map((option) => option.roman),
     ),
     answerIndex: correctIndex(item.options),
+    audio: catalogRecordedEchoOf(item, port),
   });
-}
-
-/**
- * 그림 고르기입니다 — 그림이 붙은 단어 선택 문항이며 제시문은 정답 낱말의 영어 뜻입니다. 검사 순서는
- * 모양 → 그림 → 뜻입니다.
- */
-export function pictureChoiceItemOf(
-  item: ItemOf<"IMG_MATCH">,
-  port: CatalogLessonItemPort,
-): CatalogMappedItem {
-  const choices = item.options.map((option) => koOf(port, option.ko));
-  const answerIndex = correctIndex(item.options);
-  if (!hasTwo(choices) || choices.includes("") || answerIndex < 0) {
-    return skippedItem(item, "malformed");
-  }
-  const correct = item.options[answerIndex];
-  const path = item.stimulus.imageUrl;
-  const url = path === undefined ? null : port.imageUrlOf(path);
-  if (url === null) return skippedItem(item, "image-missing");
-  const prompt = englishOf(port, correct?.en) ?? port.glossOf(item.ref);
-  if (prompt === undefined || prompt === null) return skippedItem(item, "no-gloss");
-  const choiceRoms = choiceRomanizationsOf(
-    port,
-    item.options.map((option) => option.roman),
-  );
-  const question: WordChoiceQuestion = {
-    prompt,
-    choices,
-    choicesSource: item.options.map((option) => option.ko),
-    answerIndex,
-    ...optionalField("instruction", instructionOf(port, item.prompt)),
-    ...audioField(catalogAnswerEchoOf(item, port)),
-    ...(choiceRoms === undefined ? {} : { choiceRomanizations: choiceRoms }),
-    picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
-  };
-  return { kind: "word-choice", itemId: item.id, question };
 }

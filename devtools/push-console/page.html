@@ -111,7 +111,9 @@
         display: grid;
         gap: var(--libitum-layout-gap-block);
       }
-      section[hidden] {
+      section[hidden],
+      .row[hidden],
+      .field[hidden] {
         display: none !important;
       }
       section {
@@ -900,6 +902,49 @@
                 </button>
               </div>
             </div>
+            <div class="field">
+              <label class="t-label-l" for="f-reward">눌러 들어오면 주는 보상</label>
+              <div class="field-box">
+                <select id="f-reward" aria-describedby="reward-help">
+                  <option value="none" selected>보상 없음</option>
+                  <option value="coins">엽전</option>
+                  <option value="unlimited_tickets">무제한 티켓</option>
+                </select>
+              </div>
+            </div>
+            <div class="row" id="reward-row" hidden>
+              <div class="field" id="reward-amount-field">
+                <label class="t-label-l" for="f-reward-amount">엽전 수</label>
+                <div class="field-box">
+                  <input id="f-reward-amount" type="number" min="1" max="1000" value="100" /><span
+                    class="suffix"
+                    >개</span
+                  >
+                </div>
+              </div>
+              <div class="field" id="reward-hours-field" hidden>
+                <label class="t-label-l" for="f-reward-hours">무제한 티켓 시간</label>
+                <div class="field-box">
+                  <input id="f-reward-hours" type="number" min="1" max="168" value="24" /><span
+                    class="suffix"
+                    >시간</span
+                  >
+                </div>
+              </div>
+              <div class="field">
+                <label class="t-label-l" for="f-reward-claim">받을 기한(발송 뒤, 시간)</label>
+                <div class="field-box">
+                  <input id="f-reward-claim" type="number" min="1" max="336" value="48" /><span
+                    class="suffix"
+                    >시간 안</span
+                  >
+                </div>
+              </div>
+            </div>
+            <p class="t-body-s muted" style="margin: 0" id="reward-help">
+              알림을 눌러 앱에 들어온 사람이 한 번 받아요. 대조군은 받지 않아요(서버가 보낸 그룹만
+              기록). 문구에 보상과 기한을 적어 주세요.
+            </p>
           </div>
 
           <div class="card stack">
@@ -1273,12 +1318,36 @@
                 },
               }
             : {}),
+          reward: rewardInput(),
           copy: copyOut,
           variants: (abOn() ? variants : variants.slice(0, 1)).map((variant) => ({
             label: variant.label,
             copy: cleanCopy(variant.copy),
           })),
         };
+      }
+
+      // 보상(ADR-0175) — 서버(`reward.mjs`)가 값을 다시 고르고 검사합니다.
+      function rewardInput() {
+        return {
+          kind: $("#f-reward").value,
+          amount: $("#f-reward-amount").value,
+          hours: $("#f-reward-hours").value,
+          claimHours: $("#f-reward-claim").value,
+        };
+      }
+      function syncRewardRow() {
+        const kind = $("#f-reward").value;
+        $("#reward-row").hidden = kind === "none";
+        $("#reward-amount-field").hidden = kind !== "coins";
+        $("#reward-hours-field").hidden = kind !== "unlimited_tickets";
+        resetPreview();
+      }
+      function rewardText(reward) {
+        if (!reward) return "보상 없음";
+        const what =
+          reward.kind === "coins" ? `엽전 ${reward.amount}` : `무제한 티켓 ${reward.hours}시간`;
+        return `${what} · 발송 뒤 ${reward.claimHours}시간 안에 받기`;
       }
 
       let lastPreview = null;
@@ -1352,6 +1421,7 @@
               <div class="kpi"><span class="t-label-m muted">보낼 사람</span><span class="t-metric sent-color">${result.sent.toLocaleString()}</span></div>
               <div class="kpi"><span class="t-label-m muted">대조군</span><span class="t-metric control-color">${result.control.toLocaleString()}</span></div>
             </div>
+            <div><span class="t-label-m muted">보상</span><div class="t-body-m" style="margin-top:var(--libitum-spacing-4)">${esc(rewardText(result.reward))}</div></div>
             <div><span class="t-label-m muted">빠진 사람</span><div style="margin-top:var(--libitum-spacing-4)">${excluded || '<span class="t-body-s subtle">없음</span>'}</div></div>
             <div><span class="t-label-m muted">문구 언어</span><div style="margin-top:var(--libitum-spacing-4)">${langs || '<span class="t-body-s subtle">—</span>'}</div></div>
             ${
@@ -1412,7 +1482,7 @@
         $("#dialog-root").innerHTML = `<div class="scrim">
           <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
             <h2 class="t-heading-s" id="dialog-title">${lastPreview.sent.toLocaleString()}명에게 보낼까요</h2>
-            <p class="t-body-m muted" id="dialog-desc">대조군 ${lastPreview.control.toLocaleString()}명은 받지 않아요. 보낸 알림은 되돌릴 수 없어요. 확인하려면 보낼 사람 수 ${lastPreview.sent}명을 적어 주세요.</p>
+            <p class="t-body-m muted" id="dialog-desc">대조군 ${lastPreview.control.toLocaleString()}명은 받지 않아요. 보상: ${esc(rewardText(lastPreview.reward))}. 보낸 알림은 되돌릴 수 없어요. 확인하려면 보낼 사람 수 ${lastPreview.sent}명을 적어 주세요.</p>
             <div class="field"><div class="field-box"><input id="confirm-text" inputmode="numeric" placeholder="${lastPreview.sent}" aria-label="보낼 사람 수" autocomplete="off" /><span class="suffix">명</span></div></div>
             <p class="t-body-s error-text" id="dialog-error" hidden></p>
             <div class="actions">
@@ -1560,6 +1630,9 @@
         }
         syncHoursRow();
         setHoldout(item.holdoutPercent);
+        // 추천은 보상을 고르지 않습니다 — 보상은 운영자가 직접 붙입니다(ADR-0175).
+        $("#f-reward").value = "none";
+        syncRewardRow();
         const given = item.variants?.length
           ? item.variants
           : [{ id: "a", label: "기본 톤", copy: item.copy }];
@@ -1855,6 +1928,7 @@
               <div class="kpi"><span class="t-label-m muted">대조군</span><span class="t-metric control-color">${results.counts.control}</span></div>
               <div class="kpi"><span class="t-label-m muted">기기 전달 성공</span><span class="t-metric">${campaign.status === "scheduled" || campaign.totals === null ? "—" : (totals.sent ?? 0)}</span></div>
               <div class="kpi"><span class="t-label-m muted">전달 실패</span><span class="t-metric">${campaign.totals === null ? "—" : (totals.failed ?? 0) + (totals.failedCalls ?? 0)}</span></div>
+              ${campaign.reward ? `<div class="kpi"><span class="t-label-m muted">보상 받음 — ${esc(rewardText(campaign.reward))}</span><span class="t-metric sent-color">${campaign.claimed ?? "—"} / ${results.counts.sent}</span></div>` : ""}
             </div>
             <div>
               <div class="legend t-body-s"><span><i class="bar-sent"></i>보낸 그룹</span><span><i class="bar-control"></i>대조군 — 보내지 않음</span></div>
@@ -1942,7 +2016,11 @@
       $("#preview").onclick = preview;
       $("#send").onclick = askConfirm;
       $("#f-hours-on").addEventListener("change", syncHoursRow);
+      $("#f-reward").addEventListener("change", syncRewardRow);
       for (const id of [
+        "#f-reward-amount",
+        "#f-reward-hours",
+        "#f-reward-claim",
         "#f-min",
         "#f-max",
         "#f-hours-on",

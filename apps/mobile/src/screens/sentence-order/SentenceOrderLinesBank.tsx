@@ -12,6 +12,8 @@ export type SentenceOrderLinesBankProps = {
   readonly interaction: SentenceOrderInteraction;
   /** 조각마다 로마자입니다(`chips`와 같은 길이). 없으면 한 줄 조각입니다(ADR-0153). */
   readonly romanizations?: readonly string[] | null;
+  /** 고민 힌트가 켜진 조각의 인덱스(ADR-0177) — 없으면 null. */
+  readonly nudgedIndex?: number | null;
   readonly onTap: (index: number) => void;
 };
 
@@ -21,6 +23,7 @@ export function SentenceOrderLinesBank({
   placedChipIndexes,
   interaction,
   romanizations,
+  nudgedIndex = null,
   onTap,
 }: SentenceOrderLinesBankProps): ReactNode {
   return (
@@ -41,6 +44,7 @@ export function SentenceOrderLinesBank({
             placedOrdinal={null}
             disabled={interaction === "locked"}
             romanization={romanizations?.[chipIndex]}
+            nudged={nudgedIndex === chipIndex}
             onTap={onTap}
           />
         ),
