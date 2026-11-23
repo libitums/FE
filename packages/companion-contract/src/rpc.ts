@@ -123,21 +123,6 @@ export const companionMessageSchema = z.object({
   suggestions: z.optional(z.nullable(z.array(replySuggestionSchema))),
   /** 캐릭터 메시지의 👍/👎(20261124). 평가가 없거나 유저 메시지면 null, 옛 서버는 칸이 없습니다. 고쳐서 숨긴 턴은 목록에 오지 않습니다. */
   rating: z.optional(z.nullable(messageRatingSchema)),
-  /**
-   * 친구 스토리 답장의 인용(20261228, ADR-0178 D5). 유저 메시지가 `story_id`를 실어 보냈을 때만, 아니면 null. 옛 서버는 칸이 없습니다.
-   * `imagePath`는 버킷 상대 경로(앱이 아바타와 같은 해석기로 주소를 만듭니다).
-   */
-  story: z.optional(
-    z.nullable(
-      z.object({
-        id: z.uuid(),
-        characterId: z.string(),
-        line: z.string(),
-        imagePath: z.string(),
-        postedAt: z.iso.datetime({ offset: true }),
-      }),
-    ),
-  ),
   createdAt: z.iso.datetime({ offset: true }),
 });
 

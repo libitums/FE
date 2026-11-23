@@ -40,7 +40,6 @@ import { useChatRoom } from "./use-chat-room";
 import { useChatEntrances } from "./use-chat-entrance";
 import { useChatTurns } from "./use-chat-turns";
 import { useCoinBalance } from "./use-coin-balance";
-import { useStoryReply } from "./use-story-reply";
 
 import "./messenger-chat.css";
 
@@ -71,7 +70,6 @@ export function MessengerChatScreen({
   // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
   const serverBusy = useRef(false);
   const guest = useGuestGate(onSignInRequired); // 비회원 — 보내기 · 계정 동작은 로그인 권유(ADR-0166)
-  const story = useStoryReply(roomId, source, () => !serverBusy.current && gate.current()); // 친구 스토리 답장 넘김 · 인용 띠(ADR-0178 D5)
   const room = useChatRoom({
     roomId,
     source,
@@ -79,10 +77,8 @@ export function MessengerChatScreen({
     keyboardHeightStore,
     edges,
     onExit,
-    // 무료 안내인 스토리 답장은 앱의 체험 · 엽전 관문을 지나지 않습니다 — 정본은 서버 판정(ADR-0178 D6).
-    authorizeSend: (idea) => !serverBusy.current && story.authorize(idea, () => gate.current()),
+    authorizeSend: () => !serverBusy.current && gate.current(),
     guest: guest.active,
-    takeSendOptions: story.takeSendOptions,
   });
   const { state, plan, thread, birthYear, preferences, keyboardHeight, send } = room;
   const dispatch = useMemo(() => guest.guard(room.dispatch), [room.dispatch, guest.active]);
@@ -272,10 +268,7 @@ export function MessengerChatScreen({
             {...(guide.step === "voice" ? { onTakeVoiceSample: guide.takeSample } : {})}
             guest={guest.active}
             aboveComposer={
-              <>
-                {story.bar(thread.counterpart.name)}
-                {turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null}
-              </>
+              turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null
             }
           />
         )}

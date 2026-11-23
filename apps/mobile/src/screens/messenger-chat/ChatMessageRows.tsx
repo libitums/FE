@@ -17,7 +17,6 @@ import { ChatActionRow } from "./ChatActionRow";
 import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
-import { StoryQuoteCard } from "./StoryQuote";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
 import { ChatMediaNoticeRow } from "./ChatMediaNotice";
 import type { ChatEntrance } from "./chat-entrance";
@@ -101,32 +100,21 @@ function RowBody({
           );
         const notes = notesOf(thread, message.id);
         const open = openTools[message.id];
-        const bubble = (
-          <MyMessageRow
-            messageId={message.id}
-            ko={message.text.ko}
-            speaker={learnerName}
-            view={myBubbleViewOf(open, notes)}
-            tools={bubbleToolRowOf(open, notes, thread.server === null ? "shown" : "hidden")}
-            motion={motion}
-            onToggle={(tool) => onToggleTool(message.id, tool)}
-            onResend={
-              feedback.resendableId === message.id ? () => feedback.onResend(message.id) : null
-            }
-            chatWords={notes.chatWords ?? null}
-          />
-        );
-        // 스토리 답장(ADR-0178 D5)이면 말풍선 위에 인용 카드 — 줄은 가로라 둘을 세로 묶음에 담습니다.
         return (
           <ChatOutgoingRow testId={ids.outgoing}>
-            {message.story === undefined ? (
-              bubble
-            ) : (
-              <view className="story-reply-stack">
-                <StoryQuoteCard quote={message.story} name={counterpart.name} now={Date.now()} />
-                {bubble}
-              </view>
-            )}
+            <MyMessageRow
+              messageId={message.id}
+              ko={message.text.ko}
+              speaker={learnerName}
+              view={myBubbleViewOf(open, notes)}
+              tools={bubbleToolRowOf(open, notes, thread.server === null ? "shown" : "hidden")}
+              motion={motion}
+              onToggle={(tool) => onToggleTool(message.id, tool)}
+              onResend={
+                feedback.resendableId === message.id ? () => feedback.onResend(message.id) : null
+              }
+              chatWords={notes.chatWords ?? null}
+            />
           </ChatOutgoingRow>
         );
       }

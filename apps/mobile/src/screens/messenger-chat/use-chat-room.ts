@@ -13,6 +13,7 @@ import {
   restoreAccessibilityFocus,
 } from "./chat-input-focus";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
+import { chatTurnsTestIds as turnIds } from "./chat-turns.contract";
 import { focusOriginOf, type ChatFocusOrigin } from "./chat-overlay-focus";
 import {
   chatRoomReducer,
@@ -26,13 +27,13 @@ import { canSend } from "./chat-rules";
 import type {
   ChatBirthYear,
   ChatPreferences,
-  ChatSendOptions,
   ChatSource,
   ChatThread,
 } from "./chat-source.contract";
 import { keyboardPlanFor, type KeyboardPlan } from "./keyboard-plan";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
-import { originTestId } from "./chat-focus-origins";
+import { chatFeedbackTestIds } from "./chat-feedback.contract";
+import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { useChatSnapshot, useChatThread } from "./use-chat-source";
 import { useEntryBirthYear } from "./use-entry-birth-year";
@@ -46,11 +47,9 @@ export type UseChatRoomProps = {
   readonly edges: KeyboardDockEdges;
   readonly onExit: () => void;
   /** 보내기 관문입니다(턴 · 엽전). 거짓이면 글을 그대로 두고 아무것도 보내지 않습니다. 기본은 늘 참. */
-  readonly authorizeSend?: (idea: boolean) => boolean; // idea = 답장 보기(아이디어)로 보냄
+  readonly authorizeSend?: () => boolean;
   /** 비회원(ADR-0166) — 방을 열 때 생년을 묻지 않습니다(2026-11-20). */
   readonly guest?: boolean;
-  /** 입력 줄의 글을 보낼 때 한 번 꺼내는 선택 칸(친구 스토리 인용, ADR-0178 D5 — 꺼내면 띠가 떨어짐). 답장 보기에는 싣지 않습니다. */
-  readonly takeSendOptions?: () => ChatSendOptions | undefined;
 };
 
 export type ChatRoomApi = {
@@ -64,6 +63,23 @@ export type ChatRoomApi = {
   readonly measureKeyboard: (height: number) => void;
   readonly dispatch: (action: ChatRoomAction) => void;
   readonly send: (idea?: string) => void;
+};
+
+const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
+  more: ids.more,
+  settings: ids.settings,
+  "snapshot-pill": ids.snapshot,
+  "voice-pill": ids.snapVoice,
+  "sidebar-story-point": ids.sidebarStoryPoint,
+  "sidebar-clear": ids.sidebarClear,
+  // 엽전 상점을 연 것은 사이드바의 「Get coins」 단추입니다(엽전 상자 전체가 아니라 접근성 요소인 단추에 id가 있습니다).
+  "sidebar-coins": ids.sidebarGetCoins,
+  // 1.5 초점 되돌림 자리 — 턴 표시 조각의 test-id입니다(spec §10).
+  send: turnIds.coinSend,
+  "sidebar-birth-year": ids.sidebarBirthYear,
+  "blocked-change-year": ids.blockedChangeYear,
+  "sidebar-feedback-mode": chatSettingsTestIds.sidebarFeedback,
+  rating: chatFeedbackTestIds.ratingBad,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */
@@ -82,7 +98,6 @@ export function useChatRoom({
   onExit,
   authorizeSend,
   guest = false,
-  takeSendOptions,
 }: UseChatRoomProps): ChatRoomApi {
   // 키보드 규칙은 마운트 때 한 번만 읽습니다(앞으로 나올 때 다시 읽기는 2단계).
   const [plan] = useState(() => keyboardPlanFor("chat", keyboardProbe.presence()));
@@ -100,8 +115,6 @@ export function useChatRoom({
   exitRef.current = onExit;
   const authorizeRef = useRef(authorizeSend);
   authorizeRef.current = authorizeSend;
-  const takeOptionsRef = useRef(takeSendOptions);
-  takeOptionsRef.current = takeSendOptions;
 
   // 방이 열리면 안 읽은 수가 0이 되고, 나가면 이 방을 「열린 방」에서 풉니다(리뷰 #1).
   useEffect(() => {
@@ -163,11 +176,9 @@ export function useChatRoom({
     const current = stateRef.current;
     if (idea !== undefined && current.slot.kind !== "ideas") return; // 판이 이미 접힘 — 같은 렌더의 연속 탭
     if (!canSend(idea ?? current.text)) return;
-    if (authorizeRef.current !== undefined && !authorizeRef.current(idea !== undefined)) return;
-    const options = idea === undefined ? takeOptionsRef.current?.() : undefined;
+    if (authorizeRef.current !== undefined && !authorizeRef.current()) return;
     try {
-      if (options === undefined) source.sendText(roomId, idea ?? current.text);
-      else source.sendText(roomId, idea ?? current.text, options); // 스토리 인용(ADR-0178 D5)
+      source.sendText(roomId, idea ?? current.text);
     } catch {} // 던져도 입력 칸 비우기가 끊기지 않게 합니다(device-findings-1 D5).
     // `stateRef`는 렌더 때만 갱신되므로, 같은 렌더 안의 연속 탭이 다시 보내지 않게 바로 맞춥니다(리뷰 P3-1).
     stateRef.current =

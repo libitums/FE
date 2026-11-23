@@ -268,8 +268,7 @@ export type ChatSendLogEntry = {
     | "companion_after_turn"
     | "companion_proactive"
     | "companion_memory_flush"
-    | "companion_eval"
-    | "companion_stories";
+    | "companion_eval";
   readonly status: number | "stream";
   readonly outcome?: string;
   readonly error?: string;

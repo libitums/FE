@@ -35,15 +35,9 @@ export function pushTargetOpener({
         name: "push_notification_opened",
         target: target.kind,
         ...(target.variant === null ? {} : { variant: target.variant }),
-        ...(target.story === true ? { story: true as const } : {}),
       });
-      const actions = companionPushActions(
-        chatSource,
-        target.characterId,
-        canOpenChats(),
-        target.story === true,
-      );
-      for (const action of actions) dispatch(action);
+      for (const action of companionPushActions(chatSource, target.characterId, canOpenChats()))
+        dispatch(action);
       return;
     }
     notificationEventSink?.({ name: "push_notification_opened", target: target.kind });

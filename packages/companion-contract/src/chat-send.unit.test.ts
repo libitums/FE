@@ -58,12 +58,6 @@ describe("chat-send 요청", () => {
     );
   });
 
-  test("CS3e. story_id는 있으면 UUID(친구 스토리 답장 — ADR-0178)", () => {
-    const story_id = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
-    expect(chatSendRequestSchema.parse({ ...valid, story_id })).toEqual({ ...valid, story_id });
-    expect(chatSendRequestSchema.safeParse({ ...valid, story_id: "story-1" }).success).toBe(false);
-  });
-
   test("CS3c. suggestion은 칩이 묶인 메시지 id와 자리(0 ~ 2)", () => {
     const suggestion = { message_id: "0d4e5f60-1a2b-4c3d-8e4f-5a6b7c8d9e01", index: 1 };
     expect(chatSendRequestSchema.parse({ ...valid, suggestion })).toEqual({ ...valid, suggestion });

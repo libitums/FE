@@ -34,9 +34,5 @@
   {
     "path": "apps/mobile/src/screens/ranking/ranking-motion.css",
     "reason": "주간 순위 화면의 등장 연출(사용자 결정 2026-11-22, 시안 「랭킹 모션」, ADR-0170 D12). 메달이 튀어나올 때의 시작 · 넘침 크기 scale(0.3) · scale(1.18), 내 줄이 한 번 커지는 scale(1.025), 강조 고리가 번지는 scale(1.06)은 scale 토큰 셋(0.95 · 0.96 · 0.8, 모두 1보다 작다)으로 표현할 수 없는 연출 값이다. 길이(d6 · d7 · d8) · 가속(enter · enter-expressive · easing) · 지연(d1 배수)은 전부 토큰이다. 모두 한 번만 돌고, 움직임 줄이기에서는 클래스도 고리 요소도 서지 않는다. 이 파일 밖의 새 리터럴은 허용하지 않는다."
-  },
-  {
-    "path": "apps/mobile/src/screens/messenger-chat/story-progress.css",
-    "reason": "친구 스토리 보기의 진행 막대(사용자 결정 2026-11-23, 시안 「친구 스토리」 2번, ADR-0178 D4). Content 예외 — 한 장을 보이는 시간 6000ms는 콘텐츠 길이(`STORY_SHOW_MS`)이고 가장 긴 UI 토큰(d9 1000ms)으로 표현할 수 없다. 채움 scaleX(0) → scaleX(1)은 막대가 0에서 차오르는 연출 값으로 scale 토큰(0.95 · 0.96 · 0.8)으로 표현할 수 없다. 가속은 토큰(linear)이다. 움직임 줄이기에서는 이 클래스가 붙지 않고 막대가 찬 채 멈추며 저절로 넘어가지 않는다. 이 파일 밖의 새 리터럴은 허용하지 않는다."
   }
 ]

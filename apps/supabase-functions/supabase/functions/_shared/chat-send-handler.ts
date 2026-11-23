@@ -22,7 +22,6 @@ import {
   readBody,
 } from "./chat-send-http.ts";
 import { resolveChoice } from "./chat-send-choice.ts";
-import { claimStory } from "./chat-send-story.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
 import { memoryLine } from "./companion-memory.ts";
 import { runAfterTurn } from "./companion-after-turn.ts";
@@ -62,19 +61,6 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     const checked = await readBody(request);
     if (!checked.ok) return respond(checked.response);
     const body = checked.body;
-
-    // 친구 스토리 답장(ADR-0178 D6): 첫 답장 무료는 관문 **전에** 판정한다 — 무료면 금액 0 예약이 먼저 서고, 관문의 엽전 부족 판정과
-    // 시작(`begin_turn`)이 그 예약을 그대로 쓴다. 실패하면 보통 턴(값은 보통).
-    const story =
-      body.story_id === undefined
-        ? null
-        : await claimStory(deps.outbound, env, {
-            userId: caller.userId,
-            storyId: body.story_id,
-            characterId: body.character_id,
-            clientMessageId: body.client_message_id,
-            now: new Date(deps.nowMs()).toISOString(),
-          });
 
     let gate: GateResult;
     try {
@@ -161,7 +147,6 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       playground: caller.playground,
       historyKeep,
       usage,
-      story,
     };
     const work = runTurn(context)
       .catch((): TurnOutcome => {
@@ -171,11 +156,10 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       .then(async ({ outcome, afterTurn, suggestions }) => {
         sink.close();
         const turnUsage = usageLine(usage.summary());
-        const storyNote = story === null ? "" : ` story=${story.result}`;
         deps.log({
           event: "chat_send",
           status: "stream",
-          outcome: `${turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`}${storyNote}`,
+          outcome: turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`,
         });
         // 입력 출처를 유저 메시지에, 앞 캐릭터 메시지의 칩 셋에 결과(고름 · 고침 · 무시)를 적는다. 실패해도 턴은 끝났다.
         await callRpc(deps.outbound, env, "companion_record_choice", {

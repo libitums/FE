@@ -6,7 +6,6 @@ import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import type { VisibleFriend } from "./friend-catalog.contract";
-import type { FriendStory } from "./friend-stories.contract";
 
 /** 서버 기록 한 쪽을 앱 모양으로 푼 값입니다. 오래된 것부터, 숨김 메시지는 빠져 있습니다. */
 export type RemoteHistory = {
@@ -46,8 +45,6 @@ export type ChatRemote = {
       readonly characterId: string;
       readonly text: string;
       readonly clientMessageId: string;
-      /** 친구 스토리 답장(ADR-0178 D5) — 요청 몸 `story_id`. */
-      readonly storyId?: string;
     },
     handlers: RemoteTurnHandlers,
   ) => { readonly cancel: () => void };
@@ -66,14 +63,6 @@ export type ChatRemote = {
   readonly earlyAccess?: EarlyAccessRemote;
   /** 추천 친구(20261216, ADR-0164) — 보이는 친구 · 성인 확인. 없으면(옛 테스트 원격) 추천 친구가 서지 않습니다. */
   readonly friends?: CompanionFriendsRemote;
-  /** 친구 스토리(ADR-0178 D2) — 없으면(옛 테스트 원격) 스토리가 서지 않습니다. */
-  readonly stories?: CompanionStoriesRemote;
-};
-
-/** 친구 스토리 RPC — 던지지 않습니다. */
-export type CompanionStoriesRemote = {
-  /** `companion_friend_stories()` — 살아 있는 스토리(최근 순). 못 읽으면 null. */
-  readonly list: () => Promise<readonly FriendStory[] | null>;
 };
 
 /** 추천 친구 RPC — 어떤 호출도 던지지 않습니다. */

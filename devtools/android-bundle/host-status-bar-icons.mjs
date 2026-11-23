@@ -138,11 +138,6 @@ export const statusBarSurfaceRegistry = {
         { component: "AlbumPhotoViewer", file: "screens/messenger-chat/AlbumPhotoViewer.tsx" },
       ],
     },
-    // 친구 스토리 보기(ADR-0178) — 짙은 바탕(gray-950) · 사진 위 검정 그늘을 띠 밑까지 덮어 밝은 아이콘을 단다.
-    "screens/messenger-chat/story-viewer.css": {
-      classification: "light-icons",
-      carriers: [{ component: "StoryViewer", file: "screens/messenger-chat/StoryViewer.tsx" }],
-    },
     "components/first-unit-guide.css": {
       classification: "light-icons",
       carriers: [
