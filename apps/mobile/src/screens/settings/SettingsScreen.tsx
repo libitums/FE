@@ -33,6 +33,7 @@ export function SettingsScreen({
   sessionOptions,
   onToggleSessionOption,
   onOpenChatSettings,
+  onOpenMyStories,
   onOpenPlans,
   rankingHidden,
 }: SettingsScreenProps): ReactNode {
@@ -62,6 +63,18 @@ export function SettingsScreen({
             description: chatCopy.entryDescription,
             onNavigate: onOpenChatSettings,
           },
+          // 「My stories」(ADR-0179) — 내 스토리 보관함 · 보관 스위치 · 지우기.
+          ...(onOpenMyStories === undefined || onOpenMyStories === null
+            ? []
+            : [
+                {
+                  id: "my-stories",
+                  trailing: "navigation" as const,
+                  title: copy.messengerChat.myStories.archive.entryTitle,
+                  description: copy.messengerChat.myStories.archive.entryDescription,
+                  onNavigate: onOpenMyStories,
+                },
+              ]),
         ];
   // 「Plans」 줄(ADR-0144) — 요금제 비교 화면. 기능 플래그가 꺼졌거나 비회원이면 결선이 없어 줄도 없습니다.
   const planItems: readonly SettingsGroupItem[] =

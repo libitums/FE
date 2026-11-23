@@ -117,6 +117,11 @@ export const statusBarSurfaceRegistry = {
       carriers: [],
     },
     // 추천 친구 프로필 시트(ADR-0162) — 새 친구 시트와 같은 ui-lynx 기본 스크림이라 표지가 없다.
+    // 내 스토리 만들기 · 보기 층(ADR-0179) — 밝은 앱 바탕(background-primary)을 띠 밑까지 덮어 기본(어두운) 아이콘 그대로라 표지가 없다.
+    "screens/messenger-chat/my-stories.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     "screens/messenger-chat/suggested-sheet.css": {
       classification: "default-scrim",
       carriers: [],

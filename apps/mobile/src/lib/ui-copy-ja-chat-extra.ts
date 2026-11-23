@@ -5,12 +5,14 @@ import { messengerChatMediaJa } from "./ui-copy-ja-chat-media";
 import { messengerChatAlbumJa } from "./ui-copy-ja-chat-album";
 import { messengerChatSuggestedJa } from "./ui-copy-ja-chat-suggested";
 import { messengerChatStoriesJa } from "./ui-copy-ja-chat-stories";
+import { myStoriesJa } from "./ui-copy-ja-my-stories";
 
 export const messengerChatExtraJa: MessengerChatExtraCopy = {
   media: messengerChatMediaJa,
   album: messengerChatAlbumJa,
   suggested: messengerChatSuggestedJa,
   stories: messengerChatStoriesJa,
+  myStories: myStoriesJa,
   access: {
     signInTitle: "出会った人とメッセージしよう",
     signInBody:

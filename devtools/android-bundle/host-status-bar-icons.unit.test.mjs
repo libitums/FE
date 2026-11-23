@@ -514,6 +514,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
     "screens/messenger-chat/friend-directory.css",
     // 메신저 첫 입장 목록 안내(ADR-0139) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/messenger-guide.css",
+    // 내 스토리 만들기 · 보기 층(ADR-0179) — 밝은 앱 바탕, 표지 없음.
+    "screens/messenger-chat/my-stories.css",
     // 메신저 새 친구 시트(ADR-0117) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/new-friend.css",
     // 친구 스토리 보기(ADR-0178) — 짙은 바탕 · 사진 그늘이라 밝은 아이콘 표지.

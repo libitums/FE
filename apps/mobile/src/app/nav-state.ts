@@ -57,6 +57,8 @@ export type Screen =
   | { name: "download-settings" }
   // 설정 탭의 「Chats」 화면입니다(ADR-0126).
   | { name: "chat-settings" }
+  // 설정 탭의 「My stories」 화면입니다(ADR-0179) — 내 스토리 보관함.
+  | { name: "my-stories" }
   // 요금제 비교(ADR-0144) — 연 자리(설정 · 티켓 · 메신저)의 스택에 쌓입니다. `focus`는 처음 고를 요금제(없으면 BEST)입니다.
   | { name: "plans"; placement: PlanPlacement; focus: PlanId | null }
   // 기억 화면입니다(ADR-0126). 인물 id · 이름이 없으면 공유 층(설정 탭에서), 있으면 그 인물 층(방 사이드바에서)입니다.

@@ -37,13 +37,15 @@ export function useStoryReply(
   const attachedRef = useRef(attached);
   attachedRef.current = attached;
   const replied = (via: "chip" | "typed", { quote, free }: Attached) =>
-    emit({
-      name: "friend_story_replied",
-      surface: "chat",
-      characterId: quote.characterId,
-      via,
-      free,
-    });
+    quote.kind === "mine"
+      ? emit({ name: "my_story_replied", surface: "chat", characterId: quote.characterId })
+      : emit({
+          name: "friend_story_replied",
+          surface: "chat",
+          characterId: quote.characterId,
+          via,
+          free,
+        });
 
   const freeSent = (characterId: string) => {
     emit({

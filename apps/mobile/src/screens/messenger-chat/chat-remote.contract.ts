@@ -7,6 +7,7 @@ import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import type { VisibleFriend } from "./friend-catalog.contract";
 import type { FriendStory } from "./friend-stories.contract";
+import type { MyStoriesState, MyStoryDraft, MyStoryPostResult } from "./my-stories.contract";
 
 /** 서버 기록 한 쪽을 앱 모양으로 푼 값입니다. 오래된 것부터, 숨김 메시지는 빠져 있습니다. */
 export type RemoteHistory = {
@@ -68,6 +69,16 @@ export type ChatRemote = {
   readonly friends?: CompanionFriendsRemote;
   /** 친구 스토리(ADR-0178 D2) — 없으면(옛 테스트 원격) 스토리가 서지 않습니다. */
   readonly stories?: CompanionStoriesRemote;
+  /** 내 스토리(ADR-0179) — 없으면(옛 테스트 원격) 「+」가 서지 않습니다. */
+  readonly myStories?: CompanionMyStoriesRemote;
+};
+
+/** 내 스토리 RPC — 던지지 않습니다. */
+export type CompanionMyStoriesRemote = {
+  readonly list: () => Promise<MyStoriesState | null>;
+  readonly post: (draft: MyStoryDraft) => Promise<MyStoryPostResult>;
+  readonly remove: (storyId: string | null) => Promise<boolean>;
+  readonly setKeep: (keep: boolean) => Promise<boolean | null>;
 };
 
 /** 친구 스토리 RPC — 던지지 않습니다. */

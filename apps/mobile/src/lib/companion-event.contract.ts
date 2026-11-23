@@ -3,6 +3,7 @@
 // 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
 import type { FriendStoryEvent } from "./friend-story-event.contract";
+import type { MyStoryEvent } from "./my-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
 
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
@@ -276,6 +277,7 @@ export type CompanionEvent =
   | CompanionUnlockEvent
   | SuggestedFriendEvent
   | FriendStoryEvent
+  | MyStoryEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

@@ -6,4 +6,14 @@ export const friendStoryEventNames = [
   "friend_story_replied",
   "friend_story_word_saved",
   "friend_story_closed",
+  // 내 스토리(ADR-0179).
+  "my_story_create_opened",
+  "my_story_guide_closed",
+  "my_story_posted",
+  "my_story_post_failed",
+  "my_story_viewed",
+  "my_story_answered",
+  "my_story_replied",
+  "my_story_deleted",
+  "my_story_keep_toggled",
 ] as const;

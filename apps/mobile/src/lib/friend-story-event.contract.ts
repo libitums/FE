@@ -18,6 +18,8 @@ export type FriendStoryEvent =
       readonly name: "friend_story_row_viewed";
       readonly count: string;
       readonly unseen: string;
+      /** 줄 맨 앞에 내 스토리 칸(「+」)이 섰는가(ADR-0179) — 친구 스토리 0개인 줄도 셉니다. */
+      readonly mine: boolean;
     })
   | (Common & {
       readonly name: "friend_story_viewed";
