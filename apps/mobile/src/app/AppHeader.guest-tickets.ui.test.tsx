@@ -47,7 +47,7 @@ const tapAction = (id: "sign-in" | "later") =>
 test("GT-U1 비회원 Get more tickets → 티켓 문구 대화상자, 지급 · 안내 없음", () => {
   const { onGetMore } = mount(true);
   expect(prompt()).not.toBeNull();
-  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Get more tickets");
+  expect(screen.getByTestId("ui-lynx-dialog-title").textContent).toBe("Get 1 ticket");
   expect(screen.getByTestId("ui-lynx-dialog-description").textContent).toBe(
     "Create a free account to keep your Yeopjeon and tickets.",
   );

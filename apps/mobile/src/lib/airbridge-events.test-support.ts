@@ -157,8 +157,8 @@ export const unmappedEvents = [
   { name: "progress_load_recovered", trigger: "auto" },
   { name: "progress_load_recovered", trigger: "manual" },
   { name: "tickets_ran_out" },
-  { name: "ticket_more_tapped", surface: "ticket_modal", granted: true },
-  { name: "ticket_more_tapped", surface: "out_of_tickets", granted: false },
+  { name: "ticket_more_tapped", surface: "ticket_modal", result: "bought", price: "20" },
+  { name: "ticket_more_tapped", surface: "out_of_tickets", result: "short", price: "20" },
   { name: "roleplay_story_opened", episodeId: "u01-water" },
   {
     name: "roleplay_story_completed",
