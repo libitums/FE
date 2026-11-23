@@ -28,7 +28,9 @@ export const messengerChatMediaMy: ChatMediaCopy = {
       case "unavailable":
         return "ဓာတ်ပုံနှင့် အသံမက်ဆေ့ချ်ကို ယခု သုံး၍ မရသေးပါ။";
       case "sample-gift":
-        return "ဒီတစ်ပုံ အခမဲ့ပါ! နောက်တစ်ခါ Snapshot က Yeopjeon သုံးပါမယ်။";
+        return photo
+          ? "ဒီတစ်ပုံ အခမဲ့ပါ! နောက်တစ်ခါ Snapshot က Yeopjeon သုံးပါမယ်။"
+          : "ဒီတစ်ခါ အခမဲ့ပါ! နောက်တစ်ခါ အသံ က Yeopjeon သုံးပါမယ်။";
       default:
         return "တောင်းဆိုမှု ပို့၍ မရပါ။ ချိတ်ဆက်မှုကို စစ်ပြီး ထပ်စမ်းကြည့်ပါ။";
     }

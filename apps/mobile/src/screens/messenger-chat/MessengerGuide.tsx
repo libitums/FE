@@ -9,7 +9,7 @@ import { useLayerBack } from "../../lib/use-back-handler";
 import { ChatListRow } from "./ChatListRow";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
-import type { GuideStep } from "./messenger-guide";
+import { isSampleStep, type GuideStep } from "./messenger-guide";
 
 import "./messenger-guide.css";
 
@@ -146,7 +146,7 @@ export type RoomGuideProps = {
 
 /**
  * 방 첫 입장 코치마크 — 머리 · 로그 위만 덮습니다. 아무 데나 탭 = Next. **건너뛸 수 없습니다**(사용자 결정 2026-11-23): Skip 단추가
- * 없고 뒤로가기는 삼키기만 합니다 — 단계를 끝까지 눌러야 끝납니다(예시 단계는 사진 알약).
+ * 없고 뒤로가기는 삼키기만 합니다 — 단계를 끝까지 눌러야 끝납니다(예시 단계는 사진 · 음성 알약).
  */
 export function MessengerRoomGuide({
   steps,
@@ -182,8 +182,8 @@ export function MessengerRoomGuide({
           body={copy.steps[step]}
           step={sampleOnly ? copy.newTag : copy.stepOf(index + 1, steps.length)}
         >
-          {/* 예시 단계는 사진 알약을 누르는 것이 다음입니다 — 「다음」 단추가 없습니다. */}
-          {step === "sample" ? null : (
+          {/* 예시 단계는 그 알약(사진 · 음성)을 누르는 것이 다음입니다 — 「다음」 단추가 없습니다. */}
+          {isSampleStep(step) ? null : (
             <GuideButton
               label={last ? copy.done : copy.next}
               testId={ids.guideCoachNext}

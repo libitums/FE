@@ -142,6 +142,8 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
         "You can also ask me for a photo or a voice message with the buttons above the keyboard.",
       sample:
         "Want to see what I'm up to? Tap Snapshot and I'll send you a photo. This first one is on me.",
+      voice:
+        "Want to hear it in my voice? Tap Snap voice and I'll read that message aloud. This first one is on me too.",
     },
     next: "Next",
     done: "Got it",

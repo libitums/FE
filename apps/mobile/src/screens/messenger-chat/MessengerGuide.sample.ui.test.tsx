@@ -47,18 +47,30 @@ const sampleMedia: RemoteMedia = {
   stage: null,
 };
 
-function serverSource(offered: boolean, result?: MediaRequestResult) {
+const voiceMedia: RemoteMedia = {
+  ...sampleMedia,
+  id: "44444444-4444-4444-8444-444444444444",
+  kind: "voice",
+  path: "samples/duksu-guide-voice-01.mp3",
+  aspect: null,
+};
+
+function serverSource(offered: boolean, result?: MediaRequestResult, voiceOffered = false) {
   const timers = fakeTimers();
   const claim = vi.fn(
-    async (): Promise<MediaRequestResult> =>
-      result ?? { kind: "accepted", media: sampleMedia, cached: false },
+    async (_messageId: string, kind: string): Promise<MediaRequestResult> =>
+      result ?? {
+        kind: "accepted",
+        media: kind === "voice" ? voiceMedia : sampleMedia,
+        cached: false,
+      },
   );
   const media: ChatMediaRemote = {
     request: vi.fn(async (): Promise<MediaRequestResult> => ({ kind: "failed" })),
     load: async () => [],
     sign: async (path) => `https://signed/${path}`,
     balance: async () => 100,
-    sample: { offer: vi.fn(async () => offered), claim },
+    sample: { offer: vi.fn(async () => ({ snapshot: offered, voice: voiceOffered })), claim },
   };
   const remote: ChatRemote = {
     loadHistory: async () => ({
@@ -126,7 +138,7 @@ describe("안내를 이미 본 사용자", () => {
     fireEvent.tap(pill(), {});
     await flush();
     expect(claim).toHaveBeenCalledTimes(1);
-    expect(claim).toHaveBeenCalledWith(A1);
+    expect(claim).toHaveBeenCalledWith(A1, "snapshot");
     expect(coach()).toBeNull();
     expect(screen.queryByTestId(ids.askDialog)).toBeNull();
     // 대기 말풍선이 바로 선다. 알약은 원래 가격으로.
@@ -199,5 +211,61 @@ describe("처음 온 사용자", () => {
     expect(claim).toHaveBeenCalledTimes(1);
     expect(coach()).toBeNull();
     expect(seen().sort()).toEqual(["list", "room", "snapshot"]);
+  });
+});
+
+describe("예시 음성 단계(스냅샷 다음)", () => {
+  const voicePill = () => screen.getByTestId(ids.snapVoice);
+
+  test("MG-UI15 사진 알약을 누르면 음성 단계로 넘어가고, 음성 알약에 고리 · FREE가 선다 — 누르면 결제 확인 없이 음성을 받고 끝난다", async () => {
+    const { source, claim, timers } = serverSource(true, undefined, true);
+    const { store, seen } = memoryStore(["list", "room"]);
+    mountChat({ source, roomId: "duksu", guideStore: store });
+    await flush();
+    expect(coach()?.getAttribute("data-step")).toBe("sample");
+    expect(voicePill().textContent).toContain("15");
+    fireEvent.tap(pill(), {});
+    await flush();
+    // 사진을 받는 동안 안내는 음성 단계로.
+    expect(coach()?.getAttribute("data-step")).toBe("voice");
+    expect(coach()?.textContent).toContain("Tap Snap voice");
+    expect(screen.queryByTestId(ids.guideCoachNext)).toBeNull();
+    expect(document.querySelector(".messenger-guide-target-voice")).not.toBeNull();
+    expect(voicePill().textContent).toContain("FREE");
+    expect(voicePill().getAttribute("accessibility-label")).toBe("Snap voice, FREE");
+    expect(pill().textContent).toContain("35");
+    // 말풍선 · 막을 눌러도 넘어가지 않는다.
+    fireEvent.tap(screen.getByTestId(ids.guideCoach), { eventType: "catchEvent" });
+    expect(coach()?.getAttribute("data-step")).toBe("voice");
+    fireEvent.tap(voicePill(), {});
+    fireEvent.tap(voicePill(), {});
+    await flush();
+    expect(coach()).toBeNull();
+    expect(screen.queryByTestId(ids.askDialog)).toBeNull();
+    expect(claim.mock.calls.map((call) => call[1])).toEqual(["snapshot", "voice"]);
+    expect(voicePill().textContent).toContain("15");
+    act(() => timers.advance(1500));
+    await flush();
+    expect(seen().sort()).toEqual(["list", "room", "snapshot", "voice"]);
+  });
+
+  test("MG-UI16 사진은 이미 봤고 음성만 제안되면 음성 단계만 「New」로 뜬다. 처음 온 사용자는 4단계", async () => {
+    const only = serverSource(false, undefined, true);
+    mountChat({
+      source: only.source,
+      roomId: "duksu",
+      guideStore: memoryStore(["list", "room", "snapshot"]).store,
+    });
+    await flush();
+    expect(coach()?.getAttribute("data-step")).toBe("voice");
+    expect(coach()?.textContent).toContain("New");
+    expect(pill().textContent).toContain("35");
+    cleanup();
+    resetSampleOfferMemoryForTests();
+
+    const fresh = serverSource(true, undefined, true);
+    mountChat({ source: fresh.source, roomId: "duksu", guideStore: memoryStore().store });
+    await flush();
+    expect(coach()?.textContent).toContain("1 of 4");
   });
 });

@@ -140,6 +140,8 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       media: "キーボードの上のボタンで、写真やボイスメッセージもお願いできます。",
       sample:
         "今なにをしているか見てみますか？Snapshotをタップすると写真を送ります。最初の1枚はサービスです。",
+      voice:
+        "声でも聞いてみますか？スナップボイスをタップするとそのメッセージを読み上げます。最初の1回はこちらもサービスです。",
     },
     next: "次へ",
     done: "わかりました",

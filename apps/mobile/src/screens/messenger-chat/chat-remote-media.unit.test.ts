@@ -369,15 +369,18 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     aspect: "3:2",
   });
   const sampleOf = (result: MediaRequestResult, offered = true) => ({
-    offer: vi.fn(async () => offered),
-    claim: vi.fn(async () => result),
+    offer: vi.fn(async () => ({ snapshot: offered, voice: offered })),
+    claim: vi.fn(async (_messageId: string, _kind: string) => result),
   });
 
   test("CM-U30 제안 — 서버가 준다고 할 때만, 예시 포트가 없으면(옛 원격) 거짓", async () => {
     const offered = await opened({
       sample: sampleOf({ kind: "accepted", media: sampleMedia, cached: false }),
     });
-    expect(await offered.source.sampleSnapshot?.offered("duksu")).toBe(true);
+    expect(await offered.source.sampleSnapshot?.offered("duksu")).toEqual({
+      snapshot: true,
+      voice: true,
+    });
     expect(offered.port.sample?.offer).toHaveBeenCalledWith("duksu");
     // 예시 포트가 없는 원격에서는 출처도 예시 길을 내놓지 않는다 — 안내가 답을 기다리지 않게.
     const none = await opened();
@@ -389,7 +392,7 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     const env = await opened({ sample });
     const done = env.source.sampleSnapshot?.claim("duksu");
     expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
-    expect(sample.claim).toHaveBeenCalledWith(A1);
+    expect(sample.claim).toHaveBeenCalledWith(A1, "snapshot");
     await flush();
     // 서버가 곧바로 답해도 잠깐은 만드는 중으로 보인다.
     expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending" });
@@ -403,6 +406,29 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
       aiGenerated: true,
     });
     expect(tail[1]).toMatchObject({ kind: "media-notice", media: "photo", notice: "sample-gift" });
+    expect(env.balances).toEqual([]);
+    expect(env.port.request).not.toHaveBeenCalled();
+  });
+
+  test("CM-U34 예시 음성 — 음성 대기 줄, 잠깐 뒤 음성 말풍선 · 「이번 것은 무료」 줄(음성). 서버에는 voice로 받는다", async () => {
+    const voice = media({
+      kind: "voice",
+      status: "complete",
+      path: "samples/duksu-guide-voice-01.mp3",
+    });
+    const sample = sampleOf({ kind: "accepted", media: voice, cached: false });
+    const env = await opened({ sample });
+    const done = env.source.sampleSnapshot?.claim("duksu", "voice");
+    expect(env.lines().at(-1)).toMatchObject({ kind: "voice-pending", startedAt: 1_000 });
+    expect(sample.claim).toHaveBeenCalledWith(A1, "voice");
+    await env.advance(1_500);
+    expect(await done).toBe(true);
+    const tail = env.lines().slice(-2);
+    expect(tail[0]).toMatchObject({
+      kind: "voice",
+      audioUrl: "https://signed/samples/duksu-guide-voice-01.mp3",
+    });
+    expect(tail[1]).toMatchObject({ kind: "media-notice", media: "voice", notice: "sample-gift" });
     expect(env.balances).toEqual([]);
     expect(env.port.request).not.toHaveBeenCalled();
   });

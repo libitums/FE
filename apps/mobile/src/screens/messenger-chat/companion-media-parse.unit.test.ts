@@ -220,12 +220,23 @@ describe("walletOf (CP-U6)", () => {
 });
 
 describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 장)", () => {
-  test("CM-U4a 제안 — { available: true }만 참, 깨진 본문 · 다른 모양은 거짓", () => {
-    expect(sampleOfferFrom('{"available":true}')).toBe(true);
-    expect(sampleOfferFrom('{"available":false}')).toBe(false);
-    expect(sampleOfferFrom('{"available":"yes"}')).toBe(false);
-    expect(sampleOfferFrom(null)).toBe(false);
-    expect(sampleOfferFrom("nope")).toBe(false);
+  test("CM-U4a 제안 — available · voice가 true일 때만 참, 깨진 본문 · 다른 모양은 둘 다 거짓", () => {
+    expect(sampleOfferFrom('{"available":true,"voice":true}')).toEqual({
+      snapshot: true,
+      voice: true,
+    });
+    // 음성 칸이 없는 앞 서버 답.
+    expect(sampleOfferFrom('{"available":true}')).toEqual({ snapshot: true, voice: false });
+    expect(sampleOfferFrom('{"available":false,"voice":true}')).toEqual({
+      snapshot: false,
+      voice: true,
+    });
+    expect(sampleOfferFrom('{"available":"yes","voice":1}')).toEqual({
+      snapshot: false,
+      voice: false,
+    });
+    expect(sampleOfferFrom(null)).toEqual({ snapshot: false, voice: false });
+    expect(sampleOfferFrom("nope")).toEqual({ snapshot: false, voice: false });
   });
 
   test("CM-U4b 받기 — ok · already는 받음(already는 cached), 서버가 막으면 거절(not-eligible), 깨진 본문은 실패", () => {

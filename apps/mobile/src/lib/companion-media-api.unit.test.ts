@@ -118,8 +118,8 @@ describe("상태 · 서명 · 지갑", () => {
 
 describe("예시 스냅샷", () => {
   test("CM-U8s 제안 · 받기 — RPC 이름과 인자, 실패는 거짓 · failed", async () => {
-    const offered = setup({ ok: true, status: 200, bodyText: '{"available":true}' });
-    expect(await offered.media.sample?.offer("duksu")).toBe(true);
+    const offered = setup({ ok: true, status: 200, bodyText: '{"available":true,"voice":true}' });
+    expect(await offered.media.sample?.offer("duksu")).toEqual({ snapshot: true, voice: true });
     expect(offered.requests[0]?.url).toBe(
       `${config.url}/rest/v1/rpc/companion_sample_snapshot_offer`,
     );
@@ -135,17 +135,20 @@ describe("예시 스냅샷", () => {
         media: { ...row, status: "complete", path: "samples/duksu-guide-01.png", aspect: "3:2" },
       }),
     });
-    expect(await claimed.media.sample?.claim(A1)).toMatchObject({
+    expect(await claimed.media.sample?.claim(A1, "voice")).toMatchObject({
       kind: "accepted",
       cached: false,
     });
     expect(claimed.requests[0]?.url).toBe(
       `${config.url}/rest/v1/rpc/companion_claim_sample_snapshot`,
     );
-    expect(JSON.parse(claimed.requests[0]?.init.body ?? "null")).toEqual({ p_message_id: A1 });
+    expect(JSON.parse(claimed.requests[0]?.init.body ?? "null")).toEqual({
+      p_message_id: A1,
+      p_kind: "voice",
+    });
 
     const down = setup({ ok: true, status: 500, bodyText: "" });
-    expect(await down.media.sample?.offer("duksu")).toBe(false);
-    expect(await down.media.sample?.claim(A1)).toEqual({ kind: "failed" });
+    expect(await down.media.sample?.offer("duksu")).toEqual({ snapshot: false, voice: false });
+    expect(await down.media.sample?.claim(A1, "snapshot")).toEqual({ kind: "failed" });
   });
 });
