@@ -30,7 +30,10 @@ export type PhotoPostDeps = {
 type PostBody = Extract<MyStoryRequest, { action: "post" }>;
 type Json = Record<string, unknown>;
 
-/** 사진을 읽는다. 제때 끝나지 않거나 실패하면 null(다시 보기). */
+/**
+ * 사진을 읽는다. 제때 끝나지 않거나 실패하면 null(다시 보기). 읽기 구현이 신호를 듣지 않아도 제때 돌아오게 경주시킨다 —
+ * 진 쪽의 약속도 `Promise.race`가 받아 두므로 나중의 거절이 처리되지 않은 채 남지 않는다.
+ */
 export async function readStoryPhoto(
   deps: Pick<PhotoPostDeps, "reader" | "readTimeoutMs">,
   input: {

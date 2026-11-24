@@ -963,7 +963,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 글 고치기(`{ action: "edit", story_id, ko }`): 글 검수를 다시 거치고 스토리당 `my_story_edit_limit`(기본 3)번. 사진은 못 바꾼다.
 - 뒷정리(`_shared/companion-story-upkeep.ts`, 반응 함수가 매분): ① 파일 정리 대기열 `my_story_file_purges` — 스토리를 지우면(하나 · 모두 · 보관 끔 정리 ·
   계정 삭제) 트리거가 그 사진을, 기한(`my_story_reject_keep_days`, 기본 30일)이 지난 거절은 격리 파일을, 올린 지 하루가 넘도록 스토리가 되지 못한 파일(막힌 글 · 쓴 창 · 그만둔 올리기)을 넣는다. ② `checking` 스토리를 한 번에 셋까지
-  다시 읽는다(30초 제한, 같은 줄은 90초 뒤에) — 다섯 번을 다 쓰고 3분이 지나면 반응 없이 게시한다(사진은 올린 사람만 본다).
+  다시 읽는다(30초 제한, 간격은 90초 × 2^시도 · 최대 30분). **읽지 못한 사진은 게시하지 않는다** — 24시간이 다 가도록 못 읽으면 지운다. 사진이 사라졌으면 스토리를 지운다.
   격리 버킷으로 옮기지 못한 거절은 원본을 지운다(그 건은 다시 확인을 못 한다).
 - 다시 확인 요청: 앱 RPC `companion_request_story_review(p_rejection_id)` — `my_story_rejections.review_requested_at`을 적는다. 운영 도구가
   `review_requested_at is not null and review_result is null`인 줄과 격리 파일을 보여 주고 `review_result`(upheld · overturned)를 적는다(운영 도구 쪽 작업).

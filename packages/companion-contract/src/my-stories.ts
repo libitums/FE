@@ -19,6 +19,8 @@ export const myStoryStatusSchema = z.enum(["checking", "live"]);
  * 사진 위에 얹은 단어 · 카드 하나입니다(굽지 않고 따로 저장 — 눌러 듣기). 위치 · 크기는 사진 너비 · 높이에 대한 비율(0 ~ 1),
  * `rotation`은 도입니다. `word`는 카탈로그 단어 카드 참조(단어장 단어 · 레슨 카드), 직접 쓴 글(`text`)이면 없습니다.
  */
+/** 사진 한 장에 얹을 수 있는 단어 · 카드 수 — 서버(`my_stories.overlays`)의 제약과 같다. */
+export const MY_STORY_OVERLAY_MAX = 8;
 export const myStoryOverlaySchema = z.object({
   kind: z.enum(["word", "card", "text"]),
   ko: z.string(),
@@ -63,7 +65,7 @@ export const myStorySchema = z.object({
   example: z.nullable(z.object({ ko: z.string(), meaning: z.nullable(z.string()) })),
   /** 비공개 버킷 `my-story-photos` 안의 경로 — 앱이 자기 토큰으로 서명 주소를 만듭니다. 사진 스토리만. */
   imagePath: z.optional(z.nullable(z.string())),
-  overlays: z.optional(z.array(myStoryOverlaySchema)),
+  overlays: z.optional(z.array(myStoryOverlaySchema).check(z.maxLength(MY_STORY_OVERLAY_MAX))),
   /** 교정 전 내가 쓴 글(「Use this」로 바꿨을 때만). */
   lineOriginal: z.optional(z.nullable(z.string())),
   /** 글을 고친 횟수(스토리당 상한은 서버 설정, 기본 3). */
@@ -136,7 +138,7 @@ export const myStoryRequestSchema = z.discriminatedUnion("action", [
     meaning: z.optional(z.string()),
     /** 교정 전 내가 쓴 글 — 「Use this」로 바꿨을 때만 보냅니다. */
     original: z.optional(z.string()),
-    overlays: z.optional(z.array(myStoryOverlaySchema)),
+    overlays: z.optional(z.array(myStoryOverlaySchema).check(z.maxLength(MY_STORY_OVERLAY_MAX))),
     lang: z.string(),
     tz_offset_min: z.optional(z.nullable(z.int())),
   }),
