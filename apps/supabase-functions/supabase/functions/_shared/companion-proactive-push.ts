@@ -42,7 +42,7 @@ export type ProactivePushPlan =
     };
 
 /** 한국어 첫 말 한 줄 — 줄바꿈은 빈칸으로, 120자를 넘으면 자르고 「…」. 말이 없으면 null. */
-function previewLine(segments: readonly Segment[]): string | null {
+export function previewLine(segments: readonly Segment[]): string | null {
   const line = segments
     .find((segment) => segment.kind === "speech" && segment.text.trim() !== "")
     ?.text.replace(/\s+/gu, " ")
