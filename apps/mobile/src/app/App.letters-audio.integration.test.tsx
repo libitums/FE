@@ -114,6 +114,7 @@ test("LAI2. 업로드 뒤 — 합치기 퀴즈를 맞히면 효과음 틈 뒤 �
   const { play } = await boot(LETTERS_MANIFEST);
   openLetters();
   openCompose();
+  expect(screen.getByTestId("compose-play")).toHaveAttribute("accessibility-traits", "button");
   vi.useFakeTimers();
   pick("ㄱ");
   pick("ㅓ");
@@ -146,6 +147,12 @@ test("LAI3. 업로드 전(정보 파일에 letters 없음) — 칸은 내장 녹
   expect(sources(play)).toEqual(["hangul-c-g-sound"]);
   play.mockClear();
   openCompose();
+  // ▶는 약속하지 않는다 — 회색 · 누를 수 없음 · 「sound not available yet」(2026-11-24: 활성인데 소리가 안 나던 것).
+  expect(screen.getByTestId("compose-play")).toHaveAttribute("accessibility-traits", "disabled");
+  expect(screen.getByTestId("compose-play")).toHaveAttribute(
+    "accessibility-label",
+    "Play, sound not available yet",
+  );
   vi.useFakeTimers();
   pick("ㄱ");
   pick("ㅏ");
