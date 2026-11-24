@@ -4,7 +4,7 @@
 
 - 측정 일시: 2026-11-24T12:00:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 인식 실패 하나의 결말 분류와 그 국면의 버튼 · 안내를 바꾼 변경의 영향 범위를 적은 기록이다
-- 기능 PR: 브랜치 `fix/speech-no-match`([ADR-0179](../../adr/0179-speech-no-match-retry.md))
+- 기능 PR: 브랜치 `fix/speech-no-match`([ADR-0181](../../adr/0181-speech-no-match-retry.md))
 - 대상 commit: `e80aeb96` 위의 변경
 - 기기: Android `Pixel_8` 에뮬레이터 · iOS 26.5 시뮬레이터(동작 확인만, 측정 아님)
 - OS: 해당 없음

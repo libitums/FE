@@ -80,7 +80,7 @@ ADR-0066 「미확인 · 후속」 3과 ADR-0065 머리의 「(PR ③) 말하기
 | `heard` | `Next` | `Try again` | 맞은 낱말 수(「구현 판단」 4) |
 | `dictation-off` | `Skip` | `Try again` | — (지시문 교체) |
 | `blocked` · `failed` | `Skip` | — | 인식 불가 안내 |
-| `missed`(못 알아들음 · 네트워크) ⟨2026-11-24⟩ | `Try again` | `Skip` | 다시 말하기 안내([ADR-0179](0179-speech-no-match-retry.md)) |
+| `missed`(못 알아들음 · 네트워크) ⟨2026-11-24⟩ | `Try again` | `Skip` | 다시 말하기 안내([ADR-0181](0181-speech-no-match-retry.md)) |
 
   마지막 문항의 `Next`는 레슨 끝이면 `See results`다. **듣는 중만 빼고 늘 넘길 수 있다.** `Try again`은 채점 없는 연습이라 둔다(Q10).
 - **`ready`의 `Next`는 건너뜀이 아니다** — 채점 대상이 아니라 건너뛸 점수가 없다. **불가 국면의 `Skip`만** 건너뜀 수 +1이다(Q2). 결과 배열은 늘 `[]`이고, 완료 카드 · 판정 배지 · 판정음이 없다.

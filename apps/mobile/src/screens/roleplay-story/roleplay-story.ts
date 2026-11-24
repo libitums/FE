@@ -49,7 +49,7 @@ export function roleplayTalkReducer(
       return state.phase === "listening"
         ? { ...state, phase: "heard", heard: action.text, verdict: action.verdict }
         : state;
-    // 못 알아들음 — 판정 없이 같은 턴을 다시 말하게 합니다(ADR-0179).
+    // 못 알아들음 — 판정 없이 같은 턴을 다시 말하게 합니다(ADR-0181).
     case "missed":
       return state.phase === "listening"
         ? { ...state, phase: "missed", missedReason: action.reason }

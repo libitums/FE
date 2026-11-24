@@ -13,7 +13,7 @@ import { solveActivity } from "./test-helpers/episode-format-solvers";
 
 // `integration` 계층: 앱 전체를 걸어, Android 호스트(대역)의 ERROR_NO_MATCH(7)가 낱말 말하기에서 「인식 불가」가
 // 아니라 다시 말하기 국면으로 서고, Try again 뒤의 판정 · Skip이 측정 이벤트(`episode_item_answered`)를 문항당
-// 한 번만 내는지 봅니다(ADR-0179). 대역은 Android 결과 페이로드 모양 그대로이고 앱 쪽은 모킹하지 않습니다.
+// 한 번만 내는지 봅니다(ADR-0181). 대역은 Android 결과 페이로드 모양 그대로이고 앱 쪽은 모킹하지 않습니다.
 
 afterEach(resetApp);
 

@@ -23,7 +23,7 @@ export type RoleplayTalkState = {
   readonly hintShown: boolean;
   /** 듣지 못한 까닭 — `unavailable`에서만 값이 있습니다(권한 · 인식기 / 받아쓰기 꺼짐 / 그 한 번의 실패). */
   readonly unavailableReason: SpeechUnavailableReason | null;
-  /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0179). */
+  /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0181). */
   readonly missedReason: SpeechMissReason | null;
   /** 못 알아들은 뒤 다시 듣는 중인가 — 그 동안 Try again 자리가 Stop으로 남습니다(포커스를 잃지 않게). */
   readonly retrying: boolean;

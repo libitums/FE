@@ -11,7 +11,7 @@ import {
 } from "./speak-word";
 import type { SpeakWordQuestion, SpeakWordSessionState } from "./speak-word.contract";
 
-// `unit` 계층: 못 알아들음(missed)에서 낱말 말하기가 판정 없이 같은 문항을 다시 듣게 하는 표입니다(ADR-0179).
+// `unit` 계층: 못 알아들음(missed)에서 낱말 말하기가 판정 없이 같은 문항을 다시 듣게 하는 표입니다(ADR-0181).
 
 const listening: SpeechAttemptPhase = { kind: "listening" };
 const noMatch: SpeechAttemptPhase = { kind: "missed", reason: "no-match" };

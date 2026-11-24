@@ -121,7 +121,7 @@ test("[RT5] 인식 불가는 안내를 띄우고, 건너뛰기는 판정 없이 
   const { onFinish } = mount();
   fireEvent.tap(id("roleplay-talk-mic"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "failed");
-  // 마이크 입력 실패는 진짜 불가다 — 「못 알아들음」 문구가 아니라 불가 안내(ADR-0179).
+  // 마이크 입력 실패는 진짜 불가다 — 「못 알아들음」 문구가 아니라 불가 안내(ADR-0181).
   expect(id("roleplay-talk-unavailable")).toHaveTextContent(
     "Speaking isn't available right now. You can skip this line.",
   );

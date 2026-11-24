@@ -7,7 +7,7 @@ import type { UiCopy } from "./ui-copy.contract";
 export type SpeechUnavailableReason = "blocked" | "dictation-off" | "failed";
 
 /**
- * 이 한 번 글자를 얻지 못한 까닭 — 기기 · 권한 문제가 아니라 같은 문항을 곧바로 다시 말할 수 있습니다(ADR-0179).
+ * 이 한 번 글자를 얻지 못한 까닭 — 기기 · 권한 문제가 아니라 같은 문항을 곧바로 다시 말할 수 있습니다(ADR-0181).
  * `no-match`(말을 못 알아들음 · 말이 없음 · 시간 초과) · `network`(인식 서버에 닿지 못함).
  */
 export type SpeechMissReason = "no-match" | "network";
@@ -60,7 +60,7 @@ export const speechBlocked: SpeechAttemptOutcome = { kind: "unavailable", reason
 const dictationOffDomain = "kLSRErrorDomain";
 const dictationOffCode = 201;
 
-// 못 알아들음 · 네트워크 실패의 오류 코드입니다(ADR-0179). 기기 · 권한 문제가 아니라 다시 말하면 풀릴 수 있습니다.
+// 못 알아들음 · 네트워크 실패의 오류 코드입니다(ADR-0181). 기기 · 권한 문제가 아니라 다시 말하면 풀릴 수 있습니다.
 // Android `SpeechRecognizer`: 6 SPEECH_TIMEOUT · 7 NO_MATCH / 1 NETWORK_TIMEOUT · 2 NETWORK · 4 SERVER.
 // iOS `kAFAssistantErrorDomain`: 1110 말 없음 · 203 다시 말하기(알아들을 말이 없음).
 const androidDomain = "android.speech.SpeechRecognizer";
@@ -85,7 +85,7 @@ function missReasonOf(result: SpeechResult): SpeechMissReason | null {
 
 /**
  * 인식 결과 → 결말. 받아쓰기 꺼짐 판정이 다른 사유보다 먼저입니다(튜토리얼 말하기와 같은 조건).
- * 못 알아들음 · 네트워크 실패는 `missed`(다시 말하기)이고 나머지 실패만 `unavailable`입니다(ADR-0179).
+ * 못 알아들음 · 네트워크 실패는 `missed`(다시 말하기)이고 나머지 실패만 `unavailable`입니다(ADR-0181).
  * `recognized`는 빈 글자도 `heard`입니다.
  */
 export function speechAttemptOutcomeOf(result: SpeechResult): SpeechAttemptOutcome {

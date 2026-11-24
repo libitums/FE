@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { initialRoleplayTalkState, roleplayTalkReducer } from "./roleplay-story";
 import type { RoleplayTalkState } from "./roleplay-story.contract";
 
-// `unit` 계층: 롤플레이 한 턴에서 못 알아들음(missed)이 판정 없이 같은 턴을 다시 듣게 하는 전이입니다(ADR-0179).
+// `unit` 계층: 롤플레이 한 턴에서 못 알아들음(missed)이 판정 없이 같은 턴을 다시 듣게 하는 전이입니다(ADR-0181).
 
 const stateOf = (overrides: Partial<RoleplayTalkState>): RoleplayTalkState => ({
   ...initialRoleplayTalkState,

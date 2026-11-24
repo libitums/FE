@@ -12,7 +12,7 @@ import {
 } from "./read-aloud";
 import type { ReadAloudQuestion, ReadAloudSessionState } from "./read-aloud.contract";
 
-// `unit` 계층: 못 알아들음(missed)에서 따라 읽기가 같은 문장을 곧바로 다시 듣게 하는 표입니다(ADR-0179).
+// `unit` 계층: 못 알아들음(missed)에서 따라 읽기가 같은 문장을 곧바로 다시 듣게 하는 표입니다(ADR-0181).
 
 const listening: SpeechAttemptPhase = { kind: "listening" };
 const noMatch: SpeechAttemptPhase = { kind: "missed", reason: "no-match" };

@@ -82,7 +82,7 @@ export function readAloudControlsOf(phase: SpeechAttemptPhase): SpeechControls {
       return { primary: "stop", secondary: null };
     case "heard":
       return { primary: "next", secondary: "retry" };
-    // 못 알아들음은 같은 문장을 다시 말할 기회입니다(ADR-0179).
+    // 못 알아들음은 같은 문장을 다시 말할 기회입니다(ADR-0181).
     case "missed":
       return { primary: "retry", secondary: "skip" };
     case "unavailable":

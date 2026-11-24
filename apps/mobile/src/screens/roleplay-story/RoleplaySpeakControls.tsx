@@ -12,7 +12,7 @@ import type { RoleplayTalkPhase } from "./roleplay-story.contract";
 export type RoleplaySpeakControlsProps = {
   readonly phase: RoleplayTalkPhase;
   readonly unavailableReason: SpeechUnavailableReason | null;
-  /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0179). */
+  /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0181). */
   readonly missedReason: SpeechMissReason | null;
   /** 못 알아들은 뒤 다시 듣는 중이면 Try again 자리가 Stop으로 남습니다. */
   readonly retrying: boolean;
@@ -35,7 +35,7 @@ export function unavailableMessage(reason: SpeechUnavailableReason | null, copy:
       return copy.speaking.dictationDisabled;
     case "blocked":
       return copy.roleplayStory.blocked;
-    // 마이크 입력 실패 등은 진짜 불가입니다 — 못 알아들음은 `missed`가 따로 집니다(ADR-0179).
+    // 마이크 입력 실패 등은 진짜 불가입니다 — 못 알아들음은 `missed`가 따로 집니다(ADR-0181).
     case "failed":
       return copy.roleplayStory.unavailable;
     case null:

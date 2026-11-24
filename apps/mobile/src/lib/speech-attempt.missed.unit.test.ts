@@ -10,7 +10,7 @@ import {
 import type { SpeechAttemptOutcome, SpeechMissReason } from "./speech-attempt";
 
 // `unit` 계층: 못 알아들음(no-match) · 네트워크 실패를 「인식 불가」가 아니라 「다시 말하기」 결말로 가르는 표입니다
-// (ADR-0179). 화면이 아니라 결말 · 잠금 · 마이크 상태 · 건너뜀 까닭만 봅니다.
+// (ADR-0181). 화면이 아니라 결말 · 잠금 · 마이크 상태 · 건너뜀 까닭만 봅니다.
 
 const android = "android.speech.SpeechRecognizer";
 const assistant = "kAFAssistantErrorDomain";

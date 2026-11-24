@@ -14,7 +14,7 @@ import { ReadAloudActivity } from "./ReadAloudActivity";
 import type { ReadAloudQuestion } from "./read-aloud.contract";
 
 // `ui` 계층: 따라 읽기에서 못 알아들음 · 네트워크 실패가 안내 + Try again(주) + Skip(보조)으로 서고, Try again이
-// 같은 문장을 다시 들으며 Skip만 건너뜀 수에 드는지 본다(ADR-0179).
+// 같은 문장을 다시 들으며 Skip만 건너뜀 수에 드는지 본다(ADR-0181).
 
 const card: ReadAloudQuestion = {
   sentence: "카드로 할게요.",

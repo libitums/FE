@@ -15,7 +15,7 @@ import type { CatalogRoleplayTurn } from "../catalog-final/catalog-final.contrac
 import { RoleplayTalkScreen } from "./RoleplayTalkScreen";
 
 // `ui` 계층: 롤플레이 한 턴에서 못 알아들음 · 네트워크 실패가 안내 + Try again 버튼으로 서고, 그 버튼이 같은 턴을
-// 다시 들으며 「Can't speak now」(건너뛰기)는 그대로 남는지 본다(ADR-0179). 진짜 불가에는 Try again이 없다.
+// 다시 들으며 「Can't speak now」(건너뛰기)는 그대로 남는지 본다(ADR-0181). 진짜 불가에는 Try again이 없다.
 
 const insets = { top: 0, bottom: 0, left: 0, right: 0 };
 const turn = (id: string, line: string, accepted: string): CatalogRoleplayTurn => ({

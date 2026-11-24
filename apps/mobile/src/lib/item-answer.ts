@@ -14,7 +14,7 @@ export type ItemAnswerOutcome = AnswerResult | "skipped";
 
 /**
  * 건너뛴 까닭 — 직접 누른 Skip(`user`) · 말하기를 쓸 수 없던 까닭(`unavailable:<reason>`) ·
- * 못 알아들은 뒤 다시 말하지 않고 넘긴 까닭(`missed:<reason>`, ADR-0179)입니다.
+ * 못 알아들은 뒤 다시 말하지 않고 넘긴 까닭(`missed:<reason>`, ADR-0181)입니다.
  */
 export type ItemSkipReason =
   | "user"

@@ -14,7 +14,7 @@ import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
 // `ui` 계층: 낱말 말하기에서 못 알아들음(no-match · 말 없음) · 네트워크 실패가 「인식 불가 · Skip」이 아니라
-// 안내 + Try again(주) + Skip(보조)으로 서고, Try again이 같은 문항을 다시 들으며 보고가 한 번만 나는지 본다(ADR-0179).
+// 안내 + Try again(주) + Skip(보조)으로 서고, Try again이 같은 문항을 다시 들으며 보고가 한 번만 나는지 본다(ADR-0181).
 
 const cardQuestion: SpeakWordQuestion = {
   pictureUrl: "https://cdn/card.jpg",

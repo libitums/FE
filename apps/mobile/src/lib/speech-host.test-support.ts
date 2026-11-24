@@ -91,7 +91,7 @@ export const dictationOff: SpeechHostResult = {
 
 export const audioFailed: SpeechHostResult = { status: "audio-failed", text: "" };
 
-/** Android 인식기가 말을 못 알아들었을 때(ERROR_NO_MATCH 7)의 결과입니다(ADR-0179). */
+/** Android 인식기가 말을 못 알아들었을 때(ERROR_NO_MATCH 7)의 결과입니다(ADR-0181). */
 export const androidNoMatch: SpeechHostResult = {
   status: "recognition-failed",
   text: "",

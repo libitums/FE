@@ -8,8 +8,8 @@ export type SpeakingCopy = {
   readonly dictationDisabled: string;
   readonly tapToContinue: string;
   readonly recognitionUnavailable: string;
-  /** 못 알아들음(말이 없음 · 시간 초과 포함) — 다시 말하기 안내입니다(ADR-0179). */
+  /** 못 알아들음(말이 없음 · 시간 초과 포함) — 다시 말하기 안내입니다(ADR-0181). */
   readonly notCaught: string;
-  /** 인식 서버에 닿지 못함 — 연결 확인 뒤 다시 말하기 안내입니다(ADR-0179). */
+  /** 인식 서버에 닿지 못함 — 연결 확인 뒤 다시 말하기 안내입니다(ADR-0181). */
   readonly networkRetry: string;
 };
