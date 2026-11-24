@@ -150,3 +150,18 @@ test("FS-UI13. 엽전으로 보낸 유료 칩 — chat_message_sent(paid, storyF
     expect.objectContaining({ via: "chip", free: false }),
   ]);
 });
+
+test("FS-UI12. 내 스토리 인용으로 보낸 글은 my_story_replied 한 번이고 friend_story_replied는 없다(감사 A1)", () => {
+  putStoryReplyHandoff({
+    ...handoff(null, false),
+    quote: { ...handoff(null).quote, kind: "mine" },
+  });
+  const sink = vi.fn();
+  mountChatOpen({ eventSink: sink });
+  tapKeys(...KEYS_AN);
+  tapId(chat.send);
+  const of = (name: string) =>
+    sink.mock.calls.map(([e]) => e as { name: string }).filter((e) => e.name === name);
+  expect(of("my_story_replied")).toEqual([expect.objectContaining({ characterId: "mina" })]);
+  expect(of("friend_story_replied")).toEqual([]);
+});

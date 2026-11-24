@@ -108,6 +108,11 @@ export async function generateOpener(
     /** 적용 로맨스 선(ADR-0168). 출력 검사가 그 선으로 본다. 없으면 `defaultRomanceLine`. */
     readonly romanceLine?: RomanceLine;
     readonly timeoutMs: number;
+    /**
+     * 출력 검사 **전에** 답을 받을지(ADR-0179 — 내 스토리 반응은 단어가 없으면 버린다). 거짓이면 검사를 부르지 않고 `rejected`.
+     * 없으면 모두 받는다(선톡 · 첫 인사).
+     */
+    readonly accept?: (segments: readonly Segment[]) => boolean;
   },
 ): Promise<{ segments: Segment[]; state: TurnState | null; outcome: string }> {
   try {
@@ -124,6 +129,8 @@ export async function generateOpener(
     deltas.push(...splitter.end());
     const segments = collectSegments(deltas);
     if (segments.length === 0) return { segments, state: null, outcome: "empty_reply" };
+    if (input.accept !== undefined && !input.accept(segments))
+      return { segments, state: splitter.state(), outcome: "rejected" };
     const verdict = await llm.moderate({
       layer: "output_sync",
       text: segmentsToPlain(segments),

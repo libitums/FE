@@ -98,3 +98,16 @@
   color: var(--libitum-color-fg-brand);
   font-weight: var(--libitum-font-weight-semi-bold);
 }
+
+/* 내 스토리 칸(ADR-0179) — 「+」 · 「Your story」를 줄의 다른 칸과 같은 간격으로 붙입니다. 「+」는 brand 점선 원. */
+.my-story-faces {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-12);
+}
+
+.my-story-create {
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--libitum-color-brand-primary);
+}

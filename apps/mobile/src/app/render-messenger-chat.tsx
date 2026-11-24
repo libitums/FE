@@ -18,7 +18,8 @@ import {
 } from "../screens/messenger-chat/messenger-access";
 import type { ScreenWiring } from "./screen-wiring";
 import { guestSuggestedFriendsPort, suggestedFriendsPort } from "./suggested-friends-wiring";
-import { friendStoriesPort } from "./friend-stories-wiring";
+import { friendStoriesPort, myStoriesPortFrom } from "./friend-stories-wiring";
+import { MyStoriesScreen } from "../screens/messenger-chat/MyStoriesScreen";
 import { StoryImageContext } from "../screens/messenger-chat/story-image-context";
 
 /** 메신저 탭 접근(ADR-0128) — 계정 상태로만 정합니다(2026-11-17부터 시험 계정 표시는 보지 않습니다). */
@@ -30,6 +31,19 @@ export function messengerAccessFor(wiring: ScreenWiring): MessengerAccess {
 function learnerNameOf(wiring: ScreenWiring): string {
   const name = wiring.learnerFill.name?.trim() ?? "";
   return name === "" ? uiCopyFor(wiring.entryLanguage).common.me : name;
+}
+
+function storiesArgs(wiring: ScreenWiring) {
+  return {
+    imageUrlOf: wiring.episodeContent.imageUrlOf,
+    catalog: () => wiring.episodeContent.catalog,
+    romanization: () => wiring.more.romanization === "shown",
+  };
+}
+
+/** 이번 실행에 읽은 내 스토리 서버가 켜져 있었는가(ADR-0179) — 설정의 「My stories」 줄. */
+export function myStoriesKnownOn(wiring: ScreenWiring): boolean {
+  return myStoriesPortFrom(storiesArgs(wiring))?.knownEnabled?.() === true;
 }
 
 export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListNotice | null) {
@@ -50,15 +64,7 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
         // 비회원 미리보기(ADR-0166)는 앱 인물 표만 — 서버 RPC 0.
         friends={access === "preview" ? guestSuggestedFriendsPort() : suggestedFriendsPort()}
         // 친구 스토리(ADR-0178) — 회원 메신저만. 손님 · 접근 불가는 서버 RPC 0(목록 화면이 한 번 더 거릅니다).
-        stories={
-          access === "open"
-            ? friendStoriesPort({
-                imageUrlOf: wiring.episodeContent.imageUrlOf,
-                catalog: () => wiring.episodeContent.catalog,
-                romanization: () => wiring.more.romanization === "shown",
-              })
-            : undefined
-        }
+        stories={access === "open" ? friendStoriesPort(storiesArgs(wiring)) : undefined}
       />
     </ChatEventsContext.Provider>
   );
@@ -112,6 +118,23 @@ export function renderChatSettings(wiring: ScreenWiring) {
       onOpenSharedMemories={() => chat.onOpenMemories(null, null)}
       onBack={chat.onExitChatSettingsStack}
     />
+  );
+}
+
+/** 설정 › My stories(ADR-0179) — 반응에 답하면 메신저 탭으로 옮겨 그 방을 엽니다. */
+export function renderMyStories(wiring: ScreenWiring) {
+  const chat = wiring.messengerChat;
+  const port = myStoriesPortFrom(storiesArgs(wiring));
+  if (port === undefined) return renderChatSettings(wiring);
+  return (
+    <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId: null }}>
+      <MyStoriesScreen
+        port={port}
+        source={chat.source}
+        onBack={chat.onExitChatSettingsStack}
+        onOpenRoom={chat.onOpenChatRoomFromNewFriend}
+      />
+    </ChatEventsContext.Provider>
   );
 }
 

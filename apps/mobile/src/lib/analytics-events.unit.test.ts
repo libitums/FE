@@ -227,11 +227,23 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0175⟩ 푸시 캠페인 보상 `push_reward_claimed` · `push_reward_failed`가 더해져 97이다.
   // ⟨ADR-0176⟩ 입장 선택 `entry_path_selected` · `entry_basics_step_completed` · `entry_basics_skipped`가 더해져 100이다.
   // ⟨ADR-0178 D8⟩ 친구 스토리 `friend_story_row_viewed` · `friend_story_viewed` · `friend_story_replied` · `friend_story_word_saved`가
-  // 더해져 104이고, 보기 닫힘 `friend_story_closed`(감사 A4)가 더해져 105다(PostHog만).
-  test("AN1. 이벤트 이름은 105개이고 지운 여덟이 없다", () => {
+  // 더해져 104이고, 보기 닫힘 `friend_story_closed`(감사 A4)가 더해져 105, 내 스토리(ADR-0179) 아홉이 더해져 114다(PostHog만).
+  test("AN1. 이벤트 이름은 114개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(105);
+    expect(names).toHaveLength(114);
+    for (const name of [
+      "my_story_create_opened",
+      "my_story_guide_closed",
+      "my_story_posted",
+      "my_story_post_failed",
+      "my_story_viewed",
+      "my_story_answered",
+      "my_story_replied",
+      "my_story_deleted",
+      "my_story_keep_toggled",
+    ])
+      expect(names).toContain(name);
     expect(names).toContain("friend_story_closed");
     expect(names).toContain("friend_story_row_viewed");
     expect(names).toContain("friend_story_viewed");

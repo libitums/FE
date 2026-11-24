@@ -6,6 +6,7 @@ import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
 import type { SuggestedFriendsCopy } from "./suggested-friends.contract";
 import type { FriendStoriesCopy } from "./friend-stories.contract";
+import type { MyStoriesCopy } from "./my-stories-copy.contract";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
 export type ChatProactivePref = "off" | "daily1" | "daily2";
 /** 교정 방식입니다 — 카드만 · 답 안에서 자연스럽게 · 먼저 짚고. 카드는 셋 모두 옵니다. */
@@ -55,6 +56,8 @@ export type MessengerChatExtraCopy = {
   readonly suggested: SuggestedFriendsCopy;
   /** 친구 스토리 줄 · 보기 · 대화 인용(ADR-0178). */
   readonly stories: FriendStoriesCopy;
+  /** 내 스토리(ADR-0179). */
+  readonly myStories: MyStoriesCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;

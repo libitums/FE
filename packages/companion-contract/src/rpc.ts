@@ -124,18 +124,32 @@ export const companionMessageSchema = z.object({
   /** 캐릭터 메시지의 👍/👎(20261124). 평가가 없거나 유저 메시지면 null, 옛 서버는 칸이 없습니다. 고쳐서 숨긴 턴은 목록에 오지 않습니다. */
   rating: z.optional(z.nullable(messageRatingSchema)),
   /**
-   * 친구 스토리 답장의 인용(20261228, ADR-0178 D5). 유저 메시지가 `story_id`를 실어 보냈을 때만, 아니면 null. 옛 서버는 칸이 없습니다.
-   * `imagePath`는 버킷 상대 경로(앱이 아바타와 같은 해석기로 주소를 만듭니다).
+   * 스토리 답장의 인용(20261228, ADR-0178 D5 · ADR-0179). 유저 메시지가 `story_id`를 실어 보냈을 때만, 아니면 null. 옛 서버는 칸이 없습니다.
+   * - 친구 스토리(`kind` friend — 20261228120000 서버는 칸이 없음): `imagePath`는 버킷 상대 경로(앱이 아바타와 같은 해석기로 주소를 만듭니다).
+   * - 내 스토리(`kind` mine — 인물의 반응에 답함): `line`은 단어(한국어), 그림 없음.
+   * - 지운 내 스토리(`kind` deleted): 인물만 — 앱은 「Deleted story」.
    */
   story: z.optional(
     z.nullable(
-      z.object({
-        id: z.uuid(),
-        characterId: z.string(),
-        line: z.string(),
-        imagePath: z.string(),
-        postedAt: z.iso.datetime({ offset: true }),
-      }),
+      z.union([
+        z.object({
+          kind: z.optional(z.literal("friend")),
+          id: z.uuid(),
+          characterId: z.string(),
+          line: z.string(),
+          imagePath: z.string(),
+          postedAt: z.iso.datetime({ offset: true }),
+        }),
+        z.object({
+          kind: z.literal("mine"),
+          id: z.uuid(),
+          characterId: z.string(),
+          line: z.string(),
+          imagePath: z.null(),
+          postedAt: z.iso.datetime({ offset: true }),
+        }),
+        z.object({ kind: z.literal("deleted"), characterId: z.string() }),
+      ]),
     ),
   ),
   createdAt: z.iso.datetime({ offset: true }),

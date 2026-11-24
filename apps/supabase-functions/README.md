@@ -290,6 +290,7 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `COMPANION_TRANSLATION` | 아니오 | 캐릭터 답의 L1 번역. `every`(기본, 턴마다) 또는 `off`. 모르는 값이면 설정 오류(500). PRD O9(매 메시지 · 탭할 때)가 정해지면 바꾼다 |
 | `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 | `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`chat-send`의 매 턴 칩 · `companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
+| `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL` | 아니오 | 내 스토리 반응(`companion-story-reactions`, ADR-0179)의 출력 검사 · 번역 모델. 기본 `claude-haiku-5-5`(답은 `COMPANION_MODEL`). 다른 함수는 읽지 않는다 |
 | `OPENAI_API_KEY` | 스냅샷에 | `companion-snapshot`의 이미지 편집. 없으면 스냅샷이 503 `not_configured` |
 | `ELEVENLABS_API_KEY` | 음성에 | `companion-voice`의 TTS. 없으면 음성이 503 `not_configured` |
 | `COMPANION_SNAPSHOT_MODEL` | 아니오 | 스냅샷 프롬프트 · 검사 노드 모델. 기본 `claude-haiku-5-5`(lab과 같다). 키는 `ANTHROPIC_API_KEY` |
@@ -869,3 +870,46 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
    `select jobname, schedule from cron.job where jobname = 'companion-stories';`.
 4. 켜기: `update companion.settings set friend_stories = 'testers';` → 시험 계정으로 앱 확인 → `'on'`. 알림은 따로 `story_push = 'testers'` → `'on'`.
    **알림은 스토리를 여는 새 앱이 충분히 깔린 뒤에 켠다** — 옛 앱은 알림을 누르면 그 방만 연다.
+
+## 내 스토리 (20261228, ADR-0179)
+
+`migrations/20261228140000_my_stories.sql`(친구 스토리 두 마이그레이션 **뒤**) · Edge Function `companion-story-reactions`(새) · `chat-send`(`story_id`가
+내 스토리면 `mine`) · 예약 `cron/my-stories.sql`. 사진은 없다 — 단어장 단어 · 레슨 카드만.
+
+- 스위치(`companion.settings`, 기본 **off**): `my_stories` — 올리기 · 읽기 · 지우기, `story_reactions` — LLM 반응 예약 · 만들기(값 off · testers · on).
+  `story_reactions`는 `my_stories`가 켜진 사람에게만 뜻이 있다(`companion.reactions_on`).
+- 상한(UTC 하루): `my_story_daily`(사람마다 올리기, 기본 3) · `story_reaction_user_daily`(사람마다 반응, 기본 3) · `story_reaction_global_daily`(전체 반응,
+  기본 500). 반응 상한은 **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘는 반응은 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차)
+  올린 지 24시간이 지나면 `skipped`. 수는 지워지지 않는 장부 `my_story_usage`(사람 · 날 — posts · claims, 계정 삭제 때만 지움) ·
+  `my_story_usage_global`(날 — claims)에서 읽는다 — 스토리를 지우거나 정리해도 줄지 않는다. claim은 그날 전체 장부 줄을 `for update`로 잠가 줄 세운다.
+  30분 넘게 `claimed`인 줄(함수가 끊김)은 다음 claim이 `failed`로 끝낸다. 끝내기는 사용량 요약을 `my_story_reactions.meta`에 남긴다.
+- `skip_reason`(감사 A14): 사람 상한 `cap_user` · 24시간 지남 `expired` · 반응 스위치 꺼짐 `switch_off` · 끊겨 30분 넘은 claimed `stale` · 단어 없음 `no_word` · 시간 예산 `budget` · 그 밖 핸들러 결과(`not_allowed` · `blocked` · `empty_reply` · `failed` …). claim은 `{ rows, skippedCap, globalCapped }`을 돌려주고 반응 함수의 결과 · 로그에 `skipped_cap` · `global_capped`가 실린다.
+- 모델: 반응 하나 = 모델 호출 셋(답 · 출력 검사 · 번역). **사용자 결정(2026-11-23) — 검사 · 번역은 Haiku**: 반응 함수만 출력 검사 · 번역을 `claude-haiku-5-5`로 부르고(`_shared/companion-reaction-env.ts`, 바꿀 때 `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL`), 답은 컴패니언 답변 모델(`COMPANION_MODEL`, 기본 `claude-opus-5-5`) 그대로 — chat-send · 선톡은 바뀌지 않는다. 추정(캐시 없이): 답 입력 약 2.8k · 출력 약 300 (Opus 5.5 $4 / $20 per MTok) ≈ $0.0172, 검사 약 1.2k / 50 ≈ $0.00015, 번역 약 0.8k / 60 ≈ $0.00011(Haiku 5.5 $0.10 / $0.50) — **성공한 반응 하나 약 $0.0175, 단어가 없어 버린 반응 약 $0.0172**(답만). 상한이 다 차면 사람 하루 최대 약 $0.052(3개), 전체 하루 최대 약 $8.7(500개), 30일 약 $262.
+- 표(RLS 켬, 앱 직접 접근 없음): `my_stories`(사용자 · `client_id` 하나 — 두 번 눌러도 하나 · 단어 `{episodeId, ref}` · 한국어 · 로마자 · 뜻(올린 사람 언어) ·
+  예문 · 24시간) · `my_story_reactions`(스토리 cascade · 인물 · `due_at` · scheduled → claimed → done/failed/skipped) · `my_story_replies`(대화 인용 —
+  스토리를 지우면 `my_story_id`가 null → 기록 읽기의 `story`가 `{ kind: deleted }`, 앱은 「Deleted story」).
+- 프로필 `keep_my_stories`(기본 켬): 끄면 읽기는 살아 있는 것만, 정리(`companion_purge_my_stories`)가 24시간 지난 것을 지운다.
+- 앱 RPC(authenticated): `companion_my_stories()` → `{ enabled, keep, stories }`(최신 100개, 반응은 done만) · `companion_post_my_story(…)` →
+  `ok | off | daily_limit | invalid` · `companion_delete_my_story(id | null = 모두)` · `companion_set_keep_my_stories(bool)`.
+- 반응 예약(올릴 때): 이 사람이 말한 대화의 인물 최대 셋(마지막으로 말한 순) — 8 ~ 25분 · 45 ~ 150분 · 3 ~ 7시간 뒤(스토리 · 인물 해시).
+- 반응 만들기(`companion-story-reactions`, 10분마다): 정리 → claim 12 → 사람마다(동시 넷) 선톡 맥락(`companion_proactive_context`) + 반응 지시
+  (`_shared/companion-reaction-prompt.ts` — 단어를 꼭 넣고 한두 줄) → 답 → 말에 단어(활용형 포함)가 없으면 출력 검사 전에 failed(다시 부르지 않음) →
+  출력 검사 → 올린 사람 언어로 번역 → `companion_finish_story_reaction`(meta = 사용량). 반응 하나에 모델 호출 셋(답 · 검사 · 번역), 단어가 없으면 하나.
+  시간 예산 60초(시작 판정)를 넘으면 남은 줄은 모델 없이 failed — 그 줄도 그날 상한에 센다(모델을 부르지 않았어도, 보수적으로).
+- 기록의 인용(`story_quote_json`)은 이제 `kind`를 싣는다: friend(친구 스토리) · mine(내 스토리 — `line`은 단어, 그림 없음) · deleted.
+- 테스트: `migrations/my-stories.integration.test.ts`(MS1 ~ MS15) · `_shared/companion-reactions-handler.unit.test.ts`(RH1 ~ RH7) ·
+  `_shared/companion-reaction-env.unit.test.ts`(RE1 ~ RE2) ·
+  `companion-reaction-prompt.unit.test.ts`(RP1 ~ RP4 · RP3b) · `chat-send-story.unit.test.ts`(SS1 ~ SS2) · 친구 스토리 FS15(인용 `kind`).
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
+
+> 마이그레이션 `20261228140000`과 함수 `companion-story-reactions`는 **함께** 배포한다 — claim 결과 모양(`{ rows, skippedCap, globalCapped }`)이 바뀌어
+> 옛 함수 · 옛 마이그레이션이 섞이면 고른 줄이 30분 뒤 stale로 실패한다.
+
+1. 마이그레이션: 친구 스토리 둘 뒤에 `20261228140000_my_stories.sql`. `companion_claim_story_reply` 정의에 내 스토리 블록을 넣는다(이미 있으면 건너뜀,
+   찾는 줄이 없으면 멈춤). 더 늦은 번호가 이미 적용돼 있으면 `supabase db push --include-all`. 확인:
+   `select my_stories, story_reactions, my_story_daily, story_reaction_user_daily, story_reaction_global_daily from companion.settings;`(off · off · 3 · 3 · 500).
+2. 함수: `supabase functions deploy chat-send companion-story-reactions`(계약 사본 `_shared/companion-contract` 포함).
+3. 예약: `supabase/cron/my-stories.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈). 확인:
+   `select jobname, schedule from cron.job where jobname = 'companion-story-reactions';`.
+4. 켜기: `my_stories = 'testers'` → 앱 확인 → 반응은 따로 `story_reactions = 'testers'` → 비용 확인 뒤 `'on'`. 전체 상한을 먼저 정한다.
