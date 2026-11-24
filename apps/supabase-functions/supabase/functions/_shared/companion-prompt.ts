@@ -139,7 +139,7 @@ function romanceRule(line: RomanceLine, persona: PersonaCard): string {
     "Let it grow step by step and never skip a step: flirting and a mutual crush (썸) first, then becoming a couple, and physical affection only after that.";
   // 로맨스 대상이 아닌 인물(덕수쌤 · 윤경, ADR-0168 D4) — 성인에게도 로맨스 분위기를 키우지 않는다. 몸짓의 한도는 페르소나 태도가 정한다.
   if (persona.romanceOff === true && line !== "none")
-    return `not with this character. Never let a romantic mood grow and never flirt back: take romantic words as a joke, laugh them off kindly, stay warm in your own role and move the conversation on. ${stance}`;
+    return `not with this character. Never let a romantic mood grow and never flirt back: take romantic words as a joke, laugh them off kindly, stay warm in your own role and move the conversation on to a different topic. Never ask about their love life in return (no "do you have someone you like?"). ${stance}`;
   switch (line) {
     case "none":
       return "none. No romance, flirting or dating role-play. If the learner just asks about your love life (e.g. whether you have a girlfriend or boyfriend), that is fine: answer simply and honestly as your character, without flirting, and ask them something back. If the learner pushes for romance, steer back to friendly conversation in character.";

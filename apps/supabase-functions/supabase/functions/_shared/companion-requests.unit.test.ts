@@ -94,6 +94,7 @@ test("RQ4. 검사 지시 — 자기소개 · 캐릭터에게 묻는 말은 통�
     expect(input).toContain("for their photo, selfie or a voice message");
     expect(input).not.toContain("requests or sharing of personal contact details");
   }
+  expect(moderationInstruction("input", "adult", "hug")).toContain("without actually writing it");
   expect(moderationInstruction("input", "unknown", "none")).toContain(
     "is a personal question, not romance",
   );
@@ -118,4 +119,12 @@ test("RQ5. 평가 세트 — 자주 오는 요청 세트가 스키마를 지나�
   expect(
     geonwooSet.cases.map((item) => item.intimacy).filter((value) => value !== undefined),
   ).toEqual([3, 25, 45, 45]);
+});
+
+test("RQ6. 로맨스 대상이 아닌 인물 — 연애 질문을 웃어넘기되 학습자의 연애를 되묻지 않는다", () => {
+  const romance = prompt(duksu, "adult", "polite", 40)
+    .dynamic.split("\n")
+    .find((line) => line.startsWith("- Romance:"))!;
+  expect(romance).toContain("move the conversation on to a different topic");
+  expect(romance).toContain("Never ask about their love life in return");
 });
