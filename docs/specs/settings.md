@@ -58,6 +58,10 @@
 > 리터럴이다**(위 2026-09-29 개정의 ⚠, ADR-0108 「대가」 3 · CR-A2). 바뀐 계약: `SettingsScreenProps`에 필수 prop 둘(`sessionOptions` ·
 > `onToggleSessionOption(key, value)` — `value`는 바뀐 뒤 값), 설정에 서는 키는 `settingsSessionOptionKeys = ["show-choice-romanization"]`,
 > test-id `ui-lynx-settings-group-item-show-choice-romanization`.
+
+> **개정 (2026-11-24, 대화 · 레슨 문장 로마자).** 결정은 [ADR-0188](../adr/0188-dialogue-romanization.md). 같은 토글이 보기만이 아니라
+> 레슨 문장 · 이야기 대화의 로마자 줄까지 켜고 끈다. 제목은 **`Romanization`**, 설명은 `Show how Korean is read, in small text, in answers,
+> lessons and stories.`(여덟 언어, ADR-0188 D6). 키 · 저장 키 · 기본 켬 · test-id는 그대로다.
 > **영속은 그 키 하나다** — `libitum.session-option.show-choice-romanization`(`"on"` / `"off"`, 기기 범위, 로그아웃 · 삭제에 남음). 그래서 §0의 1 · 5 · 6,
 > §2의 표(토글 둘), §4의 「저장하지 않는다」는 **자동 재생 · 대본 표시에 한해** 참이고, 그 둘은 지금 설정에 서지 않는다. 이벤트는 §6 표의
 > `session_option_changed`가 새 `option` 값을 받는다(새 이벤트 0). 기기 절차는 [보기 로마자 e2e](../e2e/choice-romanization.md)다.

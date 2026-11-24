@@ -111,7 +111,7 @@ export function useListenAudio(cue: ListenCue | null, lesson: LessonAudio): List
     start(currentRate());
   };
 
-  // 켜면 그 자리에서 0.85로 처음부터 다시 들려 주고, 끌 때는 재생을 건드리지 않습니다(갑작스러운 소리 없음).
+  // 켜면 그 자리에서 천천히(0.7)로 처음부터 다시 들려 주고, 끌 때는 재생을 건드리지 않습니다(갑작스러운 소리 없음).
   const togglePace = (): void => {
     "background only";
     if (source === undefined) return;

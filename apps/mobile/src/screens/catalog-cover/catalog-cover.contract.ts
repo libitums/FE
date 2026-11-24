@@ -3,6 +3,7 @@
 import type { AudioTiming } from "../../lib/audio-manifest";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { ChoiceRomanization } from "../../lib/session-options";
 
 export type CatalogCutScript = "en" | "roman";
 
@@ -65,6 +66,8 @@ export type CatalogCoverScreenProps = {
   readonly onComplete: () => void;
   /** 머리 나가기 · 시스템 뒤로. */
   readonly onExit: () => void;
+  /** 로마자 스위치(ADR-0188) — 없으면 `"hidden"`(이 변경 전 모양). 앱은 세션 옵션에서 넘깁니다. */
+  readonly romanization?: ChoiceRomanization;
 };
 
 /** 배너의 종류 — 표지 컷 뒤(`start`) · 통과 뒤 컷 뒤(`clear`). */

@@ -6,6 +6,8 @@ import { audioSyncLengthMs } from "../../lib/audio-manifest";
 import { contentAudioSourceOf } from "../../lib/content-audio";
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import type { FillScript } from "../../lib/placeholder-fill";
+import { readingOf } from "../../lib/romanization-display";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type { AudioCue } from "../../lib/use-audio-cue";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
@@ -135,6 +137,29 @@ export function catalogCutTranslation(
   return script === "en" ? (text.en ?? text.roman) : (text.roman ?? text.en);
 }
 
+/** 대사 아래 줄 — 로마자 줄 · 번역 줄 · 영어 ↔ 로마자 토글 여부입니다(ADR-0188 D2). */
+export type CatalogCutLines = {
+  readonly romanization: string | null;
+  readonly translation: string | null;
+  readonly toggle: boolean;
+};
+
+export function catalogCutLinesOf(
+  text: CatalogCutText,
+  script: CatalogCutScript,
+  display: ChoiceRomanization,
+): CatalogCutLines {
+  // 끔이면 이 변경 전 모양 — 고른 글 한 줄과 영어 ↔ 로마자 토글입니다. 켬이면 두 줄이 함께 서므로 토글이 필요 없습니다.
+  if (display === "hidden") {
+    return {
+      romanization: null,
+      translation: catalogCutTranslation(text, script),
+      toggle: catalogCutHasToggle(text),
+    };
+  }
+  return { romanization: readingOf(text.ko, text.roman), translation: text.en, toggle: false };
+}
+
 export function catalogCutHasToggle(text: CatalogCutText): boolean {
   return text.en !== null && text.roman !== null;
 }
@@ -167,6 +192,7 @@ export function catalogCutAccessibilityLabel(
   view: CatalogCutView,
   script: CatalogCutScript,
   copy: UiCopy,
+  display: ChoiceRomanization = "hidden",
 ): string {
   // 지문은 화자 뒤에 둡니다 — 보조기술 사용자가 장면 지시를 놓치지 않게(시각 패널과 같은 순서).
   const thought = view.kind === "line" && view.voice === "thought";
@@ -177,6 +203,14 @@ export function catalogCutAccessibilityLabel(
       ? `${catalogCutSpeakerName(view.speaker, copy)}${thought ? `, ${copy.catalogCover.thinking}` : ""}${view.aside === null ? "" : `, ${view.aside.ko}`}: `
       : "";
   let label = `${lead}${spoken.ko}`;
+  if (display === "shown") {
+    // 로마자 켬 — 한글 · 「Pronunciation: 로마자」 · 영어 순서(화면에 선 순서, ADR-0084 D19의 접두)이고 토글이 없습니다.
+    const lines = catalogCutLinesOf(spoken, script, display);
+    if (lines.romanization !== null)
+      label += `, ${copy.readAloud.pronunciation(lines.romanization)}`;
+    if (lines.translation !== null) label += `, ${lines.translation}`;
+    return label;
+  }
   const translation = catalogCutTranslation(spoken, script);
   if (translation !== null) label += ` ${translation}`;
   if (catalogCutHasToggle(view.text)) label += `, ${copy.catalogCover.toggleScript[script]}`;

@@ -58,11 +58,11 @@ export const settingsZhTw: SettingsCopy = {
   sessionOption: {
     "auto-play-audio": "自動播放",
     "show-transcript": "顯示字幕",
-    "show-choice-romanization": "選項顯示羅馬拼音",
+    "show-choice-romanization": "羅馬拼音",
     vibration: "震動",
   },
   sessionOptionDescription: {
-    "show-choice-romanization": "在每個韓文答案上方以小字顯示讀法。",
+    "show-choice-romanization": "在答案、課程和故事中，以小字顯示韓文的讀法。",
     vibration: "答對、答錯和點按鍵盤時震動。",
   },
   optionState: { on: "開啟", off: "關閉" },
