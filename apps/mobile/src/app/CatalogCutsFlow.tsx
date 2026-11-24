@@ -29,6 +29,8 @@ export type CatalogCoverFlowProps = {
   readonly onCutsDone: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
+  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0189). */
+  readonly onReplay?: () => void;
   /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
   readonly romanization?: ChoiceRomanization;
 };
@@ -41,6 +43,8 @@ export type CatalogEpilogueFlowProps = {
   readonly onExit: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
+  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0189). */
+  readonly onReplay?: () => void;
   /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
   readonly romanization?: ChoiceRomanization;
 };
@@ -81,6 +85,7 @@ export function CatalogCoverFlow({
   onExit,
   onCutsDone,
   onClose,
+  onReplay,
   romanization = "hidden",
 }: CatalogCoverFlowProps): ReactNode {
   const copy = useUiCopy();
@@ -105,6 +110,7 @@ export function CatalogCoverFlow({
         insets={insets}
         ordinal={ordinal}
         cuts={cuts}
+        onReplay={onReplay}
         romanization={romanization}
         onComplete={() => {
           "background only";
@@ -149,6 +155,7 @@ export function CatalogEpilogueFlow({
   cuts,
   onExit,
   onClose,
+  onReplay,
   romanization = "hidden",
 }: CatalogEpilogueFlowProps): ReactNode {
   const { shown, send } = useCutsFlowStep("cuts");
@@ -171,6 +178,7 @@ export function CatalogEpilogueFlow({
       insets={insets}
       ordinal={ordinal}
       cuts={cuts}
+      onReplay={onReplay}
       romanization={romanization}
       onComplete={() => {
         "background only";

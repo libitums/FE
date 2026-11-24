@@ -74,6 +74,7 @@ export function renderCatalogStory(
             romanization={romanization}
             onComplete={finish}
             onExit={exitStory}
+            onReplay={() => wiring.onStorySentenceReplayed(episodeId, "interlude")}
           />
         );
       }}

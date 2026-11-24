@@ -11,6 +11,7 @@ import type {
 import { assembledHintOf, listenBuildItemOf, syllableBuildItemOf } from "./catalog-build-map";
 import { tileReadingOf } from "../components/assembled-hint/assembled-hint.contract";
 import { audioField, catalogAnswerEchoOf } from "./catalog-item-audio";
+import { chipAudioField } from "./catalog-chip-audio";
 import { cultureCardItemOf, vocabCardItemOf } from "./catalog-card-map";
 import { cultureCheckItemOf } from "./catalog-culture-map";
 import {
@@ -75,6 +76,10 @@ function wordOrderItemOf(
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
     chipsSource: order.map((index) => item.tiles[index]?.ko ?? ""),
+    ...chipAudioField(
+      order.map((index) => item.tiles[index]?.ko ?? ""),
+      port,
+    ),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
     ...(chipReading === undefined ? {} : { chipReading }),
     // 흐린 정답은 콘텐츠의 첫 정답 문장입니다(조각을 이은 문자열이 아니라 — 문장부호 · 띄어쓰기를 그대로).
@@ -116,7 +121,10 @@ const isPermutation = (values: readonly number[]): boolean =>
  * 고정된 첫 줄**(`opening`)로 빠지고 창고에 들지 않습니다 — 학습자는 둘째 턴부터 놓습니다. 그래서 턴이 둘 미만이면
  * 놓을 것이 없어 `malformed`입니다. 정답 인덱스는 원래 타일 기준이라 섞인 자리로 옮깁니다.
  */
-function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): CatalogMappedItem {
+function turnOrderItemOf(
+  item: ItemOf<"TURN_ORDER">,
+  port: CatalogLessonItemPort,
+): CatalogMappedItem {
   const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
   const prompt = koOf(port, item.context.ko);
   const valid =
@@ -148,6 +156,10 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
     prompt,
     chips: chipTiles.map((tile) => tiles[tile] ?? ""),
     chipsSource: chipTiles.map((tile) => item.tiles[tile]?.ko ?? ""),
+    ...chipAudioField(
+      chipTiles.map((tile) => item.tiles[tile]?.ko ?? ""),
+      port,
+    ),
     answerOrder: restAnswer.map((tile) => chipTiles.indexOf(tile)),
     dialogue: {
       opening: { speaker: openingSpeaker, text: tiles[openingTile] ?? "" },

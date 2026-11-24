@@ -176,6 +176,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           romanization={choiceRomanizationOf(wiring.sessionOptions)}
           onExit={() => wiring.onLeaveCatalogEpilogue(episodeId)}
           onClose={() => wiring.onLeaveCatalogEpilogue(episodeId)}
+          onReplay={() => wiring.onStorySentenceReplayed(episodeId, "epilogue")}
         />
       );
     }

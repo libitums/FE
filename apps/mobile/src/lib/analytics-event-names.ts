@@ -43,6 +43,8 @@ export type AnalyticsEventName =
   | "episode_final_passed"
   | "episode_listen_item_answered"
   | "episode_item_answered"
+  | "sentence_audio_replayed"
+  | "choice_chip_sound_played"
   | "learner_profile_saved"
   | "learner_profile_opened"
   | "progress_load_delayed"

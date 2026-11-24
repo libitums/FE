@@ -66,6 +66,8 @@ export type CatalogCoverScreenProps = {
   readonly onComplete: () => void;
   /** 머리 나가기 · 시스템 뒤로. */
   readonly onExit: () => void;
+  /** 대사 위 스피커로 그 컷의 소리를 다시 낸 뒤 한 번 부릅니다(측정, ADR-0189). 회색(소리 없음)은 부르지 않습니다. */
+  readonly onReplay?: (cutIndex: number) => void;
   /** 로마자 스위치(ADR-0188) — 없으면 `"hidden"`(이 변경 전 모양). 앱은 세션 옵션에서 넘깁니다. */
   readonly romanization?: ChoiceRomanization;
 };
@@ -118,6 +120,7 @@ export type CatalogCoverTestId =
   | "catalog-cover-screen-line"
   | "catalog-cover-screen-aside"
   | "catalog-cover-screen-next"
+  | "catalog-cover-screen-replay"
   | "episode-banner-screen"
   | "episode-banner-screen-safe"
   | "episode-banner-screen-text";

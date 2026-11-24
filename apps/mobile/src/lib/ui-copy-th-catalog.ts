@@ -1,7 +1,10 @@
 // 태국어 문구표 구획 — 카탈로그 맵 · 표지 컷.
 // 번역 초안 — 원어민 검수 필요(ADR-0158 개정).
 
-import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type {
+  AudioUnavailableCopy,
+  SentenceReplayCopy,
+} from "../components/audio-unavailable.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
@@ -183,4 +186,9 @@ export const catalogStoryFinalTh: CatalogStoryFinalCopy = {
 
 export const audioUnavailableTh: AudioUnavailableCopy = {
   label: "ยังไม่มีเสียง",
+};
+
+/** 지나간 문장 다시 듣기 단추의 이름입니다(ADR-0189). 소리가 없으면 `audioUnavailable.label`이 이름입니다. */
+export const sentenceReplayTh: SentenceReplayCopy = {
+  label: "เล่นอีกครั้ง",
 };

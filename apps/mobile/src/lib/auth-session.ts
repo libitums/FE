@@ -12,17 +12,25 @@ import { getItem, removeItem, setItem } from "./storage";
 /** 저장소에 들어가는 유일한 키입니다. */
 export const authSessionStorageKey = "libitum.auth.session";
 
-/** 세 값만 담은 JSON입니다. */
+/** 세 값과, 있으면 계정 생성 시각만 담은 JSON입니다. */
 export function serializeAuthSession(session: AuthSession): string {
   return JSON.stringify({
     accessToken: session.accessToken,
     refreshToken: session.refreshToken,
     expiresAt: session.expiresAt,
+    ...(session.accountCreatedAt === undefined
+      ? {}
+      : { accountCreatedAt: session.accountCreatedAt }),
   });
 }
 
+// 양의 정수 ms만 계정 생성 시각입니다. 틀리면 그 칸만 버립니다(세션은 그대로).
+function storedCreatedAt(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : undefined;
+}
+
 /**
- * `null` · JSON 실패 · 필드 누락 · 빈 문자열 · `expiresAt`이 유한수 아님 → `null`입니다.
+ * `null` · JSON 실패 · 필드 누락 · 빈 문자열 · `expiresAt`이 유한수 아님 → `null`입니다. 틀린 `accountCreatedAt`은 그 칸만 버립니다.
  * `serializeAuthSession`의 왕복이 항등입니다.
  */
 export function parseAuthSession(raw: string | null): AuthSession | null {
@@ -51,7 +59,10 @@ export function parseAuthSession(raw: string | null): AuthSession | null {
   if (typeof expiresAt !== "number" || !Number.isFinite(expiresAt)) {
     return null;
   }
-  return { accessToken, refreshToken, expiresAt };
+  const accountCreatedAt = storedCreatedAt(record["accountCreatedAt"]);
+  return accountCreatedAt === undefined
+    ? { accessToken, refreshToken, expiresAt }
+    : { accessToken, refreshToken, expiresAt, accountCreatedAt };
 }
 
 /** 계약 `EntryAuthState`의 판정입니다 — 세션이 있으면 `refresh`, 비회원 표식이 있으면 `guest`, 아니면 `none`. */

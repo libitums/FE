@@ -14,8 +14,10 @@ import { useLettersRecommend } from "./use-letters-recommend";
 import { useLaunchCoins, type LaunchCoins } from "./use-launch-coins";
 import { useSignupReward } from "./use-signup-reward";
 import { usePushReward } from "./use-push-reward";
+import { useWelcomePass } from "./use-welcome-pass";
 import { pushRewardGuideOn } from "./push-reward-record";
 import { guestUnlimitedPass, type UnlimitedPass } from "../lib/unlimited-pass";
+import { laterTimedPass } from "../lib/welcome-pass";
 import { tutorialDone } from "./launch-coins";
 import { useMessengerMediaHooks } from "./use-messenger-media-hooks";
 import { useStreakReward } from "./use-streak-reward";
@@ -45,7 +47,7 @@ export function useMapNotices(input: MapNoticesInput): {
   readonly blocking: boolean;
   /** 알림 권한 창의 답을 기다리는 중(ADR-0176 D5) — 머리가 연속 모달 · 설문을 저절로 열지 않습니다. */
   readonly holdsHeader: boolean;
-  /** 푸시 보상으로 받은 무제한 티켓(ADR-0175) — 머리 칩 · 무제한 모달. 구독 판이 있으면 그쪽이 앞섭니다. */
+  /** 시간 한정 무제한 티켓 — 푸시 보상(ADR-0175) · 첫날 이용권(ADR-0186) 중 늦게 끝나는 쪽. 구독 판이 있으면 그쪽이 앞섭니다. */
   readonly ticketPass: UnlimitedPass | undefined;
 } {
   // 업데이트 안내가 이미 떠 있으면 엽전 모달이 그 위로 끼어들지 않습니다 — 안내가 닫힘 처리 없이 사라졌다가 다시 뜨면
@@ -87,6 +89,7 @@ export function useMapNotices(input: MapNoticesInput): {
     acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
   });
   pushOpen.current = push.open;
+  const welcomePass = useWelcomePass(); // 첫날 무제한 티켓(ADR-0186 개정 1) — 회원만, 안내 모달 없음
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
@@ -156,7 +159,7 @@ export function useMapNotices(input: MapNoticesInput): {
     streakReward: streak.wiring,
     blocking: updateNotice.open || letters.open || signup.open || push.open,
     holdsHeader: promptAsking,
-    ticketPass: push.ticketPass,
+    ticketPass: laterTimedPass(push.ticketPass, welcomePass),
     layer: (
       <>
         {signup.layer}
