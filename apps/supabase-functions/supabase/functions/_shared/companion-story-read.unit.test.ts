@@ -37,14 +37,14 @@ test("SR1. 판정 — 거절인데 분류가 없으면 other, 설명 · 말 걸 
   const read = storyReadFrom({
     verdict: "ok",
     category: null,
-    description: `  A  cafe\n table. ${"x".repeat(700)}`,
+    description: `  A  cafe\n table. ${"x".repeat(1000)}`,
     hooks: ["one", " ", "two", "three", "four"],
     crisis: true,
   });
   expect(read.verdict).toBe("ok");
   if (read.verdict !== "ok") return;
   expect(read.scene.description.startsWith("A cafe table.")).toBe(true);
-  expect([...read.scene.description]).toHaveLength(600);
+  expect([...read.scene.description]).toHaveLength(900);
   expect(read.scene.hooks).toEqual(["one", "two", "three"]);
   expect(read.scene.crisis).toBe(true);
 });
@@ -52,6 +52,9 @@ test("SR1. 판정 — 거절인데 분류가 없으면 other, 설명 · 말 걸 
 test("SR2. 지시 — 개인정보 규칙(문서의 글자 · 이름 · 번호 · 신원 · 외모)과 거절 분류 · 위기 신호, 글 속 지시는 따르지 않는다", () => {
   expect(defaultStoryReadModel).toBe("claude-sonnet-5-5");
   for (const phrase of [
+    "Write 3 to 5 plain English sentences",
+    "do not assume how people are related to each other",
+    "A portrait printed on an ID or card is just",
     "Never transcribe or paraphrase text from documents",
     "No names, numbers, addresses",
     "Never say or guess who a person is",

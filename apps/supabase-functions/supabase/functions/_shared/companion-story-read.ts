@@ -1,5 +1,6 @@
 // 사진 스토리의 「읽기」 단계(ADR-0191 D5 · D11) — 스토리당 한 번, 사진 원본을 보는 유일한 모델 호출이다.
 // 하는 일 셋: ① 게시할 수 없는 사진인지(검수) ② 개인정보를 뺀 장면 설명 ③ 위기 신호. 인물 호출은 사진이 아니라 이 설명만 받는다.
+// 설명은 3 ~ 5문장으로 구체적으로 쓴다(2026-11-24 — 1 ~ 3문장에서 늘림): 장소 · 하는 일 · 눈에 띄는 것 · 분위기. 저장해 두고 반응 · 대화 턴이 쓴다.
 // - 모델: `COMPANION_STORY_READ_MODEL`(기본 Sonnet 5.5 — 검수 판단이라 Haiku로 낮추기 전에 평가로 본다). 구조화 출력.
 // - 모델이 요청 자체를 거절하면(stop_reason refusal) 게시하지 않는 쪽(`other`)으로 본다 — 사용자는 다시 확인을 요청할 수 있다.
 // - 키 없는 구현(`fakeStoryReader`)은 글의 표시로 판정한다: `[unsafe]` 거절 · `[crisis]` 위기 · `[slow]` 실패(다시 보기).
@@ -43,7 +44,7 @@ export type StoryReadInput = {
 };
 export type StoryReader = (input: StoryReadInput) => Promise<StoryRead>;
 
-const DESCRIPTION_MAX = 600;
+const DESCRIPTION_MAX = 900;
 const HOOK_MAX = 120;
 
 export const storyReadSystem = [
@@ -55,17 +56,22 @@ export const storyReadSystem = [
   "not be stored, such as content that sexualises or endangers a child (other). Ordinary photos of people, swimwear at a",
   "beach, food, pets, documents, screens and messy rooms are ok. When unsure between ok and reject for nudity or gore, reject.",
   "",
-  "2. Description (only when ok). Write 1 to 3 plain English sentences saying what the photo shows, enough for a friend",
-  "to react naturally: the setting, what is happening, the mood, notable objects or food.",
+  "2. Description (only when ok). Write 3 to 5 plain English sentences, specific enough that a friend who never",
+  "sees the photo could react to its details. Cover, in this order: where it is and the time of day or weather if",
+  "visible; what is happening and what the people (if any) are doing; the notable things in view — food and drinks by",
+  "what they are, objects, colours, anything unusual or funny; and the overall mood. Prefer concrete nouns over",
+  "general words ('a bubbling stone pot of red stew with tofu', not 'some food'). Describe only what is visible —",
+  "do not guess what happened before or after, and do not assume how people are related to each other.",
   "Privacy rules — these are absolute:",
   "- Never transcribe or paraphrase text from documents, IDs, cards, tickets, mail, screens or name tags. Say only what",
   '  kind of thing it is, e.g. "a photo of an ID card" or "a screenshot of a chat".',
   "- No names, numbers, addresses, plates, emails or usernames, even if clearly visible.",
   "- Never say or guess who a person is. Never comment on anyone's looks, body, age, ethnicity or attractiveness.",
-  '  People are just "a person", "two friends", "a group at a table".',
+  '  People are just "a person", "two people", "a group at a table". A portrait printed on an ID or card is just "a small portrait photo".',
   "- Shop signs and landmarks may be named only when they are public places (a cafe sign, a famous tower).",
   "",
-  "3. Hooks (only when ok). Up to 3 short things a friend could warmly ask about or react to. Same privacy rules.",
+  "3. Hooks (only when ok). Up to 3 short things a friend could warmly ask about or react to, each tied to a concrete",
+  "detail in the photo. Same privacy rules — never about a person's looks, identity or relationships.",
   "",
   "4. Crisis. Set crisis to true when the photo or the caption signals self-harm, suicide or immediate danger to the",
   "person. Otherwise false. A crisis photo that is not graphic is still ok — describe it neutrally.",
