@@ -19,6 +19,7 @@
 | C 실제 값으로 Airbridge 대시보드 확인 | **미실행 — 이번 범위 밖, 사용자 몫** |
 | D 추적 허용(ATT) 대화상자 ⟨2026-10-22, ADR-0079⟩ | **일부 통과** — 2026-10-22 · iPhone 13 mini · Release · 실제 값. D-2(맵 진입에 한 번 뜸) 통과, D-1 · D-3 · D-4 · D-5 미실행([D](#d--추적-허용att-대화상자-adr-0079)) |
 | E 딥링크 · 지연 딥링크 ⟨2026-10-22, ADR-0080⟩ | **일부 통과** — iOS 실기 E-1 ~ E-3 통과(사용자 관찰), Android는 호스트 수신까지, E-4 ~ E-6 미실행([E](#e--딥링크--지연-딥링크-adr-0080)) |
+| H 소재 테스트 깔때기 다섯 ⟨2026-11-24⟩ | H-A(값 없는 빌드 회귀) — 아래 결과 기록. **H-C(실제 값 수신) 미실행 — 사용자 몫**([H](#h--소재-테스트-깔때기-다섯-adr-0063-적용-기록-2026-11-24)) |
 | F 웹 랜딩 → 설치 귀속 ⟨2026-10-30, ADR-0090⟩ | **미실행 — AB-M1 · M2 · M3 전부.** Vercel Production에 Web SDK Token이 아직 없다(사용자 작업). 자동 e2e(AB-E1 ~ E4 · 128건 중 12)는 2026-10-30 통과([F](#f--웹-랜딩--설치-귀속-adr-0090)) |
 
 **미실행 · 관찰 불가는 통과가 아니다.** 2026-10-13 실행에서 이 문서의 명령 다섯 곳이 그대로는 맞지 않아 고쳤다 — [절차 정정 기록](#절차-정정-기록).
@@ -391,6 +392,42 @@ Google Ads 연동 · Google Ads 최종 URL 접미사(`utm_source=google&utm_medi
 | 날짜 | 커밋 | 기기 | 판정 | 근거 |
 |---|---|---|---|---|
 | — | — | — | **미실행** | Vercel Production에 토큰을 넣기 전. 자동 e2e만 2026-10-30 통과(chromium · analytics · analytics-mobile 128건) |
+
+## H — 소재 테스트 깔때기 다섯 (ADR-0063 적용 기록 2026-11-24)
+
+새로 Airbridge로 나가는 다섯(`tickets_ran_out` · `first_chat_message_sent` · Product List View · `plan_selected` · Initiate Checkout)의 기기 확인이다.
+매핑 · 합성 · 호스트 모듈까지의 전달은 unit(AB7 ~ AB14 · U17 ~ U19)과 integration(`App.airbridge-funnel.integration.test.tsx` AF-I1 · I2)이 진다.
+
+### H-A. 값 없는 빌드의 회귀 (에이전트가 한다)
+
+A와 같은 조건(값 파일 없음 · Release 시뮬레이터 또는 `bundled` 에뮬레이터)에서 로그인된 세션으로 설정 › Plans(또는 머리 티켓 칩)를 열고 Continue를 누른다.
+
+| # | 기대 |
+|---|---|
+| H-A1 | Airbridge로 나가는 요청 0 — iOS `lsof` 소켓 · Android logcat `initializeSDK` 0 · `AirbridgeEventsModule` 미등록(A와 같은 관찰 수단) |
+| H-A2 | 화면은 전과 같다(「곧」 안내) · JS 오류 0 |
+
+| 날짜 | 커밋 | 기기 | 판정 | 근거 |
+|---|---|---|---|---|
+| 2026-11-24 | 이 PR 브랜치 | Android 에뮬레이터(Pixel_8 read-only · `bundled`, 값 파일 없음 · `BuildConfig`의 `AIRBRIDGE_APP_NAME = ""` 확인) | **H-A1 통과(한계 있음)** · H-A2 첫 화면까지 | 데이터를 지운 새 실행: logcat `initializeSDK` · `io.airbridge` · `co.ab180` 0, JS의 모듈 찾기는 `try to find module: AirbridgeEventsModule failed`(미등록 — 기대대로). 앱 UID 소켓은 `172.217.116.4:443` 하나(Google — Firebase)이고 Airbridge 도메인 IP(`54.230.62.x`)가 아니다. 첫 화면(온보딩)이 정상으로 섰고 JS 오류 0. **로그인이 필요해 Plans · Continue까지는 가지 않았다** — 그 구간의 「모듈 없으면 trackEvent 0」은 integration AF-I2가 진다. iOS는 이번에 보지 않았다 |
+
+### H-C. 실제 값으로 수신 확인 (사용자 몫 — 에이전트는 값을 다루지 않는다)
+
+C의 1 ~ 3을 마친 빌드(새 JS 번들이 실린 빌드)에서 Real-time Logs를 열어 두고:
+
+| # | 하는 것 | 기대 |
+|---|---|---|
+| H-C1 | 무료 티켓을 다 쓰고 레슨을 하나 더 연다 | `tickets_ran_out`(속성 없음) 1건 |
+| H-C2 | 이 기기에서 처음으로 채팅 메시지를 보낸다 → 하나 더 보낸다 | `first_chat_message_sent` 1건뿐(두 번째 메시지는 없음). **기기당 한 번**이라 이미 보낸 기기는 앱 데이터를 지운 뒤 본다 |
+| H-C3 | 설정 › Plans를 연다 | `airbridge.ecommerce.productList.viewed` — `productListID` `plans_compare` · `label` `settings` |
+| H-C4 | 요금제 · 기간을 고르고 Continue | `plan_selected`(`label` · `action` 예 `premium.yearly`)와 `airbridge.initiateCheckout`(`action` `plan` · `type` `preview` 또는 `checkout` · `products`) |
+| H-C5 | 엽전 상점에서 팩 사기를 누른다(결제는 취소해도 된다) | `airbridge.initiateCheckout` `action` `pack`. 결제를 끝내면 Order Complete가 따로 1건 |
+| H-C6 | 모든 행의 속성 | 사용자 ID · 나라 · 날 수 · 캐릭터 · 입력 글이 **속성에** 없다(User ID 칸은 ADR-0090대로 있다). Initiate Checkout에 최상위 `value`가 없다 |
+| H-C7 | 구독을 하나 결제한다(샌드박스) | 구독 이벤트는 RevenueCat 연동으로 **한 번만** 들어온다 — 앱이 보낸 구독 이벤트가 없다 |
+
+| 날짜 | 커밋 | 기기 | 판정 | 근거 |
+|---|---|---|---|---|
+| | | | **H-C 미실행** | 실제 값 · 새 빌드는 사용자 몫 |
 
 ## 이 절차로 확인되지 않는 것
 

@@ -15,8 +15,8 @@ import type {
   AnalyticsTransport,
 } from "../../lib/analytics.contract";
 import { analyticsConfigFrom } from "../../lib/analytics-config";
-import { withAirbridgeEvents } from "../../lib/airbridge-events";
-import { resolveAirbridgeEventTracker } from "../../lib/airbridge-events-module";
+import { productEventSinks } from "../../lib/airbridge-events-module";
+import type { Milestone, MilestoneStore } from "../../lib/companion-events";
 import { createAnalyticsSession } from "../../lib/posthog-client";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
 import { passSplash } from "./pass-splash";
@@ -59,16 +59,25 @@ export function sentEventNames(calls: readonly TransportCall[]): string[] {
   });
 }
 
+/** 이번 테스트 안에서만 기억하는 첫 경험 마일스톤 저장소입니다(기기 저장소 대역과 섞이지 않게). */
+export function memoryMilestoneStore(): MilestoneStore {
+  const done = new Set<Milestone>();
+  return {
+    done: (milestone) => done.has(milestone),
+    mark: (milestone) => void done.add(milestone),
+  };
+}
+
 /**
- * 진입점의 조립 그대로 — `withAirbridgeEvents(session.sinks, resolveAirbridgeEventTracker())`.
- * `analyticsConfig`를 `null`로 주면 transport가 꽂혀 있어도 PostHog만 꺼집니다(I6).
+ * 진입점의 조립 그대로 — `productEventSinks(session.sinks)`(Airbridge 전달 + 바깥의 첫 경험 마일스톤, 2026-11-24).
+ * `analyticsConfig`를 `null`로 주면 transport가 꽂혀 있어도 PostHog만 꺼집니다(I6). 호스트 모듈 대역은 먼저 세웁니다.
  */
 export function assembleSinks(
   transport: AnalyticsTransport | null,
   analyticsConfig: AnalyticsConfig | null = config,
 ): AnalyticsEventSinks {
   const session = createAnalyticsSession(analyticsConfig, transport);
-  return withAirbridgeEvents(session.sinks, resolveAirbridgeEventTracker());
+  return productEventSinks(session.sinks, memoryMilestoneStore());
 }
 
 const tapButton = (testId: string) =>
