@@ -1,7 +1,6 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
@@ -46,7 +45,8 @@ import {
 } from "../../lib/session-options";
 import { questionOptionsOf } from "../../components/question-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
-import { handsOffAfter, lessonCounter, type ActivityFinish, type LessonPosition } from "../learning/activity-finish";
+import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import { useLearningDensity } from "../learning/use-learning-density";
 import { playChoiceSound } from "../learning/lesson-sound";
 import type { WordChoiceQuestion } from "./word-choice-questions";
