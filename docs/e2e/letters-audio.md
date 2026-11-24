@@ -21,9 +21,12 @@
 | LA-E4 | Next → ㄴ + ㅏ(틀림) → Try again → ㄴ + ㅓ | 틀림은 무음, 맞힘 뒤 「너」 | 통과 — `correct_answer` 41.650 → `play neo` 42.553(+903 ms) | (2라운드는 iOS만) |
 | LA-E5 | 실행 로그의 JS 오류 | ReferenceError · TypeError · 1101 없음 | 통과 — 없음 · 오디오 세션 실패 로그 없음 | 통과 — 없음(FATAL 없음. 프로브가 화면을 갈아 끼울 때 Lynx 네이티브 레이아웃 로그 `DestroyLayoutNodeBeforeRemoveFromParent`만) |
 | LA-E6 | 업로드 전(정보 파일에 letters 없음) | 칸 · 퀴즈가 소리 없이 그대로, 오류 없음 | integration LAI3 · LAI4로 확인(기기 회차는 ADR-0169 ME-E5) | 같음 |
-| LA-E7 | (2026-11-24, 프로브 없이 실제 앱 · 운영 정보 파일 — letters 0항목) 게스트 시작 → 더보기 › Letters › Practice | 「Make “ga”」의 ▶가 회색, 이름 「Play, sound not available yet」 · 비활성, 눌러도 재생 없음 · 2라운드(neo)도 회색, JS 오류 없음 | 통과 — iPhone 17 Pro 시뮬레이터(Debug Host, `--bundle-url=main.lynx`): 회색, AX `enabled=false` · `NotEnabled` · 그 이름, 누른 뒤 재생 호출 없음 | 통과 — `assembleBundled` + AVD Pixel_8(`-read-only -no-audio`): 회색, uiautomator `content-desc` 그 이름 · `clickable=false`, 누른 뒤 재생 호출 없음, ㄱ + ㅏ → Next 뒤 neo도 회색 |
+| LA-E7 | **(개정 2026-11-24 ⟨음절 녹음 앱 내장⟩ — 아래 줄이 지금 기대값. 앞 회차 「회색 ▶」 결과는 그 아래 줄에 남김)** 프로브 없이 실제 앱 · 운영 정보 파일(letters 0항목), 게스트 시작 → 입장 전 기초 › 합치기, 더보기 › Letters › Practice | ▶가 단추(이름 「Play」), 누르면 `play(hangul-s-ga)` → 앱 안 `audio/hangul-s-ga.m4a`. ㄱ + ㅏ 맞힘 → `correct_answer` 뒤 약 0.8 s에 `hangul-s-ga` 한 번. 2 · 3라운드 ▶는 `hangul-s-neo` · `hangul-s-do`. JS 오류 없음 | 통과 — iPhone 17 Pro 시뮬레이터(iOS 26.5, Debug Host `--bundle-url=main.lynx`, 이 확인용으로 만들고 지움). 기초: ▶ AX `Button` 「Play」, `play hangul-s-ga` → `Host.app/audio/hangul-s-ga.m4a`(AVPlayer 0.6249 s), `correct_answer` 39.638 → `play hangul-s-ga` 40.440(+802 ms). Letters: 같은 단추 · ▶ ga, 정답 뒤 +802 ms ga, Next 뒤 ▶ `hangul-s-neo` → 앱 안 파일. JS 오류 0 | 통과 — `assembleBundled`(APK 안 `assets/audio/hangul-s-*` 3개, 21,115 B) + AVD Pixel_8(`-read-only -no-audio`, 포트 5584). 기초: ▶ `content-desc` 「Play」 · `clickable=true`, ▶ ga · MediaPlayer 열고 약 0.7 s 뒤 놓음, `correct_answer` 33.483 → `play hangul-s-ga` 34.284(+801 ms), 2라운드 ▶ neo, 3라운드 ▶ do. 재생 오류(`Rejected` · `Cannot open` · `playback error`) · JS 오류 0. Letters 화면은 Android에서 보지 않았다(같은 포트 · 같은 결선, integration LAI3 · LAI6) |
+| (이전 LA-E7, 2026-11-24 #573) | 음절 녹음이 없을 때 | 「Make “ga”」의 ▶가 회색, 이름 「Play, sound not available yet」 · 비활성 | 통과(당시) — 지금은 세 라운드에 내장 녹음이 있어 나타나지 않는다(ui CS19 ~ CS22가 포트 null일 때를 지킴) | 통과(당시) |
 
 ## 남은 것
 
 - 운영 파일을 올린 뒤(ADR-0173 D5) 실제 앱(더보기 메뉴가 고쳐진 뒤)에서 원격 주소로 ME-E6 · LA-E3를 한 번 더 — 올린 목소리를 귀로 듣는 확인 포함.
 - 소리 크기 · 음질 청취, VoiceOver · TalkBack 낭독과 겹침(ADR-0173 대가)은 하지 않았다.
+- 음절 녹음 가 · 너 · 도가 정말 그 음절인지 귀로 듣기 — LA-E7 회차는 재생 호출 · 파일 해석 · 재생 길이까지만 봤다(시뮬레이터 · `-no-audio` 에뮬레이터, 들은 사람 없음). 간접 비교는 ADR-0173 ⟨2026-11-24 — 합치기 퀴즈 음절도 앱 내장 녹음⟩.
+- Android 2라운드 정답 뒤 음절은 이 회차에 보지 못했다 — Next를 틈(0.8 s) 안에 눌러 설계대로 걷혔다(ui CS13).
