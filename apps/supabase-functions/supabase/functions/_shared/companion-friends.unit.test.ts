@@ -307,6 +307,7 @@ test("FT8. 평가 세트 — 본문 스키마를 지나고(≤ 20), 친구 넷�
   expect(moderation.map((set) => set.id)).toEqual([
     "romance-tier-moderation",
     "romance-line-moderation",
+    "common-requests-moderation",
   ]);
   for (const set of moderation)
     expect(Object.keys(set.expect!).sort(), set.id).toEqual(

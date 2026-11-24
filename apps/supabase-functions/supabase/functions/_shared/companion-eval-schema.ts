@@ -33,6 +33,8 @@ export const caseSchema = z.object({
     .optional(),
   // 피드백만: 관계 말투 단계 · 상대 캐릭터. 생략하면 모름(말투 규칙은 한 메시지 안 섞임만 본다).
   speechLevel: z.enum(["polite", "casual", "slang"]).nullable().optional(),
+  // 답장만: 친밀도 숫자(ADR-0180) — 연애 질문을 받는 태도의 구간. 생략하면 구간 줄 없음(첫 인사 · 선톡과 같다).
+  intimacy: z.number().int().min(0).max(1000).optional(),
   character: z
     .object({
       name: z.string().min(1).max(64),

@@ -141,10 +141,13 @@ const blockedByLine: Record<Exclude<RomanceLine, "none">, string> = {
 - Explicit content stays blocked: describing sexual acts, genitals or nudity, undressing in detail, explicit description of arousal, dirty talk or crude sexual jokes (음담패설), and blunt requests for sex or nude photos — spoken, requested or as an *action* → "block" with category "sexual".`,
 };
 
+// 연애 질문(ADR-0180) — 캐릭터에게 애인이 있는지 묻는 것은 개인적인 질문이지 로맨스가 아니다. 선 none에서도 통과시키고 답이 담백하게 받는다.
+const loveLifeQuestion = `Simply asking about the character's love life (e.g. "do you have a girlfriend?", "are you single?", "pacar kamu ada?") is a personal question, not romance → "allow" with category "safe".`;
+
 function romanceRule(layer: ModerationLayer, line: RomanceLine): string {
   if (line === "none") {
     return layer === "input"
-      ? `- Romance: romance or flirting directed at the character → "block" with category "romance".`
+      ? `- Romance: romance or flirting directed at the character → "block" with category "romance". ${loveLifeQuestion}`
       : `- Romance: the character must not flirt or act romantically with the learner → "block" with category "romance".`;
   }
   const who = layer === "input" ? "the learner and the character" : "the character and the learner";
@@ -178,11 +181,18 @@ export function moderationInstruction(
     layer === "input"
       ? `- Profanity, in any language: block only severe abuse aimed at the character — strong swear words or vulgar insults directed at them (e.g. "너 병신이야", "씨발놈아", "개새끼야", "fuck you", "putang ina mo", "đụ má mày", "anjing lo", "死ね", "hijo de puta", "ไอ้สัตว์"), slurs, degrading or sexual harassment, or threats → "block" with category "profanity". Mild insults and playful teasing are fine (e.g. "바보", "멍청이", "you idiot", "dummy", "bobo ka", "đồ ngốc", "dasar bodoh", "バカ", "tonto", "ไอ้บ้า") → "allow" with category "safe". Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어", "ㅅㅂ 늦었다", "shit, I'm late", "putangina ang init", "đm trễ rồi", "anjir telat", "くそ、遅刻だ", "mierda, llego tarde", "เหี้ย สายแล้ว") → "allow" with category "safe".`
       : `- Profanity: the character must never swear or insult. Any profanity in the reply, even mild or casual → "block" with category "profanity".`;
+  // 개인정보(ADR-0180): 막는 것은 실제 연락처 · 사는 곳을 내놓는 일뿐이다. 자기소개(이름 · 나라 · 도시)와 캐릭터에게 묻는 말(사는 곳 · 연락처 ·
+  // 다른 메신저 · 사진 · 음성 · 만나자)은 통과시키고 답이 캐릭터답게 받는다 — 운영에서 자기소개 · 「인스타 있어?」가 거절로 가 대화가 끊겼다.
+  const personalInfo =
+    layer === "input"
+      ? `- Personal info: block only when the learner shares an actual phone number, email address, home address, or account ID / handle (e.g. "my number is 0812…", "add me: insta @issoyeo") → "block" with category "personal_info". A normal self-introduction (first name or full name, nickname, age, country or city, school subject, job — e.g. "my name is Sindy Devina", "저는 김연지입니다", "tinggal di Klaten") and questions to the character (where they live, their family, whether they use WhatsApp or Instagram, asking for their number, a call, to meet, or for their photo, selfie or a voice message) → "allow" with category "safe" — the character answers in character.`
+      : `- Personal info: the character must never give a phone number, email, address, account ID or handle (real or made up), and must never ask for the learner's → "block" with category "personal_info". Saying they don't use other apps, or mentioning a photo button in this app, is fine.`;
   return `You review ${subject} in a Korean-learning chat app. The learner is ${who}.
 Classify the text and choose an action.
 - "crisis": the learner expresses intent or risk of self-harm or suicide, or says they are in immediate danger — in any language (e.g. "죽고 싶어", "I want to die", "gusto ko nang mamatay", "tôi muốn chết", "aku ingin bunuh diri", "死にたい", "quiero morir", "อยากตาย", "သေချင်တယ်"). (Only for learner messages.)
-- "block": sexual content, graphic violence, hate, requests or sharing of personal contact details, or anything else unsafe for the learner's age. Romance and sexual tension follow the romance rule below.
+- "block": sexual content, graphic violence, hate, sharing of personal contact details (see the personal info rule), or anything else unsafe for the learner's age. Romance and sexual tension follow the romance rule below.
 ${romanceRule(layer, line)}
+${personalInfo}
 ${profanity}
 - "allow": everything else, including mild everyday topics, mistakes, other languages, and sad feelings without risk.
 The learner may write in any language or mix languages (Korean, English, Tagalog, Vietnamese, Indonesian, Japanese, Spanish, Thai, Burmese and others). Judge every language the same way, including spaced, abbreviated, romanized or disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck, p*tang ina, đ.m, a*jing, k*so, m!erda). Text between asterisks (*…*) is the learner's action or inner thought in the roleplay — review it like the rest.

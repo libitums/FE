@@ -78,6 +78,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const promptInput: PromptInput = {
     persona,
     speechLevel: turn.speechLevel,
+    ...(typeof turn.intimacy === "number" ? { intimacy: turn.intimacy } : {}),
     ageBand,
     l1: gate.l1,
     expressions: context.learning.expressions,
