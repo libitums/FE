@@ -413,6 +413,9 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_expire_sub_credits(p_now)` | M4 | 구독 크레딧 소멸(pg_cron) |
 | `companion_media_begin(p_user_id, p_message_id, p_kind, p_again, p_now)` | 2026-11-13 | 스냅샷 · 음성 요청 — 자격 · 판정 · 저장본 · 동시 1 · 하루 상한 · 예약 · pending 행 · 작업 입력(§2.9) |
 | `companion_media_finish(p_media_id, p_status, p_result, p_now)` | 2026-11-13 | 백그라운드 작업의 끝 — complete면 확정, blocked · failed면 해제. 이미 닫힌 행이면 `closed` |
+| `companion_snapshot_v2_context(p_user_id, p_character_id)` | 2026-11-24 (ADR-0179) | 스냅샷 v2m 입력 — `{ tester, recent }`: 시험 계정(`duru_tester`) 여부 · 이 유저 × 인물의 완료된 v2m 계획(`media.prompt`) 새것부터 6개(다양성) |
+| `companion_snapshot_outfit_candidate(p_character_id, p_name, p_description, p_outfit_change, p_media_id)` | 2026-11-24 (ADR-0179) | 장면 설계가 옷장에 없는 옷을 고른 스냅샷의 새 옷 후보 기록(옷 설명만) |
+| `companion_snapshot_outfit_candidates_pending(p_limit)` · `companion_snapshot_outfit_candidates_mark(p_ids, p_result)` | 2026-11-24 (ADR-0179) | 운영 대시보드 크론(이틀에 한 번 새벽) — 처리 안 한 새 옷 후보를 오래된 것부터 · 처리 표시(한 번만) |
 | `companion_post_stories(p_now)` | 2026-11-23 (ADR-0178) | 친구 스토리 올림(`companion-stories`, pg_cron 매시) — 인물마다 UTC 하루 하나, 올림 시각(UTC 01 ~ 10시, id 해시)이 지났을 때 가장 적게 올린 묶음 줄(같으면 id 순). 24시간 산다. `{ posted: [{ storyId, characterId, poolId }] }` |
 | `companion_claim_story_reply(p_user_id, p_story_id, p_character_id, p_client_message_id, p_now)` | 2026-11-23 (ADR-0178) | chat-send `story_id` — 지갑을 잠그고 첫 답장 무료 판정 · 인용 기록. `{ result: free \| used \| expired \| not_found \| off, story: { line, wordKo, imagePath, postedAt } \| null }`. free면 그 메시지에 금액 0 예약(관문 엽전 판정 · `begin_turn`이 그대로 씀). 같은 메시지 재전송은 같은 줄 |
 | `companion_story_push_candidates(p_now, p_limit)` | 2026-11-23 (ADR-0178) | 스토리 알림 후보 `[{ userId, storyId, characterId, name, line, mode, tester }]` — 스위치 `settings.story_push` · 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) · 오늘(현지) 보낸 알림 없음(모든 묶음). 사람마다 가장 새 스토리 하나 |
