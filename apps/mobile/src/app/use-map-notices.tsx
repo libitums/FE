@@ -89,7 +89,7 @@ export function useMapNotices(input: MapNoticesInput): {
     acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
   });
   pushOpen.current = push.open;
-  const welcomePass = useWelcomePass(); // 첫날 무제한 티켓(ADR-0186) — 비회원 포함, 안내 모달 없음
+  const welcomePass = useWelcomePass(); // 첫날 무제한 티켓(ADR-0186 개정 1) — 회원만, 안내 모달 없음
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
