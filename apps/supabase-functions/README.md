@@ -290,7 +290,9 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `COMPANION_TRANSLATION` | 아니오 | 캐릭터 답의 L1 번역. `every`(기본, 턴마다) 또는 `off`. 모르는 값이면 설정 오류(500). PRD O9(매 메시지 · 탭할 때)가 정해지면 바꾼다 |
 | `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 | `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`chat-send`의 매 턴 칩 · `companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
-| `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL` | 아니오 | 내 스토리 반응(`companion-story-reactions`, ADR-0179)의 출력 검사 · 번역 모델. 기본 `claude-haiku-5-5`(답은 `COMPANION_MODEL`). 다른 함수는 읽지 않는다 |
+| `COMPANION_STORY_READ_MODEL` | 아니오 | 사진 스토리의 읽기 단계(`companion-my-story` · `companion-story-reactions`의 다시 보기, ADR-0191 D11) 모델. 기본 `claude-sonnet-5-5` |
+| `COMPANION_REACTION_MODEL` | 아니오 | 내 스토리 반응(`companion-story-reactions`, ADR-0191 D5)의 답 모델. 기본 `claude-sonnet-5-5` — 대화의 `COMPANION_MODEL`과 따로 고른다. 다른 함수는 읽지 않는다 |
+| `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL` · `COMPANION_REACTION_SUGGEST_MODEL` | 아니오 | 내 스토리 반응의 출력 검사 · 번역 · 추천 답안 칩 모델. 기본 `claude-haiku-5-5`(칩은 `COMPANION_SUGGEST_MODEL`이 있으면 그 값). 다른 함수는 읽지 않는다 |
 | `OPENAI_API_KEY` | 스냅샷에 | `companion-snapshot`의 이미지 편집. 없으면 스냅샷이 503 `not_configured` |
 | `ELEVENLABS_API_KEY` | 음성에 | `companion-voice`의 TTS. 없으면 음성이 503 `not_configured` |
 | `COMPANION_SNAPSHOT_MODEL` | 아니오 | 스냅샷 프롬프트 · 검사 노드 모델. 기본 `claude-haiku-5-5`(lab과 같다). 키는 `ANTHROPIC_API_KEY` |
@@ -871,45 +873,114 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 4. 켜기: `update companion.settings set friend_stories = 'testers';` → 시험 계정으로 앱 확인 → `'on'`. 알림은 따로 `story_push = 'testers'` → `'on'`.
    **알림은 스토리를 여는 새 앱이 충분히 깔린 뒤에 켠다** — 옛 앱은 알림을 누르면 그 방만 연다.
 
-## 내 스토리 (20261228, ADR-0179)
+## 내 스토리 (20261228, ADR-0179 내 스토리 · ADR-0191)
 
-`migrations/20261228140000_my_stories.sql`(친구 스토리 두 마이그레이션 **뒤**) · Edge Function `companion-story-reactions`(새) · `chat-send`(`story_id`가
-내 스토리면 `mine`) · 예약 `cron/my-stories.sql`. 사진은 없다 — 단어장 단어 · 레슨 카드만.
+`migrations/20261228140000_my_stories.sql`(친구 스토리 두 마이그레이션 **뒤**) · Edge Function `companion-story-reactions`(새) · `chat-send`(스토리 맥락 ·
+`story_id`가 내 스토리면 `mine`) · 예약 `cron/my-stories.sql`. 사진은 없다 — 단어장 단어 · 레슨 카드만(사진은 ADR-0191 D11, 다음 단계).
+**반응은 그 인물 방의 채팅 메시지다**(ADR-0191 D2) — 마이그레이션은 운영에 올라가기 전에 제자리에서 고쳐 썼다.
 
-- 스위치(`companion.settings`, 기본 **off**): `my_stories` — 올리기 · 읽기 · 지우기, `story_reactions` — LLM 반응 예약 · 만들기(값 off · testers · on).
-  `story_reactions`는 `my_stories`가 켜진 사람에게만 뜻이 있다(`companion.reactions_on`).
-- 상한(UTC 하루): `my_story_daily`(사람마다 올리기, 기본 3) · `story_reaction_user_daily`(사람마다 반응, 기본 3) · `story_reaction_global_daily`(전체 반응,
-  기본 500). 반응 상한은 **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘는 반응은 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차)
-  올린 지 24시간이 지나면 `skipped`. 수는 지워지지 않는 장부 `my_story_usage`(사람 · 날 — posts · claims, 계정 삭제 때만 지움) ·
-  `my_story_usage_global`(날 — claims)에서 읽는다 — 스토리를 지우거나 정리해도 줄지 않는다. claim은 그날 전체 장부 줄을 `for update`로 잠가 줄 세운다.
-  30분 넘게 `claimed`인 줄(함수가 끊김)은 다음 claim이 `failed`로 끝낸다. 끝내기는 사용량 요약을 `my_story_reactions.meta`에 남긴다.
-- `skip_reason`(감사 A14): 사람 상한 `cap_user` · 24시간 지남 `expired` · 반응 스위치 꺼짐 `switch_off` · 끊겨 30분 넘은 claimed `stale` · 단어 없음 `no_word` · 시간 예산 `budget` · 그 밖 핸들러 결과(`not_allowed` · `blocked` · `empty_reply` · `failed` …). claim은 `{ rows, skippedCap, globalCapped }`을 돌려주고 반응 함수의 결과 · 로그에 `skipped_cap` · `global_capped`가 실린다.
-- 모델: 반응 하나 = 모델 호출 셋(답 · 출력 검사 · 번역). **사용자 결정(2026-11-23) — 검사 · 번역은 Haiku**: 반응 함수만 출력 검사 · 번역을 `claude-haiku-5-5`로 부르고(`_shared/companion-reaction-env.ts`, 바꿀 때 `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL`), 답은 컴패니언 답변 모델(`COMPANION_MODEL`, 기본 `claude-opus-5-5`) 그대로 — chat-send · 선톡은 바뀌지 않는다. 추정(캐시 없이): 답 입력 약 2.8k · 출력 약 300 (Opus 5.5 $4 / $20 per MTok) ≈ $0.0172, 검사 약 1.2k / 50 ≈ $0.00015, 번역 약 0.8k / 60 ≈ $0.00011(Haiku 5.5 $0.10 / $0.50) — **성공한 반응 하나 약 $0.0175, 단어가 없어 버린 반응 약 $0.0172**(답만). 상한이 다 차면 사람 하루 최대 약 $0.052(3개), 전체 하루 최대 약 $8.7(500개), 30일 약 $262.
-- 표(RLS 켬, 앱 직접 접근 없음): `my_stories`(사용자 · `client_id` 하나 — 두 번 눌러도 하나 · 단어 `{episodeId, ref}` · 한국어 · 로마자 · 뜻(올린 사람 언어) ·
-  예문 · 24시간) · `my_story_reactions`(스토리 cascade · 인물 · `due_at` · scheduled → claimed → done/failed/skipped) · `my_story_replies`(대화 인용 —
-  스토리를 지우면 `my_story_id`가 null → 기록 읽기의 `story`가 `{ kind: deleted }`, 앱은 「Deleted story」).
-- 프로필 `keep_my_stories`(기본 켬): 끄면 읽기는 살아 있는 것만, 정리(`companion_purge_my_stories`)가 24시간 지난 것을 지운다.
-- 앱 RPC(authenticated): `companion_my_stories()` → `{ enabled, keep, stories }`(최신 100개, 반응은 done만) · `companion_post_my_story(…)` →
-  `ok | off | daily_limit | invalid` · `companion_delete_my_story(id | null = 모두)` · `companion_set_keep_my_stories(bool)`.
-- 반응 예약(올릴 때): 이 사람이 말한 대화의 인물 최대 셋(마지막으로 말한 순) — 8 ~ 25분 · 45 ~ 150분 · 3 ~ 7시간 뒤(스토리 · 인물 해시).
-- 반응 만들기(`companion-story-reactions`, 10분마다): 정리 → claim 12 → 사람마다(동시 넷) 선톡 맥락(`companion_proactive_context`) + 반응 지시
-  (`_shared/companion-reaction-prompt.ts` — 단어를 꼭 넣고 한두 줄) → 답 → 말에 단어(활용형 포함)가 없으면 출력 검사 전에 failed(다시 부르지 않음) →
-  출력 검사 → 올린 사람 언어로 번역 → `companion_finish_story_reaction`(meta = 사용량). 반응 하나에 모델 호출 셋(답 · 검사 · 번역), 단어가 없으면 하나.
-  시간 예산 60초(시작 판정)를 넘으면 남은 줄은 모델 없이 failed — 그 줄도 그날 상한에 센다(모델을 부르지 않았어도, 보수적으로).
-- 기록의 인용(`story_quote_json`)은 이제 `kind`를 싣는다: friend(친구 스토리) · mine(내 스토리 — `line`은 단어, 그림 없음) · deleted.
-- 테스트: `migrations/my-stories.integration.test.ts`(MS1 ~ MS15) · `_shared/companion-reactions-handler.unit.test.ts`(RH1 ~ RH7) ·
-  `_shared/companion-reaction-env.unit.test.ts`(RE1 ~ RE2) ·
-  `companion-reaction-prompt.unit.test.ts`(RP1 ~ RP4 · RP3b) · `chat-send-story.unit.test.ts`(SS1 ~ SS2) · 친구 스토리 FS15(인용 `kind`).
+- 스위치(`companion.settings`, 기본 **off**): `my_stories` — 올리기 · 읽기 · 지우기, `story_reactions` — 반응 예약 · 만들기, `story_reaction_push` —
+  반응 알림(값 off · testers · on). `story_reactions`는 `my_stories`가 켜진 사람에게만 뜻이 있다(`companion.reactions_on`). `my_story_seen`(기본 켬) — Seen by.
+- 규칙 수치는 `settings.my_story_rules`(jsonb, 비어 있으면 기본값) — 배포 없이 고친다:
+  `twoReplyChance` 0.6 · `recentDays` 3 · `recentWeight` 1.0 · `midDays` 14 · `midWeight` 0.5 · `oldWeight` 0.15 · `intimacy0` 1.0 · `intimacy15` 1.5 ·
+  `intimacy35` 2.2 · `intimacy60` 3.0 · `repeatFactor` 0.6 · `firstMinSec` 60 · `firstMaxSec` 300 · `secondMinSec` 300 · `secondMaxSec` 3600 ·
+  `seenMaxSec` 1800 · `morningStart` 4 · `dayStart` 12 · `nightStart` 18.
+  예: `update companion.settings set my_story_rules = my_story_rules || '{"secondMaxSec": 1800}';`
+- 올리기(ADR-0191 D8): 현지 **아침 · 낮 · 밤 창마다 하나**(`my_story_slots` — 지워도 돌아오지 않음) + 24시간 안 `my_story_daily` + 1(기본 4)개 — 바르게 쓰는
+  사람은 어느 24시간에도 창 셋 + 하나를 넘지 않는다(`companion.my_story_day_full`).
+  시간대는 `companion.user_timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`) → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
+- 반응 상한: `story_reaction_user_daily`(사람 하루, 기본 6) · `story_reaction_global_daily`(전체 하루, 기본 1000 — 버그 · 악용에 대한 퓨즈).
+  **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘으면 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차) 올린 지 24시간이 지나면 `skipped`.
+  수는 지워지지 않는 장부 `my_story_usage`(사람 · UTC 날) · `my_story_usage_global`(날)에서 읽는다. claim은 그날 전체 장부 줄을 `for update`로 잠가 줄 세운다.
+  30분 넘게 `claimed`인 줄(함수가 끊김)은 다음 claim이 `failed`로 끝낸다.
+- `skip_reason`: 사람 상한 `cap_user` · 24시간 지남 `expired` · 반응 스위치 꺼짐 `switch_off` · 끊겨 30분 넘은 claimed `stale` · 시간 예산 `budget` ·
+  방 없음 `no_conversation` · 그 밖 핸들러 결과(`not_allowed` · `blocked` · `empty_reply` · `failed` …). claim은
+  `{ rows, skippedCap, deferred, globalCapped }`을 돌려준다 — `deferred`는 그 대화가 도는 중(pending 턴 · 마지막 메시지 1분 안)이라 다음 회차로 미룬 수.
+- 누가 답하나(올릴 때, ADR-0191 D3 · D4): 친구 = 내가 말한 대화가 있는 · 켜진 · 숨기지 않은 인물. 1명이면 1, 여럿이면 2명(`twoReplyChance`) 또는 1명.
+  가중 무작위 — `companion.reaction_weight` = 최근성 × 친밀도 × 직전 내 스토리에 답했으면 `repeatFactor`. 첫 답 1 ~ 5분, 둘째 5 ~ 60분(스토리 · 인물 해시로 결정적).
+  각도: 첫 인물 `word`, 둘째 `question` · `quiz` · `together` 중 하나. Seen by(`my_story_seen`)는 친구 전원 — 답하는 인물은 답 30 ~ 120초 전, 나머지는 1 ~ 30분.
+- 반응 만들기(`companion-story-reactions`, **매분**): 정리 → claim 12 → 알람마다(동시 넷) 선톡 맥락(`companion_proactive_context`) + 반응 지시
+  (`_shared/companion-reaction-prompt.ts` — 각도, 단어는 필수 아님) → 답 → 출력 검사(항상) → 번역 · 추천 답안 칩(동시에) →
+  `companion_finish_story_reaction`이 **그 인물 방의 메시지**(`messages.origin = 'story_reaction'`, meta에 `myStoryId` · `angle` · 사용량)로 저장 → 푸시.
+  그 사이 스토리를 지웠으면 저장하지 않는다(`saved: false`). 시간 예산 40초(시작 판정)를 넘으면 남은 줄은 알람으로 되돌린다(`requeued` — 센 상한도 돌려놓고 다음 회차가
+  다시 고른다).
+- 모델(`_shared/companion-reaction-env.ts`): 답 `COMPANION_REACTION_MODEL`(기본 `claude-sonnet-5-5` — 대화의 `COMPANION_MODEL`과 따로) · 출력 검사 · 번역
+  `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL`(기본 `claude-haiku-5-5`) · 칩 `COMPANION_REACTION_SUGGEST_MODEL` →
+  `COMPANION_SUGGEST_MODEL` → Haiku. 추정(캐시 없이, 입력 약 2.8k · 출력 약 300): Sonnet 5.5($2 / $10 per MTok) 답 ≈ $0.0086 + 검사 · 번역 ≈ $0.0003 —
+  **반응 하나 약 $0.009**, 전체 상한이 다 차면 하루 약 $9. Haiku 답은 약 $0.0004 — 평가로 견준 뒤 바꾼다.
+- 반응 푸시(ADR-0191 D7, `_shared/companion-reaction-push.ts`): 문 `companion_story_reaction_push_gate`(스위치 · 시험 계정 · 기기 · 방). 배정을
+  `push_campaign_sends`(묶음 「스토리 반응」)에 먼저 남기고 `send-push`(목적지 그 인물 방). 「하루 한 번」에 세지 않지만, 그 줄이 있으면 그날 선톡 푸시
+  (`companion_proactive_push_gate.pushedToday`) · 친구 스토리 알림은 건너뛴다.
+- 대화 턴(`chat-send`): `companion_story_context` — 학습자의 살아 있는 내 스토리 · 그 인물이 최근 올린 스토리 셋을 이번 턴 지시에 싣는다(ADR-0191 D9).
+  읽지 못하면(옛 서버 · 실패) 싣지 않는다.
+- 표(RLS 켬, 앱 직접 접근 없음): `my_stories` · `my_story_reactions`(알람 — 인물 · `rank` · `angle` · `due_at` · `message_id` · scheduled → claimed →
+  done/failed/skipped) · `my_story_seen` · `my_story_slots` · `my_story_replies`(내가 인용해 보낸 답) · 장부 둘.
+- 지우기(ADR-0191 D10): 스토리 · 알람 · Seen이 사라진다. **대화방의 반응 메시지 글은 남고** 기록의 `story`만 `{ kind: deleted }`가 된다.
+  프로필 `keep_my_stories`(기본 켬): 끄면 읽기는 살아 있는 것만, 정리(`companion_purge_my_stories`)가 24시간 지난 것을 지운다.
+- 앱 RPC(authenticated, 모양은 `packages/companion-contract/src/my-stories.ts`): `companion_my_stories(p_tz_offset_min?)` →
+  `{ enabled, keep, stories, window }`(최신 100개 · `reactions` · `seenBy`) · `companion_post_my_story(…, p_tz_offset_min?)` →
+  `ok | off | window_used | daily_limit | invalid` · `companion_delete_my_story(id | null = 모두)` · `companion_set_keep_my_stories(bool)`.
+- 기록의 인용(`message_json.story`): 내 말 — friend(친구 스토리 답장) · mine · deleted. 인물의 반응 메시지 — mine · deleted.
+- 테스트: `migrations/my-stories.integration.test.ts`(MS1 ~ MS17) · `_shared/companion-reactions-handler.unit.test.ts`(RH1 ~ RH10) ·
+  `_shared/companion-reaction-env.unit.test.ts`(RE1 ~ RE3) · `companion-reaction-prompt.unit.test.ts`(RP1 ~ RP4) ·
+  `chat-send-story.unit.test.ts`(SS1 ~ SS5) · 계약 `my-stories.unit.test.ts`(MC1 ~ MC2) · 친구 스토리 FS15(인용 `kind`).
 
 **적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
 
-> 마이그레이션 `20261228140000`과 함수 `companion-story-reactions`는 **함께** 배포한다 — claim 결과 모양(`{ rows, skippedCap, globalCapped }`)이 바뀌어
-> 옛 함수 · 옛 마이그레이션이 섞이면 고른 줄이 30분 뒤 stale로 실패한다.
+> 마이그레이션 `20261228140000`과 함수 `chat-send` · `companion-story-reactions`는 **함께** 배포한다 — claim · 끝내기의 모양이 함수와 맞물려 있어
+> 섞이면 고른 줄이 30분 뒤 stale로 실패한다.
 
-1. 마이그레이션: 친구 스토리 둘 뒤에 `20261228140000_my_stories.sql`. `companion_claim_story_reply` 정의에 내 스토리 블록을 넣는다(이미 있으면 건너뜀,
-   찾는 줄이 없으면 멈춤). 더 늦은 번호가 이미 적용돼 있으면 `supabase db push --include-all`. 확인:
-   `select my_stories, story_reactions, my_story_daily, story_reaction_user_daily, story_reaction_global_daily from companion.settings;`(off · off · 3 · 3 · 500).
-2. 함수: `supabase functions deploy chat-send companion-story-reactions`(계약 사본 `_shared/companion-contract` 포함).
-3. 예약: `supabase/cron/my-stories.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈). 확인:
+1. 마이그레이션: 친구 스토리 둘 뒤에 `20261228140000_my_stories.sql`. `messages.origin`에 `story_reaction`을 더하고, `companion_claim_story_reply` ·
+   `message_json` · `companion_proactive_push_gate` 정의의 한 곳씩을 바꾼다(이미 있으면 건너뜀, 찾는 줄이 없으면 멈춤). 더 늦은 번호가 이미 적용돼
+   있으면 `supabase db push --include-all`. 확인:
+   `select my_stories, story_reactions, story_reaction_push, my_story_daily, story_reaction_user_daily, story_reaction_global_daily from companion.settings;`
+   (off · off · off · 3 · 6 · 1000).
+2. 함수: `supabase functions deploy chat-send companion-story-reactions`(계약 사본 `_shared/companion-contract` 포함). 답 모델을 바꾸려면
+   `COMPANION_REACTION_MODEL`.
+3. 예약: `supabase/cron/my-stories.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈) — **매분**. 확인:
    `select jobname, schedule from cron.job where jobname = 'companion-story-reactions';`.
-4. 켜기: `my_stories = 'testers'` → 앱 확인 → 반응은 따로 `story_reactions = 'testers'` → 비용 확인 뒤 `'on'`. 전체 상한을 먼저 정한다.
+4. 켜기: `my_stories = 'testers'` → 앱 확인 → `story_reactions = 'testers'` → 비용 · 반응 품질 확인 → `story_reaction_push = 'testers'` → `'on'`.
+
+## 내 스토리 — 사진 (20270104, ADR-0191 D11)
+
+`migrations/20270104120000_my_story_photos.sql`(내 스토리 마이그레이션 **뒤**) · Edge Function `companion-my-story`(새 — 교정 · 올리기 · 글 고치기) ·
+`companion-story-reactions`(같은 회차에 뒷정리) · `delete-account`(사진 · 격리 버킷 정리). 스위치 `my_story_photo`(기본 **off** · testers · on) —
+`my_stories`가 켜진 **성인**(생년으로 확인)에게만 뜻이 있다. 미성년 · 나이 모름은 사진을 올릴 수 없다(단어 · 카드는 된다).
+
+- 버킷(둘 다 비공개, 5 MB, jpeg · png · webp — 앱이 줄여서 올린다): `my-story-photos/<user_id>/<파일>` — 올릴 수 있는 사람만 자기 폴더에 올리고 읽는다(저장소 정책이
+  `companion_can_upload_story_photo()`를 부른다 — 스위치 · 성인 · 폴더의 파일 40개 미만). `my-story-quarantine/<user_id>/<파일>` — 거절한 사진, 정책 없음(서버 키만).
+- 올리기(`POST companion-my-story` `{ action: "post", client_id, image_path, ko, … }`, 모양은 계약 `myStoryRequestSchema`):
+  0. 경로가 `<내 id>/<파일 이름>` 꼴인지 본다 — 서버 키로 읽고 옮기고 지우므로 저장소를 건드리기 전에 막는다.
+  1. 문 `companion_my_photo_gate` — 스위치 · 성인 · 창 · 24시간 상한 · 하루 검수 시도(`my_story_check_daily`, 기본 5). 같은 `client_id`가 다시 오면 그 스토리.
+  2. 글 검수(대화의 입력 검사 층). 막히면 `text_blocked`.
+  3. 사진 읽기(`_shared/companion-story-read.ts`, 8초) — 검수 + 개인정보를 뺀 장면 설명 + 위기 신호. **사진 원본을 보는 모델 호출은 이것 하나다.**
+     인물 호출 · 대화 턴은 `my_stories.scene`(설명)만 받는다. 모델은 `COMPANION_STORY_READ_MODEL`(기본 `claude-sonnet-5-5`).
+  4. 결과: 통과 → `live`(Seen · 알람 — 첫 인물 `react`, 둘째 `question` · `together`) · 거절 → 사진을 격리 버킷으로 옮기고
+     `my_story_rejections`에 적음(창은 쓰지 않는다) · 제때 끝나지 않음 → `checking`(올린 사람에게만 보임).
+  - 위기 신호(글 또는 사진)가 읽히면 `scene.crisis` — Seen · 알람을 만들지 않는다(보통 반응을 끈다).
+- 교정(`{ action: "draft", text }`): 하루 `my_story_draft_daily`(기본 30) → 글 검수 → 대화의 피드백 노드로 자연스러운 한국어 한 줄 · 뜻 · 팁.
+  모국어로 써도 된다. 로마자는 앱이 만든다.
+- 글 고치기(`{ action: "edit", story_id, ko }`): 글 검수를 다시 거치고 스토리당 `my_story_edit_limit`(기본 3)번. 사진은 못 바꾼다.
+- 뒷정리(`_shared/companion-story-upkeep.ts`, 반응 함수가 매분): ① 파일 정리 대기열 `my_story_file_purges` — 스토리를 지우면(하나 · 모두 · 보관 끔 정리 ·
+  계정 삭제) 트리거가 그 사진을, 기한(`my_story_reject_keep_days`, 기본 30일)이 지난 거절은 격리 파일을, 올린 지 하루가 넘도록 스토리가 되지 못한 파일(막힌 글 · 쓴 창 · 그만둔 올리기)을 넣는다. ② `checking` 스토리를 한 번에 셋까지
+  다시 읽는다(30초 제한, 같은 줄은 90초 뒤에) — 다섯 번을 다 쓰고 3분이 지나면 반응 없이 게시한다(사진은 올린 사람만 본다).
+  격리 버킷으로 옮기지 못한 거절은 원본을 지운다(그 건은 다시 확인을 못 한다).
+- 다시 확인 요청: 앱 RPC `companion_request_story_review(p_rejection_id)` — `my_story_rejections.review_requested_at`을 적는다. 운영 도구가
+  `review_requested_at is not null and review_result is null`인 줄과 격리 파일을 보여 주고 `review_result`(upheld · overturned)를 적는다(운영 도구 쪽 작업).
+- 아동 성착취 의심(`category = 'sexual_minors'`) 건의 열람 · 신고 · 보관 기한은 법무 확인 뒤 정한다(ADR-0191 D11) — 그 전에는 `my_story_photo`를
+  `on`으로 올리지 않는다.
+- 평가 세트(`_shared/companion-eval-sets-reactions.ts`): `story-reaction-words`(14) · `story-reaction-photos`(12). `companion-eval`의 답장 케이스에
+  `storyReaction`을 실으면 운영과 같은 반응 지시로 답을 만든다. 답 모델을 고를 때 같은 세트를 `model`만 바꿔 돌려 견준다.
+  로컬에서 실제 모델로 돌리기(돈이 든다 — 26케이스 × 3모델 약 $2): `ANTHROPIC_API_KEY=… npx vitest run supabase/evals/story-reactions.eval`
+  (`EVAL_MODELS` · `EVAL_SETS` · `EVAL_CASES` · `EVAL_OUT`으로 고른다, 결과는 `supabase/evals/out/` — git에 올리지 않는다). 기록은 ADR-0191 「평가 기록」.
+- 테스트: `migrations/my-story-photos.integration.test.ts`(MP1 ~ MP8) · `_shared/companion-my-story-handler.unit.test.ts`(MH1 ~ MH7 · MU1 ~ MU2 · RP5) ·
+  `_shared/companion-story-read.unit.test.ts`(SR1 ~ SR3 · SS1 ~ SS3) · `_shared/companion-eval-reactions.unit.test.ts`(ER1 ~ ER2) · 계약 MC3.
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
+
+1. 마이그레이션 `20270104120000_my_story_photos.sql`(내 스토리 뒤). 확인:
+   `select id, public from storage.buckets where id like 'my-story-%';` · `select my_story_photo from companion.settings;`(off).
+2. 함수: `supabase functions deploy companion-my-story companion-story-reactions chat-send delete-account`. `companion-my-story`는
+   `ANTHROPIC_API_KEY`가 없으면 `post`를 받지 않는다(500).
+3. 켜기 전: 개인정보 처리방침 · 스토어 개인정보 응답 갱신, 의심 건 처리 절차의 법무 확인(ADR-0191 D11). 그 뒤 `my_story_photo = 'testers'`.
+

@@ -39,3 +39,6 @@ verify_jwt = false
 
 [functions.companion-story-reactions]
 verify_jwt = false
+
+[functions.companion-my-story]
+verify_jwt = false
