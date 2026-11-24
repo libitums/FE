@@ -76,3 +76,9 @@ test("TR10. 태국어 · 미얀마어 표도 같은 규칙으로 옮긴다(ADR-0
   expect(result.episode.translations).toEqual({ th: { water: "น้ำ" }, my: { water: "ရေ" } });
   expect(codes(result)).not.toContain("invalid-translation");
 });
+
+test("TR11. 대만 중국어(zh-TW) 표도 같은 규칙으로 옮긴다(ADR-0185 개정)", () => {
+  const result = decoded({ "zh-TW": { water: "水" } });
+  expect(result.episode.translations).toEqual({ "zh-TW": { water: "水" } });
+  expect(codes(result)).not.toContain("invalid-translation");
+});

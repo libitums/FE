@@ -20,8 +20,21 @@
 - `ui-copy-zh-tw*.ts`(구획 17 + `ui-copy-more-zh-tw.ts` · `ui-copy-ranking-zh-tw.ts` + 가입 보상 칸). 타입(`UiCopy`)이 키를 강제한다.
 - 표기: 번체 + 대만 용어(軟體 · 訊息 · 影片 · 登入 · 設定 · 帳號 · 網路 · 螢幕), 전각 문장부호(，。！？「」), 호칭은 你, 요금제 이름 영어(ADR-0144 · 0160),
   엽전은 `Yeopjeon`, 단위는 「枚錢幣」, 엽전 묶음 기호 `,`. 날짜는 `Intl` 없이 `M月D日`. 낭독되는 진행 숫자는 「N/M」 대신 「第N…，共M…」 — 중국어 TTS가 「2/3」를 분수 · 날짜로 읽는다(접근성 점검 Major, ZT-U8). 낭독 목록 구분자는 「，」(ZT-U9). 모두 **번역 초안 — 원어민 검수 필요**(파일 머리 주석).
-- 이야기 대사 · 레슨 콘텐츠 번역은 만들지 않는다 → `ContentLanguage`에 넣지 않고, 받기 차례는 zh-TW에서 번역 파일을 받지 않으며(`translationLanguageForRound` → null)
-  에피소드는 영어 원문이다(ADR-0158 규칙 — 번역 없는 언어는 영어).
+- ~~이야기 대사 · 레슨 콘텐츠 번역은 만들지 않는다~~ → **개정(D8)**: 스테이징에 zh-TW 콘텐츠 번역이 있어 th · my와 같은 길로 연다.
+
+### D8. ⟨2026-11-24 개정⟩ 이야기 · 레슨 번역도 zh-TW — th · my와 같은 길(버킷 번역 파일)
+- **사용자 결정(2026-11-24 「진행」)**: 「콘텐츠 번역은 범위 밖 → 영어」는 틀렸다 — 스테이징 `episodes/u00~u17.json`(delivery-2)의 `translations`에 zh-TW가 다른 여섯 언어와 같은 수(편마다 51~300)로 있다.
+- 앱: `ContentLanguage` · episode-core `translationsOf` · 매니페스트 `translationRefsOf`에 zh-TW, 받기 차례가 zh-TW 파일을 받는다(`translationLanguageForRound`의 예외를 지움).
+  모르는 언어 키를 조용히 버리는 규칙(MT2) 그대로라 **옛 앱은 매니페스트의 zh-TW 항목을 무시**한다. 번들에 품은 본문(u00~u10의 `translations` vi · id · es · ja)에는 넣지 않는다 —
+  th · my처럼 첫 받기 전 · 오프라인 첫 실행은 영어이고, 번들 크기는 그대로다.
+- **수준 5만**: 운영 `translations/level-5/zh-TW/<id>.json` 18개 + `manifests/level-5.json`의 각 편 `translations["zh-TW"]`(version = 그 편의 운영 본문 판 `2026-11-18.1`). 수준 4(`translations/<언어>/`)는
+  만들지 않는다 — 수준 4만 읽는 앱(1.3.x 이하)에는 zh-TW 화면 언어가 없다. 스테이징에 수준 구분은 없다(본문 하나가 두 수준의 원본).
+- 변환기 `devtools/content/translation-files.mjs` · `translation-files-build.mjs`(TF-U1~U7): 운영 ja · th 파일과 같은 모양(스테이징이 바뀌지 않은 편에서 바이트 일치 확인).
+  운영 본문(11-18판)과 스테이징(11-20판)의 영어 키가 어긋난 곳은 **운영 ja 키에 맞춘다** — 자리표시자 이름만 바뀐 3줄(`{수단}` → `{means}` · `{명사}` → `{noun}`)은
+  스테이징 번역을 옮겨 채우고, 스테이징에 없는 u15 aside 「Stepping back to fit them both in the frame.」 한 줄은 영어로 남는다(th · my와 같음).
+- 점검: 18편 모두 운영 ja 키 대비 빠짐 1(위 aside) · 자리표시자 잃음 0 · 빈 번역 0 · 간체 전용 글자 0 · 가나 0(앱 문구표와 같은 목록). 생성 파일을 앱 디코더(매니페스트 · 번역 파일 · sha256 · bytes)로 읽어 18/18 통과.
+- 저장소는 번역 파일을 두지 않는다(본문 · 번역은 버킷이 정본) — 생성물은 커밋하지 않고, 올리는 일은 사람(아래 「적용」).
+- 단계별 예고 푸시(`staging/push/*.json`)에는 zh-TW가 없다 → 영어 그대로(D6).
 
 ### D3. 기기 언어 판정 — 번체만 받는다
 - `uiLanguageFromDeviceTag`: 주 하위 태그 `zh`이면 스크립트 `Hant` 또는 지역 `TW` · `HK` · `MO` → `zh-TW`. `Hans` · `CN` · `SG` · 지역 없는 `zh` → null(영어).
@@ -61,8 +74,13 @@
 2. 번역 품질 — 초안. 대만 원어민 검수 전에 내보내지 않는다.
 3. Android 한자 자형(D4) · 화면 낭독기의 영어 접미사(아래 표)는 남는다.
 
+## 적용(버킷, 사람 — 승인 뒤)
+- 올릴 파일: `translations/level-5/zh-TW/{u00-tutorial,u01-water,u02-checkin,u03-mina,u04-directions,u05-baekban,u06-cafe,u07-jaemin,u08-umbrella,u09-subway,u10-laundry,u11-bookstore,u12-cafe-missed,u13-pajeon,u14-hanbok,u15-changdeokgung,u16-umbrella-return,u17-samgyeopsal}.json`(새 파일, `x-upsert: false`),
+  그다음 `manifests/level-5.json`(덮어쓰기, `x-upsert: true`) — 번역 파일 먼저, 공개 URL의 sha256 · bytes 확인, 매니페스트 마지막. `cache-control: max-age=60`.
+- 다시 만들기: 스테이징 `episodes/*.json` · 운영 `manifests/level-5.json` · 운영 `translations/level-5/ja/*.json`을 받아 `translation-files-build.mjs`(사용법은 파일 머리).
+
 ## 남은 일(사람 · 다음 결정)
-- 원어민 검수. 버킷에 `country-names/zh-TW.json` 올리기(부록 H 절차 — 그 전에는 나라 이름이 영어).
+- 원어민 검수. 버킷에 수준 5 zh-TW 번역 18개 · 매니페스트 올리기(위 「적용」), `country-names/zh-TW.json` 올리기(부록 H 절차 — 그 전에는 나라 이름이 영어).
 - 서버 파일 운영 적용(`push-campaign-locale.ts` · `push-campaign-config.ts` · `companion-stories-handler.ts` 함수 배포).
 - 친구 스토리 묶음(정본 `docs/content/friend-stories.json` · 마이그레이션) 뜻 줄에 zh-TW — 지금은 영어(앱은 zh-TW 칸을 읽을 준비가 되어 있다).
 - Android 대만 자형: (가) 그대로 둔다 (나) Noto Sans TC 서브셋을 앱 자산으로 싣고 `@font-face`로 맨 앞에 (다) 호스트가 Lynx 글 그리기에 로캘을 넘기는지 확인.
@@ -74,7 +92,8 @@
 | 화면 · 서비스 | zh-TW | 대체 · 이유 |
 |---|---|---|
 | 앱 화면 문구(`UiCopy` 전부 — 입장 · 맵 · 레슨 · 이야기 · 채팅 · 상점 · 요금제 · 설정 · Letters · 단어장 · 순위 · 알림 · 가입 보상) | 예 | — |
-| 이야기 대사 · 레슨 콘텐츠 · 단계별 예고 푸시(버킷 콘텐츠) | 아니오 | 영어 — 콘텐츠 번역은 범위 밖(D2 · D6) |
+| 이야기 대사 · 레슨 번역(버킷 수준 5 번역 파일) | 예(업로드 뒤) | 운영 업로드 전 · 첫 받기 전 · 오프라인 첫 실행은 영어(th · my와 같음). u15 aside 한 줄은 스테이징에 번역이 없어 영어(D8) |
+| 단계별 예고 푸시(버킷 콘텐츠) | 아니오 | 영어 — `staging/push`에 zh-TW 없음(D6) |
 | 인물 소개 · 직업 · 나이 · 시트 첫 말(`companion-*roster.ts`) | 예 | — |
 | 친구 스토리 뜻 줄(서버 묶음 27줄) | 아니오 | 영어 — 묶음 정본에 zh-TW 칸 없음(남은 일), 앱은 읽을 준비 |
 | 학습자 프로필 미리보기 틀 | 예 | — |
