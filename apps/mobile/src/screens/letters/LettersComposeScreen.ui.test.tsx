@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import type { AutoPlayAudio } from "../../lib/question-audio";
 import { uiCopyEn } from "../../lib/ui-copy-en";
-import { COMPOSE_ECHO_DELAY_MS } from "./compose-quiz";
+import { COMPOSE_ECHO_DELAY_MS, composeClipOf } from "./compose-quiz";
 import { LettersComposeScreen } from "./LettersComposeScreen";
 import { lettersTestIds as ids } from "./letters.contract";
 
@@ -357,4 +357,49 @@ test("CS22. 나중에 소리 파일이 올라오면(포트가 주소를 돌려�
   expect(speaker()).toHaveAttribute("accessibility-traits", "button");
   fireEvent.tap(speaker(), {});
   expect(play).toHaveBeenCalledExactlyOnceWith("src:가");
+});
+
+// ---------------------------------------------------------------- 앱 내장 음절 녹음(2026-11-24 — 가 · 너 · 도를 앱에 실음)
+
+function mountBundled() {
+  const play = vi.fn<(source: string) => void>();
+  render(
+    <LettersComposeScreen
+      romanization="shown"
+      sound={{ sourceOf: composeClipOf, letterSourceOf: () => null, play }}
+      onExit={() => {}}
+    />,
+  );
+  return play;
+}
+
+test("CS23. 앱 내장 음절 녹음이면 세 라운드 모두 ▶가 단추이고 그 라운드 녹음(hangul-s-ga · neo · do)을 낸다", () => {
+  const play = mountBundled();
+  for (const [consonant, vowel, clip] of [
+    ["ㄱ", "ㅏ", "hangul-s-ga"],
+    ["ㄴ", "ㅓ", "hangul-s-neo"],
+    ["ㄷ", "ㅗ", "hangul-s-do"],
+  ] as const) {
+    expect(speaker(), clip).toHaveAttribute("accessibility-traits", "button");
+    expect(speaker(), clip).toHaveAttribute("accessibility-enable-tap", "true");
+    expect(speaker(), clip).toHaveAttribute("accessibility-label", uiCopyEn.more.compose.play);
+    play.mockClear();
+    fireEvent.tap(speaker(), {});
+    expect(play).toHaveBeenCalledExactlyOnceWith(clip);
+    pick(consonant);
+    pick(vowel);
+    fireEvent.tap(action(), {});
+  }
+});
+
+test("CS24. 앱 내장 음절 녹음이면 맞힌 뒤 효과음 틈 뒤에 그 녹음이 한 번 난다", () => {
+  vi.useFakeTimers();
+  const play = mountBundled();
+  pick("ㄱ");
+  pick("ㅏ");
+  expect(play).not.toHaveBeenCalled();
+  act(() => {
+    vi.advanceTimersByTime(COMPOSE_ECHO_DELAY_MS * 3);
+  });
+  expect(play).toHaveBeenCalledExactlyOnceWith("hangul-s-ga");
 });
