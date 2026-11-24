@@ -43,7 +43,7 @@ export type WordChoicePresentationProps = {
   /** 고른 보기의 글과 판정입니다 — 답하기 전에는 `null`. 문화 확인 장면의 내 대답이 이것에서 납니다. */
   readonly answer?: { readonly reply: string; readonly result: AnswerResult } | null;
   /** 로마자 스위치(ADR-0188) — 제시문 로마자 줄 · 문화 장면 말풍선 줄이 따릅니다. 없으면 `"shown"`. */
-  readonly romanization?: ChoiceRomanization;
+  readonly choiceRomanization?: ChoiceRomanization;
 };
 
 const emptyCast: ConversationCast = { counterpart: {}, me: {} };
@@ -67,7 +67,7 @@ export function WordChoicePresentation({
   density = "regular",
   cast = emptyCast,
   answer = null,
-  romanization: display = "shown",
+  choiceRomanization = "shown",
 }: WordChoicePresentationProps): ReactNode {
   const copy = useUiCopy();
   // 빈칸이 있는 줄은 빈칸을 말로 푼 문장을 낭독 라벨로 둡니다. 없으면 `undefined`이고, 부르는 쪽이 보이는 글자를
@@ -111,7 +111,7 @@ export function WordChoicePresentation({
         scene={scene}
         cast={cast}
         density={density}
-        romanization={display}
+        romanization={choiceRomanization}
         outcome={
           answer === null
             ? { kind: "asking" }
@@ -142,7 +142,7 @@ export function WordChoicePresentation({
       {/* 카탈로그 문항의 지원 줄입니다 — 값이 있을 때만 섭니다. 뜻 줄은 정답을 드러내는 문항에는 실리지 않습니다(그
           판단은 문항을 만드는 쪽이 집니다). 로마자 → 구분선 → 뜻이 한글 바로 아래 이 순서입니다. */}
       {/* 로마자 줄은 로마자 스위치를 따릅니다(ADR-0188 D1) — 끄면 한글 · 뜻만 섭니다. */}
-      {romanization === undefined || folded || display === "hidden" ? null : (
+      {romanization === undefined || folded || choiceRomanization === "hidden" ? null : (
         <TextRoles.Romanization
           segments={romanizationSegmentsOf(romanization, emphasis)}
           size={size}
