@@ -1,4 +1,4 @@
-// `unit` 계층: 「소리가 안 나는 문장」 점검(ADR-0188). `node --test devtools/content/*.test.mjs`.
+// `unit` 계층: 「소리가 안 나는 문장」 점검(ADR-0189). `node --test devtools/content/*.test.mjs`.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 

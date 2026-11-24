@@ -1,6 +1,6 @@
-# 수동 e2e — 다시 듣기 · 단어 칩 소리 (ADR-0188)
+# 수동 e2e — 다시 듣기 · 단어 칩 소리 (ADR-0189)
 
-결정은 [ADR-0188](../adr/0188-replay-audio-and-chip-sound.md), 시안은 [docs/design/replay-audio.md](../design/replay-audio.md).
+결정은 [ADR-0189](../adr/0189-replay-audio-and-chip-sound.md), 시안은 [docs/design/replay-audio.md](../design/replay-audio.md).
 
 | 이미 지는 층 | 무엇을 |
 |---|---|

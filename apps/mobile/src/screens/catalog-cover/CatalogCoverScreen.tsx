@@ -190,7 +190,7 @@ export function CatalogCoverScreen({
         <view className="catalog-cover-screen-spacer" />
 
         <view className="catalog-cover-screen-dialogue">
-          {/* 다시 듣기(ADR-0188) — 대사 상자(토글 단추) 밖 형제라 단추 안 단추가 아닙니다. 소리 없는 컷은 회색입니다. */}
+          {/* 다시 듣기(ADR-0189) — 대사 상자(토글 단추) 밖 형제라 단추 안 단추가 아닙니다. 소리 없는 컷은 회색입니다. */}
           <view className="catalog-cover-screen-replay-row">
             <SentenceReplayButton
               key={index}

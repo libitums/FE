@@ -96,7 +96,7 @@ export type EpisodeItemAnsweredEvent = {
 export type ReplayStoryStage = "prologue" | "epilogue" | "interlude";
 
 /**
- * 지나간 한국어 문장을 스피커로 다시 들은 순간 한 번 나는 이벤트입니다(ADR-0188). 회색(소리 없음) 단추는 눌리지 않아 나지 않습니다.
+ * 지나간 한국어 문장을 스피커로 다시 들은 순간 한 번 나는 이벤트입니다(ADR-0189). 회색(소리 없음) 단추는 눌리지 않아 나지 않습니다.
  * 이야기 컷은 `stage`, 레슨 판정 뒤 정답 문장은 `unitKey`를 싣습니다.
  */
 export type SentenceAudioReplayedEvent = {
@@ -107,7 +107,7 @@ export type SentenceAudioReplayedEvent = {
   readonly unitKey?: string;
 };
 
-/** 단어 고르기 · 조립 칩을 눌러 그 낱말 소리가 난 순간 한 번 나는 이벤트입니다(ADR-0188). 소리가 없는 칩은 나지 않습니다. */
+/** 단어 고르기 · 조립 칩을 눌러 그 낱말 소리가 난 순간 한 번 나는 이벤트입니다(ADR-0189). 소리가 없는 칩은 나지 않습니다. */
 export type ChoiceChipSoundPlayedEvent = {
   readonly name: "choice_chip_sound_played";
   readonly episodeId: string;

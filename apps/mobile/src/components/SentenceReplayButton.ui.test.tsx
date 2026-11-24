@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testi
 
 import { SentenceReplayButton } from "./SentenceReplayButton";
 
-// `ui` 계층: 다시 듣기 스피커(ADR-0188) — 소리가 있으면 누를 수 있고 누르면 그 소리를 처음부터, 없으면 회색 · 눌리지 않음.
+// `ui` 계층: 다시 듣기 스피커(ADR-0189) — 소리가 있으면 누를 수 있고 누르면 그 소리를 처음부터, 없으면 회색 · 눌리지 않음.
 // 소리 모듈만 대역입니다.
 
 const audio = vi.hoisted(() => ({

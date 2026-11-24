@@ -1,10 +1,10 @@
-# ADR-0188: 지나간 한국어 문장 다시 듣기 · 소리 없는 문장은 회색 · 단어 칩 소리
+# ADR-0189: 지나간 한국어 문장 다시 듣기 · 소리 없는 문장은 회색 · 단어 칩 소리
 
 - 상태: **제안 — 구현됨**(브랜치 `feat/replay-audio`, 머지 전). (2026-11-24)
 - 날짜: 2026-11-24
 - **사용자 요청**(2026-11-24, 「123 진행」 — 운영 `public.feedback` 튜토리얼 별점 의견): 소리를 다시 듣고 싶다(여러 건) · 소리가 안 나는 문장이 있다 ·
   단어 고르기 칩을 누르면 소리가 났으면(한글을 모르는 사용자). 이 ADR의 기본값은 조정자 지시 범위 안에서 스스로 정했다 — 아래 「스스로 정한 기본값」.
-- 번호: 0182 ~ 0187은 다른 브랜치가 쓸 수 있어(같은 날 병렬 작업 `fix/slow-playback` · `feat/dialogue-romanization`) 0188을 쓴다.
+- 번호: 처음에는 0188로 적었으나 같은 날 병렬 작업 `feat/dialogue-romanization`(#580)이 0188(대화문 로마자)을 써서 0189로 옮겼다. `fix/slow-playback`은 새 ADR 번호를 쓰지 않는다.
 - 이어받는 결정: [ADR-0060](0060-episode-voice-remote-audio.md)(컷 음성 · 받은 파일만), [ADR-0172](0172-answer-echo-all-items.md)(정답 뒤 음성 · 녹음 색인 D2),
   [ADR-0173](0173-letters-audio.md)(소리 파일이 없으면 회색 — Letters #573), [ADR-0029](0029-product-analytics-posthog.md)(이벤트 이름 규칙), [ADR-0016](0016-assistive-technology-semantics.md) D5 · D10.
 - 시안: [docs/design/replay-audio.md](../design/replay-audio.md)

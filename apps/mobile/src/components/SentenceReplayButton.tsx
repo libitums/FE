@@ -21,7 +21,7 @@ export type SentenceReplayButtonProps = {
 
 const noop = (): void => {};
 
-// 지나간 한국어 문장을 다시 듣는 스피커입니다(ADR-0188, 시안 docs/design/replay-audio.md). 소리가 있으면 누를 때마다
+// 지나간 한국어 문장을 다시 듣는 스피커입니다(ADR-0189, 시안 docs/design/replay-audio.md). 소리가 있으면 누를 때마다
 // 처음부터 다시 내고(재생 모듈은 하나라 앞 소리는 끊깁니다), 없으면 Letters와 같은 회색 꺼진 단추입니다(ADR-0173).
 // 상태는 들지 않습니다 — 재생 중 표시가 없어 정지 · 끝을 읽을 일이 없습니다.
 export function SentenceReplayButton({

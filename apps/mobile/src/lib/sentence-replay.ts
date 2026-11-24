@@ -1,4 +1,4 @@
-// 지나간 한국어 문장을 다시 듣는 단추와 칩 소리의 순수 판정입니다(ADR-0188). 화면 경로에 실리므로 값 import가 없습니다.
+// 지나간 한국어 문장을 다시 듣는 단추와 칩 소리의 순수 판정입니다(ADR-0189). 화면 경로에 실리므로 값 import가 없습니다.
 
 import type { QuestionAudio } from "./question-audio";
 

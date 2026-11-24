@@ -1,5 +1,5 @@
 // 문장 조립의 조각 누름 세 갈래입니다 — 줄 배치의 놓기/되돌리기, 대화 조립의 놓기 · 되돌리기. 조각을 **놓을 때만** 그 낱말
-// 소리를 냅니다(ADR-0188) — 되돌릴 때는 조용합니다. 판정 · 보고는 상태 리듀서가 그대로 집니다.
+// 소리를 냅니다(ADR-0189) — 되돌릴 때는 조용합니다. 판정 · 보고는 상태 리듀서가 그대로 집니다.
 
 import type { LessonAudio } from "../../lib/question-audio";
 import { playChipSound } from "../learning/lesson-sound";

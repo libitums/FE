@@ -8,7 +8,7 @@ import { SentenceOrderActivity } from "./SentenceOrderScreen";
 import { tapCheck } from "./sentence-order-check.test-support";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
-// `ui` 계층: 문장 조립의 칩 소리 · 판정 뒤 다시 듣기(ADR-0188). 칩을 놓을 때만 그 낱말 소리, 되돌릴 때는 없음.
+// `ui` 계층: 문장 조립의 칩 소리 · 판정 뒤 다시 듣기(ADR-0189). 칩을 놓을 때만 그 낱말 소리, 되돌릴 때는 없음.
 // 판정 · 측정 보고는 소리와 무관하게 같다. 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({

@@ -193,7 +193,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  /* 배지 옆 다시 듣기(ADR-0188) — 간격 8, 48 누르는 자리가 36 줄 위아래로 넘칩니다. */
+  /* 배지 옆 다시 듣기(ADR-0189) — 간격 8, 48 누르는 자리가 36 줄 위아래로 넘칩니다. */
   gap: var(--libitum-layout-gap-inline);
   overflow: visible;
 }

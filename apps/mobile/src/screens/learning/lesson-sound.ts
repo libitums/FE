@@ -1,4 +1,4 @@
-// 레슨 활동이 함께 쓰는 칩 소리 · 판정 뒤 다시 듣기 결선입니다(ADR-0188). 판정 · 점수 · 문항 보고와는 닿지 않고,
+// 레슨 활동이 함께 쓰는 칩 소리 · 판정 뒤 다시 듣기 결선입니다(ADR-0189). 판정 · 점수 · 문항 보고와는 닿지 않고,
 // 재생 모듈과 측정 알림(`LessonAudio.onSoundUsed`)만 부릅니다.
 
 import { playAudio } from "../../lib/audio";
@@ -16,7 +16,7 @@ export function playChipSound(
   lesson: LessonAudio,
   surface: ChipSoundSurface,
 ): void {
-  // 자동 재생을 끈 사람에게는 칩 소리도 내지 않습니다 — 판정 효과음 · 화면낭독과 겹치는 소리를 끌 길이 이것뿐입니다(ADR-0188 D3).
+  // 자동 재생을 끈 사람에게는 칩 소리도 내지 않습니다 — 판정 효과음 · 화면낭독과 겹치는 소리를 끌 길이 이것뿐입니다(ADR-0189 D3).
   if (lesson.autoPlay === "off") return;
   const source = chipSoundAt(chipAudio, index);
   if (source === null) return;
@@ -26,7 +26,7 @@ export function playChipSound(
 
 /**
  * 단어 고르기 보기의 낱말 소리입니다 — 누름이 곧 판정이라, 판정 뒤 정답 음성(틈 0.8초)이 **같은 소리**면 칩 소리를 내지 않습니다
- * (정답 보기를 누르면 같은 문장이 두 번 나지 않게). 틀린 보기는 그 낱말 → 정답 음성 순으로 들립니다(ADR-0188 D3).
+ * (정답 보기를 누르면 같은 문장이 두 번 나지 않게). 틀린 보기는 그 낱말 → 정답 음성 순으로 들립니다(ADR-0189 D3).
  */
 export function playChoiceSound(
   choiceAudio: readonly (string | null)[] | undefined,

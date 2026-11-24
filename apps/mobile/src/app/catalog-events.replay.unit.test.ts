@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { lessonSoundUsedEventOf, storySentenceReplayedEventOf } from "./catalog-events";
 
-// `unit` 계층: 다시 듣기 · 칩 소리 측정 이벤트의 모양(ADR-0188, 이름 규칙 ADR-0029).
+// `unit` 계층: 다시 듣기 · 칩 소리 측정 이벤트의 모양(ADR-0189, 이름 규칙 ADR-0029).
 
 describe("storySentenceReplayedEventOf", () => {
   test.each(["prologue", "epilogue", "interlude"] as const)(

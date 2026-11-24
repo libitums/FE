@@ -11,7 +11,7 @@ import type { LessonSoundUse } from "../../lib/question-audio";
 import { SyllableBuildActivity } from "./SyllableBuildActivity";
 import type { SyllableBuildQuestion } from "./syllable-build.contract";
 
-// `ui` 계층: 음절 조립 판정 뒤 다시 듣기(ADR-0188). 재생 접점(`lib/audio`)만 대역입니다.
+// `ui` 계층: 음절 조립 판정 뒤 다시 듣기(ADR-0189). 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void, rate?: number) => string>(),

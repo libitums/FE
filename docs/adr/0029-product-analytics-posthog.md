@@ -522,7 +522,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   `entry_path_selected { path: basics | story }` · `entry_basics_step_completed { step: letters | compose | ready }` ·
   `entry_basics_skipped { step: letters | compose }`. `entry_screen_viewed.screen`에 기초 세 화면이 더해진다. `entry_completed`는 실제
   `enterApp` 때 한 번 그대로다 — 기초 도중 이탈만큼 여정 입장 열람 → 완주 전환율의 해석이 이날 바뀐다. GitHub wiki 사전은 따로 고친다.
-- ⟨2026-11-24 — [ADR-0188](0188-replay-audio-and-chip-sound.md) D5⟩ 다시 듣기 · 칩 소리 이벤트 둘을 더한다(`episodeIntroEventSink`, 이름 105 → 107, PostHog만):
+- ⟨2026-11-24 — [ADR-0189](0189-replay-audio-and-chip-sound.md) D5⟩ 다시 듣기 · 칩 소리 이벤트 둘을 더한다(`episodeIntroEventSink`, 이름 105 → 107, PostHog만):
   `sentence_audio_replayed { episodeId, surface: story_cut | lesson_answer, stage?, unitKey? }`(켜진 스피커를 누를 때마다) ·
   `choice_chip_sound_played { episodeId, unitKey, surface: word_choice | sentence_order }`(소리가 난 칩 누름마다). 기존 이벤트의 모양 · 발생 시점은 그대로다.
   GitHub wiki 사전은 따로 고친다.

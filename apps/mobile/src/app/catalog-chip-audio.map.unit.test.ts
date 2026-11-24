@@ -6,7 +6,7 @@ import { catalogItemOf } from "./catalog-item-map";
 import type { CatalogLessonItemPort, CatalogMappedItem } from "./catalog-lesson-types";
 import { opt, t } from "./catalog-screens.test-support";
 
-// `unit` 계층: 레슨 매핑이 단어 고르기 보기 · 조립 조각에 낱말 소리를 싣는다(ADR-0188). 녹음 색인은 대역입니다.
+// `unit` 계층: 레슨 매핑이 단어 고르기 보기 · 조립 조각에 낱말 소리를 싣는다(ADR-0189). 녹음 색인은 대역입니다.
 
 const sourceOf = (id: string): string => `https://cdn/audio/${id}.m4a`;
 const prompt = t("고르세요.", undefined, "Pick one.");

@@ -1,4 +1,4 @@
-// 보기 · 조각(칩)마다 그 낱말의 소리를 이 에피소드 녹음에서 찾습니다(순수, ADR-0188). 새 음성 파일은 만들지 않습니다.
+// 보기 · 조각(칩)마다 그 낱말의 소리를 이 에피소드 녹음에서 찾습니다(순수, ADR-0189). 새 음성 파일은 만들지 않습니다.
 // 화면 경로가 닿는 파일이라 타입과 순수 함수만 가져옵니다.
 
 import { contentAudioSourceOf } from "../lib/content-audio";
@@ -15,7 +15,7 @@ export function catalogChipAudioOf(
   const recordedAudioOf = port.recordedAudioOf;
   if (recordedAudioOf === undefined) return null;
   // 정답 뒤 음성과 달리 낱말 하나짜리도 찾습니다 — 칩 소리는 그 글자의 발음을 들려주는 자리라 같은 글자의 다른 뜻 녹음도
-  // 같은 소리입니다(ADR-0188 D4).
+  // 같은 소리입니다(ADR-0189 D4).
   const sourceOf = (ko: string): string | null => {
     for (const id of recordedAudioOf(ko)) {
       const source = contentAudioSourceOf(id, ko, port.audioUrlOf);

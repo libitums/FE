@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testi
 import { CatalogCoverScreen } from "./CatalogCoverScreen";
 import type { CatalogCutView, CatalogCuts } from "./catalog-cover.contract";
 
-// `ui` 계층: 이야기 컷 대사 위 다시 듣기 스피커(ADR-0188) — 소리 있는 컷은 그 소리를 다시, 없는 컷은 회색.
+// `ui` 계층: 이야기 컷 대사 위 다시 듣기 스피커(ADR-0189) — 소리 있는 컷은 그 소리를 다시, 없는 컷은 회색.
 // 대사 토글 · 진행과 겹치지 않는다. 소리 모듈만 대역입니다.
 
 const audio = vi.hoisted(() => ({

@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 미측정 — 번들만. 렌더링 · 메모리 캡처를 돌리지 않았다.
-- 기능 변경: 이야기 컷 · 레슨 판정 줄의 다시 듣기 스피커, 단어 고르기 · 조립 칩 소리, 이벤트 둘([ADR-0188](../../adr/0188-replay-audio-and-chip-sound.md)).
+- 기능 변경: 이야기 컷 · 레슨 판정 줄의 다시 듣기 스피커, 단어 고르기 · 조립 칩 소리, 이벤트 둘([ADR-0189](../../adr/0189-replay-audio-and-chip-sound.md)).
 - 대상 commit: `feat/replay-audio` 브랜치 HEAD
 - 기기: 렌더 측정 기기 없음. 화면은 iOS 시뮬레이터 · Android 에뮬레이터에서 봤다([e2e](../../e2e/replay-audio.md)).
 - OS: 해당 없음(번들 산출물)

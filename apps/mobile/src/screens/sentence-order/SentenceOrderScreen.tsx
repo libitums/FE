@@ -121,7 +121,7 @@ export function SentenceOrderActivity({
   const busy = guide.visible || hint.open || listen.playback === "playing";
   const nudgedIndex = useSentenceOrderNudge(question, state, busy);
 
-  // 조각 누름 — 안내 중에는 움직이지 않고, 놓을 때만 낱말 소리가 납니다(ADR-0188).
+  // 조각 누름 — 안내 중에는 움직이지 않고, 놓을 때만 낱말 소리가 납니다(ADR-0189).
   const { toggle, placeDialogueChip, returnDialogueChip } = sentenceOrderChipTaps({
     guideVisible: guide.visible,
     question,
@@ -251,7 +251,7 @@ export function SentenceOrderActivity({
         actionPlacement={layout === "lines" ? "in-flow" : "floating"}
         stage={question != null && layout === "lines" ? "bare" : "card"}
         verdict={result ?? undefined}
-        // 대화 조립은 정답이 여러 줄이라 다시 들을 한 문장이 없습니다(줄마다 칩 소리가 집니다, ADR-0188).
+        // 대화 조립은 정답이 여러 줄이라 다시 들을 한 문장이 없습니다(줄마다 칩 소리가 집니다, ADR-0189).
         verdictReplay={
           question?.dialogue === undefined
             ? lessonVerdictReplayOf(question?.audio, state.phase === "checked", audioLesson)

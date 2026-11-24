@@ -228,7 +228,7 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0176⟩ 입장 선택 `entry_path_selected` · `entry_basics_step_completed` · `entry_basics_skipped`가 더해져 100이다.
   // ⟨ADR-0178 D8⟩ 친구 스토리 `friend_story_row_viewed` · `friend_story_viewed` · `friend_story_replied` · `friend_story_word_saved`가
   // 더해져 104이고, 보기 닫힘 `friend_story_closed`(감사 A4)가 더해져 105다(PostHog만).
-  // ⟨ADR-0188⟩ 다시 듣기 `sentence_audio_replayed` · 칩 소리 `choice_chip_sound_played`가 더해져 107이다(PostHog만).
+  // ⟨ADR-0189⟩ 다시 듣기 `sentence_audio_replayed` · 칩 소리 `choice_chip_sound_played`가 더해져 107이다(PostHog만).
   test("AN1. 이벤트 이름은 107개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);

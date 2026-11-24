@@ -1,4 +1,4 @@
-// 「소리가 안 나는 문장」 점검의 순수 함수입니다(ADR-0188) — 에피소드 원문(수준 5 배달 JSON)과 음성 정보 파일(`audio/manifest.json`)을
+// 「소리가 안 나는 문장」 점검의 순수 함수입니다(ADR-0189) — 에피소드 원문(수준 5 배달 JSON)과 음성 정보 파일(`audio/manifest.json`)을
 // 대조해, 다시 듣기 단추가 회색으로 서는 문장을 자리 · 까닭과 함께 냅니다. 네트워크 · 파일을 건드리지 않습니다(CLI는 silent-sentences-report.mjs).
 //
 // 규칙은 앱의 것을 옮겨 적었습니다 — 녹음 색인(`app/catalog-recorded-audio.ts`, ADR-0172 D2) · 자리표시자 무음(`hasContentPlaceholder`) ·

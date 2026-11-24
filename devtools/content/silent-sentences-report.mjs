@@ -1,4 +1,4 @@
-// 「소리가 안 나는 문장」 보고를 만듭니다(ADR-0188). 이미 받아 둔 파일만 읽고 네트워크를 쓰지 않습니다.
+// 「소리가 안 나는 문장」 보고를 만듭니다(ADR-0189). 이미 받아 둔 파일만 읽고 네트워크를 쓰지 않습니다.
 //
 //   node devtools/content/silent-sentences-report.mjs --episodes <배달 JSON 폴더> --manifest <audio/manifest.json> --out <보고.md>
 //
@@ -43,7 +43,7 @@ const report = silentSentencesReport(rows, coverage, {
 const head = [
   "# 소리가 안 나는 문장 — 점검 보고",
   "",
-  "[ADR-0188](../adr/0188-replay-audio-and-chip-sound.md) D6의 도구가 만든 파일입니다(`node devtools/content/silent-sentences-report.mjs`). 손으로 고치지 않습니다.",
+  "[ADR-0189](../adr/0189-replay-audio-and-chip-sound.md) D6의 도구가 만든 파일입니다(`node devtools/content/silent-sentences-report.mjs`). 손으로 고치지 않습니다.",
   "까닭: `no-audio-id` 콘텐츠에 음성 id 없음 · `not-in-manifest` id는 있는데 음성 정보 파일에 없음(미업로드) · `no-recording` 레슨 정답과 같은 녹음 없음 · `placeholder` 자리표시자라 앱이 끔.",
   "",
 ].join("\n");

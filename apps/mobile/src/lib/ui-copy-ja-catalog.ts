@@ -189,7 +189,7 @@ export const audioUnavailableJa: AudioUnavailableCopy = {
   label: "音声はまだ利用できません",
 };
 
-/** 지나간 문장 다시 듣기 단추의 이름입니다(ADR-0188). 소리가 없으면 `audioUnavailable.label`이 이름입니다. */
+/** 지나간 문장 다시 듣기 단추의 이름입니다(ADR-0189). 소리가 없으면 `audioUnavailable.label`이 이름입니다. */
 export const sentenceReplayJa: SentenceReplayCopy = {
   label: "もう一度再生",
 };

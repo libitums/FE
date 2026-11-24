@@ -4,7 +4,7 @@ import { catalogChipAudioOf } from "./catalog-chip-audio";
 import { cdnAudioUrlOf } from "./catalog-item-audio.test-support";
 import type { CatalogLessonItemPort } from "./catalog-lesson-types";
 
-// `unit` 계층: 칩(보기 · 조각) 원문 → 그 낱말 녹음의 재생 주소(ADR-0188).
+// `unit` 계층: 칩(보기 · 조각) 원문 → 그 낱말 녹음의 재생 주소(ADR-0189).
 
 const sourceOf = (id: string): string => `https://cdn/audio/${id}.m4a`;
 

@@ -143,7 +143,7 @@ export function itemAnsweredEventOf(
   };
 }
 
-/** 이야기 컷에서 대사를 다시 들은 이벤트입니다(ADR-0188). */
+/** 이야기 컷에서 대사를 다시 들은 이벤트입니다(ADR-0189). */
 export function storySentenceReplayedEventOf(
   episodeId: string,
   stage: ReplayStoryStage,
@@ -151,7 +151,7 @@ export function storySentenceReplayedEventOf(
   return { name: "sentence_audio_replayed", episodeId, surface: "story_cut", stage };
 }
 
-/** 레슨이 알린 소리 사용을 이벤트로 바꿉니다(ADR-0188) — 다시 듣기 또는 칩 소리. */
+/** 레슨이 알린 소리 사용을 이벤트로 바꿉니다(ADR-0189) — 다시 듣기 또는 칩 소리. */
 export function lessonSoundUsedEventOf(
   episodeId: string,
   unitKey: CatalogUnitKey,

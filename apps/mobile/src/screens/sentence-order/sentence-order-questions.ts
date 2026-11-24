@@ -69,7 +69,7 @@ export type SentenceOrderQuestion = {
   readonly chipReading?: TileReading;
   /** 문장 조립의 힌트 — 흐린 글자는 정답 문장 하나입니다(ADR-0153). 듣고 조립 · 대화 조립에는 없습니다. */
   readonly hint?: AssembledHint;
-  /** 창고 조각마다 그 낱말의 소리 주소입니다(없는 조각은 `null`, ADR-0188) — 놓을 때 납니다. 소리 있는 조각이 없으면 키가 없습니다. */
+  /** 창고 조각마다 그 낱말의 소리 주소입니다(없는 조각은 `null`, ADR-0189) — 놓을 때 납니다. 소리 있는 조각이 없으면 키가 없습니다. */
   readonly chipAudio?: readonly (string | null)[];
   /** 조각마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`chips`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
   readonly chipsSource?: readonly string[];

@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import type { QuestionAudio } from "./question-audio";
 import { answerReplayOf, chipSoundAt, sentenceReplayOf } from "./sentence-replay";
 
-// `unit` 계층: 다시 듣기 단추 상태와 칩 소리 주소의 순수 판정(ADR-0188).
+// `unit` 계층: 다시 듣기 단추 상태와 칩 소리 주소의 순수 판정(ADR-0189).
 
 const SOURCE = "https://cdn/audio/u01-water/d-01.m4a";
 const ECHO = "https://cdn/audio/u01-water/echo.m4a";

@@ -31,7 +31,7 @@ vi.mock("../lib/episode-bundled", async () => {
   };
 });
 
-// `integration` 계층: 다시 듣기 · 칩 소리(ADR-0188)가 계획(녹음 색인) → 화면 → 재생 모듈 · 측정 sink까지 닿는 경로.
+// `integration` 계층: 다시 듣기 · 칩 소리(ADR-0189)가 계획(녹음 색인) → 화면 → 재생 모듈 · 측정 sink까지 닿는 경로.
 // 대역은 경계뿐입니다(`NativeModules` · `fetch` · env). 계획 · 화면 · 결선은 실물입니다.
 
 afterEach(resetApp);

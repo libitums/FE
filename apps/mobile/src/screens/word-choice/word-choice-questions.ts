@@ -62,7 +62,7 @@ export type WordChoiceQuestion = {
   /** 있으면 문화 확인입니다 — 답한 뒤 자동으로 넘기지 않고 해설 판을 세웁니다. */
   readonly culture?: WordChoiceCulture;
   /** 보기마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(표시 순서). 측정 `selectedAnswer`만 이 값을 씁니다 — 학습자 이름 · 나라가 분석 도구로 가지 않게. */
-  /** 보기마다 그 낱말의 소리 주소입니다(없는 보기는 `null`, ADR-0188) — 누르면 판정과 함께 납니다. 소리 있는 보기가 없으면 키가 없습니다. */
+  /** 보기마다 그 낱말의 소리 주소입니다(없는 보기는 `null`, ADR-0189) — 누르면 판정과 함께 납니다. 소리 있는 보기가 없으면 키가 없습니다. */
   readonly choiceAudio?: readonly (string | null)[];
   readonly choicesSource?: readonly string[];
 };

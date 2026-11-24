@@ -7,7 +7,7 @@ import type { ItemAnswerReport } from "../../lib/item-answer";
 import { WordChoiceActivity } from "./WordChoiceScreen";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
-// `ui` 계층: 단어 고르기 보기를 누르면 그 낱말 소리(ADR-0188) — 판정 · 측정 보고 · 넘김은 소리와 무관하게 같다.
+// `ui` 계층: 단어 고르기 보기를 누르면 그 낱말 소리(ADR-0189) — 판정 · 측정 보고 · 넘김은 소리와 무관하게 같다.
 // 재생 접점(`lib/audio`)만 대역입니다.
 
 const audio = vi.hoisted(() => ({

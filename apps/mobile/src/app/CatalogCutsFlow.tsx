@@ -28,7 +28,7 @@ export type CatalogCoverFlowProps = {
   readonly onCutsDone: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
-  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0188). */
+  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0189). */
   readonly onReplay?: () => void;
 };
 
@@ -40,7 +40,7 @@ export type CatalogEpilogueFlowProps = {
   readonly onExit: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
-  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0188). */
+  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0189). */
   readonly onReplay?: () => void;
 };
 

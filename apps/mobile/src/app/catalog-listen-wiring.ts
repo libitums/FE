@@ -22,13 +22,13 @@ export type CatalogListenWiring = {
     unitKey: CatalogUnitKey,
     report: ListenItemReport,
   ) => void;
-  /** 레슨의 다시 듣기 · 칩 소리 사용(측정만, ADR-0188). */
+  /** 레슨의 다시 듣기 · 칩 소리 사용(측정만, ADR-0189). */
   readonly onLessonSoundUsed: (
     episodeId: string,
     unitKey: CatalogUnitKey,
     use: LessonSoundUse,
   ) => void;
-  /** 이야기 컷에서 대사를 다시 들음(측정만, ADR-0188). */
+  /** 이야기 컷에서 대사를 다시 들음(측정만, ADR-0189). */
   readonly onStorySentenceReplayed: (episodeId: string, stage: ReplayStoryStage) => void;
 };
 

@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testi
 import { LearningShell } from "./LearningShell";
 import type { LearningShellProps } from "./learning-shell-props";
 
-// `ui` 계층: 판정 배지 옆 다시 듣기 스피커(ADR-0188) — 배지가 설 때만, 저절로 넘어가는 동안은 없다.
+// `ui` 계층: 판정 배지 옆 다시 듣기 스피커(ADR-0189) — 배지가 설 때만, 저절로 넘어가는 동안은 없다.
 
 const audio = vi.hoisted(() => ({
   playAudio: vi.fn<(source: string, onFinished: () => void) => string>(() => "started"),

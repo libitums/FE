@@ -112,7 +112,7 @@ describe("정답 뒤 음성 — 수준 5 · 녹음 찾기 · 틈 · 정지", () 
     const before = host.play.mock.calls.length;
 
     tapChoice(target.answerIndex);
-    // ⟨ADR-0188⟩ 누른 빈칸 조각(낱말)에 녹음이 있으면 그 칩 소리가 먼저 납니다 — 정답 뒤 음성은 틈 뒤 한 번 그대로입니다.
+    // ⟨ADR-0189⟩ 누른 빈칸 조각(낱말)에 녹음이 있으면 그 칩 소리가 먼저 납니다 — 정답 뒤 음성은 틈 뒤 한 번 그대로입니다.
     const afterTap = host.play.mock.calls.length;
     const chip = (target as { choiceAudio?: readonly (string | null)[] }).choiceAudio?.[
       target.answerIndex
