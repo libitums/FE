@@ -121,10 +121,19 @@ test("RQ5. 평가 세트 — 자주 오는 요청 세트가 스키마를 지나�
   ).toEqual([3, 25, 45, 45]);
 });
 
-test("RQ6. 로맨스 대상이 아닌 인물 — 연애 질문을 웃어넘기되 학습자의 연애를 되묻지 않는다", () => {
-  const romance = prompt(duksu, "adult", "polite", 40)
-    .dynamic.split("\n")
-    .find((line) => line.startsWith("- Romance:"))!;
-  expect(romance).toContain("move the conversation on to a different topic");
-  expect(romance).toContain("Never ask about their love life in return");
+test("RQ6. 연애를 되묻지 않는다 — 로맨스 대상이 아닌 인물은 연령대와 상관없이, 선 none은 모든 인물이", () => {
+  const romanceOf = (persona: PersonaCard, ageBand: AgeBand) =>
+    prompt(persona, ageBand, "polite", 40)
+      .dynamic.split("\n")
+      .find((line) => line.startsWith("- Romance:"))!;
+  for (const ageBand of ["adult", "unknown", "minor"] as const) {
+    const romance = romanceOf(duksu, ageBand);
+    expect(romance, ageBand).toContain("not with this character");
+    expect(romance, ageBand).toContain("move the conversation on to a different topic");
+    expect(romance, ageBand).toContain("Never ask about their love life in return");
+  }
+  for (const ageBand of ["unknown", "minor"] as const)
+    expect(romanceOf(geonwoo, ageBand), ageBand).toContain(
+      "never ask about their love life in return",
+    );
 });
