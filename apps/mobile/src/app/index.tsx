@@ -43,6 +43,7 @@ import { noAnalyticsSession } from "../lib/analytics-events";
 import { productEventSinks } from "../lib/airbridge-events-module";
 import { productAnalyticsSession } from "../lib/posthog-client";
 import { noteFirstOpen } from "../lib/first-open";
+import { noteWelcomePass } from "../lib/welcome-pass";
 import { isTesterAccessActive } from "../lib/tester-access";
 import { withoutTesterEvents, withoutTesterIdentify } from "../lib/tester-tracking";
 import { companionRemote } from "../lib/companion-api";
@@ -55,7 +56,11 @@ setMessengerChatRemote(companionRemote);
 // 엽전 먼저 만나기(ADR-0162 D5) — 같은 서버 포트의 RPC 둘. 포트는 처음 쓸 때(배경 스레드) 만듭니다.
 setEarlyAccessRemote(companionRemote);
 // 기기 첫 실행일을 한 번 적습니다(ADR-0029 「D3 목적 구분」의 `daysSinceFirstOpen`). 저장소는 배경 스레드에서만 만집니다.
-if (__BACKGROUND__) noteFirstOpen();
+// 첫날 무제한 티켓(ADR-0186)의 시작 시각은 첫 실행일이 적히기 전에만 적습니다 — 순서를 바꾸지 않습니다.
+if (__BACKGROUND__) {
+  noteWelcomePass();
+  noteFirstOpen();
+}
 
 // 메인 스레드에서는 SDK 모듈이 번들에서 빠집니다(ADR-0029). 두 스레드의 첫 렌더가
 // 다른 sink를 받지만 sink는 이벤트 핸들러(background)에서만 불리므로 그려지는 것은 같습니다.

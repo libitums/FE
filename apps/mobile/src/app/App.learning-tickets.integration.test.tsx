@@ -14,6 +14,7 @@ import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-
 import { fullTicketLedger, spendTicket, ticketRefillMs } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
+import { welcomePassStorageKey } from "../lib/welcome-pass";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
@@ -404,4 +405,45 @@ test("[IT14] 사는 중에 또 눌러도 서버에는 한 번만 보낸다", asy
   answer(ok({ result: "bought", price: 20, wallet: { balance: 80 } }));
   await flush();
   expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("1 ticket added.");
+});
+
+// 첫날 무제한 티켓(ADR-0186) — 시작 시각은 진입점이 적습니다(여기서는 저장소에 심음). 무대의 지금은 2027-01-15 09:00.
+const welcomeSeed = (hoursAgo: number) => ({
+  [welcomePassStorageKey]: String(new Date(2027, 0, 15, 9).getTime() - hoursAgo * ticketRefillMs),
+});
+
+test("[IT15] 첫 실행 뒤 24시간 안이면 0장이어도 새 레슨이 열린다 — 태그 · 대화상자 · tickets_ran_out 없음, 칩은 남은 시간 판", async () => {
+  await boot(async () => ok(drainedProgressOf([])), welcomeSeed(1));
+  tap(catalogNodeTestId(u01, "S1"));
+  expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+  expect(screen.queryByTestId("out-of-tickets")).not.toBeInTheDocument();
+  expect(env.events.filter((e) => e.name === "tickets_ran_out")).toHaveLength(0);
+  tap("learning-run-header-exit");
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  await flush();
+  tap("top-bar-tickets");
+  expect(screen.getByTestId("unlimited-ticket-modal-days-left")).toHaveTextContent("23 hours left");
+});
+
+test("[IT16] 24시간이 지난 기기는 지금 규칙 그대로 — 0장이면 대화상자", async () => {
+  await boot(async () => ok(drainedProgressOf([])), welcomeSeed(25));
+  expect(chip()).toHaveTextContent("0");
+  expect(startStep("S1")).toBe(false);
+  expect(screen.getByTestId("out-of-tickets")).toBeInTheDocument();
+});
+
+test("[IT17] 앱을 켜 둔 채 24시간이 끝나면 칩이 숫자로 돌아오고 레슨이 다시 티켓을 쓴다", async () => {
+  await boot(async () => ok(progressOf([])), welcomeSeed(23.5));
+  tap(catalogNodeTestId(u01, "S1"));
+  expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(ticketRefillMs);
+  });
+  expect(chip()).toHaveTextContent("3");
+  expect(screen.getByTestId("step-sheet-ticket-cost")).toBeInTheDocument();
 });
