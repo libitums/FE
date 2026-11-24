@@ -541,3 +541,24 @@ test("SV13. 묶음 칸 검사 — 경로로 새는 이름 · 모르는 역할은
   expect(text).toContain("on the right: pose");
   expect(text).not.toContain("undefined");
 });
+
+test("SV14. v2m도 그리기 직전에 단계 drawing과 장면 설계가 고른 비율을 적고(20270104), 장면 설계가 막으면 적지 않는다", async () => {
+  expect(await snap()).toBe(202);
+  const stage = to(`${SUPA}/rest/v1/rpc/companion_media_stage`);
+  expect(stage).toHaveLength(1);
+  expect(stage[0]!.body).toMatchObject({
+    p_stage: "drawing",
+    p_aspect: finish().p_result["aspect"],
+  });
+  const urls = calls.map((c) => c.url);
+  expect(urls.indexOf(`${SUPA}/rest/v1/rpc/companion_media_stage`)).toBeLessThan(
+    urls.findIndex((url) => url.startsWith("https://api.openai.com/")),
+  );
+
+  calls = [];
+  work = [];
+  planInput = { ...RAW, safety: "block", reason: "no" };
+  expect(await snap()).toBe(202);
+  expect(finish().p_status).toBe("blocked");
+  expect(to(`${SUPA}/rest/v1/rpc/companion_media_stage`)).toHaveLength(0);
+});
