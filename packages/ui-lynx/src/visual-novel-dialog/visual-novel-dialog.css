@@ -269,8 +269,10 @@
   white-space: normal;
 }
 
-/* 로마자 줄이 있으면 대사 칸의 최소 높이(48)를 풀어 로마자가 대사에 바로 붙게 합니다(시안 — 간격 작게). */
-.ui-lynx-visual-novel-dialog-with-romanization .ui-lynx-visual-novel-dialog-line {
+/* 로마자 줄이 있거나 로마자 스위치가 있으면 대사 칸의 최소 높이(48)를 풉니다 — 로마자가 대사에 바로 붙고(시안 — 간격 작게),
+   스위치로 끈 때도 한 줄 대사와 구분선 사이에 빈 틈이 남지 않습니다. */
+.ui-lynx-visual-novel-dialog-with-romanization .ui-lynx-visual-novel-dialog-line,
+.ui-lynx-visual-novel-dialog-with-switch .ui-lynx-visual-novel-dialog-line {
   min-height: var(--libitum-spacing-0);
 }
 

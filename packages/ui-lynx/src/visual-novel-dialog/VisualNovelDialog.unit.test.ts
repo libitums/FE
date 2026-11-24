@@ -230,6 +230,12 @@ describe("visual-novel-dialog.css", () => {
     );
   });
 
+  test("VND-S6. 로마자 스위치가 있으면 꺼도 대사 칸 최소 높이를 풀어 한 줄 대사 아래 빈 틈이 없다", () => {
+    expect(styles).toMatch(
+      /\.ui-lynx-visual-novel-dialog-with-switch \.ui-lynx-visual-novel-dialog-line\s*\{[^}]*min-height: var\(--libitum-spacing-0\)/s,
+    );
+  });
+
   test("Translucent surface는 opacity.surface token과 0.9 호환 fallback을 사용한다", () => {
     expect(styles).toContain("opacity: var(--libitum-opacity-surface, 0.9)");
   });
