@@ -291,6 +291,8 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 | `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`chat-send`의 매 턴 칩 · `companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 | `COMPANION_STORY_READ_MODEL` | 아니오 | 사진 스토리의 읽기 단계(`companion-my-story` · `companion-story-reactions`의 다시 보기, ADR-0191 D11) 모델. 기본 `claude-sonnet-5-5` |
+| `COMPANION_STORY_PLAN_MODEL` | 아니오 | 친구 스토리 주간 기획(`companion-story-studio`, ADR-0192)의 소재 조사(웹 검색) · 초안 쓰기 모델. 기본 `claude-sonnet-5-5`. 최종 승인의 번역은 Haiku 고정 |
+| `COMPANION_CONTENT_BUCKET` | 아니오 | 친구 스토리 그림 일꾼(`companion-story-images`)이 그림을 올리는 공개 콘텐츠 버킷. 기본 `content` — 앱이 읽는 버킷과 같아야 한다(스테이징 `content-test`) |
 | `COMPANION_REACTION_MODEL` | 아니오 | 내 스토리 반응(`companion-story-reactions`, ADR-0191 D5)의 답 모델. 기본 `claude-sonnet-5-5` — 대화의 `COMPANION_MODEL`과 따로 고른다. 다른 함수는 읽지 않는다 |
 | `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL` · `COMPANION_REACTION_SUGGEST_MODEL` | 아니오 | 내 스토리 반응의 출력 검사 · 번역 · 추천 답안 칩 모델. 기본 `claude-haiku-5-5`(칩은 `COMPANION_SUGGEST_MODEL`이 있으면 그 값). 다른 함수는 읽지 않는다 |
 | `OPENAI_API_KEY` | 스냅샷에 | `companion-snapshot`의 이미지 편집. 없으면 스냅샷이 503 `not_configured` |
@@ -872,6 +874,75 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
    `select jobname, schedule from cron.job where jobname = 'companion-stories';`.
 4. 켜기: `update companion.settings set friend_stories = 'testers';` → 시험 계정으로 앱 확인 → `'on'`. 알림은 따로 `story_push = 'testers'` → `'on'`.
    **알림은 스토리를 여는 새 앱이 충분히 깔린 뒤에 켠다** — 옛 앱은 알림을 누르면 그 방만 연다.
+
+## 친구 스토리 — AI 생성 (20270105, ADR-0192)
+
+`migrations/20270105120000_friend_story_generation.sql`(사진 스토리 마이그레이션 **뒤**) · Edge Function `companion-story-studio`(새 — 주간 기획) ·
+`companion-story-images`(새 — 그림 일꾼) · 예약 `cron/friend-story-images.sql`. 앱이 부르는 것은 없다 — 운영 도구(ops-dashboard 「스토리 스튜디오」)가 서버 키로 부른다.
+앱 읽기 · 인용 · 알림 · 첫 답장 무료는 1단계(ADR-0178) 그대로다: 최종 승인된 초안이 묶음 `story_pool`의 그날짜 줄이 될 뿐이다.
+
+- 스위치 `settings.story_schedule`: `pool`(기본 — 1단계 그대로, 인물마다 날마다 하나) · `cadence`(인물별 빈도). 빈도는 `settings.story_cadence`:
+  `{ epoch, daily: { 인물: 시 }, weekly: { 인물: { dow, hour } }, groups: [{ 인물: 시 }, …] }` — 시는 UTC, 조는 `epoch`부터 하루씩 돈다.
+  기본값: 덕수쌤 매일 01시 · 윤경 토요일 10시 · (서연 02 · 건우 08 · 도윤 14) (다은 03 · 재민 09) (미나 04 · 해준 10). 설정에 없는 인물은 `cadence`에서
+  올리지 않는다(그날로 승인된 스토리가 있을 때만). 값이 틀려도(글 · 범위 밖 · 정수에 안 들어가는 큰 수) 던지지 않는다 — 시각은 해시 시각, 요일은 토요일로.
+- 올림 `companion_post_stories(now)`(다시 정의): 인물의 올림 시각이 지났고 오늘 올린 것이 없으면 — 그날로 승인된 한 번짜리 줄(`story_pool.publish_on`)을 먼저,
+  없으면 올릴 차례(`companion.story_due`)인 인물만 돌려쓰는 줄(`publish_on is null`, 가장 적게 올린 것)에서. 한 번짜리 줄은 다른 날에 돌려쓰지 않는다.
+  결과 줄에 `generated`(승인된 초안이었는가)가 더해졌고, 올리면 그 초안이 `published`가 된다.
+- 표(RLS 켬, 서버 키만): `story_drafts`(인물 · 날짜마다 살아 있는 것 하나 — 한 줄 · 로마자 · 뜻 · 추천 답안 · 단어 · 컷(`selfie` · `other` · `scene`) · 그림 주문 ·
+  그림 경로 · 근거 `image_meta`) · `story_plans`(그 주 월요일 — 사람이 고치는 메모 `notes` · 웹 검색 조사 `research` · 출처 `sources`).
+  상태: `planned`(글 초안) → `queued`(기획 승인 — 그림 대기) → `drawing` → `ready`(최종 승인 대기) · `failed`(그림 실패) → `approved` → `published`, 버리면 `discarded`.
+- `companion-story-studio`(서버 키, 본문 `{ action, by, … }`, 응답 HTTP 200 `{ result, … }`):
+  `calendar { from, days }` · `drafts { from, to }` · `plan { week }` · `save_plan { week, notes }` — RPC 그대로.
+  `research { week, hints? }` — 웹 검색(Anthropic 서버 도구 `web_search_20260209`, 검색 24번까지)으로 그 주의 소재 후보를 분야별로(맛집 · 음식 / 관광명소 · 장소 /
+  행사 · 전시 / 상영 · 방영 / K-pop / 밈 · 유행어 · 릴스 / 계절 · 날씨) 모아 `story_plans.research` · `sources`에. 80초 안팎.
+  `plan_week { from, days, catalog? }` — **한 주 기획**(주 진입점): 인물마다 기획 맥락을 읽고 → 배정 한 번(`llm.assign` — 메모의 소재를 자리(인물 · 날짜)마다
+  하나, 구체적인 소재는 한 인물에게만) → 컷 배정(코드 — `settings.story_shot_mix`: 셀카 0.3 · 남이 찍어 준 컷 0.2 · 인물 없음 0.5를 모든 인물을 합쳐
+  맞춘다, 인물마다 최근 여섯 컷까지 돌아본다 — `companion-story-studio-shots.ts`) → 인물별 초안을 동시에 → 한 번에 넣는다. 한 주(7일)씩만 — 주간 메모가
+  주마다 하나다. 응답: `failed`(맥락 읽기 · 초안 쓰기에 실패한 인물) · `skipped`(쓰지 못한 자리 수) · `unassigned`(배정이 빠뜨린 자리 수 — 하나도 맞지
+  않으면 `failed`로 닫는다). 그 무렵 이미 있는 초안은 배정에 알려 준다(다시 돌려도 같은 소재를 또 나누지 않게). 30초 안팎(인물 아홉).
+  **빈 자리와 달력의 차례는 스위치와 상관없이 빈도 설정대로 본다** — `pool`인 동안에도 넘어갈 한 주를 미리 기획 · 승인해 볼 수 있다.
+  `write { characterId, from, days, catalog? }` — 한 인물만 다시 쓴다(배정 없이): 그 인물의 빈 자리(차례인데 초안 · 올림이 없는 날)마다 초안. 덕수쌤(`LEARNING_CHARACTERS`)은 학습 스토리,
+  나머지는 문화 · 유행. 다른 인물이 그 무렵 올리는 초안을 같이 줘 소재가 겹치지 않게 한다(인물을 차례로 쓴다). 로마자는 모델이 쓰지 않는다 —
+  모델은 읽는 법(숫자 · 로마자를 한글로 푼 글)만 쓰고 `korean-romanize.ts`(국어의 로마자 표기법 · 소리 변화 반영, 앱 레슨 콘텐츠의 표기
+  1,265쌍과 94% 일치 — ㄴ 첨가 같은 예외는 자주 나오는 말만 표로)가 옮긴다. 읽는 법은 한 줄에 숫자 · 로마자가 있을 때만 쓴다. 다 쓴 한 줄에 `catalog`(`[{ ko, episodeId, ref }]` — 운영 도구가 준다)의 단어가 들어 있을 때만 단어를 붙인다
+  (`companion-story-studio-items.ts`). 혼자 찾는 것은 체언만 — 낱말의 처음에 있고 뒤가 끝이거나 조사일 때(눈사람의 「사람」 · 포장마차의 「포장」은
+  붙이지 않는다). 용언은 덕수쌤 초안에서 모델이 고른 단어를 확인할 때만 본다(같은 꼴의 다른 뜻 — 눈이 내리다 · 차에서 내리다 — 을 가릴 수 없다).
+  카탈로그 줄에 `meaning`(영어 뜻)을 주면 초안 쓰기에 같이 보여 준다. 한 번에 두 주(14일)까지 쓴다.
+  `review { id, step, patch? }` — `approve_plan` · `edit` · `redo_image` · `set_image` · `approve` · `unapprove` · `discard`. 결과: ok · not_found · invalid ·
+  wrong_state · no_image · past_date · slot_taken · already_posted · translate_failed. **승인된 초안은 고칠 수 없다**(`wrong_state` — 승인을 풀고 고친다:
+  고친 글이 번역 · 두 번째 확인 없이 나가지 않게). `past_date`: 지난 날짜, 또는 오늘인데 마지막 올림 회차(UTC 23시 5분)가 지남.
+  `set_image`의 경로는 `content/images/…` 안만 받는다. `edit`로 한 줄 · 영어 뜻이 바뀌면 다른 언어 뜻은 비워지고,
+  최종 승인(`approve`)이 빠진 언어(es id ja vi th my)를 번역해 채운 뒤 승인한다(번역 실패면 승인하지 않는다). 올린 뒤에는 고칠 수 없다.
+  `edit`로 한 줄(`ko`)을 고치면 로마자를 다시 만든다(`patch.roman`을 직접 주면 그대로, 숫자가 있으면 `patch.reading`에 읽는 법).
+- `companion-story-images`(서버 키, 매분): `companion_claim_story_images(now, 2)` → 줄마다 한 장(`companion-story-image.ts`) → `companion_finish_story_image`.
+  컷(`story_drafts.shot`)은 셋: `selfie`(셀카) · `other`(남이 찍어 준 컷) — 둘은 스냅샷 v2m(ADR-0179)의 장면 설계 · 기준 그림 묶음 · 편집 호출 · 검사를
+  다시 쓴다(초안의 그림 주문이 무대 지시, 학습자는 늘 없음, 각도는 코드가 고정 — 셀카는 `selfie`, 남이 찍어 준 컷은 `selfie` 금지) ·
+  `scene`(인물 없음 — 찍는 사람의 손까지): 그림 주문 + 고정 규칙 문장으로 생성 호출(`/v1/images/generations`) → 사물 검사(얼굴 · 글자 · 로고 · 주문과 맞는가).
+  그림이 검사를 통과하면 **그 그림을 보고 문구를 맞춘다**(`companion-story-caption.ts`, `COMPANION_STORY_PLAN_MODEL`): 초안이 그림과 맞으면 그대로,
+  어긋나면 같은 소재 · 말투로 고쳐 닫기의 `p_line`으로 낸다(로마자는 규칙으로, 단어는 한 줄에 남아 있을 때만, 다른 언어 뜻은 비워져 최종 승인이 다시 번역).
+  고치기 전의 글은 `story_drafts.line_draft`(한 줄 · 로마자 · 뜻 · 추천 답안 · 단어)와 `image_meta.caption.draft`에 남고, 「그림 다시」는 그 글로 되돌려
+  다시 맞춘다. 그리는 사이 사람이 글을 고쳤으면 맞춘 글을 쓰지 않는다(`caption: "rejected"`). 고친 글은 한글 위주 · 80자 안 · 초안에 없던 로마자 없음일
+  때만 쓴다(아니면 `"unusable"`). 실패하면 초안 그대로(`"failed"`). 인물 없는 컷의 검사는 사람이 주인공으로 나온 것(얼굴이 안 보여도)도 떨어뜨린다. 인물이 나오는 컷인데
+  묶음(`companion-refs/v2/<slug>/manifest.json` — 달력의 `hasRef`)이 없으면 그리지 않고 `failed`(`no_bundle`)로 넘긴다 — 사람이 컷을 바꾼다. 모두에게 보이므로 규칙은 미성년자 기준, 검사는 늘 돈다. 세로 2:3(1024x1536) · webp(압축 82).
+  안전하지 않은 그림은 올리지 않는다. 그 밖의 흠(동일성 · 깨진 글자 · 주문과 다름)은 다시 그리다 세 번째 시도면 경고(`image_meta.warnings`)를 달아 사람에게 보인다.
+  실패는 세 번까지 다시 `queued`, 그 뒤 `failed`(사람이 다시 그리기 · 직접 올리기 · 버리기). 닫지 못하고 죽은 줄은 10분 뒤 다시 고르되 세 번이면 `failed`.
+  닫기는 고를 때 받은 `claimedAt`을 증표로 낸다 — 그리는 중에 「그림 다시」 · 그림 주문 고치기가 들어오면 그리던 그림은 저장되지 않는다.
+  지난 날짜의 초안은 그리지 않는다. 파일 이름은 시도마다 다르다(공개 파일이 1년 캐시되므로 같은 주소에 덮어쓰지 않는다).
+  그림은 공개 콘텐츠 버킷(`COMPANION_CONTENT_BUCKET`, 기본 `content`)의 `images/friend-stories/<인물>/<초안>-<시각>.webp`에 올리고, 묶음에는
+  `content/images/friend-stories/…`로 적는다(앱이 맨 앞 `content/`를 떼고 자기 버킷에서 읽는다 — **앱의 버킷과 같아야 한다**).
+- 환경: `COMPANION_STORY_PLAN_MODEL`(조사 · 초안, 기본 `claude-sonnet-5-5`) · 번역은 Haiku 고정 · 그림 노드는 `COMPANION_SNAPSHOT_MODEL` · 엔진과 품질은
+  `settings.snapshot_engine` · `snapshot_quality` · `ANTHROPIC_API_KEY` · `OPENAI_API_KEY`(없으면 그림 일꾼이 503 `not_configured`, 고르지 않는다).
+- 테스트: `migrations/friend-story-generation.integration.test.ts`(빈도 · 초안 흐름 · 검토 · 일꾼 · 달력) · `_shared/companion-story-studio.unit.test.ts` ·
+  `_shared/companion-story-images-handler.unit.test.ts`(컷별 길 · 문구 맞추기) · `_shared/korean-romanize.unit.test.ts`. 실제 모델로 한 바퀴: `supabase/evals/friend-stories.eval.test.ts`(내장 Postgres · 로컬 기준 그림 —
+  `ANTHROPIC_API_KEY=… OPENAI_API_KEY=… EVAL_REFS_DIR=<묶음 폴더> npx vitest run supabase/evals/friend-stories.eval`, 결과는 `supabase/evals/out/friend-stories/`).
+
+**적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
+
+1. 마이그레이션 `20270105120000_friend_story_generation.sql`(20270104 **뒤**). 확인: `select story_schedule from companion.settings;`(pool) ·
+   `select companion.story_due('yoonkyung', current_date);`. `pool`인 동안 올림은 1단계와 같다.
+2. 함수: `supabase functions deploy companion-story-studio companion-story-images`. `COMPANION_CONTENT_BUCKET`을 앱이 읽는 버킷과 맞춘다(스테이징 `content-test`).
+3. 예약: `supabase/cron/friend-story-images.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈).
+4. 운영 도구에서 한 주를 기획 · 승인해 본 뒤 `update companion.settings set story_schedule = 'cadence';`. 이때부터 차례가 아닌 인물은 그날 스토리가 없다.
 
 ## 내 스토리 (20261228, ADR-0179 내 스토리 · ADR-0191)
 
