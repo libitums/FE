@@ -6,6 +6,7 @@ import type { EntryLanguage } from "../lib/entry-language";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { ShopLayer } from "./shop-layer";
+import type { TicketSignIn } from "./use-learning-tickets";
 import type { ShopControl } from "./use-shop";
 import type { PlansWiring } from "./use-plans";
 
@@ -20,6 +21,7 @@ export function SessionProviders({
   shop,
   coinBalance,
   platform,
+  signIn,
   children,
 }: {
   readonly language: EntryLanguage;
@@ -28,15 +30,14 @@ export function SessionProviders({
   readonly shop: ShopControl;
   readonly coinBalance: number;
   readonly platform: AppPlatform | null;
+  readonly signIn: TicketSignIn | null;
   readonly children: ReactNode;
 }): ReactNode {
   return (
     <UiCopyContext.Provider value={uiCopyFor(language)}>
       <FirstUnitGuideProvider enabled={guideEnabled}>
         <ErrorBoundary>
-          <ShopLayer plans={plans} shop={shop} coinBalance={coinBalance} platform={platform}>
-            {children}
-          </ShopLayer>
+          <ShopLayer {...{ plans, shop, coinBalance, platform, signIn }}>{children}</ShopLayer>
         </ErrorBoundary>
       </FirstUnitGuideProvider>
     </UiCopyContext.Provider>

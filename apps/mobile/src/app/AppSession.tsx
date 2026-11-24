@@ -234,7 +234,7 @@ export function AppSession({
         legacyTutorial: progress.legacyTutorial,
         catalogProgress,
       })}
-      {...{ plans, shop }}
+      {...{ plans, shop, signIn: wiring.ticketHeader.signIn ?? null }}
       coinBalance={notices.coinCount ?? 0}
       platform={appVersion?.platform ?? null}
     >
