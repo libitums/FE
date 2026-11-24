@@ -23,3 +23,6 @@
   - Android(Pixel 8 AVD 읽기 전용, `assembleBundled`): 같은 흐름 확인. AVD가 하드웨어 키보드(`hw.keyboard=yes`)라 처음엔 화면 키보드가 숨었고 입력 칸 초점은 서 있었음(`mServedView` = 입력 칸) — 이 에뮬레이터 인스턴스에서만 `show_ime_with_hard_keyboard=1`로 켜자 Gboard(툴바 포함)가 올라오고 토글이 그 위에 붙음. logcat에 JS 오류 · FATAL 없음.
   - Android 뒤로가기(MG-E10 일부): 휴대폰 키보드 화면에서 뒤로가기를 누르면 **시스템이 키보드를 먼저 내려** 토글 아래 키보드 자리가 흰 빈칸으로 남음(안내 · 방은 그대로, Next로 계속 진행됨). → 2026-11-24 사용자 「고친다」: 키보드가 내려가면 Hangul keys 화면으로 넘김(MG-E12, ADR-0190 개정).
   - 실기기 미실행.
+- MG-E12 2026-11-24(ADR-0190 개정) — **흉내 출처**: 로그인 없이 임시 진입점(커밋 안 함)으로 덕수쌤 서버 방을 가짜 원격(첫 인사만)으로 세움. 진입점이 `AppSession`을 거치지 않아 시스템 뒤로가기 결선(`useSystemBack`과 같은 처리)을 탐침에 따로 넣음. 실서버 · 실계정 아님.
+  - Android(Pixel 8 AVD 읽기 전용, `assembleBundled`, 이 인스턴스에서만 `show_ime_with_hard_keyboard=1`): Phone keyboard 화면(Gboard) → 뒤로가기 → 키보드가 내려가고 **Hangul keys 화면**(토글 Hangul keys, 같은 높이에 Hangul keys 키보드 · 막이 키보드까지, 꼬리 Hangul keys 칸, 「1 of 2」), 흰 빈칸 없음. 한 번 더 뒤로가기 → 그대로. 안내 안 토글로 Phone keyboard → 뒤로가기(Gboard 안내 띠가 먼저 닫혀 한 번 더) → 다시 Hangul keys. Next → 전구 「2 of 2」 · 입력 칸 「Korean or English」. logcat에 JS 오류 · FATAL 없음.
+  - iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5): 헤드리스 시뮬레이터가 하드웨어 키보드 상태라 시스템 키보드가 올라오지 않음 → 「한 번 올라온 뒤」 조건이 서지 않아 Phone keyboard 화면 그대로(의도). Next → Hangul keys(같은 번호) → Next → 전구로 기존 흐름 회귀 없음. 로그에 JS 오류 없음(네이티브 레이아웃 경고만). iOS의 키보드 내려감 자체는 실기기 미확인.
