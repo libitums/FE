@@ -87,6 +87,14 @@
   flex-shrink: 0;
 }
 
+/* 대사 상자 위 오른쪽 끝의 다시 듣기 줄(ADR-0188, docs/design/replay-audio.md §2) — 높이는 단추의 누르는 자리(48)입니다. */
+.catalog-cover-screen-replay-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
 .catalog-cover-screen-line {
   width: 100%;
 }

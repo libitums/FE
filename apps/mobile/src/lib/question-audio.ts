@@ -8,6 +8,14 @@ import type { ListenPace } from "./listen-pace";
 import type { SessionOptions } from "./session-options";
 import type { AudioCue } from "./use-audio-cue";
 
+/** 칩 소리가 난 활동입니다(ADR-0188). */
+export type ChipSoundSurface = "word_choice" | "sentence_order";
+
+/** 레슨이 다시 듣기 · 칩 소리를 썼다는 알림입니다 — 측정만 합니다(판정 · 점수와 무관, ADR-0188). */
+export type LessonSoundUse =
+  | { readonly kind: "answer-replayed" }
+  | { readonly kind: "chip-sound"; readonly surface: ChipSoundSurface };
+
 export type ListenItemType = Extract<
   LearningItem["type"],
   "LISTEN_SELECT" | "MIN_PAIR_AB" | "REPLY_SELECT" | "LISTEN_BUILD" | "DICTATION" | "SHADOW"
@@ -59,6 +67,8 @@ export type LessonAudio = {
   readonly autoPlay: AutoPlayAudio;
   readonly onTogglePace: () => void;
   readonly onListenItemAnswered: (report: ListenItemReport) => void;
+  /** 다시 듣기 · 칩 소리를 썼을 때(측정만, ADR-0188). 없으면 재지 않습니다. */
+  readonly onSoundUsed?: (use: LessonSoundUse) => void;
 };
 
 export function autoPlayAudioOf(options: SessionOptions): AutoPlayAudio {

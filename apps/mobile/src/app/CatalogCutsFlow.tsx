@@ -28,6 +28,8 @@ export type CatalogCoverFlowProps = {
   readonly onCutsDone: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
+  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0188). */
+  readonly onReplay?: () => void;
 };
 
 export type CatalogEpilogueFlowProps = {
@@ -38,6 +40,8 @@ export type CatalogEpilogueFlowProps = {
   readonly onExit: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
+  /** 컷 대사를 스피커로 다시 들은 뒤(측정, ADR-0188). */
+  readonly onReplay?: () => void;
 };
 
 // 걸음은 ref로 들어 같은 틱의 연타도 봅니다. 걸음이 바뀐 사건만 `true`를 내므로 콜백은 그때만
@@ -76,6 +80,7 @@ export function CatalogCoverFlow({
   onExit,
   onCutsDone,
   onClose,
+  onReplay,
 }: CatalogCoverFlowProps): ReactNode {
   const copy = useUiCopy();
   const { shown, send } = useCutsFlowStep("intro");
@@ -99,6 +104,7 @@ export function CatalogCoverFlow({
         insets={insets}
         ordinal={ordinal}
         cuts={cuts}
+        onReplay={onReplay}
         onComplete={() => {
           "background only";
           if (send("cuts-done")) onCutsDone();
@@ -142,6 +148,7 @@ export function CatalogEpilogueFlow({
   cuts,
   onExit,
   onClose,
+  onReplay,
 }: CatalogEpilogueFlowProps): ReactNode {
   const { shown, send } = useCutsFlowStep("cuts");
 
@@ -163,6 +170,7 @@ export function CatalogEpilogueFlow({
       insets={insets}
       ordinal={ordinal}
       cuts={cuts}
+      onReplay={onReplay}
       onComplete={() => {
         "background only";
         send("cuts-done");

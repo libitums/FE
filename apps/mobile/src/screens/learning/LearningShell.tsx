@@ -61,6 +61,7 @@ export function LearningShell({
   runProgress,
   actionButton: actionButtonProp,
   verdict: verdictProp,
+  verdictReplay,
   result,
   feedback: feedbackProp,
   actionPlacement = "floating",
@@ -220,6 +221,7 @@ export function LearningShell({
         arrangement={arrangement}
         instruction={complete ? undefined : instruction}
         verdict={complete ? undefined : verdict}
+        verdictReplay={advance === undefined ? verdictReplay : undefined}
         card={card}
         stage={stage}
         workspace={workspace}

@@ -1,7 +1,10 @@
 // 대만 중국어(번체, zh-TW) 문구표 구획 — 카탈로그 맵 · 표지 컷 덩어리(ADR-0185).
 // 번역 초안 — 원어민 검수 필요(ADR-0185).
 
-import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type {
+  AudioUnavailableCopy,
+  SentenceReplayCopy,
+} from "../components/audio-unavailable.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
@@ -184,4 +187,9 @@ export const catalogStoryFinalZhTw: CatalogStoryFinalCopy = {
 
 export const audioUnavailableZhTw: AudioUnavailableCopy = {
   label: "目前還沒有音訊",
+};
+
+/** 지나간 문장 다시 듣기 단추의 이름입니다(ADR-0188). 소리가 없으면 `audioUnavailable.label`이 이름입니다. */
+export const sentenceReplayZhTw: SentenceReplayCopy = {
+  label: "再播一次",
 };

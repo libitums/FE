@@ -174,6 +174,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           cuts={model.cuts}
           onExit={() => wiring.onLeaveCatalogEpilogue(episodeId)}
           onClose={() => wiring.onLeaveCatalogEpilogue(episodeId)}
+          onReplay={() => wiring.onStorySentenceReplayed(episodeId, "epilogue")}
         />
       );
     }

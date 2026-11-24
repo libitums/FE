@@ -1,0 +1,10 @@
+/* 다시 듣기 스피커의 누르는 자리입니다(ADR-0188, docs/design/replay-audio.md). 켜짐 · 꺼짐 모두 48 정사각 안 가운데에
+   서서, 소리 유무가 바뀌어도 줄이 움직이지 않습니다. 면 · 아이콘 · 누름 반응은 RoundButton과 꺼짐 조작이 집니다. */
+.sentence-replay {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

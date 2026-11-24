@@ -63,6 +63,7 @@ export function renderCatalogStory(
             cuts={model.cuts}
             onComplete={finish}
             onExit={exitStory}
+            onReplay={() => wiring.onStorySentenceReplayed(episodeId, "interlude")}
           />
         );
       }}

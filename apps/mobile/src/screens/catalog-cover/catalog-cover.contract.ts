@@ -65,6 +65,8 @@ export type CatalogCoverScreenProps = {
   readonly onComplete: () => void;
   /** 머리 나가기 · 시스템 뒤로. */
   readonly onExit: () => void;
+  /** 대사 위 스피커로 그 컷의 소리를 다시 낸 뒤 한 번 부릅니다(측정, ADR-0188). 회색(소리 없음)은 부르지 않습니다. */
+  readonly onReplay?: (cutIndex: number) => void;
 };
 
 /** 배너의 종류 — 표지 컷 뒤(`start`) · 통과 뒤 컷 뒤(`clear`). */
@@ -115,6 +117,7 @@ export type CatalogCoverTestId =
   | "catalog-cover-screen-line"
   | "catalog-cover-screen-aside"
   | "catalog-cover-screen-next"
+  | "catalog-cover-screen-replay"
   | "episode-banner-screen"
   | "episode-banner-screen-safe"
   | "episode-banner-screen-text";

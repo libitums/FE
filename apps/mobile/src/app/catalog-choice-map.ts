@@ -29,6 +29,7 @@ import {
   catalogRecordedEchoOf,
   catalogReplySelectAudioOf,
 } from "./catalog-item-audio";
+import { catalogChipAudioOf } from "./catalog-chip-audio";
 import { shuffledOrder } from "./catalog-shuffle";
 
 // 그림 고르기는 줄 수 상한 때문에 따로 둡니다 — 소비자는 그대로 이 모듈에서 가져갑니다.
@@ -111,7 +112,7 @@ type WordChoiceParts = {
 
 export function wordChoiceItem(
   item: LearningItem,
-  port: CatalogItemPort,
+  port: CatalogItemPort & Partial<Pick<CatalogLessonItemPort, "audioUrlOf" | "recordedAudioOf">>,
   promptText: Text,
   parts: WordChoiceParts,
 ): CatalogMappedItem {
@@ -120,6 +121,11 @@ export function wordChoiceItem(
     return skippedItem(item, "malformed");
   }
   if (answerIndex < 0 || answerIndex >= choices.length) return skippedItem(item, "malformed");
+  // 보기마다 낱말 소리(ADR-0188) — 치환 전 원문으로 이 에피소드 녹음을 찾습니다.
+  const choiceAudio =
+    port.audioUrlOf === undefined || parts.choicesSource?.length !== choices.length
+      ? null
+      : catalogChipAudioOf(parts.choicesSource, { ...port, audioUrlOf: port.audioUrlOf });
   const question: WordChoiceQuestion = {
     prompt,
     choices,
@@ -142,6 +148,7 @@ export function wordChoiceItem(
     ...(parts.choiceTranslations !== undefined && parts.choiceTranslations.length === choices.length
       ? { choiceTranslations: parts.choiceTranslations }
       : {}),
+    ...(choiceAudio === null ? {} : { choiceAudio }),
   };
   return { kind: "word-choice", itemId: item.id, question };
 }

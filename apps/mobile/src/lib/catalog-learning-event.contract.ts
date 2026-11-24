@@ -92,9 +92,34 @@ export type EpisodeItemAnsweredEvent = {
   readonly speechKoreanPack?: SpeechKoreanPack;
 };
 
+/** 이야기 컷이 서는 자리입니다(`CatalogCutStage`와 같은 값). */
+export type ReplayStoryStage = "prologue" | "epilogue" | "interlude";
+
+/**
+ * 지나간 한국어 문장을 스피커로 다시 들은 순간 한 번 나는 이벤트입니다(ADR-0188). 회색(소리 없음) 단추는 눌리지 않아 나지 않습니다.
+ * 이야기 컷은 `stage`, 레슨 판정 뒤 정답 문장은 `unitKey`를 싣습니다.
+ */
+export type SentenceAudioReplayedEvent = {
+  readonly name: "sentence_audio_replayed";
+  readonly episodeId: string;
+  readonly surface: "story_cut" | "lesson_answer";
+  readonly stage?: ReplayStoryStage;
+  readonly unitKey?: string;
+};
+
+/** 단어 고르기 · 조립 칩을 눌러 그 낱말 소리가 난 순간 한 번 나는 이벤트입니다(ADR-0188). 소리가 없는 칩은 나지 않습니다. */
+export type ChoiceChipSoundPlayedEvent = {
+  readonly name: "choice_chip_sound_played";
+  readonly episodeId: string;
+  readonly unitKey: string;
+  readonly surface: "word_choice" | "sentence_order";
+};
+
 export type CatalogLearningEvent =
   | EpisodeLessonStartedEvent
   | EpisodeLessonFinishedEvent
   | EpisodeFinalPassedEvent
   | EpisodeListenItemAnsweredEvent
-  | EpisodeItemAnsweredEvent;
+  | EpisodeItemAnsweredEvent
+  | SentenceAudioReplayedEvent
+  | ChoiceChipSoundPlayedEvent;

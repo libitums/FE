@@ -18,5 +18,6 @@ export function catalogLessonAudioOf(
     autoPlay: autoPlayAudioOf(wiring.sessionOptions),
     onTogglePace: wiring.onToggleListenPace,
     onListenItemAnswered: (report) => wiring.onListenItemAnswered(episodeId, unitKey, report),
+    onSoundUsed: (use) => wiring.onLessonSoundUsed(episodeId, unitKey, use),
   };
 }

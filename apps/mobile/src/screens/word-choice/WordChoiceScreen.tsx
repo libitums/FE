@@ -49,6 +49,7 @@ import { useAudioCue } from "../../lib/use-audio-cue";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import { useLearningDensity } from "../learning/use-learning-density";
+import { playChoiceSound } from "../learning/lesson-sound";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
@@ -203,6 +204,7 @@ export function WordChoiceActivity({
     if (question === null || !answerable) return;
     const judged = index === question.answerIndex ? "correct" : "incorrect";
     if (!hasAnswered(state)) {
+      playChoiceSound(question.choiceAudio, index, question.audio, audioLesson);
       onItemAnswered?.(choiceReport(question, state.questionIndex, judged, density, index));
       const entering = cultureFeedbackOf(question, judged, copy);
       if (entering !== undefined) announce(cultureFeedbackAnnouncement(entering));
