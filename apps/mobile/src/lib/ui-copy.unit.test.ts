@@ -130,8 +130,17 @@ test("UC3. 입력 둘을 바꾸지 않고 던지지 않는다", () => {
   expect(overrides.common?.count?.coins).toBe(coins);
 });
 
-test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · my · th · vi이고 en이 uiCopyEn이다", () => {
-  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "id", "ja", "my", "th", "vi"]);
+test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · my · th · vi · zh-TW이고 en이 uiCopyEn이다", () => {
+  expect(Object.keys(uiCopyCatalog).sort()).toEqual([
+    "en",
+    "es",
+    "id",
+    "ja",
+    "my",
+    "th",
+    "vi",
+    "zh-TW",
+  ]);
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
 });
 

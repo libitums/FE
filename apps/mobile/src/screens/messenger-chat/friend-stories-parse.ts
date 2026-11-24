@@ -6,7 +6,7 @@ import type { ChatMessage } from "./chat-source.contract";
 import type { ChatStoryQuote, FriendStory, FriendStoryWord } from "./friend-stories.contract";
 
 const MAX_REPLIES = 3;
-const MEANING_LANGUAGES = ["es", "id", "ja", "vi", "th", "my"] as const;
+const MEANING_LANGUAGES = ["es", "id", "ja", "vi", "th", "my", "zh-TW"] as const;
 
 type Raw = Readonly<Record<string, unknown>>;
 

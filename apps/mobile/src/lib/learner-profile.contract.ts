@@ -55,7 +55,7 @@ export type LearnerCountry = {
 };
 
 /** 미리보기 문장 틀을 따로 가진 화면 언어입니다(나라 이름 표는 버킷에서 받습니다 — `country-names.ts`). */
-export type LearnerCountryLanguage = "es" | "id" | "ja" | "vi" | "th" | "my";
+export type LearnerCountryLanguage = "es" | "id" | "ja" | "vi" | "th" | "my" | "zh-TW";
 
 /** 미리보기 상자의 내용입니다. `example`은 견본 이름으로 만든 한 쌍, `yours`는 입력한 값으로 만든 한두 쌍입니다. */
 export type LearnerProfilePreview = {

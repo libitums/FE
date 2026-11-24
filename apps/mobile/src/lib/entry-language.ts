@@ -6,7 +6,7 @@
 // 2026-09-21 디자인 반영으로 목록이 Intermediate English · Vietnamese · Spanish ·
 // Japanese로 바뀌었고 2026-11-03 Indonesian이 더해졌습니다. 2026-11-04 스페인어 · 일본어까지 열어 다섯 모두 고를 수 있습니다(`isEntryLanguageAvailable`).
 // 옛 목록(ko · en · ja · vi)을 대체합니다.
-export type EntryLanguage = "en" | "vi" | "id" | "es" | "ja" | "th" | "my";
+export type EntryLanguage = "en" | "vi" | "id" | "es" | "ja" | "th" | "my" | "zh-TW";
 export type EntryLanguageLabel =
   | "Intermediate English"
   | "Vietnamese"
@@ -14,10 +14,20 @@ export type EntryLanguageLabel =
   | "Spanish"
   | "Japanese"
   | "Thai · ภาษาไทย"
-  | "Burmese · မြန်မာ";
+  | "Burmese · မြန်မာ"
+  | "Traditional Chinese · 繁體中文";
 
-// 목록의 렌더 순서입니다. 2026-11-18 태국어 · 미얀마어를 끝에 더했고(ADR-0158), 2026-11-20부터 두 언어도 화면 문구 표가 있습니다(ADR-0158 개정).
-export const entryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja", "th", "my"];
+// 목록의 렌더 순서입니다. 2026-11-24 대만 중국어(번체, zh-TW)를 끝에 더했습니다(ADR-0185). 2026-11-18 태국어 · 미얀마어를 끝에 더했고(ADR-0158), 2026-11-20부터 두 언어도 화면 문구 표가 있습니다(ADR-0158 개정).
+export const entryLanguages: readonly EntryLanguage[] = [
+  "en",
+  "vi",
+  "id",
+  "es",
+  "ja",
+  "th",
+  "my",
+  "zh-TW",
+];
 
 // `entryLanguages[0]`과 같은 값이어야 한다는 성질을 unit이 단언합니다 — 리터럴이
 // 아니라 「목록의 첫 항목」이라는 성질입니다.
@@ -47,11 +57,14 @@ export function entryLanguageLabel(language: EntryLanguage): EntryLanguageLabel 
     case "my": {
       return "Burmese · မြန်မာ";
     }
+    case "zh-TW": {
+      return "Traditional Chinese · 繁體中文";
+    }
   }
 }
 
 // 지금 고를 수 있는 언어인가입니다. 영어 · 베트남어(ADR-0091 D4) · 인도네시아어(ADR-0093) · 스페인어(ADR-0097) ·
-// 일본어(ADR-0098) · 태국어 · 미얀마어(ADR-0158) 모두 열려 있습니다. 목록에 고를 수 없는 언어를 다시 둘 때를 위해 판정은 남깁니다.
+// 일본어(ADR-0098) · 태국어 · 미얀마어(ADR-0158) · 대만 중국어(ADR-0185) 모두 열려 있습니다. 목록에 고를 수 없는 언어를 다시 둘 때를 위해 판정은 남깁니다.
 export function isEntryLanguageAvailable(language: EntryLanguage): boolean {
   switch (language) {
     case "en":
@@ -60,7 +73,8 @@ export function isEntryLanguageAvailable(language: EntryLanguage): boolean {
     case "es":
     case "ja":
     case "th":
-    case "my": {
+    case "my":
+    case "zh-TW": {
       return true;
     }
   }

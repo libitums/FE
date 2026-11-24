@@ -1,0 +1,4 @@
+/* 추적 허용 안내(ATT) · 마이크 · 음성 인식, zh-Hant(대만 중국어 번체 — zh-TW · zh-HK · zh-MO 기기). ADR-0185. 번역 초안 — 원어민 검수 필요. */
+"NSUserTrackingUsageDescription" = "允許追蹤，讓我們了解是哪則廣告幫你找到 Duru。我們絕不出售你的資料。";
+"NSMicrophoneUsageDescription" = "Duru 會錄下你在口說練習中朗讀的句子，用來確認你的發音。只會在口說步驟中錄音，你一停止就會結束。";
+"NSSpeechRecognitionUsageDescription" = "Duru 會把你的口說練習錄音轉成韓文文字，確認是否與要朗讀的句子相符。除此之外不會使用你的語音。";

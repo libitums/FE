@@ -93,6 +93,8 @@
 		1A10C0DE0000000000000006 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000007 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000008 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A10C0DE000000000000000A /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		1A10C0DE000000000000000B /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000009 /* my */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = my; path = my.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSyncSignalTests.swift; sourceTree = "<group>"; };
 		D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFileStoreTests.swift; sourceTree = "<group>"; };
@@ -401,6 +403,8 @@
 				vi,
 				th,
 				my,
+				"zh-Hant",
+				ko,
 			);
 			mainGroup = 2B94A3BC2D6613730060892C;
 			productRefGroup = 2B94A3C62D6613730060892C /* Products */;
@@ -619,6 +623,8 @@
 				1A10C0DE0000000000000006 /* ja */,
 				1A10C0DE0000000000000007 /* vi */,
 				1A10C0DE0000000000000008 /* th */,
+				1A10C0DE000000000000000A /* zh-Hant */,
+				1A10C0DE000000000000000B /* ko */,
 				1A10C0DE0000000000000009 /* my */,
 			);
 			name = InfoPlist.strings;
