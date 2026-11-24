@@ -54,9 +54,7 @@ describe("sessionOptionLabel", () => {
   it("SO4. auto-play-audio → 자동 재생, show-transcript → 대본 표시, show-choice-romanization → 보기 로마자", () => {
     expect(sessionOptionLabel("auto-play-audio", uiCopyEn)).toBe("Auto-play");
     expect(sessionOptionLabel("show-transcript", uiCopyEn)).toBe("Show transcript");
-    expect(sessionOptionLabel("show-choice-romanization", uiCopyEn)).toBe(
-      "Romanization on choices",
-    );
+    expect(sessionOptionLabel("show-choice-romanization", uiCopyEn)).toBe("Romanization");
   });
 
   it("SO5. 라벨 둘이 서로 다르다 — 같으면 SO4가 반쯤 공허해진다", () => {
@@ -87,7 +85,7 @@ describe("sessionOptionAccessibilityLabel", () => {
       "Show transcript, off",
     );
     expect(sessionOptionAccessibilityLabel("show-choice-romanization", false, uiCopyEn)).toBe(
-      "Romanization on choices, off",
+      "Romanization, off",
     );
   });
 });

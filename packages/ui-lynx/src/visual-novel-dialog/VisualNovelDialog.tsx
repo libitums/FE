@@ -120,19 +120,29 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
             </view>
           ) : null}
         </view>
-        {contract.translation ? (
+        {contract.translation || contract.romanization ? (
           <view
             className="ui-lynx-visual-novel-dialog-translation-block"
             data-testid="ui-lynx-visual-novel-dialog-translation-block"
             style={{ visibility: contract.showTranslation ? "visible" : "hidden" }}
           >
             <view className="ui-lynx-visual-novel-dialog-divider" />
-            <text
-              className="ui-lynx-visual-novel-dialog-translation"
-              data-testid="ui-lynx-visual-novel-dialog-translation"
-            >
-              {contract.translation}
-            </text>
+            {contract.romanization ? (
+              <text
+                className="ui-lynx-visual-novel-dialog-romanization"
+                data-testid="ui-lynx-visual-novel-dialog-romanization"
+              >
+                {contract.romanization}
+              </text>
+            ) : null}
+            {contract.translation ? (
+              <text
+                className="ui-lynx-visual-novel-dialog-translation"
+                data-testid="ui-lynx-visual-novel-dialog-translation"
+              >
+                {contract.translation}
+              </text>
+            ) : null}
           </view>
         ) : null}
       </view>

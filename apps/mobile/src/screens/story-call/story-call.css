@@ -232,6 +232,26 @@
   line-height: var(--libitum-typography-body-m-line-height);
 }
 
+/* 로마자(읽는 법, ADR-0188) — 영어 줄과 같은 크기 · 색에 기울임 · medium · 로마자 글꼴입니다. */
+.story-call-line-roman {
+  color: var(--libitum-color-gray-200);
+  text-align: center;
+  font-style: italic;
+  font-family:
+    "Duru Roman",
+    "DuruRoman",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    "Roboto",
+    "Helvetica Neue",
+    "Segoe UI",
+    sans-serif;
+  font-weight: var(--libitum-font-weight-medium);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
 /* 음소거 · 스피커 · 끊기 — 전화다운 틀일 뿐 누르지 않아 흐리게 둡니다. */
 .story-call-controls {
   align-self: stretch;

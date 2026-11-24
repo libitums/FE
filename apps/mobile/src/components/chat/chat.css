@@ -167,6 +167,20 @@
   line-height: var(--libitum-typography-button-xl-line-height);
 }
 
+/* 내 말풍선(주황 면)의 로마자 · 구분선 · 뜻 묶음(ADR-0188 D3) — ui-lynx는 들어오는 말풍선(회색 면) 색만 정해, 주황 면에서는
+   muted 회색 · 검정 뜻이 거의 안 보입니다. 번역 줄과 같은 흰 계열로 다시 칠합니다. */
+.ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-annotation-romanization {
+  color: var(--libitum-color-gray-200);
+}
+
+.ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-annotation-divider {
+  background-color: var(--libitum-color-gray-200);
+}
+
+.ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-annotation-meaning {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
 .chat-reply-option-line {
   color: var(--libitum-color-gray-200);
   text-align: center;

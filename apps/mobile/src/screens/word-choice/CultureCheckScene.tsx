@@ -9,8 +9,10 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { LearningDensity } from "../../lib/learning-density";
+import type { ChoiceRomanization } from "../../lib/session-options";
+import { bubbleLinesOf } from "../../lib/romanization-display";
 import { useUiCopy } from "../../lib/ui-copy";
-import type { CultureScene, CultureSceneLine } from "./word-choice-questions";
+import type { CultureScene } from "./word-choice-questions";
 
 import "./culture-check-scene.css";
 
@@ -24,32 +26,9 @@ export type CultureCheckSceneProps = {
   readonly cast: ConversationCast;
   readonly outcome: CultureSceneOutcome;
   readonly density: LearningDensity;
+  /** 로마자 스위치(ADR-0188) — 없으면 `"shown"`. */
+  readonly romanization?: ChoiceRomanization;
 };
-
-// 로마자와 뜻이 둘 다 있을 때만 말풍선 안 묶음(annotation)으로 싣습니다. 뜻만 있으면 한 줄 번역으로, 로마자만
-// 있으면 싣지 않습니다(로마자 혼자는 읽는 법일 뿐 뜻이 아닙니다).
-function lineExtrasOf(
-  line: CultureSceneLine,
-  pronunciation: (romanization: string) => string,
-): {
-  readonly annotation?: {
-    readonly romanization: string;
-    readonly meaning: string;
-    readonly spokenRomanization: string;
-  };
-  readonly translation?: string;
-} {
-  if (line.romanization !== undefined && line.meaning !== undefined) {
-    return {
-      annotation: {
-        romanization: line.romanization,
-        meaning: line.meaning,
-        spokenRomanization: pronunciation(line.romanization),
-      },
-    };
-  }
-  return line.meaning === undefined ? {} : { translation: line.meaning };
-}
 
 /**
  * 문화 확인 장면입니다 — 그림(5:2) 위에 상대 말풍선, 답한 뒤에는 그림이 접히고 상대 말풍선은 한글만 남으며 정답이면
@@ -61,6 +40,7 @@ export function CultureCheckScene({
   cast,
   outcome,
   density,
+  romanization = "shown",
 }: CultureCheckSceneProps): ReactNode {
   const copy = useUiCopy();
   const reduced = useMotion() === "reduced";
@@ -103,7 +83,17 @@ export function CultureCheckScene({
                   size={size}
                   contentLanguage="learning"
                   languageTag="ko"
-                  {...(asking ? lineExtrasOf(scene.line, copy.readAloud.pronunciation) : {})}
+                  {...(asking
+                    ? bubbleLinesOf(
+                        {
+                          ko: scene.line.ko,
+                          roman: scene.line.romanization,
+                          meaning: scene.line.meaning,
+                        },
+                        romanization,
+                        copy.readAloud.pronunciation,
+                      )
+                    : {})}
                 />
               </view>
             </view>

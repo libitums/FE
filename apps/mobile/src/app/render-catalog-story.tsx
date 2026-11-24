@@ -3,6 +3,7 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
+import { choiceRomanizationOf } from "../lib/session-options";
 import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
 import { StoryCallScreen } from "../screens/story-call/StoryCallScreen";
 import { StoryMessengerScreen } from "../screens/story-messenger/StoryMessengerScreen";
@@ -30,6 +31,8 @@ export function renderCatalogStory(
   const insets = wiring.safeAreaInsets;
   const exitStory = () => wiring.onExitCatalogStory(episodeId, unitKey, "story");
   const { chat, call } = model;
+  // 로마자 스위치(ADR-0188) — 메신저 · 전화 · 컷 대사 아래 로마자 줄.
+  const romanization = choiceRomanizationOf(wiring.sessionOptions);
   return (
     <CatalogStoryFlow
       key={`${episodeId}:${unitKey}:${model.version}`}
@@ -45,6 +48,7 @@ export function renderCatalogStory(
             <StoryMessengerScreen
               insets={insets}
               chat={chat}
+              romanization={romanization}
               onComplete={finish}
               onExit={exitStory}
             />
@@ -52,7 +56,13 @@ export function renderCatalogStory(
         }
         if (call !== null) {
           return (
-            <StoryCallScreen insets={insets} call={call} onComplete={finish} onExit={exitStory} />
+            <StoryCallScreen
+              insets={insets}
+              call={call}
+              romanization={romanization}
+              onComplete={finish}
+              onExit={exitStory}
+            />
           );
         }
         return (
@@ -61,6 +71,7 @@ export function renderCatalogStory(
             insets={insets}
             ordinal={model.ordinal}
             cuts={model.cuts}
+            romanization={romanization}
             onComplete={finish}
             onExit={exitStory}
           />

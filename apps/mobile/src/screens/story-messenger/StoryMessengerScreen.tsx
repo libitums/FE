@@ -17,6 +17,8 @@ import {
 } from "../../components/chat/ChatMessageRow";
 import { ChatReplyOption } from "../../components/chat/ChatReplyOption";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
+import { bubbleLinesOf } from "../../lib/romanization-display";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { StoryComposer } from "./StoryComposer";
@@ -25,6 +27,7 @@ import {
   type StoryChatLogItem,
   type StoryMessengerScreenProps,
 } from "./story-messenger.contract";
+import { storyReplyLinesOf } from "./story-messenger";
 import { useStoryChat } from "./use-story-chat";
 
 import "./story-messenger.css";
@@ -34,16 +37,32 @@ type MessageRowProps = {
   counterpart: string;
   avatarUrl: string | null;
   selfName: string;
+  romanization: ChoiceRomanization;
+  pronunciation: (romanization: string) => string;
 };
 
-function MessageRow({ item, counterpart, avatarUrl, selfName }: MessageRowProps): ReactNode {
+function MessageRow({
+  item,
+  counterpart,
+  avatarUrl,
+  selfName,
+  romanization,
+  pronunciation,
+}: MessageRowProps): ReactNode {
   const outgoing = item.direction === "outgoing";
+  // 로마자 켬이면 로마자 · 구분선 · 뜻 묶음, 끔이면 뜻 한 줄입니다(ADR-0188 D3).
+  const lines = bubbleLinesOf(
+    { ko: item.text.ko, roman: item.text.roman, meaning: item.text.en },
+    romanization,
+    pronunciation,
+  );
   const bubble = (
     <ChatTextBubble
       direction={item.direction}
       message={item.text.ko}
       speaker={outgoing ? selfName : counterpart}
-      translation={item.text.en}
+      translation={"translation" in lines ? lines.translation : null}
+      {...("annotation" in lines ? { annotation: lines.annotation } : {})}
     />
   );
   if (outgoing) return <ChatOutgoingRow testId={ids.outgoing}>{bubble}</ChatOutgoingRow>;
@@ -64,6 +83,7 @@ export function StoryMessengerScreen({
   chat,
   onComplete,
   onExit,
+  romanization = "hidden",
 }: StoryMessengerScreenProps): ReactNode {
   const uiCopy = useUiCopy();
   const copy = uiCopy.storyMessenger;
@@ -107,6 +127,8 @@ export function StoryMessengerScreen({
             counterpart={chat.counterpart}
             avatarUrl={chat.counterpartAvatarUrl}
             selfName={uiCopy.common.me}
+            romanization={romanization}
+            pronunciation={uiCopy.readAloud.pronunciation}
           />
         ))}
         {state.typing ? (
@@ -149,7 +171,7 @@ export function StoryMessengerScreen({
               <ChatReplyOption
                 key={`${index}:${option.ko}`}
                 primary={option.ko}
-                lines={[option.en]}
+                lines={storyReplyLinesOf(option, romanization)}
                 state="idle"
                 testId={ids.option(index)}
                 onPick={() => state.pick(index + 1)}

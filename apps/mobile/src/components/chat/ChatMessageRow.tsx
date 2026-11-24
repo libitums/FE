@@ -40,6 +40,7 @@ export function ChatTextBubble({
   speaker,
   message,
   translation,
+  annotation,
 }: ChatTextBubbleProps): ReactNode {
   return (
     <ChatBubble
@@ -49,7 +50,7 @@ export function ChatTextBubble({
       size="m"
       contentLanguage="learning"
       languageTag="ko"
-      translation={translation ?? undefined}
+      {...(annotation === undefined ? { translation: translation ?? undefined } : { annotation })}
     />
   );
 }

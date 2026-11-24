@@ -45,6 +45,12 @@ export type ChatTextBubbleProps = {
   readonly speaker: string;
   readonly message: string;
   readonly translation: string | null;
+  /** 로마자 · 구분선 · 뜻 묶음(ADR-0188) — 있으면 `translation` 대신 섭니다. */
+  readonly annotation?: {
+    readonly romanization: string;
+    readonly meaning: string;
+    readonly spokenRomanization: string;
+  };
 };
 export type ChatPhotoAspect = "portrait-9x16" | "portrait-3x4";
 export type ChatPhotoProps = {

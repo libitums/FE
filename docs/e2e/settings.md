@@ -1,6 +1,7 @@
 # 설정 탭을 채운다 — 프로필 · 약관 · 세션 토글 둘 — iOS Release 수동 e2e
 
 > ⟨2026-11-06 — [ADR-0108](../adr/0108-choice-romanization.md)⟩ 설정에 `Learning` 그룹이 맨 위에 생기고 토글 `Romanization on choices`(기본 켬)가 든다. **이 토글만 기기에 저장된다** — 이 토글은 끈 채 재시작해도 꺼져 있다. 아래 T1 · T4 · T8 · V1 · V4의 세션 토글 둘(`자동 재생` · `대본 표시`)은 지금 설정 화면에 줄이 없다(PR #185 이후 그리지 않음 — 그 행들은 옛 화면의 기록이다). 지금 설정의 켬/끔 줄은 이 토글 하나다. 이 토글의 기기 절차는 [보기 로마자 e2e](choice-romanization.md)다.
+> ⟨2026-11-24 — [ADR-0188](../adr/0188-dialogue-romanization.md)⟩ 이 토글의 제목은 이제 `Romanization`이다(설명 `Show how Korean is read, in small text, in answers, lessons and stories.`) — 아래 절차의 `Romanization on choices`는 이 이름으로 읽는다. 끄면 레슨 문장 · 이야기 대화의 로마자 줄도 사라진다([대화 로마자 e2e](dialogue-romanization.md) DR-E4).
 
 > ⟨2026-09-29 — UI 문구표⟩ **앱의 안내 · 버튼 · 판정 · 접근성 이름 · 제목 · 이름이 영어로 바뀌었다**
 > ([ADR-0031](../adr/0031-ui-language-catalog.md)). 이 절차 · 기대값 · 실행 기록의 한국어 라벨은 **바뀌기 전 값**이다 —
