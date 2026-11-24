@@ -46,8 +46,7 @@ import {
 } from "../../lib/session-options";
 import { questionOptionsOf } from "../../components/question-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
-import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
-import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
+import { handsOffAfter, lessonCounter, type ActivityFinish, type LessonPosition } from "../learning/activity-finish";
 import { useLearningDensity } from "../learning/use-learning-density";
 import { playChoiceSound } from "../learning/lesson-sound";
 import type { WordChoiceQuestion } from "./word-choice-questions";
