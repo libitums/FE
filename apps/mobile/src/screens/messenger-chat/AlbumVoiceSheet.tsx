@@ -7,7 +7,7 @@ import play from "@libitums/icons/lynx/play";
 
 import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { playAudio, stopAudio } from "../../lib/audio";
-import { SLOW_PLAYBACK_RATE } from "../../lib/listen-pace";
+import { CHAT_VOICE_PLAYBACK_RATE } from "../../lib/listen-pace";
 import { useUiCopy } from "../../lib/ui-copy";
 import { chatAlbumTestIds as ids, type ChatAlbumTile } from "./chat-album.contract";
 import { remakePrice } from "./chat-album-rules";
@@ -45,7 +45,9 @@ export function AlbumVoiceSheet({
       return setPlaying(false);
     }
     if (item.url === null) return setPlaying(true);
-    setPlaying(playAudio(item.url, () => setPlaying(false), SLOW_PLAYBACK_RATE) === "started");
+    setPlaying(
+      playAudio(item.url, () => setPlaying(false), CHAT_VOICE_PLAYBACK_RATE) === "started",
+    );
   };
   return (
     <view data-testid={ids.voiceSheet}>

@@ -2,7 +2,7 @@
 
 import type { WordbookEntry } from "../../app/wordbook-entries";
 
-/** 단어 소리 포트 — 단어 → 재생 주소(없으면 null) · 재생(느리게는 0.85, `lib/listen-pace.ts`). */
+/** 단어 소리 포트 — 단어 → 재생 주소(없으면 null) · 재생(느리게는 「천천히」와 같은 0.7, `lib/listen-pace.ts`). */
 export type WordSoundPort = {
   readonly sourceOf: (entry: WordbookEntry) => string | null;
   readonly play: (source: string, slow: boolean) => void;

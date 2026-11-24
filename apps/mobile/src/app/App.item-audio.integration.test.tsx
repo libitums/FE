@@ -112,7 +112,7 @@ describe("재생 경로 — 속도", () => {
     expect(host.playAtRate).not.toHaveBeenCalled();
   });
 
-  test("IT3. 「천천히」를 켜면 playAtRate(주소, 0.85, 함수)가 한 번이고 토글이 on이다", async () => {
+  test("IT3. 「천천히」를 켜면 playAtRate(주소, 0.7, 함수)가 한 번이고 토글이 on이다", async () => {
     const { host } = await bootItemAudioApp({ progress: afterS1 });
     tapNode(u01, "S2");
     expect(dataState("listening-prompt-slow")).toBe("off");
@@ -122,14 +122,14 @@ describe("재생 경로 — 속도", () => {
     expect(host.playAtRate).toHaveBeenCalledTimes(1);
     expect(host.playAtRate).toHaveBeenCalledWith(
       itemAudioUrl(u01, "S2-01"),
-      0.85,
+      0.7,
       expect.any(Function),
     );
     expect(host.play).toHaveBeenCalledTimes(1);
     expect(dataState("listening-prompt-slow")).toBe("on");
   });
 
-  test("IT4. 다른 활동 route로 넘어간 뒤의 듣기 문항도 0.85로 자동 재생되고 토글이 on이다", async () => {
+  test("IT4. 다른 활동 route로 넘어간 뒤의 듣기 문항도 0.7로 자동 재생되고 토글이 on이다", async () => {
     const { host } = await bootItemAudioApp({ progress: afterS1 });
     const plan = lessonPlanWith(u01, "S2");
     expect(plan.activities.map((activity) => activity.form).slice(0, 4)).toEqual([
@@ -147,7 +147,7 @@ describe("재생 경로 — 속도", () => {
     expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
     expect(host.playAtRate).toHaveBeenLastCalledWith(
       itemAudioUrl(u01, "S2-03"),
-      0.85,
+      0.7,
       expect.any(Function),
     );
     expect(dataState("listening-prompt-slow")).toBe("on");
@@ -160,7 +160,7 @@ describe("재생 경로 — 속도", () => {
 
     expect(host.playAtRate).toHaveBeenLastCalledWith(
       itemAudioUrl(u01, "S2-05"),
-      0.85,
+      0.7,
       expect.any(Function),
     );
     expect(dataState("word-choice-listen-slow")).toBe("on");
