@@ -33,9 +33,12 @@ export async function downloadStoryPhoto(
   if (response.status === 400 || response.status === 404) return null;
   if (response.status !== 200) throw new Error(`story photo download ${response.status}`);
   const mime = (response.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
+  if (!PHOTO_MIMES.has(mime)) return null;
+  // 크기는 본문을 읽기 전에도 본다 — 버킷 상한이 막지만, 너무 큰 본문을 메모리에 올리지 않게.
+  const declared = Number(response.headers.get("content-length") ?? "");
+  if (Number.isFinite(declared) && declared > STORY_PHOTO_MAX_BYTES) return null;
   const bytes = new Uint8Array(await response.arrayBuffer());
-  if (!PHOTO_MIMES.has(mime) || bytes.length === 0 || bytes.length > STORY_PHOTO_MAX_BYTES)
-    return null;
+  if (bytes.length === 0 || bytes.length > STORY_PHOTO_MAX_BYTES) return null;
   return { bytes, mime };
 }
 

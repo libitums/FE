@@ -1,7 +1,7 @@
 // 사진 스토리의 뒷정리(ADR-0191 D11) — 매분 도는 반응 함수(`companion-story-reactions`)가 부른다. 던지지 않는다.
 // 1. 파일 정리: 지운 스토리의 사진 · 기한이 지난 거절의 격리 파일(`companion_my_story_file_purges`)을 저장소에서 지운다.
-// 2. 다시 보기: 제때 읽지 못해 `checking`으로 올라간 스토리를 한 번에 셋까지 다시 읽어 게시 · 거절을 정한다. 다섯 번을 넘기면 서버가
-//    반응 없이 게시로 끝낸다. 사진이 사라졌으면(올리지 못했거나 지움) 읽을 수 없으므로 반응 없이 게시한다.
+// 2. 다시 보기: 제때 읽지 못해 `checking`으로 올라간 스토리를 한 번에 셋까지 다시 읽어 게시 · 거절을 정한다. **읽지 못한 사진은 게시하지
+//    않는다** — 서버가 간격을 늘려 가며 24시간 동안 다시 고르고, 끝내 못 읽으면 지운다. 사진이 사라졌으면(지움 · 올리지 못함) 스토리를 지운다.
 
 import { readStoryPhoto } from "./companion-my-story-post.ts";
 import { callRpc, type RpcEnv } from "./companion-rpc.ts";
@@ -89,7 +89,8 @@ async function recheck(
     });
   const photo = await downloadStoryPhoto(deps.fetch, env, row.imagePath, STORAGE_TIMEOUT_MS);
   if (photo === null) {
-    await resolve("live");
+    // 사진이 없으면 읽을 수 없다 — 읽지 못한 스토리는 게시하지 않으므로 지운다.
+    await resolve("drop");
     return;
   }
   const read = await readStoryPhoto(

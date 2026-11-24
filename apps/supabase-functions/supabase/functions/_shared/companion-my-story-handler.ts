@@ -131,6 +131,9 @@ export function createMyStoryHandler(deps: MyStoryDeps): (request: Request) => P
     if (token === null) return respond(401, { error: "invalid_session" }, "invalid_session");
     let raw: unknown;
     try {
+      // 길이는 본문을 읽기 전에도 본다(헤더가 없거나 틀릴 수 있어 읽은 뒤에도 본다).
+      if (Number(request.headers.get("content-length") ?? "0") > MAX_BODY_BYTES)
+        throw new Error("too large");
       const text = await request.text();
       if (text.length > MAX_BODY_BYTES) throw new Error("too large");
       raw = JSON.parse(text);

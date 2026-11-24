@@ -105,6 +105,23 @@ test("MH1. 세션 · 본문 — POST만, 앱 토큰만, 틀린 본문은 400", a
   expect((await setup().call({}, "user-token", "GET")).status).toBe(405);
   expect((await setup().call(post(), "bad-token")).status).toBe(401);
   expect((await setup().call("not json")).status).toBe(400);
+  // 길이 헤더가 상한을 넘으면 본문을 읽기 전에 거절한다.
+  const big = await createMyStoryHandler({
+    env,
+    outbound: async () => ({ status: 500, text: async () => "{}" }),
+    fetch: (async () => new Response("")) as typeof fetch,
+    llm: fakeCompanionLlm(),
+    reader: fakeStoryReader,
+    nowMs: () => 0,
+    log: () => undefined,
+  })(
+    new Request("https://ref.supabase.co/functions/v1/companion-my-story", {
+      method: "POST",
+      headers: { Authorization: "Bearer user-token", "content-length": "9999999" },
+      body: "{}",
+    }),
+  );
+  expect(big.status).toBe(400);
   expect((await setup().call({ action: "delete" })).status).toBe(400);
   expect((await setup().call(post({ client_id: "x" }))).status).toBe(400);
 });
@@ -354,7 +371,7 @@ test("MU1. 뒷정리(파일) — 버킷별로 묶어 지우고, 지운 줄만 �
   expect(failing.rpcs.some((rpc) => rpc.fn === "companion_done_my_story_file_purges")).toBe(false);
 });
 
-test("MU2. 뒷정리(다시 보기) — 읽히면 live(장면 설명) · 거절이면 격리 뒤 rejected · 사진이 없으면 반응 없이 live · 또 실패하면 그대로", async () => {
+test("MU2. 뒷정리(다시 보기) — 읽히면 live(장면 설명) · 거절이면 격리 뒤 rejected · 사진이 없으면 지움(drop) · 또 실패하면 그대로(게시하지 않음)", async () => {
   const row = (ko: string) => ({
     storyId: "s1",
     imagePath: "u1/a.png",
@@ -380,7 +397,7 @@ test("MU2. 뒷정리(다시 보기) — 읽히면 live(장면 설명) · 거절�
   expect(rejected.storage).toContain("POST /storage/v1/object/my-story-quarantine/u1/a.png");
   const missing = upkeepSetup({ checks: [row("서울 도착")], photo: false });
   await storyUpkeep(missing.deps, env, "now");
-  expect(resolved(missing)).toMatchObject({ p_verdict: "live", p_scene: null });
+  expect(resolved(missing)).toMatchObject({ p_verdict: "drop", p_scene: null });
   const again = upkeepSetup({ checks: [row("[slow]")] });
   expect(await storyUpkeep(again.deps, env, "now")).toEqual({ purged: 0, checked: 1 });
   expect(resolved(again)).toBeUndefined();

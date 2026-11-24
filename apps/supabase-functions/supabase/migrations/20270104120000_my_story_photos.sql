@@ -5,6 +5,7 @@
 -- 2. 버킷: `my-story-photos`(비공개 — 올릴 수 있는 사람이 자기 폴더 `<user_id>/…`에 올리고 읽는다) · `my-story-quarantine`(비공개, 서버 키만).
 -- 3. `my_stories`: kind `photo` · `status`(checking — 나에게만 보임 · live) · `image_path` · `overlays`(얹은 단어 · 카드, 굽지 않음) ·
 --    `scene`(읽기 결과 — 개인정보를 뺀 장면 설명. 인물 호출은 사진이 아니라 이것만 받는다) · `line_original` · `edits` · `check_tries`.
+--    읽지 못한 사진은 게시하지 않는다 — checking은 24시간 동안 다시 읽고, 끝내 못 읽으면 지운다.
 -- 4. 거절: `my_story_rejections`(분류 · 격리 경로 · 지울 날 · 다시 확인 요청). 스토리 줄은 만들지 않는다.
 -- 5. 파일 정리 대기열 `my_story_file_purges`: 스토리를 지우면(계정 삭제 · 보관 끔 정리 포함) 그 사진을, 기한이 지난 거절은 격리 파일을 넣는다 —
 --    저장소 파일은 SQL로 지울 수 없어 매분 도는 반응 함수가 지운다.
@@ -357,7 +358,9 @@ $$;
 
 -- ------------------------------------------------------------------ 서버 — 다시 보기(checking)
 
--- 다시 읽을 스토리. 고를 때마다 시도를 센다 — 다섯 번을 넘기면 반응 없이 게시로 끝낸다(읽기가 계속 실패 — 올리기는 지킨다).
+-- 다시 읽을 스토리. 고를 때마다 시도를 센다. **읽지 못한 사진은 게시하지 않는다** — 읽기가 계속 실패해도(읽기 모델 장애 · 읽기를 깨뜨리는 사진)
+-- `checking`으로 남아 올린 사람에게만 보이고, 간격을 늘려 가며(90초 × 2^시도, 최대 30분) 24시간 동안 다시 읽는다. 그때까지 못 읽으면 지운다
+-- (사진은 트리거가 정리 대기열에 넣는다). 읽는 중인 줄을 지우지 않게 마지막 시도 뒤 3분은 기다린다.
 create function public.companion_my_story_checks_due(p_now timestamptz, p_limit integer)
 returns jsonb
 language plpgsql
@@ -367,13 +370,14 @@ as $$
 declare
   v_out jsonb;
 begin
-  -- 다섯 번을 다 쓴 줄은 마지막 읽기가 끝났을 만큼(3분) 지난 뒤에 게시로 끝낸다 — 읽는 중에 끝내면 늦게 온 거절을 놓친다.
-  update companion.my_stories set status = 'live'
-  where status = 'checking' and check_tries >= 5 and checked_at < p_now - interval '3 minutes';
+  delete from companion.my_stories
+  where status = 'checking' and expires_at <= p_now
+    and (checked_at is null or checked_at < p_now - interval '3 minutes');
   with due as (
     select s.id from companion.my_stories s
-    where s.status = 'checking' and s.check_tries < 5
-      and (s.checked_at is null or s.checked_at < p_now - interval '90 seconds')
+    where s.status = 'checking'
+      and (s.checked_at is null
+        or s.checked_at < p_now - make_interval(secs => least(90 * power(2, least(s.check_tries, 5)), 1800)))
     order by s.posted_at, s.id
     limit greatest(p_limit, 0)
     for update skip locked
@@ -390,7 +394,8 @@ begin
 end;
 $$;
 
--- 다시 본 결과. live: 읽기 결과를 적고 Seen · 알람을 지금부터 적는다. rejected: 거절을 적고 스토리를 지운다. 그 밖(retry)은 그대로 둔다.
+-- 다시 본 결과. live: 읽기 결과를 적고 Seen · 알람을 지금부터 적는다. rejected: 거절을 적고 스토리를 지운다.
+-- drop: 사진이 사라져 읽을 수 없다 — 스토리를 지운다(거절은 아니다). 그 밖(retry)은 그대로 둔다.
 create function public.companion_resolve_my_story_check(
   p_story_id uuid,
   p_verdict text,
@@ -428,6 +433,9 @@ begin
     perform public.companion_reject_my_photo(v_story.user_id, v_story.client_id, p_category, p_quarantine_path, p_now, null);
     delete from companion.my_stories where id = p_story_id;
     return jsonb_build_object('result', 'rejected');
+  elsif p_verdict = 'drop' then
+    delete from companion.my_stories where id = p_story_id;
+    return jsonb_build_object('result', 'dropped');
   end if;
   return jsonb_build_object('result', 'retry');
 end;

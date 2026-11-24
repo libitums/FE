@@ -141,6 +141,10 @@ test("MC3. 사진 스토리 — 단어는 null · 상태 · 경로 · 얹은 단
     }).success,
   ).toBe(true);
   expect(myStoryRequestSchema.safeParse({ ...post, client_id: "x" }).success).toBe(false);
+  // 얹는 것은 여덟 개까지 — 서버 제약과 같다.
+  const many = (count: number) => Array.from({ length: count }, () => photo.overlays[0]);
+  expect(myStoryRequestSchema.safeParse({ ...post, overlays: many(8) }).success).toBe(true);
+  expect(myStoryRequestSchema.safeParse({ ...post, overlays: many(9) }).success).toBe(false);
   expect(
     myStoryRequestSchema.safeParse({ action: "edit", story_id: photo.id, ko: "서울에 도착했어!" })
       .success,

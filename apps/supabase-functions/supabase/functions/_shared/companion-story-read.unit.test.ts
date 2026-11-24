@@ -122,6 +122,15 @@ test("SS1. 내려받기 — 서버 키로 읽고, 없음 · 사진 아님 · 너
     () => image(4, "text/html"),
     () => image(0),
     () => image(STORY_PHOTO_MAX_BYTES + 1),
+    // 길이 헤더가 상한을 넘으면 본문을 읽지 않는다.
+    () =>
+      new Response(new Uint8Array(4), {
+        status: 200,
+        headers: {
+          "content-type": "image/jpeg",
+          "content-length": String(STORY_PHOTO_MAX_BYTES + 1),
+        },
+      }),
   ])
     expect(await downloadStoryPhoto(storage(response).fetchImpl, env, "u1/a.jpg", 1000)).toBeNull();
   await expect(

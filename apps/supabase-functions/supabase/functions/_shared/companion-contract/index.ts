@@ -133,6 +133,7 @@ export {
   type SnapshotSelf,
 } from "./media.ts";
 export {
+  MY_STORY_OVERLAY_MAX,
   myStoriesResponseSchema,
   myStoryDraftSchema,
   myStoryKindSchema,

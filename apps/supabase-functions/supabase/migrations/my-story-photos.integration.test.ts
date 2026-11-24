@@ -242,7 +242,7 @@ test("MP3. 거절 — 스토리 없이 거절 줄만(분류 · 격리 경로 · 
   expect(await count("my_story_rejections", "review_requested_at is not null")).toBe(1);
 });
 
-test("MP4. 다시 보기 — 고를 때마다 시도를 세고 다섯 번을 넘기면 반응 없이 게시, 판정 live는 알람 · rejected는 스토리를 지우고 거절을 적는다", async () => {
+test("MP4. 다시 보기 — 읽지 못한 사진은 게시하지 않는다(간격을 늘려 24시간 다시 읽고 끝내 못 읽으면 지움), 판정 live는 알람 · rejected는 거절 · drop은 지움", async () => {
   await spoke(adult, "mina");
   const first = storyId(await save(adult, await uuid(), { status: "checking", scene: null }));
   const due = (await server.query("select public.companion_my_story_checks_due(now(), 5) as r"))
@@ -294,20 +294,42 @@ test("MP4. 다시 보기 — 고를 때마다 시도를 세고 다섯 번을 넘
       (await server.query(`select public.companion_my_story_checks_due(${at}, 5) as r`)).rows[0]
         .r as Json[]
     ).map((row) => row["storyId"]);
-  // 방금 고른 줄은 90초 안에는 다시 고르지 않는다(읽는 중일 수 있다).
+  // 간격을 늘려 가며 다시 고른다 — 첫 시도 뒤에는 3분(90초 × 2^1), 시도가 쌓이면 최대 30분.
   expect(await dueIds()).toEqual([stuck]);
   expect(await dueIds()).toEqual([]);
-  expect(await dueIds("now() + interval '2 minutes'")).toEqual([stuck]);
-  // 다섯 번을 다 써도 마지막 읽기가 끝날 때까지(3분)는 게시로 끝내지 않는다 — 그 사이 온 거절은 그대로 받는다.
+  expect(await dueIds("now() + interval '2 minutes'")).toEqual([]);
+  expect(await dueIds("now() + interval '4 minutes'")).toEqual([stuck]);
   await db.admin.query(
-    "update companion.my_stories set check_tries = 5, checked_at = now() where id = $1",
+    "update companion.my_stories set check_tries = 9, checked_at = now() where id = $1",
     [stuck],
   );
-  expect(await dueIds()).toEqual([]);
+  expect(await dueIds("now() + interval '20 minutes'")).toEqual([]);
+  expect(await dueIds("now() + interval '31 minutes'")).toEqual([stuck]);
+  // 읽지 못한 사진은 게시하지 않는다 — 몇 번을 실패해도 checking으로 남고 알람이 없다.
   expect(await count("my_stories", `id = '${stuck}' and status = 'checking'`)).toBe(1);
-  expect(await dueIds("now() + interval '4 minutes'")).toEqual([]);
-  expect(await count("my_stories", `id = '${stuck}' and status = 'live'`)).toBe(1);
   expect(await alarms(stuck)).toEqual([]);
+  // 24시간이 다 가도록 못 읽었으면 지운다(읽는 중일 수 있는 마지막 3분은 기다린다) — 사진은 정리 대기열로.
+  await db.admin.query(
+    "update companion.my_stories set checked_at = now() + interval '24 hours 30 seconds' where id = $1",
+    [stuck],
+  );
+  expect(await dueIds("now() + interval '24 hours 1 minute'")).toEqual([]);
+  expect(await count("my_stories", `id = '${stuck}'`)).toBe(1);
+  expect(await dueIds("now() + interval '24 hours 5 minutes'")).toEqual([]);
+  expect(await count("my_stories", `id = '${stuck}'`)).toBe(0);
+  expect(await count("my_story_file_purges", "bucket = 'my-story-photos'")).toBeGreaterThanOrEqual(
+    1,
+  );
+  // 사진이 사라져 읽을 수 없으면 지운다(거절은 아니다).
+  await reopen(adult);
+  const lost = storyId(await save(adult, await uuid(), { status: "checking", scene: null }));
+  expect(
+    await rpc("public.companion_resolve_my_story_check($1, 'drop', null, null, null, now())", [
+      lost,
+    ]),
+  ).toEqual({ result: "dropped" });
+  expect(await count("my_stories", `id = '${lost}'`)).toBe(0);
+  expect(await count("my_story_rejections", "true")).toBe(1); // 위의 gore 하나뿐
 
   // 올릴 때 글에서 읽힌 위기 신호는 다시 읽은 결과(위기 아님)가 덮지 못한다 — 알람이 없다.
   await reopen(adult);
