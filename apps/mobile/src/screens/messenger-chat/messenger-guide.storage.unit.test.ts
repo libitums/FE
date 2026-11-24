@@ -16,7 +16,13 @@ vi.mock("../../lib/storage", () => ({
   },
 }));
 
-import { deviceGuideStore, markMessengerTabVisited, messengerTabVisited } from "./messenger-guide";
+import {
+  deviceGuideStore,
+  markMessengerTabVisited,
+  messengerGuideSeenStorageKey,
+  messengerKeyboardGuideSeenStorageKey,
+  messengerTabVisited,
+} from "./messenger-guide";
 
 afterEach(() => {
   storage.available = true;
@@ -47,4 +53,19 @@ describe("기기 기록", () => {
     expect(() => markMessengerTabVisited()).not.toThrow();
     expect(deviceGuideStore.unseen("room")).toBe(true);
   });
+});
+
+// ADR-0190: 키보드 단계는 따로 둔 키에 적습니다 — 기존 `guide-seen` 배열의 뜻(목록 · 방 · 예시)은 그대로.
+test("MG-U14 키보드 단계 기록은 새 키 하나 — 기존 기록에 섞이지 않고, 기존 기록이 있어도 키보드는 안 본 것", () => {
+  storage.values.set(messengerGuideSeenStorageKey, JSON.stringify(["list", "room", "snapshot"]));
+  expect(deviceGuideStore.unseen("keyboard")).toBe(true);
+  expect(deviceGuideStore.unseen("room")).toBe(false);
+  deviceGuideStore.markSeen("keyboard");
+  expect(storage.values.get(messengerKeyboardGuideSeenStorageKey)).toBe("1");
+  expect(storage.values.get(messengerGuideSeenStorageKey)).toBe(
+    JSON.stringify(["list", "room", "snapshot"]),
+  );
+  expect(deviceGuideStore.unseen("keyboard")).toBe(false);
+  storage.available = false;
+  expect(deviceGuideStore.unseen("keyboard")).toBe(false);
 });

@@ -17,10 +17,12 @@ import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
 import { useAutoIdeas } from "./use-auto-ideas";
-import { guideTargetClass, MessengerRoomGuide } from "./MessengerGuide";
+import { guideTargetClass } from "./MessengerGuide";
+import { RoomCoach, RoomKeyboardGuide } from "./ChatRoomGuide";
 import { deviceGuideStore } from "./messenger-guide";
 import type { GuestGateProps } from "./messenger-access";
 import { useRoomGuide } from "./use-room-guide";
+import { useGuideKeyboard } from "./use-guide-keyboard";
 import { useGuestGate } from "./use-guest-gate";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
@@ -111,7 +113,10 @@ export function MessengerChatScreen({
     guideStore,
     state.overlay.kind !== "none",
     source.sampleSnapshot,
+    plan.toggle === "shown",
   );
+  // 키보드 단계가 입력 줄 키보드를 맞추고 휴대폰 키보드가 내려간 것을 봄(ADR-0190)
+  const measurePhoneKeyboard = useGuideKeyboard(guide, state, dispatch, room.measureKeyboard);
   useAutoIdeas({
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
     enabled: preferences.replyIdeas,
@@ -224,16 +229,7 @@ export function MessengerChatScreen({
               onRefresh={() => source.server?.reload(roomId)}
             />
           </ChatLog>
-          {guide.step === null || thread.server === null ? null : (
-            <MessengerRoomGuide
-              steps={guide.steps}
-              index={guide.index}
-              name={thread.counterpart.name}
-              avatarUrl={thread.counterpart.avatarUrl}
-              onNext={guide.next}
-              sampleOnly={guide.sampleOnly}
-            />
-          )}
+          <RoomCoach guide={guide} thread={thread} />
           {state.overlay.kind === "more-menu" ? (
             <MoreMenu
               showIdeas={preferences.replyIdeas}
@@ -262,7 +258,7 @@ export function MessengerChatScreen({
             plan={plan}
             thread={thread}
             edges={edges}
-            keyboard={{ height: keyboardHeight, measure: room.measureKeyboard }}
+            keyboard={{ height: keyboardHeight, measure: measurePhoneKeyboard }}
             dispatch={dispatch}
             onSend={send}
             sendCost={turn.sendCost}
@@ -280,6 +276,10 @@ export function MessengerChatScreen({
           />
         )}
       </view>
+      <RoomKeyboardGuide
+        {...{ guide, thread, edges, slotHeight }}
+        slotOpen={state.slot.kind !== "closed" && !turn.panelOpen}
+      />
       <ChatRoomOverlays
         state={state}
         dispatch={dispatch}

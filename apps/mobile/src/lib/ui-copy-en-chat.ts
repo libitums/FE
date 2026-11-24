@@ -50,7 +50,7 @@ export const messengerChatEn: MessengerChatCopy = {
     crisisArrived: "Support resources",
   },
   composer: {
-    placeholder: "Message",
+    placeholder: "Korean or English",
     send: "Send",
     ideas: "Reply ideas",
     ideasOpen: "Reply ideas, open",

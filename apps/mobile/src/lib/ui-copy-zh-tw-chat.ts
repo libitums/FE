@@ -51,7 +51,7 @@ export const messengerChatZhTw: MessengerChatCopy = {
     crisisArrived: "支援資源",
   },
   composer: {
-    placeholder: "訊息",
+    placeholder: "韓文或中文",
     send: "傳送",
     ideas: "回覆建議",
     ideasOpen: "回覆建議，已開啟",

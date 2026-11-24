@@ -117,13 +117,17 @@ export type MessengerGuideCopy = {
   readonly cardBody: string;
   readonly cardButton: (name: string) => string;
   readonly steps: {
-    readonly chat: string;
     readonly ideas: string;
     readonly media: string;
     /** 예시 스냅샷 단계(ADR-0146 추가) — 사진 단추를 누르면 첫 한 장은 무료. */
     readonly sample: string;
     /** 예시 음성 단계 — 음성 단추를 누르면 첫 인사를 읽은 음성을 무료로 한 번. */
     readonly voice: string;
+  };
+  /** 키보드 두 갈래 단계(ADR-0190) — 휴대폰 키보드 화면 · Hangul keys 화면마다 큰 줄(title)과 작은 줄(body). */
+  readonly keyboard: {
+    readonly phone: { readonly title: string; readonly body: string };
+    readonly hangul: { readonly title: string; readonly body: string };
   };
   readonly next: string;
   readonly done: string;

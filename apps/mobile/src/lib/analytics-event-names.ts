@@ -64,6 +64,7 @@ export type AnalyticsEventName =
   | "launch_chat_shown"
   | "launch_chat_closed"
   | "messenger_guide_finished"
+  | "messenger_guide_keyboard"
   | "messenger_tab_opened"
   | "companion_unlocked"
   | "new_friend_sheet_closed"

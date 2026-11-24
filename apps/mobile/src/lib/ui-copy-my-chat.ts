@@ -51,7 +51,7 @@ export const messengerChatMy: MessengerChatCopy = {
     crisisArrived: "အကူအညီ ရနိုင်သော နေရာများ",
   },
   composer: {
-    placeholder: "မက်ဆေ့ချ်",
+    placeholder: "ကိုရီးယား သို့မဟုတ် မြန်မာ",
     send: "ပို့ရန်",
     ideas: "အဖြေ အကြံပြုချက်",
     ideasOpen: "အဖြေ အကြံပြုချက်၊ ဖွင့်ထားသည်",
