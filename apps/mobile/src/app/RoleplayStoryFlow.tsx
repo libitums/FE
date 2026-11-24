@@ -104,7 +104,7 @@ export function RoleplayStoryFlow({
         ordinal={model.ordinal}
         cuts={model.cuts}
         romanization={romanization}
-        {...(onRomanizationChange === undefined ? {} : { onRomanizationChange })}
+        onRomanizationChange={onRomanizationChange}
         onComplete={() => setStage("talk")}
         onExit={onExit}
       />

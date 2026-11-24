@@ -117,7 +117,7 @@ export function CatalogCoverFlow({
         cuts={cuts}
         onReplay={onReplay}
         romanization={romanization}
-        {...(onRomanizationChange === undefined ? {} : { onRomanizationChange })}
+        onRomanizationChange={onRomanizationChange}
         onComplete={() => {
           "background only";
           if (send("cuts-done")) onCutsDone();
@@ -187,7 +187,7 @@ export function CatalogEpilogueFlow({
       cuts={cuts}
       onReplay={onReplay}
       romanization={romanization}
-      {...(onRomanizationChange === undefined ? {} : { onRomanizationChange })}
+      onRomanizationChange={onRomanizationChange}
       onComplete={() => {
         "background only";
         send("cuts-done");

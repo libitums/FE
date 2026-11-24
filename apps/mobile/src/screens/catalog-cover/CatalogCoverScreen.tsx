@@ -94,17 +94,17 @@ export function CatalogCoverScreen({
     contentLanguage: "learning",
     languageTag: "ko",
     accessibilityLabel: catalogCutAccessibilityLabel(cut, copy, romanization),
-    ...(onRomanizationChange === undefined
-      ? {}
-      : {
-          headerSwitch: {
+    // 스위치는 값을 바꿀 길(onRomanizationChange)이 있을 때만 섭니다(ADR-0188 개정 D7).
+    headerSwitch:
+      onRomanizationChange === undefined
+        ? undefined
+        : {
             ...catalogRomanizationSwitchOf(romanization, copy),
             onChange: (checked: boolean) => {
               "background only";
               onRomanizationChange(checked ? "shown" : "hidden");
             },
           },
-        }),
   } as const;
 
   const handleNext = () => {
