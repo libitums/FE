@@ -74,8 +74,8 @@ describe("settingsSessionOptionRows", () => {
     expect(settingsSessionOptionRows(initialSessionOptions, uiCopyEn)).toEqual([
       {
         key: "show-choice-romanization",
-        title: "Romanization on choices",
-        description: "Show how each Korean answer is read, in small text above it.",
+        title: "Romanization",
+        description: "Show how Korean is read, in small text, in answers, lessons and stories.",
         checked: true,
       },
       {

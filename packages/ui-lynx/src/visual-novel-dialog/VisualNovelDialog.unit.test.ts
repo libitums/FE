@@ -293,3 +293,48 @@ describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
     expect(contract.status).toBe("revealing");
   });
 });
+
+describe("getVisualNovelDialogContract — romanization", () => {
+  test("VND-R1. 로마자는 trim해 싣고, 대사 뒤 · 번역 앞에서 읽는다", () => {
+    const contract = getVisualNovelDialogContract({
+      line: "어서 오세요.",
+      speakerName: "점원",
+      romanization: " eoseo oseyo. ",
+      translation: "Welcome.",
+    });
+    expect(contract.romanization).toBe("eoseo oseyo.");
+    expect(contract.accessibilityLabel).toBe("점원: 어서 오세요., eoseo oseyo. Welcome.");
+    expect(contract.showTranslation).toBe(true);
+  });
+
+  test("VND-R2. 번역 없이 로마자만 있어도 묶음이 서고, 대사가 다 드러난 뒤에만 보인다", () => {
+    const ready = getVisualNovelDialogContract({
+      line: "네?",
+      variant: "narration",
+      romanization: "ne?",
+    });
+    expect(ready.romanization).toBe("ne?");
+    expect(ready.translation).toBeUndefined();
+    expect(ready.showTranslation).toBe(true);
+    expect(ready.accessibilityLabel).toBe("네?, ne?");
+    const revealing = getVisualNovelDialogContract({
+      line: "네?",
+      variant: "narration",
+      romanization: "ne?",
+      reveal: "typewriter",
+      status: "revealing",
+    });
+    expect(revealing.showTranslation).toBe(false);
+  });
+
+  test("VND-R3. 빈 로마자는 없음이다 — 키가 없고 낭독도 그대로다", () => {
+    const contract = getVisualNovelDialogContract({
+      line: "안녕",
+      speakerName: "이유나",
+      romanization: "  ",
+    });
+    expect("romanization" in contract).toBe(false);
+    expect(contract.accessibilityLabel).toBe("이유나: 안녕");
+    expect(contract.showTranslation).toBe(false);
+  });
+});

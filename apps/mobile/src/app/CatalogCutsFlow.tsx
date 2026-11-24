@@ -2,6 +2,7 @@ import { useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { SafeAreaInsets } from "../lib/safe-area";
+import type { ChoiceRomanization } from "../lib/session-options";
 import { useUiCopy } from "../lib/ui-copy";
 import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
 import type { CatalogCuts } from "../screens/catalog-cover/catalog-cover.contract";
@@ -28,6 +29,8 @@ export type CatalogCoverFlowProps = {
   readonly onCutsDone: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
+  /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
+  readonly romanization?: ChoiceRomanization;
 };
 
 export type CatalogEpilogueFlowProps = {
@@ -38,6 +41,8 @@ export type CatalogEpilogueFlowProps = {
   readonly onExit: () => void;
   /** 배너가 닫힌 뒤 */
   readonly onClose: () => void;
+  /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
+  readonly romanization?: ChoiceRomanization;
 };
 
 // 걸음은 ref로 들어 같은 틱의 연타도 봅니다. 걸음이 바뀐 사건만 `true`를 내므로 콜백은 그때만
@@ -76,6 +81,7 @@ export function CatalogCoverFlow({
   onExit,
   onCutsDone,
   onClose,
+  romanization = "hidden",
 }: CatalogCoverFlowProps): ReactNode {
   const copy = useUiCopy();
   const { shown, send } = useCutsFlowStep("intro");
@@ -99,6 +105,7 @@ export function CatalogCoverFlow({
         insets={insets}
         ordinal={ordinal}
         cuts={cuts}
+        romanization={romanization}
         onComplete={() => {
           "background only";
           if (send("cuts-done")) onCutsDone();
@@ -142,6 +149,7 @@ export function CatalogEpilogueFlow({
   cuts,
   onExit,
   onClose,
+  romanization = "hidden",
 }: CatalogEpilogueFlowProps): ReactNode {
   const { shown, send } = useCutsFlowStep("cuts");
 
@@ -163,6 +171,7 @@ export function CatalogEpilogueFlow({
       insets={insets}
       ordinal={ordinal}
       cuts={cuts}
+      romanization={romanization}
       onComplete={() => {
         "background only";
         send("cuts-done");
