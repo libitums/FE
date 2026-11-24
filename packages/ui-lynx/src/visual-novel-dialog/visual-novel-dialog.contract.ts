@@ -17,6 +17,11 @@ type VisualNovelDialogBaseProps = {
    * 모국어로 옮긴 한 줄이고, 대사가 다 드러난 뒤(`ready`)에만 섭니다.
    */
   readonly translation?: string;
+  /**
+   * 대사의 읽는 법(로마자)입니다(FE 확장, 2026-11-24 ADR-0188). 번역 묶음 안 구분선 위에 서고, 번역처럼 대사가 다
+   * 드러난 뒤에만 보입니다. 빈 문자열은 없음입니다.
+   */
+  readonly romanization?: string;
   readonly accessibilityLabel?: string;
   readonly surface?: VisualNovelDialogSurface;
   readonly reveal?: VisualNovelDialogReveal;
@@ -95,6 +100,7 @@ export type VisualNovelDialogContract = {
   readonly asideTranslation?: string;
   readonly status: VisualNovelDialogStatus;
   readonly translation?: string;
+  readonly romanization?: string;
   readonly showTranslation: boolean;
   readonly surface: VisualNovelDialogSurface;
   readonly variant: VisualNovelDialogVariant;
@@ -186,6 +192,8 @@ export function getVisualNovelDialogContract(
     props.translation === undefined
       ? undefined
       : requireVisibleText(props.translation, "translation");
+  // 빈 로마자는 없음입니다(번역과 달리 던지지 않습니다 — 부르는 쪽이 「없으면 빈 문자열」로 넘깁니다).
+  const romanization = props.romanization?.trim() || undefined;
   // 지문이 있으면 화자 뒤, 대사 앞에서 읽습니다(화면에 선 순서).
   const asideLead = aside === undefined ? "" : `, ${aside}`;
   const defaultAccessibilityLabel =
@@ -195,11 +203,16 @@ export function getVisualNovelDialogContract(
         ? `${speakerName}, thinking${asideLead}: ${line}`
         : `${speakerName}${asideLead}: ${line}`;
   // 번역이 있으면 대사 뒤에 이어 읽습니다 — 화면에 선 두 줄을 한 요소가 함께 냅니다.
+  // 로마자가 있으면 대사 뒤 · 번역 앞에 읽습니다(화면에 선 순서).
+  const spokenLine =
+    romanization === undefined
+      ? defaultAccessibilityLabel
+      : `${defaultAccessibilityLabel}, ${romanization}`;
   const accessibilityLabel =
     props.accessibilityLabel === undefined
       ? translation
-        ? `${defaultAccessibilityLabel} ${translation}`
-        : defaultAccessibilityLabel
+        ? `${spokenLine} ${translation}`
+        : spokenLine
       : requireVisibleText(props.accessibilityLabel, "accessibilityLabel");
 
   return {
@@ -226,7 +239,10 @@ export function getVisualNovelDialogContract(
     status,
     surface,
     ...(translation ? { translation } : {}),
-    showTranslation: translation !== undefined && status === "ready",
+    ...(romanization ? { romanization } : {}),
+    // 번역 묶음(구분선 · 로마자 · 번역)은 둘 중 하나라도 있으면 서고, 대사가 다 드러난 뒤에만 보입니다.
+    showTranslation:
+      (translation !== undefined || romanization !== undefined) && status === "ready",
     variant,
     visibleLine,
   };

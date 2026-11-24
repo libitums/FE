@@ -1,5 +1,6 @@
 // 그림 고르기(IMG_MATCH) 문항의 매핑입니다(순수). `catalog-choice-map`이 다시 내보냅니다.
 
+import { choiceAudioField } from "./catalog-chip-audio";
 import type { LearningItem, Option } from "../lib/episode-content.model";
 import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
 import { audioField, catalogAnswerEchoOf } from "./catalog-item-audio";
@@ -53,6 +54,10 @@ export function pictureChoiceItemOf(
     ...audioField(catalogAnswerEchoOf(item, port)),
     ...(choiceRoms === undefined ? {} : { choiceRomanizations: choiceRoms }),
     picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
+    ...choiceAudioField(
+      item.options.map((option) => option.ko),
+      port,
+    ),
   };
   return { kind: "word-choice", itemId: item.id, question };
 }

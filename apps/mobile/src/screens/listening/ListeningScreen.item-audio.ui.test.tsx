@@ -104,7 +104,7 @@ describe("ListeningActivity — 문항 음성", () => {
     mount([soundful("S2-01")], lesson);
 
     expect(playAudio).toHaveBeenCalledTimes(1);
-    expect(playAudio).toHaveBeenCalledWith(LISTEN_SOURCE, expect.any(Function), 0.85);
+    expect(playAudio).toHaveBeenCalledWith(LISTEN_SOURCE, expect.any(Function), 0.7);
   });
 
   test("LS1. slow를 탭하면 lessonAudio.onTogglePace가 불린다", () => {
@@ -114,7 +114,7 @@ describe("ListeningActivity — 문항 음성", () => {
     fireEvent.tap(screen.getByTestId("listening-prompt-slow"), {});
 
     expect(onTogglePace).toHaveBeenCalledTimes(1);
-    expect(playAudio).toHaveBeenLastCalledWith(LISTEN_SOURCE, expect.any(Function), 0.85);
+    expect(playAudio).toHaveBeenLastCalledWith(LISTEN_SOURCE, expect.any(Function), 0.7);
   });
 
   test("LS2. 정답 보기를 고르면 correct로 한 번 보고하고 문항 참조가 실린다", () => {

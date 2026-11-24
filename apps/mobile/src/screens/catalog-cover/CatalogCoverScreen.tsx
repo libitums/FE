@@ -8,6 +8,8 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { useTypewriter } from "@libitums/ui-lynx/typewriter";
 import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
+import { SentenceReplayButton } from "../../components/SentenceReplayButton";
+import { sentenceReplayOf } from "../../lib/sentence-replay";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useAudioCue } from "../../lib/use-audio-cue";
@@ -16,9 +18,8 @@ import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import {
   catalogCutAccessibilityLabel,
   catalogCutAudioCueOf,
-  catalogCutHasToggle,
+  catalogCutLinesOf,
   catalogCutSpeakerName,
-  catalogCutTranslation,
   nextCatalogCutIndex,
   nextCatalogCutScript,
 } from "./catalog-cover";
@@ -61,6 +62,8 @@ export function CatalogCoverScreen({
   cuts,
   onComplete,
   onExit,
+  onReplay,
+  romanization = "hidden",
 }: CatalogCoverScreenProps): ReactNode {
   perfProbe().countRender("CatalogCover");
   const copy = useUiCopy();
@@ -73,7 +76,9 @@ export function CatalogCoverScreen({
   const cut = cuts[index] ?? cuts[0];
   const total = cuts.length;
   const audio = useAudioCue(catalogCutAudioCueOf(cut, index));
-  const hasToggle = catalogCutHasToggle(cut.text);
+  // 로마자 스위치가 켜져 있으면 로마자 · 영어 두 줄이 함께 서고 토글이 없습니다(ADR-0188 D2).
+  const lines = catalogCutLinesOf(cut.text, script, romanization);
+  const hasToggle = lines.toggle;
   const isLast = nextCatalogCutIndex(index, total) === null;
   const typing = useTypewriter({
     text: cut.text.ko,
@@ -81,10 +86,10 @@ export function CatalogCoverScreen({
     reducedMotion,
     intervalMs: voiceRevealIntervalMs(cut.voiceSyncMs ?? null, cut.text.ko),
   });
-  const translation = catalogCutTranslation(cut.text, script) ?? undefined;
   const dialogCommon = {
     line: cut.text.ko,
-    translation,
+    translation: lines.translation ?? undefined,
+    romanization: lines.romanization ?? undefined,
     reveal: "typewriter",
     status: typing.isComplete ? "ready" : "revealing",
     visibleCharacterCount: typing.visibleCharacterCount,
@@ -187,6 +192,16 @@ export function CatalogCoverScreen({
         <view className="catalog-cover-screen-spacer" />
 
         <view className="catalog-cover-screen-dialogue">
+          {/* 다시 듣기(ADR-0189) — 대사 상자(토글 단추) 밖 형제라 단추 안 단추가 아닙니다. 소리 없는 컷은 회색입니다. */}
+          <view className="catalog-cover-screen-replay-row">
+            <SentenceReplayButton
+              key={index}
+              testId="catalog-cover-screen-replay"
+              replay={sentenceReplayOf(cut.audioSource)}
+              size="l"
+              onReplayed={() => onReplay?.(index)}
+            />
+          </view>
           {/* 대사 상자는 접근성 요소 하나입니다 — 토글이 있으면 버튼으로 서고, 안쪽 패널은 가려 이름이 겹치지 않게 합니다. */}
           <view
             className="catalog-cover-screen-line"
@@ -194,10 +209,10 @@ export function CatalogCoverScreen({
             data-cutKind={cut.kind}
             accessibility-element={true}
             accessibility-traits={hasToggle ? "button" : "text"}
-            accessibility-label={catalogCutAccessibilityLabel(cut, script, copy)}
+            accessibility-label={catalogCutAccessibilityLabel(cut, script, copy, romanization)}
             catchtap={handleToggle}
           >
-            <view accessibility-elements-hidden={true}>
+            <view className="catalog-cover-screen-line-inner" accessibility-elements-hidden={true}>
               <scroll-view
                 className="catalog-cover-screen-scroll"
                 scroll-orientation="vertical"

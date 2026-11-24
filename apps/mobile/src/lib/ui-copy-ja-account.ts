@@ -60,11 +60,12 @@ export const settingsJa: SettingsCopy = {
   sessionOption: {
     "auto-play-audio": "自動再生",
     "show-transcript": "字幕を表示",
-    "show-choice-romanization": "選択肢のローマ字",
+    "show-choice-romanization": "ローマ字",
     vibration: "バイブレーション",
   },
   sessionOptionDescription: {
-    "show-choice-romanization": "韓国語の各選択肢の読み方を、上に小さく表示します。",
+    "show-choice-romanization":
+      "韓国語の読み方を、選択肢・レッスン・ストーリーに小さく表示します。",
     vibration: "答えの正誤とキーボード入力のときに振動します。",
   },
   optionState: { on: "オン", off: "オフ" },
