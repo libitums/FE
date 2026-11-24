@@ -1,7 +1,7 @@
 // 스테이징 에피소드의 번역 → 운영 번역 파일 · 매니페스트 항목(ADR-0185 개정, ADR-0102 D2 · ADR-0158 「적용」과 같은 모양). 순수 함수뿐입니다.
 //
 // 운영 파일 모양: `{schema: "translation-1", episode, language, entries}`, `JSON.stringify(_, null, 2)` + 끝 줄바꿈(비ASCII 그대로) — 스테이징이
-// 바뀌지 않은 편에서 운영 ja · th 파일과 바이트가 같다(2026-11-24 확인). 간체 · 가나 목록은 앱 문구표 점검과 같은 출처를 쓴다.
+// 바뀌지 않은 편에서 운영 th 파일과 바이트가 같다(u00 · u03, 2026-11-24 확인). 운영 ja는 손본 값이 있어 모양만 같다. 간체 · 가나 목록은 앱 문구표 점검과 같은 출처를 쓴다.
 
 import { createHash } from "node:crypto";
 
@@ -49,24 +49,28 @@ const shapeOf = (key) => key.replace(/\{[^}]+\}/g, "{}");
  * 맞출 키가 없으면 `missing` — 앱은 그 줄을 영어로 둔다.
  */
 export function alignedEntries(entries, reference) {
-  const byShape = new Map(Object.keys(entries).map((key) => [shapeOf(key), key]));
+  // 모양이 같은 후보가 둘 이상이면 고르지 않는다(`{N}` · `{명사}`처럼 실제로 있다) — 영어로 남기는 편이 엉뚱한 번역보다 낫다.
+  const byShape = new Map();
+  for (const key of Object.keys(entries)) {
+    const shape = shapeOf(key);
+    byShape.set(shape, byShape.has(shape) ? null : key);
+  }
   const out = { ...entries };
   const aligned = [];
   const missing = [];
   for (const key of Object.keys(reference)) {
     if (key in entries) continue;
     const source = byShape.get(shapeOf(key));
-    if (source === undefined || placeholdersOf(source).length === 0) {
+    if (source === undefined || source === null || placeholdersOf(source).length === 0) {
       missing.push(key);
       continue;
     }
-    const from = placeholdersOf(source);
+    // 이름 바꾸기는 한 번에 — 차례대로 바꾸면 이름이 엇갈린 경우(`{a}…{b}` → `{b}…{a}`) 섞인다.
     const to = placeholdersOf(key);
-    let value = entries[source];
-    from.forEach((token, index) => {
-      value = value.split(token).join(to[index] ?? token);
-    });
-    out[key] = value;
+    const rename = new Map(
+      placeholdersOf(source).map((token, index) => [token, to[index] ?? token]),
+    );
+    out[key] = entries[source].replace(/\{[^}]+\}/g, (token) => rename.get(token) ?? token);
     aligned.push(`${key} ← ${source}`);
   }
   return { entries: out, aligned, missing };
@@ -85,6 +89,9 @@ export function checkTranslationEntries(entries, reference, options = {}) {
     }
     for (const token of placeholdersOf(key)) {
       if (!value.includes(token)) problems.push(`자리표시자 ${token} 잃음: ${key}`);
+    }
+    for (const token of placeholdersOf(value)) {
+      if (!key.includes(token)) problems.push(`키에 없는 자리표시자 ${token}: ${key}`);
     }
   }
   for (const key of Object.keys(reference)) {

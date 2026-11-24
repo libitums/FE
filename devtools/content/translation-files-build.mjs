@@ -39,6 +39,9 @@ let failed = false;
 
 for (const episode of manifest.episodes) {
   const staging = readJson(path.join(args.staging, `${episode.id}.json`));
+  // 파일의 episode 칸이 매니페스트 id와 다르면 앱 디코더가 버려 조용히 영어가 된다 — 여기서 멈춘다.
+  if (staging.unit_id !== episode.id)
+    throw new Error(`${episode.id}: 스테이징 unit_id가 ${staging.unit_id}입니다`);
   const reference = readJson(path.join(args.reference, `${episode.id}.json`)).entries;
   // 운영 본문(기준 ja 키)에 맞춘다 — 자리표시자 이름만 바뀐 키를 채우고, 맞출 수 없는 키는 영어로 남는다(경고).
   translationFileText(staging, args.language); // 그 언어 번역이 없으면 여기서 던진다.

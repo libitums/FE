@@ -1,4 +1,4 @@
-// `unit` 계층(TF-U1 ~ U6, ADR-0185 개정): 스테이징 에피소드(delivery-2)의 `translations.<언어>` → 운영 번역 파일(translation-1)과
+// `unit` 계층(TF-U1 ~ U10, ADR-0185 개정): 스테이징 에피소드(delivery-2)의 `translations.<언어>` → 운영 번역 파일(translation-1)과
 // 매니페스트 항목을 만드는 변환과, 만든 파일의 점검(ja 대비 키 · 자리표시자 · 간체)을 본다.
 
 import assert from "node:assert/strict";
@@ -102,4 +102,25 @@ test("TF-U6. 점검: 대만 번체가 아닌 글자(간체 · 가나)를 문제�
     },
   );
   assert.deepEqual(problems, ["간체 设: A", "가나 す: B", "가나 る: B"]);
+});
+
+test("TF-U8. 자리표시자만 다른 후보가 둘 이상이면 고르지 않고 영어로 남긴다(missing)", () => {
+  const { entries, aligned, missing } = alignedEntries(
+    { "Pay with {means}.": "用{means}付", "Pay with {item}.": "用{item}付款" },
+    { "Pay with {수단}.": "x" },
+  );
+  assert.equal(entries["Pay with {수단}."], undefined);
+  assert.deepEqual(aligned, []);
+  assert.deepEqual(missing, ["Pay with {수단}."]);
+});
+
+test("TF-U9. 자리표시자 이름은 한 번에 바꾼다 — 이름이 서로 엇갈려도 섞이지 않는다", () => {
+  const { entries } = alignedEntries({ "{a} met {b}.": "{a}遇見{b}。" }, { "{b} met {a}.": "x" });
+  assert.equal(entries["{b} met {a}."], "{b}遇見{a}。");
+});
+
+test("TF-U10. 점검: 키에 없는 자리표시자가 값에 있으면 문제로 낸다", () => {
+  assert.deepEqual(checkTranslationEntries({ "Hi {이름}.": "嗨{名字}{이름}。" }, {}), [
+    "키에 없는 자리표시자 {名字}: Hi {이름}.",
+  ]);
 });
