@@ -62,6 +62,13 @@ export const companionMediaSchema = z.object({
   fromPastChat: z.optional(z.boolean()),
   /** 만드는 중(pending) 스냅샷의 흐릿한 중간 그림(`<user>/<media>.preview.png`, 같은 버킷). 끝나면 null — 서버가 지운다(20261207). 옛 서버에는 없습니다. */
   previewPath: z.optional(z.nullable(z.string())),
+  /**
+   * 만드는 중(pending) 스냅샷 · 음성의 진행 단계 — `preparing`(기준 그림 · 장면 구상) → `drawing`(이미지 엔진, 스냅샷만). 끝나면 null(20270104).
+   * 옛 서버에는 없습니다. 비율(`aspect`)은 `drawing`부터 적혀 있습니다.
+   */
+  stage: z.optional(z.nullable(z.enum(["preparing", "drawing"]))),
+  /** 그 단계가 시작된 시각(ISO, UTC). `preparing`이면 만든 시각. 끝나면 null(20270104). */
+  stageAt: z.optional(z.nullable(z.string())),
 });
 
 /**
