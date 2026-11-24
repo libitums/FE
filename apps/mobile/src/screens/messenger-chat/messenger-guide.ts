@@ -3,17 +3,27 @@
 
 import { getItem, isStorageAvailable, setItem } from "../../lib/storage";
 import type { ChatRoomSummary } from "./chat-source.contract";
+import type { ComposerKeyboard } from "./keyboard-plan";
 import type { MessengerAccess } from "./messenger-access";
 
-/** `sample` — 사진 단추를 가리키고, 누르면 예시 스냅샷을 무료로 한 장 받는 단계(ADR-0146 추가). */
-export type GuideStep = "chat" | "ideas" | "media" | "sample" | "voice";
-/** `snapshot` — 예시 스냅샷 단계를 봤는가(안내를 이미 본 사람에게 그 단계만 따로 한 번 보이려고 따로 적습니다). */
-export type GuidePart = "list" | "room" | "snapshot" | "voice";
+/**
+ * `keyboard` — 입력 줄 아래 키보드 토글의 두 갈래(내 언어로 휴대폰 키보드 · 한국어로 Hangul keys)를 차례로 가리키는 단계(ADR-0190).
+ * `sample` — 사진 단추를 가리키고, 누르면 예시 스냅샷을 무료로 한 장 받는 단계(ADR-0146 추가).
+ */
+export type GuideStep = "keyboard" | "ideas" | "media" | "sample" | "voice";
+/**
+ * `snapshot` — 예시 스냅샷 단계를 봤는가(안내를 이미 본 사람에게 그 단계만 따로 한 번 보이려고 따로 적습니다).
+ * `keyboard` — 키보드 단계를 봤는가(ADR-0190). 기존 기록(`guide-seen` 배열)이 아니라 따로 둔 키에 적습니다.
+ */
+export type GuidePart = "list" | "room" | "snapshot" | "voice" | "keyboard";
+/** 키보드 단계 안의 두 화면 — 휴대폰 키보드(먼저, 높이를 잼) → Hangul keys. */
+export type KeyboardGuideStage = "phone" | "hangul";
 
 /** 안내를 맡는 인물 방입니다(서버 모드 인물 표의 덕수쌤). 없으면 안내가 서지 않습니다. */
 export const GUIDE_ROOM_ID = "duksu";
 export const messengerTabVisitedStorageKey = "libitum.messenger.tab-visited";
 export const messengerGuideSeenStorageKey = "libitum.messenger.guide-seen";
+export const messengerKeyboardGuideSeenStorageKey = "libitum.messenger.keyboard-guide-seen";
 
 /** 메신저 탭에 처음 들어가기 전이거나 안 연 새 친구가 있으면 NEW. */
 export function messengerTabBadge(input: { visited: boolean; newFriend: boolean }): "new" | null {
@@ -26,8 +36,8 @@ export function hasNewFriend(rooms: readonly ChatRoomSummary[], access: Messenge
 }
 
 /**
- * 방 안내의 단계 — 새 사용자는 chat · ideas, 서버가 예시 스냅샷을 제안하면 sample이 붙습니다. 안내를 이미 본 사람은 제안되고
- * 예시 단계를 아직 안 봤을 때 sample만 한 번. 그 밖에는 빈 목록(안내 없음).
+ * 방 안내의 단계 — 새 사용자는 keyboard · ideas, 서버가 예시 스냅샷 · 음성을 제안하면 sample · voice가 붙습니다. 안내를 이미 본 사람은
+ * 키보드 단계를 아직 안 봤으면 그것만(ADR-0190), 제안되고 안 본 예시 단계가 있으면 그것도. 그 밖에는 빈 목록(안내 없음).
  */
 export function roomGuideSteps(input: {
   readonly roomSeen: boolean;
@@ -36,11 +46,39 @@ export function roomGuideSteps(input: {
   /** 예시 음성 단계(스냅샷 다음) — 봤는가 · 서버가 제안하는가. 없으면 서지 않습니다. */
   readonly voiceSeen?: boolean;
   readonly voiceOffered?: boolean;
+  /** 키보드 단계를 봤는가(ADR-0190). */
+  readonly keyboardSeen?: boolean;
+  /** 입력 줄 아래 키보드 토글이 서는 방인가 — 아니면 가리킬 곳이 없어 키보드 단계가 빠집니다. 기본은 섬. */
+  readonly toggle?: boolean;
 }): readonly GuideStep[] {
   const samples: GuideStep[] = [];
   if (input.offered && !input.snapshotSeen) samples.push("sample");
   if (input.voiceOffered === true && input.voiceSeen !== true) samples.push("voice");
-  return input.roomSeen ? samples : ["chat", "ideas", ...samples];
+  const keyboard: GuideStep[] =
+    input.toggle !== false && input.keyboardSeen !== true ? ["keyboard"] : [];
+  return input.roomSeen ? [...keyboard, ...samples] : [...keyboard, "ideas", ...samples];
+}
+
+/** 키보드 단계에서 Next — 휴대폰 키보드 다음은 Hangul keys, 그다음은 단계 끝. */
+export function keyboardGuideNext(stage: KeyboardGuideStage): KeyboardGuideStage | "done" {
+  return stage === "phone" ? "hangul" : "done";
+}
+
+/** 키보드 단계의 화면이 세울 입력 줄 키보드 — 휴대폰 키보드 화면은 phone, Hangul keys 화면은 learning. */
+export function keyboardOfStage(stage: KeyboardGuideStage): ComposerKeyboard {
+  return stage === "phone" ? "phone" : "learning";
+}
+
+/**
+ * 방 안내를 끝낼 때 `messenger_guide_finished`의 part — 새 사용자는 room, 안내를 이미 본 사람은 키보드 단계가 들었으면 keyboard
+ * (ADR-0190), 예시 단계만이면 snapshot.
+ */
+export function finishedRoomPart(input: {
+  readonly roomSeen: boolean;
+  readonly steps: readonly GuideStep[];
+}): "room" | "keyboard" | "snapshot" {
+  if (!input.roomSeen) return "room";
+  return input.steps.includes("keyboard") ? "keyboard" : "snapshot";
 }
 
 /** 알약을 눌러야 끝나는 단계(예시 사진 · 예시 음성) — 「다음」 단추가 없고 아무 데나 눌러도 넘어가지 않습니다. */
@@ -48,7 +86,7 @@ export function isSampleStep(step: GuideStep | null): step is "sample" | "voice"
   return step === "sample" || step === "voice";
 }
 
-const PARTS: readonly GuidePart[] = ["list", "room", "snapshot", "voice"];
+const PARTS: readonly GuidePart[] = ["list", "room", "snapshot", "voice"]; // keyboard는 따로 둔 키
 
 export function guideSeenFrom(raw: string | null): readonly GuidePart[] {
   if (raw === null || raw === "") return [];
@@ -65,12 +103,12 @@ export function guideSeenFrom(raw: string | null): readonly GuidePart[] {
   return seen;
 }
 
-/** 이 안내를 띄울지 — 저장소를 못 쓰면 매번 뜨지 않게 띄우지 않습니다. */
+/** 이 안내를 띄울지 — 저장소를 못 쓰면 매번 뜨지 않게 띄우지 않습니다. 키보드 단계는 따로 둔 키(ADR-0190)를 봅니다. */
 export function guideUnseen(part: GuidePart): boolean {
   try {
-    return (
-      isStorageAvailable() && !guideSeenFrom(getItem(messengerGuideSeenStorageKey)).includes(part)
-    );
+    if (!isStorageAvailable()) return false;
+    if (part === "keyboard") return getItem(messengerKeyboardGuideSeenStorageKey) !== "1";
+    return !guideSeenFrom(getItem(messengerGuideSeenStorageKey)).includes(part);
   } catch {
     return false;
   }
@@ -78,6 +116,12 @@ export function guideUnseen(part: GuidePart): boolean {
 
 export function markGuideSeen(part: GuidePart): void {
   try {
+    // 기존 배열에 넣지 않습니다 — 예전 빌드가 모르는 값을 버리고 다시 적어 기록이 사라지지 않게(ADR-0190).
+    if (part === "keyboard") {
+      if (getItem(messengerKeyboardGuideSeenStorageKey) !== "1")
+        setItem(messengerKeyboardGuideSeenStorageKey, "1");
+      return;
+    }
     const seen = guideSeenFrom(getItem(messengerGuideSeenStorageKey));
     if (!seen.includes(part))
       setItem(messengerGuideSeenStorageKey, JSON.stringify([...seen, part]));

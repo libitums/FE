@@ -51,7 +51,7 @@ export const messengerChatJa: MessengerChatCopy = {
     crisisArrived: "相談窓口",
   },
   composer: {
-    placeholder: "メッセージ",
+    placeholder: "韓国語または日本語",
     send: "送信",
     ideas: "返信のヒント",
     ideasOpen: "返信のヒント、開いています",

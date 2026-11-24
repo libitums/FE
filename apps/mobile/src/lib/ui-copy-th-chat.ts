@@ -51,7 +51,7 @@ export const messengerChatTh: MessengerChatCopy = {
     crisisArrived: "แหล่งช่วยเหลือ",
   },
   composer: {
-    placeholder: "ข้อความ",
+    placeholder: "ภาษาเกาหลีหรือภาษาไทย",
     send: "ส่ง",
     ideas: "คำตอบแนะนำ",
     ideasOpen: "คำตอบแนะนำ, เปิดอยู่",

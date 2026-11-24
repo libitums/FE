@@ -4,6 +4,10 @@ import { entryPathEventExamples, entryPathEventNames } from "./entry-path-events
 import { planEventExamples } from "./purchase-intent.test-support";
 import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
 import { friendStoryEventNames } from "./friend-story-events.test-support";
+import {
+  messengerGuideEventExamples,
+  messengerGuideEventNames,
+} from "./messenger-guide-events.test-support";
 
 /** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
@@ -55,8 +59,7 @@ export const allEventNames = [
   "launch_coins_closed",
   "launch_chat_shown",
   "launch_chat_closed",
-  "messenger_guide_finished",
-  "messenger_tab_opened",
+  ...messengerGuideEventNames,
   "companion_unlocked",
   "new_friend_sheet_closed",
   "chat_sign_in_prompt_closed",
@@ -191,14 +194,7 @@ export const unmappedEvents = [
   { name: "launch_coins_closed", surface: "learning", daysSinceFirstOpen: "0" },
   { name: "launch_chat_shown", surface: "learning", daysSinceFirstOpen: "1", met: "1", total: "4" },
   { name: "launch_chat_closed", surface: "learning", daysSinceFirstOpen: "1", choice: "start" },
-  {
-    name: "messenger_guide_finished",
-    surface: "chat",
-    daysSinceFirstOpen: "2",
-    part: "room",
-    outcome: "skipped",
-  },
-  { name: "messenger_tab_opened", surface: "chat", daysSinceFirstOpen: "0", badge: "first" },
+  ...messengerGuideEventExamples,
   {
     name: "companion_unlocked",
     surface: "learning",

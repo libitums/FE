@@ -109,6 +109,8 @@ describe("방 코치마크", () => {
       eventSink: sink,
     });
     await flush();
+    // 키보드 단계 두 화면(ADR-0190) · 전구.
+    fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     cleanup();
