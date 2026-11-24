@@ -1,7 +1,7 @@
 // 세그먼트별 기본 문구입니다. 콘솔에서 고쳐 보낼 수 있고, 보낸 문구는 캠페인 기록에 남습니다.
 // 자리표시: {name} 학습자 이름(없으면 지워짐) · {episode} 에피소드 영어 제목 · {streak} 연속 일수 · {steps} 남은 단계 수 ·
 // {store} 그 사람 플랫폼의 스토어 이름(Google Play · App Store — 업데이트 세그먼트).
-// 영어 외 언어는 초안입니다 — 처음 보내기 전에 원어민 확인을 권합니다.
+// zh-TW(대만 중국어 번체)는 ADR-0185. 영어 외 언어는 초안입니다 — 처음 보내기 전에 원어민 확인을 권합니다.
 
 /** @type {Record<string, Record<string, { title: string, body: string }>>} */
 export const DEFAULT_COPY = {
@@ -30,6 +30,10 @@ export const DEFAULT_COPY = {
       title: "韓国語のストーリーが待っています",
       body: "{name}さん、最初のページを開いてみましょう。1分で終わります。",
     },
+    "zh-TW": {
+      title: "你的韓語故事正在等你",
+      body: "{name}，打開第一頁吧，只要一分鐘。",
+    },
   },
   "tutorial-lesson1": {
     en: { title: "Lesson 1 takes 2 minutes", body: "{name}, learn your first Korean words now." },
@@ -53,6 +57,7 @@ export const DEFAULT_COPY = {
       title: "レッスン1は2分で終わります",
       body: "{name}さん、最初の韓国語の単語を覚えましょう。",
     },
+    "zh-TW": { title: "第1課只要2分鐘", body: "{name}，現在就來學你的第一批韓語單字。" },
   },
   "tutorial-lesson2": {
     en: {
@@ -79,6 +84,10 @@ export const DEFAULT_COPY = {
       title: "レッスン2にもう一度挑戦",
       body: "{name}さん、レッスン2はチュートリアルでいちばん難しいところです。もう一度やってみましょう！",
     },
+    "zh-TW": {
+      title: "再挑戰一次第2課",
+      body: "{name}，第2課是教學中最難的部分。再試一次吧！",
+    },
   },
   "tutorial-rest": {
     en: {
@@ -90,6 +99,7 @@ export const DEFAULT_COPY = {
     ms: { title: "Tutorial hampir selesai", body: "{name}, tinggal beberapa langkah lagi." },
     es: { title: "Ya casi terminas el tutorial", body: "{name}, solo te faltan unos pasos." },
     ja: { title: "チュートリアルはもうすぐ終わり", body: "{name}さん、あと少しです。" },
+    "zh-TW": { title: "教學快要完成了", body: "{name}，只剩幾個步驟就結束了。" },
   },
   "episode-next": {
     en: { title: "New story: {episode}", body: "{name}, your next episode is ready." },
@@ -101,6 +111,7 @@ export const DEFAULT_COPY = {
       title: "新しいストーリー：{episode}",
       body: "{name}さん、次のエピソードの準備ができました。",
     },
+    "zh-TW": { title: "新故事：{episode}", body: "{name}，下一集已經準備好了。" },
   },
   "episode-mid": {
     en: { title: "Continue {episode}", body: "{name}, pick up where you left off." },
@@ -109,6 +120,7 @@ export const DEFAULT_COPY = {
     ms: { title: "Teruskan {episode}", body: "{name}, sambung dari tempat anda berhenti." },
     es: { title: "Continúa {episode}", body: "{name}, sigue donde lo dejaste." },
     ja: { title: "{episode}の続き", body: "{name}さん、続きから始めましょう。" },
+    "zh-TW": { title: "繼續{episode}", body: "{name}，從上次停下的地方繼續吧。" },
   },
   "all-done": {
     en: {
@@ -142,6 +154,10 @@ export const DEFAULT_COPY = {
       title: "Duruの新機能：韓国語でチャット 💬",
       body: "{name}さん、ストーリーの登場人物とおしゃべりできます。{store}でDuruをアップデートして始めましょう。",
     },
+    "zh-TW": {
+      title: "Duru 新功能：用韓語聊天 💬",
+      body: "{name}，和故事裡的角色聊天吧。到 {store} 更新 Duru 就能開始。",
+    },
   },
   "streak-at-risk": {
     en: {
@@ -165,6 +181,10 @@ export const DEFAULT_COPY = {
       body: "{name}, una lección corta hoy para no perderla.",
     },
     ja: { title: "{streak}日連続を守ろう", body: "{name}さん、今日も短いレッスンをひとつだけ。" },
+    "zh-TW": {
+      title: "守住連續{streak}天的紀錄",
+      body: "{name}，今天上一堂短短的課就能繼續保持。",
+    },
   },
 };
 
@@ -302,6 +322,10 @@ export const DEFAULT_COPY_B = {
     ja: {
       title: "{character}: 이제 저랑 대화할 수 있어요 💬",
       body: "{name}さん、{store}でDuruをアップデートして、韓国語で私とおしゃべりしましょう。",
+    },
+    "zh-TW": {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}，到 {store} 更新 Duru，就能用韓語和我聊天了。",
     },
   },
   "streak-at-risk": {

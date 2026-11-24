@@ -4,9 +4,10 @@
 import type { RankingCopy } from "../screens/ranking/ranking.contract";
 import { n } from "./ui-copy-en-plural";
 import { rankingCopyMy, rankingCopyTh } from "./ui-copy-ranking-th-my";
+import { rankingCopyZhTw } from "./ui-copy-ranking-zh-tw";
 
 export const rankingCopy: Readonly<
-  Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my", RankingCopy>
+  Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my" | "zh-TW", RankingCopy>
 > = {
   en: {
     title: "Weekly ranking",
@@ -241,4 +242,5 @@ export const rankingCopy: Readonly<
   },
   th: rankingCopyTh,
   my: rankingCopyMy,
+  "zh-TW": rankingCopyZhTw,
 };

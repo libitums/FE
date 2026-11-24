@@ -86,7 +86,8 @@ function assetPolicyForRound(): (id: string, target: AssetTarget) => AssetDecisi
 /** 받기 차례마다 지금 UI 언어를 읽습니다 — 영어(원문)면 번역 파일을 받지 않습니다(ADR-0102 D3). */
 function translationLanguageForRound(): ContentLanguage | null {
   const language = loadUiLanguage();
-  return language === "en" ? null : language;
+  // 대만 중국어는 이야기 번역 파일이 없어 영어 원문을 씁니다(ADR-0185 — 콘텐츠 번역은 범위 밖).
+  return language === "en" || language === "zh-TW" ? null : language;
 }
 
 /**

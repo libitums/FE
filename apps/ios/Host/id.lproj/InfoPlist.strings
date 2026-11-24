@@ -1,2 +1,5 @@
 /* 추적 허용 안내(ATT), id. ADR-0091 D6(2026-11-19 개정). */
 "NSUserTrackingUsageDescription" = "Izinkan pelacakan agar kami bisa mengukur iklan mana yang membantumu menemukan Duru. Kami tidak pernah menjual datamu.";
+/* 마이크 · 음성 인식 권한 안내(ADR-0185 언어 검증 — 빌드 설정 값은 한국어라 이 언어 기기에도 한국어가 떴다). 번역 초안 — 원어민 검수 필요. */
+"NSMicrophoneUsageDescription" = "Duru merekam kalimat yang kamu baca saat latihan berbicara untuk memeriksa pelafalanmu. Perekaman hanya terjadi di langkah berbicara dan langsung berhenti saat kamu berhenti.";
+"NSSpeechRecognitionUsageDescription" = "Duru mengubah rekaman latihan berbicaramu menjadi teks Korea untuk memeriksa apakah sesuai dengan kalimat yang harus dibaca. Suaramu tidak dipakai untuk hal lain.";

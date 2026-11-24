@@ -56,10 +56,19 @@ describe("FA1 추천 친구 넷이 정본과 같다", () => {
     },
   );
 
-  test("모든 언어 칸(es · id · ja · vi · th · my)이 소개 · 직업에 있다", () => {
+  test("모든 언어 칸(es · id · ja · vi · th · my · zh-TW)이 소개 · 직업에 있다", () => {
     for (const friend of COMPANION_FRIENDS) {
       for (const line of [friend.intro, friend.tags[0]]) {
-        expect(Object.keys(line ?? {}).sort()).toEqual(["en", "es", "id", "ja", "my", "th", "vi"]);
+        expect(Object.keys(line ?? {}).sort()).toEqual([
+          "en",
+          "es",
+          "id",
+          "ja",
+          "my",
+          "th",
+          "vi",
+          "zh-TW",
+        ]);
       }
     }
   });

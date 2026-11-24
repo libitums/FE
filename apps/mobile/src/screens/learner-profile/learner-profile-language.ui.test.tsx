@@ -130,3 +130,22 @@ test("LP-U5. 나라 화면(th · my) — 뜻 줄이 그 언어 문장 · 그 언
     forgetCountryNames();
   }
 });
+
+test("LP-U6. 나라 화면(zh-TW) — 뜻 줄이 대만 중국어 문장 · 번체 나라 이름이다(ADR-0185)", () => {
+  receivedCountryNames("zh-TW");
+  inLanguage(
+    "zh-TW",
+    <LearnerCountryScreen
+      learnerName="Emma"
+      initialCountryCode="TH"
+      port={learnerProfilePort}
+      onContinue={vi.fn()}
+      onBack={vi.fn()}
+    />,
+  );
+  const preview = screen.getByTestId("learner-country-screen-preview").textContent ?? "";
+  expect(preview).toContain("我來自泰國。");
+  expect(preview).not.toContain("I'm from");
+  cleanup();
+  forgetCountryNames();
+});

@@ -368,6 +368,122 @@
     "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
+/* 대만 중국어 UI의 글꼴(ADR-0185) — 앱 Duru Sans는 일본 자형(Pretendard JP 서브셋)이라 같은 한자도 대만 자형과 다르고, 서브셋에 없는 한자는
+   다른 글꼴로 떨어져 한 줄에 두 자형이 섞입니다. 그래서 번체 시스템 글꼴(iOS PingFang TC, Android Noto Sans CJK TC)을 맨 앞에 두고,
+   그 글꼴에 없는 한글은 뒤따르는 Duru Sans가 그립니다. 라틴 글자도 시스템 글꼴로 그려지는 것이 대가입니다. 목록은 `.app-lang-ja`와 같은 모양입니다. */
+.app-lang-zh-tw {
+  --libitum-typography-accent-chapter-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-accent-display-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-accent-metric-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-accent-reward-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-body-l-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-body-m-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-body-s-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-button-l-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-button-m-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-button-s-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-button-xl-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-caption-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-dialogue-body-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-dialogue-speaker-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-display-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-heading-l-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-heading-m-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-heading-s-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-label-l-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-label-m-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-label-s-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  --libitum-typography-label-xl-font-family:
+    "PingFang TC", "Heiti TC", "Noto Sans CJK TC", "Noto Sans TC", "Duru Sans", "DuruSans",
+    "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Roboto",
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic",
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+
 /* ui-lynx 부품의 로마자(ChatBubble annotation · OptionSelector 보기 로마자)도 앱의 로마자 글꼴로 그립니다(ADR-0107 ·
    ADR-0108 D8) — 부품은 토큰의 본문 글꼴을 쓰므로 앱이 셸 아래에서 다시 정합니다. 목록은 `text-roles.css`의 로마자와 같습니다. */
 .app .ui-lynx-chat-bubble-annotation-romanization,

@@ -141,7 +141,7 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
     expect(friendStatusOf(friend("l"), room("l", false))).toBe("locked");
   });
 
-  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 일곱 언어(th · my 2026-11-20)", () => {
+  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 여덟 언어(th · my 2026-11-20 · zh-TW 2026-11-24)", () => {
     expect(COMPANION_CATALOG.characters.map((c) => [c.id, c.kind])).toEqual([
       ["duksu", "story"],
       ["yoonkyung", "story"],
@@ -164,6 +164,7 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
         "my",
         "th",
         "vi",
+        "zh-TW",
       ]);
     }
   });

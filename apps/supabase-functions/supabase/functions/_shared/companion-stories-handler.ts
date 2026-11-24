@@ -34,7 +34,7 @@ export const STORY_PUSH_CONCURRENCY = 8;
 export type StoryPushMode = "off" | "testers" | "on";
 
 /**
- * 본문 — 받는 사람 나라의 언어(일곱, 검수 B1). 제목이 인물 이름이라 본문은 「올렸다」로 시작하고 한국어 한 줄은 번역하지 않는다.
+ * 본문 — 받는 사람 나라의 언어(여덟, 검수 B1 · zh-TW는 ADR-0185). 제목이 인물 이름이라 본문은 「올렸다」로 시작하고 한국어 한 줄은 번역하지 않는다.
  * 나라 → 언어는 예고 캠페인과 같은 표(`storyLanguageFor` — 말레이시아는 인도네시아어, 미얀마는 미얀마어).
  */
 const STORY_PUSH_BODY: Readonly<Record<string, (line: string) => string>> = {
@@ -45,6 +45,8 @@ const STORY_PUSH_BODY: Readonly<Record<string, (line: string) => string>> = {
   vi: (line) => `vừa đăng tin — ${line}`,
   th: (line) => `โพสต์สตอรี่ใหม่ — ${line}`,
   my: (line) => `စတိုရီအသစ် တင်လိုက်ပါပြီ — ${line}`,
+  // 대만 중국어(ADR-0185) — 번역 초안, 원어민 검수 필요.
+  "zh-TW": (line) => `發布了限時動態 — ${line}`,
 };
 
 export type StoryPushPlan = {
