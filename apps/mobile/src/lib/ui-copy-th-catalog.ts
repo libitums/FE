@@ -66,10 +66,6 @@ export const catalogMapTh: CatalogMapCopy = {
 };
 
 export const catalogCoverTh: CatalogCoverCopy = {
-  toggleScript: {
-    en: "แสดงคำอ่าน",
-    roman: "แสดงความหมาย",
-  },
   nextCut: (ordinal, total) => `ฉากถัดไป, ${ordinal} จาก ${total}`,
   finishCover: "จบบทนำ",
   finishEpilogue: "จบตอน",

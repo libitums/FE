@@ -68,10 +68,6 @@ export const catalogMapId: CatalogMapCopy = {
 };
 
 export const catalogCoverId: CatalogCoverCopy = {
-  toggleScript: {
-    en: "Tampilkan romanisasi",
-    roman: "Tampilkan arti",
-  },
   nextCut: (ordinal, total) => `Adegan berikutnya, ${ordinal} dari ${total}`,
   finishCover: "Selesaikan pengantar",
   finishEpilogue: "Selesaikan episode",

@@ -32,6 +32,8 @@ export type RoleplayStoryFlowProps = {
   readonly onExit: () => void;
   /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
   readonly romanization?: ChoiceRomanization;
+  /** 대사 상자 안 로마자 스위치(ADR-0188 개정 D7) — 없으면 스위치를 그리지 않습니다. */
+  readonly onRomanizationChange?: (next: ChoiceRomanization) => void;
 };
 
 export function RoleplayStoryFlow({
@@ -40,6 +42,7 @@ export function RoleplayStoryFlow({
   onFinish,
   onExit,
   romanization = "hidden",
+  onRomanizationChange,
 }: RoleplayStoryFlowProps): ReactNode {
   const [stage, setStage] = useState<Stage>("preview");
   const [notice, setNotice] = useState<RoleplaySpeechNotice | null>(null);
@@ -101,6 +104,7 @@ export function RoleplayStoryFlow({
         ordinal={model.ordinal}
         cuts={model.cuts}
         romanization={romanization}
+        {...(onRomanizationChange === undefined ? {} : { onRomanizationChange })}
         onComplete={() => setStage("talk")}
         onExit={onExit}
       />

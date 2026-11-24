@@ -17,12 +17,14 @@ export function AudioUnavailableControl({
   testId,
   icon = play,
   size = "l",
+  tone = "light",
 }: AudioUnavailableControlProps): ReactNode {
   const copy = useUiCopy();
+  const iconColor = tone === "dialog" ? color.gray[800] : color.fg.neutral;
 
   return (
     <view
-      className={`audio-unavailable-control audio-unavailable-control-${size}`}
+      className={`audio-unavailable-control audio-unavailable-control-${size}${tone === "dialog" ? " audio-unavailable-control-dialog" : ""}`}
       data-testid={testId}
       data-state="unavailable"
       accessibility-element={true}
@@ -30,11 +32,7 @@ export function AudioUnavailableControl({
       accessibility-label={copy.audioUnavailable.label}
     >
       {/* 이름은 감싼 상자가 지므로 아이콘에는 접근성 속성을 붙이지 않습니다(ADR-0016 D5). */}
-      <svg
-        className="audio-unavailable-control-icon"
-        content={icon}
-        current-color={color.fg.neutral}
-      />
+      <svg className="audio-unavailable-control-icon" content={icon} current-color={iconColor} />
     </view>
   );
 }

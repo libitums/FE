@@ -48,6 +48,15 @@ Auto Advance, Learning Language, Right To Left, Long Content를 제공한다.
 > 번역 꼴이다. `narration`은 지문을 받지 않는다(타입이 `never`). 주지 않으면 DOM은 전과 같다. 소비자는 카탈로그 표지 컷 화면
 > ([ADR-0024](../adr/0024-journey-units-and-special-unit-placement.md) D15). 한글은 폰트에 기울임이 없어 기울지 않는다(영어 줄만 기운다).
 
+> ⟨2026-11-24⟩ **로마자 · 이름 줄 스위치(FE 확장, [ADR-0188](../adr/0188-dialogue-romanization.md) D2 · 개정 D7)** — 선택 prop `romanization`(읽는 법)은
+> **대사 바로 아래 · 구분선 위** 한 줄이다(순서: 대사 → 로마자 → 구분선 → 번역). 대사가 다 드러난 뒤(`ready`)에만 보이고(`showRomanization`),
+> 번역 묶음(구분선 · 번역, `showTranslation`)은 번역이 있을 때만 선다. 빈 문자열은 없음. 색은 `brand.reward-disabled-text` 기울임 · medium.
+> 선택 prop `headerSwitch: { label, checked, stateLabel, onChange }`는 이름 줄 오른쪽(화자가 없으면 `header-row` 오른쪽)에 「글자 + 스위치」를 세운다 —
+> 누르면 `onChange(!checked)`만 부르고(값의 주인은 부르는 쪽) 대사 상자 `bindtap`으로 번지지 않는다. 낭독은 `{label}, {stateLabel}` ·
+> role description `switch`. 스위치가 있으면 루트는 접근성 요소가 아니고 상자 전체를 덮는 낭독 요소(`-reading`)가 대사 이름을 지며, 화면에 선 글은
+> 각각 가린다(iOS에서 접근성 요소 안 스위치에 닿을 수 없기 때문). 누르는 자리 높이 44 이상, 글자는 상자 폭 60 %를 넘으면 한 줄 말줄임, 이름은 줄바꿈.
+> 둘 다 주지 않으면 DOM은 전과 같다.
+
 ## 범위 밖
 
 - 장면 art, 선택지, 대사 queue와 persistence

@@ -29,3 +29,10 @@
   width: 18px;
   height: 18px;
 }
+
+/* 대사 상자와 같은 짙은 면(ADR-0188 개정 D7 · ADR-0189) — 면이 그림에 비치지 않게 불투명도를 걷고, 꺼짐은 흐린 아이콘(gray-800)이
+   말합니다. 켜진 스피커(흰 아이콘)와 같은 면 위에서 아이콘 밝기로 갈립니다. */
+.audio-unavailable-control-dialog {
+  background: var(--libitum-color-gray-950);
+  opacity: 1;
+}

@@ -72,12 +72,11 @@ describe("CatalogCoverScreen 다시 듣기", () => {
     expect(onReplay).toHaveBeenCalledWith(0);
   });
 
-  test("CR2. 스피커는 대사 토글 · 진행을 건드리지 않는다", () => {
+  test("CR2. 스피커는 진행을 건드리지 않는다", () => {
     const { onComplete } = mount();
     tapReplay();
 
     const root = screen.getByTestId("catalog-cover-screen");
-    expect(root.getAttribute("data-script")).toBe("en");
     expect(root.getAttribute("data-cut-index")).toBe("0");
     expect(onComplete).not.toHaveBeenCalled();
   });

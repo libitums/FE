@@ -66,10 +66,6 @@ export const catalogMapMy: CatalogMapCopy = {
 };
 
 export const catalogCoverMy: CatalogCoverCopy = {
-  toggleScript: {
-    en: "အသံထွက် ပြရန်",
-    roman: "အဓိပ္ပာယ် ပြရန်",
-  },
   nextCut: (ordinal, total) => `နောက်မြင်ကွင်း၊ ${total} ခုအနက် ${ordinal}`,
   finishCover: "မိတ်ဆက် ပြီးရန်",
   finishEpilogue: "အပိုင်း ပြီးရန်",

@@ -67,10 +67,6 @@ export const catalogMapVi: CatalogMapCopy = {
 };
 
 export const catalogCoverVi: CatalogCoverCopy = {
-  toggleScript: {
-    en: "Hiện phiên âm",
-    roman: "Hiện nghĩa",
-  },
   nextCut: (ordinal, total) => `Cảnh tiếp theo, ${ordinal} trên ${total}`,
   finishCover: "Kết thúc giới thiệu",
   finishEpilogue: "Kết thúc tập",

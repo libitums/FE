@@ -20,14 +20,10 @@ import {
   catalogCutAudioCueOf,
   catalogCutLinesOf,
   catalogCutSpeakerName,
+  catalogRomanizationSwitchOf,
   nextCatalogCutIndex,
-  nextCatalogCutScript,
 } from "./catalog-cover";
-import type {
-  CatalogCoverScreenProps,
-  CatalogCutScript,
-  CatalogCutStage,
-} from "./catalog-cover.contract";
+import type { CatalogCoverScreenProps, CatalogCutStage } from "./catalog-cover.contract";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import { voiceRevealIntervalMs } from "./voice-reveal";
 
@@ -49,8 +45,9 @@ const finishLabelByStage = (copy: UiCopy): Readonly<Record<CatalogCutStage, stri
 });
 
 // 카탈로그 에피소드의 컷 화면입니다 — 에피소드 앞(표지, `stage="prologue"`)과 최종 테스트
-// 통과 뒤(`"epilogue"`)가 같은 화면이고, 다른 것은 마지막 버튼의 낭독 하나뿐입니다. 컷을 차례로 보이고, 대사 상자를 누르면 영어와 로마자를 번갈아 보이며,
-// 진행은 아래 버튼 하나뿐입니다(화면 어디를 눌러도 넘어가지 않습니다 — 토글 탭과 겹치지 않게).
+// 통과 뒤(`"epilogue"`)가 같은 화면이고, 다른 것은 마지막 버튼의 낭독 하나뿐입니다. 컷을 차례로 보이고, 진행은 아래 버튼
+// 하나뿐입니다(화면 어디를 눌러도 넘어가지 않습니다). 로마자 줄은 대사 상자 이름 줄 오른쪽의 스위치가 켜고 끕니다 — 값은 설정의
+// 로마자 스위치와 같은 세션 옵션이고 화면은 누름만 올립니다(ADR-0188 개정 D7 — 대사 상자를 눌러 영어 ↔ 로마자를 바꾸던 토글은 없앴습니다).
 //
 // 그림과 글은 **형제 층**입니다. 글 층은 그림의 상태를 읽지 않으므로 그림이 없거나 늦거나 실패해도 머리 ·
 // 대사 · 버튼이 첫 프레임부터 섭니다. 로드 전 투명 처리는 그림 층에만 걸립니다.
@@ -64,21 +61,19 @@ export function CatalogCoverScreen({
   onExit,
   onReplay,
   romanization = "hidden",
+  onRomanizationChange,
 }: CatalogCoverScreenProps): ReactNode {
   perfProbe().countRender("CatalogCover");
   const copy = useUiCopy();
   const [index, setIndex] = useState(0);
-  // 읽는 사람의 선택이라 컷을 넘겨도 유지됩니다. 화면을 나가면 버립니다.
-  const [script, setScript] = useState<CatalogCutScript>("en");
   const completion = useRef({ done: false });
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
 
   const cut = cuts[index] ?? cuts[0];
   const total = cuts.length;
   const audio = useAudioCue(catalogCutAudioCueOf(cut, index));
-  // 로마자 스위치가 켜져 있으면 로마자 · 영어 두 줄이 함께 서고 토글이 없습니다(ADR-0188 D2).
-  const lines = catalogCutLinesOf(cut.text, script, romanization);
-  const hasToggle = lines.toggle;
+  // 로마자 스위치가 켜져 있으면 로마자 · 영어 두 줄이 함께 서고, 끄면 로마자 줄만 빠집니다(ADR-0188 D2 · 개정 D7).
+  const lines = catalogCutLinesOf(cut.text, romanization);
   const isLast = nextCatalogCutIndex(index, total) === null;
   const typing = useTypewriter({
     text: cut.text.ko,
@@ -98,12 +93,20 @@ export function CatalogCoverScreen({
     surface: "opaque",
     contentLanguage: "learning",
     languageTag: "ko",
+    accessibilityLabel: catalogCutAccessibilityLabel(cut, copy, romanization),
+    ...(onRomanizationChange === undefined
+      ? {}
+      : {
+          headerSwitch: {
+            ...catalogRomanizationSwitchOf(romanization, copy),
+            onChange: (checked: boolean) => {
+              "background only";
+              onRomanizationChange(checked ? "shown" : "hidden");
+            },
+          },
+        }),
   } as const;
 
-  const handleToggle = () => {
-    "background only";
-    if (hasToggle) setScript(nextCatalogCutScript);
-  };
   const handleNext = () => {
     "background only";
     // 쓰는 중 첫 탭은 대사를 끝까지 보이고, 다음 탭이 컷을 넘깁니다.
@@ -137,7 +140,6 @@ export function CatalogCoverScreen({
       data-statusbar={lightStatusBarIcons}
       // 데이터셋 키는 카멜로 적습니다(하이픈 키는 테스트 환경이 거부합니다) — 속성 이름은 `data-cut-index` 등이 됩니다.
       data-cutIndex={index}
-      data-script={script}
     >
       <view className="catalog-cover-screen-backdrop" data-testid="catalog-cover-screen-backdrop" />
       {/* 장면 층은 순수 장식입니다 — 그림이 없으면 비우고, 실패하면 투명으로 남아 단색 배경이 보입니다. */}
@@ -192,27 +194,24 @@ export function CatalogCoverScreen({
         <view className="catalog-cover-screen-spacer" />
 
         <view className="catalog-cover-screen-dialogue">
-          {/* 다시 듣기(ADR-0189) — 대사 상자(토글 단추) 밖 형제라 단추 안 단추가 아닙니다. 소리 없는 컷은 회색입니다. */}
+          {/* 다시 듣기(ADR-0189) — 대사 상자 밖 형제입니다. 면은 대사 상자와 같은 색이고(개정 D7), 소리 없는 컷은 회색 아이콘입니다. */}
           <view className="catalog-cover-screen-replay-row">
             <SentenceReplayButton
               key={index}
               testId="catalog-cover-screen-replay"
               replay={sentenceReplayOf(cut.audioSource)}
               size="l"
+              tone="dialog"
               onReplayed={() => onReplay?.(index)}
             />
           </view>
-          {/* 대사 상자는 접근성 요소 하나입니다 — 토글이 있으면 버튼으로 서고, 안쪽 패널은 가려 이름이 겹치지 않게 합니다. */}
+          {/* 대사 상자가 스스로 접근성 요소를 집니다 — 스위치가 있으면 대사 낭독 요소와 스위치가 따로 닿습니다. 감싼 칸은 배치만 맡습니다. */}
           <view
             className="catalog-cover-screen-line"
             data-testid="catalog-cover-screen-line"
             data-cutKind={cut.kind}
-            accessibility-element={true}
-            accessibility-traits={hasToggle ? "button" : "text"}
-            accessibility-label={catalogCutAccessibilityLabel(cut, script, copy, romanization)}
-            catchtap={handleToggle}
           >
-            <view className="catalog-cover-screen-line-inner" accessibility-elements-hidden={true}>
+            <view className="catalog-cover-screen-line-inner">
               <scroll-view
                 className="catalog-cover-screen-scroll"
                 scroll-orientation="vertical"

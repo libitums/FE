@@ -209,6 +209,7 @@ export type {
   VisualNovelDialogContinueIndicator,
   VisualNovelDialogContract,
   VisualNovelDialogDirection,
+  VisualNovelDialogHeaderSwitch,
   VisualNovelDialogProps,
   VisualNovelDialogReveal,
   VisualNovelDialogStatus,

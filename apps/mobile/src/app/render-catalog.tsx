@@ -174,6 +174,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           ordinal={model.ordinal}
           cuts={model.cuts}
           romanization={choiceRomanizationOf(wiring.sessionOptions)}
+          onRomanizationChange={wiring.onDialogRomanizationChange}
           onExit={() => wiring.onLeaveCatalogEpilogue(episodeId)}
           onClose={() => wiring.onLeaveCatalogEpilogue(episodeId)}
           onReplay={() => wiring.onStorySentenceReplayed(episodeId, "epilogue")}

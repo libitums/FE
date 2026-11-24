@@ -11,6 +11,7 @@ import type {
   LanguageSettingsOpenedEvent,
   NotificationSettingsOpenedEvent,
   ProfileOpenedEvent,
+  SessionOptionChangeSource,
   SessionOptionChangedEvent,
   SettingsAccountState,
   SettingsNavTarget,
@@ -79,11 +80,16 @@ export function settingsNavOpenedEvent(
 
 // `value`는 바뀐 뒤 값입니다 — 호출자가 이미 계산한 다음 값을 그대로 싣습니다.
 // 개인식별정보는 싣지 않습니다.
+// `source`는 설정 밖에서 바꿨을 때만 싣습니다 — 대사 상자 안 로마자 스위치는 `"dialog"`(ADR-0188 개정 D7). 설정에서 바꾼 것은
+// 키가 없습니다(그 전 앱과 같은 모양이라, 없음 = 설정으로 읽습니다).
 export function sessionOptionChangedEvent(
   key: SessionOptionKey,
   value: boolean,
+  source?: SessionOptionChangeSource,
 ): SessionOptionChangedEvent {
-  return { name: "session_option_changed", option: key, value };
+  return source === undefined
+    ? { name: "session_option_changed", option: key, value }
+    : { name: "session_option_changed", option: key, value, source };
 }
 
 export const settingsSessionOptionKeys: readonly SettingsSessionOptionKey[] = [

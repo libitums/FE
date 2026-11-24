@@ -10,6 +10,25 @@ export type VisualNovelDialogContinueIndicator = "on" | "off";
 export type VisualNovelDialogContentLanguage = "ui" | "learning";
 export type VisualNovelDialogDirection = "ltr" | "rtl";
 
+/**
+ * 이름 줄 오른쪽(화자가 없으면 같은 자리)에 서는 스위치 하나입니다(FE 확장, 2026-11-24 앱 ADR-0188 개정 D7). 대사 상자 안에서
+ * 보조 표시(로마자 줄 등)를 켜고 끄는 자리이고, 값의 주인은 부르는 쪽입니다 — 누르면 `onChange(!checked)`만 부릅니다.
+ */
+export type VisualNovelDialogHeaderSwitch = {
+  /** 스위치 앞에 보이는 글자이자 낭독 이름입니다. */
+  readonly label: string;
+  readonly checked: boolean;
+  /** 낭독에 붙는 상태 말(「On」 · 「Off」 등, 부르는 쪽 언어)입니다. */
+  readonly stateLabel: string;
+  readonly onChange: (checked: boolean) => void;
+};
+
+export type VisualNovelDialogHeaderSwitchContract = {
+  readonly label: string;
+  readonly checked: boolean;
+  readonly accessibilityLabel: string;
+};
+
 type VisualNovelDialogBaseProps = {
   readonly line: string;
   /**
@@ -18,10 +37,11 @@ type VisualNovelDialogBaseProps = {
    */
   readonly translation?: string;
   /**
-   * 대사의 읽는 법(로마자)입니다(FE 확장, 2026-11-24 ADR-0188). 번역 묶음 안 구분선 위에 서고, 번역처럼 대사가 다
-   * 드러난 뒤에만 보입니다. 빈 문자열은 없음입니다.
+   * 대사의 읽는 법(로마자)입니다(FE 확장, 2026-11-24 ADR-0188). 대사 바로 아래 · 구분선 위에 서고(개정 D7 — 읽는 법은
+   * 한국어에 붙고 구분선 아래는 뜻만), 번역처럼 대사가 다 드러난 뒤에만 보입니다. 빈 문자열은 없음입니다.
    */
   readonly romanization?: string;
+  readonly headerSwitch?: VisualNovelDialogHeaderSwitch;
   readonly accessibilityLabel?: string;
   readonly surface?: VisualNovelDialogSurface;
   readonly reveal?: VisualNovelDialogReveal;
@@ -101,6 +121,10 @@ export type VisualNovelDialogContract = {
   readonly status: VisualNovelDialogStatus;
   readonly translation?: string;
   readonly romanization?: string;
+  readonly headerSwitch?: VisualNovelDialogHeaderSwitchContract;
+  /** 로마자 줄이 보이는가 — 로마자가 있고 대사가 다 드러났을 때입니다. */
+  readonly showRomanization: boolean;
+  /** 번역 묶음(구분선 · 번역)이 보이는가 — 번역이 있고 대사가 다 드러났을 때입니다. */
   readonly showTranslation: boolean;
   readonly surface: VisualNovelDialogSurface;
   readonly variant: VisualNovelDialogVariant;
@@ -122,6 +146,15 @@ function normalizeLanguageTag(value: string | undefined): string | undefined {
 
 function getVisibleLine(line: string, count: number): string {
   return Array.from(line).slice(0, count).join("");
+}
+
+function getHeaderSwitchContract(
+  value: VisualNovelDialogHeaderSwitch | undefined,
+): VisualNovelDialogHeaderSwitchContract | undefined {
+  if (value === undefined) return undefined;
+  const label = requireVisibleText(value.label, "headerSwitch label").trim();
+  const stateLabel = requireVisibleText(value.stateLabel, "headerSwitch stateLabel").trim();
+  return { label, checked: value.checked, accessibilityLabel: `${label}, ${stateLabel}` };
 }
 
 export function getVisualNovelDialogContract(
@@ -194,6 +227,7 @@ export function getVisualNovelDialogContract(
       : requireVisibleText(props.translation, "translation");
   // 빈 로마자는 없음입니다(번역과 달리 던지지 않습니다 — 부르는 쪽이 「없으면 빈 문자열」로 넘깁니다).
   const romanization = props.romanization?.trim() || undefined;
+  const headerSwitch = getHeaderSwitchContract(props.headerSwitch);
   // 지문이 있으면 화자 뒤, 대사 앞에서 읽습니다(화면에 선 순서).
   const asideLead = aside === undefined ? "" : `, ${aside}`;
   const defaultAccessibilityLabel =
@@ -225,7 +259,12 @@ export function getVisualNovelDialogContract(
       `ui-lynx-visual-novel-dialog-${surface}`,
       `ui-lynx-visual-novel-dialog-${status}`,
       `ui-lynx-visual-novel-dialog-${direction}`,
-    ].join(" "),
+      // 스위치 · 로마자 줄이 있을 때만 붙습니다(이 확장 전 클래스는 그대로).
+      headerSwitch ? "ui-lynx-visual-novel-dialog-with-switch" : undefined,
+      romanization ? "ui-lynx-visual-novel-dialog-with-romanization" : undefined,
+    ]
+      .filter((token): token is string => token !== undefined)
+      .join(" "),
     contentLanguage,
     continueIndicator,
     direction,
@@ -240,9 +279,10 @@ export function getVisualNovelDialogContract(
     surface,
     ...(translation ? { translation } : {}),
     ...(romanization ? { romanization } : {}),
-    // 번역 묶음(구분선 · 로마자 · 번역)은 둘 중 하나라도 있으면 서고, 대사가 다 드러난 뒤에만 보입니다.
-    showTranslation:
-      (translation !== undefined || romanization !== undefined) && status === "ready",
+    ...(headerSwitch ? { headerSwitch } : {}),
+    // 로마자 줄과 번역 묶음(구분선 · 번역)은 따로 서고, 둘 다 대사가 다 드러난 뒤에만 보입니다(ADR-0188 개정 D7).
+    showRomanization: romanization !== undefined && status === "ready",
+    showTranslation: translation !== undefined && status === "ready",
     variant,
     visibleLine,
   };

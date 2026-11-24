@@ -72,6 +72,7 @@ export function renderCatalogStory(
             ordinal={model.ordinal}
             cuts={model.cuts}
             romanization={romanization}
+            onRomanizationChange={wiring.onDialogRomanizationChange}
             onComplete={finish}
             onExit={exitStory}
             onReplay={() => wiring.onStorySentenceReplayed(episodeId, "interlude")}
