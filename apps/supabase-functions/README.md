@@ -973,6 +973,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `storyReaction`을 실으면 운영과 같은 반응 지시로 답을 만든다. 답 모델을 고를 때 같은 세트를 `model`만 바꿔 돌려 견준다.
   로컬에서 실제 모델로 돌리기(돈이 든다 — 26케이스 × 3모델 약 $2): `ANTHROPIC_API_KEY=… npx vitest run supabase/evals/story-reactions.eval`
   (`EVAL_MODELS` · `EVAL_SETS` · `EVAL_CASES` · `EVAL_OUT`으로 고른다, 결과는 `supabase/evals/out/` — git에 올리지 않는다). 기록은 ADR-0191 「평가 기록」.
+  사진 읽기까지 보는 실행기는 `supabase/evals/story-photos.eval`(가상 데이터 `story-photo-cases.ts` — 콘텐츠 버킷의 이야기 그림 + 학습자 글 18케이스,
+  기본 Sonnet · Haiku, 약 $1.5). 버킷에 없는 그림은 `EVAL_IMAGE_BASE=<duru-curation>/pipeline/evals/delivery/images`로 로컬에서 읽는다.
 - 테스트: `migrations/my-story-photos.integration.test.ts`(MP1 ~ MP8) · `_shared/companion-my-story-handler.unit.test.ts`(MH1 ~ MH7 · MU1 ~ MU2 · RP5) ·
   `_shared/companion-story-read.unit.test.ts`(SR1 ~ SR3 · SS1 ~ SS3) · `_shared/companion-eval-reactions.unit.test.ts`(ER1 ~ ER2) · 계약 MC3.
 

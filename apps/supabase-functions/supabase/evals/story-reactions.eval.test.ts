@@ -16,37 +16,24 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "vitest";
 
-import type {
-  ChatSendEnv,
-  PersonaCard,
-  ReplyJudgement,
-} from "../functions/_shared/chat-send.contract.ts";
+import type { ReplyJudgement } from "../functions/_shared/chat-send.contract.ts";
 import { defaultJudgeModel } from "../functions/_shared/companion-eval-judge.ts";
 import { evalReply } from "../functions/_shared/companion-eval-reply.ts";
 import { storyReactionSets } from "../functions/_shared/companion-eval-sets-reactions.ts";
 import { companionLlmWithModel } from "../functions/_shared/companion-llm.ts";
 import { mapLimited } from "../functions/_shared/map-limited.ts";
-import { startTestDatabase } from "../migrations/postgres.test-support";
+import { apiKey, envList, envText, evalEnv, loadPersonas } from "./eval-support.ts";
 
-const apiKey = process.env["ANTHROPIC_API_KEY"]?.trim() ?? "";
-const list = (name: string, fallback: string[]) => {
-  const values = (process.env[name] ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter((value) => value !== "");
-  return values.length === 0 ? fallback : values;
-};
-const models = list("EVAL_MODELS", ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]);
-const setIds = list(
+const models = envList("EVAL_MODELS", ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"]);
+const setIds = envList(
   "EVAL_SETS",
   storyReactionSets.map((set) => set.id),
 );
-const caseIds = list("EVAL_CASES", []);
-const judgeModel = process.env["EVAL_JUDGE"]?.trim() || defaultJudgeModel;
+const caseIds = envList("EVAL_CASES", []);
+const judgeModel = envText("EVAL_JUDGE", defaultJudgeModel);
 const here = dirname(fileURLToPath(import.meta.url));
 
 type Row = {
@@ -105,29 +92,8 @@ function report(rows: Row[]): string {
 test.skipIf(apiKey === "")(
   "내 스토리 반응 — 실제 모델로 세트를 돌리고 채점 결과를 파일로 남긴다",
   async () => {
-    const env: ChatSendEnv = {
-      supabaseUrl: "http://localhost",
-      supabaseAnonKey: "unused",
-      supabaseServiceRoleKey: "unused",
-      llm: {
-        kind: "anthropic",
-        apiKey,
-        model: judgeModel,
-        moderationModel: judgeModel,
-        feedbackModel: judgeModel,
-        translationModel: judgeModel,
-      },
-      translation: "every",
-    };
-    const db = await startTestDatabase();
-    let personas: Map<string, PersonaCard>;
-    try {
-      const cards = (await db.admin.query("select public.companion_inspect_characters() as c"))
-        .rows[0].c as { id: string; persona: PersonaCard }[];
-      personas = new Map(cards.map((card) => [card.id, card.persona]));
-    } finally {
-      await db.close();
-    }
+    const env = evalEnv(judgeModel);
+    const personas = await loadPersonas();
     const judge = companionLlmWithModel(env, judgeModel);
     const jobs = storyReactionSets
       .filter((set) => setIds.includes(set.id))
@@ -187,8 +153,7 @@ test.skipIf(apiKey === "")(
       }
     });
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const file =
-      process.env["EVAL_OUT"]?.trim() || join(here, "out", `story-reactions-${stamp}.json`);
+    const file = envText("EVAL_OUT", join(here, "out", `story-reactions-${stamp}.json`));
     await mkdir(dirname(file), { recursive: true });
     await writeFile(file, `${JSON.stringify({ judgeModel, models, rows }, null, 2)}\n`);
     await writeFile(file.replace(/\.json$/, ".md"), report(rows));
