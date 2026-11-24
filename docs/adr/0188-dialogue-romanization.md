@@ -3,6 +3,9 @@
 - 상태: **채택 — 클라이언트 쪽, PR(머지 전).** 서버 · 콘텐츠 형식 · 새 분석 이벤트 · 새 토큰 0. 세션 옵션 키 · 저장 키 · 기본값 그대로.
   ui-lynx 변경은 `VisualNovelDialog` 하나(FE 확장 `romanization`)다.
 - 날짜: 2026-11-24. 브랜치 `feat/dialogue-romanization`.
+- **개정 D7(2026-11-24, 브랜치 `feat/dialog-romanization-switch`)**: 대사 상자 이름 줄 오른쪽에 로마자 스위치 · 줄 순서 「한국어 → 로마자 →
+  구분선 → 영어」 · 컷의 숨은 영어 ↔ 로마자 토글 폐지 · 다시 듣기 스피커를 대사 상자 색으로. 아래 「개정 D7」이 D1 표의 「이야기 컷 대사」 행과
+  D2의 「대사 → 구분선 → 로마자 → 영어」 · 「끔이면 이 변경 전 그대로(영어, 누르면 로마자)」를 대체한다.
 - **사용자 결정**(2026-11-24, 「123 진행」 — 피드백 3번): 운영 `public.feedback` 튜토리얼 별점 의견에서 가장 많은 것이 「한글을 못 읽는다 ·
   대화문에 로마자가 없다」였다. 「이야기 대화(말풍선) · 레슨 문장에 로마자 줄을 보이게 하고 **같은 스위치로** 켜고 끈다. 기본값은 합리적으로
   정하고 ADR에 근거. 로마자 원천은 콘텐츠 로마자, 없으면 변환 함수 — 새로 만들면 규칙을 ADR에 적고 unit을 충분히.」
@@ -120,6 +123,45 @@
 
 새 이벤트 0. 스위치를 끄고 켜는 수는 기존 `session_option_changed`로 잰다.
 
+### D7. 개정(2026-11-24) — 대사 상자 안 로마자 스위치 · 줄 순서 「한국어 → 로마자 → 구분선 → 영어」
+
+- **사용자 결정**(2026-11-24 「진행」): 시안 `roman-toggle` 세 안 중 **B — 대사 상자 이름 줄 오른쪽 「Romanization」 스위치**(켬 · 끔 두 장이 정본).
+- **자리**: `VisualNovelDialog` 이름 줄 오른쪽 끝. 화자가 없는 지문 · 내레이션 상자도 같은 자리(맨 위 줄 오른쪽 — `header-row`)에 선다. 대사가 타자기로
+  쓰이는 중에도 보이고 누를 수 있다.
+- **모양**: 글자 「Romanization」(설정 토글 제목 `settings.sessionOption["show-choice-romanization"]` 재사용 — 8개 언어 새 문구 0) + 트랙 40 × 24 ·
+  손잡이 16. 켬 = 주황 트랙(brand.primary) · 흰 손잡이 · 글자 gray-600, 끔 = 회색 트랙(gray-800) · 옅은 손잡이(gray-600) · 글자 gray-700(대비 5.0:1).
+  누르는 자리 높이 44 이상(스위치 줄이 44가 되는 만큼 상자 위 여백을 20 → 12로 줄임).
+- **겹침 규칙**(긴 언어 · 큰 글자): 이름은 줄을 바꿔 들어가고 자르지 않는다. 스위치는 줄지 않되 글자가 상자 폭의 60 %를 넘으면 한 줄 말줄임이다
+  (`max-width: 60%` · `text-maxline=1`). 가장 긴 글자는 es 「Romanización」 · id 「Romanisasi」, vi 「Phiên âm」 · my 「အသံထွက်」는 짧다.
+- **값**: 설정의 로마자 스위치와 **같은 세션 옵션**(`show-choice-romanization`, 저장 키 그대로). 화면은 값을 들지 않고 누름만 올린다
+  (`CatalogCoverScreen.onRomanizationChange` → `ScreenWiring.onDialogRomanizationChange` → `setSessionOption`). 그래서 다음 컷 · 다른 이야기 · 레슨 보기 ·
+  설정 셀이 곧바로 같은 값이다.
+- **이벤트**: 새 이벤트 0. 같은 `session_option_changed`에 `source: "dialog"`를 붙인다. 설정에서 바꾼 것은 키가 없다(이 개정 전 앱과 같은 모양 —
+  없음 = 설정). 이벤트가 상태 · 저장보다 먼저 나간다(설정 토글과 같은 순서).
+- **줄 순서**: 「한국어 → 로마자 → 구분선 → 영어」. 로마자는 한국어 바로 아래(간격 4, 로마자가 있으면 대사 칸 최소 높이 48을 푼다)이고, 구분선 아래는
+  뜻만이다. 색은 따뜻한 살구색 — 시안 #D9A27E에 가장 가까운 기존 토큰 `brand.reward-disabled-text`(#D89A70, gray-950 위 대비 7.1:1, 새 토큰 0). 기울임 ·
+  medium · 대사 본문 크기 그대로. 끄면 로마자 줄만 빠지고 나머지 위치는 그대로다. 영어가 없는 대사는 구분선도 없다(로마자만이면 구분선 없이 로마자 줄).
+- **컷의 숨은 토글 폐지**: 끔에서 대사 상자를 누르면 영어 ↔ 로마자를 바꾸던 갈래(D2 「끔」)를 없앴다 — 같은 상자 안에 「Romanization」 스위치가
+  서는데 상자 누름이 로마자를 구분선 아래(뜻 자리)로 내리면 스위치 상태와 화면이 어긋나고, 「구분선 아래는 뜻만」 규칙과도 어긋난다. 그 낭독 꼬리
+  (`Show romanization` · `Show English`, 8개 언어 `catalogCover.toggleScript`)도 지웠다. 끔에서 영어가 없는 대사는 아래 줄이 없다(전에는 로마자가
+  번역 자리로 내려왔다).
+- **접근성 구조**: iOS에서 접근성 요소 안의 자손은 닿지 않으므로, 스위치가 있으면 `VisualNovelDialog` 루트는 요소가 아니고 상자 전체를 덮는 빈 낭독
+  요소(`-reading`, text, 이름 = 화면이 준 낭독)가 글 층 아래에 깔린다. 화면에 선 글(화자 · 지문 · 대사 · 로마자 · 번역)은 각각 가린다. 스위치는
+  `accessibility-role-description="switch"` · 이름 「Romanization, on/off」(설정 셀과 같은 방식). 스위치가 없으면 이 개정 전 구조 그대로다.
+  컷 화면의 대사 칸(`catalog-cover-screen-line`)은 이제 접근성 요소가 아니다(배치만).
+- **다시 듣기 스피커 색**(ADR-0189 D1 개정): 흰 원 → 대사 상자와 같은 면(gray-950) + 흰 아이콘(RoundButton `overlay`). 소리 없는 회색 단추는 같은 면에
+  흐린 아이콘(gray-800, 비활성 불투명도 없이 — 면이 그림에 비치지 않게). 레슨 판정 줄 스피커는 그대로(밝은 면).
+- **적용 화면**(로마자 줄을 그리는 `VisualNovelDialog` 전부): 컷 화면 `CatalogCoverScreen` 하나 — 표지 컷(prologue) · 통과 뒤 컷(epilogue) · 막간 이야기
+  컷(interlude) · 롤플레이 미리보기 컷. 최종 테스트 · 롤플레이 말하기 화면의 `VisualNovelDialog`는 로마자를 쓰지 않아(D1 범위 밖) 스위치를 달지 않았다.
+  문화 확인 장면 · 메신저 · 전화는 `VisualNovelDialog`가 아니라(말풍선 · 앱 줄) 이 개정의 스위치 · 순서와 무관하다 — 설정 스위치만 따른다.
+- **버린 대안**:
+  - **A — 다시 듣기 스피커 옆 「ga」 칩**(시안 추천안): 엄지 닿는 자리지만 「ga」가 무엇인지 글자로 말하지 않는다. 사용자가 B를 골랐다.
+  - **C — 한국어 줄을 누르면 켜고 끔**: 단추가 없어 깔끔하지만 처음엔 모르고, 스크린리더 · 큰 글자에서 누를 곳이 덜 분명하다. 이 개정 전 숨은 토글과
+    같은 약점이다.
+- 확인: unit `VisualNovelDialog.unit` VND-S1 ~ S5 · VND-R2 · R3, `catalog-cover.romanization.unit` CC-R1 ~ R7, `settings.unit` SN10 / ui
+  `VisualNovelDialog.header-switch.ui` HS1 ~ HS6 · `.romanization.ui` VNR-U1 ~ U3, `CatalogCoverScreen.romanization-switch.ui` RS1 ~ RS6 / integration
+  `App.dialog-romanization-switch.integration` DS1 ~ DS3 / e2e [DR-E8 ~ DR-E12](../e2e/dialogue-romanization.md).
+
 ## 대가
 
 1. **화면이 길어진다** — 컷 대사 · 말풍선 · 전화 대사가 한 줄씩(긴 문장은 두세 줄) 높아진다. 컷 대화 상자는 제 스크롤 안이라 잘리지 않고,
@@ -128,7 +170,9 @@
    (chat-bubble.css 주석 「약 3:1」), 그 위 로마자(gray-200)는 약 2.7:1, 흰 뜻은 약 3.0:1이다(접근성 감사 Major 1). 원인은 면 색이라 글자 색으로는
    못 고친다 — 면 색 · 토큰 결정은 design 소유로 따로 한다.
 3. **변환 읽기는 콘텐츠와 다를 수 있다** — 99.0%(D4). 콘텐츠에 로마자를 채우는 것이 정답이고, 변환은 빈 곳을 메우는 대체다.
-4. **ui-lynx `VisualNovelDialog`에 FE 확장 하나** — design-system 보고 대상(ADR-0084 「미확인 · 후속」 5 목록에 더함).
+4. **ui-lynx `VisualNovelDialog`에 FE 확장 하나** — design-system 보고 대상(ADR-0084 「미확인 · 후속」 5 목록에 더함). 개정 D7에서 둘째 확장
+   `headerSwitch`(이름 줄 오른쪽 스위치)가 더해졌고 `romanization`의 자리가 번역 묶음 밖(대사 바로 아래)으로 옮겨졌다.
+6. **(개정 D7) 스위치 줄이 44 높이라 상자가 조금 높아진다** — 위 여백을 12로 줄여 이름 한 줄 기준 약 8 늘어난다. 큰 글자에서는 스크롤이 받는다.
 
 5. **컷 대사 스크롤이 버튼을 덮던 결함을 함께 고쳤다** — 대화창이 z-index를 가져 스크롤 경계 밖에 그려졌다. 로마자 줄이 더해진 긴 내레이션이
    iPhone SE에서 `Continue` 단추를 덮는 것을 기기(시뮬레이터)에서 봤고, 최종 테스트 `-line-scroll`과 같은 규칙(`overflow: hidden` +
@@ -147,6 +191,7 @@
 1. 기기 확인 — [e2e](../e2e/dialogue-romanization.md) DR-E1 ~ DR-E7. 2026-11-24 iOS 시뮬레이터(iPhone SE 3세대) 프로브로 일부 확인(실행 기록).
 2. 최종 테스트 · 롤플레이 말하기 상대 대사(D1 범위 밖).
 3. 주황 면 대비(「대가」 2) — design.
-4. design-system 보고 — `VisualNovelDialog` `romanization`.
+4. design-system 보고 — `VisualNovelDialog` `romanization` · `headerSwitch`(개정 D7).
+6. (개정 D7) 스토리북에 `headerSwitch` 예시가 없다 — 앱 화면 테스트 · 기기 확인으로만 본다.
 5. 접근성 감사 Minor(코드 읽기 기준): 전화 대사 한 줄을 접근성 요소 하나로 묶기 · 전화 화면 큰 글자 스크롤 · 컷 대사 스크롤 표시 ·
    `VisualNovelDialog` 기본 낭독에 `spokenRomanization`(접두)과 쉼표 구분 · translucent 면 위 로마자 · 번역 색.

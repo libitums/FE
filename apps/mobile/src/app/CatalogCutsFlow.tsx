@@ -33,6 +33,8 @@ export type CatalogCoverFlowProps = {
   readonly onReplay?: () => void;
   /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
   readonly romanization?: ChoiceRomanization;
+  /** 대사 상자 안 로마자 스위치(ADR-0188 개정 D7) — 없으면 스위치를 그리지 않습니다. */
+  readonly onRomanizationChange?: (next: ChoiceRomanization) => void;
 };
 
 export type CatalogEpilogueFlowProps = {
@@ -47,6 +49,8 @@ export type CatalogEpilogueFlowProps = {
   readonly onReplay?: () => void;
   /** 로마자 스위치(ADR-0188) — 컷 대사 아래 로마자 줄. 없으면 `"hidden"`. */
   readonly romanization?: ChoiceRomanization;
+  /** 대사 상자 안 로마자 스위치(ADR-0188 개정 D7) — 없으면 스위치를 그리지 않습니다. */
+  readonly onRomanizationChange?: (next: ChoiceRomanization) => void;
 };
 
 // 걸음은 ref로 들어 같은 틱의 연타도 봅니다. 걸음이 바뀐 사건만 `true`를 내므로 콜백은 그때만
@@ -87,6 +91,7 @@ export function CatalogCoverFlow({
   onClose,
   onReplay,
   romanization = "hidden",
+  onRomanizationChange,
 }: CatalogCoverFlowProps): ReactNode {
   const copy = useUiCopy();
   const { shown, send } = useCutsFlowStep("intro");
@@ -112,6 +117,7 @@ export function CatalogCoverFlow({
         cuts={cuts}
         onReplay={onReplay}
         romanization={romanization}
+        onRomanizationChange={onRomanizationChange}
         onComplete={() => {
           "background only";
           if (send("cuts-done")) onCutsDone();
@@ -157,6 +163,7 @@ export function CatalogEpilogueFlow({
   onClose,
   onReplay,
   romanization = "hidden",
+  onRomanizationChange,
 }: CatalogEpilogueFlowProps): ReactNode {
   const { shown, send } = useCutsFlowStep("cuts");
 
@@ -180,6 +187,7 @@ export function CatalogEpilogueFlow({
       cuts={cuts}
       onReplay={onReplay}
       romanization={romanization}
+      onRomanizationChange={onRomanizationChange}
       onComplete={() => {
         "background only";
         send("cuts-done");

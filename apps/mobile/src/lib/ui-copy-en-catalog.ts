@@ -66,10 +66,6 @@ export const catalogMapEn: CatalogMapCopy = {
 };
 
 export const catalogCoverEn: CatalogCoverCopy = {
-  toggleScript: {
-    en: "Show romanization",
-    roman: "Show English",
-  },
   nextCut: (ordinal, total) => `Next scene, ${ordinal} of ${total}`,
   finishCover: "Finish intro",
   finishEpilogue: "Finish episode",

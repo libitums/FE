@@ -52,6 +52,7 @@ export function renderRoleplayStory(screen: RoleplayStoryScreen, wiring: ScreenW
       }
       onExit={wiring.onExitRoleplayStory}
       romanization={choiceRomanizationOf(wiring.sessionOptions)}
+      onRomanizationChange={wiring.onDialogRomanizationChange}
     />
   );
 }

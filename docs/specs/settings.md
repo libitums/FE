@@ -288,7 +288,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | `language_settings_opened` ⟨2026-11-03⟩ | 없음 | `Language` tap → `push` 직전 1회([ADR-0093](../adr/0093-indonesian-localization.md) D6) | 언어를 바꾼 것 자체는 세지 않는다 |
 | `download_settings_opened` ⟨2026-11-04⟩ | 없음 | `Downloads` tap → `push` 직전 1회([ADR-0095](../adr/0095-content-delivery-and-data-policy.md) D8) | 정책을 바꾼 것 자체는 세지 않는다 |
 | `terms_opened` | 없음 | `개인정보 보호 및 약관` tap → `push` 직전 1회 | 그 밖 |
-| `session_option_changed` | `option`(`auto-play-audio` \| `show-transcript` \| ⟨2026-11-06⟩ `show-choice-romanization`) · `value`(boolean) | 토글 tap → `setSessionOptions` **직전** 1회. `value`는 **바뀐 뒤** 값. ⟨2026-11-06⟩ 지금 내는 것은 `show-choice-romanization` 토글뿐이다 — tap → 상태 · 저장 **직전** 1회([ADR-0108](../adr/0108-choice-romanization.md)) | 설정 화면을 열거나 떠날 때 · 듣기 · 단어 선택 화면이 값을 읽을 때 · 앱이 켜지며 저장값을 읽을 때 |
+| `session_option_changed` | `option`(`auto-play-audio` \| `show-transcript` \| ⟨2026-11-06⟩ `show-choice-romanization`) · `value`(boolean) | 토글 tap → `setSessionOptions` **직전** 1회. `value`는 **바뀐 뒤** 값. ⟨2026-11-06⟩ 지금 내는 것은 `show-choice-romanization` 토글뿐이다 — tap → 상태 · 저장 **직전** 1회([ADR-0108](../adr/0108-choice-romanization.md)) ⟨2026-11-24⟩ 이야기 컷 대사 상자 안 로마자 스위치에서 바꿔도 같은 이벤트가 나가고 `source: "dialog"`가 붙는다. 설정에서 바꾼 것은 `source`가 없다([ADR-0188](../adr/0188-dialogue-romanization.md) D7) | 설정 화면을 열거나 떠날 때 · 듣기 · 단어 선택 화면이 값을 읽을 때 · 앱이 켜지며 저장값을 읽을 때 |
 
 | 지표 | 계산 |
 |---|---|

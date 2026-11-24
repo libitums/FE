@@ -8,3 +8,9 @@
   align-items: center;
   justify-content: center;
 }
+
+/* 이야기 컷(dialog 톤) — 누르는 자리 48 가운데에 대사 상자와 같은 면(gray-950)의 44 원을 깔고, 그 위에 흰 아이콘 단추(overlay)가
+   섭니다(ADR-0188 개정 D7 · ADR-0189). 소리 없는 단추는 같은 원 위에 흐린 아이콘입니다(audio-unavailable-control-dialog). */
+.sentence-replay-dialog .ui-lynx-round-button-overlay .ui-lynx-round-button-surface {
+  background-color: var(--libitum-color-gray-950);
+}

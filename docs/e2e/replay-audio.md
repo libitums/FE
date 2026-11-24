@@ -51,3 +51,6 @@
 | RA7 | 통과 — 10분 로그에 ReferenceError · TypeError · 1101 없음 | 통과 — 레슨 시작 뒤 로그에 없음 |
 
 스크린샷(저장소 밖): 컷 회색 · 컷 「Play again」(iOS), 컷 회색 · 보기 누름(Android) — PR 본문에 경로를 적었다.
+
+> ⟨2026-11-24 — [ADR-0188](../adr/0188-dialogue-romanization.md) 개정 D7⟩ 컷 스피커의 색이 바뀌었다(대사 상자와 같은 짙은 원 + 흰 아이콘, 소리 없음은 같은 원 + 흐린
+> 아이콘). 색 확인은 [로마자 e2e](dialogue-romanization.md) DR-E11이 맡는다. 레슨 판정 줄 스피커는 그대로다.

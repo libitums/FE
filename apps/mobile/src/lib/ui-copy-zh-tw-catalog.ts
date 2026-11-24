@@ -66,10 +66,6 @@ export const catalogMapZhTw: CatalogMapCopy = {
 };
 
 export const catalogCoverZhTw: CatalogCoverCopy = {
-  toggleScript: {
-    en: "顯示羅馬拼音",
-    roman: "顯示中文",
-  },
   nextCut: (ordinal, total) => `下一幕，第${ordinal}幕，共${total}幕`,
   finishCover: "結束序章",
   finishEpilogue: "結束這一集",

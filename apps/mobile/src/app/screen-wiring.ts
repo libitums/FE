@@ -50,7 +50,7 @@ import type {
   RoleplaySection,
 } from "../screens/roleplay-list/roleplay-list.contract";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { ChoiceRomanization, SessionOptionKey, SessionOptions } from "../lib/session-options";
 import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
@@ -115,6 +115,8 @@ export type ScreenWiring = {
   // 스택도 `dispatch`도 모릅니다(위 원칙 그대로).
   sessionOptions: SessionOptions;
   onToggleSessionOption: (key: SessionOptionKey, value: boolean) => void;
+  // 대사 상자 안 로마자 스위치(ADR-0188 개정 D7) — 같은 세션 옵션을 바꾸고 이벤트에 `source: "dialog"`를 붙입니다.
+  onDialogRomanizationChange: (next: ChoiceRomanization) => void;
   onSelectNavTarget: (target: SettingsNavTarget) => void;
   onExitSettingsStack: () => void;
   /** User profile 나가기 — 한 칸 뒤로(설정 첫 화면 · 방 사이드바의 My profile로 연 방, ADR-0156). */

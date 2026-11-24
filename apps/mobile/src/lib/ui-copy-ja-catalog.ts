@@ -68,10 +68,6 @@ export const catalogMapJa: CatalogMapCopy = {
 };
 
 export const catalogCoverJa: CatalogCoverCopy = {
-  toggleScript: {
-    en: "ローマ字を表示",
-    roman: "意味を表示",
-  },
   nextCut: (ordinal, total) => `次のシーン、${ordinal} / ${total}`,
   finishCover: "紹介を終える",
   finishEpilogue: "エピソードを終える",

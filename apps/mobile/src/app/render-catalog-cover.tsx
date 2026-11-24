@@ -31,6 +31,7 @@ export function renderCatalogCover(
       title={model.title}
       cuts={model.cuts}
       romanization={choiceRomanizationOf(wiring.sessionOptions)}
+      onRomanizationChange={wiring.onDialogRomanizationChange}
       onSkip={() => wiring.onSkipCatalogCover(episodeId)}
       onContinue={() => wiring.onContinueCatalogCover(episodeId)}
       onExit={(stage) => wiring.onExitCatalogCover(episodeId, stage)}

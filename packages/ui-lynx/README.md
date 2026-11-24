@@ -367,6 +367,11 @@ Typewriter의 `visibleCharacterCount`는 대사 전환 시점의 상태 경합�
 그 아래 같은 모양의 둘째 줄이다(`aside`가 있어야 한다). 기본 접근성 이름은 `화자, 지문: 대사`
 순서로 지문을 읽는다. Narration에는 지문 자리가 없고 주면 던진다.
 
+`romanization`(FE 확장, 2026-11-24)은 대사 바로 아래 · 구분선 위의 기울임 로마자 줄이다(순서: 대사 → 로마자 → 구분선 → `translation`).
+`headerSwitch: { label, checked, stateLabel, onChange }`(FE 확장, 같은 날)는 이름 줄 오른쪽(Narration은 맨 위 줄 오른쪽)에 「글자 + 스위치」를
+세운다. 누르면 `onChange(!checked)`만 부르고 `bindtap`으로 번지지 않는다. 스위치가 있으면 루트 대신 상자 전체를 덮는 낭독 요소
+(`ui-lynx-visual-novel-dialog-reading`)가 대사 이름을 진다 — iOS에서 접근성 요소 안의 스위치에 닿을 수 없어서다. 앱 ADR-0188 개정 D7.
+
 `EpisodeHeader`는 에피소드 띠다(2026-10-16 — 앞선 흰 면 · 가운데 정렬 카드를 바꿨다). 면은 `brand-primary`(테두리 없음 · `radius-xl` ·
 안쪽 여백 16 / 20 / 16), 글자는 전부 `white`이고 왼쪽 정렬이다. **폭은 부모가 정한다** — 컴포넌트가 폭을 고정하지 않는다. 순서는 설명 줄
 (`episodeLabel` 그대로, `body-s`) → 제목(`accent-chapter`) → 진행 줄(막대 `flex: 1` · 높이 10 · 트랙 `brand-reward-border` · 채움 `white` · 별 없음,

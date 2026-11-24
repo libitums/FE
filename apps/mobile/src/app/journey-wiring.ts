@@ -16,7 +16,7 @@ import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contra
 import { openLegalDocument } from "../lib/legal-document";
 import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { ChoiceRomanization, SessionOptionKey, SessionOptions } from "../lib/session-options";
 import type { SessionOptionsWiring } from "./use-session-options";
 import { roleplayScreenFor } from "./screen-routing";
 import { tabRootActions } from "./nav-reducer";
@@ -88,6 +88,13 @@ export function journeyWiring(args: JourneyWiringArgs) {
     onToggleSessionOption: (key: SessionOptionKey, value: boolean) => {
       settingsEventSink?.(sessionOptionChangedEvent(key, value));
       args.setSessionOption(key, value);
+    },
+    // 대사 상자 안 로마자 스위치(ADR-0188 개정 D7) — 설정 토글과 같은 세션 옵션 · 같은 이벤트이고, 어디서 바꿨는지만
+    // `source: "dialog"`로 붙입니다. 이벤트를 먼저 보내고 상태 · 저장을 바꿉니다.
+    onDialogRomanizationChange: (next: ChoiceRomanization) => {
+      const value = next === "shown";
+      settingsEventSink?.(sessionOptionChangedEvent("show-choice-romanization", value, "dialog"));
+      args.setSessionOption("show-choice-romanization", value);
     },
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));

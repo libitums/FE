@@ -111,10 +111,6 @@ test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () =
   expect(c.catalogMap.unavailableSection("Episode 4.", "Ep", "unavailable")).toBe(
     "Episode 4. Ep, not available",
   );
-  expect(c.catalogCover.toggleScript).toEqual({
-    en: "Show romanization",
-    roman: "Show English",
-  });
   expect(c.catalogCover.nextCut(2, 6)).toBe("Next scene, 2 of 6");
   expect(c.catalogCover.finishCover).toBe("Finish intro");
 });

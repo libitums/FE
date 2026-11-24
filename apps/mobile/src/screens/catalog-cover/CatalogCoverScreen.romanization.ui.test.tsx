@@ -6,8 +6,8 @@ import type { ChoiceRomanization } from "../../lib/session-options";
 import { CatalogCoverScreen } from "./CatalogCoverScreen";
 import type { CatalogCutView, CatalogCuts } from "./catalog-cover.contract";
 
-// `ui` 계층(ADR-0188 D2): 컷 대사 아래 로마자 줄이 스위치를 따르는지 봅니다 — 켬이면 로마자 · 영어 두 줄이고 토글이 없으며,
-// 끔이면 이 변경 전처럼 영어 한 줄 · 누르면 로마자입니다.
+// `ui` 계층(ADR-0188 D2 · 개정 D7): 컷 대사 아래 로마자 줄이 스위치를 따르는지 봅니다 — 켬이면 로마자 · 영어 두 줄이고,
+// 끔이면 로마자 줄만 빠집니다(대사 상자를 눌러 바꾸던 토글은 없어졌습니다).
 
 const insets = { top: 0, bottom: 0, left: 0, right: 0 };
 
@@ -47,6 +47,7 @@ const settle = () =>
     vi.advanceTimersByTime(5000);
   });
 const line = () => screen.getByTestId("catalog-cover-screen-line");
+const reading = () => screen.getByTestId("ui-lynx-visual-novel-dialog");
 const tapLine = () => fireEvent.tap(line(), { eventType: "catchEvent" });
 const romanLine = () => screen.queryByTestId("ui-lynx-visual-novel-dialog-romanization");
 const translation = () => screen.getByTestId("ui-lynx-visual-novel-dialog-translation");
@@ -64,8 +65,8 @@ test("CCR-U1. 켬이면 로마자 줄과 영어 줄이 함께 서고, 대사 상
   mount("shown");
   expect(romanLine()?.textContent).toBe("eoseo oseyo.");
   expect(translation().textContent).toBe("Welcome.");
-  expect(line().getAttribute("accessibility-traits")).toBe("text");
-  expect(line().getAttribute("accessibility-label")).toBe(
+  expect(reading().getAttribute("accessibility-traits")).toBe("text");
+  expect(reading().getAttribute("accessibility-label")).toBe(
     "점원: 어서 오세요., Pronunciation: eoseo oseyo., Welcome.",
   );
   tapLine();
@@ -81,13 +82,14 @@ test("CCR-U2. 켬 · 콘텐츠 로마자가 없는 컷은 한글을 변환한 �
 });
 
 test.each([["hidden" as const], [undefined]])(
-  "CCR-U3. 끔(%s)이면 로마자 줄이 없고 영어 ↔ 로마자 토글이 그대로다",
+  "CCR-U3. 끔(%s)이면 로마자 줄만 없고 영어 줄은 그대로다 — 눌러도 바뀌지 않는다",
   (romanization) => {
     mount(romanization);
     expect(romanLine()).toBeNull();
     expect(translation().textContent).toBe("Welcome.");
-    expect(line().getAttribute("accessibility-traits")).toBe("button");
+    expect(reading().getAttribute("accessibility-traits")).toBe("text");
     tapLine();
-    expect(translation().textContent).toBe("eoseo oseyo.");
+    expect(romanLine()).toBeNull();
+    expect(translation().textContent).toBe("Welcome.");
   },
 );
