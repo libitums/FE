@@ -151,15 +151,7 @@ export type WordChoiceCopy = {
 
 export type { SentenceOrderCopy } from "./sentence-order-copy.contract";
 
-export type SpeakingCopy = {
-  readonly instruction: string;
-  readonly speak: string;
-  readonly stopSpeaking: string;
-  readonly tryAgain: string;
-  readonly dictationDisabled: string;
-  readonly tapToContinue: string;
-  readonly recognitionUnavailable: string;
-};
+export type { SpeakingCopy } from "./speaking-copy.contract";
 
 export type AssessmentCopy = {
   readonly activity: string;

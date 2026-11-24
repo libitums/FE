@@ -64,6 +64,37 @@ Android: 네이티브 변경이 없어 절차를 따로 두지 않는다(단위 
 - SPE2(허용 경로): `Speak` → 마이크 · 음성 인식 권한 창이 차례로 서고 둘 다 「허용」 → 시뮬레이터 권한 DB에 둘 다 허용으로 기록됨. 그러나 곧바로(1.5초 안) 안내 `Speech recognition isn't available right now. Tap Skip to continue.`와 `Skip`이 선다 — 호스트 Mac 스피커로 한국어 음성을 틀어도 같다. 이 시뮬레이터에서는 인식기를 쓸 수 없다(판정 불가 — 실제 인식 · 정답/오답 판정 · 정답 상자는 기기에서 확인해야 한다). 안내 문구는 접근성 S5 수정본이다.
 - SPE4(Skip 뒤 진행): `Skip`으로 다음 문항(문장 조립)으로 넘어가 레슨이 끝까지 진행된다. 레슨 결과는 앞뒤 문항의 자동 탭 오답(조각이 움직이는 중 탭 · 자판 좌표를 화면 전환 전에 읽음)이 섞여 판정 불가 — 결과 화면의 실수 수는 결과 배열의 오답만 세고 건너뛴 말하기는 결과에 없다(통합 SPK5 · SPK6이 덮음).
 
+## 못 알아들음 — 다시 말하기 (SPM1 ~ SPM6) ⟨2026-11-24, [ADR-0179](../adr/0179-speech-no-match-retry.md)⟩
+
+인식기가 말을 못 알아들었을 때(말이 없음 · 알아듣지 못함 · 시간 초과) · 인식 서버에 닿지 못했을 때 세 화면이 「인식 불가 · Skip」이 아니라 **안내 + `Try again` + `Skip`**으로 서는지 본다.
+판정 · 이벤트 한 번은 unit · ui · integration(ISM1 · ISM2)이 진다 — 여기서는 실제 인식기의 오류가 그 경로로 오는지와 기기에서 그려지는 모습만 본다.
+
+| id | 단계 | 관찰(통과 조건) |
+|---|---|---|
+| SPM1 | 낱말 말하기에서 `Speak` → 말하지 않고 `Stop speaking`(또는 시간 초과) | 판정 배지 · 정답 상자 없이 안내 `I didn't catch that. Tap the mic and try again.` · 주 `Try again` · 보조 `Skip` · 마이크 대기(회색) |
+| SPM2 | SPM1에서 `Try again` | 같은 문항이 듣는 중(`Stop speaking` · 마이크 주색)으로 돌아간다 |
+| SPM3 | 따라 읽기에서 SPM1과 같이 | 같은 안내 · 주 `Try again` · 보조 `Skip`(맞은 낱말 수 안내 없음) |
+| SPM4 | 롤플레이에서 마이크 → 말 없이 다시 마이크 | 안내 `I didn't catch that. Tap the mic and try again.` · 마이크 아래 브랜드 `Try again` 버튼 · `Show hint` · `Can't speak now`. `Try again` → 같은 턴 듣는 중, 그 버튼 자리는 `Stop` |
+| SPM5 | 진짜 불가(권한 거부 · 인식기를 만들 수 없음) | 지금처럼 `Speech recognition isn't available right now. Tap Skip to continue.` + `Skip` 하나 — `Try again` 없음 |
+| SPM6 | 네트워크 끊김(Android) | 안내 `Couldn't connect to speech recognition. Check your connection and try again.` + `Try again` · `Skip` |
+
+### 회차 — 2026-11-24 11:32 KST, Android 에뮬레이터 · iOS 시뮬레이터 — 탐침 화면
+
+- 조건: 이 브랜치 작업 트리(커밋 전)의 번들을 **임시 탐침 진입점**(세 화면을 고정 문항으로 바로 띄움 — 커밋하지 않고 되돌림)으로 지어 실었다. 효과음은 탐침 번들에서 껐다.
+  확인자: 개발 에이전트(자동 조작 · 스크린샷 · 로그), 사람 청취 없음. 맵 · 레슨을 지나 닿지 않았으므로 레슨 흐름(카운터 · 결과 화면 · 이벤트 전송)은 보지 않았다.
+- Android: `Pixel_8` read-only AVD(`-no-audio`, 오디오 입력 없음) · `assembleBundled`. 마이크 권한은 `pm grant`.
+- iOS: iPhone 17 Pro 전용 시뮬레이터(iOS 26.5) · 기존 Debug `Host.app`에 이 번들을 넣어 `--bundle-url=main.lynx`. 마이크는 `simctl privacy grant`, 음성 인식은 창에서 허용.
+
+| id | 결과 | 관찰 |
+|---|---|---|
+| SPM1 | **통과(Android)** | 듣는 중 12초 뒤 `Stop speaking` → Google 인식기 로그 `NO_SPEECH_DETECTED` → 안내 · 주 `Try again` · 보조 `Skip` · 마이크 회색. 판정 배지 · 정답 상자 없음 |
+| SPM2 | **통과(Android)** | `Try again` → 같은 문항 듣는 중(상태 표시줄 마이크 표시 · `Stop speaking`) |
+| SPM3 | **통과(Android)** | 따라 읽기에서 같은 안내 · `Try again` · `Skip` |
+| SPM4 | **통과(Android)** | 롤플레이에서 안내 · 브랜드 `Try again` · `Show hint` · `Can't speak now`. `Try again` → `Listening… Tap again when you're done.` · 같은 자리가 `Stop`(접근성 감사 M1 반영 뒤 11:52 재확인) → `Stop` → 다시 못 알아들음 안내 + `Try again`. JS 오류 0 |
+| SPM5 | **통과(iOS 시뮬레이터)** | 이 시뮬레이터는 한국어 인식기를 만들지 못한다(시스템 로그 `Failed to create recognizer`) → 따라 읽기에서 지금처럼 인식 불가 안내 + `Skip` 하나, `Try again` 없음 |
+| SPM6 | **판정 불가**: 에뮬레이터 네트워크를 끊어 인식기 오류 2를 만드는 회차를 돌리지 않았다 | ui USW-M6 · URA-M5 · RT-M4가 문구 · 버튼을 진다 |
+| iOS 못 알아들음 | **판정 불가**: 시뮬레이터 인식기가 서지 않는다 | `kAFAssistantErrorDomain` 1110 · 203 경로는 unit · ui(USW-M5 · URA-M3 · RT-M3)만 진다 — iOS 실기 확인이 남는다 |
+
 ## 미확인
 
 - **허용 경로(SPE2)** — 창 둘을 허용하고 호스트 마이크로 실제 문장을 읽어 칠하기 · 맞은 낱말 수 문구 · `Try again`을 본다. 창이 뜨는 **순서**를 적는다.
@@ -82,5 +113,6 @@ Android: 네이티브 변경이 없어 절차를 따로 두지 않는다(단위 
   - 글자 배율 2.0 · 320폭: 17자 문장이 음절 단위로 끊기는지, `Try again` · `Skip` 버튼이 두 줄로 접힐 때 잘리지 않는지.
 - **u02 · u03** — 특히 부호가 있는 긴 문장(「미나 씨는 어느 나라에서 왔어요?」)의 칠하기와 u03 `S5-10`(정답 묶음 문장 「Hello, I'm Eunji.」).
 - **Android.**
+- **못 알아들음의 iOS 실기 · 네트워크 끊김 · 레슨 흐름 안에서의 `Try again`**(SPM 회차의 판정 불가 셋).
 
 미확인 항목을 누가 언제 보는지는 [ADR-0067](../adr/0067-episode-format-speaking.md) 「미확인 · 후속」 1이 진다.

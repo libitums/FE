@@ -16,6 +16,8 @@ export const initialRoleplayTalkState: RoleplayTalkState = {
   verdict: null,
   hintShown: false,
   unavailableReason: null,
+  missedReason: null,
+  retrying: false,
   results: [],
   skippedCount: 0,
 };
@@ -34,12 +36,23 @@ export function roleplayTalkReducer(
 ): RoleplayTalkState {
   switch (action.type) {
     case "start":
-      return state.phase === "ready" || state.phase === "unavailable"
-        ? { ...state, phase: "listening", unavailableReason: null }
+      return state.phase === "ready" || state.phase === "missed" || state.phase === "unavailable"
+        ? {
+            ...state,
+            phase: "listening",
+            unavailableReason: null,
+            missedReason: null,
+            retrying: state.phase === "missed",
+          }
         : state;
     case "heard":
       return state.phase === "listening"
         ? { ...state, phase: "heard", heard: action.text, verdict: action.verdict }
+        : state;
+    // 못 알아들음 — 판정 없이 같은 턴을 다시 말하게 합니다(ADR-0179).
+    case "missed":
+      return state.phase === "listening"
+        ? { ...state, phase: "missed", missedReason: action.reason }
         : state;
     case "unavailable":
       return state.phase === "listening" || state.phase === "ready"

@@ -52,6 +52,8 @@ export const speakingId: SpeakingCopy = {
     "Siri atau Dikte sedang nonaktif. Aktifkan Pengaturan > Umum > Papan Ketik > Aktifkan Dikte, lalu coba lagi.",
   tapToContinue: "Ketuk layar untuk lanjut",
   recognitionUnavailable: "Pengenalan suara sedang tidak tersedia. Ketuk Lewati untuk lanjut.",
+  notCaught: "Aku tidak menangkapnya. Ketuk mikrofon dan coba lagi.",
+  networkRetry: "Tidak bisa terhubung ke pengenalan suara. Periksa koneksimu, lalu coba lagi.",
 };
 
 export const assessmentId: AssessmentCopy = {

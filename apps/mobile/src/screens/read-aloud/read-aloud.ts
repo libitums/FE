@@ -1,7 +1,11 @@
 // 따라 읽기 활동의 순수 로직입니다. UI를 import하지 않습니다.
 
 import { matchedWordCount, speakingWords } from "../../lib/speaking-judge";
-import { speechAvailabilityAfter, speechPhaseFor } from "../../lib/speech-attempt";
+import {
+  speechAvailabilityAfter,
+  speechMissedHintOf,
+  speechPhaseFor,
+} from "../../lib/speech-attempt";
 import type { SpeechAttemptPhase, SpeechControls } from "../../lib/speech-attempt";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { LessonPosition } from "../learning/activity-finish";
@@ -38,6 +42,7 @@ export function readAloudSessionReducer(
       const startable =
         phase.kind === "ready" ||
         phase.kind === "heard" ||
+        phase.kind === "missed" ||
         (phase.kind === "unavailable" && phase.reason === "dictation-off");
       return startable ? { ...state, phase: { kind: "listening" } } : state;
     }
@@ -52,7 +57,9 @@ export function readAloudSessionReducer(
     case "next":
       return phase.kind === "ready" || phase.kind === "heard" ? nextQuestion(state, 0) : state;
     case "skip":
-      return phase.kind === "unavailable" ? nextQuestion(state, 1) : state;
+      return phase.kind === "unavailable" || phase.kind === "missed"
+        ? nextQuestion(state, 1)
+        : state;
   }
 }
 
@@ -75,6 +82,9 @@ export function readAloudControlsOf(phase: SpeechAttemptPhase): SpeechControls {
       return { primary: "stop", secondary: null };
     case "heard":
       return { primary: "next", secondary: "retry" };
+    // 못 알아들음은 같은 문장을 다시 말할 기회입니다(ADR-0179).
+    case "missed":
+      return { primary: "retry", secondary: "skip" };
     case "unavailable":
       return { primary: "skip", secondary: phase.reason === "dictation-off" ? "retry" : null };
   }
@@ -97,6 +107,9 @@ export function readAloudHintOf(
       matchedWordCount(question.sentence, phase.text),
       speakingWords(question.sentence).length,
     );
+  }
+  if (phase.kind === "missed") {
+    return speechMissedHintOf(phase.reason, copy);
   }
   if (phase.kind === "unavailable" && phase.reason !== "dictation-off") {
     return copy.speaking.recognitionUnavailable;

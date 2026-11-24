@@ -52,6 +52,8 @@ export const speakingEn: SpeakingCopy = {
     "Siri or Dictation is off. Turn on Settings > General > Keyboard > Enable Dictation, then try again.",
   tapToContinue: "Tap the screen to continue",
   recognitionUnavailable: "Speech recognition isn't available right now. Tap Skip to continue.",
+  notCaught: "I didn't catch that. Tap the mic and try again.",
+  networkRetry: "Couldn't connect to speech recognition. Check your connection and try again.",
 };
 
 export const assessmentEn: AssessmentCopy = {
