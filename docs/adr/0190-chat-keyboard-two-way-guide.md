@@ -32,6 +32,15 @@
 - 키보드 단계를 떠나면(다음 단계 · 안내 끝) 키보드를 접는다. 키보드 값은 채팅 기본값 **Hangul keys**로 남는다(시안 3 · 4는 키보드가 닫힌 그림).
 - 뒤로가기는 삼킨다(ADR-0139 개정 2026-11-23과 같음). 방의 「열린 키보드 접기」보다 위에 서야 해서 방 훅 뒤 순서로 등록한다
   (`useGuideKeyboard`) — 그렇지 않으면 뒤로가기가 키보드를 접어 안내가 보이지 않은 채 남았다(테스트로 잡음).
+- ⟨개정 2026-11-24, 사용자 「고친다」⟩ **휴대폰 키보드 화면에서 휴대폰 키보드가 내려가면 같은 단계의 Hangul keys 화면으로 넘긴다** —
+  Next를 누른 것과 같은 결과(토글 Hangul keys, 잰 높이 그대로, 말풍선 · 꼬리 Hangul keys 칸, 같은 번호). Android 시스템 뒤로가기는 OS가
+  키보드를 먼저 내려 앱 뒤로가기 처리까지 오지 않고, 그대로 두면 토글 아래 키보드 자리가 흰 빈칸으로 남았다(기기 확인).
+  - 신호: 입력 칸 `keyboardheightchange`의 높이 0. 판정은 순수 함수 `keyboardGuidePhoneHidden({ stage, height, risen })` — 휴대폰 키보드
+    화면이고, **이 화면 동안 키보드가 한 번 올라온 뒤(양수 높이)**, 높이가 0일 때만. 올라오기 전에 온 0(초점을 주기 전 등)으로는 넘기지 않는다.
+  - 높이 저장 경로는 그대로다 — 0은 저장하지 않는다(`usePhoneKeyboardHeight`가 버림). 입력 칸 높이는 `useGuideKeyboard`가 돌려준 함수가
+    방(저장)과 안내(판정) 둘 다에 건넨다.
+  - iOS도 같은 신호면 같은 동작(뒤로가기는 없지만 키보드가 내려가는 경우 대비). Hangul keys 화면 · 다른 단계 · 안내 밖 채팅은 영향 없다.
+  - 말풍선은 지금 그대로 흰색(기존 코치마크) — 사용자 확정.
 
 ### D3. 겹침 — 토글 줄만 밝게, 위치를 재지 않음
 - 키보드 단계는 방 화면 전체에 겹치는 세 칸(`KeyboardGuideLayer`): **위**(머리 · 로그 · 기능 줄 · 입력 줄을 덮는 막 + 말풍선) ·
@@ -61,6 +70,8 @@
 ### D6. 이벤트
 - 새 이벤트 **`messenger_guide_keyboard { stage: phone | hangul, action: shown | next | switched }`**(영역 `chat`, PostHog만).
   `shown` = 화면이 처음 섬(화면마다 한 번), `next` = 그 화면에서 Next, `switched` = 안내 안의 토글을 직접 눌러 바꿈(stage는 바꾼 뒤).
+- ⟨개정 2026-11-24⟩ `action`에 **`hidden`**이 더해진다 — 휴대폰 키보드 화면에서 키보드가 내려가 Hangul keys 화면으로 저절로 넘어감
+  (stage는 `phone`, Next처럼 넘어가기 전 화면). 학습자가 누른 `next` · `switched`와 구분한다. 이벤트 이름 수는 그대로다.
 - `messenger_guide_finished.part`에 `keyboard`가 더해진다 — 안내를 이미 본 사람에게 키보드 단계가 든 안내를 끝냄. 새 사용자는 그대로 `room`.
 
 ### D7. 내 언어로 보낸 말의 한국어 — 이미 있음
@@ -79,16 +90,16 @@
 ## 대가
 - 키보드 단계 동안 토글이 두 벌(원본 · 안내 안 복사본) 있고 test id가 같다 — 테스트는 `within(안내)`로 고른다. 기기 자동화가 생기면
   접두사를 둔다(ADR-0139 대가와 같음).
-- Android에서 휴대폰 키보드 화면 중 시스템 뒤로가기는 OS가 키보드를 먼저 내려 토글 아래가 흰 빈칸으로 남는다(안내는 그대로, Next로
-  진행). 기기 확인 2026-11-24, [e2e](../e2e/messenger-guide.md) 실행 기록.
+- Android에서 휴대폰 키보드 화면 중 시스템 뒤로가기는 「한 번 누르면 Hangul keys 화면」이 된다 — 휴대폰 키보드 화면으로 돌아가려면
+  안내 안 토글을 다시 누른다(개정 2026-11-24, 처음엔 흰 빈칸으로 남았다).
 - 휴대폰 키보드 자동 초점이 기기에서 시스템 키보드를 띄우지 못하면(포커스 거부) 학습 키보드가 밑판으로 남은 채 「Phone keyboard」가 켜진
   그림이 된다. 이때 입력 칸이 막 아래라 눌러 열 수 없다 — 기기 확인 결과는 [e2e](../e2e/messenger-guide.md) MG-E8.
 - 안내를 이미 본 사람도 업데이트 뒤 덕수쌤 방에 처음 들어가면 키보드 단계를 한 번 본다(의도).
 - 앱 전체 통합 테스트(`App.messenger-turns`)는 덕수쌤 방에서 안내를 먼저 끝내야 글을 칠 수 있다 — 안내가 입력 줄 키보드를 쥔다.
 
 ## 테스트
-- unit MG-U9 ~ U14(`messenger-guide.unit` · `messenger-guide.storage.unit`) · AN1 · AB3(이벤트 수)
-- ui KG-UI1 ~ UI8(`MessengerGuide.keyboard.ui`) · MG-UI3 · UI5(`MessengerGuide.ui`, 순서 바뀜) · MG-UI10 ~ UI16(`MessengerGuide.sample.ui`) ·
+- unit MG-U9 ~ U15(`messenger-guide.unit` · `messenger-guide.storage.unit`) · AN1 · AB3(이벤트 수)
+- ui KG-UI1 ~ UI10(`MessengerGuide.keyboard.ui`, UI9 · UI10은 키보드가 내려감) · MG-UI3 · UI5(`MessengerGuide.ui`, 순서 바뀜) · MG-UI10 ~ UI16(`MessengerGuide.sample.ui`) ·
   EV-UI2(`chat-events.ui`) · D5 · M4(`MessengerChatScreen.device1.ui`, 입력 칸 안내 글) · LV-U1 ~ U3(언어 여덟)
-- integration KG-I1 · I2(`App.messenger-keyboard-guide`) · CP-I4(안내를 끝낸 뒤 보내기)
+- integration KG-I1 ~ I3(`App.messenger-keyboard-guide`, I3은 키보드가 내려감) · CP-I4(안내를 끝낸 뒤 보내기)
 - e2e [수동](../e2e/messenger-guide.md) MG-E8 ~ E11

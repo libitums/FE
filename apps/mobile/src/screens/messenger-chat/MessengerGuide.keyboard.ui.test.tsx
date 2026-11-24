@@ -81,6 +81,19 @@ const next = () =>
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
   });
 
+/** 입력 칸이 휴대폰 키보드 높이를 알립니다(Lynx `keyboardheightchange`) — 내려가면 0. */
+function keyboardHeight(height: number): void {
+  const EventConstructor = screen.getByTestId(ids.input).ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select(`[data-testid="${ids.input}"]`);
+  act(() => {
+    fireEvent(
+      ref as unknown as Element,
+      new EventConstructor("bindEvent:keyboardheightchange", { detail: { height } }),
+    );
+  });
+}
+
 async function open(seen: readonly GuidePart[] = [], store = heightStore(300).store) {
   const memory = memoryStore(seen);
   mountChat({
@@ -206,6 +219,44 @@ describe("키보드 단계 — 휴대폰 키보드 먼저", () => {
     }
     expect(steps).toEqual(["keyboard", "keyboard", "ideas"]);
     expect(memory.seen()).toEqual(expect.arrayContaining(["room", "list", "keyboard"]));
+  });
+});
+
+describe("키보드 단계 — 휴대폰 키보드가 내려가면(Android 뒤로가기 등, ADR-0190 개정 2026-11-24)", () => {
+  test("KG-UI9 휴대폰 키보드 화면에서 키보드가 내려가면(높이 0) Next와 같은 Hangul keys 화면 — 잰 높이 그대로, 0은 저장하지 않는다", async () => {
+    const heights = heightStore(300);
+    await open([], heights.store);
+    keyboardHeight(312);
+    const measured = slotHeight();
+    keyboardHeight(0);
+    expect(coach().getAttribute("data-step")).toBe("keyboard");
+    expect(coach().getAttribute("data-stage")).toBe("hangul");
+    expect(coach().textContent).toContain(en.keyboard.hangul.title);
+    expect(coach().textContent).toContain("1 of 2");
+    expect(field()).toBe("learning");
+    expect(slotContent()).toBe("learning-keyboard");
+    expect(slotHeight()).toBe(measured);
+    expect(screen.getByTestId(ids.guideTail).getAttribute("data-target")).toBe("learning");
+    expect(within(coach()).getByTestId(ids.toggle("learning")).getAttribute("data-selected")).toBe(
+      "true",
+    );
+    expect(heights.write.mock.calls).toEqual([[312]]);
+    expect(keyboardEvents()).toEqual(["phone:shown", "phone:hidden", "hangul:shown"]);
+  });
+
+  test("KG-UI10 Hangul keys 화면 · 키보드가 오르기 전에 온 높이 0은 아무것도 바꾸지 않는다", async () => {
+    await open();
+    keyboardHeight(0);
+    expect(coach().getAttribute("data-stage")).toBe("phone");
+    expect(field()).toBe("phone");
+    keyboardHeight(300);
+    next();
+    keyboardHeight(0);
+    expect(coach().getAttribute("data-step")).toBe("keyboard");
+    expect(coach().getAttribute("data-stage")).toBe("hangul");
+    expect(field()).toBe("learning");
+    expect(slotContent()).toBe("learning-keyboard");
+    expect(keyboardEvents()).toEqual(["phone:shown", "phone:next", "hangul:shown"]);
   });
 });
 

@@ -22,7 +22,7 @@ import {
 import { openTab, present, renderTesterApp, tapRound } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
 
-// `integration` 계층(KG-I1 · I2): 덕수쌤 방 안내의 키보드 단계(ADR-0190)가 실제 App 트리에서 기기 저장소 · 키보드 높이 저장 ·
+// `integration` 계층(KG-I1 ~ I3): 덕수쌤 방 안내의 키보드 단계(ADR-0190)가 실제 App 트리에서 기기 저장소 · 키보드 높이 저장 ·
 // 이벤트 결선과 맞물린다. 휴대폰 키보드 화면에서 입력 칸이 알린 높이가 기기에 남고, 끝내면 키보드 단계 기록이 기존 안내 기록과
 // 다른 키에 남으며, 다시 들어오면 안내가 서지 않는다. 대역은 경계뿐 — `ChatRemote` 포트.
 
@@ -131,6 +131,25 @@ test("KG-I1. 휴대폰 키보드 화면에서 잰 높이가 기기에 남고, �
     event.name === "messenger_guide_keyboard" ? [`${event.stage}:${event.action}`] : [],
   );
   expect(keyboard).toEqual(["phone:shown", "phone:next", "hangul:shown", "hangul:next"]);
+});
+
+test("KG-I3. 휴대폰 키보드 화면에서 키보드가 내려가면(높이 0) Hangul keys 화면으로 — 기기에는 잰 높이만 남고 자리는 그 높이", async () => {
+  await openDuksu();
+  const coach = () => screen.getByTestId(COACH);
+  // KG-I1의 336과 다른 값 — 기기 높이 저장소는 모듈 캐시라 같은 값을 다시 적지 않습니다.
+  keyboardHeight(344);
+  keyboardHeight(0);
+  expect(coach().getAttribute("data-step")).toBe("keyboard");
+  expect(coach().getAttribute("data-stage")).toBe("hangul");
+  expect(getItem(KEYBOARD_HEIGHT_KEY)).toBe("344");
+  expect(screen.getByTestId("messenger-chat-slot").getAttribute("data-height")).toBe("344");
+  expect(screen.getByTestId("messenger-chat-field").getAttribute("data-keyboard")).toBe("learning");
+  next();
+  expect(coach().getAttribute("data-step")).toBe("ideas");
+  const keyboard = events.flatMap((event) =>
+    event.name === "messenger_guide_keyboard" ? [`${event.stage}:${event.action}`] : [],
+  );
+  expect(keyboard).toEqual(["phone:shown", "phone:hidden", "hangul:shown", "hangul:next"]);
 });
 
 test("KG-I2. 끝낸 뒤 다시 들어오면 안내가 서지 않고 키보드는 닫힌 채 Hangul keys다", async () => {

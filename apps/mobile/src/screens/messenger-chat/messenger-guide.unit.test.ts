@@ -4,6 +4,7 @@ import type { ChatRoomSummary } from "./chat-source.contract";
 import {
   finishedRoomPart,
   keyboardGuideNext,
+  keyboardGuidePhoneHidden,
   keyboardOfStage,
   guideSeenFrom,
   roomGuideSteps,
@@ -156,6 +157,13 @@ test("MG-U12 키보드 단계 안 — 휴대폰 키보드 → Hangul keys → �
   expect(keyboardGuideNext("hangul")).toBe("done");
   expect(keyboardOfStage("phone")).toBe("phone");
   expect(keyboardOfStage("hangul")).toBe("learning");
+});
+
+test("MG-U15 휴대폰 키보드 화면에서 올라왔던 키보드가 내려가면(높이 0) Hangul keys로 — 다른 화면 · 오르기 전 · 양수 높이는 그대로", () => {
+  expect(keyboardGuidePhoneHidden({ stage: "phone", height: 0, risen: true })).toBe(true);
+  expect(keyboardGuidePhoneHidden({ stage: "hangul", height: 0, risen: true })).toBe(false);
+  expect(keyboardGuidePhoneHidden({ stage: "phone", height: 0, risen: false })).toBe(false);
+  expect(keyboardGuidePhoneHidden({ stage: "phone", height: 300, risen: true })).toBe(false);
 });
 
 test("MG-U13 끝낸 안내의 part — 새 사용자 room, 이미 본 사람은 키보드가 있으면 keyboard, 아니면 snapshot", () => {

@@ -19,6 +19,7 @@ import {
   GUIDE_ROOM_ID,
   isSampleStep,
   keyboardGuideNext,
+  keyboardGuidePhoneHidden,
   roomGuideSteps,
   type GuideStep,
   type GuideStore,
@@ -49,6 +50,8 @@ export type RoomGuide = {
   readonly keyboardStage: KeyboardGuideStage;
   /** 키보드 단계에서 안내 안의 토글을 눌렀습니다 — 그 칸의 화면으로 바꿉니다. */
   readonly selectKeyboard: (mode: ComposerKeyboard) => void;
+  /** 입력 칸이 알린 휴대폰 키보드 높이(pt/dp, 내려가면 0) — 휴대폰 키보드 화면에서 키보드가 내려가면 Hangul keys 화면으로 넘깁니다. */
+  readonly phoneKeyboardHeight: (height: number) => void;
 };
 
 export function useRoomGuide(
@@ -111,8 +114,10 @@ export function useRoomGuide(
   const shown = !ended && ready && steps.length > 0 && !covered && server && greeted;
   const step = shown ? (steps[index] ?? null) : null;
   const taken = useRef<GuideStep | null>(null);
-  const keyboardEvent = (stage: KeyboardGuideStage, action: "shown" | "next" | "switched") =>
-    emit({ name: "messenger_guide_keyboard", surface: "chat", stage, action });
+  const keyboardEvent = (
+    stage: KeyboardGuideStage,
+    action: "shown" | "next" | "switched" | "hidden",
+  ) => emit({ name: "messenger_guide_keyboard", surface: "chat", stage, action });
   // 키보드 단계의 화면이 설 때마다 한 번(겹침에 가려졌다 돌아온 것은 다시 세지 않습니다).
   const shownStages = useRef<Set<KeyboardGuideStage>>(new Set());
   const keyboardShown = step === "keyboard" ? keyboardStage : null;
@@ -121,6 +126,11 @@ export function useRoomGuide(
     shownStages.current.add(keyboardShown);
     keyboardEvent(keyboardShown, "shown");
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyboardShown]);
+  // 이 화면 동안 휴대폰 키보드가 한 번 올라왔는가 — 오르기 전에 온 0으로 넘기지 않습니다. 화면이 바뀌면 다시 셉니다.
+  const phoneRisen = useRef(false);
+  useEffect(() => {
+    phoneRisen.current = false;
   }, [keyboardShown]);
   const advance = () => {
     if (index >= steps.length - 1) end();
@@ -161,6 +171,15 @@ export function useRoomGuide(
       if (step !== "keyboard" || stage === keyboardStage) return;
       keyboardEvent(stage, "switched");
       setKeyboardStage(stage);
+    },
+    phoneKeyboardHeight: (height) => {
+      if (step !== "keyboard") return;
+      const risen = phoneRisen.current;
+      if (keyboardStage === "phone" && height > 0) phoneRisen.current = true;
+      if (!keyboardGuidePhoneHidden({ stage: keyboardStage, height, risen })) return;
+      // Next를 누른 것과 같은 결과 — Hangul keys 화면(토글 · 잰 높이 · 꼬리), 이벤트만 hidden으로 구분합니다.
+      keyboardEvent(keyboardStage, "hidden");
+      setKeyboardStage("hangul");
     },
     takeSample: () => {
       if (!isSampleStep(step) || sample === undefined || taken.current === step) return;

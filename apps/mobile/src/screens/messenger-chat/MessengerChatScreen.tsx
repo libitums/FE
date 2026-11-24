@@ -115,7 +115,8 @@ export function MessengerChatScreen({
     source.sampleSnapshot,
     plan.toggle === "shown",
   );
-  useGuideKeyboard(guide.step, guide.keyboardStage, state, dispatch); // 키보드 단계가 입력 줄 키보드를 맞춤(ADR-0190)
+  // 키보드 단계가 입력 줄 키보드를 맞추고 휴대폰 키보드가 내려간 것을 봄(ADR-0190)
+  const measurePhoneKeyboard = useGuideKeyboard(guide, state, dispatch, room.measureKeyboard);
   useAutoIdeas({
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
     enabled: preferences.replyIdeas,
@@ -257,7 +258,7 @@ export function MessengerChatScreen({
             plan={plan}
             thread={thread}
             edges={edges}
-            keyboard={{ height: keyboardHeight, measure: room.measureKeyboard }}
+            keyboard={{ height: keyboardHeight, measure: measurePhoneKeyboard }}
             dispatch={dispatch}
             onSend={send}
             sendCost={turn.sendCost}

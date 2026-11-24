@@ -64,6 +64,18 @@ export function keyboardGuideNext(stage: KeyboardGuideStage): KeyboardGuideStage
   return stage === "phone" ? "hangul" : "done";
 }
 
+/**
+ * 키보드 단계에서 입력 칸이 휴대폰 키보드 높이를 알렸을 때 Hangul keys 화면으로 넘길지(ADR-0190 개정 2026-11-24). 휴대폰 키보드
+ * 화면에서 이 화면 동안 한 번 올라왔던(`risen`) 키보드가 내려가면(높이 0 — Android 뒤로가기 등) Next와 같은 결과로 넘깁니다.
+ */
+export function keyboardGuidePhoneHidden(input: {
+  readonly stage: KeyboardGuideStage;
+  readonly height: number;
+  readonly risen: boolean;
+}): boolean {
+  return input.stage === "phone" && input.risen && input.height <= 0;
+}
+
 /** 키보드 단계의 화면이 세울 입력 줄 키보드 — 휴대폰 키보드 화면은 phone, Hangul keys 화면은 learning. */
 export function keyboardOfStage(stage: KeyboardGuideStage): ComposerKeyboard {
   return stage === "phone" ? "phone" : "learning";

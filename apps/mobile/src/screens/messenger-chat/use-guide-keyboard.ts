@@ -3,19 +3,23 @@
 // 키보드를 같은 자리 높이로 세웁니다. 키보드 단계를 떠나면(다음 단계 · 안내 끝 · 겹침에 가려짐) 키보드를 접습니다 — 키보드 값은
 // Hangul keys(채팅 기본값)로 남습니다. 뒤로가기는 삼킵니다(ADR-0139 개정 2026-11-23) — 방의 「열린 키보드 접기」보다 위에 서도록
 // 키보드 자리가 열린 같은 커밋에 방 훅(useChatRoom) 뒤 순서로 등록합니다.
+// 입력 칸이 알린 휴대폰 키보드 높이는 방(`measure` — 잰 값을 기기에 남김, 0은 버림)과 안내(휴대폰 키보드 화면에서 키보드가 내려가면
+// Hangul keys 화면으로, ADR-0190 개정 2026-11-24) 둘 다에 건넵니다 — 돌려주는 함수가 그 자리입니다.
 
 import { useEffect, useRef } from "@lynx-js/react";
 
 import { useLayerBack } from "../../lib/use-back-handler";
 import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
-import { keyboardOfStage, type GuideStep, type KeyboardGuideStage } from "./messenger-guide";
+import { keyboardOfStage } from "./messenger-guide";
+import type { RoomGuide } from "./use-room-guide";
 
 export function useGuideKeyboard(
-  step: GuideStep | null,
-  stage: KeyboardGuideStage,
+  guide: Pick<RoomGuide, "step" | "keyboardStage" | "phoneKeyboardHeight">,
   state: ChatRoomState,
   dispatch: (action: ChatRoomAction) => void,
-): void {
+  measure: (height: number) => void,
+): (height: number) => void {
+  const { step, keyboardStage: stage } = guide;
   const want = step === "keyboard" ? keyboardOfStage(stage) : null;
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -46,4 +50,8 @@ export function useGuideKeyboard(
     dispatch({ type: "close-keyboard" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shown]);
+  return (height) => {
+    measure(height);
+    guide.phoneKeyboardHeight(height);
+  };
 }

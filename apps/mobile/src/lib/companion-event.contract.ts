@@ -37,11 +37,14 @@ export type MessengerGuideEvent =
       readonly part: "list" | "room" | "snapshot" | "keyboard";
       readonly outcome: "done" | "skipped";
     })
-  /** 방 안내의 키보드 단계(ADR-0190) — 화면이 섬(shown) · Next(next) · 학습자가 토글을 직접 바꿈(switched, stage = 바꾼 뒤 화면). */
+  /**
+   * 방 안내의 키보드 단계(ADR-0190) — 화면이 섬(shown) · Next(next) · 학습자가 토글을 직접 바꿈(switched, stage = 바꾼 뒤 화면) ·
+   * 휴대폰 키보드 화면에서 키보드가 내려가 Hangul keys로 넘어감(hidden, stage = phone — Android 뒤로가기 등, 2026-11-24).
+   */
   | (Common & {
       readonly name: "messenger_guide_keyboard";
       readonly stage: "phone" | "hangul";
-      readonly action: "shown" | "next" | "switched";
+      readonly action: "shown" | "next" | "switched" | "hidden";
     })
   | (Common & {
       readonly name: "messenger_tab_opened";
