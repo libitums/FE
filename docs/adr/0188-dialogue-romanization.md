@@ -133,7 +133,8 @@
 5. **컷 대사 스크롤이 버튼을 덮던 결함을 함께 고쳤다** — 대화창이 z-index를 가져 스크롤 경계 밖에 그려졌다. 로마자 줄이 더해진 긴 내레이션이
    iPhone SE에서 `Continue` 단추를 덮는 것을 기기(시뮬레이터)에서 봤고, 최종 테스트 `-line-scroll`과 같은 규칙(`overflow: hidden` +
    `z-index`)을 `.catalog-cover-screen-scroll`에 줬다. 또 SE에서 영어 줄 마지막 줄이 스크롤 아래로 반쯤 잘려 보여 스크롤 최대 높이를 40vh → 55vh로
-   올렸다(위 빈 공간을 쓴다 — 큰 글자에서는 여전히 제 스크롤 안).
+   올렸다(위 빈 공간을 쓴다). 큰 글자에서 합이 화면을 넘을 때는 대화 열 → 대사 상자 → 스크롤이 줄고 버튼은 줄지 않는다
+   (`flex-shrink` · `min-height: 0` 사슬, 재리뷰 W-1) — Android 글꼴 2배에서 버튼이 덮이지 않고 대사가 제 스크롤 안에 드는 것을 봤다.
 
 ## 재검토 조건
 
@@ -146,6 +147,6 @@
 1. 기기 확인 — [e2e](../e2e/dialogue-romanization.md) DR-E1 ~ DR-E7. 2026-11-24 iOS 시뮬레이터(iPhone SE 3세대) 프로브로 일부 확인(실행 기록).
 2. 최종 테스트 · 롤플레이 말하기 상대 대사(D1 범위 밖).
 3. 주황 면 대비(「대가」 2) — design.
+4. design-system 보고 — `VisualNovelDialog` `romanization`.
 5. 접근성 감사 Minor(코드 읽기 기준): 전화 대사 한 줄을 접근성 요소 하나로 묶기 · 전화 화면 큰 글자 스크롤 · 컷 대사 스크롤 표시 ·
    `VisualNovelDialog` 기본 낭독에 `spokenRomanization`(접두)과 쉼표 구분 · translucent 면 위 로마자 · 번역 색.
-4. design-system 보고 — `VisualNovelDialog` `romanization`.

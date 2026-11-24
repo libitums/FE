@@ -199,7 +199,7 @@ export function CatalogCoverScreen({
             accessibility-label={catalogCutAccessibilityLabel(cut, script, copy, romanization)}
             catchtap={handleToggle}
           >
-            <view accessibility-elements-hidden={true}>
+            <view className="catalog-cover-screen-line-inner" accessibility-elements-hidden={true}>
               <scroll-view
                 className="catalog-cover-screen-scroll"
                 scroll-orientation="vertical"
