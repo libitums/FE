@@ -10,7 +10,7 @@
 | unit | 속도 어휘(`lib/listen-pace.ts` — 0.7 한 자리 · 토글 · 이름), 재생 접점(1.0 = `play` 인자 둘 · 0.7 = `playAtRate` · 옛 호스트 = `play` · 세대 · 한 번 규칙), 12유형 문항 → 음성 매핑 · 자리표시자 · `LISTEN_BUILD` 조립, 레슨 수명 · 리셋, 이벤트 `episode_listen_item_answered` |
 | ui | `Slow` 토글(이름 `Slow, on/off` · 숨김 규칙 · 동작 줄이기), 듣기 3열 · 간이 줄(재생 중 `Stop`), 듣기 훅(문항 키 자동 재생 · 다시 듣기 · 켤 때 0.7로 처음부터 · 끌 때 무동작 · 빠른 연타), 일곱 화면의 재생 시점, 듣기 대본 판정 뒤 공개 · 판정 때 대본 낭독 |
 | integration | 앱을 띄워 내장 u01 · u00 레슨에서 재생 모듈 대역에 `playAtRate(…, 0.7, …)`가 닿는 것, 다음 활동까지 유지 · 나가면 1.0, 소리 없는 듣기는 건너뛰지 않고 대본이 보이는 소리 없는 제시(`LISTEN_BUILD`만 건너뜀 — ADR-0082 v4 정정), 컷 · 최종은 `playAtRate` 0회 |
-| 호스트 | iOS HostTests `AudioPlaybackModuleTests` AI6 ~ AI10(정규화 · 소스 무관 적용 · 메서드 다섯 · 0.85가 더 길고 `done` 한 번 · 0.85 중 `stop` · 닿지 않는 원격), Android JVM `AudioPlaybackRateTest` · 계측 AP-S1 ~ AP-S6 |
+| 호스트 | iOS HostTests `AudioPlaybackModuleTests` AI6 ~ AI10(정규화 · 소스 무관 적용 · 메서드 다섯 · 0.85가 더 길고 `done` 한 번 · 0.85 중 `stop` · 닿지 않는 원격) · AI9b(「천천히」 0.7이 1.25배 이상), Android JVM `AudioPlaybackRateTest` · 계측 AP-S1 ~ AP-S6 · AP-S1b(0.7이 1.2배 이상) |
 
 **이 문서만 보는 것**: 실제로 **들리는** 길이 비 · 음높이, 받아 둔 파일 · 일시정지 재개에서 속도가 유지되는지(학습 문항은 받아 둔 파일만 소리다 — ADR-0082 v4), 레슨을 오가는 동안의 상태, 다른 앱 음악 덕킹, VoiceOver · TalkBack이 무엇을 읽고 소리와 어떻게 겹치는지.
 Maestro 흐름은 두지 않는다 — 소리 · 음높이를 판정할 수 없다.
