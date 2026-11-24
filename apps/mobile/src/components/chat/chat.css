@@ -181,6 +181,17 @@
   color: var(--libitum-color-fg-neutral-inverted);
 }
 
+/* 답장 보기의 로마자 줄(ADR-0188 D3) — 아래 줄과 같은 크기 · 색에 기울임 · medium. 글꼴은 app.css 로마자 묶음이 정합니다. */
+.chat-reply-option-romanization {
+  color: var(--libitum-color-gray-200);
+  text-align: center;
+  font-style: italic;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-font-weight-medium);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
 .chat-reply-option-line {
   color: var(--libitum-color-gray-200);
   text-align: center;

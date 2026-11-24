@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { EpisodeChat } from "../../lib/episode-content.model";
-import { storyChatViewOf, storyReplyLinesOf } from "./story-messenger";
+import { storyChatViewOf, storyReplyRomanizationOf } from "./story-messenger";
 
 // `unit` 계층(ADR-0188 D3): 메신저 막간의 로마자 원천(채움) · 답장 보기 아래 줄만 봅니다.
 
@@ -41,25 +41,30 @@ describe("storyChatViewOf — 로마자", () => {
   });
 });
 
-describe("storyReplyLinesOf", () => {
-  test("SM-R2. 켬이면 [로마자, 영어], 콘텐츠 로마자가 없으면 변환한다", () => {
-    expect(storyReplyLinesOf({ ko: "몰라요", roman: "mollayo", en: "No idea" }, "shown")).toEqual([
-      "mollayo",
-      "No idea",
-    ]);
-    expect(storyReplyLinesOf({ ko: "같이 가요", en: "Let's go" }, "shown")).toEqual([
-      "gachi gayo",
-      "Let's go",
-    ]);
+describe("storyReplyRomanizationOf", () => {
+  const pronunciation = (roman: string) => `Pronunciation: ${roman}`;
+
+  test("SM-R2. 켬이면 읽기와 낭독(Pronunciation 접두), 콘텐츠 로마자가 없으면 변환한다", () => {
+    expect(
+      storyReplyRomanizationOf(
+        { ko: "몰라요", roman: "mollayo", en: "No idea" },
+        "shown",
+        pronunciation,
+      ),
+    ).toEqual({ text: "mollayo", spoken: "Pronunciation: mollayo" });
+    expect(
+      storyReplyRomanizationOf({ ko: "같이 가요", en: "Let's go" }, "shown", pronunciation),
+    ).toEqual({ text: "gachi gayo", spoken: "Pronunciation: gachi gayo" });
   });
 
-  test("SM-R3. 끔이면 영어만(이 변경 전), 빈 줄은 뺀다", () => {
-    expect(storyReplyLinesOf({ ko: "몰라요", roman: "mollayo", en: "No idea" }, "hidden")).toEqual([
-      "No idea",
-    ]);
-    expect(storyReplyLinesOf({ ko: "몰라요", roman: "mollayo", en: "" }, "hidden")).toEqual([]);
-    expect(storyReplyLinesOf({ ko: "몰라요", roman: "mollayo", en: "" }, "shown")).toEqual([
-      "mollayo",
-    ]);
+  test("SM-R3. 끔이면 없음(이 변경 전), 한글이 없어도 없음", () => {
+    expect(
+      storyReplyRomanizationOf(
+        { ko: "몰라요", roman: "mollayo", en: "No idea" },
+        "hidden",
+        pronunciation,
+      ),
+    ).toBeNull();
+    expect(storyReplyRomanizationOf({ ko: "OK", en: "OK" }, "shown", pronunciation)).toBeNull();
   });
 });

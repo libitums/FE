@@ -30,6 +30,9 @@ describe("romanizeKorean — 규칙", () => {
     ["ㅅ + 모음", "맛있어요", "masisseoyo"],
     ["ㅎ + 모음 — 소리 나지 않는다", "좋아요", "joayo"],
     ["ㅇ 받침은 넘어가지 않는다", "중앙", "jungang"],
+    ["ㅀ + 모음 — ㅎ은 소리 나지 않고 ㄹ이 넘어가 r", "싫어요", "sireoyo"],
+    ["ㅀ + 모음", "끓여", "kkeuryeo"],
+    ["ㄶ + 모음", "않아요", "anayo"],
   ])("KR2. R2 연음 — %s: %s → %s", (_rule, ko, expected) => {
     expect(romanizeKorean(ko)).toBe(expected);
   });

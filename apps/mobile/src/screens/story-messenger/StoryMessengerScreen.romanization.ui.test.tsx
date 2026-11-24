@@ -79,11 +79,11 @@ test("SMR-U1. 켬이면 말풍선에 로마자 · 구분선 · 뜻이 서고, �
   );
 });
 
-test("SMR-U2. 켬이면 답장 보기 아래에 로마자 · 영어 두 줄이 선다", () => {
+test("SMR-U2. 켬이면 답장 보기에 로마자 줄(기울임 자리)과 영어가 서고, 낭독은 Pronunciation 접두다", () => {
   mount("shown");
   const option = screen.getByTestId(ids.option(0));
-  expect(option.textContent).toContain("aniyo");
-  expect(option.textContent).toContain("No");
+  expect(option.querySelector(".chat-reply-option-romanization")?.textContent).toBe("aniyo");
+  expect(option.getAttribute("accessibility-label")).toBe("아니요, Pronunciation: aniyo, No");
 });
 
 test.each([["hidden" as const], [undefined]])(

@@ -125,11 +125,12 @@ export function storyChatViewOf(chat: EpisodeChat, port: StoryChatPort): StoryCh
   };
 }
 
-/** 답장 보기 아래 줄 — 켬이면 읽기 · 영어, 끔이면 영어만(빈 줄은 뺌, ADR-0188 D3). */
-export function storyReplyLinesOf(
+/** 답장 보기의 로마자 줄과 그 낭독(「Pronunciation: …」) — 끔이거나 읽을 한글이 없으면 `null`입니다(ADR-0188 D3). */
+export function storyReplyRomanizationOf(
   option: StoryChatText,
   display: ChoiceRomanization,
-): readonly string[] {
+  pronunciation: (romanization: string) => string,
+): { readonly text: string; readonly spoken: string } | null {
   const reading = display === "shown" ? readingOf(option.ko, option.roman) : null;
-  return [reading ?? "", option.en].filter((line) => line.trim() !== "");
+  return reading === null ? null : { text: reading, spoken: pronunciation(reading) };
 }

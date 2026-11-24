@@ -57,11 +57,12 @@
 ### D3. 메신저 · 전화 — 말풍선은 기존 annotation, 전화는 앱 줄 하나
 
 - `bubbleLinesOf(line, display, pronunciation)`이 말풍선 아래 줄을 정한다: 켬 · 읽기 + 뜻 → annotation(로마자 · 구분선 · 뜻, 낭독
-  `Pronunciation: …`), 켬 · 읽기만 → 한 줄, 끔 → 뜻 한 줄(없으면 없음). 문화 확인 장면도 같은 함수를 쓴다.
+  `Pronunciation: …`), 켬 · 읽기만(뜻 없음) → **줄 없음**(번역 자리에 로마자를 두면 기울임 모양 · 낭독 접두가 어긋난다 — 독립 리뷰 W2,
+  문화 확인 장면의 옛 원칙 「로마자 혼자는 싣지 않는다」와 같음), 끔 → 뜻 한 줄(없으면 없음). 문화 확인 장면도 같은 함수를 쓴다.
 - 내 말풍선(주황 면)의 annotation 색은 `chat.css`가 흰 계열로 다시 칠한다(ui-lynx는 들어오는 말풍선 색만 정함).
 - 전화 대사 · 끝 지문은 한글 아래 `story-call-line-roman`(영어 줄과 같은 크기 · 색, 기울임 · Duru Roman), 낭독 `Pronunciation: …`.
-- 답장 보기는 줄 목록(`storyReplyLinesOf`)에 로마자를 앞에 더한다 — 보기 부품(`ChatReplyOption`)은 그대로라 로마자 줄도 보통 줄 모양이고
-  낭독 접두가 없다(「대가」 2).
+- 답장 보기: 공용 `ChatReplyOption`에 선택 prop `romanization?: { text, spoken }` — 첫 줄 아래 기울임 줄(`chat-reply-option-romanization`,
+  Duru Roman), 낭독 `한글, Pronunciation: 로마자, 영어`(`storyReplyRomanizationOf`). prop이 없는 호출부(자유 대화 메신저)는 그대로다.
 - 표시 모델(`StoryChatText` · `StoryCallText`)에 `roman?`(로마자 스크립트로 채움, 비면 키 없음)을 더했다.
 
 ### D4. 로마자 원천 — 콘텐츠 로마자, 없으면 앱의 변환 함수(국어의 로마자 표기법 + 표준 발음 일부)
@@ -73,7 +74,7 @@
 | 규칙 | 내용 | 예 |
 |---|---|---|
 | R1 음절표 | 초성 · 중성 · 받침 대표음(k · n · t · l · m · p · ng) | 부엌 bueok · 닭 dak · 의자 uija |
-| R2 연음 | 받침 + ㅇ → 받침이 다음 첫소리로(겹받침은 뒤 자음만, ㅎ은 소리 없음, ㅇ 받침은 그대로) | 한국어 hangugeo · 괜찮아요 gwaenchanayo · 중앙 jungang |
+| R2 연음 | 받침 + ㅇ → 받침이 다음 첫소리로(겹받침은 뒤 자음만, ㅎ은 소리 없음 — ㅀ은 ㄹ이 넘어가 r, ㅇ 받침은 그대로) | 한국어 hangugeo · 괜찮아요 gwaenchanayo · 싫어요 sireoyo · 중앙 jungang |
 | R3 비음화 | k · t · p + ㄴ · ㅁ → ng · n · m | 먹는 meongneun · 감사합니다 gamsahamnida · 옛말 yenmal |
 | R4 유음화 | ㄴ + ㄹ · ㄹ + ㄴ · ㄹ + ㄹ → ll | 신라 silla · 설날 seollal |
 | R5 ㄹ의 비음화 | ㄴ · ㄹ 아닌 받침 + ㄹ → n | 종로 jongno · 대학로 daehangno · 음료수 eumnyosu |
@@ -123,10 +124,16 @@
 
 1. **화면이 길어진다** — 컷 대사 · 말풍선 · 전화 대사가 한 줄씩(긴 문장은 두세 줄) 높아진다. 컷 대화 상자는 제 스크롤 안이라 잘리지 않고,
    메신저는 로그 스크롤, 전화는 가운데 무대가 늘어난다. 작은 화면 실측은 e2e [DR-E2](../e2e/dialogue-romanization.md).
-2. **답장 보기 로마자 줄은 보통 줄 모양이고 낭독 접두가 없다** — 공용 `ChatReplyOption`을 바꾸지 않았다(병렬 작업과 겹치는 부품). 낭독은
-   `한글, 로마자, 영어`로 읽힌다.
+2. **주황 면 위 대비가 AA(4.5:1)에 못 미친다** — 내 말풍선 · 답장 보기 면이 정본 brand.strong 대신 brand.primary인 기존 FE override라
+   (chat-bubble.css 주석 「약 3:1」), 그 위 로마자(gray-200)는 약 2.7:1, 흰 뜻은 약 3.0:1이다(접근성 감사 Major 1). 원인은 면 색이라 글자 색으로는
+   못 고친다 — 면 색 · 토큰 결정은 design 소유로 따로 한다.
 3. **변환 읽기는 콘텐츠와 다를 수 있다** — 99.0%(D4). 콘텐츠에 로마자를 채우는 것이 정답이고, 변환은 빈 곳을 메우는 대체다.
 4. **ui-lynx `VisualNovelDialog`에 FE 확장 하나** — design-system 보고 대상(ADR-0084 「미확인 · 후속」 5 목록에 더함).
+
+5. **컷 대사 스크롤이 버튼을 덮던 결함을 함께 고쳤다** — 대화창이 z-index를 가져 스크롤 경계 밖에 그려졌다. 로마자 줄이 더해진 긴 내레이션이
+   iPhone SE에서 `Continue` 단추를 덮는 것을 기기(시뮬레이터)에서 봤고, 최종 테스트 `-line-scroll`과 같은 규칙(`overflow: hidden` +
+   `z-index`)을 `.catalog-cover-screen-scroll`에 줬다. 또 SE에서 영어 줄 마지막 줄이 스크롤 아래로 반쯤 잘려 보여 스크롤 최대 높이를 40vh → 55vh로
+   올렸다(위 빈 공간을 쓴다 — 큰 글자에서는 여전히 제 스크롤 안).
 
 ## 재검토 조건
 
@@ -136,7 +143,9 @@
 
 ## 미확인 · 후속
 
-1. 기기 확인 — [e2e](../e2e/dialogue-romanization.md) DR-E1 ~ DR-E6.
+1. 기기 확인 — [e2e](../e2e/dialogue-romanization.md) DR-E1 ~ DR-E7. 2026-11-24 iOS 시뮬레이터(iPhone SE 3세대) 프로브로 일부 확인(실행 기록).
 2. 최종 테스트 · 롤플레이 말하기 상대 대사(D1 범위 밖).
-3. 답장 보기 로마자 줄의 모양 · 낭독 접두(「대가」 2).
+3. 주황 면 대비(「대가」 2) — design.
+5. 접근성 감사 Minor(코드 읽기 기준): 전화 대사 한 줄을 접근성 요소 하나로 묶기 · 전화 화면 큰 글자 스크롤 · 컷 대사 스크롤 표시 ·
+   `VisualNovelDialog` 기본 낭독에 `spokenRomanization`(접두)과 쉼표 구분 · translucent 면 위 로마자 · 번역 색.
 4. design-system 보고 — `VisualNovelDialog` `romanization`.

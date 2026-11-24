@@ -36,10 +36,10 @@ describe("bubbleLinesOf", () => {
     });
   });
 
-  test("RD5. 켬 · 뜻이 없으면 읽기 한 줄(콘텐츠 로마자가 없으면 변환)", () => {
-    expect(bubbleLinesOf({ ko: "안녕", meaning: "" }, "shown", pronunciation)).toEqual({
-      translation: "annyeong",
-    });
+  test("RD5. 켬 · 뜻이 없으면 아무 줄도 없다 — 로마자를 번역 자리에 싣지 않는다(모양 · 낭독 접두가 어긋남)", () => {
+    expect(
+      bubbleLinesOf({ ko: "안녕", roman: "annyeong", meaning: "" }, "shown", pronunciation),
+    ).toEqual({});
   });
 
   test("RD6. 끔이면 뜻 한 줄, 뜻이 없으면 아무 줄도 없다 — 이 변경 전 모양", () => {

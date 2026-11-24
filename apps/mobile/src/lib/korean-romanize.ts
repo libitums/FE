@@ -92,7 +92,7 @@ const FINALS: Readonly<Record<number, Final>> = {
   12: { rep: "l", link: ["l", "s"] },
   13: { rep: "l", link: ["l", "t"] },
   14: { rep: "p", link: ["l", "p"] },
-  15: { rep: "l", link: ["l", ""] },
+  15: { rep: "l", link: ["", "r"] },
   16: { rep: "m", link: ["", "m"] },
   17: { rep: "p", link: ["", "b"] },
   18: { rep: "p", link: ["p", "s"] },

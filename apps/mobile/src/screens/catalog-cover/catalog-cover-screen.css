@@ -92,9 +92,13 @@
 }
 
 /* 큰 글꼴에서도 버튼이 화면 밖으로 밀리지 않게 패널이 이 높이 안에서 스크롤합니다. */
+/* 대화창이 z-index를 가져 overflow만으로는 경계 밖에 그려지므로 독립 레이어로 만듭니다(최종 테스트 `-line-scroll`과 같은
+   규칙). 로마자 줄이 더해진 긴 대사가 작은 화면에서 아래 버튼을 덮던 것을 기기에서 봤습니다(ADR-0188, iPhone SE). */
 .catalog-cover-screen-scroll {
-  max-height: 40vh;
+  max-height: 55vh;
   width: 100%;
+  overflow: hidden;
+  z-index: var(--libitum-elevation-z-default);
 }
 
 .catalog-cover-screen-next {

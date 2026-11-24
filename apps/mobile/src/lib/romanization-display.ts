@@ -26,8 +26,8 @@ export function readingOf(ko: string, roman: string | null | undefined): string 
 }
 
 /**
- * 말풍선 아래 줄 — 켬이면 읽기(+ 뜻: 로마자 · 구분선 · 뜻 묶음), 끔이면 뜻 한 줄(이 변경 전 모양)입니다. 줄 것이 없으면 빈
- * 객체입니다.
+ * 말풍선 아래 줄 — 켬이면 읽기 + 뜻(로마자 · 구분선 · 뜻 묶음), 끔이면 뜻 한 줄(이 변경 전 모양)입니다. 켬인데 뜻이 없거나,
+ * 줄 것이 없으면 빈 객체입니다.
  */
 export function bubbleLinesOf(
   line: { readonly ko: string; readonly roman?: string | null; readonly meaning?: string | null },
@@ -41,6 +41,7 @@ export function bubbleLinesOf(
       annotation: { romanization: reading, meaning, spokenRomanization: pronunciation(reading) },
     };
   }
-  if (reading !== null) return { translation: reading };
+  // 읽기만 있으면 아무 줄도 싣지 않습니다 — 번역 자리에 로마자를 두면 모양(기울임)과 낭독 접두가 어긋납니다(ADR-0188 D3).
+  if (reading !== null) return {};
   return meaning === "" ? {} : { translation: meaning };
 }

@@ -27,7 +27,7 @@ import {
   type StoryChatLogItem,
   type StoryMessengerScreenProps,
 } from "./story-messenger.contract";
-import { storyReplyLinesOf } from "./story-messenger";
+import { storyReplyRomanizationOf } from "./story-messenger";
 import { useStoryChat } from "./use-story-chat";
 
 import "./story-messenger.css";
@@ -171,7 +171,11 @@ export function StoryMessengerScreen({
               <ChatReplyOption
                 key={`${index}:${option.ko}`}
                 primary={option.ko}
-                lines={storyReplyLinesOf(option, romanization)}
+                lines={[option.en]}
+                romanization={
+                  storyReplyRomanizationOf(option, romanization, uiCopy.readAloud.pronunciation) ??
+                  undefined
+                }
                 state="idle"
                 testId={ids.option(index)}
                 onPick={() => state.pick(index + 1)}
