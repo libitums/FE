@@ -20,6 +20,11 @@ import {
   offerDirective,
 } from "./companion-learning.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
+import {
+  reactionDirective,
+  reactionUserText,
+  type ReactionStory,
+} from "./companion-reaction-prompt.ts";
 import { offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { storyCardFor } from "./companion-story.ts";
 import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
@@ -47,6 +52,11 @@ export type ReplyEvalCase = {
     readonly gloss?: string | null;
     readonly kind?: string;
     readonly mode: string;
+  };
+  /** 내 스토리 반응(ADR-0191 D5) — 있으면 운영의 반응 지시 · 앱 안내 글로 답을 만든다(`text`는 쓰지 않는다). */
+  readonly storyReaction?: Omit<ReactionStory, "roman" | "exampleKo"> & {
+    readonly roman?: string;
+    readonly exampleKo?: string | null;
   };
 };
 
@@ -109,6 +119,14 @@ export async function evalReply(input: {
       roman: null,
       gloss: target.gloss,
     });
+  const reaction: ReactionStory | null = item.storyReaction
+    ? {
+        ...item.storyReaction,
+        roman: item.storyReaction.roman ?? "",
+        exampleKo: item.storyReaction.exampleKo ?? null,
+      }
+    : null;
+  const userText = reaction === null ? item.text : reactionUserText(reaction);
   const story =
     item.characterId === undefined || item.episodes === undefined
       ? null
@@ -124,7 +142,7 @@ export async function evalReply(input: {
     summary: item.summary ?? null,
     feedbackMode: "separate",
     memories: item.memories ?? [],
-    directive: null,
+    directive: reaction === null ? null : reactionDirective(reaction),
     story,
   });
   const offer: LearningOffer | null = target
@@ -149,7 +167,7 @@ export async function evalReply(input: {
   for await (const chunk of llm.reply({
     system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     history,
-    userText: item.text,
+    userText,
     directive: offer === null ? null : offerDirective(offer),
     signal,
   })) {
@@ -180,7 +198,11 @@ export async function evalReply(input: {
             ? null
             : { surface: target.surface, mode: target.mode as "expose" | "elicit" },
         history: item.history ?? [],
-        userText: item.text,
+        // 사진 반응은 인물이 받은 장면 설명을 채점자에게도 준다 — 없으면 설명에 있는 것을 「지어냈다」고 본다(평가 2026-11-24).
+        userText:
+          reaction?.kind === "photo" && reaction.scene
+            ? `${userText}\n(인물이 받은 사진 설명: ${reaction.scene})`
+            : userText,
         reply: segments,
         signal,
       });

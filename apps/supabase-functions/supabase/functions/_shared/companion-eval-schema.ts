@@ -70,6 +70,20 @@ export const caseSchema = z.object({
       mode: z.enum(["expose", "elicit", "chip"]),
     })
     .optional(),
+  // 답장만: 내 스토리 반응(ADR-0191 D5). 있으면 `text` 대신 운영의 반응 지시 · 앱 안내 글로 답을 만든다 — 인물이 학습자의 스토리에 다는 한두 줄.
+  storyReaction: z
+    .object({
+      kind: z.enum(["word", "card", "photo"]),
+      ko: z.string().min(1).max(120),
+      roman: z.string().max(400).optional(),
+      meaning: z.string().max(300),
+      exampleKo: z.string().max(120).nullable().optional(),
+      angle: z.enum(["word", "question", "quiz", "together", "react"]),
+      // 사진 스토리만: 읽기 단계의 장면 설명 · 말 걸 거리.
+      scene: z.string().max(600).nullable().optional(),
+      hooks: z.array(z.string().max(120)).max(3).optional(),
+    })
+    .optional(),
 });
 export const bodySchema = z.object({
   kind: z.enum(["moderation", "feedback", "translation", "suggestions", "learning", "reply"]),
