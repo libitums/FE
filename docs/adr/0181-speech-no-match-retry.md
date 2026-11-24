@@ -87,4 +87,9 @@ iOS의 짝은 `kAFAssistantErrorDomain` 1110(말 없음) · 203(알아들을 말
 - iOS의 「못 알아들음」 코드(1110 · 203)는 문서 · 접점 테스트의 관찰값이고, 이 회차의 시뮬레이터는 인식기를 만들지 못해(`kLSRErrorDomain` 계열 → `failed`)
   iOS 실기에서 못 알아들음 경로를 보지 못했다. iOS의 네트워크 오류 코드는 가르지 않았다(그대로 `failed`).
 - 인식기가 빈 글자로 `recognized`를 올리면 지금처럼 들음(낱말 말하기는 오답)이다. 실기에서 그 경로가 잦으면 `missed`로 옮길지 다시 본다.
+- Android에서 한국어 팩을 확인하는 짧은 틈에 사용자가 `Stop`을 누르면 호스트가 `recognition-failed` + `ERROR_CLIENT`(5, 메시지 「Stopped before listening」)를
+  올려 지금처럼 「인식 불가 · Skip」이 선다. 같은 코드 5가 다른 클라이언트 오류에도 쓰여 앱에서 가르지 않았다 — 배포 뒤 `speechErrorCode=5`의 비율을 보고,
+  잦으면 호스트가 이 경로를 따로 싣게 한다(리뷰 지적).
+- 두 호스트는 `recognition-failed`에도 그때까지 읽은 글자를 싣지만, 앱은 지금처럼 `missed` · `unavailable`에서 그 글자를 쓰지 않는다.
+- iOS 네트워크 오류 코드는 비어 있다 — 배포 뒤 iOS `unavailable:failed`의 `speechErrorCode` 분포로 채운다.
 - 배포 뒤 `skipReason` 분포(`unavailable:failed` 대 `missed:*`)로 이 갈래가 맞는지 본다.
