@@ -30,7 +30,7 @@ export function ComposeQuizCard({
   romanization,
   speaker = "ready",
 }: ComposeQuizPartProps & {
-  /** `unavailable`이면 ▶가 비활성입니다(입장 전 기초 — 소리가 없으면 약속하지 않음). 기본 `ready`. */
+  /** `unavailable`이면 ▶가 비활성입니다(소리가 없으면 약속하지 않음 — 두 화면 다 `sourceOf(target)`으로 정함). 기본 `ready`. */
   readonly speaker?: "ready" | "unavailable";
 }): ReactNode {
   const uiCopy = useUiCopy();

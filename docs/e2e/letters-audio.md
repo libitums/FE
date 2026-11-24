@@ -21,6 +21,7 @@
 | LA-E4 | Next → ㄴ + ㅏ(틀림) → Try again → ㄴ + ㅓ | 틀림은 무음, 맞힘 뒤 「너」 | 통과 — `correct_answer` 41.650 → `play neo` 42.553(+903 ms) | (2라운드는 iOS만) |
 | LA-E5 | 실행 로그의 JS 오류 | ReferenceError · TypeError · 1101 없음 | 통과 — 없음 · 오디오 세션 실패 로그 없음 | 통과 — 없음(FATAL 없음. 프로브가 화면을 갈아 끼울 때 Lynx 네이티브 레이아웃 로그 `DestroyLayoutNodeBeforeRemoveFromParent`만) |
 | LA-E6 | 업로드 전(정보 파일에 letters 없음) | 칸 · 퀴즈가 소리 없이 그대로, 오류 없음 | integration LAI3 · LAI4로 확인(기기 회차는 ADR-0169 ME-E5) | 같음 |
+| LA-E7 | (2026-11-24, 프로브 없이 실제 앱 · 운영 정보 파일 — letters 0항목) 게스트 시작 → 더보기 › Letters › Practice | 「Make “ga”」의 ▶가 회색, 이름 「Play, sound not available yet」 · 비활성, 눌러도 재생 없음 · 2라운드(neo)도 회색, JS 오류 없음 | 통과 — iPhone 17 Pro 시뮬레이터(Debug Host, `--bundle-url=main.lynx`): 회색, AX `enabled=false` · `NotEnabled` · 그 이름, 누른 뒤 재생 호출 없음 | 통과 — `assembleBundled` + AVD Pixel_8(`-read-only -no-audio`): 회색, uiautomator `content-desc` 그 이름 · `clickable=false`, 누른 뒤 재생 호출 없음, ㄱ + ㅏ → Next 뒤 neo도 회색 |
 
 ## 남은 것
 

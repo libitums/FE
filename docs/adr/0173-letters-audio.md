@@ -130,3 +130,17 @@ ADR-0169의 기본값(조정자 결정)을 근거와 함께 확정한다.
 - **ㅁ 새 녹음**(`staging/audio/hangul/c-m-sound-v2.m4a`, 「므」 0.57 s — 콘텐츠 쪽 `staging/hangul/jamo.json`이 ㅁ을 이 파일로 바꿨다). 앱 이름은 그대로 `hangul-c-m-sound`다. 같은 목표로 올리면 순간 최고가 −0.77 dB라 상한(−1.0 dB)까지만 올렸다(+0.97 dB → −17.1 LUFS, 나머지보다 0.24 dB 작음).
 - 대응표 `jamo.json`(스키마 `hangul-jamo-1`)으로 자음 녹음이 **자음 + ㅡ**(그 · 끄 · 느 · 므 …)임을 확인했다 — 위 「자음 + ㅏ」인지 단독인지 모른다던 점의 답. ㅇ 녹음은 그때 없었다(표 메모 「ㅇ 없음」).
 - **ㅇ 녹음**(08:17 UTC): `staging/audio/hangul/c-ng-sound.m4a` — 표 메모가 「자음 소리(자음 + ㅡ, ㅇ 은 으) 19 · 모음 21」로 바뀌었다. 파일은 모음 ㅡ(`v-eu`, 「으」)와 **바이트가 같다** — ㅇ + ㅡ = 으라서 같은 녹음을 쓴 것이다. 앱에 `hangul-c-ng-sound`로 실었고(ㅡ와 같은 음량 맞춤 결과, −16.85 LUFS), **ㅇ 칸은 「아」 대신 「으」**를 낸다(`jamoClipOf`, 위 적용 기록의 「ㅇ은 아」를 갈음). 같은 바이트의 파일이 둘이지만(7.7 KB), 콘텐츠 표와 이름을 하나씩 맞춰 두어 나중에 ㅇ 녹음만 바꿀 수 있게 했다.
+
+## 적용 기록 ⟨2026-11-24 — 소리 없는 음절의 ▶는 회색⟩
+
+**사용자 보고**(2026-11-24): Letters › 합치기 퀴즈에서 만들 글자(가 · 너 · 도)의 ▶가 눌리는 모양인데 아무 소리도 나지 않는다.
+
+- 까닭: 음절 소리는 D1대로 버킷 `audio/letters/`에서 오는데 운영 버킷은 아직 비어 있고 정보 파일에 letters 항목이 0개다(D3 대기). D7은 「소리 없이 판정 · Next」까지만 정했고
+  ▶의 모양은 정하지 않아, Letters 화면은 `ComposeQuizCard`의 기본값(`ready`)으로 ▶를 활성처럼 그렸다. 입장 전 기초([ADR-0176](0176-entry-basics-choice.md))는 이미
+  `speaker={sound.sourceOf(target) === null ? "unavailable" : "ready"}`를 넘기고 있었다.
+- **D7에 더한다**: 그 라운드 음절의 주소가 null이면 ▶는 회색 · 누를 수 없음(`accessibility-traits` disabled · `accessibility-enable-tap` false) ·
+  이름 「Play, sound not available yet」(있는 문구 `more.letters.soundUnavailable`, 새 문구 없음). 두 화면이 같은 식으로 정한다.
+- 라운드마다 그릴 때 포트에 묻는다 — 소리 파일을 올려 정보 파일에 letters 항목이 생기면 코드 변경 없이 ▶가 다시 단추가 된다(ui CS21 · CS22).
+- 정답 뒤 음절 소리(`composeEchoOf`)는 보이는 단추가 없고 주소가 null이면 재생 모듈을 부르지 않아(D7) 같은 문제가 없다. Letters 자모표 칸은 앱 내장 녹음(`letterSourceOf`)이라
+  늘 소리가 있고, 없으면 이미 「sound not available yet」을 단다.
+- 검사: ui CS19 ~ CS22, integration LAI2(업로드 뒤 ▶ 단추) · LAI3(업로드 전 ▶ 회색), e2e [수동 절차](../e2e/letters-audio.md) LA-E7.
