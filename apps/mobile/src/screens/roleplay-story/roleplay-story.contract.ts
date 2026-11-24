@@ -2,12 +2,15 @@
 // 턴 모양은 최종 테스트의 것을 그대로 받습니다 — 같은 콘텐츠(`RP` 스텝)를 같은 계획 함수로 만듭니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
-import type { SpeechUnavailableReason } from "../../lib/speech-attempt";
+import type { SpeechMissReason, SpeechUnavailableReason } from "../../lib/speech-attempt";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { CatalogRoleplayTurns } from "../catalog-final/catalog-final.contract";
 
-/** 말하기 한 턴의 국면입니다. 판정은 `heard`에서만 섭니다 — 인식을 쓸 수 없으면 `unavailable`. */
-export type RoleplayTalkPhase = "ready" | "listening" | "heard" | "unavailable";
+/**
+ * 말하기 한 턴의 국면입니다. 판정은 `heard`에서만 섭니다 — 못 알아들었으면 `missed`(곧바로 다시 말하기),
+ * 인식을 쓸 수 없으면 `unavailable`.
+ */
+export type RoleplayTalkPhase = "ready" | "listening" | "heard" | "missed" | "unavailable";
 
 export type RoleplayTalkState = {
   readonly turnIndex: number;
@@ -20,6 +23,10 @@ export type RoleplayTalkState = {
   readonly hintShown: boolean;
   /** 듣지 못한 까닭 — `unavailable`에서만 값이 있습니다(권한 · 인식기 / 받아쓰기 꺼짐 / 그 한 번의 실패). */
   readonly unavailableReason: SpeechUnavailableReason | null;
+  /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0181). */
+  readonly missedReason: SpeechMissReason | null;
+  /** 못 알아들은 뒤 다시 듣는 중인가 — 그 동안 Try again 자리가 Stop으로 남습니다(포커스를 잃지 않게). */
+  readonly retrying: boolean;
   /** 넘긴 턴의 판정입니다. 건너뛴 턴은 싣지 않습니다(인식 불가 · 말할 수 없음을 오답으로 접지 않습니다). */
   readonly results: readonly AnswerResult[];
   readonly skippedCount: number;
@@ -28,6 +35,7 @@ export type RoleplayTalkState = {
 export type RoleplayTalkAction =
   | { readonly type: "start" }
   | { readonly type: "heard"; readonly text: string; readonly verdict: AnswerResult }
+  | { readonly type: "missed"; readonly reason: SpeechMissReason }
   | { readonly type: "unavailable"; readonly reason: SpeechUnavailableReason }
   | { readonly type: "hint" }
   | { readonly type: "retry" }

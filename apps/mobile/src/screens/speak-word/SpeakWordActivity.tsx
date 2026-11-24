@@ -94,7 +94,7 @@ export function SpeakWordActivity({
     if (result !== null && question != null) {
       report(result);
       announce(speakWordResultAnnouncement(question, result, copy));
-    } else if (phase.kind === "unavailable") {
+    } else if (phase.kind === "unavailable" || phase.kind === "missed") {
       const content = dictationOff ? copy.speaking.dictationDisabled : hint;
       if (content !== null) announce(content);
     }
@@ -176,7 +176,12 @@ export function SpeakWordActivity({
   };
   const handleWaves = (): void => {
     "background only";
-    if (primary === "speak" || primary === "stop") {
+    // 못 알아들은 뒤에는 마이크도 같은 문항을 다시 듣습니다(주 버튼 Try again과 같은 동작).
+    if (
+      primary === "speak" ||
+      primary === "stop" ||
+      (primary === "retry" && phase.kind === "missed")
+    ) {
       playSound("button");
       run(primary);
     }
@@ -235,7 +240,9 @@ export function SpeakWordActivity({
                     className="speak-word-activity-hint"
                     data-testid="speak-word-hint"
                     bindlayoutchange={
-                      phase.kind === "unavailable" ? revealSpeakWordHint : undefined
+                      phase.kind === "unavailable" || phase.kind === "missed"
+                        ? revealSpeakWordHint
+                        : undefined
                     }
                   >
                     {hint}
@@ -252,7 +259,9 @@ export function SpeakWordActivity({
             data-testid="speak-word-content"
             data-questionindex={state.questionIndex}
             data-phase={phase.kind}
-            data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
+            data-reason={
+              phase.kind === "unavailable" || phase.kind === "missed" ? phase.reason : undefined
+            }
           >
             {question == null ? (
               <LearningActivityComplete

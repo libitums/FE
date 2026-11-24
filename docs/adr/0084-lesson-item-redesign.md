@@ -186,7 +186,7 @@
 | `contentSource` ⟨2026-11-16⟩ | `bundled`(앱 내장) · `remote`(버킷에서 받은 판) |
 | `contentLevel` ⟨2026-11-16⟩ | 원격 판을 받은 매니페스트의 `min_client_level`(10진 문자열, 예 `"5"`). 내장판은 없음 |
 | `selectedAnswer` ⟨2026-11-16 · 개정 11-17⟩ | 처음 판정 때 고른 보기 · 타일의 **자리표시자를 치환하기 전 콘텐츠 원문**(예 「{이름}(으)로 예약했어요.」 — 화면 글자는 학습자 이름 · 나라로 바뀌어 있어 쓰지 않는다). 보기형은 고른 보기, 문장 · 듣고 조립은 놓은 타일을 공백으로, 대화 조립은 **놓은 턴만(고정된 첫 턴 제외)** `" \| "`로, 음절 조립은 이음 없이. 원문 배열이 없는 문항은 싣지 않는다. **직접 입력 · 말하기 결과는 싣지 않는다** |
-| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user"` 또는 `unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) |
+| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user"` 또는 `unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) · ⟨2026-11-24⟩ `missed:<reason>`(`no-match` · `network` — 못 알아들은 뒤 다시 말하지 않고 넘김, [ADR-0181](0181-speech-no-match-retry.md)) |
 | `hintUsed` ⟨2026-11-17⟩ | 판정 전에 쓴 힌트 — `listen`(정답 듣기) · `show`(정답 보기, 앞섬). 음절 조립 · 문장 조립만. 안 썼으면 없음([ADR-0153](0153-assembled-item-romanization-hint.md)) |
 | `speechErrorCode` ⟨2026-11-19⟩ | 낱말 말하기: 인식기 오류 코드(10진 문자열, 오류 없음 `"0"`). Android는 `SpeechRecognizer.ERROR_*`, iOS는 그 오류 도메인의 코드. **인식기가 결과를 올렸을 때만**(판정 · 실패 뒤 Skip) — 말하기 전 Skip · 접점 없음 · 권한 막힘에는 없음([ADR-0017](0017-host-native-capabilities-and-audio.md) 2026-11-19 적용 기록) |
 | `speechFallback` ⟨2026-11-19⟩ | 낱말 말하기: 네트워크 인식기로 되돌아갔는가 — `none` · `pack-missing`(시작 전 확인에서 한국어 팩 없음) · `on-device-error`(온디바이스 언어 오류). iOS는 늘 `none`. 있고 없음은 `speechErrorCode`와 같다 |

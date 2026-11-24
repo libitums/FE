@@ -54,6 +54,8 @@ export const speakingMy: SpeakingCopy = {
     "Siri သို့မဟုတ် Dictation ပိတ်ထားပါသည်။ Settings > General > Keyboard > Enable Dictation တွင် ဖွင့်ပြီး ထပ်စမ်းကြည့်ပါ။",
   tapToContinue: "ဆက်လုပ်ရန် မျက်နှာပြင်ကို နှိပ်ပါ",
   recognitionUnavailable: "ယခု အသံကို မှတ်သား၍ မရပါ။ ဆက်သွားရန် ကျော်ရန်ကို နှိပ်ပါ။",
+  notCaught: "သေချာ မကြားရပါ။ မိုက်ခရိုဖုန်းကို နှိပ်ပြီး ထပ်စမ်းကြည့်ပါ။",
+  networkRetry: "အသံ မှတ်သားမှုနှင့် ချိတ်ဆက်၍ မရပါ။ အင်တာနက် ချိတ်ဆက်မှုကို စစ်ဆေးပြီး ထပ်စမ်းကြည့်ပါ။",
 };
 
 export const assessmentMy: AssessmentCopy = {
