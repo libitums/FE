@@ -4,7 +4,7 @@
 
 - 상태: 미측정 — 번들 · 앱 자산 크기만. 렌더링 · 메모리 캡처를 돌리지 않았다. 결선의 `sourceOf`가 라운드 음절이면 버킷 정보 파일 조회 대신 이름 하나를 돌려준다.
 - 기능 변경: 합치기 퀴즈 ▶와 정답 뒤 음절 소리가 앱에 실은 녹음을 낸다([ADR-0173](../../adr/0173-letters-audio.md) ⟨2026-11-24 — 합치기 퀴즈 음절도 앱 내장 녹음⟩).
-- 대상 commit: `feat/letters-syllable-audio` 브랜치 HEAD
+- 대상 commit: `feat/letters-syllable-audio` 브랜치 `8ae44591`(코드 · 녹음, 뒤 커밋은 문서만)
 - 기기: 렌더 측정 기기 없음. 화면 · 재생 호출은 iOS 시뮬레이터 · Android 에뮬레이터에서 봤다(PR 본문). 음량은 ffmpeg 9.0.2 `loudnorm` 측정값(EBU R128)이다.
 - OS: 해당 없음(번들 · 앱 자산)
 - Lynx SDK: 4.0.1
