@@ -4,6 +4,8 @@ import { EPISODE_SELF_SPEAKER } from "@libitums/episode-core/lines";
 
 import type { EpisodeChat, EpisodeChatTurn, Text } from "../../lib/episode-content.model";
 import type { FillScript } from "../../lib/placeholder-fill";
+import { readingOf } from "../../lib/romanization-display";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type {
   StoryChatLogItem,
   StoryChatProgress,
@@ -87,9 +89,12 @@ export type StoryChatPort = {
   readonly fill: (text: string, script: FillScript) => string;
 };
 
+// 로마자는 로마자 스크립트로 채웁니다(이름 · 나라가 로마자로 섭니다). 비면 키를 두지 않고 화면이 변환한 읽기로 채웁니다.
 function textOf(text: Text, port: StoryChatPort): StoryChatText {
+  const roman = text.roman === undefined ? "" : port.fill(text.roman, "roman").trim();
   return {
     ko: port.fill(text.ko, "ko"),
+    ...(roman === "" ? {} : { roman }),
     en: text.en === undefined ? "" : port.fill(text.en, "en"),
   };
 }
@@ -118,4 +123,14 @@ export function storyChatViewOf(chat: EpisodeChat, port: StoryChatPort): StoryCh
       chat.counterpartImageUrl === undefined ? null : port.imageUrlOf(chat.counterpartImageUrl),
     turns: [first as StoryChatTurn, ...rest],
   };
+}
+
+/** 답장 보기의 로마자 줄과 그 낭독(「Pronunciation: …」) — 끔이거나 읽을 한글이 없으면 `null`입니다(ADR-0188 D3). */
+export function storyReplyRomanizationOf(
+  option: StoryChatText,
+  display: ChoiceRomanization,
+  pronunciation: (romanization: string) => string,
+): { readonly text: string; readonly spoken: string } | null {
+  const reading = display === "shown" ? readingOf(option.ko, option.roman) : null;
+  return reading === null ? null : { text: reading, spoken: pronunciation(reading) };
 }

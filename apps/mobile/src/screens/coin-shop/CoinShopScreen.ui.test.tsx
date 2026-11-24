@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import { backHandlers } from "../../lib/back-handler";
 import type { PurchaseResult } from "../../lib/purchase-bridge";
 import { resetPurchaseContextForTests, setPurchaseContext } from "../../lib/purchase-intent";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -79,6 +80,53 @@ test("[CS-U4] 사기 → 「결제 준비 중」 안내가 뜨고 뒤쪽은 낭�
 
   expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
   expect(props.onClose).not.toHaveBeenCalled();
+});
+
+test("[CS-G1] 비회원 사기 → 「결제 준비 중」 대신 로그인 권유(coins), 의향은 남는다. 로그인을 고르면 onSignIn, 나중에는 권유만 닫힌다", () => {
+  const events: unknown[] = [];
+  const sink = (event: unknown) => events.push(event);
+  setPurchaseContext({ region: "US", sink });
+  const onSignIn = vi.fn();
+  const props = fixture();
+  render(<CoinShopScreen {...props} signIn={{ onSignIn, sink }} />);
+  const prompt = () => screen.queryByTestId("messenger-sign-in-prompt");
+  const promptButtons = () =>
+    (prompt() as Element).querySelectorAll('[data-testid="ui-lynx-button"]');
+
+  fireEvent.tap(buyButton(), {});
+
+  expect(prompt()).not.toBeNull();
+  expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
+  expect(screen.getByTestId("coin-shop-screen-close")).toHaveAttribute(
+    "accessibility-elements-hidden",
+    "true",
+  );
+  expect(events).toEqual([expect.objectContaining({ name: "purchase_intent", preview: true })]);
+
+  fireEvent.tap(promptButtons()[1] as Element, {});
+  expect(prompt()).toBeNull();
+  expect(onSignIn).not.toHaveBeenCalled();
+
+  // 시스템 뒤로가기는 권유만 닫습니다 — 권유의 층이 상점의 층보다 나중에 등록됩니다.
+  fireEvent.tap(buyButton(), {});
+  act(() => {
+    backHandlers.runTop();
+  });
+  expect(prompt()).toBeNull();
+  expect(props.onClose).not.toHaveBeenCalled();
+
+  fireEvent.tap(buyButton(), {});
+  fireEvent.tap(promptButtons()[0] as Element, {});
+  expect(prompt()).toBeNull();
+  expect(onSignIn).toHaveBeenCalledTimes(1);
+  expect(events).toContainEqual(
+    expect.objectContaining({
+      name: "chat_sign_in_prompt_closed",
+      trigger: "coins",
+      choice: "sign_in",
+    }),
+  );
+  resetPurchaseContextForTests();
 });
 
 test("[CS-PI1] 가격 지역 VN이면 팩 · 버튼이 임시 추천 가격(₫)이고, 사기는 안내와 함께 purchase_intent를 낸다", () => {

@@ -277,6 +277,7 @@ export function WordChoiceActivity({
               onError={picture.onError}
               density={density}
               cast={cast}
+              choiceRomanization={choiceRomanization}
               answer={
                 result === null || selectedIndex === null
                   ? null

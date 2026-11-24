@@ -4,6 +4,9 @@ export function chatReplyOptionLabel(
   primary: string,
   lines: readonly string[],
   action?: string,
+  spokenRomanization?: string,
 ): string {
-  return [primary, ...lines, action ?? ""].filter((line) => line !== "").join(", ");
+  return [primary, spokenRomanization ?? "", ...lines, action ?? ""]
+    .filter((line) => line !== "")
+    .join(", ");
 }

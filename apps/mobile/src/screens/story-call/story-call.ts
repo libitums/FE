@@ -26,9 +26,12 @@ export type StoryCallPort = {
   readonly audioTimingOf: (audioId: string) => AudioTiming | null;
 };
 
+// 로마자는 로마자 스크립트로 채웁니다. 비면 키를 두지 않고 화면이 변환한 읽기로 채웁니다(ADR-0188).
 function textOf(text: Text, port: StoryCallPort): StoryCallText {
+  const roman = text.roman === undefined ? "" : port.fill(text.roman, "roman").trim();
   return {
     ko: port.fill(text.ko, "ko"),
+    ...(roman === "" ? {} : { roman }),
     en: text.en === undefined ? "" : port.fill(text.en, "en"),
   };
 }

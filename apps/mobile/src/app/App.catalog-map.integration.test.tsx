@@ -501,7 +501,9 @@ test("I4. (AC6) 본문 없는 넷째 에피소드는 준비 중 구획으로 서
 // 새 완료 규칙은 completion.requires 전부를 끝내야 에피소드 완료입니다 — u03의 완료 키 전부를 시드로 씁니다.
 const u03CompletedKeys = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"];
 
-test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」으로 보이고 대사를 누르면 로마자로 바뀐다", async () => {
+// ⟨2026-11-24 — ADR-0188⟩ 로마자 스위치 기본 켬에서는 컷 대사 아래 로마자 줄이 처음부터 서고 누름 토글이 없습니다. 끔에서의
+// 영어 ↔ 로마자 토글은 CatalogCoverScreen.romanization.ui CCR-U3가 지킵니다.
+test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」으로 보이고, 로마자 줄도 채운 이름으로 선다", async () => {
   const manifest = remoteManifestText();
   const { releaseBodies } = await boot({
     seed: tutorialDoneSeed,
@@ -526,11 +528,11 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
   const line = screen.getByTestId("ui-lynx-visual-novel-dialog-line");
   expect(line.textContent).not.toContain("{이름}");
 
-  fireEvent.tap(screen.getByTestId("catalog-cover-screen-line"), { eventType: "catchEvent" });
-  expect(screen.getByTestId("catalog-cover-screen")).toHaveAttribute("data-script", "roman");
-  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-translation")).toHaveTextContent(
+  expect(screen.getByTestId("ui-lynx-visual-novel-dialog-romanization")).toHaveTextContent(
     "jeoneun ireumieyo.",
   );
+  fireEvent.tap(screen.getByTestId("catalog-cover-screen-line"), { eventType: "catchEvent" });
+  expect(screen.getByTestId("catalog-cover-screen")).toHaveAttribute("data-script", "en");
 });
 
 test("I5c. 내장 카탈로그(네 에피소드)로 맵이 서면 u03 구획 뒤 맨 끝에 Episode 4. 준비 중 구획이 하나 선다", async () => {

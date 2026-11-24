@@ -3,6 +3,7 @@
 import type { AudioTiming } from "../../lib/audio-manifest";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { ChoiceRomanization } from "../../lib/session-options";
 
 export type CatalogCutScript = "en" | "roman";
 
@@ -67,6 +68,8 @@ export type CatalogCoverScreenProps = {
   readonly onExit: () => void;
   /** 대사 위 스피커로 그 컷의 소리를 다시 낸 뒤 한 번 부릅니다(측정, ADR-0189). 회색(소리 없음)은 부르지 않습니다. */
   readonly onReplay?: (cutIndex: number) => void;
+  /** 로마자 스위치(ADR-0188) — 없으면 `"hidden"`(이 변경 전 모양). 앱은 세션 옵션에서 넘깁니다. */
+  readonly romanization?: ChoiceRomanization;
 };
 
 /** 배너의 종류 — 표지 컷 뒤(`start`) · 통과 뒤 컷 뒤(`clear`). */

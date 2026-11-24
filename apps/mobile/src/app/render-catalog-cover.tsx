@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
+import { choiceRomanizationOf } from "../lib/session-options";
 import { CatalogCoverFlow } from "./CatalogCutsFlow";
 import { catalogCoverModelOf } from "./catalog-cover-wiring";
 import type { Screen } from "./nav-state";
@@ -29,6 +30,7 @@ export function renderCatalogCover(
       ordinal={model.ordinal}
       title={model.title}
       cuts={model.cuts}
+      romanization={choiceRomanizationOf(wiring.sessionOptions)}
       onSkip={() => wiring.onSkipCatalogCover(episodeId)}
       onContinue={() => wiring.onContinueCatalogCover(episodeId)}
       onExit={(stage) => wiring.onExitCatalogCover(episodeId, stage)}

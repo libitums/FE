@@ -170,6 +170,18 @@
   white-space: normal;
 }
 
+/* 로마자(읽는 법) — 번역과 같은 크기 · 색에 기울임 · medium으로 모양을 가릅니다(FE 확장, 2026-11-24). */
+.ui-lynx-visual-novel-dialog-romanization {
+  color: var(--libitum-color-gray-700);
+  font-style: italic;
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  font-weight: var(--libitum-font-weight-medium);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+  white-space: normal;
+}
+
 .ui-lynx-visual-novel-dialog-narration .ui-lynx-visual-novel-dialog-line {
   color: var(--libitum-color-gray-600);
 }

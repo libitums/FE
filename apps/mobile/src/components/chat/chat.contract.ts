@@ -45,6 +45,12 @@ export type ChatTextBubbleProps = {
   readonly speaker: string;
   readonly message: string;
   readonly translation: string | null;
+  /** 로마자 · 구분선 · 뜻 묶음(ADR-0188) — 있으면 `translation` 대신 섭니다. */
+  readonly annotation?: {
+    readonly romanization: string;
+    readonly meaning: string;
+    readonly spokenRomanization: string;
+  };
 };
 export type ChatPhotoAspect = "portrait-9x16" | "portrait-3x4";
 export type ChatPhotoProps = {
@@ -59,6 +65,8 @@ export type ChatTypingRowProps = {
 };
 export type ChatReplyOptionProps = {
   readonly primary: string;
+  /** 첫 줄 아래 로마자 줄(기울임)과 그 낭독(ADR-0188). 없으면 줄도 낭독도 없습니다. */
+  readonly romanization?: { readonly text: string; readonly spoken: string };
   readonly lines: readonly string[];
   readonly state: "idle" | "picked";
   /** 누르면 일어나는 일을 낭독 끝에 붙입니다(예: 「Send」). 없으면 글만 읽습니다. */

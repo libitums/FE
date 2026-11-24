@@ -9,7 +9,7 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import { ChatPhoto } from "../../components/chat/ChatMessageRow";
 import { playAudio, stopAudio } from "../../lib/audio";
-import { SLOW_PLAYBACK_RATE } from "../../lib/listen-pace";
+import { CHAT_VOICE_PLAYBACK_RATE } from "../../lib/listen-pace";
 import { useUiCopy } from "../../lib/ui-copy";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { voiceDurationLabel } from "./chat-rules";
@@ -248,7 +248,7 @@ export function VoiceBubble({
       return setPlaying(false);
     }
     if (audioUrl === null) return;
-    const started = playAudio(audioUrl, () => setPlaying(false), SLOW_PLAYBACK_RATE);
+    const started = playAudio(audioUrl, () => setPlaying(false), CHAT_VOICE_PLAYBACK_RATE);
     setPlaying(started === "started");
   };
 
