@@ -58,7 +58,48 @@ export function authSessionFrom(bodyText: string, nowMs: number): AuthSession | 
   if (typeof expiresIn !== "number" || !Number.isFinite(expiresIn) || expiresIn <= 0) {
     return null;
   }
-  return { accessToken, refreshToken, expiresAt: nowMs + expiresIn * 1000 };
+  const user = body["user"];
+  const accountCreatedAt =
+    typeof user === "object" && user !== null
+      ? accountCreatedAtFrom((user as Record<string, unknown>)["created_at"])
+      : undefined;
+  const expiresAt = nowMs + expiresIn * 1000;
+  return accountCreatedAt === undefined
+    ? { accessToken, refreshToken, expiresAt }
+    : { accessToken, refreshToken, expiresAt, accountCreatedAt };
+}
+
+const isoTimePattern =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})$/;
+
+/**
+ * 응답 `user.created_at`(예: `2026-11-24T01:02:03.456789Z`) → epoch ms. 시각이 아니거나 1970년 이전이면 `undefined`.
+ * `Date.parse`에 기대지 않습니다 — 소수 여섯 자리를 런타임마다 다르게 읽을 수 있어서입니다. 순수.
+ */
+export function accountCreatedAtFrom(value: unknown): number | undefined {
+  if (typeof value !== "string") return undefined;
+  const match = isoTimePattern.exec(value);
+  if (match === null) return undefined;
+  const [year, month, day, hour, minute, second] = match.slice(1, 7).map(Number) as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+  if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59 || second > 59) {
+    return undefined;
+  }
+  const millis = Number(((match[7] ?? "") + "000").slice(0, 3));
+  const zone = match[8] ?? "Z";
+  const offsetMinutes =
+    zone === "Z"
+      ? 0
+      : (zone.startsWith("-") ? -1 : 1) *
+        (Number(zone.slice(1, 3)) * 60 + Number(zone.slice(4, 6)));
+  const ms = Date.UTC(year, month - 1, day, hour, minute, second, millis) - offsetMinutes * 60_000;
+  return Number.isFinite(ms) && ms > 0 ? ms : undefined;
 }
 
 /** 429 또는 `over_` 코드 → `rate-limited` · 5xx → `unavailable` · 4xx → `rejected`. */
