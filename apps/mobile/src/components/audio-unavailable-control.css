@@ -18,3 +18,14 @@
   height: var(--libitum-icon-size-md);
   flex-shrink: 0;
 }
+
+/* 레슨 판정 줄의 작은 꺼짐(ADR-0189) — 면 36 · 아이콘 18, RoundButton M과 같은 값입니다. */
+.audio-unavailable-control-m {
+  width: 36px;
+  height: 36px;
+}
+
+.audio-unavailable-control-m .audio-unavailable-control-icon {
+  width: 18px;
+  height: 18px;
+}

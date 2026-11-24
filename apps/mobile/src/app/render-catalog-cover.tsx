@@ -36,6 +36,7 @@ export function renderCatalogCover(
       onExit={(stage) => wiring.onExitCatalogCover(episodeId, stage)}
       onCutsDone={() => wiring.onFinishCatalogCoverCuts(episodeId)}
       onClose={wiring.onCloseCatalogCover}
+      onReplay={() => wiring.onStorySentenceReplayed(episodeId, "prologue")}
     />
   );
 }
