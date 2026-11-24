@@ -11,6 +11,7 @@ import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
+import { setGlobalProps } from "./test-helpers/journey-map-host";
 
 // 에피소드 롤플레이를 App 한 트리에서 봅니다 — 롤플레이 탭의 본편 구획(잠김 · 열림) · 미리보기 → 표지 컷 →
 // 말하기 대화 → 결과 · 목록으로. 대역은 경계뿐입니다 — `StorageModule` · 인식 모듈 · `fetch` · 이벤트 sink.
@@ -41,6 +42,9 @@ const env = {
   afterRequest: { microphone: "granted", speechRecognition: "granted", recognizerAvailable: true },
   openedSettings: 0,
   saves: 0,
+  /** `log_roleplay_turns`로 나간 본문입니다(ADR-0161). */
+  turnLogs: [] as unknown[],
+  turnLogStatus: 200,
 };
 
 const granted = { microphone: "granted", speechRecognition: "granted", recognizerAvailable: true };
@@ -61,6 +65,7 @@ async function boot(
   env.store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   env.events = [];
   env.saves = 0;
+  env.turnLogs = [];
   vi.stubGlobal("NativeModules", {
     StorageModule: {
       get: (key: string) => env.store.get(key) ?? null,
@@ -84,8 +89,12 @@ async function boot(
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   const body = JSON.stringify(progressOf(catalogProgress));
-  vi.stubGlobal("fetch", async (url: string) => {
+  vi.stubGlobal("fetch", async (url: string, init?: { body?: string }) => {
     if (isContentRequest(url)) return contentNotFoundResponse();
+    if (url.endsWith("/rest/v1/rpc/log_roleplay_turns")) {
+      env.turnLogs.push(JSON.parse(init?.body ?? "null"));
+      return { status: env.turnLogStatus, text: async () => "3" };
+    }
     if (url.includes("grant_type=refresh_token")) {
       return {
         status: 200,
@@ -123,6 +132,8 @@ async function boot(
 
 afterEach(() => {
   cleanup();
+  setGlobalProps(undefined);
+  env.turnLogStatus = 200;
   resetPushWiringForTests();
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -235,4 +246,112 @@ test("[IR7] 묻고 나서도 거부하면 안내가 뜬다", async () => {
   fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
   tapButton("roleplay-preview-start");
   expect(id("roleplay-preview-speech-notice")).toHaveAttribute("data-notice", "blocked");
+});
+
+// ---------------------------------------------------------------- 턴 로그(ADR-0161)
+
+const host = { appVersion: { platform: "android", name: "1.5.0", build: 17 } };
+const flush = () =>
+  act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+
+test("[IR8] 끝까지 마치면 턴 로그 한 묶음이 서버로 간다 — 에피소드 · 플랫폼 · 버전 · 언어와 턴마다 한 줄", async () => {
+  setGlobalProps(host);
+  await boot({ "u01-water": u01Complete });
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  passCuts();
+  env.heard = ["아니요 괜찮아요", "현금으로 할게요", "카드로 할게요"];
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  tapButton("roleplay-talk-next");
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  tapButton("roleplay-talk-retry");
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  tapButton("roleplay-talk-next");
+  fireEvent.tap(id("roleplay-talk-skip"), {});
+  await flush();
+  expect(id("lesson-complete-screen")).toBeInTheDocument();
+  expect(env.turnLogs).toEqual([
+    {
+      p_batch: {
+        episodeId: "u01-water",
+        mode: "scripted",
+        platform: "android",
+        appVersion: "1.5.0",
+        appBuild: 17,
+        uiLanguage: "en",
+        // 테스트 런타임의 `SystemInfo.osVersion`입니다 — 값이 아니라 글자로 실린다는 것만 봅니다.
+        osVersion: expect.any(String),
+        turns: [
+          {
+            turnIndex: 0,
+            attempt: 1,
+            outcome: "heard",
+            reason: null,
+            heard: "아니요 괜찮아요",
+            verdict: "correct",
+            hintShown: false,
+          },
+          {
+            turnIndex: 1,
+            attempt: 1,
+            outcome: "heard",
+            reason: null,
+            heard: "현금으로 할게요",
+            verdict: "incorrect",
+            hintShown: false,
+          },
+          {
+            turnIndex: 1,
+            attempt: 2,
+            outcome: "heard",
+            reason: null,
+            heard: "카드로 할게요",
+            verdict: "correct",
+            hintShown: false,
+          },
+          {
+            turnIndex: 2,
+            attempt: 1,
+            outcome: "skipped",
+            reason: null,
+            heard: null,
+            verdict: null,
+            hintShown: false,
+          },
+        ],
+      },
+    },
+  ]);
+});
+
+test("[IR9] 중간에 나가도 그때까지의 턴 로그가 가고, 서버가 거절해도 목록으로 돌아온다", async () => {
+  setGlobalProps(host);
+  env.turnLogStatus = 500;
+  await boot({ "u01-water": u01Complete });
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  passCuts();
+  env.heard = ["아니요 괜찮아요"];
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(within(id("roleplay-talk-back")).getByTestId("ui-lynx-round-button"), {});
+  await flush();
+  expect(id("roleplay-list-section-u01-water")).toBeInTheDocument();
+  expect(env.turnLogs).toHaveLength(1);
+  expect(env.turnLogs[0]).toMatchObject({
+    p_batch: { episodeId: "u01-water", turns: [{ turnIndex: 0, outcome: "heard" }] },
+  });
+});
+
+test("[IR10] 호스트가 앱 버전을 알려 주지 않으면(Explorer) 턴 로그를 보내지 않는다", async () => {
+  await boot({ "u01-water": u01Complete });
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  passCuts();
+  env.heard = ["아니요 괜찮아요"];
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(within(id("roleplay-talk-back")).getByTestId("ui-lynx-round-button"), {});
+  await flush();
+  expect(env.turnLogs).toEqual([]);
 });

@@ -11,6 +11,7 @@ import {
 import type { CatalogRoleplayTurn } from "../catalog-final/catalog-final.contract";
 import { RoleplayPreviewScreen } from "./RoleplayPreviewScreen";
 import { RoleplayTalkScreen } from "./RoleplayTalkScreen";
+import type { RoleplayTurnLogEntry } from "./roleplay-story.contract";
 
 // `ui` 계층: 롤플레이 미리보기 · 대화 — 상대 대사 다이얼로그 · 마이크 · 판정(「Me」 다이얼로그) · 다시 하기 ·
 // 힌트 · 건너뛰기 · 끝 한 번을 실제 컴포넌트로 본다. 인식은 호스트 대역(`stubSpeechHost`)이다.
@@ -233,4 +234,89 @@ test("[RT-FIT] 긴 대사 · 판정 뒤에도 대사는 아래 묶음의 스크�
   fireEvent.tap(id("roleplay-talk-mic"), {});
   expect(scrollOf(id("roleplay-talk-reply"))).not.toBeNull();
   expect(scrollOf(id("roleplay-talk-actions"))).toBeNull();
+});
+
+// ---------------------------------------------------------------- 턴 로그(ADR-0161)
+
+function mountWithLog() {
+  const order: string[] = [];
+  const onTurnLog = vi.fn(
+    (log: readonly RoleplayTurnLogEntry[]) => void order.push(`log:${log.length}`),
+  );
+  const onFinish = vi.fn<Finish>(() => void order.push("finish"));
+  const onExit = vi.fn(() => void order.push("exit"));
+  render(
+    <RoleplayTalkScreen
+      insets={insets}
+      ordinal={1}
+      counterpartName="점원"
+      turns={turns}
+      wildcards={[]}
+      onFinish={onFinish}
+      onExit={onExit}
+      onTurnLog={onTurnLog}
+    />,
+  );
+  return { onTurnLog, onFinish, onExit, order };
+}
+
+test("[RT9] 끝까지 마치면 턴 로그를 한 번, onFinish보다 먼저 올린다 — 들음 · 실패 · 넘김이 차례로", () => {
+  stubSpeechHost({
+    result: (attempt) => (attempt === 0 ? recognized("아니요 괜찮아요") : audioFailed),
+  });
+  const { onTurnLog, order } = mountWithLog();
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  tapButton("roleplay-talk-next");
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-talk-skip"), {});
+  expect(order).toEqual(["log:3", "finish"]);
+  expect(onTurnLog).toHaveBeenCalledTimes(1);
+  expect(onTurnLog.mock.calls[0]?.[0]).toEqual([
+    {
+      turnIndex: 0,
+      attempt: 1,
+      outcome: "heard",
+      reason: null,
+      heard: "아니요 괜찮아요",
+      verdict: "correct",
+      hintShown: false,
+    },
+    {
+      turnIndex: 1,
+      attempt: 1,
+      outcome: "unavailable",
+      reason: "failed",
+      heard: null,
+      verdict: null,
+      hintShown: false,
+    },
+    {
+      turnIndex: 1,
+      attempt: 2,
+      outcome: "skipped",
+      reason: null,
+      heard: null,
+      verdict: null,
+      hintShown: false,
+    },
+  ]);
+});
+
+test("[RT10] 중간에 나가면 그때까지의 턴 로그를 한 번, onExit보다 먼저 올린다", () => {
+  stubSpeechHost({ result: () => recognized("네 괜찮아요") });
+  const { onTurnLog, order } = mountWithLog();
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(within(id("roleplay-talk-back")).getByTestId("ui-lynx-round-button"), {});
+  expect(order).toEqual(["log:1", "exit"]);
+  expect(onTurnLog.mock.calls[0]?.[0]).toMatchObject([
+    { turnIndex: 0, attempt: 1, outcome: "heard", heard: "네 괜찮아요", verdict: "incorrect" },
+  ]);
+});
+
+test("[RT11] 한 번도 말하지 않고 나가면 턴 로그를 올리지 않는다", () => {
+  stubSpeechHost();
+  const { onTurnLog, onExit } = mountWithLog();
+  fireEvent.tap(within(id("roleplay-talk-back")).getByTestId("ui-lynx-round-button"), {});
+  expect(onExit).toHaveBeenCalledTimes(1);
+  expect(onTurnLog).not.toHaveBeenCalled();
 });

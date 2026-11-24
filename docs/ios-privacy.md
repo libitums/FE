@@ -26,15 +26,25 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 | 이메일 / `EmailAddress`                 | App Functionality                                                    | Supabase 소셜 인증 프로필                                                                                                                                            |
 | 대략적인 위치 / `CoarseLocation`        | Analytics                                                            | PostHog GeoIP 국가·지역·시간대. ADR-0029 D15의 서버 변환 설정 전제                                                                                                   |
 | 기타 사용자 콘텐츠 / `OtherUserContent` | Analytics                                                            | `feedback-api.ts` → `submit_feedback`: 선택적 평점·의견·화면/에피소드 맥락                                                                                           |
+| 기타 사용자 콘텐츠 / `OtherUserContent` ⟨2026-11-18 — 같은 항목에 목적 하나가 더해진다⟩ | **App Functionality**, Analytics | `roleplay-turn-log-api.ts` → `log_roleplay_turns`: 대본형 롤플레이에서 음성 인식이 받아 적은 글자 · 판정 · 실패 사유([ADR-0161](adr/0161-roleplay-turn-logs.md)). **앱 manifest(`PrivacyInfo.xcprivacy`)와 App Store Connect의 응답은 아직 고치지 않았다** — 아래 절 |
 | 사용자 ID / `UserID`                    | App Functionality, Analytics, **Developer Advertising** ⟨2026-10-29⟩ | Supabase 계정별 저장 및 로그인 후 PostHog identify. ⟨2026-10-29⟩ 같은 ID를 Airbridge `setUserID`로 건다([ADR-0090](adr/0090-airbridge-user-id.md)) |
 | 기기 ID / `DeviceID`                    | App Functionality, **Developer Advertising** ⟨2026-10-13⟩            | `push_devices`의 APNs 토큰과 사용자 연결. Airbridge SDK 자체 manifest가 `DeviceID`를 tracking false로 선언한다(IDFV · SDK 생성 ID. IDFA 코드는 SDK에 없다 — 아래 절) |
 | 제품 상호작용 / `ProductInteraction`    | App Functionality, Analytics, **Developer Advertising** ⟨2026-10-13⟩ | 서버 진행·학습 날짜·최근 접속 및 PostHog 화면/학습 이벤트. Airbridge로 가는 앱 설치 · 실행 · 가입 완료 · 레슨 완료 이벤트(`airbridge-events.ts`)                     |
 
-`NSPrivacyTracking = false`이며 각 수집 항목의 tracking도 false다. ~~광고 ID·광고 SDK는 사용하지 않는다.~~ ⟨2026-10-13 — 이 문장은 더는 참이 아니다. 광고 측정 SDK(Airbridge `airbridge-ios-sdk-restricted`)가 앱에 들어 있다. IDFA는 수집하지 않고 추적 허용(ATT)을 묻지 않는다 — 아래 [Airbridge SDK와 추적 선언](#airbridge-sdk와-추적-선언)⟩ 음성은 기기가 지원하면 온디바이스, 아니면 Apple Speech 서버에서 처리하며 앱 서버/분석에는 음성이나 인식 원문을 보내지 않는다. Apple 프레임워크 자체 수집은 개발자가 공개할 책임이 없다는 [Apple 안내](https://developer.apple.com/app-store/app-privacy-details/)의 “Apple frameworks or services” 기준을 따른다. 온디바이스라고만 안내해서는 안 된다.
+`NSPrivacyTracking = false`이며 각 수집 항목의 tracking도 false다. ~~광고 ID·광고 SDK는 사용하지 않는다.~~ ⟨2026-10-13 — 이 문장은 더는 참이 아니다. 광고 측정 SDK(Airbridge `airbridge-ios-sdk-restricted`)가 앱에 들어 있다. IDFA는 수집하지 않고 추적 허용(ATT)을 묻지 않는다 — 아래 [Airbridge SDK와 추적 선언](#airbridge-sdk와-추적-선언)⟩ 음성은 기기가 지원하면 온디바이스, 아니면 Apple Speech 서버에서 처리하며 ~~앱 서버/분석에는 음성이나 인식 원문을 보내지 않는다.~~ ⟨2026-11-18 — [ADR-0161](adr/0161-roleplay-turn-logs.md)⟩ **음성은 여전히 앱 서버 · 분석으로 보내지 않는다. 인식 원문(글자)은 대본형 롤플레이에 한해 앱 서버로 간다** — 로그인한 사용자의 말하기 시도마다 인식된 글자(200자까지) · 판정 · 실패 사유가 `log_roleplay_turns`로 가고 1년 보관한다. 분석 도구(PostHog · Airbridge)로는 가지 않는다. 아래 [롤플레이 턴 로그](#롤플레이-턴-로그)에 신고 화면에서 바꿀 것을 적었다. Apple 프레임워크 자체 수집은 개발자가 공개할 책임이 없다는 [Apple 안내](https://developer.apple.com/app-store/app-privacy-details/)의 “Apple frameworks or services” 기준을 따른다. 온디바이스라고만 안내해서는 안 된다.
 
 신고 화면의 7개 항목은 현재 공개 상태와 일치한다(2026-10-01 기준 — 2026-10-13에 더한 `Developer Advertising` 목적 둘은 신고 화면에 아직 없다). 다만 신고 일치가 공개 처리방침의 완결성이나 운영 SaaS 설정을 증명하지는 않는다. 운영 PostHog 프로젝트 632540의 키가 Release 설정과 일치하는지 값 노출 없이 대조했다. `anonymize_ips = true`와 활성 GeoIP 변환 소스(국가·대륙·1단계 행정구역·시간대만 추가)를 MCP로 확인했다. 실제 `entry_screen_viewed` 속성 목록도 이 위치 항목들만 보고한다. 프로젝트의 replay/성능 수집 토글은 켜져 있지만 앱은 PostHogCore의 수동 이벤트만 쓰므로 웹 SDK 자동 수집 기능을 실행하지 않는다. 이번 검토에서는 운영 설정을 변경하지 않았다.
 
 ⟨2026-11-04⟩ **PostHog 이벤트마다 연결 종류가 실린다**([ADR-0096](adr/0096-network-type-in-analytics.md)) — `network`(Wi-Fi · 셀룰러 · 유선 · 기타 · 오프라인) · `networkCost`(요금 없음 · 요금제 · 저데이터 모드). 통신사 · IP · Wi-Fi 이름은 싣지 않는다. 위 7개 항목 가운데 딱 맞는 것이 없고 가장 가까운 것은 **기타 진단 데이터 / `OtherDiagnosticData`**(사용자와 연결 · 목적 Analytics)다. **신고 화면과 앱 manifest에 더할지는 사용자 확인 전이다** — 출시 전에 정한다.
+
+### 롤플레이 턴 로그
+
+2026-11-18. [ADR-0161](adr/0161-roleplay-turn-logs.md)이 대본형 롤플레이의 말하기 시도를 서버에 남긴다. **이 기능이 든 빌드를 심사에 내기 전에 사람이 할 일**이다 — 코드 PR은 아래를 바꾸지 않았다.
+
+1. **App Store Connect → 앱이 수집하는 정보**: 「사용자 콘텐츠 → 기타 사용자 콘텐츠」의 목적에 **App Functionality**를 더한다(지금은 Analytics — 의견). 사용자와 연결됨 · 추적에 쓰지 않음은 그대로다.
+2. **앱 manifest**: `PrivacyInfo.xcprivacy`의 `NSPrivacyCollectedDataTypeOtherUserContent` 목적 배열에 `NSPrivacyCollectedDataTypePurposeAppFunctionality`를 더한다(호스트 빌드가 필요해 이 PR에 넣지 않았다 — 앱 주소 등 다음 호스트 변경과 함께 낸다).
+3. **「오디오 데이터」는 신고하지 않는다** — 음성은 기기와 Apple의 음성 인식 밖으로 나가지 않는다. 서버 음성 인식을 붙이는 날 이 답이 바뀐다.
+4. **공개 처리방침**: 「We do not record, store, or receive your voice」는 그대로 참이다. 그 옆에 인식된 글자를 저장한다는 문장과 보관 1년을 더하고 시행일을 올린다(문장 초안은 ADR-0161을 올린 PR의 설명).
 
 ### Airbridge SDK와 추적 선언
 

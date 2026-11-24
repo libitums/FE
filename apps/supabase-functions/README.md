@@ -212,6 +212,27 @@ B(단계별 예고)로 나눠 `send-push`로 보낸다. 배정은 보내기 전�
 - 개인정보처리방침에 붙일 문구 초안: [`docs/specs/web-trial-speech-samples-privacy.md`](../../docs/specs/web-trial-speech-samples-privacy.md)(사용자가 Notion에 반영).
 - 남은 위험: 사전 등록 표와 같이 빈도 제한 · 봇 막기가 없다. 사용자가 말로 개인정보를 말하면 글자로 남는다(90일 뒤 삭제).
 
+## 롤플레이 턴 로그 표 (ADR-0161)
+
+`20270101120000_roleplay_turn_logs.sql` — 앱의 대본형 롤플레이에서 말하기 시도 · 넘김마다 한 줄이 쌓이는 표 `public.roleplay_turn_logs`
+(**녹음 없음**, 인식기가 낸 글자만). 내장 음성 인식이 쓸 만한지, 서버 음성 인식 · 발음 평가를 어디에 붙일지를 보려는 것이다.
+
+- 열: `user_id`(계정 삭제 시 CASCADE) · `play_id`(한 판을 묶는 값 — 서버가 묶음마다 만든다) · `episode_id` · `mode`(scripted · free — free는 자유 미션의 자리,
+  아직 보내는 곳 없음) · `turn_index` · `attempt` · `outcome`(heard · unavailable · skipped) · `fail_reason`(blocked · dictation-off · failed) ·
+  `recognized_text`(200자까지, 빈 글자 허용) · `verdict`(correct · incorrect) · `hint_shown` · `platform` · `app_version` · `app_build` · `ui_language` ·
+  `os_version` · `created_at`.
+- **앱은 `log_roleplay_turns(p_batch jsonb)`만 부른다**(로그인 사용자, `SECURITY DEFINER`). 표는 RLS를 켜고 정책이 없으며 앱 역할의 권한도 없다 — 읽기 ·
+  쓰기 · 지우기는 42501. 운영자는 대시보드(service role)로 읽는다.
+- 본문: `{ episodeId, mode, platform, appVersion, appBuild, uiLanguage, osVersion?, turns: [{ turnIndex, attempt, outcome, reason, heard, verdict,
+  hintShown }] }`. 줄은 1 ~ 200개(아니면 22023). 값이 하나라도 틀리면 묶음 전체가 실패한다(check 제약 23514 등). 한 사용자 1시간 60판까지(P0001).
+  돌려주는 값은 남긴 줄 수다.
+- **보관 1년**: `purge_roleplay_turn_logs()`가 1년 넘은 줄을 지운다(앱 역할 실행 불가). 매일 부르는 예약은 마이그레이션이 아니라
+  `supabase/cron/roleplay-turn-logs-retention.sql`이다 — pg_cron을 켜고 SQL 편집기에서 **한 번** 실행한다(매일 03:40 UTC). 실행하지 않으면 지워지지 않는다.
+- 통합 테스트 `supabase/migrations/roleplay-turn-logs.integration.test.ts`(TL1 ~ TL11, embedded-postgres)가 권한 · 검증 · 빈도 제한 · 계정 삭제 · 보관을 고정한다.
+- **적용**: 원격 프로젝트에는 아직 적용하지 않았다. 순서 ① 마이그레이션(SQL 편집기 또는 `supabase db push --dry-run` → `supabase db push` — 운영 기록 상태는
+  PRD §7 위험 5를 먼저 본다) ② 예약 SQL 1회 ③ 앱 배포. ①이 없으면 앱의 요청이 404로 조용히 버려진다(화면은 그대로).
+- **개인정보**: 인식된 글자가 계정과 연결되어 남는다. 이 기능이 든 빌드를 내기 전에 개인정보 처리방침 · 스토어 개인정보 표시를 고친다(ADR-0161 D6).
+
 ## AI 컴패니언 — chat-send · companion-proactive (M1 ~ M4)
 
 턴 하나를 SSE로 돌려주는 `chat-send`, 선톡을 만드는 `companion-proactive`, 그 밑의 DB 함수다(LLM 한 단계 평가 창구 `companion-eval`은 아래 따로). 계약은 `packages/companion-contract`

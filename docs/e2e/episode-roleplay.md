@@ -19,3 +19,7 @@
 | ER12 | 앱을 지우고 새로 깔아 `Start roleplay` | 시스템 권한 창 둘(마이크 · 음성 인식) → 허용하면 표지 컷 |
 | ER13 | 듣는 중 바로 다시 누름(말 없이) | 「I didn't catch that. Tap the mic and try again.」, 마이크로 다시 시도 |
 | ER10 | PostHog | `roleplay_story_opened`(episodeId) · `roleplay_story_completed`(episodeId · correctCount · judgedCount · skippedCount) 도착 |
+| ER14 | ⟨2026-11-18 — ADR-0161⟩ 로그인한 채 1편 롤플레이를 끝까지 한다(한 턴은 틀렸다가 다시, 한 턴은 `Can't speak now`) | 결과 화면은 전과 같다. 운영 DB `public.roleplay_turn_logs`에 그 계정의 줄이 한 `play_id`로 쌓인다 — 턴 · 기록 번호 · `heard`/`skipped` · 인식된 글자 · 판정 · `platform` · `app_version` · `os_version` (마이그레이션 적용 뒤 · 네트워크 필요 — 미실행) |
+| ER15 | 한 턴만 말하고 뒤로 나간다 | 목록으로 돌아오고, 그때까지의 줄만 새 `play_id`로 쌓인다. 한 번도 말하지 않고 나가면 줄이 없다 (미실행) |
+| ER16 | 비회원으로, 그리고 비행기 모드에서 롤플레이를 한다 | 화면은 전과 같고 서버에 줄이 생기지 않는다(다시 보내지도 않는다) (미실행) |
+

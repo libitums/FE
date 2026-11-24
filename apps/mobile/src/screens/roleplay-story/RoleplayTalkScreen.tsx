@@ -39,12 +39,20 @@ export function RoleplayTalkScreen({
   wildcards,
   onFinish,
   onExit,
+  onTurnLog,
 }: RoleplayTalkScreenProps): ReactNode {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   const [state, dispatch] = useReducer(roleplayTalkReducer, initialRoleplayTalkState);
   const [replays, setReplays] = useState(0);
   const finished = useRef(false);
+  // 턴 로그는 한 판에 한 번만 올립니다(ADR-0161) — 끝까지 마쳤을 때 또는 중간에 나갈 때, 기록이 있을 때만.
+  const logSent = useRef(false);
+  const sendLog = () => {
+    if (logSent.current || state.log.length === 0) return;
+    logSent.current = true;
+    onTurnLog?.(state.log);
+  };
   const done = isRoleplayTalkDone(state, turns.length);
   const turn = turns[Math.min(state.turnIndex, turns.length - 1)] ?? turns[0];
   const isLast = state.turnIndex === turns.length - 1;
@@ -76,6 +84,7 @@ export function RoleplayTalkScreen({
   useEffect(() => {
     if (!done || finished.current) return;
     finished.current = true;
+    sendLog();
     onFinish(state.results, state.skippedCount);
   }, [done, onFinish, state.results, state.skippedCount]);
 
@@ -91,6 +100,7 @@ export function RoleplayTalkScreen({
     "background only";
     audio.stop();
     attempt.stop();
+    sendLog();
     onExit();
   };
   useScreenBack(handleExit);
