@@ -44,9 +44,7 @@ export function LearningShellPrompt({
               testId="learning-shell-verdict-replay"
               replay={verdictReplay.replay}
               size="m"
-              {...(verdictReplay.onReplayed === undefined
-                ? {}
-                : { onReplayed: verdictReplay.onReplayed })}
+              onReplayed={verdictReplay.onReplayed}
             />
           )}
         </view>

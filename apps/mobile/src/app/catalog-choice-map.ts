@@ -123,7 +123,9 @@ export function wordChoiceItem(
   if (answerIndex < 0 || answerIndex >= choices.length) return skippedItem(item, "malformed");
   // 보기마다 낱말 소리(ADR-0189) — 치환 전 원문으로 이 에피소드 녹음을 찾습니다.
   const choiceAudio =
-    port.audioUrlOf === undefined || parts.choicesSource?.length !== choices.length
+    port.audioUrlOf === undefined ||
+    port.recordedAudioOf === undefined ||
+    parts.choicesSource?.length !== choices.length
       ? null
       : catalogChipAudioOf(parts.choicesSource, { ...port, audioUrlOf: port.audioUrlOf });
   const question: WordChoiceQuestion = {
