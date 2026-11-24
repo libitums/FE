@@ -27,7 +27,13 @@ beforeEach(async () => {
 });
 
 /** 스냅샷 결과 행 하나(계획 · 상태 · 몇 분 전). */
-async function media(user: string, character: string, prompt: unknown, status = "complete", minutesAgo = 0) {
+async function media(
+  user: string,
+  character: string,
+  prompt: unknown,
+  status = "complete",
+  minutesAgo = 0,
+) {
   const result = await db.admin.query(
     `insert into companion.media (user_id, character_id, message_id, kind, status, charge, cost, storage_path, prompt, created_at)
      values ($1, $2, gen_random_uuid(), 'snapshot', $3, 'photo', 0, case when $3 = 'complete' then 'x/' || gen_random_uuid() end,
@@ -38,11 +44,15 @@ async function media(user: string, character: string, prompt: unknown, status = 
 }
 const context = async (user: string, character: string) =>
   (
-    await server.query("select public.companion_snapshot_v2_context($1, $2) as c", [user, character])
+    await server.query("select public.companion_snapshot_v2_context($1, $2) as c", [
+      user,
+      character,
+    ])
   ).rows[0].c as { tester: boolean; recent: { shot: string }[] };
 
 test("V2M1. 시험 계정 여부 + 이 유저 × 인물의 완료된 v2m 계획만, 새것부터 6개", async () => {
-  for (let i = 0; i < 8; i += 1) await media(tester, "daeun", { pipeline: "v2m", shot: `s${i}` }, "complete", 100 - i);
+  for (let i = 0; i < 8; i += 1)
+    await media(tester, "daeun", { pipeline: "v2m", shot: `s${i}` }, "complete", 100 - i);
   await media(tester, "daeun", { pipeline: "v2m", shot: "failed" }, "failed", 0);
   await media(tester, "daeun", { scene: "v1 prompt", aspect: "3:2" }, "complete", 0);
   await media(tester, "doyun", { pipeline: "v2m", shot: "other character" }, "complete", 0);
@@ -58,7 +68,11 @@ test("V2M1. 시험 계정 여부 + 이 유저 × 인물의 완료된 v2m 계획�
 
 test("V2M2. 새 옷 후보는 옷 설명만 남기고(빈 설명 · 까닭 none은 버림), 크론이 오래된 것부터 읽고 한 번만 표시한다", async () => {
   const shot = await media(tester, "daeun", { pipeline: "v2m" });
-  const record = (description: string, change = "occasion", name: string | null = "festival hanbok") =>
+  const record = (
+    description: string,
+    change = "occasion",
+    name: string | null = "festival hanbok",
+  ) =>
     server.query("select public.companion_snapshot_outfit_candidate($1, $2, $3, $4, $5)", [
       "daeun",
       name,
@@ -88,7 +102,8 @@ test("V2M2. 새 옷 후보는 옷 설명만 남기고(빈 설명 · 까닭 none�
   );
   expect(again.rows[0].n).toBe(0);
   expect(
-    (await server.query("select public.companion_snapshot_outfit_candidates_pending(10) as p")).rows[0].p,
+    (await server.query("select public.companion_snapshot_outfit_candidates_pending(10) as p"))
+      .rows[0].p,
   ).toEqual([]);
 });
 

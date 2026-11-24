@@ -32,13 +32,37 @@ const MANIFEST: Manifest = manifestFrom({
   slug: "daeun",
   figureKeep: true,
   outfits: [
-    { id: 6, name: "default", description: "the outfit shown in the character reference sheet", default: true, image: false },
-    { id: 9, name: "rain coat", description: "navy raincoat over the cardigan", default: false, image: true },
-    { id: 11, name: "lounge set", description: "grey sweatshirt and lounge pants", default: false, image: false },
+    {
+      id: 6,
+      name: "default",
+      description: "the outfit shown in the character reference sheet",
+      default: true,
+      image: false,
+    },
+    {
+      id: 9,
+      name: "rain coat",
+      description: "navy raincoat over the cardigan",
+      default: false,
+      image: true,
+    },
+    {
+      id: 11,
+      name: "lounge set",
+      description: "grey sweatshirt and lounge pants",
+      default: false,
+      image: false,
+    },
   ],
   refs: {
-    neutral: { default: { file: "neutral.png", roles: ["angles"], merged: false }, o9: { file: "neutral--o9.png", roles: ["angles", "outfit"], merged: true } },
-    smile: { default: { file: "smile.png", roles: ["angles", "expression"], merged: true }, o9: { file: "smile--o9.png", roles: ["angles", "expression", "outfit"], merged: true } },
+    neutral: {
+      default: { file: "neutral.png", roles: ["angles"], merged: false },
+      o9: { file: "neutral--o9.png", roles: ["angles", "outfit"], merged: true },
+    },
+    smile: {
+      default: { file: "smile.png", roles: ["angles", "expression"], merged: true },
+      o9: { file: "smile--o9.png", roles: ["angles", "expression", "outfit"], merged: true },
+    },
   },
 })!;
 
@@ -87,27 +111,55 @@ test("SV3. 계획 정리 — 까닭 없으면 기본 옷, 없는 학습자는 �
   expect(plain.pipeline).toBe("v2m");
   // 옷을 골랐어도 까닭이 none이면 기본 옷
   expect(normalizePlan({ ...RAW, outfit_id: 9 }, MANIFEST, "female")!.outfit_id).toBe(6);
-  const rain = normalizePlan({ ...RAW, outfit_change: "weather", outfit_id: 9 }, MANIFEST, "female")!;
-  expect([rain.outfit_id, rain.outfit_change]).toEqual([9, "weather"]);
-  const fresh = normalizePlan(
-    { ...RAW, outfit_change: "occasion", outfit_id: 99, new_outfit: "red hanbok", new_outfit_name: "festival hanbok" },
+  const rain = normalizePlan(
+    { ...RAW, outfit_change: "weather", outfit_id: 9 },
     MANIFEST,
     "female",
   )!;
-  expect([fresh.outfit_id, fresh.new_outfit, fresh.new_outfit_name]).toEqual([null, "red hanbok", "festival hanbok"]);
-  const alone = normalizePlan({ ...RAW, shot: "over_shoulder", learner: "none" }, MANIFEST, "female")!;
+  expect([rain.outfit_id, rain.outfit_change]).toEqual([9, "weather"]);
+  const fresh = normalizePlan(
+    {
+      ...RAW,
+      outfit_change: "occasion",
+      outfit_id: 99,
+      new_outfit: "red hanbok",
+      new_outfit_name: "festival hanbok",
+    },
+    MANIFEST,
+    "female",
+  )!;
+  expect([fresh.outfit_id, fresh.new_outfit, fresh.new_outfit_name]).toEqual([
+    null,
+    "red hanbok",
+    "festival hanbok",
+  ]);
+  const alone = normalizePlan(
+    { ...RAW, shot: "over_shoulder", learner: "none" },
+    MANIFEST,
+    "female",
+  )!;
   expect([alone.shot, alone.learner]).toEqual(["medium", "none"]);
-  const selfie = normalizePlan({ ...RAW, angle: "selfie", shot: "wide", learner: "back_view" }, MANIFEST, "female")!;
+  const selfie = normalizePlan(
+    { ...RAW, angle: "selfie", shot: "wide", learner: "back_view" },
+    MANIFEST,
+    "female",
+  )!;
   expect([selfie.shot, selfie.learner]).toEqual(["medium", "none"]);
-  expect(normalizePlan({ ...RAW, learner: "back_view" }, MANIFEST, "hidden")!.learner).toBe("hands");
-  const odd = normalizePlan({ ...RAW, shot: "drone", angle: "x", expression: "angry" }, MANIFEST, "female")!;
+  expect(normalizePlan({ ...RAW, learner: "back_view" }, MANIFEST, "hidden")!.learner).toBe(
+    "hands",
+  );
+  const odd = normalizePlan(
+    { ...RAW, shot: "drone", angle: "x", expression: "angry" },
+    MANIFEST,
+    "female",
+  )!;
   expect([odd.shot, odd.angle, odd.expression]).toEqual(["medium", "eye_level", "smile"]);
   expect(normalizePlan({ ...RAW, safety: "maybe" }, MANIFEST, "female")).toBeNull();
 });
 
 test("SV4. 다양성 추천 — 어깨 너머는 권하지 않고, 바로 앞 둘에 쓴 구도 · 각도는 피한다", () => {
   let seed = 0;
-  const random = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  const random = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   const recent = [
     { shot: "close_up", angle: "eye_level" },
     { shot: "medium", angle: "selfie" },
@@ -121,11 +173,30 @@ test("SV4. 다양성 추천 — 어깨 너머는 권하지 않고, 바로 앞 �
 
 test("SV5. 라우팅 — 표정 × 옷 칸, 없으면 기본 옷 칸 · 무표정, 그림 없는 옷은 글로만", () => {
   const plan = normalizePlan(RAW, MANIFEST, "female")!;
-  expect(route(MANIFEST, plan)).toMatchObject({ ref: "v2/daeun/smile.png", merged: true, defaultOutfit: true });
-  const rain = normalizePlan({ ...RAW, outfit_change: "weather", outfit_id: 9 }, MANIFEST, "female")!;
-  expect(route(MANIFEST, rain)).toMatchObject({ ref: "v2/daeun/smile--o9.png", outfitText: "navy raincoat over the cardigan" });
-  const lounge = normalizePlan({ ...RAW, outfit_change: "home", outfit_id: 11 }, MANIFEST, "female")!;
-  expect(route(MANIFEST, lounge)).toMatchObject({ ref: "v2/daeun/smile.png", outfitText: "grey sweatshirt and lounge pants", defaultOutfit: false });
+  expect(route(MANIFEST, plan)).toMatchObject({
+    ref: "v2/daeun/smile.png",
+    merged: true,
+    defaultOutfit: true,
+  });
+  const rain = normalizePlan(
+    { ...RAW, outfit_change: "weather", outfit_id: 9 },
+    MANIFEST,
+    "female",
+  )!;
+  expect(route(MANIFEST, rain)).toMatchObject({
+    ref: "v2/daeun/smile--o9.png",
+    outfitText: "navy raincoat over the cardigan",
+  });
+  const lounge = normalizePlan(
+    { ...RAW, outfit_change: "home", outfit_id: 11 },
+    MANIFEST,
+    "female",
+  )!;
+  expect(route(MANIFEST, lounge)).toMatchObject({
+    ref: "v2/daeun/smile.png",
+    outfitText: "grey sweatshirt and lounge pants",
+    defaultOutfit: false,
+  });
   // 묶음에 없는 표정은 무표정 칸
   const sad = normalizePlan({ ...RAW, expression: "sad" }, MANIFEST, "female")!;
   expect(route(MANIFEST, sad).ref).toBe("v2/daeun/neutral.png");
@@ -135,7 +206,9 @@ test("SV6. 조립 — 합친 한 장 문장 · 비율 고정 · 체형 유지 �
   const plan = normalizePlan(RAW, MANIFEST, "female")!;
   const kept = compose(plan, "female", route(MANIFEST, plan), true);
   expect(kept.startsWith("a medium shot from the waist up, eye-level camera.")).toBe(true);
-  expect(kept).toContain("The reference image is one sheet: on the left the character from four angles");
+  expect(kept).toContain(
+    "The reference image is one sheet: on the left the character from four angles",
+  );
   expect(kept).toContain("head-to-body proportions");
   expect(kept).toContain("Only the learner's hands appear at the frame edge — never her face.");
   expect(kept.endsWith(FIGURE_TEXT)).toBe(true);
@@ -148,13 +221,40 @@ test("SV7. 묶음 검사 · slug · 판정 계산", () => {
   expect(slugFromRefs(["deoksu-ref.png", "deoksu-expressions.png"])).toBe("deoksu");
   expect(slugFromRefs(["x.png"])).toBeNull();
   expect(manifestFrom({ pipeline: "v1", slug: "a", outfits: [], refs: {} })).toBeNull();
-  expect(manifestFrom({ pipeline: "v2m", slug: "a", outfits: [{ id: 1, default: false }], refs: { neutral: { default: {} } } })).toBeNull();
+  expect(
+    manifestFrom({
+      pipeline: "v2m",
+      slug: "a",
+      outfits: [{ id: 1, default: false }],
+      refs: { neutral: { default: {} } },
+    }),
+  ).toBeNull();
   const ok = { reasons: "", safe: true, identity: 4, garbled_text: false, learner_face: false };
   expect(v2VerdictFrom({ ...ok, learner_matches: true })!.pass).toBe(true);
   expect(v2VerdictFrom({ ...ok, learner_matches: false })!.pass).toBe(false);
   expect(v2VerdictFrom(ok)!.pass).toBe(true); // 칸이 없으면 막지 않는다
-  expect(mediaEnvFrom((n) => ({ SUPABASE_URL: "https://x.supabase.co", SUPABASE_ANON_KEY: "a", SUPABASE_SERVICE_ROLE_KEY: "s", COMPANION_SNAPSHOT_PIPELINE: "V2M-test" })[n as string])!.snapshotPipeline).toBe("v2m-test");
-  expect(mediaEnvFrom((n) => ({ SUPABASE_URL: "https://x.supabase.co", SUPABASE_ANON_KEY: "a", SUPABASE_SERVICE_ROLE_KEY: "s", COMPANION_SNAPSHOT_PIPELINE: "v3" })[n as string])!.snapshotPipeline).toBe("v1");
+  expect(
+    mediaEnvFrom(
+      (n) =>
+        ({
+          SUPABASE_URL: "https://x.supabase.co",
+          SUPABASE_ANON_KEY: "a",
+          SUPABASE_SERVICE_ROLE_KEY: "s",
+          COMPANION_SNAPSHOT_PIPELINE: "V2M-test",
+        })[n as string],
+    )!.snapshotPipeline,
+  ).toBe("v2m-test");
+  expect(
+    mediaEnvFrom(
+      (n) =>
+        ({
+          SUPABASE_URL: "https://x.supabase.co",
+          SUPABASE_ANON_KEY: "a",
+          SUPABASE_SERVICE_ROLE_KEY: "s",
+          COMPANION_SNAPSHOT_PIPELINE: "v3",
+        })[n as string],
+    )!.snapshotPipeline,
+  ).toBe("v1");
 });
 
 test("SV8. 장면 설계 입력 — 옷장 · 피할 것 · 추천 · 체형 유지 줄, 대화는 신뢰하지 않는 데이터", () => {
@@ -165,7 +265,15 @@ test("SV8. 장면 설계 입력 — 옷장 · 피할 것 · 추천 · 체형 유
     segments: [{ kind: "speech", text: "김밥 싸 왔어!" }],
     snapshotSelf: "female",
     manifest: MANIFEST,
-    recent: [{ shot: "close_up", angle: "selfie", expression: "smile", outfit_name: "default", setting: "cafe" }],
+    recent: [
+      {
+        shot: "close_up",
+        angle: "selfie",
+        expression: "smile",
+        outfit_name: "default",
+        setting: "cafe",
+      },
+    ],
     suggest: { shot: "wide", angle: "low" },
   });
   expect(content).toContain("- id 9: rain coat — navy raincoat over the cardigan");
@@ -237,12 +345,21 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   calls.push({ url, body });
   if (url === `${SUPA}/auth/v1/user`) return json(200, { id: USER });
   if (url === `${SUPA}/rest/v1/rpc/companion_media_begin`)
-    return json(200, { result: "ok", cached: false, media: { id: MEDIA, status: "pending" }, holdId: "h1", job });
+    return json(200, {
+      result: "ok",
+      cached: false,
+      media: { id: MEDIA, status: "pending" },
+      holdId: "h1",
+      job,
+    });
   if (url === `${SUPA}/rest/v1/rpc/companion_snapshot_v2_context`) return json(200, context);
   if (url.startsWith(`${SUPA}/rest/v1/rpc/`)) return json(200, { result: "ok" });
   if (url === `${SUPA}/storage/v1/object/companion-refs/v2/daeun/manifest.json`)
-    return manifestReply.body === undefined ? json(manifestReply.status, { error: "not found" }) : json(manifestReply.status, manifestReply.body);
-  if (url.startsWith(`${SUPA}/storage/v1/object/companion-refs/`)) return new Response(PNG as BodyInit, { status: 200 });
+    return manifestReply.body === undefined
+      ? json(manifestReply.status, { error: "not found" })
+      : json(manifestReply.status, manifestReply.body);
+  if (url.startsWith(`${SUPA}/storage/v1/object/companion-refs/`))
+    return new Response(PNG as BodyInit, { status: 200 });
   if (url.startsWith(`${SUPA}/storage/v1/object/companion-media`)) return json(200, {});
   if (url === "https://api.anthropic.com/v1/messages") {
     const name = (body as { tool_choice: { name: string } }).tool_choice.name;
@@ -250,8 +367,21 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       name === "snapshot_plan"
         ? planInput
         : name === "snapshot_check"
-          ? { reasons: "fine", safe: true, identity: 5, garbled_text: false, learner_face: false, learner_matches: true }
-          : { scene: "A girl with kimbap on a picnic mat.", aspect: "3:2", background_text: null, safety: "allow", reason: "ok" };
+          ? {
+              reasons: "fine",
+              safe: true,
+              identity: 5,
+              garbled_text: false,
+              learner_face: false,
+              learner_matches: true,
+            }
+          : {
+              scene: "A girl with kimbap on a picnic mat.",
+              aspect: "3:2",
+              background_text: null,
+              safety: "allow",
+              reason: "ok",
+            };
     return json(200, {
       id: "msg_1",
       type: "message",
@@ -264,7 +394,10 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     });
   }
   if (url === "https://api.openai.com/v1/images/edits")
-    return json(200, { data: [{ b64_json: base64FromBytes(PNG) }], usage: { output_tokens: 1568 } });
+    return json(200, {
+      data: [{ b64_json: base64FromBytes(PNG) }],
+      usage: { output_tokens: 1568 },
+    });
   return json(404, { url });
 }) as typeof fetch;
 
@@ -288,15 +421,23 @@ async function snap(overrides: Partial<MediaEnv> = {}) {
 }
 const to = (prefix: string) => calls.filter((c) => c.url.startsWith(prefix));
 const finish = () =>
-  to(`${SUPA}/rest/v1/rpc/companion_media_finish`)[0]!.body as { p_status: string; p_result: Record<string, unknown> };
+  to(`${SUPA}/rest/v1/rpc/companion_media_finish`)[0]!.body as {
+    p_status: string;
+    p_result: Record<string, unknown>;
+  };
 const toolNames = () =>
-  to("https://api.anthropic.com/").map((c) => (c.body as { tool_choice: { name: string } }).tool_choice.name);
+  to("https://api.anthropic.com/").map(
+    (c) => (c.body as { tool_choice: { name: string } }).tool_choice.name,
+  );
 
 beforeEach(() => {
   calls = [];
   work = [];
   manifestReply = { status: 200, body: { ...MANIFEST } };
-  context = { tester: false, recent: [{ shot: "close_up", angle: "selfie", expression: "smile", setting: "cafe" }] };
+  context = {
+    tester: false,
+    recent: [{ shot: "close_up", angle: "selfie", expression: "smile", setting: "cafe" }],
+  };
   planInput = { ...RAW };
 });
 
@@ -305,7 +446,9 @@ test("SV9. v2m — 묶음 · 최근 계획을 읽고, 장면 설계로 고른 �
   expect(toolNames()).toEqual(["snapshot_plan", "snapshot_check"]);
   const plan = to("https://api.anthropic.com/")[0]!.body as { messages: { content: string }[] };
   expect(JSON.stringify(plan)).toContain("- close_up, selfie, smile");
-  const refs = to(`${SUPA}/storage/v1/object/companion-refs/`).map((c) => c.url.split("companion-refs/")[1]);
+  const refs = to(`${SUPA}/storage/v1/object/companion-refs/`).map(
+    (c) => c.url.split("companion-refs/")[1],
+  );
   expect(refs).toEqual(["v2/daeun/manifest.json", "v2/daeun/smile.png"]);
   const form = to("https://api.openai.com/")[0]!.body as FormData;
   expect(form.getAll("image[]")).toHaveLength(1);
@@ -313,19 +456,33 @@ test("SV9. v2m — 묶음 · 최근 계획을 읽고, 장면 설계로 고른 �
   expect(String(form.get("prompt")).endsWith(FIGURE_TEXT)).toBe(true);
   const done = finish();
   expect(done.p_status).toBe("complete");
-  expect(done.p_result["prompt"]).toMatchObject({ pipeline: "v2m", ref: "v2/daeun/smile.png", figure: true, outfit_id: 6 });
+  expect(done.p_result["prompt"]).toMatchObject({
+    pipeline: "v2m",
+    ref: "v2/daeun/smile.png",
+    figure: true,
+    outfit_id: 6,
+  });
   expect(done.p_result["meta"]).toMatchObject({ pipeline: "v2m" });
   expect(to(`${SUPA}/rest/v1/rpc/companion_snapshot_outfit_candidate`)).toHaveLength(0);
 });
 
 test("SV10. 새 옷은 글로만 그리고 후보로 기록한다", async () => {
-  planInput = { ...RAW, outfit_change: "occasion", new_outfit: "red hanbok with a white jeogori", new_outfit_name: "festival hanbok" };
+  planInput = {
+    ...RAW,
+    outfit_change: "occasion",
+    new_outfit: "red hanbok with a white jeogori",
+    new_outfit_name: "festival hanbok",
+  };
   await snap();
   const prompt = String((to("https://api.openai.com/")[0]!.body as FormData).get("prompt"));
   expect(prompt).toContain("Outfit: red hanbok with a white jeogori.");
   const recorded = to(`${SUPA}/rest/v1/rpc/companion_snapshot_outfit_candidate`);
   expect(recorded).toHaveLength(1);
-  expect(recorded[0]!.body).toMatchObject({ p_character_id: "daeun", p_outfit_change: "occasion", p_media_id: MEDIA });
+  expect(recorded[0]!.body).toMatchObject({
+    p_character_id: "daeun",
+    p_outfit_change: "occasion",
+    p_media_id: MEDIA,
+  });
 });
 
 test("SV11. 묶음이 없거나 · 시험 계정만인데 시험 계정이 아니면 v1으로 그린다", async () => {
