@@ -70,7 +70,7 @@ describe("받은 파일이 없는 부팅", () => {
 });
 
 describe("받은 파일이 있는 부팅", () => {
-  test("AF3. u00 S2 듣기 문항은 받은 파일 주소로 재생하고 「천천히」가 0.85로 같은 파일을 부른다", async () => {
+  test("AF3. u00 S2 듣기 문항은 받은 파일 주소로 재생하고 「천천히」가 0.7로 같은 파일을 부른다", async () => {
     const { host } = await bootItemAudioApp({ progress: afterS1, files: "all" });
 
     tapNode(u00, "S2");
@@ -78,7 +78,7 @@ describe("받은 파일이 있는 부팅", () => {
     expect(present("listening-prompt-playback")).toBe(true);
     expect(host.play).toHaveBeenCalledWith(D04_FILE, expect.any(Function));
     tapId("listening-prompt-slow");
-    expect(host.playAtRate).toHaveBeenCalledWith(D04_FILE, 0.85, expect.any(Function));
+    expect(host.playAtRate).toHaveBeenCalledWith(D04_FILE, 0.7, expect.any(Function));
   });
 
   test("AF6. 받은 파일이 있는 기기에서는 같은 문항에 답하면 듣기 측정 이벤트가 하나 나간다(AF5의 가드)", async () => {

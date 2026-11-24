@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  CHAT_VOICE_PLAYBACK_RATE,
   initialListenPace,
   listenPaceAccessibilityLabel,
   playbackRateOf,
@@ -15,10 +16,22 @@ import { uiCopyFor } from "./ui-copy";
 // `unit` 계층: 속도 어휘의 입출력만 봅니다.
 
 describe("listen-pace", () => {
-  it("LP1. normal은 1, slow는 0.85다", () => {
+  it("LP1. normal은 1, slow는 0.7이다", () => {
     expect(playbackRateOf("normal")).toBe(1);
     expect(playbackRateOf("slow")).toBe(SLOW_PLAYBACK_RATE);
-    expect(SLOW_PLAYBACK_RATE).toBe(0.85);
+    expect(SLOW_PLAYBACK_RATE).toBe(0.7);
+  });
+
+  // 피드백(2026-11-22) 「천천히가 느려지지 않는다」의 재현입니다. 호스트는 배율을 그대로 적용했고(0.85 → 같은 문장이
+  // 1.16 ~ 1.18배, 2.3초 문장에서 +0.4초), 그 차이가 「느려졌다」로 들리지 않았습니다. 천천히는 같은 소리를 1.4배 이상
+  // 늘려야 합니다(ADR-0082 ⟨2026-11-24⟩).
+  it("LP5. 천천히는 같은 소리를 1.4배 이상 늘리고, 음질이 무너지는 0.5 아래로는 내려가지 않는다", () => {
+    expect(1 / playbackRateOf("slow")).toBeGreaterThanOrEqual(1.4);
+    expect(playbackRateOf("slow")).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it("LP6. 대화 음성 메시지의 배율은 천천히와 따로 0.85 그대로다", () => {
+    expect(CHAT_VOICE_PLAYBACK_RATE).toBe(0.85);
   });
 
   it("LP2. 토글은 왕복하고 처음 값은 normal이다", () => {

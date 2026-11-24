@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { pauseAudio, playAudio, resumeAudio, slowPlaybackSupport, stopAudio } from "./audio";
-import { SLOW_PLAYBACK_RATE } from "./listen-pace";
+import { CHAT_VOICE_PLAYBACK_RATE, SLOW_PLAYBACK_RATE } from "./listen-pace";
 
 // 재생 접점의 속도 갈래입니다. 호스트 경계(`NativeModules.AudioPlaybackModule`)만 대역이고,
 // `done`을 붙잡아 두어 늦게 온 콜백을 손으로 일으킵니다.
@@ -65,18 +65,27 @@ describe("playAudio — 속도 갈래", () => {
     expect(host.playAtRate).not.toHaveBeenCalled();
   });
 
-  it("AR2. 0.85이고 playAtRate가 있으면 playAtRate(source, 0.85, 함수) 한 번이고 play는 0회다", () => {
+  it("AR2. 천천히이고 playAtRate가 있으면 playAtRate(source, 0.7, 함수) 한 번이고 play는 0회다", () => {
     const host = stubModern();
 
     const outcome = playAudio("greeting-1", vi.fn<() => void>(), SLOW_PLAYBACK_RATE);
 
     expect(outcome).toBe("started");
     expect(host.playAtRate).toHaveBeenCalledTimes(1);
+    expect(host.playAtRate).toHaveBeenCalledWith("greeting-1", 0.7, expect.any(Function));
+    expect(host.play).not.toHaveBeenCalled();
+  });
+
+  it("AR2b. 대화 음성 배율(0.85)도 playAtRate로 그대로 간다", () => {
+    const host = stubModern();
+
+    playAudio("greeting-1", vi.fn<() => void>(), CHAT_VOICE_PLAYBACK_RATE);
+
     expect(host.playAtRate).toHaveBeenCalledWith("greeting-1", 0.85, expect.any(Function));
     expect(host.play).not.toHaveBeenCalled();
   });
 
-  it("AR3. 0.85인데 옛 호스트(playAtRate 없음)면 play가 인자 둘로 불리고 started다", () => {
+  it("AR3. 천천히인데 옛 호스트(playAtRate 없음)면 play가 인자 둘로 불리고 started다", () => {
     const host = stubLegacy();
 
     const outcome = playAudio("greeting-1", vi.fn<() => void>(), SLOW_PLAYBACK_RATE);
@@ -87,7 +96,7 @@ describe("playAudio — 속도 갈래", () => {
     expect(host.play.mock.calls[0]?.[0]).toBe("greeting-1");
   });
 
-  it("AR4. 0.85 재생 뒤 stopAudio를 하면 그 뒤 온 done은 onFinished를 부르지 않는다", () => {
+  it("AR4. 천천히 재생 뒤 stopAudio를 하면 그 뒤 온 done은 onFinished를 부르지 않는다", () => {
     const host = stubModern();
     const onFinished = vi.fn<() => void>();
     playAudio("greeting-1", onFinished, SLOW_PLAYBACK_RATE);
@@ -99,7 +108,7 @@ describe("playAudio — 속도 갈래", () => {
     expect(onFinished).not.toHaveBeenCalled();
   });
 
-  it("AR5. 0.85 done이 두 번 와도 onFinished는 한 번이다", () => {
+  it("AR5. 천천히 done이 두 번 와도 onFinished는 한 번이다", () => {
     const host = stubModern();
     const onFinished = vi.fn<() => void>();
     playAudio("greeting-1", onFinished, SLOW_PLAYBACK_RATE);
@@ -111,7 +120,7 @@ describe("playAudio — 속도 갈래", () => {
     expect(onFinished).toHaveBeenCalledTimes(1);
   });
 
-  it("AR6. 0.85 재생을 1.0 재생이 대체하면 앞 done은 무시되고 뒤 done은 한 번 올라간다", () => {
+  it("AR6. 천천히 재생을 1.0 재생이 대체하면 앞 done은 무시되고 뒤 done은 한 번 올라간다", () => {
     const host = stubModern();
     const first = vi.fn<() => void>();
     const second = vi.fn<() => void>();
@@ -127,7 +136,7 @@ describe("playAudio — 속도 갈래", () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  it("AR7. 모듈이 없으면 0.85도 unavailable이고 onFinished를 부르지 않는다", () => {
+  it("AR7. 모듈이 없으면 천천히도 unavailable이고 onFinished를 부르지 않는다", () => {
     vi.stubGlobal("NativeModules", {});
     const onFinished = vi.fn<() => void>();
 
@@ -144,7 +153,7 @@ describe("playAudio — 속도 갈래", () => {
     for (const method of Object.values(host)) expect(method).not.toHaveBeenCalled();
   });
 
-  it("AR9. 0.85 재생 중 pause와 resume을 지나도 done 한 번에 onFinished가 한 번 올라간다", () => {
+  it("AR9. 천천히 재생 중 pause와 resume을 지나도 done 한 번에 onFinished가 한 번 올라간다", () => {
     const host = stubModern();
     const onFinished = vi.fn<() => void>();
     playAudio("greeting-1", onFinished, SLOW_PLAYBACK_RATE);

@@ -215,6 +215,18 @@ public final class AudioPlaybackModuleTest {
     assertTrue("normal=" + normal + "ms slow=" + slow + "ms", slow >= normal * 1.1);
   }
 
+  /**
+   * AP-S1b: the JS "Slow" rate (0.7, ADR-0082 2026-11-24 correction) is clearly longer — at least 1.25x
+   * including the fixed open/complete cost. 0.85 (about 1.16x) was reported as "not slower".
+   */
+  @Test public void apS1b_jsSlowRateIsClearlyLonger() throws InterruptedException {
+    elapsedMillis("greeting-1", 1.0); // first open is discarded
+    long normal = elapsedMillis("greeting-1", 1.0);
+    long slow = elapsedMillis("greeting-1", 0.7);
+    android.util.Log.i("AudioPlaybackTest", "AP-S1b normal=" + normal + "ms slow=" + slow + "ms");
+    assertTrue("normal=" + normal + "ms slow=" + slow + "ms", slow >= normal * 1.25);
+  }
+
   /** AP-S2 */
   @Test public void apS2_stopDuringSlowPlaybackDiscardsCompletion() throws InterruptedException {
     CountDownLatch complete = new CountDownLatch(1);

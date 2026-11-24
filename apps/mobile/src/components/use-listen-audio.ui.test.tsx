@@ -93,12 +93,12 @@ describe("자동 재생", () => {
     expect(playbackText()).toBe("idle");
   });
 
-  test("LA2. 레슨 속도가 slow이면 새 cue의 자동 재생은 0.85다", () => {
+  test("LA2. 레슨 속도가 slow이면 새 cue의 자동 재생은 0.7이다", () => {
     const { lesson } = lessonOf({ pace: "slow" });
 
     render(<Probe cue={cueOf("q1")} lesson={lesson} />);
 
-    expect(playAudio).toHaveBeenCalledWith(listen.source, expect.any(Function), 0.85);
+    expect(playAudio).toHaveBeenCalledWith(listen.source, expect.any(Function), 0.7);
   });
 
   test("LA3. 자동 재생이 꺼지면 자동으로는 0회이고 replay()로 한 번 난다", () => {
@@ -170,7 +170,7 @@ describe("다시 듣기 · 「천천히」 · 재생/일시정지", () => {
     const slow = { ...lesson, pace: "slow" as const };
     view.rerender(<Probe cue={cue} lesson={slow} />);
     act(() => hook().replay());
-    expect(playAudio).toHaveBeenLastCalledWith(listen.source, expect.any(Function), 0.85);
+    expect(playAudio).toHaveBeenLastCalledWith(listen.source, expect.any(Function), 0.7);
 
     act(() => hook().answered("correct"));
 
@@ -185,7 +185,7 @@ describe("다시 듣기 · 「천천히」 · 재생/일시정지", () => {
     });
   });
 
-  test("LA5. normal에서 togglePace는 onTogglePace 한 번과 즉시 0.85 재생이다", () => {
+  test("LA5. normal에서 togglePace는 onTogglePace 한 번과 즉시 0.7 재생이다", () => {
     const { lesson, onTogglePace } = lessonOf({ autoPlay: "off" });
     render(<Probe cue={cueOf("q1")} lesson={lesson} />);
 
@@ -193,7 +193,7 @@ describe("다시 듣기 · 「천천히」 · 재생/일시정지", () => {
 
     expect(onTogglePace).toHaveBeenCalledTimes(1);
     expect(playAudio).toHaveBeenCalledTimes(1);
-    expect(playAudio).toHaveBeenCalledWith(listen.source, expect.any(Function), 0.85);
+    expect(playAudio).toHaveBeenCalledWith(listen.source, expect.any(Function), 0.7);
   });
 
   test("LA5. slow에서 togglePace는 onTogglePace 한 번이고 재생을 건드리지 않는다", () => {
@@ -246,7 +246,7 @@ describe("다시 듣기 · 「천천히」 · 재생/일시정지", () => {
     expect(playbackText()).toBe("idle");
 
     act(() => hook().toggle());
-    expect(playAudio).toHaveBeenCalledWith(listen.source, expect.any(Function), 0.85);
+    expect(playAudio).toHaveBeenCalledWith(listen.source, expect.any(Function), 0.7);
     expect(playbackText()).toBe("playing");
 
     act(() => hook().toggle());
