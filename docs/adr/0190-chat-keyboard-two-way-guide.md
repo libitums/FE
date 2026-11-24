@@ -37,6 +37,9 @@
   키보드를 먼저 내려 앱 뒤로가기 처리까지 오지 않고, 그대로 두면 토글 아래 키보드 자리가 흰 빈칸으로 남았다(기기 확인).
   - 신호: 입력 칸 `keyboardheightchange`의 높이 0. 판정은 순수 함수 `keyboardGuidePhoneHidden({ stage, height, risen })` — 휴대폰 키보드
     화면이고, **이 화면 동안 키보드가 한 번 올라온 뒤(양수 높이)**, 높이가 0일 때만. 올라오기 전에 온 0(초점을 주기 전 등)으로는 넘기지 않는다.
+  - Android는 키보드가 닫힐 때 0 대신 아래 내비게이션 높이(24)를 보낸다(기기 로그 2026-11-17, 에피소드 설문 시트). 그래서 높이를 레이아웃
+    단위로 바꾸는 한 곳(`phoneKeyboardHeightOf`)이 **64 pt/dp 이하를 0(내려감)** 으로 본다(`PHONE_KEYBOARD_CLOSED_MAX`, 설문 시트와 같은 값)
+    — 안내 판정과 높이 저장이 같은 값을 본다. 그만큼 낮은 휴대폰 키보드는 없다.
   - 높이 저장 경로는 그대로다 — 0은 저장하지 않는다(`usePhoneKeyboardHeight`가 버림). 입력 칸 높이는 `useGuideKeyboard`가 돌려준 함수가
     방(저장)과 안내(판정) 둘 다에 건넨다.
   - iOS도 같은 신호면 같은 동작(뒤로가기는 없지만 키보드가 내려가는 경우 대비). Hangul keys 화면 · 다른 단계 · 안내 밖 채팅은 영향 없다.
@@ -98,7 +101,7 @@
 - 앱 전체 통합 테스트(`App.messenger-turns`)는 덕수쌤 방에서 안내를 먼저 끝내야 글을 칠 수 있다 — 안내가 입력 줄 키보드를 쥔다.
 
 ## 테스트
-- unit MG-U9 ~ U15(`messenger-guide.unit` · `messenger-guide.storage.unit`) · AN1 · AB3(이벤트 수)
+- unit MG-U9 ~ U15(`messenger-guide.unit` · `messenger-guide.storage.unit`) · KH-U5(`keyboard-height.unit`, 닫힘 작은 값) · AN1 · AB3(이벤트 수)
 - ui KG-UI1 ~ UI10(`MessengerGuide.keyboard.ui`, UI9 · UI10은 키보드가 내려감) · MG-UI3 · UI5(`MessengerGuide.ui`, 순서 바뀜) · MG-UI10 ~ UI16(`MessengerGuide.sample.ui`) ·
   EV-UI2(`chat-events.ui`) · D5 · M4(`MessengerChatScreen.device1.ui`, 입력 칸 안내 글) · LV-U1 ~ U3(언어 여덟)
 - integration KG-I1 ~ I3(`App.messenger-keyboard-guide`, I3은 키보드가 내려감) · CP-I4(안내를 끝낸 뒤 보내기)
