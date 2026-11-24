@@ -513,3 +513,31 @@ test("SV12. 장면 설계가 막으면 blocked — 그림을 그리지 않는다
   expect(to("https://api.openai.com/")).toHaveLength(0);
   expect(finish()).toMatchObject({ p_status: "blocked", p_result: { failure: "prompt_blocked" } });
 });
+
+test("SV13. 묶음 칸 검사 — 경로로 새는 이름 · 모르는 역할은 그 칸만 버리고, 무표정 기본 칸이 없으면 v1", () => {
+  const base = {
+    pipeline: "v2m",
+    slug: "daeun",
+    outfits: [{ id: 1, default: true }],
+  };
+  const good = { file: "neutral.png", roles: ["angles"], merged: false };
+  const checked = manifestFrom({
+    ...base,
+    refs: {
+      neutral: { default: good },
+      smile: {
+        default: { file: "../../secret.png", roles: ["angles", "expression"], merged: true },
+        o2: { file: "smile--o2.png", roles: ["angles", "pose"], merged: true },
+        o3: { file: "smile--o3.png", roles: ["angles", "expression", "outfit"], merged: true },
+      },
+      sad: { default: { file: "sad.png", roles: ["expression"], merged: false } },
+    },
+  })!;
+  expect(Object.keys(checked.refs)).toEqual(["neutral", "smile"]);
+  expect(Object.keys(checked.refs["smile"]!)).toEqual(["o3"]);
+  expect(manifestFrom({ ...base, refs: { neutral: { o1: good } } })).toBeNull();
+  expect(manifestFrom({ ...base, slug: "../x", refs: { neutral: { default: good } } })).toBeNull();
+  const [text] = referenceText(["angles", "pose"], true, true);
+  expect(text).toContain("on the right: pose");
+  expect(text).not.toContain("undefined");
+});

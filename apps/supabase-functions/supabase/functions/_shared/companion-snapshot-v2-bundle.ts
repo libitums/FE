@@ -41,18 +41,53 @@ export const slugFromRefs = (refs: readonly string[]): string | null => {
   return sheet ? sheet.slice(0, -"-ref.png".length) : null;
 };
 
-/** manifest.json → 모양 검사. 틀리면 null(그 인물은 v1으로 그린다). */
+const FILE = /^[a-z_]+(--o\d+)?\.png$/;
+const SIDE_ROLES = ["expression", "outfit"];
+
+/** 파일 하나의 칸 검사 — 이름(경로로 새지 않게) · 역할(첫째는 인물 sheet · angles, 나머지는 표정 · 옷 한 번씩) · 합침 여부. */
+function refFrom(input: unknown): ManifestRef | null {
+  if (typeof input !== "object" || input === null) return null;
+  const ref = input as Record<string, unknown>;
+  const roles = ref["roles"];
+  if (typeof ref["file"] !== "string" || !FILE.test(ref["file"]) || !Array.isArray(roles))
+    return null;
+  const [person, ...rest] = roles as unknown[];
+  if (person !== "angles" && person !== "sheet") return null;
+  if (rest.length > 2 || new Set(rest).size !== rest.length) return null;
+  if (!rest.every((role) => typeof role === "string" && SIDE_ROLES.includes(role))) return null;
+  return {
+    file: ref["file"],
+    roles: [person, ...(rest as string[])],
+    merged: ref["merged"] === true,
+  };
+}
+
+/** 표정 → 칸 → 파일. 틀린 칸은 버리고, 무표정 · 기본 옷 칸이 없으면 null. */
+function refsFrom(input: unknown): Manifest["refs"] | null {
+  if (typeof input !== "object" || input === null) return null;
+  const out: Record<string, Record<string, ManifestRef>> = {};
+  for (const [expression, cells] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof cells !== "object" || cells === null) continue;
+    const kept: Record<string, ManifestRef> = {};
+    for (const [key, raw] of Object.entries(cells as Record<string, unknown>)) {
+      const ref = refFrom(raw);
+      if (ref !== null && (key === "default" || /^o\d+$/.test(key))) kept[key] = ref;
+    }
+    if (Object.keys(kept).length) out[expression] = kept;
+  }
+  return out["neutral"]?.["default"] ? out : null;
+}
+
+/** manifest.json → 모양 검사. 틀리면 null(그 인물은 v1으로 그린다). 칸 하나가 틀리면 그 칸만 버린다(라우팅이 기본 칸으로 간다). */
 export function manifestFrom(input: unknown): Manifest | null {
   if (typeof input !== "object" || input === null) return null;
   const value = input as Record<string, unknown>;
-  if (value["pipeline"] !== PIPELINE || typeof value["slug"] !== "string") return null;
+  const slug = value["slug"];
+  if (value["pipeline"] !== PIPELINE || typeof slug !== "string" || !/^[a-z0-9-]+$/.test(slug))
+    return null;
   const outfits = Array.isArray(value["outfits"]) ? value["outfits"] : null;
-  const refs = value["refs"];
-  if (outfits === null || typeof refs !== "object" || refs === null) return null;
-  const neutral = (refs as Record<string, unknown>)["neutral"] as
-    | Record<string, unknown>
-    | undefined;
-  if (!neutral || typeof neutral["default"] !== "object") return null;
+  const refs = refsFrom(value["refs"]);
+  if (outfits === null || refs === null) return null;
   const clean = outfits
     .filter(
       (o): o is Record<string, unknown> =>
@@ -71,10 +106,10 @@ export function manifestFrom(input: unknown): Manifest | null {
   return {
     version: typeof value["version"] === "number" ? value["version"] : 0,
     pipeline: PIPELINE,
-    slug: value["slug"],
+    slug,
     figureKeep: value["figureKeep"] === true,
     outfits: clean,
-    refs: refs as Manifest["refs"],
+    refs,
   };
 }
 

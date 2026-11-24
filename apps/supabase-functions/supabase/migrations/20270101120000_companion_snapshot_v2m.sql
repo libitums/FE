@@ -19,6 +19,9 @@ create table if not exists companion.snapshot_outfit_candidates (
 );
 create index if not exists snapshot_outfit_candidates_pending
   on companion.snapshot_outfit_candidates (created_at) where processed_at is null;
+-- 사진 행을 지울 때(on delete set null) 후보 표를 훑지 않게.
+create index if not exists snapshot_outfit_candidates_media
+  on companion.snapshot_outfit_candidates (media_id);
 alter table companion.snapshot_outfit_candidates enable row level security;
 -- 정책 없음: 서버 키(service_role)만 읽고 쓴다.
 

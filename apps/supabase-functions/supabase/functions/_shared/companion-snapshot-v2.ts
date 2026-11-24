@@ -218,15 +218,17 @@ export function referenceText(
     : "keep the same face, hairstyle and hair colour";
   if (merged) {
     const rest = roles.slice(1);
+    // 역할은 묶음 검사(`manifestFrom`)가 표정 · 옷으로만 남긴다 — 그래도 모르는 이름이면 그 이름 그대로.
     const names: Record<string, string> = {
       expression: "the facial expression to use",
       outfit: "the outfit to wear",
     };
+    const name = (role: string) => names[role] ?? role;
     const right =
       rest.length > 1
-        ? `; on the right, top: ${names[rest[0]!]}; bottom: ${names[rest[1]!]}`
+        ? `; on the right, top: ${name(rest[0]!)}; bottom: ${name(rest[1]!)}`
         : rest.length
-          ? `; on the right: ${names[rest[0]!]}`
+          ? `; on the right: ${name(rest[0]!)}`
           : "";
     const body =
       `The reference image is one sheet: on the left the character` +
