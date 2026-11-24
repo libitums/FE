@@ -307,6 +307,7 @@ test("FT8. 평가 세트 — 본문 스키마를 지나고(≤ 20), 친구 넷�
   expect(moderation.map((set) => set.id)).toEqual([
     "romance-tier-moderation",
     "romance-line-moderation",
+    "common-requests-moderation",
   ]);
   for (const set of moderation)
     expect(Object.keys(set.expect!).sort(), set.id).toEqual(
@@ -406,8 +407,8 @@ test("FT13. 로맨스 대상이 아닌 인물(덕수쌤 · 윤경) — Romance �
   expect(text).toContain("- Romance: not with this character. Never let a romantic mood grow");
   expect(text).toContain("You are their teacher.");
   expect(text).not.toContain("hold hands or hug in an @action");
-  // 미성년자 · 나이 모름은 다른 인물처럼 none.
-  expect(romanceText(teacher, "minor")).toContain("- Romance: none.");
+  // 미성년자 · 나이 모름도 같은 줄(ADR-0180 D6) — 선 none의 「담백하게 답하고 질문」 대신 웃어넘기고, 연애를 되묻지 않는다.
+  expect(romanceText(teacher, "minor")).toContain("- Romance: not with this character.");
   // 앞부분(캐시)은 칸이 있어도 같다.
   expect(prompt(teacher, "adult").stable).toBe(prompt(duksu, "adult").stable);
 });

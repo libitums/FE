@@ -114,7 +114,11 @@ afterEach(() => {
 describe("안내를 이미 본 사용자", () => {
   test("MG-UI10 서버가 예시를 제안하면 사진 단계만 「New」로 뜨고, 사진 알약에 고리 · FREE가 선다", async () => {
     const { source } = serverSource(true);
-    mountChat({ source, roomId: "duksu", guideStore: memoryStore(["list", "room"]).store });
+    mountChat({
+      source,
+      roomId: "duksu",
+      guideStore: memoryStore(["list", "room", "keyboard"]).store,
+    });
     await flush();
     expect(coach()?.getAttribute("data-step")).toBe("sample");
     expect(coach()?.textContent).toContain("This first one is on me.");
@@ -130,7 +134,7 @@ describe("안내를 이미 본 사용자", () => {
 
   test("MG-UI11 알약을 누르면 결제 확인 없이 예시를 받고 안내가 끝난다 — 다시 뜨지 않는다", async () => {
     const { source, claim, timers } = serverSource(true);
-    const { store, seen } = memoryStore(["list", "room"]);
+    const { store, seen } = memoryStore(["list", "room", "keyboard"]);
     mountChat({ source, roomId: "duksu", guideStore: store });
     await flush();
     fireEvent.tap(pill(), {});
@@ -153,7 +157,7 @@ describe("안내를 이미 본 사용자", () => {
 
   test("MG-UI12 예시 단계에도 건너뛰기가 없다 — 알약을 눌러야 끝난다. 제안이 없으면 안내가 서지 않고 알약은 보통 가격", async () => {
     const offered = serverSource(true);
-    const first = memoryStore(["list", "room"]);
+    const first = memoryStore(["list", "room", "keyboard"]);
     mountChat({ source: offered.source, roomId: "duksu", guideStore: first.store });
     await flush();
     expect(screen.queryByTestId(ids.guideCoachSkip)).toBeNull();
@@ -170,7 +174,7 @@ describe("안내를 이미 본 사용자", () => {
     mountChat({
       source: none.source,
       roomId: "duksu",
-      guideStore: memoryStore(["list", "room"]).store,
+      guideStore: memoryStore(["list", "room", "keyboard"]).store,
     });
     await flush();
     expect(coach()).toBeNull();
@@ -181,7 +185,7 @@ describe("안내를 이미 본 사용자", () => {
 describe("받지 못한 경우", () => {
   test("MG-UI14 받기에 실패하면 본 것으로 적지 않는다 — 다음에 방에 오면 다시 권한다", async () => {
     const { source, timers } = serverSource(true, { kind: "failed" });
-    const { store, seen } = memoryStore(["list", "room"]);
+    const { store, seen } = memoryStore(["list", "room", "keyboard"]);
     mountChat({ source, roomId: "duksu", guideStore: store });
     await flush();
     fireEvent.tap(pill(), {});
@@ -194,12 +198,13 @@ describe("받지 못한 경우", () => {
 });
 
 describe("처음 온 사용자", () => {
-  test("MG-UI13 chat → ideas 뒤에 예시 단계가 「3 of 3」으로 이어지고, 받으면 방 · 목록 · 예시 안내를 모두 본 것으로 적는다", async () => {
+  test("MG-UI13 keyboard(두 화면) → ideas 뒤에 예시 단계가 「3 of 3」으로 이어지고, 받으면 방 · 목록 · 키보드 · 예시 안내를 모두 본 것으로 적는다", async () => {
     const { source, claim, timers } = serverSource(true);
     const { store, seen } = memoryStore();
     mountChat({ source, roomId: "duksu", guideStore: store });
     await flush();
     expect(coach()?.textContent).toContain("1 of 3");
+    fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     expect(coach()?.getAttribute("data-step")).toBe("sample");
@@ -210,7 +215,7 @@ describe("처음 온 사용자", () => {
     await flush();
     expect(claim).toHaveBeenCalledTimes(1);
     expect(coach()).toBeNull();
-    expect(seen().sort()).toEqual(["list", "room", "snapshot"]);
+    expect(seen().sort()).toEqual(["keyboard", "list", "room", "snapshot"]);
   });
 });
 
@@ -219,7 +224,7 @@ describe("예시 음성 단계(스냅샷 다음)", () => {
 
   test("MG-UI15 사진 알약을 누르면 음성 단계로 넘어가고, 음성 알약에 고리 · FREE가 선다 — 누르면 결제 확인 없이 음성을 받고 끝난다", async () => {
     const { source, claim, timers } = serverSource(true, undefined, true);
-    const { store, seen } = memoryStore(["list", "room"]);
+    const { store, seen } = memoryStore(["list", "room", "keyboard"]);
     mountChat({ source, roomId: "duksu", guideStore: store });
     await flush();
     expect(coach()?.getAttribute("data-step")).toBe("sample");
@@ -246,7 +251,7 @@ describe("예시 음성 단계(스냅샷 다음)", () => {
     expect(voicePill().textContent).toContain("15");
     act(() => timers.advance(1500));
     await flush();
-    expect(seen().sort()).toEqual(["list", "room", "snapshot", "voice"]);
+    expect(seen().sort()).toEqual(["keyboard", "list", "room", "snapshot", "voice"]);
   });
 
   test("MG-UI16 사진은 이미 봤고 음성만 제안되면 음성 단계만 「New」로 뜬다. 처음 온 사용자는 4단계", async () => {
@@ -254,7 +259,7 @@ describe("예시 음성 단계(스냅샷 다음)", () => {
     mountChat({
       source: only.source,
       roomId: "duksu",
-      guideStore: memoryStore(["list", "room", "snapshot"]).store,
+      guideStore: memoryStore(["list", "room", "snapshot", "keyboard"]).store,
     });
     await flush();
     expect(coach()?.getAttribute("data-step")).toBe("voice");

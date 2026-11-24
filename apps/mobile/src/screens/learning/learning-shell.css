@@ -175,6 +175,7 @@
   justify-content: center;
   flex-shrink: 0;
   min-height: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
+  overflow: visible;
 }
 
 /* 판정이 서면 지시문 글은 흐름에 남아 높이를 지키되 보이지 않습니다. */
@@ -192,6 +193,9 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  /* 배지 옆 다시 듣기(ADR-0189) — 간격 8, 48 누르는 자리가 36 줄 위아래로 넘칩니다. */
+  gap: var(--libitum-layout-gap-inline);
+  overflow: visible;
 }
 
 /* 무대를 감싸는 상자입니다. 면 · 모서리 · 안 여백은 ui-lynx `Card`의 `stage` 변형이

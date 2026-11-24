@@ -4,11 +4,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaJa } from "./ui-copy-ja-chat-media";
 import { messengerChatAlbumJa } from "./ui-copy-ja-chat-album";
 import { messengerChatSuggestedJa } from "./ui-copy-ja-chat-suggested";
+import { messengerChatStoriesJa } from "./ui-copy-ja-chat-stories";
 
 export const messengerChatExtraJa: MessengerChatExtraCopy = {
   media: messengerChatMediaJa,
   album: messengerChatAlbumJa,
   suggested: messengerChatSuggestedJa,
+  stories: messengerChatStoriesJa,
   access: {
     signInTitle: "出会った人とメッセージしよう",
     signInBody:
@@ -135,13 +137,22 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     cardBody: "ここでは韓国の友だちとメッセージで話します。まずは私と話してみましょう。",
     cardButton: (name) => `${name}と話す`,
     steps: {
-      chat: "韓国語で書いて送ってください。私が返信し、メッセージの下の鉛筆でより良い言い方がわかります。",
       ideas: "何を言えばいいか迷ったら、入力欄の横の電球をタップすると返信のヒントが出ます。",
       media: "キーボードの上のボタンで、写真やボイスメッセージもお願いできます。",
       sample:
         "今なにをしているか見てみますか？Snapshotをタップすると写真を送ります。最初の1枚はサービスです。",
       voice:
         "声でも聞いてみますか？スナップボイスをタップするとそのメッセージを読み上げます。最初の1回はこちらもサービスです。",
+    },
+    keyboard: {
+      phone: {
+        title: "自分の言葉でチャットしてOK。韓国語でどう言うか教えます。",
+        body: "次は、自分で韓国語を打ってみましょう。",
+      },
+      hangul: {
+        title: "ここでハングルキーを使って韓国語を打つこともできます。",
+        body: "韓国語キーボードは要りません。入力欄の下の切り替えでいつでも変えられます。",
+      },
     },
     next: "次へ",
     done: "わかりました",

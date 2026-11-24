@@ -4,11 +4,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaId } from "./ui-copy-id-chat-media";
 import { messengerChatAlbumId } from "./ui-copy-id-chat-album";
 import { messengerChatSuggestedId } from "./ui-copy-id-chat-suggested";
+import { messengerChatStoriesId } from "./ui-copy-id-chat-stories";
 
 export const messengerChatExtraId: MessengerChatExtraCopy = {
   media: messengerChatMediaId,
   album: messengerChatAlbumId,
   suggested: messengerChatSuggestedId,
+  stories: messengerChatStoriesId,
   access: {
     signInTitle: "Kirim pesan ke orang yang kamu temui",
     signInBody:
@@ -135,13 +137,23 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     cardBody: "Di sini kamu mengobrol dengan teman Korea. Mulai denganku — aku bantu.",
     cardButton: (name) => `Ngobrol dengan ${name}`,
     steps: {
-      chat: "Tulis dalam bahasa Korea lalu kirim. Aku akan membalas, dan pensil di bawah pesanmu menunjukkan cara mengatakannya dengan lebih baik.",
       ideas: "Bingung mau bilang apa? Ketuk lampu di samping kotak pesan untuk ide balasan.",
       media: "Kamu juga bisa minta foto atau pesan suara lewat tombol di atas keyboard.",
       sample:
         "Mau lihat aku lagi apa? Ketuk Snapshot dan aku kirim foto. Yang pertama gratis dariku.",
       voice:
         "Mau dengar suaraku? Ketuk Suara kilat dan aku bacakan pesan itu. Yang pertama juga gratis dariku.",
+    },
+    keyboard: {
+      phone: {
+        title:
+          "Ngobrol pakai bahasamu sendiri — aku tunjukkan cara mengatakannya dalam bahasa Korea.",
+        body: "Selanjutnya, coba ketik bahasa Korea sendiri.",
+      },
+      hangul: {
+        title: "Atau ketik bahasa Korea langsung di sini dengan Tombol Hangul.",
+        body: "Tidak perlu keyboard Korea. Ganti kapan saja lewat tombol di bawah kotak pesan.",
+      },
     },
     next: "Berikutnya",
     done: "Mengerti",

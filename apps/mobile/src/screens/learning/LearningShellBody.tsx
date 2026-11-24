@@ -12,7 +12,11 @@ import {
   type LearningShellScene,
   type LearningWorkspaceMode,
 } from "./learning-shell.contract";
-import type { LearningShellActionPlacement, LearningShellStage } from "./learning-shell-props";
+import type {
+  LearningShellActionPlacement,
+  LearningShellStage,
+  VerdictReplay,
+} from "./learning-shell-props";
 import { learningShellScrollId } from "./learning-shell-scroll";
 import {
   questionTransitionAttributes,
@@ -26,6 +30,8 @@ export type LearningShellBodyProps = {
   readonly instruction: string | undefined;
   /** 주면 지시문 자리에 판정 배지가 겹쳐 섭니다(`LearningShellPrompt`). */
   readonly verdict?: AnswerResult;
+  /** 판정 배지 옆 다시 듣기입니다(`LearningShellPrompt`). */
+  readonly verdictReplay?: VerdictReplay | undefined;
   /** 가운데 카드 안입니다. 무대 상자(`learning-shell-stage`)는 이 컴포넌트가 만듭니다. */
   readonly card: ReactNode;
   /** 무대의 면 — `bare`면 `Card`로 감싸지 않습니다(`LearningShellProps.stage`). */
@@ -60,6 +66,7 @@ export function LearningShellBody({
   arrangement,
   instruction,
   verdict,
+  verdictReplay,
   card,
   stage: stageSurface,
   workspace,
@@ -107,7 +114,11 @@ export function LearningShellBody({
 
   const instructionNode =
     instruction === undefined ? null : (
-      <LearningShellPrompt instruction={instruction} verdict={verdict} />
+      <LearningShellPrompt
+        instruction={instruction}
+        verdict={verdict}
+        verdictReplay={verdictReplay}
+      />
     );
 
   if (arrangement === "card-scroll") {

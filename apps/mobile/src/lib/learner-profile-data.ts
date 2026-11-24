@@ -15,7 +15,7 @@ import { fillPlaceholders } from "./placeholder-fill";
 
 export { learnerCountryTextOf };
 
-/** 문장 틀 — ko · en은 반드시, 화면 언어(es · id · ja · vi · th · my)는 뜻 줄의 그 언어 꼴입니다(2026-11-19 · th · my 11-20). */
+/** 문장 틀 — ko · en은 반드시, 화면 언어(es · id · ja · vi · th · my · zh-TW)는 뜻 줄의 그 언어 꼴입니다(2026-11-19 · th · my 11-20). */
 type PreviewTemplate = { readonly ko: string; readonly en: string } & Readonly<
   Partial<Record<LearnerCountryLanguage, string>>
 >;
@@ -29,7 +29,15 @@ type Asset = {
 
 const isText = (value: unknown): value is string => typeof value === "string" && value !== "";
 
-const LOCAL_LANGUAGES: readonly LearnerCountryLanguage[] = ["es", "id", "ja", "vi", "th", "my"];
+const LOCAL_LANGUAGES: readonly LearnerCountryLanguage[] = [
+  "es",
+  "id",
+  "ja",
+  "vi",
+  "th",
+  "my",
+  "zh-TW",
+];
 
 /** 화면 언어마다 하나씩 — 값이 글자인 칸만 남깁니다. */
 function localTextsOf(

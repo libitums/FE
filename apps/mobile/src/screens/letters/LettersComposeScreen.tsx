@@ -38,7 +38,7 @@ export function LettersComposeScreen({
       base.dispatch(next);
     },
   };
-  const { state, round, verdict } = quiz;
+  const { state, round, target, verdict } = quiz;
 
   const action = state.done
     ? { label: copy.done, run: onExit }
@@ -94,7 +94,13 @@ export function LettersComposeScreen({
           state.done ? (
             <text className="letters-compose-complete">{copy.complete}</text>
           ) : (
-            <ComposeQuizCard quiz={quiz} romanization={romanization} />
+            // 만들 글자의 소리가 없으면(버킷에 올리기 전) ▶는 회색 · 누를 수 없음 — 입장 전 기초와 같습니다. 그릴 때마다
+            // 포트에 묻으므로 소리가 올라오면 코드 변경 없이 다시 단추가 됩니다.
+            <ComposeQuizCard
+              quiz={quiz}
+              romanization={romanization}
+              speaker={sound.sourceOf(target) === null ? "unavailable" : "ready"}
+            />
           )
         }
       />

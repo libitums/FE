@@ -63,13 +63,17 @@ export function localHourOf(nowMs: number, timeZone: string): number {
 
 const SPANISH = new Set("AR BO CL CO CR CU DO EC ES GT HN MX NI PA PE PR PY SV UY VE".split(" "));
 
-/** 나라 → 콘솔 문구 언어(en · vi · id · ms · es · ja)입니다. */
+/** 번체 중국어 나라 — 대만 · 홍콩 · 마카오(ADR-0185). 간체(중국 · 싱가포르)는 화면 언어에 없어 영어입니다. */
+const TRADITIONAL_CHINESE = new Set(["TW", "HK", "MO"]);
+
+/** 나라 → 콘솔 문구 언어(en · vi · id · ms · es · ja · zh-TW)입니다. */
 export function copyLanguageFor(country: string | null): string {
   const code = (country ?? "").toUpperCase();
   if (code === "VN") return "vi";
   if (code === "ID") return "id";
   if (code === "MY") return "ms";
   if (code === "JP") return "ja";
+  if (TRADITIONAL_CHINESE.has(code)) return "zh-TW";
   if (SPANISH.has(code)) return "es";
   return "en";
 }
@@ -82,6 +86,7 @@ export function storyLanguageFor(country: string | null): string {
   if (code === "JP") return "ja";
   if (code === "TH") return "th";
   if (code === "MM") return "my";
+  if (TRADITIONAL_CHINESE.has(code)) return "zh-TW";
   if (SPANISH.has(code)) return "es";
   return "en";
 }

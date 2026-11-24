@@ -17,6 +17,7 @@ import { uiCopyJa } from "./ui-copy-ja";
 import { uiCopyMy } from "./ui-copy-my";
 import { uiCopyTh } from "./ui-copy-th";
 import { uiCopyVi } from "./ui-copy-vi";
+import { uiCopyZhTw } from "./ui-copy-zh-tw";
 
 export const uiCopyCatalog: UiCopyCatalog = {
   en: uiCopyEn,
@@ -27,6 +28,8 @@ export const uiCopyCatalog: UiCopyCatalog = {
   // 2026-11-20 태국어 · 미얀마어도 완전한 표입니다(ADR-0158 개정 — 화면 문구를 번들에 싣고 천장을 올림, ADR-0149 개정).
   th: uiCopyTh,
   my: uiCopyMy,
+  // 2026-11-24 대만 중국어(번체)도 완전한 표입니다(ADR-0185).
+  "zh-TW": uiCopyZhTw,
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -64,6 +67,7 @@ const tables: Readonly<Record<UiLanguage, UiCopy>> = {
   ja: uiCopyJa,
   th: uiCopyTh,
   my: uiCopyMy,
+  "zh-TW": uiCopyZhTw,
 };
 
 // 메인 스레드에는 `NativeModules`가 없어 저장된 언어를 못 읽으므로 첫 프레임은 늘 영어입니다. 그래서 영어 표만

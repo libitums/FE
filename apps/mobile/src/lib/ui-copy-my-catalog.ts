@@ -1,7 +1,10 @@
 // 미얀마어 문구표 구획 — 카탈로그 맵 · 표지 컷.
 // 번역 초안 — 원어민 검수 필요(ADR-0158 개정).
 
-import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type {
+  AudioUnavailableCopy,
+  SentenceReplayCopy,
+} from "../components/audio-unavailable.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
@@ -63,10 +66,6 @@ export const catalogMapMy: CatalogMapCopy = {
 };
 
 export const catalogCoverMy: CatalogCoverCopy = {
-  toggleScript: {
-    en: "အသံထွက် ပြရန်",
-    roman: "အဓိပ္ပာယ် ပြရန်",
-  },
   nextCut: (ordinal, total) => `နောက်မြင်ကွင်း၊ ${total} ခုအနက် ${ordinal}`,
   finishCover: "မိတ်ဆက် ပြီးရန်",
   finishEpilogue: "အပိုင်း ပြီးရန်",
@@ -182,4 +181,9 @@ export const catalogStoryFinalMy: CatalogStoryFinalCopy = {
 
 export const audioUnavailableMy: AudioUnavailableCopy = {
   label: "အသံ မရှိသေးပါ",
+};
+
+/** 지나간 문장 다시 듣기 단추의 이름입니다(ADR-0189). 소리가 없으면 `audioUnavailable.label`이 이름입니다. */
+export const sentenceReplayMy: SentenceReplayCopy = {
+  label: "ပြန်ဖွင့်ရန်",
 };

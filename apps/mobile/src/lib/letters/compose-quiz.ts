@@ -122,3 +122,14 @@ export function composeEchoOf(state: ComposeState): string | null {
   if (state.done || round === undefined || composeVerdictOf(state) !== "correct") return null;
   return composeSyllable(round.consonant, round.vowel);
 }
+
+/**
+ * 라운드 음절(가 · 너 · 도)의 앱 내장 녹음 이름입니다(ADR-0173 ⟨2026-11-24⟩) — 호스트 음성 폴더의 `hangul-s-<로마자>.m4a`
+ * (Android는 같은 폴더를 복사 — ADR-0045). ▶와 정답 뒤 음절 소리가 이 이름을 재생 모듈에 넘깁니다. 라운드 음절이 아니면 null.
+ */
+export function composeClipOf(syllable: string): string | null {
+  for (const round of COMPOSE_ROUNDS)
+    if (syllable !== "" && composeSyllable(round.consonant, round.vowel) === syllable)
+      return `hangul-s-${round.roman}`;
+  return null;
+}

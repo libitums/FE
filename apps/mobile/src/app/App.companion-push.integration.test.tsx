@@ -167,3 +167,12 @@ test("CP-I7 시험 계정이 아닌 회원도 선톡 알림을 누르면 그 인
   expect(textOf("messenger-chat-header")).toContain("미나");
   expect(present("messenger-access-gate")).toBe(false);
 });
+
+test("CP-I8 스토리 알림(story: true)을 누르면 opened 이벤트에 story: true(감사 A3)", async () => {
+  const events: NotificationEvent[] = [];
+  await boot(events);
+  await tapPush({ kind: "companion-chat", characterId: "mina", story: true });
+  expect(events.filter((event) => event.name === "push_notification_opened")).toEqual([
+    { name: "push_notification_opened", target: "companion-chat", story: true },
+  ]);
+});

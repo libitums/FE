@@ -153,7 +153,7 @@
    연결 실패 · 5xx면 메시지 id로 한 번 물어 서버가 받았으면 그대로 이어 간다(두 번 내지 않음).
 3. **결과 · 파일** [코드]: 사진은 `POST /storage/v1/object/sign/companion-media/<path> {expiresIn: 86400}`의 서명 URL(하루 — 방을 다시 열면 새로),
    3:2(240 × 160) · 1:1(200 × 200) 상자와 「AI-generated」 캡션(§8의 `aiGenerated`를 화면에 보임). 음성은 대상 메시지의 한국어 · 번역을 그대로 싣고
-   호스트 `AudioPlaybackModule`로 0.85배 재생한다(두 호스트 모두 https 원격 재생을 이미 받는다 — 호스트 변경 없음). 길이를 모르므로 길이 글자를 그리지 않는다.
+   호스트 `AudioPlaybackModule`로 0.85배 재생한다(⟨2026-11-24⟩ 상수는 「천천히」(0.7)와 갈린 `CHAT_VOICE_PLAYBACK_RATE` — [ADR-0082](0082-item-audio-and-slow-playback.md) 「정정 ⟨2026-11-24⟩」; 두 호스트 모두 https 원격 재생을 이미 받는다 — 호스트 변경 없음). 길이를 모르므로 길이 글자를 그리지 않는다.
 4. **오류 → 회색 줄** [코드]: 402 엽전 부족 · 409 만드는 중 · 429 상한(`resetsAt` 또는 다음 UTC 자정을 기기 시각으로) · 422/404/403 forbidden 대상 아님 ·
    403/503/400/401/405 지금 못 씀 · blocked · failed(엽전 돌아옴) · 요청 실패. 5개 언어.
 5. **엽전** [코드]: 서버 모드에서는 앱 지갑에서 빼지 않는다. 202 · 결과 뒤 `companion_get_wallet`(sub + grant + paid)을 읽어 엽전 출시 결선의

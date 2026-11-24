@@ -4,7 +4,11 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { PictureLoadState } from "../../lib/picture-load";
 import { judgeSpeaking } from "../../lib/speaking-judge";
-import { speechAvailabilityAfter, speechPhaseFor } from "../../lib/speech-attempt";
+import {
+  speechAvailabilityAfter,
+  speechMissedHintOf,
+  speechPhaseFor,
+} from "../../lib/speech-attempt";
 import type { SpeechAttemptPhase, SpeechControls } from "../../lib/speech-attempt";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
@@ -41,6 +45,7 @@ export function speakWordSessionReducer(
     case "start": {
       const startable =
         phase.kind === "ready" ||
+        phase.kind === "missed" ||
         (phase.kind === "unavailable" && phase.reason === "dictation-off");
       return startable ? { ...state, phase: { kind: "listening" } } : state;
     }
@@ -57,7 +62,7 @@ export function speakWordSessionReducer(
       };
     }
     case "skip":
-      return phase.kind === "ready" || phase.kind === "unavailable"
+      return phase.kind === "ready" || phase.kind === "missed" || phase.kind === "unavailable"
         ? nextQuestion(state, [...state.heard, null])
         : state;
     case "next":
@@ -124,6 +129,9 @@ export function speakWordControlsOf(
       return { primary: "stop", secondary: null };
     case "heard":
       return { primary: null, secondary: null };
+    // 못 알아들음은 판정이 아니라 같은 문항을 다시 말할 기회입니다(ADR-0181).
+    case "missed":
+      return { primary: "retry", secondary: "skip" };
     case "unavailable":
       return { primary: "skip", secondary: phase.reason === "dictation-off" ? "retry" : null };
   }
@@ -132,6 +140,9 @@ export function speakWordControlsOf(
 export function speakWordHintOf(phase: SpeechAttemptPhase, copy: UiCopy): string | null {
   if (phase.kind === "heard") {
     return copy.speaking.tapToContinue;
+  }
+  if (phase.kind === "missed") {
+    return speechMissedHintOf(phase.reason, copy);
   }
   if (phase.kind === "unavailable" && phase.reason !== "dictation-off") {
     return copy.speakWord.recognitionUnavailable;

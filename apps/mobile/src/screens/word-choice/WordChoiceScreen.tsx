@@ -1,7 +1,6 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
@@ -49,6 +48,7 @@ import { useAudioCue } from "../../lib/use-audio-cue";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import { useLearningDensity } from "../learning/use-learning-density";
+import { playChoiceSound } from "../learning/lesson-sound";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
@@ -203,6 +203,7 @@ export function WordChoiceActivity({
     if (question === null || !answerable) return;
     const judged = index === question.answerIndex ? "correct" : "incorrect";
     if (!hasAnswered(state)) {
+      playChoiceSound(question.choiceAudio, index, question.audio, audioLesson);
       onItemAnswered?.(choiceReport(question, state.questionIndex, judged, density, index));
       const entering = cultureFeedbackOf(question, judged, copy);
       if (entering !== undefined) announce(cultureFeedbackAnnouncement(entering));
@@ -275,6 +276,7 @@ export function WordChoiceActivity({
               onError={picture.onError}
               density={density}
               cast={cast}
+              choiceRomanization={choiceRomanization}
               answer={
                 result === null || selectedIndex === null
                   ? null

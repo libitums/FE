@@ -13,6 +13,7 @@ import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteS
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { lessonCoinReward } from "../lib/coins";
 import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
+import { choiceRomanizationOf } from "../lib/session-options";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { renderCatalogActivity } from "./render-catalog-activity";
 import { renderCatalogReview } from "./render-catalog-review";
@@ -172,8 +173,11 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           insets={wiring.safeAreaInsets}
           ordinal={model.ordinal}
           cuts={model.cuts}
+          romanization={choiceRomanizationOf(wiring.sessionOptions)}
+          onRomanizationChange={wiring.onDialogRomanizationChange}
           onExit={() => wiring.onLeaveCatalogEpilogue(episodeId)}
           onClose={() => wiring.onLeaveCatalogEpilogue(episodeId)}
+          onReplay={() => wiring.onStorySentenceReplayed(episodeId, "epilogue")}
         />
       );
     }

@@ -33,3 +33,6 @@ verify_jwt = false
 
 [functions.push-campaigns]
 verify_jwt = false
+
+[functions.companion-stories]
+verify_jwt = false

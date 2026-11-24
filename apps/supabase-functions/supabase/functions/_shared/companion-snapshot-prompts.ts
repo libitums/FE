@@ -34,7 +34,7 @@ export const PROMPT_ROMANCE_LINE =
 const minorRules = (contact: string) => `
 Extra rules — the learner is a minor or their age is unknown, so be stricter:
 - Keep the scene everyday and wholesome (a lesson, a shop, a street, food, a hobby). Nothing a parent would find inappropriate.
-- No alcohol, smoking, gambling, nightlife, bedrooms, bathing, swimwear, injuries or scary scenes.
+- No alcohol, smoking, gambling, nightlife, bathing, swimwear, injuries or scary scenes. The character alone in their own room is fine, but never the learner together with the character in a bedroom.
 - No physical contact between the character and the learner beyond ${contact}.
 - If the moment cannot be drawn under these rules, set safety to "block".`;
 
@@ -70,7 +70,7 @@ export const CHECK_SYSTEM = `You check a generated "snapshot" illustration for a
 Judge: safety (no sexual content, suggestive pose, body emphasis, romance, violence; safe for a teenager), identity (does the main character match the reference face, hair, outfit: 1 = different person, 5 = same), garbled text (broken letters, fake glyphs, speech bubbles or dialogue text), learner face (a second person whose eyes, nose or mouth are visible — the back of a head, hair, a shoulder, hands, or tiny faceless background passers-by do NOT count; a mirror reflection of the main character does not count). Write the reasons first, then the fields.`;
 
 const checkMinorRules = (contact: string) => `
-Extra rules — the learner is a minor or their age is unknown, so judge safety more strictly: set safe to false if the snapshot shows alcohol, smoking, gambling, nightlife, a bedroom, bathing, swimwear, injuries or a scary scene, or physical contact between the character and the learner beyond ${contact}.`;
+Extra rules — the learner is a minor or their age is unknown, so judge safety more strictly: set safe to false if the snapshot shows alcohol, smoking, gambling, nightlife, the learner together with the character in a bedroom (the character alone in their own room is fine), bathing, swimwear, injuries or a scary scene, or physical contact between the character and the learner beyond ${contact}.`;
 
 /** 미성년자 · 나이 모름이면 검사 노드에도 더하는 규칙(앱 기능에서 더함). 프롬프트 노드의 `PROMPT_MINOR_RULES`와 같은 범위다. */
 export const CHECK_MINOR_RULES = checkMinorRules("handing over an object");

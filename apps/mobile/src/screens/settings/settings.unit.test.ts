@@ -74,8 +74,8 @@ describe("settingsSessionOptionRows", () => {
     expect(settingsSessionOptionRows(initialSessionOptions, uiCopyEn)).toEqual([
       {
         key: "show-choice-romanization",
-        title: "Romanization on choices",
-        description: "Show how each Korean answer is read, in small text above it.",
+        title: "Romanization",
+        description: "Show how Korean is read, in small text, in answers, lessons and stories.",
         checked: true,
       },
       {
@@ -140,6 +140,20 @@ describe("sessionOptionChangedEvent", () => {
         ]);
       }
     }
+  });
+
+  // ADR-0188 개정 D7(2026-11-24): 대사 상자 안 로마자 스위치에서 바꾸면 같은 이벤트에 source: "dialog"를 붙입니다.
+  // 설정에서 바꾼 것은 키가 없습니다(이 개정 전 앱과 같은 모양 — 없음 = 설정).
+  it("SN10. 대사 상자에서 바꾸면 source dialog가 붙고, 그 밖의 키는 더하지 않는다", () => {
+    expect(sessionOptionChangedEvent("show-choice-romanization", false, "dialog")).toEqual({
+      name: "session_option_changed",
+      option: "show-choice-romanization",
+      value: false,
+      source: "dialog",
+    });
+    expect(
+      Object.keys(sessionOptionChangedEvent("show-choice-romanization", true, "dialog")).sort(),
+    ).toEqual(["name", "option", "source", "value"]);
   });
 });
 

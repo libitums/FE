@@ -76,6 +76,17 @@ function openRoom(id: string): void {
 }
 
 /** 학습 키보드로 「안」을 입력 칸에 씁니다(키보드가 닫혀 있으면 먼저 엽니다). */
+/** 덕수쌤 방 첫 입장 안내를 끝까지 넘깁니다 — 키보드 단계(ADR-0190)가 입력 줄 키보드를 쥐고 있는 동안은 글을 칠 수 없습니다. */
+function finishGuide(): void {
+  while (present("messenger-chat-guide-coach")) {
+    act(() => {
+      fireEvent.tap(screen.getByTestId("messenger-chat-guide-coach-next"), {
+        eventType: "catchEvent",
+      });
+    });
+  }
+}
+
 function typeAn(): void {
   if (!present("messenger-keyboard-rows")) tapId("messenger-chat-field");
   tapKeys("ㅇ", "ㅏ", "ㄴ");
@@ -189,6 +200,7 @@ test("CP-I4. 서버 방의 체험 인물: 서버 지갑의 체험 수(2)를 보�
   await bootServer(server.remote, 40);
   openRoom("duksu");
   await flush();
+  finishGuide();
 
   expect(textOf(LINE)).toBe("2 of 20 free messages left");
   typeAn();

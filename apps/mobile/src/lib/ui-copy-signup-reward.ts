@@ -131,6 +131,22 @@ const my: SignupRewardCopy = {
   hoursShort: (hours) => `${hours} နာရီ`,
 };
 
+// 대만 중국어(번체) — 번역 초안, 원어민 검수 필요(ADR-0185).
+const zhTw: SignupRewardCopy = {
+  cardTitle: (amount) => `免費領取 ${amount} Yeopjeon`,
+  cardBody: "註冊帳號，你的學習進度會一起保留。",
+  signUp: "註冊",
+  tag: "歡迎禮",
+  title: "註冊完成！",
+  amountSpoken: (amount) => `+${amount} Yeopjeon`,
+  bodyGuest: "你以訪客身分學習的進度已存到你的帳號。",
+  bodyNew: "用 Yeopjeon 和你認識的朋友聊天吧。",
+  gotIt: "知道了",
+  pushTag: "禮物",
+  pushTitle: "你的禮物到了！",
+  hoursShort: (hours) => `${hours}小時`,
+};
+
 export const signupRewardCopy: Readonly<Record<EntryLanguage, SignupRewardCopy>> = {
   en,
   es,
@@ -139,4 +155,5 @@ export const signupRewardCopy: Readonly<Record<EntryLanguage, SignupRewardCopy>>
   vi,
   th,
   my,
+  "zh-TW": zhTw,
 };

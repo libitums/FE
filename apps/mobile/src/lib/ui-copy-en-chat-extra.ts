@@ -4,11 +4,13 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaEn } from "./ui-copy-en-chat-media";
 import { messengerChatAlbumEn } from "./ui-copy-en-chat-album";
 import { messengerChatSuggestedEn } from "./ui-copy-en-chat-suggested";
+import { messengerChatStoriesEn } from "./ui-copy-en-chat-stories";
 
 export const messengerChatExtraEn: MessengerChatExtraCopy = {
   media: messengerChatMediaEn,
   album: messengerChatAlbumEn,
   suggested: messengerChatSuggestedEn,
+  stories: messengerChatStoriesEn,
   access: {
     signInTitle: "Text the people you meet",
     signInBody:
@@ -136,7 +138,6 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     cardBody: "Here you text with Korean friends. Start with me — I'll help you along.",
     cardButton: (name) => `Chat with ${name}`,
     steps: {
-      chat: "Write in Korean and send it. I'll reply, and the pencil under your message shows a better way to say it.",
       ideas: "Not sure what to say? Tap the bulb next to the message box for reply ideas.",
       media:
         "You can also ask me for a photo or a voice message with the buttons above the keyboard.",
@@ -144,6 +145,16 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
         "Want to see what I'm up to? Tap Snapshot and I'll send you a photo. This first one is on me.",
       voice:
         "Want to hear it in my voice? Tap Snap voice and I'll read that message aloud. This first one is on me too.",
+    },
+    keyboard: {
+      phone: {
+        title: "Chat in your own language — I'll show you how to say it in Korean.",
+        body: "Next, try typing Korean yourself.",
+      },
+      hangul: {
+        title: "Or type Korean right here with Hangul keys.",
+        body: "No Korean keyboard needed. Switch any time with the toggle below the message box.",
+      },
     },
     next: "Next",
     done: "Got it",

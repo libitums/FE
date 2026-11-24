@@ -1,7 +1,10 @@
 // 베트남어 문구표 구획 — 카탈로그 맵 · 표지 컷.
 // 번역 초안 — 원어민 검수 필요(ADR-0091 D3).
 
-import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type {
+  AudioUnavailableCopy,
+  SentenceReplayCopy,
+} from "../components/audio-unavailable.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
@@ -64,10 +67,6 @@ export const catalogMapVi: CatalogMapCopy = {
 };
 
 export const catalogCoverVi: CatalogCoverCopy = {
-  toggleScript: {
-    en: "Hiện phiên âm",
-    roman: "Hiện nghĩa",
-  },
   nextCut: (ordinal, total) => `Cảnh tiếp theo, ${ordinal} trên ${total}`,
   finishCover: "Kết thúc giới thiệu",
   finishEpilogue: "Kết thúc tập",
@@ -184,4 +183,9 @@ export const catalogStoryFinalVi: CatalogStoryFinalCopy = {
 
 export const audioUnavailableVi: AudioUnavailableCopy = {
   label: "Chưa có âm thanh",
+};
+
+/** 지나간 문장 다시 듣기 단추의 이름입니다(ADR-0189). 소리가 없으면 `audioUnavailable.label`이 이름입니다. */
+export const sentenceReplayVi: SentenceReplayCopy = {
+  label: "Phát lại",
 };

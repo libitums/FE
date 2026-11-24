@@ -5,6 +5,7 @@ import { openLegalDocument } from "../lib/legal-document";
 import { openManageSubscription } from "../lib/manage-subscription";
 import { CoinShopScreen } from "../screens/coin-shop/CoinShopScreen";
 import { ShopPlansContext, type ShopPlans } from "../screens/coin-shop/shop-plans";
+import type { TicketSignIn } from "./use-learning-tickets";
 import type { ShopControl } from "./use-shop";
 import type { PlansWiring } from "./use-plans";
 
@@ -17,12 +18,15 @@ export function ShopLayer({
   shop,
   coinBalance,
   platform,
+  signIn = null,
   children,
 }: {
   readonly plans: PlansWiring | undefined;
   readonly shop: ShopControl;
   readonly coinBalance: number;
   readonly platform: AppPlatform | null;
+  /** 비회원의 로그인 흐름(ADR-0166) — 있으면 상점의 사기가 로그인 권유로 가고, 로그인을 고르면 상점을 닫고 로그인 화면을 엽니다. */
+  readonly signIn?: TicketSignIn | null;
   readonly children: ReactNode;
 }): ReactNode {
   const value: ShopPlans | undefined =
@@ -50,6 +54,17 @@ export function ShopLayer({
           placement={request.placement}
           focus={request.focus}
           surface={request.placement === "messenger" ? "chat" : "learning"}
+          signIn={
+            signIn === null
+              ? null
+              : {
+                  sink: signIn.sink,
+                  onSignIn: () => {
+                    shop.close();
+                    signIn.onSignIn();
+                  },
+                }
+          }
         />
       )}
     </ShopPlansContext.Provider>

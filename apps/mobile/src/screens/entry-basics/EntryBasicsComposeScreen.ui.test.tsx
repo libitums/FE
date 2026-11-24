@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { backHandlers } from "../../lib/back-handler";
+import { composeClipOf } from "../../lib/letters/compose-quiz";
 import { ANSWER_ECHO_DELAY_MS } from "../../lib/question-audio";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import { EntryBasicsComposeScreen } from "./EntryBasicsComposeScreen";
@@ -115,6 +116,33 @@ test("BC5. 소리가 없으면 듣기 단추는 비활성이고 문제는 그대
   pick("ㅏ");
   expect(play).not.toHaveBeenCalled();
   expect(screen.getByTestId(ids.next)).toBeInTheDocument();
+});
+
+test("BC7. 앱 내장 음절 녹음(composeClipOf)이면 ▶는 단추로 hangul-s-ga를 내고, 맞힌 뒤 같은 녹음이 한 번 난다(ADR-0173 ⟨2026-11-24⟩)", () => {
+  const play = vi.fn<(source: string) => void>();
+  render(
+    <EntryBasicsComposeScreen
+      romanization="shown"
+      autoPlay="on"
+      sound={{ sourceOf: composeClipOf, letterSourceOf: () => null, play }}
+      onNext={() => {}}
+      onBack={() => {}}
+      onSkip={() => {}}
+    />,
+  );
+  const speaker = screen.getByTestId("compose-play");
+  expect(speaker).toHaveAttribute("accessibility-traits", "button");
+  expect(speaker).toHaveAttribute("accessibility-label", uiCopyEn.more.compose.play);
+  fireEvent.tap(speaker, {});
+  expect(play).toHaveBeenCalledExactlyOnceWith("hangul-s-ga");
+  play.mockClear();
+  vi.useFakeTimers();
+  pick("ㄱ");
+  pick("ㅏ");
+  act(() => {
+    vi.advanceTimersByTime(ANSWER_ECHO_DELAY_MS * 3);
+  });
+  expect(play).toHaveBeenCalledExactlyOnceWith("hangul-s-ga");
 });
 
 test("BC6. Skip · 시스템 뒤로", () => {

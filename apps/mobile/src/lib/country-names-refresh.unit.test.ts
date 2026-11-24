@@ -113,7 +113,7 @@ const bodyOf = (language: string): string =>
 const allFiles = () =>
   fakeFetch(
     Object.fromEntries(
-      ["es", "id", "ja", "my", "th", "vi"].map((language) => [
+      ["es", "id", "ja", "my", "th", "vi", "zh-TW"].map((language) => [
         countryNamesPath(language),
         ok(bodyOf(language)),
       ]),
@@ -123,7 +123,7 @@ const allFiles = () =>
 describe("syncCountryNames", () => {
   afterEach(resetCountryNamesSync);
 
-  test("CN6. 실행의 첫 차례는 지금 언어와 상관없이 es · id · ja · my · th · vi 여섯을 받아 저장한다", async () => {
+  test("CN6. 실행의 첫 차례는 지금 언어와 상관없이 es · id · ja · my · th · vi · zh-TW 일곱을 받아 저장한다", async () => {
     const files = allFiles();
     const { store, data } = fakeStore();
     await syncCountryNames({ fetchText: files.fetchText, store, language: "en" });
@@ -134,8 +134,9 @@ describe("syncCountryNames", () => {
       "country-names/my.json",
       "country-names/th.json",
       "country-names/vi.json",
+      "country-names/zh-TW.json",
     ]);
-    for (const language of ["es", "id", "ja", "my", "th", "vi"]) {
+    for (const language of ["es", "id", "ja", "my", "th", "vi", "zh-TW"]) {
       expect(data.get(countryNamesKey(language))).toBe(bodyOf(language));
     }
   });

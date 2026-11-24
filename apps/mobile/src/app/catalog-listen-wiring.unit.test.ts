@@ -98,7 +98,9 @@ describe("catalogLessonAudioOf", () => {
   function wiringStub() {
     const onToggleListenPace = vi.fn<() => void>();
     const onListenItemAnswered = vi.fn<CatalogListenWiring["onListenItemAnswered"]>();
-    return { onToggleListenPace, onListenItemAnswered };
+    const onLessonSoundUsed = vi.fn<CatalogListenWiring["onLessonSoundUsed"]>();
+    const onStorySentenceReplayed = vi.fn<CatalogListenWiring["onStorySentenceReplayed"]>();
+    return { onToggleListenPace, onListenItemAnswered, onLessonSoundUsed, onStorySentenceReplayed };
   }
 
   test.each(["normal", "slow"] as const)("LW4. 속도 %s를 그대로 낸다", (pace) => {

@@ -4,7 +4,8 @@
 import type { ContentLanguage, DecodeIssue, EpisodeTranslations } from "./episode-content.model";
 import { isRecord, issue } from "./episode-content.normalize";
 
-const LANGUAGES: readonly ContentLanguage[] = ["vi", "id", "es", "ja", "th", "my"];
+// zh-TW는 2026-11-24(ADR-0185 개정) — 모르는 언어 키는 조용히 버리므로 옛 앱은 zh-TW 칸을 무시한다.
+const LANGUAGES: readonly ContentLanguage[] = ["vi", "id", "es", "ja", "th", "my", "zh-TW"];
 
 export type TranslationsPlan = {
   readonly translations: EpisodeTranslations | undefined;

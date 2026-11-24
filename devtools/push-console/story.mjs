@@ -4,9 +4,12 @@
 import { variantIndexOf } from "./segments.mjs";
 
 /** 예고 문구의 언어입니다. 말레이시아는 말레이어가 없어 가까운 인도네시아어(사용자 결정 2026-11-13). */
-export const STORY_LANGUAGES = ["en", "vi", "id", "ja", "es", "th", "my", "ko"];
+export const STORY_LANGUAGES = ["en", "vi", "id", "ja", "es", "th", "my", "zh-TW", "ko"];
 
 const SPANISH = new Set("AR BO CL CO CR CU DO EC ES GT HN MX NI PA PE PR PY SV UY VE".split(" "));
+
+/** 번체 중국어 나라 — 대만 · 홍콩 · 마카오(ADR-0185). 간체(중국 · 싱가포르)는 영어입니다. */
+const TRADITIONAL_CHINESE = new Set(["TW", "HK", "MO"]);
 
 /** 나라 → 예고 문구 언어입니다. `my`는 미얀마어입니다. 한국에 있는 사람도 학습자라 영어입니다. */
 export function storyLanguageFor(countryCode) {
@@ -16,6 +19,7 @@ export function storyLanguageFor(countryCode) {
   if (code === "JP") return "ja";
   if (code === "TH") return "th";
   if (code === "MM") return "my";
+  if (TRADITIONAL_CHINESE.has(code)) return "zh-TW";
   if (SPANISH.has(code)) return "es";
   return "en";
 }

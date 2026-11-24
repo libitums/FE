@@ -9,7 +9,10 @@ import type { AssembledHintCopy } from "./ui-copy-assembled-hint";
 import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 import type { AuthFailureCopy } from "./auth-failure";
 import type { EntryLanguage } from "./entry-language";
-import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
+import type {
+  AudioUnavailableCopy,
+  SentenceReplayCopy,
+} from "../components/audio-unavailable.contract";
 import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 import type { PlansCopy } from "./ui-copy-plans";
@@ -110,6 +113,7 @@ export type UiCopy = {
   readonly catalogFinal: CatalogFinalCopy;
   readonly catalogStoryFinal: CatalogStoryFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;
+  readonly sentenceReplay: SentenceReplayCopy;
   readonly learnerProfile: LearnerProfileCopy;
   readonly progressLoad: ProgressLoadCopy;
   readonly splash: SplashCopy;

@@ -106,3 +106,19 @@ test("AS9. entryAuthStateFrom — 세션 없음 + 비회원 표식이면 guest, 
   });
   expect(entryAuthStateFrom(null, false)).toEqual({ kind: "none" });
 });
+
+// 첫날 무제한 티켓 — 회원만(ADR-0186 개정 1): 세션이 계정 생성 시각을 함께 지닙니다(없을 수 있음).
+
+test("AS10. 계정 생성 시각을 실은 세션도 왕복이 같고, 없는 세션의 JSON에는 그 칸이 없다", () => {
+  const withCreated: AuthSession = { ...sampleSession, accountCreatedAt: 1_699_990_000_000 };
+  expect(parseAuthSession(serializeAuthSession(withCreated))).toEqual(withCreated);
+  expect(serializeAuthSession(sampleSession)).not.toContain("accountCreatedAt");
+});
+
+test.each(['"x"', "-1", "0", "1.5", "null"])(
+  "AS11. 저장된 계정 생성 시각이 %s이면 그 칸만 버리고 세션은 읽는다",
+  (raw) => {
+    const text = `{"accessToken":"access-token","refreshToken":"refresh-token","expiresAt":1700000000000,"accountCreatedAt":${raw}}`;
+    expect(parseAuthSession(text)).toEqual(sampleSession);
+  },
+);

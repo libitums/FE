@@ -51,7 +51,7 @@ export const messengerChatVi: MessengerChatCopy = {
     crisisArrived: "Nơi hỗ trợ",
   },
   composer: {
-    placeholder: "Tin nhắn",
+    placeholder: "Tiếng Hàn hoặc tiếng Việt",
     send: "Gửi",
     ideas: "Gợi ý trả lời",
     ideasOpen: "Gợi ý trả lời, đang mở",

@@ -10,23 +10,15 @@ import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import { fillPlaceholders } from "../../lib/placeholder-fill";
 import type { LearnerProfile } from "../../lib/placeholder-fill";
 import { uiCopyEn } from "../../lib/ui-copy-en";
-import type {
-  CatalogCutPort,
-  CatalogCutScript,
-  CatalogCutText,
-  CatalogCutView,
-} from "./catalog-cover.contract";
+import type { CatalogCutPort, CatalogCutText, CatalogCutView } from "./catalog-cover.contract";
 import {
   CATALOG_SELF_SPEAKER,
   catalogCutAccessibilityLabel,
   catalogCutAudioCueOf,
-  catalogCutHasToggle,
   catalogCutSpeakerName,
-  catalogCutTranslation,
   catalogCutViewsOf,
   catalogCutsOf,
   nextCatalogCutIndex,
-  nextCatalogCutScript,
 } from "./catalog-cover";
 
 // `unit` 계층: 컷 → 표시 모델, 번역 선택, 토글, 다음 자리, 낭독의 입출력만 봅니다.
@@ -228,37 +220,7 @@ describe("catalogCutViewsOf", () => {
   });
 });
 
-describe("번역 · 토글 · 다음", () => {
-  const both: CatalogCutText = { ko: "가", en: "A", roman: "ga" };
-  const enOnly: CatalogCutText = { ko: "가", en: "A", roman: null };
-  const romanOnly: CatalogCutText = { ko: "가", en: null, roman: "ga" };
-  const neither: CatalogCutText = { ko: "가", en: null, roman: null };
-
-  test.each([
-    ["둘 다 · en", both, "en", "A"],
-    ["둘 다 · roman", both, "roman", "ga"],
-    ["en만 · roman 스크립트", enOnly, "roman", "A"],
-    ["roman만 · en 스크립트", romanOnly, "en", "ga"],
-    ["둘 다 없음 · en", neither, "en", null],
-    ["둘 다 없음 · roman", neither, "roman", null],
-  ] as const satisfies readonly (readonly [
-    string,
-    CatalogCutText,
-    CatalogCutScript,
-    string | null,
-  ])[])("CC6. %s", (_label, text, script, expected) => {
-    expect(catalogCutTranslation(text, script)).toBe(expected);
-  });
-
-  test("CC7. 토글은 번역이 둘 다 있을 때만 있고 스크립트는 en과 roman을 오간다", () => {
-    expect(catalogCutHasToggle(both)).toBe(true);
-    expect(catalogCutHasToggle(enOnly)).toBe(false);
-    expect(catalogCutHasToggle(romanOnly)).toBe(false);
-    expect(catalogCutHasToggle(neither)).toBe(false);
-    expect(nextCatalogCutScript("en")).toBe("roman");
-    expect(nextCatalogCutScript("roman")).toBe("en");
-  });
-
+describe("다음", () => {
   test("CC7. 다음 컷 자리는 끝에서 null이다", () => {
     expect(nextCatalogCutIndex(0, 6)).toBe(1);
     expect(nextCatalogCutIndex(5, 6)).toBeNull();
@@ -267,13 +229,9 @@ describe("번역 · 토글 · 다음", () => {
 });
 
 describe("낭독", () => {
-  test("CC8. 번역이 둘 다 있으면 보이는 스크립트에 맞춰 토글 꼬리를 붙인다", () => {
-    expect(catalogCutAccessibilityLabel(clerkView, "en", uiCopyEn)).toBe(
-      "점원: 어서 오세요. Welcome., Show romanization",
-    );
-    expect(catalogCutAccessibilityLabel(clerkView, "roman", uiCopyEn)).toBe(
-      "점원: 어서 오세요. eoseo oseyo., Show English",
-    );
+  // 2026-11-24(ADR-0188 개정 D7): 대사 상자의 영어 ↔ 로마자 토글이 없어져 토글 꼬리가 없다.
+  test("CC8. 로마자 끔이면 한글 뒤에 영어만 읽고 토글 꼬리가 없다", () => {
+    expect(catalogCutAccessibilityLabel(clerkView, uiCopyEn)).toBe("점원: 어서 오세요. Welcome.");
   });
 
   test("CC8. 자기 화자는 Me로, 내레이션은 화자 없이 시작한다", () => {
@@ -294,14 +252,12 @@ describe("낭독", () => {
     };
 
     expect(
-      catalogCutAccessibilityLabel(self, "en", uiCopyEn).startsWith("Me: 비행기를 오래 탔더니"),
+      catalogCutAccessibilityLabel(self, uiCopyEn).startsWith("Me: 비행기를 오래 탔더니"),
     ).toBe(true);
-    expect(catalogCutAccessibilityLabel(narrationView, "en", uiCopyEn)).toBe(
-      "골목 어귀 The alley., Show romanization",
-    );
+    expect(catalogCutAccessibilityLabel(narrationView, uiCopyEn)).toBe("골목 어귀 The alley.");
   });
 
-  test("CC8. 토글이 없는 컷은 꼬리가 없다", () => {
+  test("CC8. 영어가 없으면 한글만 읽는다(로마자 끔)", () => {
     const enOnlyView: CatalogCutView = {
       ...clerkView,
       text: { ko: "어서 오세요.", en: "Welcome.", roman: null },
@@ -311,12 +267,8 @@ describe("낭독", () => {
       text: { ko: "어서 오세요.", en: null, roman: null },
     };
 
-    expect(catalogCutAccessibilityLabel(enOnlyView, "en", uiCopyEn)).toBe(
-      "점원: 어서 오세요. Welcome.",
-    );
-    expect(catalogCutAccessibilityLabel(noTranslation, "roman", uiCopyEn)).toBe(
-      "점원: 어서 오세요.",
-    );
+    expect(catalogCutAccessibilityLabel(enOnlyView, uiCopyEn)).toBe("점원: 어서 오세요. Welcome.");
+    expect(catalogCutAccessibilityLabel(noTranslation, uiCopyEn)).toBe("점원: 어서 오세요.");
   });
 
   test("CC8. 화자 이름은 self이면 Me, named이면 그 이름이다", () => {
@@ -451,7 +403,7 @@ describe("독백", () => {
   test("CC14. 독백의 낭독은 괄호 대신 화자 뒤에 thinking을 붙인다", () => {
     const [view] = catalogCutViewsOf([monologue], portFor({}));
     if (view === undefined) throw new Error("view");
-    const label = catalogCutAccessibilityLabel(view, "en", uiCopyEn);
+    const label = catalogCutAccessibilityLabel(view, uiCopyEn);
     expect(label.startsWith("Me, thinking: 목이 마르다. I'm thirsty.")).toBe(true);
     expect(label).not.toContain("(");
   });

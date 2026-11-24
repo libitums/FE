@@ -45,6 +45,7 @@ const env: MediaEnv = {
   snapshotPartialImages: 0,
   snapshotRefs: "all",
   snapshotComplexity: null,
+  snapshotPipeline: "v1",
   openaiKey: "sk-openai-test",
   elevenKey: "eleven-test",
 };

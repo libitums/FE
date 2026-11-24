@@ -8,6 +8,7 @@ import "./chat.css";
 // 답장 보기 면 — brand 면에 흰 첫 줄, 아래 줄들(빈 줄은 생략). 고른 보기(picked)는 눌림과 같은 진한 면입니다.
 export function ChatReplyOption({
   primary,
+  romanization,
   lines,
   state,
   action,
@@ -22,7 +23,7 @@ export function ChatReplyOption({
       data-testid={testId}
       data-state={state}
       accessibility-element={true}
-      accessibility-label={chatReplyOptionLabel(primary, lines, action)}
+      accessibility-label={chatReplyOptionLabel(primary, lines, action, romanization?.spoken)}
       accessibility-traits="button"
       bindtap={() => {
         "background only";
@@ -30,6 +31,9 @@ export function ChatReplyOption({
       }}
     >
       <text className="chat-reply-option-primary">{primary}</text>
+      {romanization === undefined ? null : (
+        <text className="chat-reply-option-romanization">{romanization.text}</text>
+      )}
       {lines.map((line, index) =>
         line === "" ? null : (
           <text key={`${index}:${line}`} className="chat-reply-option-line">

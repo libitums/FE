@@ -48,6 +48,8 @@ export type GuestHostOptions = {
   readonly serverProfile?: unknown;
   /** 콘텐츠 버킷이 돌려줄 파일(경로 → 본문). 없는 경로는 404 — 예: `app-policy.json`(ADR-0111 개정 3). */
   readonly content?: Readonly<Record<string, string>>;
+  /** 인증 응답의 `user.created_at`(ISO). 없으면 싣지 않습니다 — 첫날 무제한 티켓(ADR-0186 개정 1)의 계정 생성 시각. */
+  readonly accountCreatedAt?: string;
 };
 
 export type Request = {
@@ -84,7 +86,10 @@ export function installGuestHost(options: GuestHostOptions = {}): GuestHost {
     token_type: "bearer",
     expires_in: 3600,
     refresh_token: "refresh-token-1",
-    user: { id: userId },
+    user:
+      options.accountCreatedAt === undefined
+        ? { id: userId }
+        : { id: userId, created_at: options.accountCreatedAt },
   });
 
   vi.stubGlobal("NativeModules", {

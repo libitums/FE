@@ -174,4 +174,12 @@ describe("phoneKeyboardHeightOf (KH-U3)", () => {
       expect(phoneKeyboardHeightOf(height, { platform: "Android", pixelRatio: 2 })).toBe(0);
     }
   });
+
+  test("KH-U5. 키보드가 닫히며 오는 작은 값(Android 아래 내비게이션 높이 24 등)도 0이다 — 그만큼 낮은 키보드는 없다", () => {
+    expect(phoneKeyboardHeightOf(24, { platform: "Android", pixelRatio: 2.625 })).toBe(0);
+    expect(phoneKeyboardHeightOf(24, { platform: "Android", pixelRatio: 0 })).toBe(0);
+    expect(phoneKeyboardHeightOf(64 * 2.625, { platform: "Android", pixelRatio: 2.625 })).toBe(0);
+    expect(phoneKeyboardHeightOf(34, { platform: "iOS", pixelRatio: 3 })).toBe(0);
+    expect(phoneKeyboardHeightOf(65, { platform: "iOS", pixelRatio: 3 })).toBe(65);
+  });
 });

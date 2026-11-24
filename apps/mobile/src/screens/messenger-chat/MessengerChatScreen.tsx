@@ -17,10 +17,12 @@ import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
 import { useAutoIdeas } from "./use-auto-ideas";
-import { guideTargetClass, MessengerRoomGuide } from "./MessengerGuide";
+import { guideTargetClass } from "./MessengerGuide";
+import { RoomCoach, RoomKeyboardGuide } from "./ChatRoomGuide";
 import { deviceGuideStore } from "./messenger-guide";
 import type { GuestGateProps } from "./messenger-access";
 import { useRoomGuide } from "./use-room-guide";
+import { useGuideKeyboard } from "./use-guide-keyboard";
 import { useGuestGate } from "./use-guest-gate";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
@@ -40,6 +42,7 @@ import { useChatRoom } from "./use-chat-room";
 import { useChatEntrances } from "./use-chat-entrance";
 import { useChatTurns } from "./use-chat-turns";
 import { useCoinBalance } from "./use-coin-balance";
+import { useStoryReply } from "./use-story-reply";
 
 import "./messenger-chat.css";
 
@@ -70,6 +73,7 @@ export function MessengerChatScreen({
   // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
   const serverBusy = useRef(false);
   const guest = useGuestGate(onSignInRequired); // 비회원 — 보내기 · 계정 동작은 로그인 권유(ADR-0166)
+  const story = useStoryReply(roomId, source, () => !serverBusy.current && gate.current()); // 친구 스토리 답장 넘김 · 인용 띠(ADR-0178 D5)
   const room = useChatRoom({
     roomId,
     source,
@@ -77,8 +81,10 @@ export function MessengerChatScreen({
     keyboardHeightStore,
     edges,
     onExit,
-    authorizeSend: () => !serverBusy.current && gate.current(),
+    // 무료 안내인 스토리 답장은 앱의 체험 · 엽전 관문을 지나지 않습니다 — 정본은 서버 판정(ADR-0178 D6).
+    authorizeSend: (idea) => !serverBusy.current && story.authorize(idea, () => gate.current()),
     guest: guest.active,
+    takeSendOptions: story.takeSendOptions,
   });
   const { state, plan, thread, birthYear, preferences, keyboardHeight, send } = room;
   const dispatch = useMemo(() => guest.guard(room.dispatch), [room.dispatch, guest.active]);
@@ -107,7 +113,10 @@ export function MessengerChatScreen({
     guideStore,
     state.overlay.kind !== "none",
     source.sampleSnapshot,
+    plan.toggle === "shown",
   );
+  // 키보드 단계가 입력 줄 키보드를 맞추고 휴대폰 키보드가 내려간 것을 봄(ADR-0190)
+  const measurePhoneKeyboard = useGuideKeyboard(guide, state, dispatch, room.measureKeyboard);
   useAutoIdeas({
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
     enabled: preferences.replyIdeas,
@@ -220,16 +229,7 @@ export function MessengerChatScreen({
               onRefresh={() => source.server?.reload(roomId)}
             />
           </ChatLog>
-          {guide.step === null || thread.server === null ? null : (
-            <MessengerRoomGuide
-              steps={guide.steps}
-              index={guide.index}
-              name={thread.counterpart.name}
-              avatarUrl={thread.counterpart.avatarUrl}
-              onNext={guide.next}
-              sampleOnly={guide.sampleOnly}
-            />
-          )}
+          <RoomCoach guide={guide} thread={thread} />
           {state.overlay.kind === "more-menu" ? (
             <MoreMenu
               showIdeas={preferences.replyIdeas}
@@ -258,7 +258,7 @@ export function MessengerChatScreen({
             plan={plan}
             thread={thread}
             edges={edges}
-            keyboard={{ height: keyboardHeight, measure: room.measureKeyboard }}
+            keyboard={{ height: keyboardHeight, measure: measurePhoneKeyboard }}
             dispatch={dispatch}
             onSend={send}
             sendCost={turn.sendCost}
@@ -268,11 +268,18 @@ export function MessengerChatScreen({
             {...(guide.step === "voice" ? { onTakeVoiceSample: guide.takeSample } : {})}
             guest={guest.active}
             aboveComposer={
-              turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null
+              <>
+                {story.bar(thread.counterpart.name)}
+                {turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null}
+              </>
             }
           />
         )}
       </view>
+      <RoomKeyboardGuide
+        {...{ guide, thread, edges, slotHeight }}
+        slotOpen={state.slot.kind !== "closed" && !turn.panelOpen}
+      />
       <ChatRoomOverlays
         state={state}
         dispatch={dispatch}

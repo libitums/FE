@@ -1,10 +1,10 @@
-import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import volume from "@libitums/icons/lynx/volume";
 import { Button } from "@libitums/ui-lynx/button";
 
+import { usePlayingLetter } from "../../components/use-playing-letter";
 import { JAMO_GROUPS } from "../../lib/letters/jamo";
 import type { JamoGroupId, JamoLetter } from "../../lib/letters/jamo";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -24,7 +24,8 @@ export function LettersScreen({
   onCellTapped,
 }: LettersScreenProps): ReactNode {
   const copy = useUiCopy();
-  const [heard, setHeard] = useState<readonly string[]>([]);
+  // 스피커 색은 소리가 나는 동안만 바뀝니다(2026-11-23) — 들었다는 표시는 남기지 않습니다.
+  const playback = usePlayingLetter(sound.play);
 
   const handlePractice = () => {
     "background only";
@@ -72,15 +73,10 @@ export function LettersScreen({
                       group={group.id}
                       source={sound.letterSourceOf(letter.letter)}
                       showRoman={romanization === "shown"}
-                      heard={heard.indexOf(letter.letter) >= 0}
+                      playing={playback.playing === letter.letter}
                       unavailableLabel={copy.more.letters.soundUnavailable}
-                      heardLabel={copy.more.letters.heard}
                       onTap={(source) => {
-                        if (source !== null) sound.play(source);
-                        if (source !== null)
-                          setHeard((prev) =>
-                            prev.indexOf(letter.letter) >= 0 ? prev : [...prev, letter.letter],
-                          );
+                        if (source !== null) playback.start(letter.letter, source);
                         onCellTapped?.(
                           letter.letter,
                           group.id,
@@ -105,9 +101,9 @@ type LettersCellProps = {
   readonly group: JamoGroupId;
   readonly source: string | null;
   readonly showRoman: boolean;
-  readonly heard: boolean;
+  /** 지금 이 칸의 소리가 나는 중인가 — 스피커 색만 바뀝니다. */
+  readonly playing: boolean;
   readonly unavailableLabel: string;
-  readonly heardLabel: string;
   readonly onTap: (source: string | null) => void;
 };
 
@@ -117,9 +113,8 @@ function LettersCell({
   group,
   source,
   showRoman,
-  heard,
+  playing,
   unavailableLabel,
-  heardLabel,
   onTap,
 }: LettersCellProps): ReactNode {
   const handleTap = () => {
@@ -127,20 +122,15 @@ function LettersCell({
     onTap(source);
   };
   const vowel = group === "vowels" || group === "combined";
-  const label = [
-    letter.letter,
-    letter.roman,
-    source === null ? unavailableLabel : heard ? heardLabel : null,
-  ]
+  const label = [letter.letter, letter.roman, source === null ? unavailableLabel : null]
     .filter((part): part is string => part !== null)
     .join(", ");
   const iconColor =
-    source === null ? color.fg.disabled : heard ? color.brand.strong : color.gray["500"];
+    source === null ? color.fg.disabled : playing ? color.brand.strong : color.gray["500"];
   return (
     <view
       className="letters-cell"
       data-testid={ids.cell(index)}
-      data-heard={heard ? "true" : "false"}
       accessibility-element={true}
       accessibility-label={label}
       accessibility-traits="button"
@@ -161,7 +151,7 @@ function LettersCell({
       <svg
         className="letters-cell-speaker"
         data-testid={`${ids.cell(index)}-speaker`}
-        data-audio={source === null ? "unavailable" : heard ? "heard" : "ready"}
+        data-audio={source === null ? "unavailable" : playing ? "playing" : "ready"}
         content={volume}
         current-color={iconColor}
       />

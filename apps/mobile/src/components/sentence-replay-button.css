@@ -1,0 +1,16 @@
+/* 다시 듣기 스피커의 누르는 자리입니다(ADR-0189, docs/design/replay-audio.md). 켜짐 · 꺼짐 모두 48 정사각 안 가운데에
+   서서, 소리 유무가 바뀌어도 줄이 움직이지 않습니다. 면 · 아이콘 · 누름 반응은 RoundButton과 꺼짐 조작이 집니다. */
+.sentence-replay {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 이야기 컷(dialog 톤) — 누르는 자리 48 가운데에 대사 상자와 같은 면(gray-950)의 44 원을 깔고, 그 위에 흰 아이콘 단추(overlay)가
+   섭니다(ADR-0188 개정 D7 · ADR-0189). 소리 없는 단추는 같은 원 위에 흐린 아이콘입니다(audio-unavailable-control-dialog). */
+.sentence-replay-dialog .ui-lynx-round-button-overlay .ui-lynx-round-button-surface {
+  background-color: var(--libitum-color-gray-950);
+}

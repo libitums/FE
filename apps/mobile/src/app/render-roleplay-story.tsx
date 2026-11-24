@@ -6,6 +6,7 @@ import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteS
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 import { catalogPassCriterion } from "./catalog-lesson-plan";
 import type { Screen } from "./nav-state";
+import { choiceRomanizationOf } from "../lib/session-options";
 import { RoleplayStoryFlow } from "./RoleplayStoryFlow";
 import { roleplayStoryModelOf } from "./roleplay-story-model";
 import type { ScreenWiring } from "./screen-wiring";
@@ -50,6 +51,8 @@ export function renderRoleplayStory(screen: RoleplayStoryScreen, wiring: ScreenW
         wiring.onFinishRoleplayStory(episodeId, results, skippedCount)
       }
       onExit={wiring.onExitRoleplayStory}
+      romanization={choiceRomanizationOf(wiring.sessionOptions)}
+      onRomanizationChange={wiring.onDialogRomanizationChange}
     />
   );
 }

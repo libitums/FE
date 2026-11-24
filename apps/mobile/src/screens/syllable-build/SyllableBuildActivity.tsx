@@ -13,6 +13,7 @@ import { nextTileForWords } from "../../components/answer-nudge/answer-nudge";
 import { useAnswerNudge } from "../../components/answer-nudge/use-answer-nudge";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import { lessonVerdictReplayOf } from "../learning/lesson-sound";
 import { initialSessionOptions } from "../../lib/session-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -74,7 +75,8 @@ export function SyllableBuildActivity({
   );
 
   // 판정이 난 순간 정답 음성을 1.0으로 한 번 들려 줍니다(정오 무관, 조작 없음). 문항이 넘어가면 멈춥니다.
-  const autoPlay = (lessonAudio ?? standaloneLessonAudio(initialSessionOptions)).autoPlay;
+  const audioLesson = lessonAudio ?? standaloneLessonAudio(initialSessionOptions);
+  const autoPlay = audioLesson.autoPlay;
   useAudioCue(
     answerEchoCueOf(
       String(state.questionIndex),
@@ -169,6 +171,11 @@ export function SyllableBuildActivity({
         onAction={action?.run}
         actionSound={action?.sound ?? "button"}
         verdict={result ?? undefined}
+        verdictReplay={lessonVerdictReplayOf(
+          question?.audio,
+          state.phase === "checked",
+          audioLesson,
+        )}
         workspace={
           question == null ? undefined : (
             <view className="syllable-build-screen-workspace">

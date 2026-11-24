@@ -2,6 +2,7 @@
 // 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
 // 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
+import type { FriendStoryEvent } from "./friend-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
 
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
@@ -32,9 +33,18 @@ export type LaunchEvent =
 export type MessengerGuideEvent =
   | (Common & {
       readonly name: "messenger_guide_finished";
-      /** `snapshot` — 안내를 이미 본 사람에게 예시 스냅샷 단계만 뜬 것(ADR-0146 추가). */
-      readonly part: "list" | "room" | "snapshot";
+      /** `snapshot` — 안내를 이미 본 사람에게 예시 스냅샷 단계만 뜬 것(ADR-0146 추가). `keyboard` — 키보드 단계가 든 것(ADR-0190). */
+      readonly part: "list" | "room" | "snapshot" | "keyboard";
       readonly outcome: "done" | "skipped";
+    })
+  /**
+   * 방 안내의 키보드 단계(ADR-0190) — 화면이 섬(shown) · Next(next) · 학습자가 토글을 직접 바꿈(switched, stage = 바꾼 뒤 화면) ·
+   * 휴대폰 키보드 화면에서 키보드가 내려가 Hangul keys로 넘어감(hidden, stage = phone — Android 뒤로가기 등, 2026-11-24).
+   */
+  | (Common & {
+      readonly name: "messenger_guide_keyboard";
+      readonly stage: "phone" | "hangul";
+      readonly action: "shown" | "next" | "switched" | "hidden";
     })
   | (Common & {
       readonly name: "messenger_tab_opened";
@@ -67,20 +77,20 @@ export type SuggestedFriendEvent =
       readonly name: "suggested_friend_opened";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
     })
   | (Common & {
       readonly name: "suggested_friend_added";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
       readonly via: "free" | "early";
     })
   | (Common & {
       readonly name: "early_access_tapped";
       readonly characterId: string;
       readonly price: string;
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
     })
   /** 먼저 만나기 RPC가 끝났습니다(ADR-0162 D5) — 누른 뒤 한 번. unlocked = 이미 산 인물(already) 포함, failed = 제안 없음 · 오류. */
   | (Common & {
@@ -96,6 +106,8 @@ export type ChatCoinEvent =
       readonly characterId: string;
       readonly paid: boolean;
       readonly cost: string;
+      /** 스토리 첫 답장 무료로 보냄(ADR-0178 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
+      readonly storyFree?: true;
     })
   | (Common & {
       readonly name: "chat_media_requested";
@@ -272,6 +284,7 @@ export type CompanionEvent =
   | MessengerGuideEvent
   | CompanionUnlockEvent
   | SuggestedFriendEvent
+  | FriendStoryEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

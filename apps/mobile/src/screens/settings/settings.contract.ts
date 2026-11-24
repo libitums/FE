@@ -73,10 +73,14 @@ export type FeedbackSubmittedEvent = {
   readonly rating: string;
   readonly hasMessage: boolean;
 };
+/** 설정 밖에서 세션 옵션을 바꾼 자리입니다 — 지금은 대사 상자 안 로마자 스위치 하나(ADR-0188 개정 D7). */
+export type SessionOptionChangeSource = "dialog";
 export type SessionOptionChangedEvent = {
   readonly name: "session_option_changed";
   readonly option: SessionOptionKey;
   readonly value: boolean;
+  /** 없으면 설정에서 바꾼 것입니다. */
+  readonly source?: SessionOptionChangeSource;
 };
 
 export type SettingsEvent =

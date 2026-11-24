@@ -52,7 +52,7 @@ export const messengerChatId: MessengerChatCopy = {
     crisisArrived: "Sumber bantuan",
   },
   composer: {
-    placeholder: "Pesan",
+    placeholder: "Bahasa Korea atau Indonesia",
     send: "Kirim",
     ideas: "Ide balasan",
     ideasOpen: "Ide balasan, terbuka",

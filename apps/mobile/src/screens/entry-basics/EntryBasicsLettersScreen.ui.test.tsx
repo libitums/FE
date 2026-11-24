@@ -10,7 +10,7 @@ import { entryBasicsTestIds as ids } from "./entry-basics.contract";
 afterEach(cleanup);
 
 function mount(letterSourceOf: (letter: string) => string | null = (letter) => `clip:${letter}`) {
-  const play = vi.fn<(source: string) => void>();
+  const play = vi.fn<(source: string, onDone?: () => void) => void>();
   const onNext = vi.fn();
   const onBack = vi.fn();
   const onSkip = vi.fn();
@@ -39,7 +39,7 @@ test("BL1. 1/3 막대 · header 제목 · 글자 여섯", () => {
   expect(screen.queryByTestId(ids.letter(6))).not.toBeInTheDocument();
 });
 
-test("BL2. 소리가 있으면 들을 수 있다고 말하고, 누르면 나고, 들음으로 바뀐다", () => {
+test("BL2. 소리가 있으면 들을 수 있다고 말하고, 누르면 나고, 나는 동안만 playing(⟨2026-11-23 개정⟩)", () => {
   const { play } = mount();
   expect(screen.getByTestId(ids.lead).textContent).toContain("Tap a letter to hear it.");
   expect(cell(0)).toHaveAttribute("accessibility-traits", "button");
@@ -48,10 +48,14 @@ test("BL2. 소리가 있으면 들을 수 있다고 말하고, 누르면 나고,
   fireEvent.tap(cell(0), {});
   fireEvent.tap(cell(4), {});
 
-  expect(play.mock.calls).toEqual([["clip:ㄱ"], ["clip:ㅓ"]]);
-  expect(speaker(0)).toHaveAttribute("data-audio", "heard");
-  expect(speaker(1)).toHaveAttribute("data-audio", "ready");
-  expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k, heard");
+  expect(play.mock.calls.map(([source]) => source)).toEqual(["clip:ㄱ", "clip:ㅓ"]);
+  expect(speaker(0)).toHaveAttribute("data-audio", "ready");
+  expect(speaker(4)).toHaveAttribute("data-audio", "playing");
+  act(() => {
+    play.mock.calls[1]?.[1]?.();
+  });
+  expect(speaker(4)).toHaveAttribute("data-audio", "ready");
+  expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k");
 });
 
 test("BL3. 소리가 하나도 없으면 약속하지 않고 스피커가 비활성이며 그래도 다음으로 간다", () => {
@@ -75,7 +79,7 @@ test("BL4. 일부만 있으면 약속하지 않되 있는 소리는 난다", () 
   const { play } = mount((letter) => (letter === "ㄱ" ? "clip:ㄱ" : null));
   expect(screen.getByTestId(ids.lead).textContent).not.toContain("Tap a letter");
   fireEvent.tap(cell(0), {});
-  expect(play).toHaveBeenCalledExactlyOnceWith("clip:ㄱ");
+  expect(play).toHaveBeenCalledExactlyOnceWith("clip:ㄱ", expect.any(Function));
 });
 
 test("BL5. Skip은 한 번만 나간다(두 번 탭 · 뒤이은 Next)", () => {

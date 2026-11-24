@@ -11,6 +11,7 @@ export type MediaEnvName =
   | "COMPANION_SNAPSHOT_PARTIAL_IMAGES"
   | "COMPANION_SNAPSHOT_REFS"
   | "COMPANION_SNAPSHOT_COMPLEXITY"
+  | "COMPANION_SNAPSHOT_PIPELINE"
   | "OPENAI_API_KEY"
   | "ELEVENLABS_API_KEY";
 
@@ -39,6 +40,11 @@ export type MediaEnv = {
    * 않아 400(「Complexity 'medium' is not supported for this image model」)으로 모든 스냅샷이 실패했다(2026-11-17). 받는 엔진(2.6)에서만 켠다.
    */
   readonly snapshotComplexity: "low" | "medium" | "high" | null;
+  /**
+   * 스냅샷 방식(ADR-0179). `v1`(기본) · `v2m`(장면 설계 + 미리 합친 기준 그림, 모두) · `v2m-test`(시험 계정만 v2m, 나머지는 v1).
+   * v2m이어도 그 인물의 묶음(`companion-refs/v2/<slug>/manifest.json`)이 없으면 v1으로 그린다.
+   */
+  readonly snapshotPipeline: SnapshotPipeline;
   readonly openaiKey: string | null;
   readonly elevenKey: string | null;
 };
@@ -55,6 +61,14 @@ export const defaultComplexity = null;
 const complexityFrom = (raw: string | null): "low" | "medium" | "high" | null => {
   const v = raw?.toLowerCase() ?? null;
   return v === "low" || v === "medium" || v === "high" ? v : defaultComplexity;
+};
+
+export type SnapshotPipeline = "v1" | "v2m" | "v2m-test";
+/** 기본 v1. 모르는 값도 v1. */
+export const defaultSnapshotPipeline: SnapshotPipeline = "v1";
+const pipelineFrom = (raw: string | null): SnapshotPipeline => {
+  const v = raw?.toLowerCase() ?? null;
+  return v === "v2m" || v === "v2m-test" ? v : defaultSnapshotPipeline;
 };
 
 /** lab `TEXT_MODEL`과 같다. */
@@ -85,6 +99,7 @@ export function mediaEnvFrom(read: (name: MediaEnvName) => string | undefined): 
     snapshotPartialImages: partialImagesFrom(value("COMPANION_SNAPSHOT_PARTIAL_IMAGES")),
     snapshotRefs: value("COMPANION_SNAPSHOT_REFS")?.toLowerCase() === "sheet" ? "sheet" : "all",
     snapshotComplexity: complexityFrom(value("COMPANION_SNAPSHOT_COMPLEXITY")),
+    snapshotPipeline: pipelineFrom(value("COMPANION_SNAPSHOT_PIPELINE")),
     openaiKey: value("OPENAI_API_KEY"),
     elevenKey: value("ELEVENLABS_API_KEY"),
   };

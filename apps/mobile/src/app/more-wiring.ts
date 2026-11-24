@@ -18,6 +18,7 @@ import {
 } from "../lib/session-options";
 import { wordbookCountsOf, withAnswer, withStarred, type Wordbook } from "../lib/wordbook";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
+import { composeClipOf } from "../lib/letters/compose-quiz";
 import { jamoClipOf } from "../lib/letters/jamo";
 import { letterAudioSourceOf } from "../screens/letters/letters-audio";
 import type { LetterSoundPort } from "../screens/letters/letters.contract";
@@ -84,9 +85,14 @@ export function moreWiring(args: MoreWiringArgs): MoreWiring {
   return {
     romanization: choiceRomanizationOf(args.sessionOptions),
     letterSound: {
-      sourceOf: (syllable) => letterAudioSourceOf(syllable, episodeContent),
+      // 라운드 음절(가 · 너 · 도)은 앱 내장 녹음(ADR-0173 ⟨2026-11-24⟩), 그 밖의 음절은 지금처럼 버킷 소리입니다.
+      sourceOf: (syllable) =>
+        composeClipOf(syllable) ?? letterAudioSourceOf(syllable, episodeContent),
       letterSourceOf: jamoClipOf,
-      play: (source) => void playAudio(source, noop),
+      play: (source, onDone) => {
+        // 재생 모듈이 없으면 끝 알림이 오지 않으니 곧바로 끝을 알립니다.
+        if (playAudio(source, onDone ?? noop) === "unavailable") onDone?.();
+      },
     },
     autoPlay: autoPlayAudioOf(args.sessionOptions),
     wordSound: {

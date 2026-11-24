@@ -38,6 +38,7 @@ export function pushTargetFrom(raw: unknown): PushNotificationTarget | null {
         kind,
         characterId,
         variant: variant === "a" || variant === "b" ? variant : null,
+        ...(record["story"] === true ? { story: true as const } : {}),
       };
     }
     default:
