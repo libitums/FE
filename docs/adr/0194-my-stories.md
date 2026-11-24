@@ -1,6 +1,7 @@
 # ADR-0179 내 스토리 — 단어 · 레슨 카드 · 친구 반응(LLM, 비용 상한) · 보관과 지우기
 
 - 상태: 채택 — 앱 · 서버 파일, **운영 미적용**(마이그레이션 · Edge Function · 예약 · 스위치는 사용자 승인 뒤)
+- **일부 대체됨** ⟨2026-11-24⟩: D4(반응을 스토리에만 둠 · 인물 최대 셋 · 8분 ~ 7시간 · 단어 필수 · 알림 없음 · Answer 인용 띠) · D5의 상한 값(사람 3 · 전체 500)과 하루 올리기 규칙 · D6의 「지우면 반응도 지움」은 [ADR-0191](0191-my-stories-reactions-as-chat.md)이 대체한다. D1 ~ D3 · D7과 D5의 장부 · 스위치 · 검사 · 번역 모델은 그대로다.
 - 날짜: 2026-11-23
 - 관련: [ADR-0178](0178-friend-stories.md)(친구 스토리 — 이 ADR은 그 위에 쌓는다) · [ADR-0169](0169-more-menu-letters-wordbook.md)(단어장) ·
   [ADR-0091](0091-vietnamese-localization.md)(UI 언어 카탈로그) · [ADR-0155](0155-chat-pricing-follows-server.md)(메시지 요금) ·
