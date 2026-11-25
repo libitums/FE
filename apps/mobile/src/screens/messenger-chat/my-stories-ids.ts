@@ -50,6 +50,7 @@ export const myStoriesTestIds = {
   textEntry: ms("text-entry"),
   textInput: ms("text-input"),
   textDone: ms("text-done"),
+  textKeyboard: ms("text-keyboard"),
   textColor: (textColor: StoryTextColor) => ms(`text-color-${textColor}`),
   textRemove: ms("text-remove"),
   addSheet: ms("add-sheet"),

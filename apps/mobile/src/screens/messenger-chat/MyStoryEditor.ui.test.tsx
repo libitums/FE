@@ -293,3 +293,34 @@ test("MS-UI38. 새 서버(#598 — kinds text · photo) — Aa · Words 둘 다,
     "You've tried enough for today. Try again tomorrow.",
   );
 });
+
+/** 글 상자 입력 칸이 키보드 높이를 알립니다(iOS pt · Lynx `keyboardheightchange`). */
+function typingKeyboard(height: number): void {
+  const EventConstructor = screen.getByTestId(ids.textInput).ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select(`[data-testid="${ids.textInput}"]`);
+  fireEvent(
+    ref as unknown as Element,
+    new EventConstructor("bindEvent:keyboardheightchange", { detail: { height } }),
+  );
+}
+
+test("MS-UI39. Aa 쓰는 동안 키보드가 오르면 글 상자를 키보드 위 보이는 자리로 — 키보드 높이만큼 아래를 비우고, 내리면 원래 자리", async () => {
+  await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  expect(screen.queryByTestId(ids.textKeyboard)).toBeNull();
+  act(() => typingKeyboard(336));
+  expect(screen.getByTestId(ids.textKeyboard).getAttribute("style")).toContain("336px");
+  expect(screen.getByTestId(ids.textEntry).getAttribute("class")).toContain(
+    "my-story-typing-keyboard",
+  );
+  // 글자색 줄 · Done은 위에 그대로
+  expect(screen.getByTestId(ids.textDone)).not.toBeNull();
+  act(() => typingKeyboard(0));
+  expect(screen.queryByTestId(ids.textKeyboard)).toBeNull();
+  expect(screen.getByTestId(ids.textEntry).getAttribute("class")).not.toContain(
+    "my-story-typing-keyboard",
+  );
+});

@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
+import { phoneKeyboardHeightOf } from "./keyboard-height";
 import { STORY_TEXT_COLORS } from "./my-story-editor";
 import { myStoriesTestIds as ids, type StoryTextColor } from "./my-stories.contract";
 
@@ -51,15 +52,26 @@ export function MyStoryTextEntry({
   const value = useRef(initial);
   const colorRef = useRef(textColor);
   colorRef.current = textColor;
+  // 키보드 높이(pt/dp) — 오르면 글 상자를 키보드 위 보이는 자리 가운데로 올리고 그만큼 아래를 비웁니다(채팅 입력 줄과 같은 측정).
+  const [keyboard, setKeyboard] = useState(0);
   const done = () => onDone(value.current, colorRef.current);
   useLayerBack(done);
   useEffect(() => {
     focusTyping();
   }, []);
 
+  // `keyboardheightchange`는 @lynx-js/types의 input 속성에 없어 펼침으로 겁니다(ComposerRow와 같음).
+  const keyboardProps = {
+    bindkeyboardheightchange: (event: { readonly detail: { readonly height?: unknown } }) => {
+      "background only";
+      const info = typeof SystemInfo === "undefined" ? undefined : SystemInfo;
+      setKeyboard(phoneKeyboardHeightOf(event.detail.height, info));
+    },
+  };
+
   return (
     <view
-      className="my-story-typing"
+      className={keyboard > 0 ? "my-story-typing my-story-typing-keyboard" : "my-story-typing"}
       data-testid={ids.textEntry}
       event-through={false}
       style={{ paddingTop: `${insets.top + TOP_GAP}px` }}
@@ -101,27 +113,37 @@ export function MyStoryTextEntry({
           </text>
         </view>
       </view>
-      <view className="my-story-typing-box">
-        <input
-          id={TYPING_INPUT_ID}
-          className={`my-story-typing-input my-story-ink-${textColor}`}
-          data-testid={ids.textInput}
-          default-value={initial}
-          maxlength={TEXT_MAX}
-          confirm-type="done"
-          accessibility-element={true}
-          accessibility-label={copy.label}
-          bindinput={(event: NativeInputEvent) => {
-            "background only";
-            value.current = event.detail.value;
-          }}
-          bindconfirm={() => {
-            "background only";
-            done();
-          }}
-        />
+      <view className="my-story-typing-middle">
+        <view className="my-story-typing-box">
+          <input
+            id={TYPING_INPUT_ID}
+            className={`my-story-typing-input my-story-ink-${textColor}`}
+            data-testid={ids.textInput}
+            default-value={initial}
+            maxlength={TEXT_MAX}
+            confirm-type="done"
+            accessibility-element={true}
+            accessibility-label={copy.label}
+            bindinput={(event: NativeInputEvent) => {
+              "background only";
+              value.current = event.detail.value;
+            }}
+            bindconfirm={() => {
+              "background only";
+              done();
+            }}
+            {...keyboardProps}
+          />
+        </view>
+        <text className="my-story-typing-help">{copy.help}</text>
       </view>
-      <text className="my-story-typing-help">{copy.help}</text>
+      {keyboard > 0 ? (
+        <view
+          className="my-story-typing-keyboard-space"
+          data-testid={ids.textKeyboard}
+          style={{ height: `${keyboard}px` }}
+        />
+      ) : null}
     </view>
   );
 }
