@@ -1,5 +1,5 @@
 // 내 스토리 서버 응답을 앱 모양으로 풉니다(ADR-0194 · ADR-0191 — 모양은 `@libitums/companion-contract` my-stories). 순수 · 던지지
-// 않습니다. 틀린 줄 · 반응은 버리고, 몸이 틀리면 null(못 읽음). 사진(`photo`) · 확인 중(`checking`) 스토리는 이 앱 판이 그리지 않아 건너뜁니다.
+// 않습니다. 틀린 줄 · 반응은 버리고, 몸이 틀리면 null(못 읽음). 사진(`photo`) · 확인 중(`checking`)은 ADR-0199부터 읽습니다.
 // 글 스토리(`text`) · `kinds` · 글 검수의 `crisis`는 서버 반영 예상 칸입니다(ADR-0194 적용 기록).
 
 import { crisisOf } from "./companion-parse";
@@ -16,6 +16,7 @@ import type {
   StoryBackground,
   StoryTextColor,
 } from "./my-stories.contract";
+import type { MyStoryRejection } from "./my-story-photo.contract";
 
 type Raw = Readonly<Record<string, unknown>>;
 
@@ -119,28 +120,44 @@ function overlayOf(raw: unknown): MyStoryOverlay | null {
   };
 }
 
+const PHOTO_PATH = /^[0-9a-f-]{36}\/[A-Za-z0-9._-]{1,120}$/;
+
 export function myStoryOf(raw: unknown): MyStory | null {
   if (!isRecord(raw)) return null;
-  // 확인 중 사진(ADR-0191 D11)은 올린 사람에게만 보이고 반응이 없습니다 — 사진 화면 전이라 건너뜁니다.
-  if (raw["status"] !== undefined && raw["status"] !== "live") return null;
+  // 확인 중(ADR-0191 D11)은 사진만 — 올린 사람에게만 보이고 반응이 없습니다. 모르는 상태는 건너뜁니다.
+  const status = raw["status"] === undefined ? "live" : raw["status"];
+  if (status !== "live" && status !== "checking") return null;
   const id = text(raw["id"]);
-  // 글 스토리(`text`, 서버 반영 예상)는 단어 없이 바탕 · 한 줄 · 얹은 것으로 섭니다. 사진은 건너뜁니다.
+  // 글(`text`, 서버 반영 예상) · 사진(`photo`, ADR-0199)은 단어 없이 섭니다 — 뜻은 빈 글일 수 있습니다.
   const isText = raw["kind"] === "text";
+  const isPhoto = raw["kind"] === "photo";
   const kind: MyStory["kind"] | null =
-    raw["kind"] === "word" || raw["kind"] === "card" || raw["kind"] === "text" ? raw["kind"] : null;
+    raw["kind"] === "word" || raw["kind"] === "card"
+      ? raw["kind"]
+      : isText
+        ? "text"
+        : isPhoto
+          ? "photo"
+          : null;
+  const imagePath =
+    typeof raw["imagePath"] === "string" && PHOTO_PATH.test(raw["imagePath"])
+      ? raw["imagePath"]
+      : null;
+  if (isPhoto && imagePath === null) return null;
+  const wordless = isText || isPhoto;
   const word = isRecord(raw["word"]) ? raw["word"] : null;
   const episodeId = text(word?.["episodeId"]);
   const ref = text(word?.["ref"]);
-  // 색 바탕 + 단어만(#598)이면 글이 없어 빈 글("")입니다.
+  // 색 바탕 + 단어만(#598)이면 글이 없어 빈 글("")입니다. 사진은 한 줄이 있어야 합니다(서버 1 ~ 120자).
   const ko = isText ? (typeof raw["ko"] === "string" ? raw["ko"] : null) : text(raw["ko"]);
-  const meaning = isText
+  const meaning = wordless
     ? typeof raw["meaning"] === "string"
       ? raw["meaning"]
       : ""
     : text(raw["meaning"]);
   const postedAt = time(raw["postedAt"]);
   const expiresAt = time(raw["expiresAt"]);
-  if (id === null || kind === null || (!isText && (episodeId === null || ref === null)))
+  if (id === null || kind === null || (!wordless && (episodeId === null || ref === null)))
     return null;
   if (ko === null || meaning === null || postedAt === null || expiresAt === null) return null;
   const background = raw["background"];
@@ -150,6 +167,8 @@ export function myStoryOf(raw: unknown): MyStory | null {
   return {
     id,
     kind,
+    status,
+    imagePath,
     word: episodeId === null || ref === null ? null : { episodeId, ref },
     ko,
     roman: typeof raw["roman"] === "string" ? raw["roman"] : "",
@@ -195,6 +214,13 @@ export function myStoriesFrom(body: string | null): MyStoriesState | null {
   };
 }
 
+/** 거절(ADR-0199) — id가 없으면 null(다시 확인 요청 단추가 서지 않음). */
+function rejectionOf(raw: unknown): MyStoryRejection | null {
+  if (!isRecord(raw)) return null;
+  const id = text(raw["id"]);
+  return id === null ? null : { id, category: text(raw["category"]) ?? "other" };
+}
+
 /** `companion_post_my_story(…)` · `companion-my-story` post — `window_used`는 다음 창과 함께, `crisis`는 기관과 함께. 모르는 결과 · 스토리 없는 ok는 failed. */
 export function myStoryPostFrom(body: string | null): MyStoryPostResult {
   const value = parsed(body);
@@ -208,6 +234,10 @@ export function myStoryPostFrom(body: string | null): MyStoryPostResult {
     result === "invalid"
   )
     return { result };
+  // 사진(ADR-0199): 성인 아님은 꺼짐과 같게, 버킷에 사진이 없음은 업로드 실패(다시 올림)로.
+  if (result === "age") return { result: "off" };
+  if (result === "no_photo") return { result: "upload_failed" };
+  if (result === "rejected") return { result, rejection: rejectionOf(value["rejection"]) };
   if (result === "crisis") return { result, resources: crisisOf(value) ?? [] };
   const window = myStoryWindowOf(value["window"]);
   if (result === "window_used") return { result, window };

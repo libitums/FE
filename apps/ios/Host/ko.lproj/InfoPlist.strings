@@ -2,3 +2,5 @@
    추적 허용(ATT)은 지금까지처럼 en.lproj(영어)를 따른다. */
 "NSMicrophoneUsageDescription" = "말하기 연습에서 읽은 문장을 녹음해 어떻게 발음했는지 확인합니다. 말하기 단계에서만 녹음하고, 멈추면 바로 끝납니다.";
 "NSSpeechRecognitionUsageDescription" = "녹음한 말하기 연습 음성을 한국어 문장으로 바꿔 읽어야 할 문장과 맞는지 확인합니다. 이 확인 외에는 음성을 쓰지 않습니다.";
+/* 한국어 기기의 카메라 권한 안내 — 빌드 설정(INFOPLIST_KEY_NSCameraUsageDescription) 값과 같다(ADR-0199). */
+"NSCameraUsageDescription" = "내 스토리에 올릴 사진을 찍을 때만 카메라를 씁니다. Share를 누르기 전에는 아무것도 올리지 않습니다.";

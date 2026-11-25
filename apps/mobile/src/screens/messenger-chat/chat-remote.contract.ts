@@ -7,6 +7,7 @@ import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatIdeasOrigin, ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import type { VisibleFriend } from "./friend-catalog.contract";
 import type { FriendStory } from "./friend-stories.contract";
+import type { CompanionMyStoryPhotoRemote } from "./my-story-photo.contract";
 import type {
   MyStoriesState,
   MyStoryDraft,
@@ -89,6 +90,8 @@ export type CompanionMyStoriesRemote = {
   readonly postText: (draft: MyTextStoryDraft) => Promise<MyStoryPostResult>;
   readonly remove: (storyId: string | null) => Promise<boolean>;
   readonly setKeep: (keep: boolean) => Promise<boolean | null>;
+  /** 사진 스토리(ADR-0199) — 업로드 · 게시 · 서명 주소 · 다시 확인 요청. 없으면(옛 테스트 원격) 사진을 올리지 않습니다. */
+  readonly photo?: CompanionMyStoryPhotoRemote;
 };
 
 /** 친구 스토리 RPC — 던지지 않습니다. */

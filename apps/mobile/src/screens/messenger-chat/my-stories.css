@@ -1077,3 +1077,72 @@
   border-radius: var(--libitum-radius-xl);
   overflow: hidden;
 }
+
+/* 사진 스토리(ADR-0199) — 사진 바탕 · 시작 시트 안내 · 거절 판 · 확인 중 띠. */
+.my-story-photo-bg {
+  background-color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.my-story-start-error {
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-story-rejected {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-rejected-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-checking {
+  position: absolute;
+  top: var(--libitum-spacing-12);
+  right: var(--libitum-spacing-12);
+  left: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-checking-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-checking-body {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

@@ -1,6 +1,7 @@
 // 내 스토리 문구(ja, ADR-0194).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoJa } from "./ui-copy-story-photo";
 
 const replies = (count: number) => `返信${count}件`;
 
@@ -91,6 +92,7 @@ export const myStoriesJa: MyStoriesCopy = {
     ok: "OK",
     close: "閉じる",
   },
+  photo: storyPhotoJa,
   start: {
     title: "新しいストーリー",
     close: "閉じる",
