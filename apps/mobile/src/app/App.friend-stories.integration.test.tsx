@@ -142,6 +142,26 @@ test("FSI3. 안 만난 친구 스토리 → Add friend and reply: 방이 열리�
   expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to 송다은's story");
 });
 
+test("FSI7. 줄은 스토리 있는 인물을 최신 순(친구 · 안 만난 친구 함께), Watch all의 다음 인물도 그 순서", async () => {
+  serverRemote([
+    ...live,
+    story("guesthouse", {
+      id: "st-guesthouse",
+      postedAt: NOW - HOUR / 2,
+      expiresAt: NOW + 23 * HOUR,
+    }),
+  ]);
+  await openMessenger();
+  const faces = Array.from(screen.getByTestId(ids.row).querySelectorAll("[data-testid]"))
+    .map((el) => el.getAttribute("data-testid") ?? "")
+    .filter((id) => /^friend-stories-(friend|unmet)-/.test(id));
+  expect(faces).toEqual([ids.friend("guesthouse"), ids.unmet("daeun"), ids.friend("owner")]);
+  tapId(ids.watchAll);
+  expect(screen.getByTestId(ids.name).textContent).toContain("익선 게스트하우스");
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.name).textContent).toContain("사장님");
+});
+
 test("FSI6. 스토리를 못 읽으면 추천 줄 그대로 · 오류 없음", async () => {
   serverRemote("fail");
   await openMessenger();
