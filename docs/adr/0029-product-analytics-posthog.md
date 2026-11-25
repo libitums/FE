@@ -437,6 +437,8 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-21 — 가입 보상(ADR-0174). 적용 기록⟩ **`signup_reward_card_shown`**(손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번) ·
     **`signup_reward_card_tapped`**(카드를 눌러 로그인 화면으로 갈 때마다) · **`signup_reward_shown { amount }`**(서버 지급 뒤 보상 모달이 설 때 한 번). 공통 속성 둘 포함,
     `surface: learning`, 제품 이벤트 sink(`app/use-signup-reward.tsx`). 카드 → 가입 전환 = `entry_login_method_selected` ÷ `signup_reward_card_tapped`. Airbridge 매핑 없음.
+  - ⟨2026-11-25 — 첫날 무제한 안내 줄(ADR-0186 개정 3). 적용 기록⟩ `signup_reward_shown`에 **`unlimited`**(`shown` · `none`)를 더한다 — 그 창에
+    첫날 무제한 줄이 섰는지. 새 이벤트 이름은 없다. 줄을 본 신규 회원과 아닌 회원의 u01 클리어율 · D1을 이 값으로 가른다.
   - ⟨2026-11-21 — 푸시 캠페인 보상(ADR-0175). 적용 기록⟩ **`push_reward_claimed { kind, amount }`**(보상 알림을 눌러 서버가 지급했을 때 한 번 — amount는 엽전 수 또는
     무제한 티켓 시간) · **`push_reward_failed { reason }`**(already_claimed · not_recipient · expired · unknown · guest · error, 캠페인 id가 없는 알림은 내지 않음).
     공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-push-reward.tsx`). Airbridge 매핑 없음.
