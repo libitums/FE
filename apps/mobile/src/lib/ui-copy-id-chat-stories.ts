@@ -43,7 +43,7 @@ export const messengerChatStoriesId: FriendStoriesCopy = {
     coinsShort: "Koin tidak cukup",
     newFriend: "TEMAN BARU",
     addAndReply: "Tambah teman dan balas",
-    seeHowToMeet: "Cara bertemu",
+    profile: (name) => `Profil ${name}`,
   },
   reply: {
     caption: (name) => `Kamu membalas cerita ${name}`,

@@ -222,7 +222,7 @@ export function StoryReplyBar({
   );
 }
 
-/** 안 만난 친구의 아래 — 소개 카드 · 「Add friend and reply」(추가 가능) / 「See how to meet」(잠김). */
+/** 안 만난 친구의 아래 — 소개 카드 · 「Add friend and reply」(추가 가능일 때만). */
 export function StoryMeet({
   item,
   friend,
@@ -252,18 +252,21 @@ export function StoryMeet({
           )}
         </view>
       </view>
-      <view data-testid={ids.meet}>
-        <Button
-          label={friend.status === "addable" ? copy.viewer.addAndReply : copy.viewer.seeHowToMeet}
-          variant="brand"
-          size="xl"
-          width="fill"
-          bindtap={() => {
-            "background only";
-            onMeet();
-          }}
-        />
-      </view>
+      {/* 잠긴 친구는 단추가 없습니다 — 만나는 길(프로필 시트)은 위 아바타가 엽니다(옛 「See how to meet」을 옮김). */}
+      {friend.status === "addable" ? (
+        <view data-testid={ids.meet}>
+          <Button
+            label={copy.viewer.addAndReply}
+            variant="brand"
+            size="xl"
+            width="fill"
+            bindtap={() => {
+              "background only";
+              onMeet();
+            }}
+          />
+        </view>
+      ) : null}
     </>
   );
 }

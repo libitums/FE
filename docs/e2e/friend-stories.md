@@ -16,7 +16,8 @@
 | FS-E6 | (D5 개정) 「Reply to <이름>…」을 누른다 · 쓴다 · 보낸다 · 칩 | 키보드가 오르고 **답장 칸이 키보드 바로 위**(가리지 않음, iOS · Android 둘 다) · 진행 막대 멈춤 · 칩 · 무료 안내 숨김. 보내면(단추 · return) 보기에 남은 채 칸이 비고 키보드가 내려가며 「Sent · Open chat」 3초 → 이어 감. 칩도 그 자리에서 보냄. Open chat → 방, 보낸 글 위 「You replied to <이름>'s story」. 비행기 모드면 글이 남고 「Couldn't send. Try again.」. 칸 밖 누름 · 키보드 내림 = 이어 감, Android 뒤로 = 키보드 먼저 |
 | FS-E7 | (서버) FS-E6 뒤 캐릭터 답 | 답이 스토리 내용(그 한 줄)을 알고 이어짐. 앱을 다시 켜고 방을 열면 인용 카드가 그대로(서버 기록 `story`) |
 | FS-E8 | (서버, 체험 다 씀 · 엽전 0) 같은 스토리 첫 답장 → 둘째 답장 | 첫 답장은 보내지고 엽전 그대로(`credit_holds` 금액 0 · `story_replies.free = true`), 둘째는 엽전 부족 안내. 다른 스토리의 첫 답장은 다시 무료 |
-| FS-E9 | 안 만난 친구 스토리 | 「NEW FRIEND」 · 칩 · 답장 칸 · 멈춤 없음, 아래 얼굴 · 이름 · 소개 카드 + 「Add friend and reply」. 누르면 방이 열리고(목록 맨 위 NEW) 인용 띠. 잠긴 이야기 인물이면 「See how to meet」 → 프로필 시트(회차 · 먼저 만나기) |
+| FS-E9 | 안 만난 친구 스토리 | 「NEW FRIEND」 · 칩 · 답장 칸 · 멈춤 없음, 아래 얼굴 · 이름 · 소개 카드 + 「Add friend and reply」. 누르면 방이 열리고(목록 맨 위 NEW) 인용 띠. 잠긴 이야기 인물이면 아래 단추 없이 소개 카드만(프로필 시트는 FS-E13의 아바타로) |
+| FS-E17 | 보기 위 아바타(또는 이름)를 누른다 — 친구 · 안 만난 친구 각각 | 아래에서 프로필 시트(얼굴 · 이름 · 소개 · 태그 · 첫 말 말풍선 · Start chatting · Not now)가 오르고 진행 막대가 멈춤. Not now · 막 탭 · 끌어내림 · Android 뒤로 = 시트만 닫히고 막대가 이어 감. 친구면 Start chatting → 보기가 닫히고 그 방(새로 추가 · 토스트 없음, NEW 배지 없음). 안 만난 친구면 추천 친구 시트 그대로(추가 가능 = 추가 토스트, 잠김 = 만날 회차 · 먼저 만나기). VoiceOver · TalkBack: 이름 다음에 「<이름>'s profile, button」, 시트가 떠 있는 동안 보기는 읽히지 않음 |
 | FS-E10 | VoiceOver · TalkBack | 줄 제목 머리글, 칸 「<이름>'s story, 2h, new」 · 「…, seen」 · 「<이름>'s story, new friend」. 보기 = dialog 「<이름>'s story」, 진행 「Story 1 of 3」, 이전 · 다음 · 멈춤 · 닫기 · 칩(「Reply: …」)이 버튼, 답장 칸은 입력(「Reply to <이름>…」) · 보내기(「Send」) 버튼. 보기가 떠 있는 동안 뒤 목록 · 탭 바가 읽히지 않음. Android 뒤로 = 닫기 |
 | FS-E11 | (서버, `story_push = testers`) 스토리가 올라온 뒤 1시간 안 | 시험 계정 기기에 「<이름> · posted a story — <한 줄>」 한 통(현지 09 ~ 21시). 누르면 메신저 목록 위 그 스토리. 같은 날 선톡 푸시는 오지 않음(`pushedToday`) |
 | FS-E12 | 비행기 모드로 메신저 탭 | 스토리 줄 없이 「Meet new friends」 줄(예전 그대로), 오류 없음 |

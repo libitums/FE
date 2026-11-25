@@ -43,7 +43,7 @@ export const messengerChatStoriesJa: FriendStoriesCopy = {
     coinsShort: "コインが足りません",
     newFriend: "新しい友だち",
     addAndReply: "友だちに追加して返信",
-    seeHowToMeet: "出会い方を見る",
+    profile: (name) => `${name}のプロフィール`,
   },
   reply: {
     caption: (name) => `${name}のストーリーに返信しました`,

@@ -22,7 +22,7 @@ import { openTab, present, renderTesterApp, tapId } from "./test-helpers/messeng
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 
 // `integration` 계층(SEI1, 2026-11-25 보고): 실제 App · 메신저 탭 · 스토리 결선 · 추천 친구 결선(먼저 만나기 RPC 가짜 서버 포트).
-// 잠긴 미나의 스토리 → See how to meet → Chat now · 100 → 서버 unlocked → 해금 저장 · 대화방(인용 띠)이 열리고, 목록으로 돌아오면
+// 잠긴 미나의 스토리 → 위 아바타(프로필) → Chat now · 100 → 서버 unlocked → 해금 저장 · 대화방(인용 띠)이 열리고, 목록으로 돌아오면
 // 미나는 친구 칸에 서며 다시 Chat now · 100을 보이지 않는다.
 
 const NOW = Date.now();
@@ -77,7 +77,7 @@ test("SEI1. 잠긴 친구 스토리 → Chat now · 100 → 열림: 대화방 �
   openTab("messenger");
   await settle();
   tapId(ids.unmet("mina"));
-  tapId(ids.meet);
+  tapId(ids.profile);
   expect(screen.getByTestId(suggestedIds.sheetEarly).textContent).toContain("Chat now · 100");
   tapId(suggestedIds.sheetEarly);
   await settle();

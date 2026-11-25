@@ -44,7 +44,7 @@ export const messengerChatStoriesTh: FriendStoriesCopy = {
     coinsShort: "เหรียญไม่พอ",
     newFriend: "เพื่อนใหม่",
     addAndReply: "เพิ่มเพื่อนแล้วตอบกลับ",
-    seeHowToMeet: "ดูวิธีพบกัน",
+    profile: (name) => `โปรไฟล์ของ ${name}`,
   },
   reply: {
     caption: (name) => `คุณตอบกลับสตอรี่ของ ${name}`,

@@ -10,7 +10,7 @@ type Common = {
 /**
  * `row_viewed`: 스토리 줄이 실제로 그려졌을 때 목록 마운트당 한 번(줄 단위 — 추천 줄이 대신 선 노출은 `suggested_friend_viewed`).
  * `viewed`: 보기에서 한 장이 설 때마다(장 단위 — `met` = 내 친구인가, `from` = 연 곳, `index` · `total` = 몇째 장 / 장 수).
- * `closed`: 보기가 닫힐 때 한 번(`shown` = 선 장 수, `skipped` = 다음 탭으로 넘긴 수, `reason` = 끝까지 · 닫기 · 뒤로 · 답장).
+ * `closed`: 보기가 닫힐 때 한 번(`shown` = 선 장 수, `skipped` = 다음 탭으로 넘긴 수, `reason` = 끝까지 · 닫기 · 뒤로 · 답장 · 프로필 시트의 채팅하기).
  * `replied`: 인용이 실린 글을 보냄(`free` = 보기에서 본 무료 안내 — 정본은 서버, `where` = 보기 · 대화방). `word_saved`: 단어 알약으로 단어장에 넣음.
  */
 export type FriendStoryEvent =
@@ -34,7 +34,7 @@ export type FriendStoryEvent =
       readonly shown: string;
       readonly total: string;
       readonly skipped: string;
-      readonly reason: "completed" | "closed" | "back" | "replied";
+      readonly reason: "completed" | "closed" | "back" | "replied" | "profile";
     })
   | (Common & {
       readonly name: "friend_story_replied";
