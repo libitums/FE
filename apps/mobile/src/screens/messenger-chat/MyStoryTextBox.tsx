@@ -56,6 +56,7 @@ export function MyStoryTextBox({
       onChange={onChange}
       onRemove={onRemove}
       onTap={onEdit}
+      lane={true}
     >
       <text
         className={`my-story-text-box-ko my-story-ink-${text.color}`}

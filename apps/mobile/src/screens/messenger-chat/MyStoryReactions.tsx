@@ -4,7 +4,7 @@ import { color } from "@libitums/design-tokens";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { playSound } from "../../lib/sound-effects";
-import { stickerStyle } from "./MyStorySticker";
+import { laneBoxStyle, laneStyle, stickerStyle } from "./MyStorySticker";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   myStoriesTestIds as ids,
@@ -150,33 +150,34 @@ export function MyTextStoryCard({ story }: { readonly story: MyStory }): ReactNo
       )}
       {story.overlays.map((overlay, index) =>
         overlay.kind === "text" ? (
-          <view
-            key={`${overlay.ko}-${index}`}
-            className="my-story-text-box"
-            style={stickerStyle(overlay)}
-            flatten={false}
-            accessibility-element={true}
-            accessibility-label={
-              overlay.meaning === undefined ? overlay.ko : `${overlay.ko}. ${overlay.meaning}`
-            }
-          >
-            <text
-              className={`my-story-text-box-ko my-story-ink-${overlay.color ?? "brown"}`}
-              data-testid={ids.cardKo}
-              accessibility-elements-hidden={true}
+          <view key={`${overlay.ko}-${index}`} className="my-story-lane" style={laneStyle(overlay)}>
+            <view
+              className="my-story-text-box"
+              style={laneBoxStyle(overlay)}
+              flatten={false}
+              accessibility-element={true}
+              accessibility-label={
+                overlay.meaning === undefined ? overlay.ko : `${overlay.ko}. ${overlay.meaning}`
+              }
             >
-              {overlay.ko}
-            </text>
-            {overlay.roman === undefined ? null : (
-              <text className="my-story-sticker-roman" accessibility-elements-hidden={true}>
-                {overlay.roman}
+              <text
+                className={`my-story-text-box-ko my-story-ink-${overlay.color ?? "brown"}`}
+                data-testid={ids.cardKo}
+                accessibility-elements-hidden={true}
+              >
+                {overlay.ko}
               </text>
-            )}
-            {overlay.meaning === undefined ? null : (
-              <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
-                {`“${overlay.meaning}”`}
-              </text>
-            )}
+              {overlay.roman === undefined ? null : (
+                <text className="my-story-sticker-roman" accessibility-elements-hidden={true}>
+                  {overlay.roman}
+                </text>
+              )}
+              {overlay.meaning === undefined ? null : (
+                <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
+                  {`“${overlay.meaning}”`}
+                </text>
+              )}
+            </view>
           </view>
         ) : (
           <view

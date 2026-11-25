@@ -1019,9 +1019,19 @@
   background-color: var(--libitum-color-brand-primary);
 }
 
+/* 글 상자의 줄 — 바탕 너비, 가운데가 x(laneStyle). 위아래 가운데는 y. */
+.my-story-lane {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  transform: translateY(-50%);
+}
+
 /* 바탕 위 글 상자(30번) — 스티커와 같은 변환(가운데 기준 · scale이라 글자도 같은 비율). */
 .my-story-text-box {
-  position: absolute;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
