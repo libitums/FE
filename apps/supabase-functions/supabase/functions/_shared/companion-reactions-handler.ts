@@ -150,7 +150,10 @@ async function reactOne(
     userId: claim.userId,
     characterId: claim.characterId,
     name: made.name,
-    segments: made.spoken,
+    segments: made.segments,
+    lang: made.lang,
+    word: claim.ko,
+    angle: claim.angle,
     now,
   });
   return { status: "done", push };
