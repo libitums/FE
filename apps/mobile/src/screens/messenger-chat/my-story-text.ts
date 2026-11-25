@@ -4,7 +4,7 @@ import { clamp, MAX_SCALE, MIN_SCALE, round, type Placement } from "./my-story-e
 
 /** 글 상자 한 줄의 폭(한글 글자 수) — 바탕 80% 폭 · heading-m 22px 기준. */
 const LINE_UNITS = 12;
-const unitOf = (ch: string): number => (ch === " " ? 0.3 : ch.charCodeAt(0) > 0x2e7f ? 1 : 0.55);
+const unitOf = (ch: string): number => (ch === " " ? 0.3 : ch.charCodeAt(0) > 0x2e7f ? 1 : 0.6);
 const unitsOf = (word: string): number => {
   let sum = 0;
   for (const ch of word) sum += unitOf(ch);
