@@ -23,6 +23,13 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     promptKeepBody: "Tạo tài khoản miễn phí để giữ Yeopjeon và vé của bạn.",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
+  pushAsk: {
+    title: (name) => `Nhận thông báo khi ${name} nhắn cho bạn?`,
+    body: "Thỉnh thoảng mình sẽ nhắn trước — khoảng một lần mỗi ngày, vào buổi tối.",
+    turnOn: "Bật",
+    notNow: "Để sau",
+    on: (name) => `Đã bật thông báo — ${name} nhắn là bạn sẽ biết ngay.`,
+  },
   chatSettings: {
     entryTitle: "Trò chuyện",
     entryDescription: "Gợi ý trả lời, tin nhắn từ nhân vật, ghi nhớ",

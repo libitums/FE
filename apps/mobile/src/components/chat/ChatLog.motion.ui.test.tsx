@@ -42,7 +42,7 @@ function followTwice(motion: "standard" | "reduced"): void {
   );
   const { rerender } = render(tree(1));
   act(() => {
-    vi.advanceTimersByTime(16);
+    vi.advanceTimersByTime(1000); // 첫 끝 맞춤(점프) 뒤 첫 진입 창이 지난다
   });
   rerender(tree(2));
   act(() => {
@@ -58,10 +58,10 @@ test("M6. 움직임 줄이기에서는 끝 맞춤 scrollTo가 smooth: false다",
   for (const call of scrolls) expect(call.params?.smooth).toBe(false);
 });
 
-test("M6. 기본 움직임에서는 끝 맞춤 scrollTo가 smooth: true다", () => {
+// chat-scroll-follow D: 방에 들어와 처음 끝을 맞출 때는 기본 움직임에서도 점프다(기록 전체를 훑어 내리지 않음).
+test("M6. 기본 움직임에서는 첫 끝 맞춤은 점프, 그 뒤 끝 맞춤 scrollTo는 smooth: true다", () => {
   followTwice("standard");
 
   const scrolls = invoked.filter((call) => call.method === "scrollTo");
-  expect(scrolls.length).toBeGreaterThan(0);
-  for (const call of scrolls) expect(call.params?.smooth).toBe(true);
+  expect(scrolls.map((call) => call.params?.smooth)).toEqual([false, true]);
 });

@@ -23,6 +23,13 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     promptKeepBody: "Buat akun gratis untuk menyimpan Yeopjeon dan tiketmu.",
   },
   pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
+  pushAsk: {
+    title: (name) => `Mau dapat notifikasi saat ${name} mengirim pesan?`,
+    body: "Kadang aku yang mengirim pesan duluan — sekitar sekali sehari, di malam hari.",
+    turnOn: "Aktifkan",
+    notNow: "Nanti saja",
+    on: (name) => `Notifikasi aktif — ${name} akan mengabarimu.`,
+  },
   chatSettings: {
     entryTitle: "Obrolan",
     entryDescription: "Ide balasan, pesan dari karakter, ingatan",

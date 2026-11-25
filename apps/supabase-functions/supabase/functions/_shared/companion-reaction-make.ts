@@ -40,6 +40,8 @@ export type MadeReaction =
       /** 푸시 미리보기 · 로그용 — 번역을 붙이기 전 조각. */
       readonly spoken: readonly Segment[];
       readonly name: string;
+      /** 번역한 언어(학습자 L1) — 푸시는 이 언어 한 줄만 싣는다. */
+      readonly lang: string | null;
       readonly meta: Record<string, unknown>;
       readonly suggestions: Record<string, unknown> | null;
     }
@@ -151,6 +153,7 @@ export async function makeReaction(
     segments: withTranslations(spoken, translated),
     spoken,
     name: context.persona.name,
+    lang: context.l1 ?? claim.lang,
     meta: {
       model: llm.model,
       romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
