@@ -411,7 +411,7 @@ test("MS4. 답할 인물 — 친구(내가 말한 대화)만 · 1명이면 1 · 
   );
   await spoke(member, "mina");
   const single = (await postAgain(member)).story!.id;
-  expect(await alarms(single)).toMatchObject([{ character_id: "mina", rank: 1, angle: "word" }]);
+  expect(await alarms(single)).toMatchObject([{ character_id: "mina", rank: 1, angle: "react" }]);
 
   await spoke(member, "yoonkyung");
   await spoke(member, "duksu");
@@ -421,14 +421,11 @@ test("MS4. 답할 인물 — 친구(내가 말한 대화)만 · 1명이면 1 · 
   const picked = await alarms(two);
   expect(picked.map((alarm) => alarm.rank)).toEqual([1, 2]);
   expect(new Set(picked.map((alarm) => alarm.character_id)).size).toBe(2);
-  // 덕수쌤이 친구면 단어 · 카드 스토리엔 늘 답한다. 퀴즈는 덕수쌤만 받을 수 있다(20270106120000).
+  // 덕수쌤이 친구면 단어 · 카드 스토리엔 늘 답하고 단어 담당(word · quiz — 20270110120000). 다른 인물은 첫째 react · 둘째 follow.
   const duksu = picked.find((alarm) => alarm.character_id === "duksu")!;
-  expect(duksu.rank === 1 ? ["word", "quiz"] : ["question", "quiz", "together"]).toContain(
-    duksu.angle,
-  );
+  expect(["word", "quiz"]).toContain(duksu.angle);
   const other = picked.find((alarm) => alarm.character_id !== "duksu")!;
-  if (other.rank === 1) expect(other.angle).toBe("word");
-  else expect(["question", "together"]).toContain(other.angle);
+  expect(other.angle).toBe(other.rank === 1 ? "react" : "follow");
   expect(picked[0]!.seconds).toBeGreaterThanOrEqual(60);
   expect(picked[0]!.seconds).toBeLessThanOrEqual(300);
   expect(picked[1]!.seconds).toBeGreaterThanOrEqual(300);
@@ -557,7 +554,8 @@ test("MS7. 끝내기 — 반응은 그 인물 방의 메시지(origin story_reac
     user_id: member,
     character_id: "mina",
     media: true,
-    meta: { myStoryId: story.id, angle: "word", outcome: "done" },
+    // meta.angle = 모델이 알린 방식(없으면 역할), meta.role = 역할(20270110120000).
+    meta: { myStoryId: story.id, angle: "react", role: "react", outcome: "done" },
     suggestions: { version: 2 },
   });
   expect(await alarms(story.id)).toMatchObject([{ status: "done", message_id: done.messageId }]);
@@ -870,6 +868,7 @@ test("MS17. 스토리 맥락 — 살아 있는 내 스토리(지우면 빠짐 ·
       meaning: "to arrive",
       exampleKo: "서울에 도착했어!",
       scene: null,
+      overlays: [],
       postedAt: expect.any(String),
     },
   ]);

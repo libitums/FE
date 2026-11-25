@@ -286,6 +286,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   return {
     outcome: "complete",
     suggestions: saved,
+    ...(result.state?.quiz === undefined ? {} : { quiz: result.state.quiz }),
     afterTurn: {
       userId: context.userId,
       characterId: body.character_id,

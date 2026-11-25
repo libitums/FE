@@ -47,6 +47,13 @@ export type TurnState = {
   readonly learnedHow?: "say" | "ask";
   /** 학습자가 슬프거나 속상해 위로가 필요해 보인다 — 다음 턴에 학습 표현을 넣지 않는다. */
   readonly heavy?: true;
+  /**
+   * 덕수쌤 퀴즈의 답 턴에서만(ADR-0191 D14): 모델이 본 이 메시지 — correct(맞힘, 활용이 달라도) · wrong(답하려 했는데 틀림) ·
+   * skip(퀴즈와 상관없는 말 · 넘어가는 말). 이번 턴 지시가 이 칸을 달라고 할 때만 온다.
+   */
+  readonly quiz?: "correct" | "wrong" | "skip";
+  /** 내 스토리 반응에서만(ADR-0191 D16): 모델이 실제로 한 것 — empathy · question · cheer · suggest · word · quiz · example. */
+  readonly mode?: string;
 };
 
 /** 대화의 화제 상태(conversations.topic_state). 서버가 분기를 고르는 데 쓴다. 학습 칸(20261125)은 옛 상태에 없다. */

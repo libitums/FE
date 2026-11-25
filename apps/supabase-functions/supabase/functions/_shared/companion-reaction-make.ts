@@ -156,6 +156,8 @@ export async function makeReaction(
     lang: context.l1 ?? claim.lang,
     meta: {
       model: llm.model,
+      // 모델이 고른 방식(ADR-0191 D16) — 저장이 아는 값만 meta.angle로 쓴다.
+      ...(made.state?.mode === undefined ? {} : { mode: made.state.mode }),
       romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
       romanceLine: line,
       translation: translated.status,

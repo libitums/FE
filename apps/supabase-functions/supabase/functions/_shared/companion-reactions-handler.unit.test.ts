@@ -31,7 +31,7 @@ const claimed = (n: number, extra: Record<string, unknown> = {}) => ({
   roman: "yageun",
   meaning: "overtime",
   exampleKo: "오늘도 야근이야",
-  angle: "word",
+  angle: "react",
   rank: 1,
   lang: "es",
   ...extra,
