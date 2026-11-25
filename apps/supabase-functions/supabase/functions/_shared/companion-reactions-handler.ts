@@ -60,6 +60,15 @@ const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const text = (value: unknown): string | null => (typeof value === "string" ? value : null);
 
+/** 먼저 단 다른 친구의 반응(ADR-0191 D16) — 모양이 틀리면 null. */
+function friendReplyOf(raw: unknown): { name: string; text: string } | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const row = raw as Record<string, unknown>;
+  const name = text(row["name"]);
+  const said = text(row["text"]);
+  return name === null || said === null || said.trim() === "" ? null : { name, text: said };
+}
+
 function claimOf(raw: unknown): ReactionClaim | null {
   if (typeof raw !== "object" || raw === null) return null;
   const row = raw as Record<string, unknown>;
@@ -91,6 +100,7 @@ function claimOf(raw: unknown): ReactionClaim | null {
     kind,
     texts,
     words,
+    friendReply: friendReplyOf(row["friendReply"]),
     scene: text(row["scene"]),
     hooks: Array.isArray(row["hooks"])
       ? row["hooks"].filter((hook): hook is string => typeof hook === "string")

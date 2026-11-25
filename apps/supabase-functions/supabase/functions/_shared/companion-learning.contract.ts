@@ -52,6 +52,8 @@ export type TurnState = {
    * skip(퀴즈와 상관없는 말 · 넘어가는 말). 이번 턴 지시가 이 칸을 달라고 할 때만 온다.
    */
   readonly quiz?: "correct" | "wrong" | "skip";
+  /** 내 스토리 반응에서만(ADR-0191 D16): 모델이 실제로 한 것 — empathy · question · cheer · suggest · word · quiz · example. */
+  readonly mode?: string;
 };
 
 /** 대화의 화제 상태(conversations.topic_state). 서버가 분기를 고르는 데 쓴다. 학습 칸(20261125)은 옛 상태에 없다. */

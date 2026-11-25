@@ -101,7 +101,7 @@ beforeEach(async () => {
   await spoke("yoonkyung");
 });
 
-test("MC1. 사진 · 글 + 단어 — 첫째는 다른 인물의 react, 덕수쌤은 둘째(quiz · question · together). 덕수쌤 혼자면 react", async () => {
+test("MC1. 사진 · 글 + 단어 — 첫째는 다른 인물의 react, 덕수쌤은 둘째 단어 담당(word · quiz). 덕수쌤 혼자여도 단어 담당", async () => {
   for (const [kind, ko, overlays] of [
     ["text", "", [text("비 오는 날"), word("우산", "umbrella")]],
     ["text", "오늘 비가 와요", [word("우산", "umbrella")]],
@@ -114,29 +114,27 @@ test("MC1. 사진 · 글 + 단어 — 첫째는 다른 인물의 react, 덕수�
       expect(picked[0]).toMatchObject({ rank: 1, angle: "react" });
       expect(picked[0]!.character_id).not.toBe("duksu");
       expect(picked[1]!.character_id).toBe("duksu");
-      expect(["quiz", "question", "together"]).toContain(picked[1]!.angle);
+      expect(["word", "quiz"]).toContain(picked[1]!.angle);
     }
   }
   await settings(`my_story_rules = '{"twoReplyChance": 0}'`);
-  expect(await alarms(await story("photo", "바다", [word("여름", "summer")]))).toEqual([
-    { character_id: "duksu", rank: 1, angle: "react" },
-  ]);
+  const solo = await alarms(await story("photo", "바다", [word("여름", "summer")]));
+  expect(solo).toHaveLength(1);
+  expect(solo[0]!.character_id).toBe("duksu");
+  expect(["word", "quiz"]).toContain(solo[0]!.angle);
 });
 
-test("MC2. 색 + 단어만 — 옛 단어 카드 규칙(덕수쌤 고정 · word · quiz). 단어 없는 사진 · 글은 덕수쌤 고정 · 퀴즈 없음", async () => {
+test("MC2. 색 + 단어만 — 덕수쌤 고정(첫째 · 둘째 반반, 단어 담당) · 다른 인물 react · follow. 단어 없는 사진 · 글은 react · follow", async () => {
   for (let round = 0; round < 4; round += 1) {
     const picked = await alarms(await story("text", "", [word("산책", "a walk")]));
     const duksu = picked.find((alarm) => alarm.character_id === "duksu")!;
-    expect(duksu.rank === 1 ? ["word", "quiz"] : ["question", "quiz", "together"]).toContain(
-      duksu.angle,
-    );
+    expect(["word", "quiz"]).toContain(duksu.angle);
     const other = picked.find((alarm) => alarm.character_id !== "duksu")!;
-    expect(other.rank === 1 ? ["word"] : ["question", "together"]).toContain(other.angle);
+    expect(other.angle).toBe(other.rank === 1 ? "react" : "follow");
   }
   for (let round = 0; round < 4; round += 1) {
     const picked = await alarms(await story("photo", "바다 왔어", [text("최고")]));
-    expect(picked[0]!.angle).toBe("react");
-    expect(picked.map((alarm) => alarm.angle)).not.toContain("quiz");
+    expect(picked.map((alarm) => alarm.angle)).toEqual(["react", "follow"]);
   }
 });
 
@@ -261,4 +259,67 @@ test("MC5. 인용 · 내 스토리 답장의 한 줄 — 쓴 글 → 얹은 글 
     result: "mine",
     story: { line: "비 오는 날", wordKo: "우산", meaning: "umbrella" },
   });
+});
+
+test("MC6. 역할 기반(20270110120000) — quizChance로 퀴즈 권함 · 둘째 claim은 먼저 단 친구의 반응 · 저장은 모델이 알린 방식(퀴즈는 덕수쌤만)", async () => {
+  await settings(`my_story_rules = '{"twoReplyChance": 1, "quizChance": 1}'`);
+  const s = await story("photo", "바다", [word("여름", "summer")]);
+  expect((await alarms(s)).map((alarm) => alarm.angle)).toEqual(["react", "quiz"]);
+  await settings(`my_story_rules = '{"twoReplyChance": 1, "quizChance": 0}'`);
+  expect(
+    (await alarms(await story("photo", "바다", [word("여름", "summer")]))).map((a) => a.angle),
+  ).toEqual(["react", "word"]);
+
+  const claim = async () =>
+    (
+      await server.query(
+        "select public.companion_claim_story_reactions(now() + interval '2 hours', 50) as r",
+      )
+    ).rows[0].r as { rows: Json[] };
+  await db.admin.query("delete from companion.my_story_reactions where story_id <> $1", [s]);
+  const first = (await claim()).rows;
+  expect(first.map((row) => row["angle"]).sort()).toEqual(["quiz", "react"]);
+  const reactRow = first.find((row) => row["angle"] === "react")!;
+  const quizRow = first.find((row) => row["angle"] === "quiz")!;
+  expect(reactRow["friendReply"]).toBeNull();
+  const finish = (id: unknown, mode: string) =>
+    server.query(
+      "select public.companion_finish_story_reaction($1, true, now(), gen_random_uuid(), $2, $3, null)",
+      [
+        id,
+        JSON.stringify([{ kind: "speech", text: "우와 바다다! 어디예요?" }]),
+        JSON.stringify({ mode }),
+      ],
+    );
+  // 첫째가 퀴즈라고 알려도 덕수쌤 단어 담당이 아니면 역할로 남는다.
+  await finish(reactRow["reactionId"], "quiz");
+  const firstMeta = (
+    await one<{ meta: Json }>(
+      "select m.meta from companion.my_story_reactions r join companion.messages m on m.id = r.message_id where r.id = $1",
+      [reactRow["reactionId"]],
+    )
+  ).meta;
+  expect(firstMeta).toMatchObject({ angle: "react", role: "react" });
+  // 둘째(아직 claimed가 아니게 되돌려 다시 claim)는 첫째의 말을 받는다.
+  await db.admin.query(
+    "update companion.my_story_reactions set status = 'scheduled', claimed_at = null where id = $1",
+    [quizRow["reactionId"]],
+  );
+  const second = (await claim()).rows[0]!;
+  expect(second["friendReply"]).toMatchObject({
+    characterId: reactRow["characterId"],
+    text: "우와 바다다! 어디예요?",
+  });
+  // 덕수쌤이 분위기를 보고 퀴즈 대신 응원했으면 meta.angle은 cheer — 퀴즈 줄이 생기지 않는다.
+  await finish(second["reactionId"], "cheer");
+  expect(
+    Number(
+      (
+        await one<{ n: string }>(
+          "select count(*) as n from companion.my_story_quizzes where story_id = $1",
+          [s],
+        )
+      ).n,
+    ),
+  ).toBe(0);
 });
