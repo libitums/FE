@@ -175,14 +175,15 @@ export function useMyStories({
           setState((before) => (before === null ? before : { ...before, window }));
         setError(copy.composer.windowUsed(window === null ? null : clockOf(window)));
       } else if (posted.result === "crisis") setCrisis(posted.resources);
-      else
-        setError(
-          posted.result === "daily_limit"
-            ? copy.composer.dailyLimit
-            : posted.result === "text_blocked"
-              ? copy.editor.textBlocked
-              : copy.composer.failed,
-        );
+      else {
+        const known: Partial<Record<string, string>> = {
+          daily_limit: copy.composer.dailyLimit,
+          text_blocked: copy.editor.textBlocked,
+          check_limit: copy.composer.checkLimit,
+          invalid: copy.composer.invalid,
+        };
+        setError(known[posted.result] ?? copy.composer.failed);
+      }
       return;
     }
     const { story } = posted;

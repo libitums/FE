@@ -37,6 +37,10 @@ export type MyStoriesCopy = {
     /** 서버가 `window_used`로 막음 — 다음 창 시각(모르면 null). */
     readonly windowUsed: (time: string | null) => string;
     readonly failed: string;
+    /** 서버 `check_limit` — 오늘 검수 시도를 다 씀(#598). */
+    readonly checkLimit: string;
+    /** 서버 `invalid` — 요청을 받지 않음(#598). */
+    readonly invalid: string;
   };
   readonly viewer: {
     readonly yourStory: string;

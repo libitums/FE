@@ -61,6 +61,8 @@ export const myStoriesEs: MyStoriesCopy = {
         ? "Ya compartiste una historia en esta parte del día."
         : `Ya compartiste una historia en esta parte del día. La próxima se abre a las ${time}.`,
     failed: "No se pudo compartir tu historia. Inténtalo de nuevo.",
+    checkLimit: "Ya lo intentaste bastante hoy. Vuelve a intentarlo mañana.",
+    invalid: "No se pudo compartir esta historia. Prueba a cambiarla.",
   },
   viewer: {
     yourStory: "Tu historia",
