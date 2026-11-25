@@ -52,8 +52,8 @@ export type EditorShare =
 
 /** 서버 `MY_STORY_OVERLAY_MAX`(계약 패키지) — 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
 const OVERLAY_MAX = 8;
-const MIN_SCALE = 0.5;
-const MAX_SCALE = 3;
+export const MIN_SCALE = 0.5;
+export const MAX_SCALE = 3;
 /** 새 스티커 자리 — 가운데 조금 아래, 살짝 기울여(시안 27번), 겹치지 않게 하나마다 비켜 놓습니다. */
 const START = { x: 0.5, y: 0.55, rotation: -4, step: 0.06 } as const;
 /** 새 글 상자 자리 — 가운데 위쪽(시안 29번), 기울이지 않음. */
@@ -62,8 +62,9 @@ const TEXT_START: Placement = { x: 0.5, y: 0.3, scale: 1, rotation: 0 };
 export const STORY_BACKGROUNDS: readonly StoryBackground[] = ["orange", "green", "blue", "purple"];
 export const STORY_TEXT_COLORS: readonly StoryTextColor[] = ["brown", "black", "white", "orange"];
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-const round = (value: number) => Math.round(value * 1000) / 1000;
+export const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+export const round = (value: number) => Math.round(value * 1000) / 1000;
 
 export function editorCapsOf(kinds: readonly MyStoryPostKind[]): EditorCaps {
   const text = kinds.includes("text");
@@ -206,69 +207,5 @@ export function editorShareOf(
     background,
     text,
     overlays: [...(text === null ? [] : [textOverlayOf(text)]), ...stickers.map(overlayOf)],
-  };
-}
-
-/** 글 상자 한 줄의 폭(한글 글자 수) — 바탕 80% 폭 · heading-m 22px 기준. */
-const LINE_UNITS = 12;
-const unitOf = (ch: string): number => (ch === " " ? 0.3 : ch.charCodeAt(0) > 0x2e7f ? 1 : 0.55);
-const unitsOf = (word: string): number => {
-  let sum = 0;
-  for (const ch of word) sum += unitOf(ch);
-  return sum;
-};
-
-/**
- * 글 상자의 줄(A안, 사용자 결정 2026-11-25) — 띄어쓰기로 나누고 한 줄 폭을 넘는 낱말은 자릅니다. 크기와 무관한 규칙이라 키우고 줄여도
- * 줄이 다시 흐르지 않고, 편집 · 보기(친구 화면 · 보관함)가 같은 줄을 그립니다. 서버엔 `ko` 그대로(줄바꿈 문자 없이) 보냅니다.
- */
-export function storyTextLines(ko: string): string[] {
-  const lines: string[] = [];
-  let line = "";
-  let used = 0;
-  for (const word of ko.split(" ")) {
-    let rest = word;
-    while (rest !== "") {
-      const need = unitsOf(rest);
-      if (line !== "" && used + unitOf(" ") + need <= LINE_UNITS) {
-        line = `${line} ${rest}`;
-        used += unitOf(" ") + need;
-        rest = "";
-      } else if (line === "" && need <= LINE_UNITS) {
-        line = rest;
-        used = need;
-        rest = "";
-      } else if (line !== "") {
-        lines.push(line);
-        line = "";
-        used = 0;
-      } else {
-        // 한 줄보다 긴 낱말 — 폭만큼 잘라 한 줄로.
-        let cut = "";
-        let width = 0;
-        for (const ch of rest) {
-          if (width + unitOf(ch) > LINE_UNITS) break;
-          cut += ch;
-          width += unitOf(ch);
-        }
-        lines.push(cut);
-        rest = rest.slice(cut.length);
-      }
-    }
-  }
-  if (line !== "") lines.push(line);
-  return lines;
-}
-
-/**
- * 글 상자 그리기 크기 — 확정한 크기(`settled`)는 글자 · 줄 높이 · 안쪽 여백에 곱해 선명하게, 끄는 동안 바뀐 몫(`scale / settled`)만
- * transform(`live`)으로 둡니다. 손을 떼면 settled = scale이 되어 live 1(같은 가운데 기준이라 튀지 않음).
- */
-export function textBoxSizeOf(scale: number, settled: number) {
-  return {
-    fontSize: `${22 * settled}px`,
-    lineHeight: `${28 * settled}px`,
-    padding: `${8 * settled}px ${12 * settled}px`,
-    live: round(scale / settled),
   };
 }
