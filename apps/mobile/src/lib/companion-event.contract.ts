@@ -109,8 +109,7 @@ export type ChatCoinEvent =
       readonly cost: string;
       /** 스토리 첫 답장 무료로 보냄(ADR-0178 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
       readonly storyFree?: true;
-      /** 답할 문장 추천(보기)을 눌러 보냄(ADR-0195) — 칩을 고쳐 보내는 길은 없습니다. */
-      readonly fromSuggestion: boolean;
+      readonly fromSuggestion: boolean; // 답할 문장 추천(보기)을 눌러 보냄(ADR-0195) — 칩을 고쳐 보내는 길은 없습니다.
     })
   | (Common & {
       readonly name: "chat_media_requested";
@@ -146,8 +145,7 @@ export type StreakRewardEvent = Common & {
 
 /**
  * 가입 보상(ADR-0174). `signup_reward_card_shown`: 손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번. `signup_reward_card_tapped`: 카드를
- * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수) — `unlimited`는 그 창에
- * 첫날 무제한 줄(ADR-0186 개정 3)이 섰는지(shown · none).
+ * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수) — `unlimited`는 그 창에 첫날 무제한 줄(ADR-0186 개정 3)이 섰는지(shown · none).
  */
 export type SignupRewardEvent =
   | (Common & { readonly name: "signup_reward_card_shown" })
