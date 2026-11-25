@@ -906,37 +906,24 @@
   line-height: var(--libitum-typography-label-l-line-height);
 }
 
-/* 글 상자 · 도움말 묶음 — 키보드가 오르면 위 줄과 키보드 사이 가운데로(키보드에 가리지 않게). */
+/* 글 상자 · 도움말 묶음 — 키보드가 오르면(인라인 style) 위 줄과 키보드 사이 가운데로(키보드에 가리지 않게). */
 .my-story-typing-middle {
   display: flex;
   flex-direction: column;
   align-items: center;
   align-self: stretch;
-}
-
-.my-story-typing-keyboard-space {
-  flex-shrink: 0;
-  align-self: stretch;
+  padding-top: var(--libitum-spacing-96);
 }
 
 .my-story-typing-box {
   display: flex;
   align-self: stretch;
-  margin: var(--libitum-spacing-96) var(--libitum-spacing-20) 0;
+  margin: 0 var(--libitum-spacing-20);
   padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
   border-width: 2px;
   border-style: dashed;
   border-color: rgba(255, 255, 255, 0.9);
   border-radius: var(--libitum-radius-lg);
-}
-
-.my-story-typing-keyboard .my-story-typing-middle {
-  flex: 1;
-  justify-content: center;
-}
-
-.my-story-typing-keyboard .my-story-typing-box {
-  margin-top: 0;
 }
 
 .my-story-typing-input {

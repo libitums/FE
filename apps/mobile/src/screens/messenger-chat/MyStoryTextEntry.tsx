@@ -71,10 +71,10 @@ export function MyStoryTextEntry({
 
   return (
     <view
-      className={keyboard > 0 ? "my-story-typing my-story-typing-keyboard" : "my-story-typing"}
+      className="my-story-typing"
       data-testid={ids.textEntry}
       event-through={false}
-      style={{ paddingTop: `${insets.top + TOP_GAP}px` }}
+      style={{ paddingTop: `${insets.top + TOP_GAP}px`, paddingBottom: `${keyboard}px` }}
     >
       <view className="my-story-typing-top">
         <view className="my-story-typing-colors" accessibility-label={copy.colors}>
@@ -113,7 +113,10 @@ export function MyStoryTextEntry({
           </text>
         </view>
       </view>
-      <view className="my-story-typing-middle">
+      <view
+        className="my-story-typing-middle"
+        style={keyboard > 0 ? { flex: 1, justifyContent: "center", paddingTop: 0 } : undefined}
+      >
         <view className="my-story-typing-box">
           <input
             id={TYPING_INPUT_ID}
@@ -137,13 +140,6 @@ export function MyStoryTextEntry({
         </view>
         <text className="my-story-typing-help">{copy.help}</text>
       </view>
-      {keyboard > 0 ? (
-        <view
-          className="my-story-typing-keyboard-space"
-          data-testid={ids.textKeyboard}
-          style={{ height: `${keyboard}px` }}
-        />
-      ) : null}
     </view>
   );
 }

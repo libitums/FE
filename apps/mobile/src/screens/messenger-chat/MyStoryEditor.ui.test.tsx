@@ -310,17 +310,12 @@ test("MS-UI39. Aa 쓰는 동안 키보드가 오르면 글 상자를 키보드 �
   tapId(ids.create);
   tapId(ids.startBackground);
   tapId(ids.toolText);
-  expect(screen.queryByTestId(ids.textKeyboard)).toBeNull();
+  const entry = () => screen.getByTestId(ids.textEntry).getAttribute("style") ?? "";
+  expect(entry()).toContain("padding-bottom: 0px");
   act(() => typingKeyboard(336));
-  expect(screen.getByTestId(ids.textKeyboard).getAttribute("style")).toContain("336px");
-  expect(screen.getByTestId(ids.textEntry).getAttribute("class")).toContain(
-    "my-story-typing-keyboard",
-  );
+  expect(entry()).toContain("padding-bottom: 336px");
   // 글자색 줄 · Done은 위에 그대로
   expect(screen.getByTestId(ids.textDone)).not.toBeNull();
   act(() => typingKeyboard(0));
-  expect(screen.queryByTestId(ids.textKeyboard)).toBeNull();
-  expect(screen.getByTestId(ids.textEntry).getAttribute("class")).not.toContain(
-    "my-story-typing-keyboard",
-  );
+  expect(entry()).toContain("padding-bottom: 0px");
 });
