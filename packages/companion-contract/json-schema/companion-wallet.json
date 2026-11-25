@@ -4,10 +4,7 @@
   "properties": {
     "tier": {
       "type": "string",
-      "enum": [
-        "free",
-        "premium"
-      ]
+      "enum": ["free", "premium"]
     },
     "sub": {
       "type": "integer",
@@ -15,10 +12,7 @@
       "maximum": 9007199254740991
     },
     "subExpiresAt": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "grant": {
       "type": "integer",
@@ -36,13 +30,6 @@
       "maximum": 9007199254740991
     }
   },
-  "required": [
-    "tier",
-    "sub",
-    "subExpiresAt",
-    "grant",
-    "paid",
-    "trialRemaining"
-  ],
+  "required": ["tier", "sub", "subExpiresAt", "grant", "paid", "trialRemaining"],
   "additionalProperties": false
 }

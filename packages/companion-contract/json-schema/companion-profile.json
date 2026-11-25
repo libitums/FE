@@ -18,11 +18,7 @@
       "anyOf": [
         {
           "type": "string",
-          "enum": [
-            "self",
-            "social",
-            "store_signal"
-          ]
+          "enum": ["self", "social", "store_signal"]
         },
         {
           "type": "null"
@@ -30,20 +26,13 @@
       ]
     },
     "l1": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "feedbackMode": {
       "anyOf": [
         {
           "type": "string",
-          "enum": [
-            "separate",
-            "natural",
-            "prefix"
-          ]
+          "enum": ["separate", "natural", "prefix"]
         },
         {
           "type": "null"
@@ -52,11 +41,7 @@
     },
     "proactivePref": {
       "type": "string",
-      "enum": [
-        "off",
-        "daily1",
-        "daily2"
-      ]
+      "enum": ["off", "daily1", "daily2"]
     },
     "proactiveHour": {
       "anyOf": [
@@ -71,21 +56,14 @@
       ]
     },
     "timezone": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "replySuggestions": {
       "type": "boolean"
     },
     "snapshotSelf": {
       "type": "string",
-      "enum": [
-        "female",
-        "male",
-        "hidden"
-      ]
+      "enum": ["female", "male", "hidden"]
     },
     "adultAck": {
       "type": "boolean"

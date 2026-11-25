@@ -14,48 +14,27 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "user",
-              "assistant",
-              "notice"
-            ]
+            "enum": ["user", "assistant", "notice"]
           },
           "origin": {
             "type": "string",
-            "enum": [
-              "turn",
-              "proactive",
-              "crisis",
-              "greeting",
-              "story_reaction"
-            ]
+            "enum": ["turn", "proactive", "crisis", "greeting", "story_reaction"]
           },
           "status": {
             "type": "string",
-            "enum": [
-              "complete",
-              "blocked",
-              "crisis",
-              "failed"
-            ]
+            "enum": ["complete", "blocked", "crisis", "failed"]
           },
           "hidden": {
             "type": "boolean"
           },
           "text": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "inputMode": {
             "anyOf": [
               {
                 "type": "string",
-                "enum": [
-                  "text",
-                  "voice"
-                ]
+                "enum": ["text", "voice"]
               },
               {
                 "type": "null"
@@ -69,11 +48,7 @@
               "properties": {
                 "kind": {
                   "type": "string",
-                  "enum": [
-                    "speech",
-                    "action",
-                    "narration"
-                  ]
+                  "enum": ["speech", "action", "narration"]
                 },
                 "text": {
                   "type": "string"
@@ -82,10 +57,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "kind",
-                "text"
-              ],
+              "required": ["kind", "text"],
               "additionalProperties": false
             }
           },
@@ -96,16 +68,10 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "ai_disclosure",
-                      "minor_notice",
-                      "break_reminder"
-                    ]
+                    "enum": ["ai_disclosure", "minor_notice", "break_reminder"]
                   }
                 },
-                "required": [
-                  "kind"
-                ],
+                "required": ["kind"],
                 "additionalProperties": false
               },
               {
@@ -125,28 +91,17 @@
                   },
                   "status": {
                     "type": "string",
-                    "enum": [
-                      "ok",
-                      "none",
-                      "unavailable",
-                      "skipped"
-                    ]
+                    "enum": ["ok", "none", "unavailable", "skipped"]
                   },
                   "reason": {
                     "type": "string",
-                    "enum": [
-                      "suggestion"
-                    ]
+                    "enum": ["suggestion"]
                   },
                   "kind": {
                     "anyOf": [
                       {
                         "type": "string",
-                        "enum": [
-                          "correction",
-                          "better",
-                          "l1_to_ko"
-                        ]
+                        "enum": ["correction", "better", "l1_to_ko"]
                       },
                       {
                         "type": "null"
@@ -157,10 +112,7 @@
                     "type": "string"
                   },
                   "corrected": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "items": {
                     "type": "array",
@@ -177,11 +129,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "original",
-                        "corrected",
-                        "reason"
-                      ],
+                      "required": ["original", "corrected", "reason"],
                       "additionalProperties": false
                     }
                   },
@@ -200,11 +148,7 @@
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "text",
-                          "meaning",
-                          "explanation"
-                        ],
+                        "required": ["text", "meaning", "explanation"],
                         "additionalProperties": false
                       },
                       {
@@ -213,10 +157,7 @@
                     ]
                   },
                   "meaning": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "learnedUsed": {
                     "type": "array",
@@ -230,10 +171,7 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "id",
-                        "surface"
-                      ],
+                      "required": ["id", "surface"],
                       "additionalProperties": false
                     }
                   },
@@ -252,10 +190,7 @@
                               "type": "string"
                             }
                           },
-                          "required": [
-                            "id",
-                            "surface"
-                          ],
+                          "required": ["id", "surface"],
                           "additionalProperties": false
                         }
                       },
@@ -271,10 +206,7 @@
                               "type": "string"
                             }
                           },
-                          "required": [
-                            "id",
-                            "surface"
-                          ],
+                          "required": ["id", "surface"],
                           "additionalProperties": false
                         }
                       },
@@ -284,11 +216,7 @@
                         "maximum": 9007199254740991
                       }
                     },
-                    "required": [
-                      "counted",
-                      "pending",
-                      "weekTotal"
-                    ],
+                    "required": ["counted", "pending", "weekTotal"],
                     "additionalProperties": false
                   }
                 },
@@ -321,28 +249,14 @@
                       "minLength": 1
                     },
                     "meaning": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
+                      "type": ["string", "null"]
                     },
                     "intent": {
                       "type": "string",
-                      "enum": [
-                        "elaborate",
-                        "ask",
-                        "reflect",
-                        "redirect",
-                        "boundary",
-                        "progress"
-                      ]
+                      "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
                     }
                   },
-                  "required": [
-                    "text",
-                    "meaning",
-                    "intent"
-                  ],
+                  "required": ["text", "meaning", "intent"],
                   "additionalProperties": false
                 }
               },
@@ -358,10 +272,7 @@
                 "properties": {
                   "value": {
                     "type": "string",
-                    "enum": [
-                      "up",
-                      "down"
-                    ]
+                    "enum": ["up", "down"]
                   },
                   "reasons": {
                     "type": "array",
@@ -377,17 +288,10 @@
                     }
                   },
                   "note": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   }
                 },
-                "required": [
-                  "value",
-                  "reasons",
-                  "note"
-                ],
+                "required": ["value", "reasons", "note"],
                 "additionalProperties": false
               },
               {
@@ -426,13 +330,7 @@
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                       }
                     },
-                    "required": [
-                      "id",
-                      "characterId",
-                      "line",
-                      "imagePath",
-                      "postedAt"
-                    ],
+                    "required": ["id", "characterId", "line", "imagePath", "postedAt"],
                     "additionalProperties": false
                   },
                   {
@@ -462,14 +360,7 @@
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                       }
                     },
-                    "required": [
-                      "kind",
-                      "id",
-                      "characterId",
-                      "line",
-                      "imagePath",
-                      "postedAt"
-                    ],
+                    "required": ["kind", "id", "characterId", "line", "imagePath", "postedAt"],
                     "additionalProperties": false
                   },
                   {
@@ -483,10 +374,7 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "kind",
-                      "characterId"
-                    ],
+                    "required": ["kind", "characterId"],
                     "additionalProperties": false
                   }
                 ]
@@ -525,12 +413,7 @@
                       },
                       "result": {
                         "type": "string",
-                        "enum": [
-                          "correct",
-                          "hint",
-                          "revealed",
-                          "skipped"
-                        ]
+                        "enum": ["correct", "hint", "revealed", "skipped"]
                       }
                     },
                     "additionalProperties": false
@@ -569,9 +452,6 @@
       "type": "boolean"
     }
   },
-  "required": [
-    "messages",
-    "hasMore"
-  ],
+  "required": ["messages", "hasMore"],
   "additionalProperties": false
 }
