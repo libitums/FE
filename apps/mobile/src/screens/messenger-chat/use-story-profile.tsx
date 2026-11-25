@@ -15,6 +15,8 @@ import { SuggestedFriendSheet } from "./SuggestedFriendSheet";
 export type StoryProfileUi = {
   /** 그 장 인물의 프로필 시트를 엽니다. */
   readonly open: (item: StoryViewerItem) => void;
+  /** 안 만난 친구 만나기(지금 판정으로 다시 묻기 · 시트 · 추가) — 친구가 되면 `onMet`(#608). */
+  readonly meet: (item: StoryViewerItem) => void;
   /** 이미 친구의 시트 — 보기 층 위에 둡니다. */
   readonly layer: ReactNode;
   /** 이미 친구의 시트가 떠 있는가(보기를 덮음). 안 만난 친구의 시트는 추천 친구 상태의 `layerOpen`이 알립니다. */
@@ -25,6 +27,7 @@ export function useStoryProfile({
   suggested,
   profileOf,
   onChat,
+  onMet,
   now,
 }: {
   readonly suggested: SuggestedFriendsUi;
@@ -32,6 +35,8 @@ export function useStoryProfile({
   readonly profileOf: (characterId: string) => FriendProfile | null;
   /** 이미 친구 시트의 「Start chatting」 — 보기를 닫고 그 방으로. */
   readonly onChat: (characterId: string) => void;
+  /** 안 만난 친구가 친구가 된 뒤(추가 · 먼저 만나기 · 이미 친구) — 보기를 닫고 그 방의 인용 띠로. */
+  readonly onMet: (item: StoryViewerItem) => void;
   /** 시트의 기준 시각 — 보기와 같은 값(목록 렌더의 `now`). */
   readonly now: number;
 }): StoryProfileUi {
@@ -39,14 +44,24 @@ export function useStoryProfile({
 
   function open(item: StoryViewerItem) {
     "background only";
-    if (item.unmet !== null) return suggested.openFriend(item.unmet, "story_viewer");
+    // 잠긴 안 만난 친구는 지금 판정으로 다시 묻고 먼저 만나기 뒤 보기를 닫습니다(#608). 추가할 수 있는 친구는 시트(Start chatting)부터.
+    if (item.unmet !== null)
+      return item.unmet.status === "addable"
+        ? suggested.openFriend(item.unmet, "story_viewer")
+        : meet(item);
     const { characterId } = item.story;
     const who = { id: characterId, name: item.name, avatarUrl: item.avatarUrl };
     return setSheet(modelOfMetFriend(profileOf(characterId), who));
   }
 
+  function meet(item: StoryViewerItem) {
+    "background only";
+    if (item.unmet !== null) suggested.meet(item.unmet, () => onMet(item));
+  }
+
   return {
     open,
+    meet,
     covering: sheet !== null,
     layer:
       sheet === null ? null : (

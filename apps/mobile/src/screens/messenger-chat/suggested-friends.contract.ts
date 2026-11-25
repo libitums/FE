@@ -1,5 +1,6 @@
 // 추천 친구 줄 · 프로필 시트 · 친구 찾기 화면 계약입니다(ADR-0162) — 문구표 · props · test-id.
 
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type { FriendProfile, SuggestedFriendsPort } from "./friend-catalog.contract";
 
 /** 문구의 대명사 — 인물 데이터의 `gender`, 없으면 null. */
@@ -35,6 +36,14 @@ export type SuggestedFriendsCopy = {
   readonly limitedUntil: (days: number, hours: number) => string;
   readonly added: (name: string) => string;
   readonly addFailed: (name: string) => string;
+  /** 프로필 시트 목소리 견본(ADR-0198 D2) — 단추 셋(처음 · 재생 중 · 멈춰 둠) · 자리마다 낭독 이름 · 못 읽음 줄. */
+  readonly voice: {
+    readonly hear: string;
+    readonly pause: string;
+    readonly resume: string;
+    readonly label: (name: string, phase: "idle" | "playing" | "paused") => string;
+    readonly unavailable: string;
+  };
   /**
    * 「Get closer」 시트(ADR-0164 D4, 디자인 B1 SoftSheet). 문구 규칙(사용자 결정 2026-11-19): 어느 언어에서도 로맨스 · 성인 · 18+ ·
    * 생년을 말하지 않습니다. `gender`는 인물 데이터의 대명사(없으면 대명사 없는 문구).
@@ -83,6 +92,13 @@ export type SuggestedFriendSheetModel = {
 export type SuggestedFriendSheetProps = {
   readonly model: SuggestedFriendSheetModel;
   readonly now: number;
+  /**
+   * 목소리 견본의 재생 주소(ADR-0198) — 결선이 인물의 `voiceSamplePath`를 아바타와 같은 해석기로 푼 값. 단추는 인물에 견본이 있고
+   * 잠기지 않았을 때 서고, 주소가 없으면(null · 생략) 누를 때 못 읽음 줄을 보입니다.
+   */
+  readonly voiceSampleUrl?: string | null;
+  /** 로마자 스위치(ADR-0188) — 견본 대본 아래 줄을 고릅니다. 생략하면 hidden(뜻 한 줄). */
+  readonly romanization?: ChoiceRomanization;
   readonly onStart: () => void;
   readonly onEarly: () => void;
   readonly onClose: () => void;
@@ -133,6 +149,8 @@ export const suggestedFriendsTestIds = {
   sheetIntro: sf("sheet-intro"),
   sheetTags: sf("sheet-tags"),
   sheetOpening: sf("sheet-opening"),
+  sheetVoice: sf("sheet-voice"),
+  sheetVoiceUnavailable: sf("sheet-voice-unavailable"),
   sheetInfo: sf("sheet-info"),
   sheetStart: sf("sheet-start"),
   sheetEarly: sf("sheet-early"),

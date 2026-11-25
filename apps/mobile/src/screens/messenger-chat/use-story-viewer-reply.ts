@@ -78,11 +78,14 @@ export function useStoryViewerReply({
     [],
   );
 
+  // 핸들러 · 효과에서만 부릅니다 — 메인 스레드 번들에서 빠집니다(ADR-0149).
   const setTyping = (focused: boolean) => {
+    "background only";
     typingRef.current = focused;
     setTypingState(focused);
   };
   const dismissKeyboard = (): boolean => {
+    "background only";
     if (!typingRef.current) return false;
     blurInputById(STORY_REPLY_INPUT_ID);
     setTyping(false);
@@ -116,6 +119,7 @@ export function useStoryViewerReply({
   }, [covered]);
 
   const send = (item: StoryViewerItem, text: string, via: StoryReplyVia) => {
+    "background only";
     if (!canSendStoryReply(text, sending)) return;
     playSound("button");
     setSending(true);
@@ -148,8 +152,12 @@ export function useStoryViewerReply({
     bottomPadding: (bottomInset) => (typing ? lifted + KEYBOARD_GAP : bottomInset + 16),
     send,
     setTyping,
-    edit: () => setError(null),
+    edit: () => {
+      "background only";
+      setError(null);
+    },
     measure: (height) => {
+      "background only";
       if (height <= 0) return;
       setMeasured(height);
       onKeyboardHeight?.(height);

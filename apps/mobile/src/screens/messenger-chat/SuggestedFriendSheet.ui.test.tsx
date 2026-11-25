@@ -63,7 +63,7 @@ test("SS1. 추가 가능: 이름 · 소개 · 태그 · 첫 말(ko · en) · Sta
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 
-test("FS-UI28. 이미 친구(added — 스토리 보기 아바타): 소개 · 태그 · 첫 말 · Start chatting 그대로, 일반 인물이어도 NEW 없음", () => {
+test("FS-UI33. 이미 친구(added — 스토리 보기 아바타): 소개 · 태그 · 첫 말 · Start chatting 그대로, 일반 인물이어도 NEW 없음", () => {
   const { onStart } = mount({ ...addable(general("g1", { name: "하나" })), status: "added" });
   expect(screen.getByTestId(ids.sheet).textContent).not.toContain("NEW");
   expect(screen.getByTestId(ids.sheetIntro).textContent).toBe("g1 intro");

@@ -7,6 +7,13 @@ import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatIdeasOrigin, ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import type { VisibleFriend } from "./friend-catalog.contract";
 import type { FriendStory } from "./friend-stories.contract";
+import type { CompanionMyStoryPhotoRemote } from "./my-story-photo.contract";
+import type {
+  MyStoriesState,
+  MyStoryDraft,
+  MyStoryPostResult,
+  MyTextStoryDraft,
+} from "./my-stories.contract";
 
 /** 서버 기록 한 쪽을 앱 모양으로 푼 값입니다. 오래된 것부터, 숨김 메시지는 빠져 있습니다. */
 export type RemoteHistory = {
@@ -70,6 +77,21 @@ export type ChatRemote = {
   readonly friends?: CompanionFriendsRemote;
   /** 친구 스토리(ADR-0178 D2) — 없으면(옛 테스트 원격) 스토리가 서지 않습니다. */
   readonly stories?: CompanionStoriesRemote;
+  /** 내 스토리(ADR-0194) — 없으면(옛 테스트 원격) 「+」가 서지 않습니다. */
+  readonly myStories?: CompanionMyStoriesRemote;
+};
+
+/** 내 스토리 RPC — 던지지 않습니다. */
+export type CompanionMyStoriesRemote = {
+  /** `tzOffsetMin` — 기기의 UTC 차이(분), 서버가 시간대를 모를 때 창을 셉니다(`p_tz_offset_min`). */
+  readonly list: (tzOffsetMin: number) => Promise<MyStoriesState | null>;
+  readonly post: (draft: MyStoryDraft) => Promise<MyStoryPostResult>;
+  /** 글 스토리(서버 반영 예상) · 올리기 전 교정 — Edge Function `companion-my-story`. */
+  readonly postText: (draft: MyTextStoryDraft) => Promise<MyStoryPostResult>;
+  readonly remove: (storyId: string | null) => Promise<boolean>;
+  readonly setKeep: (keep: boolean) => Promise<boolean | null>;
+  /** 사진 스토리(ADR-0199) — 업로드 · 게시 · 서명 주소 · 다시 확인 요청. 없으면(옛 테스트 원격) 사진을 올리지 않습니다. */
+  readonly photo?: CompanionMyStoryPhotoRemote;
 };
 
 /** 친구 스토리 RPC — 던지지 않습니다. */

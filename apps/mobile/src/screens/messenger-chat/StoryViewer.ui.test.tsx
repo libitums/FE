@@ -237,7 +237,7 @@ test("FS-UI5. 잠긴 안 만난 친구 → 소개 카드만, 단추 없음(프�
   expect(screen.getByTestId(ids.viewer).textContent).not.toContain("See how to meet");
 });
 
-test("FS-UI27. 위 아바타 = 「<이름>'s profile」 버튼(flatten false) — 아바타 · 이름을 누르면 onProfile(그 장)", () => {
+test("FS-UI32. 위 아바타 = 「<이름>'s profile」 버튼(flatten false) — 아바타 · 이름을 누르면 onProfile(그 장)", () => {
   const props = mount();
   const avatar = screen.getByTestId(ids.profile);
   expect(avatar.getAttribute("accessibility-label")).toBe("윤경's profile");
@@ -252,7 +252,7 @@ test("FS-UI27. 위 아바타 = 「<이름>'s profile」 버튼(flatten false) �
   expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
 });
 
-test("FS-UI27. 안 만난 친구도 아바타가 프로필 버튼", () => {
+test("FS-UI32. 안 만난 친구도 아바타가 프로필 버튼", () => {
   const unmet = {
     character: general("g", { name: "다은" }),
     room: room("g", false),

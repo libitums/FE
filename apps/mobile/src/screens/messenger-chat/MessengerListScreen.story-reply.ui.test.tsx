@@ -18,7 +18,7 @@ import { MessengerListScreen } from "./MessengerListScreen";
 import { createTrialStore } from "./trial-store";
 import { catalogOf, friend } from "./suggested-friends.test-support";
 
-// `ui` 계층(FS-UI20 ~ UI22): 목록 화면 + 가짜 출처 — 보기에서 바로 보낸 답장(ADR-0178 D5 개정)의 관문 · 이벤트 · 엽전 부족 → 상점.
+// `ui` 계층(FS-UI25 ~ UI27): 목록 화면 + 가짜 출처 — 보기에서 바로 보낸 답장(ADR-0178 D5 개정)의 관문 · 이벤트 · 엽전 부족 → 상점.
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -98,7 +98,7 @@ async function flush() {
   });
 }
 
-test("FS-UI20. 첫 답장 무료 — 체험 · 엽전을 쓰지 않고 storyFree, replied(where viewer), 같은 스토리 둘째는 보통 관문", async () => {
+test("FS-UI25. 첫 답장 무료 — 체험 · 엽전을 쓰지 않고 storyFree, replied(where viewer), 같은 스토리 둘째는 보통 관문", async () => {
   const { events, mine, trialStore } = await mount({
     stories: [story("mina", { id: "st-mina" })],
     trial: 5,
@@ -126,7 +126,7 @@ test("FS-UI20. 첫 답장 무료 — 체험 · 엽전을 쓰지 않고 storyFree
   expect(trialStore.remaining()).toBe(4);
 });
 
-test("FS-UI21. 체험을 다 썼고 엽전이 모자라면 보내지 않고 상점을 연다 · 글은 칸에 남고 안내", async () => {
+test("FS-UI26. 체험을 다 썼고 엽전이 모자라면 보내지 않고 상점을 연다 · 글은 칸에 남고 안내", async () => {
   const { events, mine } = await mount({
     stories: [story("mina", { id: "st-mina", freeReply: false })],
     balance: 0,
@@ -148,7 +148,7 @@ test("FS-UI21. 체험을 다 썼고 엽전이 모자라면 보내지 않고 상�
   expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
 });
 
-test("FS-UI22. 무제한이면 관문 없이 보내고 엽전이 그대로", async () => {
+test("FS-UI27. 무제한이면 관문 없이 보내고 엽전이 그대로", async () => {
   const { events, mine } = await mount({
     stories: [story("mina", { id: "st-mina", freeReply: false })],
     balance: 0,

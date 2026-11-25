@@ -11,6 +11,7 @@ import type {
   UnmetStoryEntry,
 } from "./friend-stories.contract";
 import { joinSpoken } from "../../lib/ui-copy-chat-parts";
+import { byLatestStory, storyOrderOf } from "./story-order";
 import type { SuggestedFriend } from "./suggested-friends";
 
 export type StoryRowInput = {
@@ -64,7 +65,7 @@ function byCharacter(
 
 const newestOf = (list: readonly FriendStory[]): FriendStory | undefined => list[list.length - 1];
 
-/** 스토리 줄(ADR-0178 D3) — 친구(안 본 것 → 본 것, 각 최근 순) · 안 만난 친구(추천 순서) · 그 밖의 추천. */
+/** 스토리 줄(ADR-0178 D3) — 친구 · 안 만난 친구(각 `byLatestStory` 순, 한 줄 순서는 `storyOrderOf`, 칸은 그 인물의 가장 새 스토리) · 그 밖의 추천. */
 export function storyRowOf(input: StoryRowInput): StoryRow {
   const groups = byCharacter(input.stories, input.now);
   const friends: FriendStoryEntry[] = [];
@@ -81,10 +82,7 @@ export function storyRowOf(input: StoryRowInput): StoryRow {
         seen: stories.every((each) => input.seen.has(each.id)),
       });
   }
-  // 정렬은 안정 정렬입니다 — 같은 시각은 방 순서 그대로.
-  friends.sort((a, b) =>
-    a.seen === b.seen ? b.story.postedAt - a.story.postedAt : a.seen ? 1 : -1,
-  );
+  friends.sort(byLatestStory);
   const unmet: UnmetStoryEntry[] = [];
   const others: SuggestedFriend[] = [];
   for (const friend of input.suggested) {
@@ -93,6 +91,7 @@ export function storyRowOf(input: StoryRowInput): StoryRow {
     if (story === undefined) others.push(friend);
     else unmet.push({ story, stories, friend });
   }
+  unmet.sort(byLatestStory);
   return { friends, unmet, others };
 }
 
@@ -181,8 +180,8 @@ function firstUnseen(items: readonly StoryViewerItem[], from: number, seen: Read
 }
 
 /**
- * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 이어 붙입니다(D4 개정). 줄의 친구는 친구 묶음 전체 중 그 인물부터, 이어 보기는
- * 첫 인물부터, 안 만난 친구 · 목록 줄 · 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
+ * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 줄 순서(`storyOrderOf`)로 이어 붙입니다(D4 개정). 줄의 친구는 친구 묶음 전체 중 그 인물부터,
+ * 이어 보기는 첫 인물부터, 안 만난 친구 · 목록 줄 · 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
  */
 export function viewerItemsOf(
   row: StoryRow,
@@ -191,8 +190,10 @@ export function viewerItemsOf(
   seen: ReadonlySet<string> = new Set(),
 ): { readonly items: readonly StoryViewerItem[]; readonly start: number } | null {
   const friends: StoryViewerItem[] = [];
-  for (const entry of row.friends)
-    friends.push(...itemsOf(entry.stories, entry.room, null, imageUrl));
+  for (const each of storyOrderOf(row)) {
+    if (each.kind === "friend")
+      friends.push(...itemsOf(each.entry.stories, each.entry.room, null, imageUrl));
+  }
   const one = (items: readonly StoryViewerItem[]) =>
     items.length === 0 ? null : { items, start: firstUnseen(items, 0, seen) };
   if (open.from === "watch_all") return one(friends);
@@ -235,4 +236,15 @@ export function myTextLine(
 /** 낭독 조각을 그 언어의 구분자로 잇습니다(빈 조각은 건너뜀) — 구분자는 문구표가 줍니다(감사 다국어 minor 9). */
 export function spokenOf(separator: string, parts: readonly string[]): string {
   return joinSpoken(parts, separator);
+}
+
+/** 목록이 보이는 동안 스토리를 다시 읽는 주기(ADR-0178 「다시 읽기」) — 5분. */
+export const STORY_RELOAD_MS = 5 * MINUTE_MS;
+
+/** 다시 읽은 뒤의 목록 — 못 읽음(null)이면 있던 목록을 지킵니다(첫 읽기 실패는 null 그대로, ADR-0178 「다시 읽기」). */
+export function storiesAfterLoad(
+  previous: readonly FriendStory[] | null,
+  loaded: readonly FriendStory[] | null,
+): readonly FriendStory[] | null {
+  return loaded ?? previous;
 }

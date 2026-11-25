@@ -2,6 +2,7 @@
 
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { LocalizedLine } from "./friend-catalog.contract";
+import type { MineRowSlot, MyStoriesPort } from "./my-stories.contract";
 import type { SuggestedFriend } from "./suggested-friends";
 import type { ChatTier } from "./free-turns";
 import type { TrialStore } from "./trial-store";
@@ -64,6 +65,10 @@ export type FriendStoriesPort = {
   readonly words?: StoryWordPort;
   /** 로마자를 보이는가(로마자 보기 설정) — 없으면 보입니다. */
   readonly romanization?: () => boolean;
+  /** 앱이 앞으로 오면 부를 리스너를 겁니다 — 돌려준 함수로 뗍니다. 없으면 그 신호로는 다시 읽지 않습니다(ADR-0178 「다시 읽기」). */
+  readonly subscribeReload?: (listener: () => void) => () => void;
+  /** 내 스토리(ADR-0194) — 없으면 「+」가 서지 않습니다. */
+  readonly mine?: MyStoriesPort;
   /** 보기에서 바로 보내는 답장의 앱 관문(체험 · 등급) — 없으면 앱 관문 없이 보냅니다(정본은 서버, D5 개정). */
   readonly replyPlan?: () => StoryReplyPlan | null;
   /** 답장 칸이 잰 키보드 높이를 남기는 곳(대화방 입력 줄과 같은 저장) — 없으면 남기지 않고 화면 표로 시작합니다. */
@@ -97,7 +102,7 @@ export type UnmetStoryEntry = {
   readonly friend: SuggestedFriend;
 };
 
-/** 스토리 줄(ADR-0178 D3): 친구 스토리 → 구분 선 → 안 만난 친구 스토리 → 그 밖의 추천 친구 → Find friends. */
+/** 스토리 줄(ADR-0178 D3 · 개정 ⟨2026-11-25⟩): 스토리 있는 인물(친구 · 안 만난 친구, `storyOrderOf` 순) → 그 밖의 추천 친구 → Find friends. */
 export type StoryRow = {
   readonly friends: readonly FriendStoryEntry[];
   readonly unmet: readonly UnmetStoryEntry[];
@@ -131,6 +136,8 @@ export type ChatStoryQuote = {
   readonly imagePath: string | null;
   /** 올린 시각(ms) — 모르면 null(「Story」만). */
   readonly postedAt: number | null;
+  /** 무엇의 인용인가(ADR-0194) — 없거나 friend면 친구 스토리, mine이면 친구 반응에 답한 내 스토리(단어), deleted면 지운 내 스토리(「Deleted story」). */
+  readonly kind?: "friend" | "mine" | "deleted";
 };
 
 /** 보기 → 대화방 넘김(ADR-0178 D5). `text`가 있으면 곧바로 보내고, null이면 입력 줄 위 인용 띠로 붙입니다. */
@@ -199,6 +206,8 @@ export type FriendStoriesCopy = {
 
 export type FriendStoriesRowProps = {
   readonly row: StoryRow;
+  /** 내 스토리 칸(ADR-0194) — 「+」와, 살아 있는 내 스토리가 있으면 「Your story」. 꺼져 있으면 없음. */
+  readonly mine?: MineRowSlot | null;
   readonly now: number;
   readonly onOpenFriend: (entry: FriendStoryEntry) => void;
   readonly onOpenUnmet: (entry: UnmetStoryEntry) => void;
@@ -252,7 +261,6 @@ export const friendStoriesTestIds = {
   friend: (characterId: string) => fs(`friend-${characterId}`),
   unmet: (characterId: string) => fs(`unmet-${characterId}`),
   suggested: (characterId: string) => fs(`suggested-${characterId}`),
-  divider: fs("divider"),
   findFriends: fs("find-friends"),
   viewer: sv("screen"),
   progress: sv("progress"),

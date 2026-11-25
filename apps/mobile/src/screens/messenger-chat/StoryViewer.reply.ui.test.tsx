@@ -18,7 +18,7 @@ import {
 import { STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
 
-// `ui` 계층(FS-UI14 ~ UI19): 보기에서 바로 답장(ADR-0178 D5 개정) — 진짜 입력 칸 · 키보드 위 · 입력 중 멈춤 · 보내기(칩 · 칸) ·
+// `ui` 계층(FS-UI19 ~ UI24): 보기에서 바로 답장(ADR-0178 D5 개정) — 진짜 입력 칸 · 키보드 위 · 입력 중 멈춤 · 보내기(칩 · 칸) ·
 // 「Sent · Open chat」 · 실패 안내 · 뒤로 = 키보드 먼저.
 
 beforeEach(() => {
@@ -92,7 +92,7 @@ const blur = () =>
     nativeInput("blur", "", ids.replyInput);
   });
 
-test("FS-UI14. 답장 칸은 진짜 입력 칸 — 자리표시 「Reply to <이름>…」 · 보내기 단추는 빈 글이면 꺼짐", () => {
+test("FS-UI19. 답장 칸은 진짜 입력 칸 — 자리표시 「Reply to <이름>…」 · 보내기 단추는 빈 글이면 꺼짐", () => {
   mount();
   expect(input().tagName.toLowerCase()).toBe("input");
   expect(input().getAttribute("placeholder")).toBe("Reply to 윤경…");
@@ -105,7 +105,7 @@ test("FS-UI14. 답장 칸은 진짜 입력 칸 — 자리표시 「Reply to <이
   expect(screen.getByTestId(ids.replySend).getAttribute("accessibility-label")).toBe("Send");
 });
 
-test("FS-UI15. 입력 칸에 초점이 오면 멈추고(진행 막대 정지) 키보드 높이 위로 오르며, 내려가면 이어 간다", () => {
+test("FS-UI20. 입력 칸에 초점이 오면 멈추고(진행 막대 정지) 키보드 높이 위로 오르며, 내려가면 이어 간다", () => {
   mount();
   const bottom = () => screen.getByTestId(ids.replyBottom).getAttribute("style") ?? "";
   focus();
@@ -121,13 +121,13 @@ test("FS-UI15. 입력 칸에 초점이 오면 멈추고(진행 막대 정지) �
   expect(name()).toBe("해준");
 });
 
-test("FS-UI15. 입력 칸이 잰 키보드 높이를 올려 보낸다", () => {
+test("FS-UI20. 입력 칸이 잰 키보드 높이를 올려 보낸다", () => {
   const { props } = mount();
   fireOnRef(ids.replyInput, "keyboardheightchange", { height: 320 });
   expect(props.onKeyboardHeight).toHaveBeenCalledWith(320);
 });
 
-test("FS-UI16. 보내기(단추) — 보기를 떠나지 않고 onReply(그 글, typed), 보내는 중엔 단추 꺼짐, 보내면 칸을 비우고 Sent · Open chat", async () => {
+test("FS-UI21. 보내기(단추) — 보기를 떠나지 않고 onReply(그 글, typed), 보내는 중엔 단추 꺼짐, 보내면 칸을 비우고 Sent · Open chat", async () => {
   const { props, settle } = mount();
   focus();
   type("나도 먹고 싶다");
@@ -142,7 +142,7 @@ test("FS-UI16. 보내기(단추) — 보기를 떠나지 않고 onReply(그 글,
   expect(props.onOpenChat).toHaveBeenCalledWith(props.items[0]);
 });
 
-test("FS-UI16. 키보드 return(confirm)으로도 보낸다, 빈 글은 보내지 않는다", () => {
+test("FS-UI21. 키보드 return(confirm)으로도 보낸다, 빈 글은 보내지 않는다", () => {
   const { props } = mount();
   act(() => {
     nativeInput("confirm", "", ids.replyInput);
@@ -155,7 +155,7 @@ test("FS-UI16. 키보드 return(confirm)으로도 보낸다, 빈 글은 보내�
   expect(props.onReply).toHaveBeenCalledWith(props.items[0], "좋아", "typed");
 });
 
-test("FS-UI16. Sent 알림이 떠 있는 동안 멈췄다가 사라지면 이어 간다 · 첫 답장 무료 안내는 보낸 뒤 사라진다", async () => {
+test("FS-UI21. Sent 알림이 떠 있는 동안 멈췄다가 사라지면 이어 간다 · 첫 답장 무료 안내는 보낸 뒤 사라진다", async () => {
   const { settle } = mount();
   expect(screen.queryByTestId(ids.free)).not.toBeNull();
   tapId(ids.chip(0));
@@ -170,7 +170,7 @@ test("FS-UI16. Sent 알림이 떠 있는 동안 멈췄다가 사라지면 이어
   expect(name()).toBe("해준");
 });
 
-test("FS-UI17. 칩 = 그 자리에서 보냄(onReply(그 말, chip)) — 방으로 가지 않는다", async () => {
+test("FS-UI22. 칩 = 그 자리에서 보냄(onReply(그 말, chip)) — 방으로 가지 않는다", async () => {
   const { props, settle } = mount();
   tapId(ids.chip(1));
   expect(props.onReply).toHaveBeenCalledWith(props.items[0], "수고했어!", "chip");
@@ -179,7 +179,7 @@ test("FS-UI17. 칩 = 그 자리에서 보냄(onReply(그 말, chip)) — 방으�
   expect(props.onOpenChat).not.toHaveBeenCalled();
 });
 
-test("FS-UI18. 실패면 글을 칸에 남기고 짧은 안내 — 엽전 부족은 coins 안내", async () => {
+test("FS-UI23. 실패면 글을 칸에 남기고 짧은 안내 — 엽전 부족은 coins 안내", async () => {
   const { settle } = mount();
   focus();
   type("다시 보내");
@@ -198,7 +198,7 @@ test("FS-UI18. 실패면 글을 칸에 남기고 짧은 안내 — 엽전 부족
   expect(screen.queryByTestId(ids.replyError)).toBeNull();
 });
 
-test("FS-UI19. 입력 중 뒤로 = 키보드 먼저(보기는 닫히지 않음), 그 뒤 뒤로 = 닫기 · 입력 중 탭 자리 = 넘기지 않음", () => {
+test("FS-UI24. 입력 중 뒤로 = 키보드 먼저(보기는 닫히지 않음), 그 뒤 뒤로 = 닫기 · 입력 중 탭 자리 = 넘기지 않음", () => {
   const { props } = mount();
   focus();
   expect(systemBack()).toBe(true);
@@ -212,7 +212,7 @@ test("FS-UI19. 입력 중 뒤로 = 키보드 먼저(보기는 닫히지 않음),
   expect(props.onClose).toHaveBeenCalledTimes(1);
 });
 
-test("FS-UI19. 시트(엽전 상점 등)가 덮으면 키보드를 내린다 — 칸이 바닥으로", () => {
+test("FS-UI24. 시트(엽전 상점 등)가 덮으면 키보드를 내린다 — 칸이 바닥으로", () => {
   const { props } = mount();
   focus();
   const bottom = () => screen.getByTestId(ids.replyBottom).getAttribute("style") ?? "";
@@ -224,7 +224,7 @@ test("FS-UI19. 시트(엽전 상점 등)가 덮으면 키보드를 내린다 —
   expect(bottom()).not.toContain("308px");
 });
 
-test("FS-UI19. 답장 칸 접근성 — 입력은 자리표시 이름, 보내기는 버튼 · flatten false", () => {
+test("FS-UI24. 답장 칸 접근성 — 입력은 자리표시 이름, 보내기는 버튼 · flatten false", () => {
   mount();
   expect(input().getAttribute("accessibility-label")).toBe("Reply to 윤경…");
   expect(screen.getByTestId(ids.replySend).getAttribute("flatten")).toBe("false");

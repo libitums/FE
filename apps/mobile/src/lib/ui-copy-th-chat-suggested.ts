@@ -26,6 +26,18 @@ export const messengerChatSuggestedTh: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `จำกัดเวลา · ${days} วัน ${hours} ชม.`,
   added: (name) => `เพิ่ม ${name} เข้าแชทแล้ว`,
   addFailed: (name) => `เพิ่ม ${name} ไม่สำเร็จ โปรดลองอีกครั้ง`,
+  voice: {
+    hear: "ฟังเสียง",
+    pause: "หยุดชั่วคราว",
+    resume: "เล่นต่อ",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `ฟังเสียงของ ${name}`
+        : phase === "playing"
+          ? `หยุดเสียงของ ${name} ชั่วคราว`
+          : `เล่นเสียงของ ${name} ต่อ`,
+    unavailable: "เล่นตัวอย่างเสียงไม่ได้",
+  },
   adultAck: {
     title: (name) => `สนิทกับ ${name} มากขึ้นไหม`,
     body: (gender) =>

@@ -276,7 +276,7 @@ test("FS-UI11. 스토리 줄이 추천 줄을 대신하면 suggested_friend_view
   expect(events().filter((e) => e.name === "suggested_friend_viewed")).toEqual([]);
 });
 
-test("FS-UI28. 친구 스토리의 아바타 → 프로필 시트(소개 · Start chatting) · 보기는 덮여 멈춤, Not now → 이어 감", async () => {
+test("FS-UI33. 친구 스토리의 아바타 → 프로필 시트(소개 · Start chatting) · 보기는 덮여 멈춤, Not now → 이어 감", async () => {
   const { events } = await mount(live);
   tapId(ids.friend("mina"));
   tapId(ids.profile);
@@ -299,7 +299,7 @@ test("FS-UI28. 친구 스토리의 아바타 → 프로필 시트(소개 · Star
   expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([]);
 });
 
-test("FS-UI28. 친구 프로필 시트의 Start chatting → 보기를 닫고 그 방(추가 없음, closed reason profile)", async () => {
+test("FS-UI33. 친구 프로필 시트의 Start chatting → 보기를 닫고 그 방(추가 없음, closed reason profile)", async () => {
   const { onOpenRoom, events } = await mount(live);
   tapId(ids.friend("mina"));
   tapId(ids.profile);
@@ -313,7 +313,7 @@ test("FS-UI28. 친구 프로필 시트의 Start chatting → 보기를 닫고 �
   expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([]);
 });
 
-test("FS-UI28. 안 만난 친구의 아바타 → 추천 친구 프로필 시트(from story_viewer) · 보기는 덮임", async () => {
+test("FS-UI33. 안 만난 친구의 아바타 → 추천 친구 프로필 시트(from story_viewer) · 보기는 덮임", async () => {
   const { events } = await mount(live);
   tapId(ids.unmet("daeun"));
   tapId(ids.profile);
