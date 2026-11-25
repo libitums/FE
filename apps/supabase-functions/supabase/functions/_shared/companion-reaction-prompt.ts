@@ -37,7 +37,7 @@ export const REACTION_MODES: readonly ReactionMode[] = [
 
 export type ReactionStory = {
   /** photo(20270104130000): `ko`는 올린 사람이 붙인 한 줄, `scene`은 읽기 단계가 쓴 장면 설명(개인정보 없음), `hooks`는 말 걸 거리. */
-  /** text(20270107120000): `ko`는 사용자가 쓴 글(빈 글일 수 있음), `overlays`는 바탕 위에 얹은 글 · 단어. */
+  /** text(20270107130000): `ko`는 사용자가 쓴 글(빈 글일 수 있음), `overlays`는 바탕 위에 얹은 글 · 단어. */
   readonly kind: "word" | "card" | "photo" | "text";
   readonly ko: string;
   readonly roman: string;
