@@ -57,6 +57,8 @@ public final class MainActivity extends Activity {
   private Runnable deeplinkListener;
   private OnBackInvokedCallback backCallback;
   private final PushTokenRefreshRelay.Listener tokenRefreshListener = this::sendPushTokenRefreshed;
+  /** 앞(resumed)에 있는 동안만 건다 — 그때 온 인물의 채팅 메시지 푸시는 알림 대신 JS로(ADR-0200 개정). */
+  private final ForegroundPush.Listener chatPushListener = this::sendPushReceived;
   private ContentSyncSignal contentSync;
   private ConnectivityManager.NetworkCallback networkCallback;
   /** 내 스토리 사진 고르기 · 찍기(ADR-0199). StoryPhotoModule이 메인 스레드에서 쓴다. */
@@ -210,6 +212,16 @@ public final class MainActivity extends Activity {
     });
   }
 
+  // Called on the FCM executor thread; carries only the character id (JS re-reads that room).
+  private void sendPushReceived(String characterId) {
+    mainHandler.post(() -> {
+      if (lynxView == null || isFinishing() || isDestroyed()) return;
+      JavaOnlyArray args = new JavaOnlyArray();
+      args.pushString(characterId);
+      lynxView.sendGlobalEvent("pushNotificationReceived", args);
+    });
+  }
+
   // API 33+ goes through the back-invoked dispatcher; 26-32 uses onBackPressed().
   private void registerBackCallback() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
@@ -348,11 +360,13 @@ public final class MainActivity extends Activity {
 
   @Override protected void onPause() {
     if (authCallback != null) leftForAuthentication = true;
+    ForegroundPush.PROCESS.detach(chatPushListener);
     super.onPause();
   }
 
   @Override protected void onResume() {
     super.onResume();
+    ForegroundPush.PROCESS.attach(chatPushListener);
     // Airbridge 딥링크 · App Link(ADR-0080). onNewIntent가 setIntent한 새 Intent도 여기서 읽힌다.
     AirbridgeEvents.handleDeeplink(getIntent());
     if (leftForAuthentication && authCallback != null) {

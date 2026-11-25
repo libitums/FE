@@ -20,4 +20,10 @@ export type ChatServerControls = {
   readonly reload: (roomId: string) => void;
   /** 앱이 앞으로 오거나 연결이 돌아왔을 때 — 열린 방만, 답을 기다리는 중엔 읽지 않습니다. */
   readonly refreshOpenRoom: () => void;
+  /**
+   * 앱이 앞에 있을 때 그 인물의 채팅 메시지 푸시가 왔다(ADR-0200 개정) — 그 방 기록을 다시 읽어 합칩니다. 닫힌 방에 새 인물 말이
+   * 서면 안 읽음을 하나 올리고(답 한 턴과 같음 — 토스트의 원천), 이미 있던 말이면 그대로입니다. 열린 방은 `refreshOpenRoom`과 같고,
+   * 답을 기다리는 중이면 읽지 않습니다. 못 읽으면 잠시 뒤 한 번 더.
+   */
+  readonly pullRoom: (roomId: string) => void;
 };

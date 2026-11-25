@@ -109,6 +109,7 @@ final class ViewController: UIViewController {
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
     observeContentSizeCategory()
     observeOpenedPushNotification()
+    observeReceivedPushNotification()
     observeOpenedDeeplink()
     observeReduceMotion()
     startContentSyncSignal()
@@ -286,6 +287,24 @@ final class ViewController: UIViewController {
 
   @objc private func pushNotificationOpened() {
     lynxView?.sendGlobalEvent("pushNotificationOpened", withParams: [])
+  }
+
+  /// 앱이 앞에 있을 때 온 인물의 채팅 메시지 푸시(배너 없음) — 인물 id만 싣는다. JS가 그 방 기록을 다시 읽고 토스트를
+  /// 띄울지 정한다(ADR-0200 개정).
+  private func observeReceivedPushNotification() {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(pushNotificationReceived(_:)),
+      name: PushNotificationHub.receivedNotification,
+      object: nil
+    )
+  }
+
+  @objc private func pushNotificationReceived(_ notification: Notification) {
+    guard let characterId = notification.userInfo?["characterId"] as? String else { return }
+    DispatchQueue.main.async { [weak self] in
+      self?.lynxView?.sendGlobalEvent("pushNotificationReceived", withParams: [characterId])
+    }
   }
 
   /// 켜진 앱에 Airbridge 딥링크가 오면 JS에 알린다. 링크는 싣지 않는다 — JS가 `takeOpenedDeeplink`로 꺼낸다(ADR-0080).

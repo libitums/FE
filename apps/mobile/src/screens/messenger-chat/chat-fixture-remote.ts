@@ -6,6 +6,7 @@ import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
+import { remotePull, theirLines } from "./chat-remote-pull";
 import { previewRemoteRooms } from "./chat-remote-preview";
 import { remoteWalletSync } from "./chat-remote-wallet";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
@@ -95,9 +96,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     })();
   };
 
-  const replies = (room: RoomState) =>
-    room.messages.filter((m) => (m.kind === "text" && m.from === "them") || m.kind === "action")
-      .length;
+  const replies = (room: RoomState) => theirLines(room.messages);
 
   // 서버가 받은 뒤 끊긴 답 — 기록에 그 답이 설 때까지 다시 읽습니다(바로 · 2 · 5 · 10 · 30초, 다 돌면 stalled).
   const recover = (room: RoomState, isDone: (log: readonly ChatMessage[]) => boolean) => {
@@ -286,6 +285,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       const room = id === null ? null : live(id);
       if (room !== null && room.access.kind === "open") refresh(room);
     },
+    pullRoom: remotePull({ remote, live, changed, isOpen, schedule, busy, refresh, applyHistory }),
   };
   return {
     loadRoom,
