@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20270107120000(ADR-0191 D13): 글 스토리 — 스위치 · 문(창 · 상한 · 검수 시도 · 연령대) · 저장(바탕색 · 쓴 글 · 얹은 글, 늘 live) ·
+// 20270107130000(ADR-0191 D13): 글 스토리 — 스위치 · 문(창 · 상한 · 검수 시도 · 연령대) · 저장(바탕색 · 쓴 글 · 얹은 글, 늘 live) ·
 // 반응 각도(사진과 같게 — 덕수쌤 고정 · 퀴즈 없음) · claim의 얹은 글 · 목록의 `kinds` · `background`.
 const adult = "00000000-0000-4000-8000-000000000021";
 const minor = "00000000-0000-4000-8000-000000000022";
