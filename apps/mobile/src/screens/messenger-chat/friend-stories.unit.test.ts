@@ -9,11 +9,12 @@ import {
   viewerItemsOf,
   viewerStep,
 } from "./friend-stories";
+import { storyOrderOf } from "./story-order";
 import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `unit` 계층(FS-U1 ~ U7 · U10): 친구 스토리 판정(ADR-0178 D2 · D3 · D4).
+// `unit` 계층(FS-U1 ~ U7 · U10): 친구 스토리 판정(ADR-0178 D2 · D3 · D4). 인물 순서는 FS-U17(`story-order.unit.test.ts`).
 
 const NOW = STORY_NOW;
 const MIN = 60_000;
@@ -58,7 +59,7 @@ describe("FS-U2 스토리 줄", () => {
     expect(row.others.map((f) => f.character.id)).toEqual(["h"]);
   });
 
-  test("안 본 것 먼저, 각 묶음 안은 최근 순", () => {
+  test("본 것과 상관없이 최근 순(D3 개정) — 본 것은 표시만", () => {
     const row = storyRowOf(
       input({
         stories: [
@@ -70,10 +71,26 @@ describe("FS-U2 스토리 줄", () => {
       }),
     );
     expect(row.friends.map((e) => [e.story.characterId, e.seen])).toEqual([
+      ["b", true],
       ["c", false],
       ["a", false],
-      ["b", true],
     ]);
+  });
+
+  test("안 만난 친구도 추천 순서가 아니라 최근 순", () => {
+    const catalog = catalogOf([general("g"), general("h")]);
+    const rooms = [room("g", false), room("h", false)];
+    const row = storyRowOf({
+      stories: [
+        story("g", { postedAt: NOW - 3 * HOUR_MS }),
+        story("h", { postedAt: NOW - HOUR_MS }),
+      ],
+      rooms,
+      suggested: suggestedFriendsOf({ catalog, rooms, earlyAccess: false, now: NOW }),
+      seen: new Set(),
+      now: NOW,
+    });
+    expect(row.unmet.map((e) => e.story.characterId)).toEqual(["h", "g"]);
   });
 
   test("방이 없는 인물 · 만료된 스토리는 줄에 없다", () => {
@@ -162,16 +179,39 @@ describe("FS-U10 보기의 장 목록", () => {
   const row = storyRowOf(input({ seen: new Set(["s-a"]) }));
 
   test("줄의 친구를 누르면 친구 스토리 전체 중 그 칸부터", () => {
-    // 친구 순서: 안 본 b · c(같은 시각 — 입력 순서) → 본 a
+    // 같은 시각 — 인물 id 순 a · b · c(본 a도 제자리, D3 개정)
     const opened = viewerItemsOf(row, { from: "friend", characterId: "c" }, url);
-    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["b", "c", "a"]);
-    expect(opened?.start).toBe(1);
-    expect(opened?.items[0]).toMatchObject({
+    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["a", "b", "c"]);
+    expect(opened?.start).toBe(2);
+    expect(opened?.items[1]).toMatchObject({
       name: "b",
       avatarUrl: "https://img/b.webp",
       imageUrl: "https://cdn/content/images/b.webp",
       unmet: null,
     });
+  });
+
+  test("이어 보기 · 친구 열기의 다음 인물은 줄 순서(storyOrderOf)와 같다 — 안 만난 친구는 빠진다", () => {
+    const timed = storyRowOf(
+      input({
+        stories: [
+          story("a", { postedAt: NOW - 5 * HOUR_MS }),
+          story("b", { postedAt: NOW - 1 * HOUR_MS }),
+          story("c", { postedAt: NOW - 3 * HOUR_MS }),
+          story("g", { postedAt: NOW - HOUR_MS / 2 }),
+        ],
+        seen: new Set(["s-b"]),
+      }),
+    );
+    const rowOrder = storyOrderOf(timed)
+      .filter((each) => each.kind === "friend")
+      .map((each) => each.entry.story.characterId);
+    expect(rowOrder).toEqual(["b", "c", "a"]);
+    const all = viewerItemsOf(timed, { from: "watch_all" }, url);
+    expect(all?.items.map((i) => i.story.characterId)).toEqual(rowOrder);
+    const fromC = viewerItemsOf(timed, { from: "friend", characterId: "c" }, url);
+    expect(fromC?.items.map((i) => i.story.characterId)).toEqual(rowOrder);
+    expect(fromC?.start).toBe(1);
   });
 
   test("안 만난 친구는 그 한 장, 추천 친구를 싣는다", () => {

@@ -78,7 +78,7 @@ export type FriendStoryEntry = {
 /** 안 만난 친구(추천 대상)의 스토리 칸 — 추가 길은 추천 친구 그대로(ADR-0162). */
 export type UnmetStoryEntry = { readonly story: FriendStory; readonly friend: SuggestedFriend };
 
-/** 스토리 줄(ADR-0178 D3): 친구 스토리 → 구분 선 → 안 만난 친구 스토리 → 그 밖의 추천 친구 → Find friends. */
+/** 스토리 줄(ADR-0178 D3 · 개정 ⟨2026-11-25⟩): 스토리 있는 인물(친구 · 안 만난 친구, `storyOrderOf` 순) → 그 밖의 추천 친구 → Find friends. */
 export type StoryRow = {
   readonly friends: readonly FriendStoryEntry[];
   readonly unmet: readonly UnmetStoryEntry[];
@@ -219,7 +219,6 @@ export const friendStoriesTestIds = {
   friend: (characterId: string) => fs(`friend-${characterId}`),
   unmet: (characterId: string) => fs(`unmet-${characterId}`),
   suggested: (characterId: string) => fs(`suggested-${characterId}`),
-  divider: fs("divider"),
   findFriends: fs("find-friends"),
   viewer: sv("screen"),
   progress: sv("progress"),
