@@ -34,7 +34,11 @@ import {
   replyToastPreviewOf,
   replyToastReducer,
 } from "./reply-toast";
-import { REPLY_TOAST_RESUME_QUIET_MS, type ReplyToastCard } from "./reply-toast.contract";
+import {
+  REPLY_TOAST_RESUME_QUIET_MS,
+  type ReplyToastCard,
+  type ReplyToastPlace,
+} from "./reply-toast.contract";
 import type { ScreenWiring } from "./screen-wiring";
 import { contentSyncEventName } from "./use-episode-content-refresh";
 
@@ -48,18 +52,30 @@ export function useReplyToast(
 ): ReactNode {
   const { source, eventSink, now } = wiring.messengerChat;
   const canOpenChats = messengerAccessOf(wiring.accountState) === "open";
-  const screen = currentScreen(nav);
   const [viewerOpen, setViewerOpen] = useState(storyViewerOpen);
   useEffect(() => subscribeReplyToastPresence(() => setViewerOpen(storyViewerOpen())), []);
-  const place = replyToastPlaceOf({
-    inApp: nav.entry.length === 0,
-    canOpenChats,
-    screen,
-    storyViewerOpen: viewerOpen,
-  });
   const [state, send] = useReducer(replyToastReducer, initialReplyToastState);
-  const placeRef = useRef(place);
-  placeRef.current = place;
+  // 자리 판정은 효과(배경 스레드)에서만 — 첫 화면을 그리는 메인 스레드에 판정 코드를 싣지 않습니다(번들 천장 ADR-0149).
+  const placeRef = useRef<ReplyToastPlace>({ kind: "off" });
+  const screenRef = useRef<string>("");
+  useEffect(() => {
+    const screen = currentScreen(nav);
+    const place = replyToastPlaceOf({
+      inApp: nav.entry.length === 0,
+      canOpenChats,
+      screen,
+      storyViewerOpen: viewerOpen,
+    });
+    const before = placeRef.current;
+    placeRef.current = place;
+    screenRef.current = screen.name;
+    if (
+      place.kind === before.kind &&
+      (place.kind !== "room" || before.kind !== "room" || place.roomId === before.roomId)
+    )
+      return;
+    send({ type: "place", place, now: now() });
+  }, [nav, viewerOpen, canOpenChats, now]);
   const resumedAt = useRef<number | null>(null);
   useLynxGlobalEventListener(contentSyncEventName, () => {
     "background only";
@@ -82,11 +98,6 @@ export function useReplyToast(
     });
   }, [source, now]);
 
-  const placeKey = place.kind === "room" ? `room:${place.roomId}` : place.kind;
-  useEffect(() => {
-    send({ type: "place", place: placeRef.current, now: now() });
-  }, [placeKey, now]);
-
   // 새 카드(빈 자리 · 다른 인물)가 설 때만 — 같은 인물의 내용 바꿔 끼움은 세지 않습니다.
   const shownRef = useRef<ReplyToastCard | null>(null);
   useEffect(() => {
@@ -103,7 +114,7 @@ export function useReplyToast(
       kind: card.kind,
       more: String(card.more),
       deferred: card.deferred ? "true" : "false",
-      screen: screen.name,
+      screen: screenRef.current,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.card?.key]);

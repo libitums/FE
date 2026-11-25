@@ -124,6 +124,7 @@ export function replyToastReducer(
   state: ReplyToastState,
   action: ReplyToastAction,
 ): ReplyToastState {
+  "background only"; // 보냄(배경 스레드)에서만 불립니다 — 메인 스레드 번들에서 뺍니다.
   switch (action.type) {
     case "dismiss":
       return state.card === null ? state : { ...state, card: null };
