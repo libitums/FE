@@ -514,6 +514,7 @@ test("FS15. 기록의 내 메시지에 스토리 인용이 실린다 — 무료�
     .rows[0].p as { messages: { text: string; story: unknown }[] };
   const stories = page.messages.map((m) => m.story);
   expect(stories).toContainEqual({
+    kind: "friend", // 내 스토리(20261228140000, ADR-0179)가 종류를 더함
     id: story,
     characterId: "mina",
     line: "mina-01 한 줄",
