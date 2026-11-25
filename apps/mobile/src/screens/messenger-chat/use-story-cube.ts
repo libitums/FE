@@ -21,13 +21,7 @@ import {
   cubeSettleMs,
 } from "./story-cube" with { runtime: "shared" };
 import type { CubeAxis, CubeDirection, CubeFaceStyle } from "./story-cube";
-import { motion } from "@libitums/design-tokens";
-import { motionDurationMs } from "@libitums/ui-lynx/motion";
-
-import { screenWidthFrom } from "../../components/top-bar-layout";
-import type { StoryViewerItem } from "./friend-stories.contract";
-import { cubeFaceStylesOf, cubeNeighborsOf, type CubeTurn } from "./story-cube-neighbors";
-import type { StoryNavigation } from "./use-story-navigation";
+import type { CubeTurn } from "./story-cube-neighbors";
 
 type Gesture = {
   x0: number;
@@ -46,11 +40,6 @@ type Point = { readonly detail?: { readonly x?: unknown; readonly y?: unknown } 
 /** 돌기 모드 — 넘어감 · 되돌아옴(옆 인물이 없으면 넘김 판정이어도) · 탭으로 바뀐 인물 전환. */
 type Settle = "advance" | "back" | "turn";
 
-/** 큐브 한 면을 다 돌리는 시간 — page 토큰(ADR-0053). */
-const CUBE_TURN_MS = motionDurationMs(motion.duration.page);
-/** 창 폭을 모를 때(테스트 · 옛 호스트) 쓰는 폭(pt) — 시안 폭. */
-const FALLBACK_WIDTH = 390;
-
 /** 마지막 움직임에서 이만큼(ms) 지나 놓으면 속도는 0으로 봅니다. */
 const STALE_MS = 100;
 /** 메인 스레드가 마지막 프레임을 그린 뒤에 넘김을 반영하도록 두는 여유(ms, 두 프레임). */
@@ -68,6 +57,7 @@ export type StoryCube = {
 export function useStoryCube({
   width,
   still,
+  locked,
   hasPrev,
   hasNext,
   turn,
@@ -79,6 +69,8 @@ export function useStoryCube({
 }: {
   readonly width: number;
   readonly still: boolean;
+  /** 답장을 쓰는 중 — 끌어도 돌지 않고 넘기지 않습니다. */
+  readonly locked: boolean;
   readonly hasPrev: boolean;
   readonly hasNext: boolean;
   readonly turn: CubeTurn | null;
@@ -176,7 +168,7 @@ export function useStoryCube({
   const touchStart = (event: MainThread.TouchEvent): void => {
     "main thread";
     const state = gesture.current;
-    if (Date.now() < state.until) {
+    if (locked || Date.now() < state.until) {
       state.axis = "vertical";
       return;
     }
@@ -268,33 +260,4 @@ function pointOf(event: Point): { x: number; y: number } {
   const x = event.detail?.x;
   const y = event.detail?.y;
   return { x: typeof x === "number" ? x : 0, y: typeof y === "number" ? y : 0 };
-}
-
-/** 스토리 보기의 큐브 결선 — 창 폭 · 옆 인물 면에 그릴 장 · 세 면의 쉬는 자리 · 손가락. */
-export function useViewerCube(
-  items: readonly StoryViewerItem[],
-  nav: StoryNavigation,
-  reducedMotion: boolean,
-): {
-  readonly cube: StoryCube;
-  readonly sides: ReturnType<typeof cubeNeighborsOf>;
-  readonly rest: ReturnType<typeof cubeFaceStylesOf>;
-} {
-  const measured = screenWidthFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo);
-  const width = measured > 0 ? measured : FALLBACK_WIDTH;
-  const sides = cubeNeighborsOf(items, nav.index, nav.turn);
-  const rest = cubeFaceStylesOf(width, nav.turn);
-  const cube = useStoryCube({
-    width,
-    still: reducedMotion,
-    hasPrev: sides.prev !== null,
-    hasNext: sides.next !== null,
-    turn: nav.turn,
-    fullMs: CUBE_TURN_MS,
-    onTouch: nav.touch,
-    onDrag: nav.drag,
-    onSwipe: nav.swipe,
-    onTurnEnd: nav.endTurn,
-  });
-  return { cube, sides, rest };
 }

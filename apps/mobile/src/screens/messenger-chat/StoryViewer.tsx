@@ -13,7 +13,7 @@ import { sideFace, StoryFaceBackdrop, StoryFaceShell, StoryLineCard } from "./St
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
 import { StoryViewerHead } from "./StoryViewerHead";
 import { StoryReplyArea } from "./StoryReplyArea";
-import { useViewerCube } from "./use-story-cube";
+import { useViewerCube } from "./use-viewer-cube";
 import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
 
@@ -55,8 +55,6 @@ export function StoryViewer({
   // 위 진행 막대 · 「Story i of n」은 지금 인물의 묶음만 셉니다(D4 개정).
   const group = viewerGroupOf(items, index);
   const groupLabel = copy.viewer.progress(group.at + 1, group.count);
-  // 인물 넘김 큐브(D4 개정 ⟨큐브⟩) — 옆 인물 면 · 쉬는 자리, 손가락은 메인 스레드가 따라갑니다.
-  const { cube, sides, rest } = useViewerCube(items, nav, reducedMotion);
   const [paused, setPaused] = useState(false);
   const reply = useStoryViewerReply({
     index,
@@ -66,6 +64,8 @@ export function StoryViewer({
     onReply,
     onKeyboardHeight,
   });
+  // 인물 넘김 큐브(D4 개정 ⟨큐브⟩) — 옆 인물 면 · 쉬는 자리, 손가락은 메인 스레드가 따라갑니다. 답장을 쓰는 중엔 끌지 않습니다.
+  const { cube, sides, rest } = useViewerCube(items, nav, reducedMotion, reply.typing);
   // 입력 중이면 뒤로 = 키보드 먼저 내림(D5 개정).
   useLayerBack(() => {
     if (!reply.dismissKeyboard()) onClose("back");
@@ -135,6 +135,7 @@ export function StoryViewer({
         role="current"
         style={rest.current}
         faceRef={cube.currentRef}
+        cube={cube}
       >
         <StoryFaceBackdrop item={item} insetTop={insets.top} marked={true} />
 
@@ -202,15 +203,7 @@ export function StoryViewer({
           )}
         </view>
 
-        {/* 가로로 밀면 인물을 넘깁니다(D4 개정) — 탭 자리 전체에서 손가락을 따라 큐브가 돕니다(메인 스레드). */}
-        <view
-          className="story-viewer-taps"
-          data-testid={ids.taps}
-          main-thread:bindtouchstart={cube.touchStart}
-          main-thread:bindtouchmove={cube.touchMove}
-          main-thread:bindtouchend={cube.touchEnd}
-          main-thread:bindtouchcancel={cube.touchEnd}
-        >
+        <view className="story-viewer-taps" data-testid={ids.taps}>
           {(["prev", "next"] as const).map((action) => (
             <view
               key={action}

@@ -15,20 +15,27 @@ import {
   type StoryViewerItem,
 } from "./friend-stories.contract";
 import type { CubeFaceStyle } from "./story-cube";
+import type { StoryCube } from "./use-story-cube";
 import { localizedLine } from "./suggested-friends";
 
 export type StoryFaceRole = "prev" | "current" | "next";
 
-/** 큐브 면 하나 — 변환은 쉬는 자리(`style`)에서 시작하고 손가락 · 전환은 메인 스레드(`faceRef`)가 옮깁니다. 그늘은 맨 위, 손을 받지 않습니다. */
+/**
+ * 큐브 면 하나 — 변환은 쉬는 자리(`style`)에서 시작하고 손가락 · 전환은 메인 스레드(`faceRef`)가 옮깁니다. 그늘은 맨 위, 손을 받지 않습니다.
+ * 지금 면은 손가락(`cube`)을 면 전체에서 받습니다 — 카드 · 단어 알약 · 칩 · 답장 칸에서 시작한 터치도 여기로 올라옵니다(형제인 탭 자리에 두면
+ * 위 층(z-index 1)의 그 요소들이 먼저 받아 탭 자리에 닿지 않았다 — 2026-11-26 실기). 짧은 탭은 그 요소의 bindtap이 그대로 받습니다.
+ */
 export function StoryFaceShell({
   role,
   style,
   faceRef,
+  cube,
   children,
 }: {
   readonly role: StoryFaceRole;
   readonly style: CubeFaceStyle;
   readonly faceRef: RefObject<MainThread.Element>;
+  readonly cube?: StoryCube;
   readonly children: ReactNode;
 }): ReactNode {
   const side = role !== "current";
@@ -38,6 +45,10 @@ export function StoryFaceShell({
       data-testid={ids.face(role)}
       data-face={role}
       main-thread:ref={faceRef}
+      main-thread:bindtouchstart={cube?.touchStart}
+      main-thread:bindtouchmove={cube?.touchMove}
+      main-thread:bindtouchend={cube?.touchEnd}
+      main-thread:bindtouchcancel={cube?.touchEnd}
       style={{
         transform: style.transform,
         transformOrigin: style.transformOrigin,

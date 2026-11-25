@@ -1,16 +1,17 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import { advance, clearBackHandlers, tapId } from "./chat-ui.test-support";
+import { advance, clearBackHandlers, nativeInput, tapId } from "./chat-ui.test-support";
 import {
   friendStoriesTestIds as ids,
   type StoryViewerItem,
   type StoryViewerProps,
+  type StoryWordPort,
 } from "./friend-stories.contract";
 import { STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
 
-// `ui` 계층(FS-UI34 ~ UI41): 인물 넘김 큐브(ADR-0178 D4 개정 ⟨큐브⟩) — 면 셋 · 손가락을 따르는 각도 · 놓았을 때 넘어감/되돌아옴 ·
+// `ui` 계층(FS-UI34 ~ UI43): 인물 넘김 큐브(ADR-0178 D4 개정 ⟨큐브⟩) — 면 셋 · 손가락을 따르는 각도 · 놓았을 때 넘어감/되돌아옴 ·
 // 탭으로 인물이 바뀌면 한 번 돎 · 모션 줄이기면 돌지 않음. 각도 · 판정 값은 unit(FS-U26 ~ U32)이 보고, 여기서는 면의 자리와 상태만 봅니다.
 
 beforeEach(() => {
@@ -77,13 +78,13 @@ const angleOf = (role: "prev" | "current" | "next"): number => {
 };
 const turnOf = () => screen.getByTestId(ids.viewer).getAttribute("data-turn");
 
-/** 탭 자리에 손가락을 댑니다(메인 스레드 이벤트). */
-const finger = (kind: "start" | "move" | "end", x: number, y = 400) => {
-  const taps = screen.getByTestId(ids.taps);
+/** 손가락을 댑니다(메인 스레드 이벤트) — 기본은 탭 자리, `on`이면 그 요소(카드 · 단어 알약 등)에서. */
+const finger = (kind: "start" | "move" | "end", x: number, y = 400, on: string = ids.taps) => {
+  const target = screen.getByTestId(on);
   act(() => {
-    if (kind === "start") fireEvent.touchstart(taps, { detail: { x, y } });
-    if (kind === "move") fireEvent.touchmove(taps, { detail: { x, y } });
-    if (kind === "end") fireEvent.touchend(taps, { detail: { x, y } });
+    if (kind === "start") fireEvent.touchstart(target, { detail: { x, y } });
+    if (kind === "move") fireEvent.touchmove(target, { detail: { x, y } });
+    if (kind === "end") fireEvent.touchend(target, { detail: { x, y } });
   });
 };
 /** 천천히 끌어 놓습니다 — 마지막 움직임 뒤 150ms 쉬고 놓아 속도는 0. */
@@ -238,3 +239,68 @@ test("FS-UI41. 모션 줄이기 — 끌어도 면이 돌지 않고, 반 넘게 �
   expect(name()).toBe("윤경");
   expect(turnOf()).toBe("none");
 });
+
+const wordPort = (): StoryWordPort & { save: ReturnType<typeof vi.fn> } => {
+  let isSaved = false;
+  return {
+    lookup: () => ({ ko: "물", roman: "mul", meaning: "water" }),
+    saved: () => isSaved,
+    save: vi.fn(() => {
+      isSaved = true;
+    }),
+  };
+};
+
+test("FS-UI42. 카드 · 단어 알약 · 칩 위에서 시작한 가로 끌기도 큐브를 돌려 넘긴다 — 짧은 탭은 그대로 저장", async () => {
+  const props = mount({ words: wordPort() });
+  // 단어 알약 위에서 끌면 손가락을 따라 돌고, 반 넘게 놓으면 넘어간다.
+  finger("start", 350, 600, ids.word);
+  advance(16);
+  finger("move", 250, 600, ids.word);
+  expect(angleOf("current")).toBeLessThan(0);
+  advance(16);
+  finger("move", 100, 600, ids.word);
+  advance(150);
+  finger("end", 100, 600, ids.word);
+  await spin(TURN);
+  expect(name()).toBe("해준");
+  // 이전 인물로 — 카드(한 줄) 위에서.
+  slowDragOn(ids.line, 60, 320);
+  await spin(TURN);
+  expect(name()).toBe("윤경");
+  // 칩 위에서도.
+  slowDragOn(ids.chip(0), 350, 100);
+  await spin(TURN);
+  expect(name()).toBe("해준");
+  cleanup();
+  // 짧은 탭은 알약의 저장(넘기지 않음).
+  const again = mount({ words: wordPort() });
+  finger("start", 200, 600, ids.word);
+  finger("end", 200, 600, ids.word);
+  tapId(ids.word);
+  expect(again.onSaveWord).toHaveBeenCalledTimes(1);
+  expect(name()).toBe("윤경");
+  expect(props.onSaveWord).not.toHaveBeenCalled();
+});
+
+test("FS-UI43. 답장을 쓰는 중(키보드)에는 가로로 끌어도 돌지 않고 넘기지 않는다", async () => {
+  mount();
+  act(() => {
+    nativeInput("focus", "", ids.replyInput);
+  });
+  slowDragOn(ids.taps, 350, 100);
+  expect(angleOf("current")).toBe(0);
+  await spin(TURN);
+  expect(name()).toBe("윤경");
+});
+
+/** 그 요소 위에서 천천히 끌어 놓습니다. */
+function slowDragOn(on: string, from: number, to: number) {
+  finger("start", from, 600, on);
+  advance(16);
+  finger("move", from + (to - from) / 2, 600, on);
+  advance(16);
+  finger("move", to, 600, on);
+  advance(150);
+  finger("end", to, 600, on);
+}
