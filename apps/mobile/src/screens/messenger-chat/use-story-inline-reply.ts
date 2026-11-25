@@ -147,12 +147,18 @@ export function useStoryInlineReply({
       where: "viewer",
     });
     return new Promise((resolve) => {
-      let stop: () => void = () => undefined;
-      const check = (): boolean => {
+      // 구독이 등록 중에 바로 알려도(동기 호출) 한 번만 풀고, 등록이 끝난 뒤 해제합니다(리뷰).
+      let stop: (() => void) | null = null;
+      let done = false;
+      const check = () => {
+        if (done) return;
         const status = storyReplyStatusOf(source.thread(roomId), before, story.id);
-        if (status.kind === "sending") return false;
-        stop();
-        watching.current.delete(stop);
+        if (status.kind === "sending") return;
+        done = true;
+        if (stop !== null) {
+          stop();
+          watching.current.delete(stop);
+        }
         if (status.kind === "sent") {
           if (free) usedFree.current.add(story.id);
           resolve({ kind: "sent" });
@@ -160,13 +166,13 @@ export function useStoryInlineReply({
           if (status.reason === "coins") onShortOfCoins();
           resolve(status);
         }
-        return true;
       };
-      if (check()) return;
-      stop = source.subscribe(() => {
-        check();
-      });
-      watching.current.add(stop);
+      check();
+      if (done) return;
+      const unsubscribe = source.subscribe(check);
+      if (done) return unsubscribe();
+      stop = unsubscribe;
+      watching.current.add(unsubscribe);
     });
   };
 
