@@ -4,7 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { useUiCopy } from "../../lib/ui-copy";
 import { typedText, type EditorText } from "./my-story-editor";
 import { myStoriesTestIds as ids, type StoryTextColor } from "./my-stories.contract";
-import { MyStoryPlaced, type CanvasSize } from "./MyStorySticker";
+import { MyStoryPlaced, StoryTextLines, type CanvasSize } from "./MyStorySticker";
 
 /** 바탕 위 글 상자 상태(시안 29 · 30번) — 쓰기(Done)면 사용자가 쓴 글 그대로 놓습니다(교정 없음, 검수는 올리기 요청 안에서 서버가). */
 export function useEditorText(changed: (apply: () => void) => void) {
@@ -58,12 +58,7 @@ export function MyStoryTextBox({
       onTap={onEdit}
       lane={true}
     >
-      <text
-        className={`my-story-text-box-ko my-story-ink-${text.color}`}
-        accessibility-elements-hidden={true}
-      >
-        {text.ko}
-      </text>
+      {(settled: number) => <StoryTextLines ko={text.ko} color={text.color} size={settled} />}
     </MyStoryPlaced>
   );
 }

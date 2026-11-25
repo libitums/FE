@@ -993,8 +993,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 80%;
-  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
   border-width: 2px;
   border-style: solid;
   border-color: rgba(0, 0, 0, 0);
@@ -1005,11 +1003,11 @@
   border-color: rgba(138, 58, 8, 0.35);
 }
 
+/* 줄은 `storyTextLines`가 정하고(다시 흐르지 않게 nowrap), 크기는 인라인 글자 크기(A안). */
 .my-story-text-box-ko {
   font-family: var(--libitum-typography-heading-m-font-family);
   font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-heading-m-font-size);
-  line-height: var(--libitum-typography-heading-m-line-height);
+  white-space: nowrap;
   text-align: center;
 }
 

@@ -1,4 +1,4 @@
-import { useRef } from "@lynx-js/react";
+import { useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { TouchEvent } from "@lynx-js/types";
 import cross from "@libitums/icons/lynx/cross";
@@ -9,6 +9,8 @@ import {
   moveSticker,
   pinchSticker,
   resizeSticker,
+  storyTextLines,
+  textBoxSizeOf,
   type EditorSticker,
   type Placement,
   type Point,
@@ -38,8 +40,13 @@ export function laneStyle(place: Pick<Placement, "x" | "y">) {
   return { left: `${(place.x - 0.5) * 100}%`, top: `${place.y * 100}%` };
 }
 
-export function laneBoxStyle(place: Pick<Placement, "scale" | "rotation">) {
-  return { transform: `rotate(${place.rotation}deg) scale(${place.scale})` };
+/** 글 상자 — 확정 크기(`settled`)는 안쪽 여백 · 글자(`StoryTextLines`)에, 끄는 동안의 몫만 transform(A안, 선명하게). */
+export function textBoxStyle(place: Pick<Placement, "scale" | "rotation">, settled: number) {
+  const size = textBoxSizeOf(place.scale, settled);
+  return {
+    transform: `rotate(${place.rotation}deg) scale(${size.live})`,
+    padding: size.padding,
+  };
 }
 
 /**
@@ -77,8 +84,13 @@ export function MyStoryPlaced<T extends Placement>({
   readonly onTap?: () => void;
   /** 글 상자 — 바탕 너비 줄 안에 놓아 옮겨도 줄바꿈이 그대로입니다(`laneStyle`). */
   readonly lane?: boolean;
-  readonly children: ReactNode;
+  /** 글 상자는 확정 크기를 받아 글자를 그립니다(손을 떼면 확정 — 끄는 동안은 transform). */
+  readonly children: ReactNode | ((settled: number) => ReactNode);
 }): ReactNode {
+  const [settled, setSettled] = useState(item.scale);
+  const settle = () => {
+    if (lane) setSettled(item.scale);
+  };
   const start = useRef<{ item: T; points: Point[] } | null>(null);
   const resize = useRef<{ item: T; point: Point } | null>(null);
 
@@ -107,6 +119,7 @@ export function MyStoryPlaced<T extends Placement>({
   const end = () => {
     "background only";
     start.current = null;
+    settle();
   };
   const resizeBegin = (event: TouchEvent) => {
     "background only";
@@ -123,13 +136,14 @@ export function MyStoryPlaced<T extends Placement>({
   const resizeEnd = () => {
     "background only";
     resize.current = null;
+    settle();
   };
 
   const box = (
     <view
       className={`${className}${selected ? ` ${className}-on` : ""}`}
       data-testid={testId}
-      style={lane ? laneBoxStyle(item) : stickerStyle(item)}
+      style={lane ? textBoxStyle(item, settled) : stickerStyle(item)}
       flatten={false}
       accessibility-element={true}
       accessibility-label={label}
@@ -146,7 +160,7 @@ export function MyStoryPlaced<T extends Placement>({
             },
           })}
     >
-      {children}
+      {typeof children === "function" ? children(settled) : children}
       {selected ? (
         <>
           <view
@@ -187,6 +201,29 @@ export function MyStoryPlaced<T extends Placement>({
   ) : (
     box
   );
+}
+
+/** 글 상자의 줄들 — 정해진 줄(`storyTextLines`)을 한 줄씩, 글자 크기에 크기를 곱해 그립니다(편집 · 보기 같은 함수). */
+export function StoryTextLines({
+  ko,
+  color: ink,
+  size,
+}: {
+  readonly ko: string;
+  readonly color: string;
+  readonly size: number;
+}): ReactNode {
+  const { fontSize, lineHeight } = textBoxSizeOf(size, size);
+  return storyTextLines(ko).map((line, index) => (
+    <text
+      key={index}
+      className={`my-story-text-box-ko my-story-ink-${ink}`}
+      style={{ fontSize, lineHeight }}
+      accessibility-elements-hidden={true}
+    >
+      {line}
+    </text>
+  ));
 }
 
 /** 단어 · 카드 스티커(시안 27번). */

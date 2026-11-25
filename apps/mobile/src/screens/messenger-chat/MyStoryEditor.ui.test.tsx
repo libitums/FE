@@ -175,7 +175,7 @@ test("MS-UI34. 글 서버(text) — Aa → 바탕 위 상자에 쓰기 · 글자
   tapId(ids.textDone);
   await flush();
   expect(screen.queryByTestId(ids.textEntry)).toBeNull();
-  expect(screen.getByTestId(ids.textBlock).textContent).toContain("오늘 처음 김치찌개 만들었어");
+  expect(screen.getByTestId(ids.textBlock).textContent).toBe("오늘 처음 김치찌개만들었어"); // 정해진 두 줄
   expect(screen.getByTestId(ids.editor).textContent).not.toContain("More natural");
   tapId(ids.toolWords);
   expect(screen.getByTestId(ids.composer).textContent).toContain("Up to 8 on one story.");
@@ -322,4 +322,22 @@ test("MS-UI39. Aa 쓰는 동안 키보드가 오르면 글 상자를 키보드 �
   act(() => typingKeyboard(0));
   expect(group()).toContain("bottom: auto");
   expect(group()).toContain("position: relative");
+});
+
+test("MS-UI40. 글 상자 크기 A안 — 정해진 줄마다 글자 크기로 그리고(22px · 줄 둘), transform은 회전 · 끄는 몫(1)만", async () => {
+  await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  act(() => nativeInput("input", "오늘 처음 김치찌개 만들었어", ids.textInput));
+  tapId(ids.textDone);
+  await flush();
+  const box = screen.getByTestId(ids.textBlock);
+  expect(box.getAttribute("style")).toContain("scale(1)");
+  expect(box.getAttribute("style")).toContain("padding: 8px 12px");
+  const lines = [...box.querySelectorAll("text")].filter((el) =>
+    (el.getAttribute("style") ?? "").includes("font-size"),
+  );
+  expect(lines.map((el) => el.textContent)).toEqual(["오늘 처음 김치찌개", "만들었어"]);
+  expect(lines[0]?.getAttribute("style")).toContain("font-size: 22px");
 });
