@@ -25,6 +25,8 @@ import {
 import { StoryViewer } from "./StoryViewer";
 import { usePhoneKeyboardHeight } from "./use-phone-keyboard-height";
 import { useStoryInlineReply } from "./use-story-inline-reply";
+import { useStoryProfile } from "./use-story-profile";
+import type { FriendProfile } from "./friend-catalog.contract";
 import { screenHeightFrom } from "../../lib/learning-density";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import type { StoryRowStats } from "./use-row-impressions";
@@ -64,6 +66,7 @@ export function useFriendStories({
   source,
   wallet,
   onShortOfCoins,
+  profileOf = () => null,
 }: {
   readonly port: FriendStoriesPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
@@ -75,6 +78,8 @@ export function useFriendStories({
   readonly source: ChatSource;
   readonly wallet: CoinWallet;
   readonly onShortOfCoins: () => void;
+  /** 보기 위 아바타의 프로필 시트가 그릴 카탈로그 인물(이미 친구) — 없으면 이름 · 얼굴만. */
+  readonly profileOf?: (characterId: string) => FriendProfile | null;
 }): FriendStoriesUi {
   const { emit } = useChatEvents();
   const [stories, setStories] = useState<readonly FriendStory[] | null>(null);
@@ -144,7 +149,7 @@ export function useFriendStories({
 
   // 보기 한 번의 장 기록 — 닫힐 때 `friend_story_closed` 한 번(감사 A4).
   const session = useRef({ shown: new Set<string>(), skipped: 0 });
-  const close = (reason: StoryCloseReason | "replied") => {
+  const close = (reason: StoryCloseReason | "replied" | "profile") => {
     if (viewer !== null)
       emit({
         name: "friend_story_closed",
@@ -204,6 +209,17 @@ export function useFriendStories({
     if (roomId !== null) onOpenRoom(roomId);
   }
 
+  // 위 아바타 → 프로필 시트. 이미 친구의 「Start chatting」 = 보기를 닫고 그 방(추가 없음).
+  const profile = useStoryProfile({
+    suggested,
+    profileOf,
+    onChat: (characterId) => {
+      const roomId = inline.roomIdOf(characterId);
+      close("profile");
+      if (roomId !== null) onOpenRoom(roomId);
+    },
+  });
+
   function handleMeet(item: StoryViewerItem) {
     "background only";
     const friend = item.unmet;
@@ -235,32 +251,36 @@ export function useFriendStories({
     ),
     layer:
       viewer === null ? null : (
-        <StoryViewer
-          items={viewer.items}
-          start={viewer.start}
-          now={now}
-          reducedMotion={reducedMotion}
-          romanization={port?.romanization?.() ?? true}
-          {...(port?.words === undefined ? {} : { words: port.words })}
-          covered={covered}
-          onShown={handleShown}
-          onReply={inline.reply}
-          onOpenChat={handleOpenChat}
-          keyboardHeight={keyboard.height}
-          onKeyboardHeight={keyboard.measure}
-          onSaveWord={(item) =>
-            emit({
-              name: "friend_story_word_saved",
-              surface: "chat",
-              characterId: item.story.characterId,
-            })
-          }
-          onMeet={handleMeet}
-          onClose={close}
-          onSkip={() => {
-            session.current.skipped += 1;
-          }}
-        />
+        <>
+          <StoryViewer
+            items={viewer.items}
+            start={viewer.start}
+            now={now}
+            reducedMotion={reducedMotion}
+            romanization={port?.romanization?.() ?? true}
+            {...(port?.words === undefined ? {} : { words: port.words })}
+            covered={covered || profile.covering}
+            onShown={handleShown}
+            onReply={inline.reply}
+            onOpenChat={handleOpenChat}
+            keyboardHeight={keyboard.height}
+            onKeyboardHeight={keyboard.measure}
+            onSaveWord={(item) =>
+              emit({
+                name: "friend_story_word_saved",
+                surface: "chat",
+                characterId: item.story.characterId,
+              })
+            }
+            onMeet={handleMeet}
+            onProfile={profile.open}
+            onClose={close}
+            onSkip={() => {
+              session.current.skipped += 1;
+            }}
+          />
+          {profile.layer}
+        </>
       ),
     layerOpen: viewer !== null,
     listStory: (characterId) => (port === undefined ? null : listStoryOf(row, characterId)),

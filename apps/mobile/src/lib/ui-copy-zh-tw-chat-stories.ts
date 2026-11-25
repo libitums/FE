@@ -44,7 +44,7 @@ export const messengerChatStoriesZhTw: FriendStoriesCopy = {
     coinsShort: "錢幣不足",
     newFriend: "新朋友",
     addAndReply: "加為朋友並回覆",
-    seeHowToMeet: "看看怎麼認識",
+    profile: (name) => `${name} 的個人檔案`,
   },
   reply: {
     caption: (name) => `你回覆了 ${name} 的限時動態`,

@@ -77,6 +77,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U16 `storyReplyStatusOf`: 방 없음 · 새 글 없음 · 다른 스토리 → failed, 가짜 출처 → sent, 앱 id → sending, 서버 id → sent, Not sent · 실패 줄 → failed(no-credits → coins), 입력 막힘 → failed.
 - FS-U18 ~ U21 인물 묶음(D4 개정, `friend-stories.groups.unit.test.ts`): 인물마다 올린 시각 순 · 줄 칸은 최신 · 본 것은 다 봤을 때, 보기 장 목록 = 묶음 이어 붙임 · 안 본 첫 장부터,
   `viewerGroupOf`(묶음 시작 · 칸 수 · 자리), `viewerJump`(다음 인물 · 마지막이면 닫힘 · 이전 인물의 첫 장).
+- FS-U22 `modelOfMetFriend`(`suggested-friends-ui.unit.test.ts`): 카탈로그 인물 → 소개 · 태그 · 첫 말 + 방 이름 · 얼굴, 없으면 이름 · 얼굴만, 상태 `added` · 제안 없음.
 - FS-U17 `canSendStoryReply`: 빈 글 · 공백 · 보내는 중이면 거짓.
 
 ### 2.2 ui (앱)
@@ -92,12 +93,16 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
 - FS-UI20 ~ UI22 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
 - FS-UI23 ~ UI26 인물 기준 보기(`StoryViewer.segments.ui.test.tsx`): 진행 막대 = 그 인물만, 왼쪽 탭은 이전 인물의 마지막 장, 가로 넘김(다음 · 이전 인물 · 짧은 움직임은 무시 · 마지막이면 닫힘), 슬라이드 방향 · 모션 줄이기면 없음, 6초 넘김은 인물을 넘어 이어 감.
+- FS-UI27 보기 위 아바타(`StoryViewer.ui.test.tsx`): 「<이름>'s profile」 버튼 · flatten false, 아바타 · 이름 탭 → `onProfile(그 장)`, 안 만난 친구도. 잠긴 안 만난 친구는 소개 카드만(「See how to meet」 없음).
+- FS-UI28 목록 + 보기 + 프로필 시트(`MessengerListScreen.stories.ui.test.tsx` · `SuggestedFriendSheet.ui.test.tsx`): 친구 아바타 → 시트(소개 · Start chatting, 추가 없음) · 보기 covered로 멈춤 → Not now면 이어 감,
+  Start chatting → 보기 닫힘(`closed` reason `profile`) · 그 방, 안 만난 친구 → 추천 시트(from `story_viewer`), `added` 모델은 NEW 배지 없음.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
 
 ### 2.3 integration (앱)
 
 - FSI1 (D5 개정) 목록 → 친구 스토리 → 칩 → 보기에 남은 채 그 방에 인용과 함께 보냄 · 「Sent」 → Open chat → 방의 인용 카드.
 - FSI8 (D4 개정) 한 인물의 스토리 둘 → 진행 막대 「Story 1 of 2」 → 다 보면 닫힘 · 둘 다 본 것.
+- FSI9 보기 위 아바타 → 프로필 시트(보기 covered) → Start chatting → 보기 닫힘 · 그 방. 안 만난 친구 아바타 → 추천 시트, 보기는 남음.
 - FSI2 (D5 개정) 답장 칸에 쓰고 보내기 → 보기에 남은 채 인용과 함께 보냄 · 칸이 빔.
 - FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
 - FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).

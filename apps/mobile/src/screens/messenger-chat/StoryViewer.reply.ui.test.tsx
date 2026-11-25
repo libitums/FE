@@ -62,6 +62,7 @@ function mount(over: Partial<StoryViewerProps> = {}) {
     onKeyboardHeight: vi.fn(),
     onSaveWord: vi.fn(),
     onMeet: vi.fn(),
+    onProfile: vi.fn(),
     onClose: vi.fn(),
     ...over,
   };

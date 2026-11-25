@@ -69,11 +69,14 @@ export type SuggestedFriendsCopy = {
   };
 };
 
-/** 시트가 그리는 인물 — 추천 줄 · 친구 찾기 어느 쪽에서 열려도 같은 모양입니다. */
+/**
+ * 시트가 그리는 인물 — 추천 줄 · 친구 찾기 어느 쪽에서 열려도 같은 모양입니다. `added`는 이미 친구(열린 방)인 인물 — 스토리 보기의
+ * 아바타에서 열리고(ADR-0178), 「Start chatting」이 그 방을 엽니다(NEW 배지 없음).
+ */
 export type SuggestedFriendSheetModel = {
   readonly character: FriendProfile;
   readonly avatarUrl: string | null;
-  readonly status: "addable" | "locked";
+  readonly status: "addable" | "locked" | "added";
   readonly offer: SuggestedFriend["offer"];
 };
 

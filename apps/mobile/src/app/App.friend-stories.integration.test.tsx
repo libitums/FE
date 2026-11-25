@@ -177,6 +177,29 @@ test("FSI8. 한 인물의 스토리 여럿 — 진행 막대는 그 인물만, �
   expect(seen.has("st-owner-1") && seen.has("st-owner-2")).toBe(true);
 });
 
+test("FSI9. 보기 위 아바타 → 프로필 시트(보기는 덮임) → Start chatting: 보기를 닫고 그 방, 안 만난 친구는 추천 시트", async () => {
+  serverRemote(live);
+  await openMessenger();
+  tapId(ids.friend("owner"));
+  tapId(ids.profile);
+  expect(present(suggestedIds.sheet)).toBe(true);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("사장님");
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+  tapId(suggestedIds.sheetStart);
+  await settle();
+  expect(present(ids.viewer)).toBe(false);
+  expect(present(suggestedIds.sheet)).toBe(false);
+  expect(present(chat.screen)).toBe(true);
+
+  cleanup();
+  serverRemote(live);
+  await openMessenger();
+  tapId(ids.unmet("daeun"));
+  tapId(ids.profile);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("송다은");
+  expect(present(ids.viewer)).toBe(true);
+});
+
 test("FSI6. 스토리를 못 읽으면 추천 줄 그대로 · 오류 없음", async () => {
   serverRemote("fail");
   await openMessenger();

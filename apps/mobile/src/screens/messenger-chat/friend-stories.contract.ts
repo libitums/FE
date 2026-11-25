@@ -186,7 +186,8 @@ export type FriendStoriesCopy = {
     readonly coinsShort: string;
     readonly newFriend: string;
     readonly addAndReply: string;
-    readonly seeHowToMeet: string;
+    /** 위 아바타(프로필 시트를 여는 단추)의 낭독 이름 — 「<이름>'s profile」. */
+    readonly profile: (name: string) => string;
   };
   readonly reply: {
     readonly caption: (name: string) => string;
@@ -229,8 +230,10 @@ export type StoryViewerProps = {
   /** 답장 칸이 잰 키보드 높이를 받습니다(`usePhoneKeyboardHeight.measure`). */
   readonly onKeyboardHeight?: (height: number) => void;
   readonly onSaveWord: (item: StoryViewerItem) => void;
-  /** 안 만난 친구 — 추가하고 답장(추가 가능) 또는 프로필 시트(잠김). */
+  /** 안 만난 친구의 「Add friend and reply」(추가 가능일 때만 섭니다) — 추가하고 답장. */
   readonly onMeet: (item: StoryViewerItem) => void;
+  /** 위 아바타 · 이름 — 그 인물의 프로필 시트(성격 정보 · 채팅하기)를 엽니다. */
+  readonly onProfile: (item: StoryViewerItem) => void;
   /** 닫힘 — 끝까지 넘김(completed) · 닫기 단추(closed) · 시스템 뒤로(back). */
   readonly onClose: (reason: StoryCloseReason) => void;
   /** 다음 탭으로 넘김(건너뜀 세기). */
@@ -255,6 +258,7 @@ export const friendStoriesTestIds = {
   progress: sv("progress"),
   segment: (index: number) => sv(`segment-${index}`),
   name: sv("name"),
+  profile: sv("profile"),
   age: sv("age"),
   pause: sv("pause"),
   close: sv("close"),

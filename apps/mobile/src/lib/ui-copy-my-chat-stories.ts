@@ -44,7 +44,7 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
     coinsShort: "ဒင်္ဂါး မလုံလောက်ပါ",
     newFriend: "သူငယ်ချင်းသစ်",
     addAndReply: "သူငယ်ချင်းထည့်ပြီး ပြန်စာရေးရန်",
-    seeHowToMeet: "တွေ့ပုံ ကြည့်ရန်",
+    profile: (name) => `${name}၏ ပရိုဖိုင်`,
   },
   reply: {
     caption: (name) => `${name}၏ စတိုရီကို သင် ပြန်စာရေးခဲ့သည်`,

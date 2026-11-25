@@ -114,6 +114,15 @@
   padding-left: var(--libitum-spacing-2);
 }
 
+/* 이름 · 아바타 묶음 — 누르면 프로필 시트. 머리 줄처럼 row-reverse라 그림은 아바타 · 이름 순. */
+.story-viewer-who {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  flex-shrink: 1;
+}
+
 .story-viewer-avatar {
   display: flex;
   padding: 1px;
