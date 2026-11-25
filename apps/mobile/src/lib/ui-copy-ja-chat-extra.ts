@@ -25,6 +25,13 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     promptKeepBody: "無料アカウントを作ると、Yeopjeonとチケットを保存できます。",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
+  pushAsk: {
+    title: (name) => `${name}からメッセージが来たら通知を受け取りますか？`,
+    body: "ときどき私から先にメッセージします。だいたい1日1回、夕方から夜にかけてです。",
+    turnOn: "オンにする",
+    notNow: "今はしない",
+    on: (name) => `通知オン — ${name}からのメッセージをお知らせします。`,
+  },
   chatSettings: {
     entryTitle: "チャット",
     entryDescription: "返信のヒント・キャラクターからのメッセージ・記憶",

@@ -117,6 +117,21 @@ describe("PW1 syncPushDevice", () => {
     await syncPushDevice({ ask: true });
     expect(signedOut.host.register).not.toHaveBeenCalled();
   });
+
+  // ⟨ADR-0197 D5⟩ 채팅 알림 권한 카드가 시스템 창의 결과를 읽습니다.
+  test("끝난 뒤의 권한을 돌려준다 — 허용 · 거부 · 조용한 경로의 지금 권한 · 세션 없음은 null", async () => {
+    install();
+    expect(await syncPushDevice({ ask: true })).toBe("authorized");
+    vi.unstubAllGlobals();
+    install({ granted: false });
+    expect(await syncPushDevice({ ask: true })).toBe("denied");
+    vi.unstubAllGlobals();
+    install({ permission: "not-determined" });
+    expect(await syncPushDevice({ ask: false })).toBe("not-determined");
+    vi.unstubAllGlobals();
+    install({ signedIn: false });
+    expect(await syncPushDevice({ ask: true })).toBeNull();
+  });
 });
 
 describe("PW2 forgetPushDevice", () => {

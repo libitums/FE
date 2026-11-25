@@ -24,6 +24,13 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     promptLater: "ไว้ทีหลัง",
   },
   pushNotice: { chatUnavailable: "ตอนนี้แชทนี้ใช้งานไม่ได้" },
+  pushAsk: {
+    title: (name) => `รับการแจ้งเตือนเมื่อ ${name} ส่งข้อความมาไหม?`,
+    body: "บางครั้งเราจะทักไปก่อน — ประมาณวันละครั้ง ช่วงเย็น",
+    turnOn: "เปิด",
+    notNow: "ไว้ทีหลัง",
+    on: (name) => `เปิดการแจ้งเตือนแล้ว — ${name} ทักมาเมื่อไหร่จะแจ้งให้รู้`,
+  },
   chatSettings: {
     entryTitle: "แชท",
     entryDescription: "คำตอบแนะนำ ข้อความจากตัวละคร ความทรงจำ",

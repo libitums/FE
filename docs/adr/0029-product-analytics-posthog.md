@@ -443,6 +443,9 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-21 — 푸시 캠페인 보상(ADR-0175). 적용 기록⟩ **`push_reward_claimed { kind, amount }`**(보상 알림을 눌러 서버가 지급했을 때 한 번 — amount는 엽전 수 또는
     무제한 티켓 시간) · **`push_reward_failed { reason }`**(already_claimed · not_recipient · expired · unknown · guest · error, 캠페인 id가 없는 알림은 내지 않음).
     공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-push-reward.tsx`). Airbridge 매핑 없음.
+  - ⟨2026-11-25 — Chat Plus 첫 구독 보너스(ADR-0196). 적용 기록⟩ **`subscription_bonus_shown { plan: chat_plus, amount }`**(서버가 알린 보너스 모달이 설 때 한 번).
+    공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-subscription-bonus.tsx`). 지급 수는 서버 원장 `chat_plus_first_bonus`가 센다. 이름이 110 → 111개,
+    Airbridge 매핑 없음.
 
   #### D3 목적 구분 — 쓰는 법
 
@@ -529,6 +532,10 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   `sentence_audio_replayed { episodeId, surface: story_cut | lesson_answer, stage?, unitKey? }`(켜진 스피커를 누를 때마다) ·
   `choice_chip_sound_played { episodeId, unitKey, surface: word_choice | sentence_order }`(소리가 난 칩 누름마다). 기존 이벤트의 모양 · 발생 시점은 그대로다.
   GitHub wiki 사전은 따로 고친다.
+- ⟨2026-11-25 — [ADR-0197](0197-chat-push-ask-card.md) D4⟩ 채팅 첫 답장 뒤 알림 권한 카드 이벤트 셋을 더한다(`episodeIntroEventSink`, 공통 속성 둘 ·
+  `surface: chat`, 이름 110 → 113, PostHog만 — Airbridge 매핑 없음): `chat_push_ask_shown { characterId, count }`(카드가 섬, 이번이 몇 번째 "1" | "2") ·
+  `chat_push_ask_tapped { characterId, choice: turn_on | not_now }` · `chat_push_ask_answered { characterId, result: allowed | denied }`(Turn on 뒤 시스템 창의
+  결과, 권한을 모르면 내지 않음). 보낸 곳은 `screens/messenger-chat/ChatPushAsk.tsx`. 허용률 = `answered.allowed` ÷ `shown`. GitHub wiki 사전은 따로 고친다.
 
 ## 재검토 조건
 

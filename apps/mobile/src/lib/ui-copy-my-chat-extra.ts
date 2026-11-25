@@ -24,6 +24,13 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     promptLater: "နောက်မှ",
   },
   pushNotice: { chatUnavailable: "ဒီချတ်ကို ယခု သုံး၍ မရပါ။" },
+  pushAsk: {
+    title: (name) => `${name} စာပို့တဲ့အခါ အသိပေးချက် ရယူမလား?`,
+    body: "တစ်ခါတလေ ကျွန်ုပ်က အရင် စာပို့တတ်ပါတယ် — တစ်ရက် တစ်ကြိမ်လောက်၊ ညနေပိုင်းမှာပါ။",
+    turnOn: "ဖွင့်မယ်",
+    notNow: "နောက်မှ",
+    on: (name) => `အသိပေးချက် ဖွင့်ပြီးပါပြီ — ${name} စာပို့ရင် အသိပေးပါမယ်။`,
+  },
   chatSettings: {
     entryTitle: "ချတ်",
     entryDescription: "အဖြေ အကြံပြုချက်၊ ဇာတ်ကောင်ထံမှ စာ၊ မှတ်ဉာဏ်",

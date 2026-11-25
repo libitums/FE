@@ -208,3 +208,20 @@ export function SignupRewardModal({
     />
   );
 }
+
+/** Chat Plus 첫 구독 보너스 모달(ADR-0196 D4) — 같은 틀에 구독 문구(SUBSCRIBER GIFT · Welcome to Chat Plus!)를 꽂습니다. */
+export function SubscriptionBonusModal({
+  amount,
+  ...rest
+}: Omit<SignupRewardModalProps, "fromGuest">): ReactNode {
+  const copy = useUiCopy().signupReward;
+  return (
+    <RewardModal
+      {...rest}
+      tag={copy.subscriberTag}
+      title={copy.subscriberTitle}
+      body={copy.subscriberBody}
+      reward={{ kind: "coins", amount }}
+    />
+  );
+}

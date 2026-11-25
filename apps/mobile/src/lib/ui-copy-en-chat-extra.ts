@@ -25,6 +25,13 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     promptKeepBody: "Create a free account to keep your Yeopjeon and tickets.",
   },
   pushNotice: { chatUnavailable: "This chat isn't available right now." },
+  pushAsk: {
+    title: (name) => `Get a ping when ${name} texts you?`,
+    body: "I sometimes message first — about once a day, in the evening.",
+    turnOn: "Turn on",
+    notNow: "Not now",
+    on: (name) => `Notifications on — ${name} will ping you.`,
+  },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Reply ideas, messages from characters, memories",

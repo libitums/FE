@@ -25,6 +25,13 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
+  pushAsk: {
+    title: (name) => `¿Quieres un aviso cuando ${name} te escriba?`,
+    body: "A veces te escribo yo primero: más o menos una vez al día, por la noche.",
+    turnOn: "Activar",
+    notNow: "Ahora no",
+    on: (name) => `Notificaciones activadas: ${name} te avisará.`,
+  },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Ideas de respuesta, mensajes de personajes, recuerdos",

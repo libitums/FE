@@ -45,6 +45,7 @@ export type ChatMemoryList = {
 };
 
 import type { MessengerListNoticeCopy } from "./messenger-list-notice";
+import type { ChatPushAskCopy } from "./chat-push-ask.contract";
 
 /** 메신저 문구 표에 덧붙는 칸입니다 — 대화 설정(ADR-0126) · 선톡 푸시 안내(ADR-0127). */
 export type MessengerChatExtraCopy = {
@@ -60,6 +61,8 @@ export type MessengerChatExtraCopy = {
   readonly myStories: MyStoriesCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
+  /** 첫 답장 뒤 알림 권한 카드(ADR-0197). */
+  readonly pushAsk: ChatPushAskCopy;
   readonly access: MessengerAccessCopy;
   /** 교정 카드 · 다시 보내기 · 답 평가(ADR-0129). */
   readonly feedback: FeedbackCopy;

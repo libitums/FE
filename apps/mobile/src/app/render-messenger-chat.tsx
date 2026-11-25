@@ -21,6 +21,11 @@ import { guestSuggestedFriendsPort, suggestedFriendsPort } from "./suggested-fri
 import { friendStoriesPort, myStoriesPortFrom } from "./friend-stories-wiring";
 import { MyStoriesScreen } from "../screens/messenger-chat/MyStoriesScreen";
 import { StoryImageContext } from "../screens/messenger-chat/story-image-context";
+import { ChatPushAskContext } from "../screens/messenger-chat/ChatPushAsk";
+import { chatPushAskPort } from "./chat-push-ask-wiring";
+
+// 알림 권한 카드 포트(ADR-0197) — 회원 방에만 내립니다. 상태가 없어 하나를 함께 씁니다.
+const pushAskPort = chatPushAskPort();
 
 /** 메신저 탭 접근(ADR-0128) — 계정 상태로만 정합니다(2026-11-17부터 시험 계정 표시는 보지 않습니다). */
 export function messengerAccessFor(wiring: ScreenWiring): MessengerAccess {
@@ -76,35 +81,37 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
   return (
     <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId }}>
       <StoryImageContext.Provider value={wiring.episodeContent.imageUrlOf}>
-        {/* 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다. 비회원이
+        <ChatPushAskContext.Provider value={access === "open" ? pushAskPort : null}>
+          {/* 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다. 비회원이
           로그인하고 같은 방으로 돌아오면(ADR-0166) 접근이 바뀌어 회원 출처로 새로 섭니다. */}
-        <MessengerChatScreen
-          key={`${roomId}:${access}`}
-          onSignInRequired={access === "preview" ? wiring.onSignIn : null}
-          roomId={roomId}
-          source={chat.source}
-          keyboardProbe={unknownKoreanKeyboardProbe}
-          keyboardHeightStore={deviceKeyboardHeightStore}
-          edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
-          learnerName={learnerNameOf(wiring)}
-          wallet={chat.wallet}
-          trial={chat.trial}
-          tier={chat.tier}
-          planOffer={wiring.plans?.messengerOffer}
-          onExit={chat.onExitChatRoom}
-          onOpenMemories={chat.onOpenMemories}
-          onOpenAlbum={chat.onOpenAlbum}
-          onOpenMyProfile={chat.onOpenMyProfile}
-          chatWords={
-            access === "open" && wiring.ranking.signedIn
-              ? {
-                  load: () => wiring.ranking.client.load("chat-words"),
-                  onOpen: () => wiring.ranking.openRanking("chat-words"),
-                  eventSink: wiring.ranking.eventSink,
-                }
-              : null
-          }
-        />
+          <MessengerChatScreen
+            key={`${roomId}:${access}`}
+            onSignInRequired={access === "preview" ? wiring.onSignIn : null}
+            roomId={roomId}
+            source={chat.source}
+            keyboardProbe={unknownKoreanKeyboardProbe}
+            keyboardHeightStore={deviceKeyboardHeightStore}
+            edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
+            learnerName={learnerNameOf(wiring)}
+            wallet={chat.wallet}
+            trial={chat.trial}
+            tier={chat.tier}
+            planOffer={wiring.plans?.messengerOffer}
+            onExit={chat.onExitChatRoom}
+            onOpenMemories={chat.onOpenMemories}
+            onOpenAlbum={chat.onOpenAlbum}
+            onOpenMyProfile={chat.onOpenMyProfile}
+            chatWords={
+              access === "open" && wiring.ranking.signedIn
+                ? {
+                    load: () => wiring.ranking.client.load("chat-words"),
+                    onOpen: () => wiring.ranking.openRanking("chat-words"),
+                    eventSink: wiring.ranking.eventSink,
+                  }
+                : null
+            }
+          />
+        </ChatPushAskContext.Provider>
       </StoryImageContext.Provider>
     </ChatEventsContext.Provider>
   );

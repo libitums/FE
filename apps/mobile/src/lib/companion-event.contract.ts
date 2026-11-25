@@ -1,7 +1,7 @@
 // 엽전 출시 · 메신저 · 새 친구 · 영역 사용의 제품 사용 이벤트(ADR-0029 「D3 목적 구분」, 타입만) — 공통 속성은 영역(`surface`) · 첫 실행일부터 지난 날 수
 // (`daysSinceFirstOpen`, 10진 문자열 — 속성은 문자열 · 불리언뿐, `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
-import type { ChatSuggestionEvent } from "./chat-suggestion-event.contract";
+import type { ChatRoomEvent } from "./chat-push-ask-event.contract";
 import type { FriendStoryEvent } from "./friend-story-event.contract";
 import type { MyStoryEvent } from "./my-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
@@ -146,15 +146,13 @@ export type StreakRewardEvent = Common & {
 /**
  * 가입 보상(ADR-0174). `signup_reward_card_shown`: 손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번. `signup_reward_card_tapped`: 카드를
  * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수) — `unlimited`는 그 창에 첫날 무제한 줄(ADR-0186 개정 3)이 섰는지(shown · none).
+ * 같은 틀의 Chat Plus 첫 구독 보너스(ADR-0196 D5) `subscription_bonus_shown`: 서버가 알린 보너스 모달이 설 때 한 번(받은 수 · 요금제).
  */
 export type SignupRewardEvent =
   | (Common & { readonly name: "signup_reward_card_shown" })
   | (Common & { readonly name: "signup_reward_card_tapped" })
-  | (Common & {
-      readonly name: "signup_reward_shown";
-      readonly amount: string;
-      readonly unlimited: "shown" | "none";
-    });
+  | (Common & { name: "signup_reward_shown"; amount: string; unlimited: "shown" | "none" })
+  | (Common & { name: "subscription_bonus_shown"; plan: "chat_plus"; amount: string });
 
 /**
  * 푸시 캠페인 보상(ADR-0175). `push_reward_claimed`: 알림을 눌러 들어와 서버가 지급했을 때 한 번 — `amount`는 엽전 수 또는 무제한 티켓
@@ -292,7 +290,7 @@ export type CompanionEvent =
   | SuggestedFriendEvent
   | FriendStoryEvent
   | MyStoryEvent
-  | ChatSuggestionEvent
+  | ChatRoomEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 type WithoutDays<T> = T extends unknown ? Omit<T, "daysSinceFirstOpen"> : never;
