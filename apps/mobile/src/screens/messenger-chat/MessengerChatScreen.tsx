@@ -69,7 +69,7 @@ export function MessengerChatScreen({
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
-  const gate = useRef<() => boolean>(() => true);
+  const gate = useRef<(idea?: boolean) => boolean>(() => true);
   // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
   const serverBusy = useRef(false);
   const guest = useGuestGate(onSignInRequired); // 비회원 — 보내기 · 계정 동작은 로그인 권유(ADR-0166)
@@ -82,7 +82,7 @@ export function MessengerChatScreen({
     edges,
     onExit,
     // 무료 안내인 스토리 답장은 앱의 체험 · 엽전 관문을 지나지 않습니다 — 정본은 서버 판정(ADR-0178 D6).
-    authorizeSend: (idea) => !serverBusy.current && story.authorize(idea, () => gate.current()),
+    authorizeSend: (idea) => !serverBusy.current && story.authorize(idea, () => gate.current(idea)),
     guest: guest.active,
     takeSendOptions: story.takeSendOptions,
   });

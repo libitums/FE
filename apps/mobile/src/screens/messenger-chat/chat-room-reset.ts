@@ -28,6 +28,7 @@ export function emptyRoom(room: RoomState, opening: ChatMessage | null): void {
   room.ratings = {};
   room.remoteHistory = "idle";
   room.remoteIdeas = null;
+  room.remoteIdeasOrigin = null;
   room.unsent = [];
   room.recovery = "none";
   room.unread = 0;

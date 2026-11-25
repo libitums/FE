@@ -4,7 +4,7 @@
 import type { EarlyAccessRemote } from "./early-access-parse";
 import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
-import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
+import type { ChatIdeasOrigin, ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import type { VisibleFriend } from "./friend-catalog.contract";
 import type { FriendStory } from "./friend-stories.contract";
 
@@ -17,6 +17,8 @@ export type RemoteHistory = {
   readonly chatWords?: Readonly<Record<string, ChatWordsResult>>;
   /** 마지막 캐릭터 메시지에 저장된 추천 답변 — 없으면 null. */
   readonly ideas: readonly ChatReplyIdea[] | null;
+  /** 그 마지막 캐릭터 메시지의 출처(ADR-0195) — 서버가 주지 않았으면 null · 없음. */
+  readonly ideasOrigin?: ChatIdeasOrigin | null;
 };
 
 /** 첫 인사 — 서버가 인사를 만들지 않았으면(이미 메시지가 있음 · 대화 불가) null. */
