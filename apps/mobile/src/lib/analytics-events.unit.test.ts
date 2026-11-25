@@ -231,10 +231,12 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0189⟩ 다시 듣기 `sentence_audio_replayed` · 칩 소리 `choice_chip_sound_played`가 더해져 107이다(PostHog만).
   // ⟨ADR-0190⟩ 방 안내 키보드 단계 `messenger_guide_keyboard`가 더해져 108이다(PostHog만).
   // ⟨ADR-0195⟩ 채팅 답할 문장 추천 `chat_suggestion_shown` · `chat_suggestion_tapped`가 더해져 110이다(PostHog만).
-  test("AN1. 이벤트 이름은 110개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0196⟩ Chat Plus 첫 구독 보너스 `subscription_bonus_shown`이 더해져 111이다(PostHog만).
+  test("AN1. 이벤트 이름은 111개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(110);
+    expect(names).toHaveLength(111);
+    expect(names).toContain("subscription_bonus_shown");
     expect(names).toContain("chat_suggestion_shown");
     expect(names).toContain("chat_suggestion_tapped");
     expect(names).toContain("sentence_audio_replayed");
