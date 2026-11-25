@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 import type { CompanionLlm } from "./chat-send.contract.ts";
-import { evalReply } from "./companion-eval-reply.ts";
+import { capSpeechLevel, evalReply } from "./companion-eval-reply.ts";
 import { bodySchema, caseSchema } from "./companion-eval-schema.ts";
 import { storyReactionSets } from "./companion-eval-sets-reactions.ts";
 import { companionEvalSets } from "./companion-eval-sets.ts";
@@ -109,4 +109,16 @@ test("ER2. 반응 케이스 — 답은 반응 지시 · 앱 안내 글로 만들
   });
   expect(replies[2]!.userText).toBe("안녕하세요!");
   expect(replies[2]!.system).not.toContain("as their story today");
+});
+
+test("ER3. 퀴즈는 덕수쌤만 · 말투는 인물 상한까지(존댓말 고정 인물은 casual 케이스도 polite)", () => {
+  const cases = storyReactionSets.flatMap((set) => set.cases);
+  const quizzers = new Set(
+    cases.filter((item) => item.storyReaction?.angle === "quiz").map((item) => item.characterId),
+  );
+  expect([...quizzers]).toEqual(["duksu"]);
+  expect(capSpeechLevel("casual", "polite")).toBe("polite");
+  expect(capSpeechLevel("slang", "casual")).toBe("casual");
+  expect(capSpeechLevel("casual", "slang")).toBe("casual");
+  expect(capSpeechLevel("slang", undefined)).toBe("slang");
 });

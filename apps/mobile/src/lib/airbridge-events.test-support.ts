@@ -84,7 +84,7 @@ export const allEventNames = [
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
+/** 매핑되는 여덟(가입 · 최종 통과 · 엽전 팩 결제 · 2026-11-24 깔때기 다섯)을 뺀 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "onboarding_step_viewed", step: "1", via: "start" },
@@ -161,7 +161,6 @@ export const unmappedEvents = [
   { name: "progress_load_failed", attempt: "retry" },
   { name: "progress_load_recovered", trigger: "auto" },
   { name: "progress_load_recovered", trigger: "manual" },
-  { name: "tickets_ran_out" },
   { name: "ticket_more_tapped", surface: "ticket_modal", result: "bought", price: "20" },
   { name: "ticket_more_tapped", surface: "out_of_tickets", result: "short", price: "20" },
   { name: "roleplay_story_opened", episodeId: "u01-water" },
@@ -244,19 +243,14 @@ export const unmappedEvents = [
   { name: "surface_session_ended", surface: "chat", daysSinceFirstOpen: "3", seconds: "95" },
   { name: "first_lesson_completed", surface: "learning", daysSinceFirstOpen: "0" },
   {
-    name: "first_chat_message_sent",
-    surface: "chat",
-    daysSinceFirstOpen: "1",
-    characterId: "duksu",
-  },
-  {
     name: "streak_reward_collected",
     surface: "learning",
     daysSinceFirstOpen: "6",
     days: "7",
     amount: "40",
   },
-  ...planEventExamples,
+  // 요금제 이벤트 가운데 상점 탭 전환만 — 보기 · 고름 · 구매 의향은 2026-11-24부터 매핑된다.
+  ...planEventExamples.filter((event) => event.name === "shop_tab_switched"),
   ...suggestedFriendEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
 

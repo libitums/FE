@@ -465,3 +465,40 @@ Airbridge 실시간 로그에 한 건도 오지 않았다(샌드박스 기기, R
   (iOS `AirbridgeEventsModule.semanticAttributes(from:)`, Android `AirbridgeEventAttributes.semantic`). 불리언 · 중첩 맵은 여전히 버린다.
   **옛 호스트**(이 변경 전 빌드)에 새 번들이 실리면 수 · 배열이 버려져 Order Complete가 금액 없이 간다 — 스토어 빌드를 새로 내야 매출이 잡힌다.
 - 이벤트 이름 수: 제품 이벤트 73(AN1), Airbridge로 가는 것은 셋(AB3).
+
+## 적용 기록 ⟨2026-11-24 — 소재 테스트 깔때기 다섯⟩
+
+결정은 **사용자 요청**(2026-11-24 「에어브릿지 소재 테스트하려고 이벤트 연결좀 해줘」). 광고 소재별로 티켓 소진률 · 채팅 사용률 · 요금제 조회율 ·
+플랜 선택 → 결제 시도율을 Airbridge에서 보려 한다. **새 제품 이벤트는 만들지 않는다** — PostHog로 이미 가는 다섯을 Airbridge로도 보낸다.
+이 ADR의 구조(모듈 셋 · 값이 없으면 SDK 호출 0 · PostHog와 독립 · 시험 계정 거름)는 그대로다.
+
+- **D7 매핑에 다섯 줄을 더했다**(정본 `apps/mobile/src/lib/airbridge-events.ts`):
+
+  | 제품 이벤트 | Airbridge 카테고리 | 시맨틱 속성 | 왜 이 이름인가 |
+  |---|---|---|---|
+  | `tickets_ran_out` | 커스텀 `tickets_ran_out` | 없음 | 「무료 티켓을 다 썼다」에 맞는 표준이 없다 — `spendCredits`는 「썼다」이지 「바닥났다」가 아니다 |
+  | `first_chat_message_sent` | 커스텀 `first_chat_message_sent` | 없음 | 「기기당 첫 채팅」에 맞는 표준이 없다. `characterId`는 싣지 않는다(지표는 비율 — 캐릭터별은 PostHog) |
+  | `plans_viewed` | 표준 `airbridge.ecommerce.productList.viewed`(`PRODUCT_LIST_VIEWED`) | `productListID` = `plans_offer` · `plans_compare`(맥락 카드 · 비교 화면) · `label` = 자리(placement) | 요금제 목록을 본 것 = 상품 목록 보기. 표준이라 매체 쪽 「View Content」류 매핑이 열린다 |
+  | `plan_selected` | 커스텀 `plan_selected` | `label` = 자리 · `action` = `<요금제>.<기간>`(예: `premium.yearly`) | 표준 후보 `addedToCart`는 장바구니 흐름의 이름이라 매체(Meta AddToCart 등)가 잘못 읽는다. 앱에는 장바구니가 없다 |
+  | `purchase_intent`(요금제 · 엽전 팩) | 표준 `airbridge.initiateCheckout`(`INITIATE_CHECKOUT`) | `label` = 자리 · `action` = `plan` · `pack` · `type` = `preview`(결제를 열지 못하고 「곧」 안내로 끝남) · `checkout`(스토어 결제를 엶) · `products` = `[{ productID, name(= 상품 id), quantity: 1, price?, currency? }]` | 구매 단추를 누름 = 결제 시작. 가격 · 통화는 보인 가격의 금액이 수로 읽히고 통화가 있을 때만(대문자). **최상위 `value`는 싣지 않는다** — 매출로 읽히지 않게(임시 추천 가격일 수 있다) |
+  | `chat_message_sent` | 보내지 않는다 | — | 메시지마다 난다. 「채팅 사용률」은 첫 채팅으로 충분하고, 사용량 이벤트를 매체로 보내면 이벤트 수만 는다 |
+
+  - 커스텀 이름은 앱 이벤트 이름과 같게(소문자 · 밑줄) — PostHog과 Airbridge에서 같은 이름으로 찾는다. `airbridge.`로 시작하지 않는다.
+  - 속성은 콘텐츠 · 상품 정보뿐이다(자리 · 요금제 · 기간 · 상품 id · 가격 · 통화). 사용자 ID · 나라 · 날 수 · 캐릭터 · 입력 글은 싣지 않는다(D7 유지, AB14가 지킨다).
+  - `preview`인 구매 단추도 보낸다 — Android는 결제가 아직 닫혀 있어(사용자 결정 대기) 전부 `preview`다. 「결제 시도율」을 실제 결제 창에 한정해 보려면
+    `type = checkout`으로 거른다.
+  - 와이어 값은 SDK 4.12.0에서 읽었다 — Android `sdk-android-4.12.0.aar`의 `AirbridgeCategory` · `AirbridgeAttribute` 상수, iOS `Airbridge.framework` 바이너리의
+    카테고리 문자열(`airbridge.ecommerce.productList.viewed` · `airbridge.initiateCheckout`). 속성 이름(`productListID` · `label` · `action` · `type` · 상품 줄 키)은
+    Android 상수에서 확인했고, iOS는 짧은 문자열이 바이너리 문자열 표에 나오지 않아 **바이너리로는 확인하지 못했다**(같은 SDK의 같은 이름 — [추정]).
+    네이티브 이름 테스트(`AirbridgeEventNamesTest` · `AirbridgeEventsTests`)에는 새 상수를 더하지 않았다.
+- **호스트 변경 0** — 두 호스트가 카테고리를 허용 목록 없이 넘기고, 시맨틱 속성의 문자열 · 수 · 상품 줄 배열(줄 안 문자열 · 수)을 넘긴다(2026-11-19 넓힌 경계).
+  커스텀 카테고리 · 새 키가 그대로 SDK에 닿는다. JS 번들만 바뀌지만, **스토어 빌드가 새 번들을 실어야** 실제 사용자에게서 집계된다.
+- **D9 — 새로 감싼 sink는 없다.** 다섯 모두 이미 감싼 `episodeIntroEventSink`로 흐른다(`use-learning-tickets` · `use-plans` · `purchase-intent`). 대신
+  **첫 경험 마일스톤의 자리를 옮겼다**: 전에는 `createAnalyticsSession`(PostHog 세션)이 자기 sink를 `withFirstMilestones`로 감싸, 마일스톤이 Airbridge 합성의
+  **안쪽**에서 만들어져 Airbridge 전달이 `first_chat_message_sent`를 볼 수 없었고, PostHog 키가 없는 빌드에서는 마일스톤 자체가 나지 않았다. 이제 진입점 조립
+  `productEventSinks(sinks, store?)` = `withFirstMilestones(withAirbridgeEvents(sinks, tracker), store)`이고, 진입점은 그 바깥을 `withoutTesterEvents`로 감싼다.
+  PostHog으로 가는 것(이벤트 · `$set_once` 사람 속성)은 그대로다 — 두 번 나지 않는다(PC9b · U17).
+- **구독 매출(8번)은 그대로 RevenueCat → Airbridge 서버 연동**이다. 앱은 구독을 보내지 않는다(두 번 세지 않게). 엽전 팩은 `pack_purchased` → Order Complete 그대로.
+  Android 실결제 열기는 이 변경이 아니다(사용자 결정 사항) — 그때까지 Android의 8번은 0이다.
+- 이벤트 이름 수: 제품 이벤트 79, Airbridge로 가는 것 여덟(AB3 — 표 71).
+- 대시보드 쪽(커스텀 이벤트를 매체 포스트백 · SKAN 전환값에 잇기, 소재별 리포트)은 사용자 몫 — [운영 안내 「대시보드에서 할 일」](../airbridge-events.md#airbridge-대시보드에서-할-일) 13 ~ 17.

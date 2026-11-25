@@ -61,7 +61,7 @@ if (__BACKGROUND__) noteFirstOpen();
 // 다른 sink를 받지만 sink는 이벤트 핸들러(background)에서만 불리므로 그려지는 것은 같습니다.
 const analytics = __BACKGROUND__ ? productAnalyticsSession() : noAnalyticsSession;
 // Airbridge tracker는 background 전용 모듈에서만 풉니다. PostHog 키가 없어도 Airbridge는 동작합니다
-// (docs/adr/0063-airbridge-events.md D8 · D9).
+// (docs/adr/0063-airbridge-events.md D8 · D9). 첫 경험 마일스톤도 이 조립이 Airbridge 합성 바깥에서 만듭니다(같은 ADR 2026-11-24).
 // 시험 계정은 PostHog · Airbridge 둘 다 보내지 않습니다 — 가장 바깥에서 거릅니다(ADR-0085 D4).
 const sinks = withoutTesterEvents(
   __BACKGROUND__ ? productEventSinks(analytics.sinks) : analytics.sinks,

@@ -12,6 +12,26 @@ import {
   retiredSpecialUnitEvents,
   unmappedEvents,
 } from "./airbridge-events.test-support";
+import {
+  chatMessageSent,
+  firstChatMessageSent,
+  packCheckoutExample,
+  planSelectedExample,
+  plansViewedExample,
+  ticketsRanOut,
+} from "./airbridge-funnel-events.test-support";
+import { purchaseIntentExample } from "./purchase-intent.test-support";
+
+const mappedNames = [
+  "entry_completed",
+  "episode_final_passed",
+  "pack_purchased",
+  "tickets_ran_out",
+  "first_chat_message_sent",
+  "plans_viewed",
+  "plan_selected",
+  "purchase_intent",
+] as const;
 
 // `unit` 계층: 제품 이벤트 → Airbridge 매핑 · sink 합성. 매핑은 가입(signup)과 에피소드 최종 통과(achieveLevel) 둘뿐.
 
@@ -59,14 +79,13 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0176⟩ 입장 선택 이벤트 셋이 더해져 73 · 70이다(Airbridge로 나가지 않음 — 가입 완료는 `entry_completed` 그대로).
   // ⟨ADR-0178 D8⟩ 친구 스토리 이벤트 넷이 더해져 77 · 74다(Airbridge로 나가지 않음 — PostHog만).
   // ⟨ADR-0190⟩ 방 안내 키보드 단계 `messenger_guide_keyboard`가 더해져 79 · 76이다(PostHog만).
-  // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 이벤트 여덟이 더해져 87 · 84다(PostHog만).
-  test("AB3. 이름 87개는 표의 84개와 매핑되는 셋으로 나뉜다", () => {
+  // ⟨ADR-0063 2026-11-24⟩ 소재 테스트 깔때기 다섯(티켓 소진 · 첫 채팅 · 요금제 보기 · 고름 · 구매 단추)이 매핑되어 표는 71, 매핑은 여덟이다.
+  // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 이벤트 여덟이 더해져 87 · 79다(PostHog만).
+  test("AB3. 이름 87개는 표의 79개와 매핑되는 여덟로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(84);
+    expect(tableNames.size).toBe(79);
     expect(allEventNames).toHaveLength(87);
-    expect(
-      [...tableNames, "entry_completed", "episode_final_passed", "pack_purchased"].sort(),
-    ).toEqual([...allEventNames].sort());
+    expect([...tableNames, ...mappedNames].sort()).toEqual([...allEventNames].sort());
   });
 
   test("AB4. pack_purchased는 Order Complete { value · currency · transactionID · products[1] }이다", () => {
@@ -128,6 +147,122 @@ describe("airbridgeEventFrom", () => {
       expect(first).toEqual(second);
       expect(first).not.toBe(second);
       expect(frozen).toEqual(event);
+    }
+  });
+});
+
+describe("airbridgeEventFrom — 소재 테스트 깔때기(2026-11-24)", () => {
+  test("AB7. tickets_ran_out · first_chat_message_sent는 같은 이름의 커스텀 이벤트이고 속성이 없다", () => {
+    expect(airbridgeEventFrom(ticketsRanOut)).toStrictEqual({
+      category: "tickets_ran_out",
+      semanticAttributes: {},
+    });
+    expect(airbridgeEventFrom(firstChatMessageSent)).toStrictEqual({
+      category: "first_chat_message_sent",
+      semanticAttributes: {},
+    });
+  });
+
+  test("AB8. chat_message_sent(메시지마다)는 보내지 않는다", () => {
+    expect(airbridgeEventFrom(chatMessageSent)).toBeNull();
+  });
+
+  test("AB9. plans_viewed는 Product List View { productListID: plans_<view>, label: 자리 }이다", () => {
+    expect(airbridgeEventFrom(plansViewedExample)).toStrictEqual({
+      category: "airbridge.ecommerce.productList.viewed",
+      semanticAttributes: { productListID: "plans_compare", label: "settings" },
+    });
+    expect(
+      airbridgeEventFrom({ ...plansViewedExample, view: "offer", placement: "tickets" }),
+    ).toStrictEqual({
+      category: "airbridge.ecommerce.productList.viewed",
+      semanticAttributes: { productListID: "plans_offer", label: "tickets" },
+    });
+  });
+
+  test("AB10. plan_selected는 커스텀 plan_selected { label: 자리, action: 요금제.기간 }이다", () => {
+    expect(airbridgeEventFrom(planSelectedExample)).toStrictEqual({
+      category: "plan_selected",
+      semanticAttributes: { label: "messenger", action: "premium.monthly" },
+    });
+  });
+
+  test("AB11. purchase_intent(「곧」 안내)는 Initiate Checkout type preview이고 가격 · 통화를 상품 줄에 싣는다", () => {
+    expect(airbridgeEventFrom(purchaseIntentExample)).toStrictEqual({
+      category: "airbridge.initiateCheckout",
+      semanticAttributes: {
+        label: "settings",
+        action: "plan",
+        type: "preview",
+        products: [
+          {
+            productID: "duru.premium.monthly.v1",
+            name: "duru.premium.monthly.v1",
+            quantity: 1,
+            price: 179000,
+            currency: "VND",
+          },
+        ],
+      },
+    });
+  });
+
+  test("AB12. 결제를 연 엽전 팩은 type checkout · action pack이고 통화는 대문자다", () => {
+    expect(airbridgeEventFrom(packCheckoutExample)).toStrictEqual({
+      category: "airbridge.initiateCheckout",
+      semanticAttributes: {
+        label: "coin_shop",
+        action: "pack",
+        type: "checkout",
+        products: [
+          {
+            productID: "duru.coins.1200.v1",
+            name: "duru.coins.1200.v1",
+            quantity: 1,
+            price: 4.99,
+            currency: "USD",
+          },
+        ],
+      },
+    });
+  });
+
+  test("AB13. 가격을 모르거나 수가 아니거나 통화가 없으면 상품 줄에서 가격 · 통화만 빠지고 이벤트는 간다", () => {
+    for (const changed of [{ price: "" }, { price: "abc" }, { currency: "" }]) {
+      const event = airbridgeEventFrom({ ...purchaseIntentExample, ...changed });
+      expect(event?.category).toBe("airbridge.initiateCheckout");
+      expect(event?.semanticAttributes).toMatchObject({
+        products: [
+          { productID: "duru.premium.monthly.v1", name: "duru.premium.monthly.v1", quantity: 1 },
+        ],
+      });
+      const attributes = event?.semanticAttributes as
+        | { readonly products: readonly object[] }
+        | undefined;
+      const row = attributes?.products[0];
+      expect(Object.keys(row ?? {}).sort()).toEqual(["name", "productID", "quantity"]);
+    }
+  });
+
+  test("AB14. 깔때기 속성에는 최상위 value · 사용자 식별 · 나라 · 날 수가 없다", () => {
+    const forbidden = [
+      "value",
+      "userId",
+      "country",
+      "daysSinceFirstOpen",
+      "characterId",
+      "surface",
+    ];
+    for (const source of [
+      ticketsRanOut,
+      firstChatMessageSent,
+      plansViewedExample,
+      planSelectedExample,
+      purchaseIntentExample,
+      packCheckoutExample,
+    ]) {
+      const keys = Object.keys(airbridgeEventFrom(source)?.semanticAttributes ?? { x: 1 });
+      for (const key of forbidden) expect(keys).not.toContain(key);
     }
   });
 });

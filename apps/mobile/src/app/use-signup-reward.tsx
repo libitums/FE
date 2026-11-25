@@ -12,6 +12,8 @@ import { topBarCoinIconId } from "../components/TopBar";
 import { emitCompanionEvent } from "../lib/companion-events";
 import { tappableBottomInsetFrom } from "../lib/safe-area";
 import { signupRewardClient, type SignupRewardClaim } from "../lib/signup-reward-api";
+import type { UnlimitedPass } from "../lib/unlimited-pass";
+import { welcomeGiftEndOf, type WelcomeGiftEnd } from "../lib/welcome-gift-time";
 import { LAUNCH_FLYING_COINS } from "../screens/launch/LaunchCoinFlight";
 import { SignupRewardCard } from "../screens/signup-reward/SignupRewardCard";
 import { SignupRewardModal } from "../screens/signup-reward/SignupRewardModal";
@@ -40,6 +42,11 @@ export type SignupRewardInput = {
   readonly chip: () => number | null;
   /** 날기가 끝나면 지급 응답의 지갑 잔액을 칩의 서버 잔액으로. */
   readonly acceptBalance: (balance: number) => void;
+  /**
+   * 첫날 무제한 이용권(ADR-0186) — 회원 · 생성 24시간 안 · 구독 없음 · 구독 상태 앎일 때만 있습니다(`useWelcomePass`). 창이 처음 서는 순간에
+   * 있으면 선물 두 줄(개정 3), 없으면 엽전 한 줄 — 그 판정을 창이 닫힐 때까지 붙잡습니다.
+   */
+  readonly welcomePass?: UnlimitedPass;
   /** 테스트 주입 — 기본은 앱 서버 · 기기 저장소. */
   readonly claim?: () => Promise<SignupRewardClaim | null>;
   readonly store?: SignupRewardStore;
@@ -119,6 +126,11 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
     tutorialDone: input.tutorialDone,
   });
   latched.current = step === "modal";
+  // 무제한 줄은 창이 처음 서는 렌더에서 한 번 판정해 닫힐 때까지 둡니다 — 창이 떠 있는 동안 줄이 생기거나 사라지지 않습니다.
+  const gift = useRef<WelcomeGiftEnd | null | undefined>(undefined);
+  if (step !== "modal") gift.current = undefined;
+  else if (gift.current === undefined)
+    gift.current = welcomeGiftEndOf(input.welcomePass, Date.now());
 
   // 제품 이벤트(ADR-0029 · D3 목적 구분) — 카드는 세션에 처음 보일 때 한 번 · 누를 때마다, 모달은 설 때 한 번.
   useEffect(() => {
@@ -132,6 +144,7 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
         name: "signup_reward_shown",
         surface: "learning",
         amount: String(record.amount),
+        unlimited: gift.current === null || gift.current === undefined ? "none" : "shown",
       });
     }
   }, [step]);
@@ -157,6 +170,7 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
       <SignupRewardModal
         amount={record.amount}
         fromGuest={wasGuest.current}
+        unlimitedUntil={gift.current}
         coinTargetId={topBarCoinIconId}
         onFlightStart={() => setFlight({ from: latest.current.chip() ?? 0, landed: 0 })}
         onCoinLanded={(landed) => setFlight((now) => (now === null ? now : { ...now, landed }))}

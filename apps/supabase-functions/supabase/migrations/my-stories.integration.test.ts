@@ -421,8 +421,14 @@ test("MS4. 답할 인물 — 친구(내가 말한 대화)만 · 1명이면 1 · 
   const picked = await alarms(two);
   expect(picked.map((alarm) => alarm.rank)).toEqual([1, 2]);
   expect(new Set(picked.map((alarm) => alarm.character_id)).size).toBe(2);
-  expect(picked[0]!.angle).toBe("word");
-  expect(["question", "quiz", "together"]).toContain(picked[1]!.angle);
+  // 덕수쌤이 친구면 단어 · 카드 스토리엔 늘 답한다. 퀴즈는 덕수쌤만 받을 수 있다(20270106120000).
+  const duksu = picked.find((alarm) => alarm.character_id === "duksu")!;
+  expect(duksu.rank === 1 ? ["word", "quiz"] : ["question", "quiz", "together"]).toContain(
+    duksu.angle,
+  );
+  const other = picked.find((alarm) => alarm.character_id !== "duksu")!;
+  if (other.rank === 1) expect(other.angle).toBe("word");
+  else expect(["question", "together"]).toContain(other.angle);
   expect(picked[0]!.seconds).toBeGreaterThanOrEqual(60);
   expect(picked[0]!.seconds).toBeLessThanOrEqual(300);
   expect(picked[1]!.seconds).toBeGreaterThanOrEqual(300);
@@ -439,7 +445,10 @@ test("MS4. 답할 인물 — 친구(내가 말한 대화)만 · 1명이면 1 · 
   }
 
   await rules({ twoReplyChance: 0 });
-  expect(await alarms((await postAgain(member)).story!.id)).toHaveLength(1);
+  // 답이 하나면 덕수쌤 혼자(첫째 자리 — word · quiz).
+  const solo = await alarms((await postAgain(member)).story!.id);
+  expect(solo).toMatchObject([{ character_id: "duksu", rank: 1 }]);
+  expect(["word", "quiz"]).toContain(solo[0]!.angle);
   // 반응 스위치가 꺼지면 알람은 없다(Seen은 남는다).
   await settings("story_reactions = 'off'");
   const off = (await postAgain(member)).story!.id;
@@ -470,7 +479,8 @@ test("MS5. 가중치 — 최근성 × 친밀도 × 직전 답한 인물 0.6, 가
   await settings("my_story_daily = 20");
   await spoke(member, "mina", "now() - interval '1 day'");
   await spoke(member, "yoonkyung", "now() - interval '90 days'");
-  await spoke(member, "duksu", "now() - interval '90 days'");
+  // 덕수쌤은 단어 스토리에 늘 들어가므로(20270106120000) 가중치 검사엔 다른 인물을 쓴다.
+  await spoke(member, "doyun", "now() - interval '90 days'");
   await db.admin.query(
     "insert into companion.relationships (user_id, character_id, intimacy) values ($1, 'mina', 70)",
     [member],

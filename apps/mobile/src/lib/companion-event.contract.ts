@@ -144,12 +144,17 @@ export type StreakRewardEvent = Common & {
 
 /**
  * 가입 보상(ADR-0174). `signup_reward_card_shown`: 손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번. `signup_reward_card_tapped`: 카드를
- * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수).
+ * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수) — `unlimited`는 그 창에
+ * 첫날 무제한 줄(ADR-0186 개정 3)이 섰는지(shown · none).
  */
 export type SignupRewardEvent =
   | (Common & { readonly name: "signup_reward_card_shown" })
   | (Common & { readonly name: "signup_reward_card_tapped" })
-  | (Common & { readonly name: "signup_reward_shown"; readonly amount: string });
+  | (Common & {
+      readonly name: "signup_reward_shown";
+      readonly amount: string;
+      readonly unlimited: "shown" | "none";
+    });
 
 /**
  * 푸시 캠페인 보상(ADR-0175). `push_reward_claimed`: 알림을 눌러 들어와 서버가 지급했을 때 한 번 — `amount`는 엽전 수 또는 무제한 티켓
