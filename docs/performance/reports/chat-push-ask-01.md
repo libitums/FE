@@ -5,11 +5,11 @@
 - 측정 일시: 2026-11-25T16:00:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace) 수치는 수집하지 않았다. 번들 크기는 로컬 빌드 한 번의 바이트만 적는다
 - 기능 PR: `feat/chat-push-ask-card`
-- 대상 commit: origin/main 3f91eef5 위의 변경
+- 대상 commit: origin/main ab9271f5 위의 변경
 - 기기: iOS 시뮬레이터(iPhone 17 Pro) · Android 에뮬레이터(Pixel 8 AVD) — 화면 확인만, 계측 없음
 - OS: iOS 26.5 · Android(에뮬레이터 이미지)
 - Lynx SDK: 4.0.1
-- 빌드: 로컬 `rspeedy build`(.env.local 없음, CI와 같은 설정) — `main.lynx.bundle` 5,776,568 bytes, 천장 5,850,000 안. 변경 전 값은 로컬에서 재지 않았다 — 차이는 CI의 「Build and bundle size」 보고로 확인
+- 빌드: 로컬 `rspeedy build`(.env.local 없음, CI와 같은 설정) — `main.lynx.bundle` 5,778,455 bytes, 천장 5,850,000 안. 변경 전 값은 로컬에서 재지 않았다 — 차이는 CI의 「Build and bundle size」 보고로 확인
 - 실행 회차: 01
 
 ## 시나리오
