@@ -87,7 +87,7 @@ test("MS-U13. 읽기 — 반응의 messageId · seenBy · 창을 풀고, 사진(
   ).toBeNull();
 });
 
-test("MS-U14. 올리기 결과 — ok는 창과 함께, window_used는 창과 함께, daily_limit · off 그대로, invalid · 모르는 결과는 failed", () => {
+test("MS-U14. 올리기 결과 — ok는 창과 함께, window_used는 창과 함께, daily_limit · off · invalid(#598) 그대로, 모르는 결과는 failed", () => {
   expect(
     myStoryPostFrom(JSON.stringify({ result: "ok", story: story(), window: wireWindow })),
   ).toMatchObject({ result: "ok", story: { id: "ms-1" }, window: { slot: "day", used: true } });
@@ -113,8 +113,10 @@ test("MS-U14. 올리기 결과 — ok는 창과 함께, window_used는 창과 �
   expect(myStoryPostFrom(JSON.stringify({ result: "daily_limit", window: wireWindow }))).toEqual({
     result: "daily_limit",
   });
-  expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "failed" });
-  expect(myStoryPostFrom(JSON.stringify({ result: "check_limit" }))).toEqual({ result: "failed" });
+  expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "invalid" });
+  expect(myStoryPostFrom(JSON.stringify({ result: "check_limit" }))).toEqual({
+    result: "check_limit",
+  });
 });
 
 test("MS-U15. 기기 UTC 차이 — 동쪽이 +(getTimezoneOffset의 반대), 올리기 요청에 실린다", () => {

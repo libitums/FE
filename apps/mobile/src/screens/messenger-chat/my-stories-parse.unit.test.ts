@@ -75,7 +75,7 @@ test("MS-U7. companion_my_stories — 줄 · 반응을 풀고 틀린 반응 · �
   expect(myStoriesFrom(JSON.stringify([]))).toBeNull();
 });
 
-test("MS-U8. companion_post_my_story — ok면 스토리, off · daily_limit 그대로, 그 밖 failed", () => {
+test("MS-U8. companion_post_my_story — ok면 스토리, off · daily_limit · invalid(#598) 그대로, 그 밖 failed", () => {
   expect(myStoryPostFrom(JSON.stringify({ result: "ok", story: wire }))).toMatchObject({
     result: "ok",
     story: { id: "ms-1" },
@@ -87,7 +87,7 @@ test("MS-U8. companion_post_my_story — ok면 스토리, off · daily_limit 그
   expect(myStoryPostFrom(JSON.stringify({ result: "ok", story: null }))).toEqual({
     result: "failed",
   });
-  expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "failed" });
+  expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "invalid" });
   expect(myStoryPostFrom(null)).toEqual({ result: "failed" });
 });
 

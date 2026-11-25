@@ -131,7 +131,8 @@ export function myStoryOf(raw: unknown): MyStory | null {
   const word = isRecord(raw["word"]) ? raw["word"] : null;
   const episodeId = text(word?.["episodeId"]);
   const ref = text(word?.["ref"]);
-  const ko = text(raw["ko"]);
+  // 색 바탕 + 단어만(#598)이면 글이 없어 빈 글("")입니다.
+  const ko = isText ? (typeof raw["ko"] === "string" ? raw["ko"] : null) : text(raw["ko"]);
   const meaning = isText
     ? typeof raw["meaning"] === "string"
       ? raw["meaning"]
@@ -194,12 +195,19 @@ export function myStoriesFrom(body: string | null): MyStoriesState | null {
   };
 }
 
-/** `companion_post_my_story(…)` — `window_used`는 다음 창과 함께. 모르는 결과 · `invalid` · 스토리 없는 ok는 failed. */
+/** `companion_post_my_story(…)` · `companion-my-story` post — `window_used`는 다음 창과 함께, `crisis`는 기관과 함께. 모르는 결과 · 스토리 없는 ok는 failed. */
 export function myStoryPostFrom(body: string | null): MyStoryPostResult {
   const value = parsed(body);
   if (!isRecord(value)) return { result: "failed" };
   const result = value["result"];
-  if (result === "off" || result === "daily_limit" || result === "text_blocked") return { result };
+  if (
+    result === "off" ||
+    result === "daily_limit" ||
+    result === "text_blocked" ||
+    result === "check_limit" ||
+    result === "invalid"
+  )
+    return { result };
   if (result === "crisis") return { result, resources: crisisOf(value) ?? [] };
   const window = myStoryWindowOf(value["window"]);
   if (result === "window_used") return { result, window };
