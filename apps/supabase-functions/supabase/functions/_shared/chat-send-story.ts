@@ -28,6 +28,8 @@ export type TurnStory = {
   readonly line: string | null;
   readonly reaction?: string | null;
   readonly note?: string | null;
+  /** 덕수쌤 퀴즈의 답(ADR-0191 D14) — 이번 턴 지시(맞힘 · 힌트 · 정답 공개). 퀴즈의 답이 아니면 없음. */
+  readonly quiz?: string | null;
 };
 
 const RESULTS: readonly StoryClaimResult[] = [
@@ -104,6 +106,8 @@ export function storyContextText(context: StoryContext): string | null {
         `a photo with the caption "${storyText(story.ko)}"${meaning}` +
           (filled(story.scene) ? ` — the photo shows: ${oneLine(story.scene)}` : ""),
       ];
+    // 글 스토리(ADR-0191 D13) — 쓴 글만(얹은 글이 전부인 스토리는 위에서 빠진다).
+    if (story.kind === "text") return [`a text post: "${storyText(story.ko, 200)}"`];
     const what = story.kind === "card" ? "a lesson card" : "a word card";
     return [`${what} "${storyText(story.ko, 40)}"${meaning}`];
   });
@@ -141,6 +145,12 @@ export async function storyContextNote(
   }
 }
 
+/** 판정 결과에 퀴즈 지시를 얹습니다. 퀴즈가 아니면 그대로. */
+export function withQuiz(story: TurnStory | null, quiz: string | null): TurnStory | null {
+  if (quiz === null) return story;
+  return story === null ? { result: "none", line: null, quiz } : { ...story, quiz };
+}
+
 /** 판정 결과에 스토리 맥락을 얹습니다. 둘 다 없으면 null. */
 export function withStoryNote(story: TurnStory | null, note: string | null): TurnStory | null {
   if (note === null) return story;
@@ -153,6 +163,7 @@ export function withStoryDirective(
   directive: string | null,
 ): string | null {
   const parts: string[] = [];
+  if (story?.quiz != null && story.quiz !== "") parts.push(story.quiz);
   if (story?.line != null) {
     const line = story.result === "mine" ? storyText(story.line, 40) : oneLine(story.line);
     parts.push(

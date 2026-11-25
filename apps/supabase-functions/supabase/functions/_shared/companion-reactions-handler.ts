@@ -73,13 +73,29 @@ function claimOf(raw: unknown): ReactionClaim | null {
   ];
   if (reactionId === null || userId === null || characterId === null || storyId === null)
     return null;
-  if (ko === null || ko.trim() === "" || meaning === null || lang === null) return null;
+  const kind =
+    row["kind"] === "word" || row["kind"] === "photo" || row["kind"] === "text"
+      ? row["kind"]
+      : "card";
+  // 글 스토리는 쓴 글이 비고 얹은 글만 있을 수 있다.
+  const overlays = Array.isArray(row["overlays"])
+    ? row["overlays"]
+        .map((overlay) =>
+          typeof overlay === "object" && overlay !== null
+            ? text((overlay as Record<string, unknown>)["ko"])
+            : null,
+        )
+        .filter((word): word is string => word !== null && word.trim() !== "")
+    : [];
+  if (ko === null || meaning === null || lang === null) return null;
+  if (ko.trim() === "" && !(kind === "text" && overlays.length > 0)) return null;
   return {
     reactionId,
     userId,
     characterId,
     storyId,
-    kind: row["kind"] === "word" || row["kind"] === "photo" ? row["kind"] : "card",
+    kind,
+    overlays,
     scene: text(row["scene"]),
     hooks: Array.isArray(row["hooks"])
       ? row["hooks"].filter((hook): hook is string => typeof hook === "string")

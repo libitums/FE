@@ -16,7 +16,8 @@ export const REACTION_ANGLES: readonly ReactionAngle[] = [
 
 export type ReactionStory = {
   /** photo(20270104130000): `ko`는 올린 사람이 붙인 한 줄, `scene`은 읽기 단계가 쓴 장면 설명(개인정보 없음), `hooks`는 말 걸 거리. */
-  readonly kind: "word" | "card" | "photo";
+  /** text(20270107120000): `ko`는 사용자가 쓴 글(빈 글일 수 있음), `overlays`는 바탕 위에 얹은 글 · 단어. */
+  readonly kind: "word" | "card" | "photo" | "text";
   readonly ko: string;
   readonly roman: string;
   readonly meaning: string;
@@ -24,6 +25,7 @@ export type ReactionStory = {
   readonly angle: ReactionAngle;
   readonly scene?: string | null;
   readonly hooks?: readonly string[];
+  readonly overlays?: readonly string[];
 };
 
 /**
@@ -101,6 +103,7 @@ function photoDirective(story: ReactionStory): string {
 /** 이번 반응의 지시 — 시스템 프롬프트의 「For this reply」 자리에 들어간다. */
 export function reactionDirective(story: ReactionStory): string {
   if (story.kind === "photo") return photoDirective(story);
+  if (story.kind === "text") return textDirective(story);
   const what = story.kind === "card" ? "a lesson card" : "a word card";
   const example =
     story.exampleKo === null ? "" : ` The card's example sentence is ${quoted(story.exampleKo)}.`;
@@ -115,8 +118,39 @@ export function reactionDirective(story: ReactionStory): string {
   );
 }
 
+/** 글 스토리의 지시(ADR-0191 D13) — 사진과 같은 각도(첫째 react, 둘째 question · together). 단어를 숨기는 퀴즈는 없다. */
+function textDirective(story: ReactionStory): string {
+  const words = (story.overlays ?? [])
+    .map((word) => storyText(word, 40))
+    .filter((word) => word !== "");
+  const line = storyText(story.ko, 200);
+  const how =
+    story.angle === "question"
+      ? " Ask one light question about it."
+      : story.angle === "together"
+        ? " Suggest doing something together that fits what they wrote."
+        : " React warmly, the way you would to a friend's post.";
+  return (
+    "The learner just posted a text story today." +
+    (line === "" ? "" : ` What they wrote: "${line}".`) +
+    (words.length === 0
+      ? ""
+      : ` Words placed on it: ${words.map((word) => `"${word}"`).join(", ")}.`) +
+    " Reply to their story as a friend who just saw it, in a short, natural Korean the learner can follow." +
+    how +
+    REACTION_SHAPE +
+    " Another friend may reply too, so say something only you would say." +
+    STORY_TEXT_IS_DATA
+  );
+}
+
 /** 유저 말 자리 — 앱 안내(학습자가 실제로 한 말이 아님). */
 export function reactionUserText(story: ReactionStory): string {
+  if (story.kind === "text") {
+    const line =
+      storyText(story.ko) || (story.overlays ?? []).map((word) => storyText(word, 40)).join(" ");
+    return `(앱 안내: 학습자가 오늘 글 스토리를 올렸다 — 「${line}」. 친구로서 짧게 반응한다.)`;
+  }
   if (story.kind === "photo")
     return `(앱 안내: 학습자가 오늘 사진 스토리를 올렸다 — 「${storyText(story.ko)}」. 친구로서 짧게 반응한다.)`;
   return `(앱 안내: 학습자가 오늘 스토리로 단어 「${storyText(story.ko, 40)}」를 올렸다. 친구로서 짧게 반응한다.)`;

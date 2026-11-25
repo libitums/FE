@@ -348,6 +348,89 @@ function upkeepSetup(options: {
   return { rpcs, storage, deps: { outbound, fetch: fetchImpl, reader: fakeStoryReader } };
 }
 
+test("MH8. 글 스토리 — 바탕색이 오면 사진 없이: 문 → 글 검수(쓴 글 + 직접 쓴 얹은 글) → 저장. 막힌 글 · 위기는 저장하지 않는다", async () => {
+  const text = (extra: Record<string, unknown> = {}) => ({
+    action: "post",
+    client_id: clientId,
+    background: "orange",
+    ko: " 오늘 비가  와요 ",
+    overlays: [
+      { kind: "text", ko: "우산", x: 0.5, y: 0.5, scale: 1, rotation: 0 },
+      {
+        kind: "word",
+        ko: "비",
+        word: { episodeId: "e1", ref: "w1" },
+        x: 0.2,
+        y: 0.2,
+        scale: 1,
+        rotation: 0,
+      },
+    ],
+    lang: "en",
+    ...extra,
+  });
+  const ok = setup({
+    rpc: {
+      companion_my_text_gate: { result: "ok", ageBand: "minor" },
+      companion_save_my_text_story: { result: "ok", story: { id: "s9", kind: "text" } },
+    },
+  });
+  expect((await ok.call(text())).body).toEqual({ result: "ok", story: { id: "s9", kind: "text" } });
+  expect(ok.rpcs.map((rpc) => rpc.fn)).toEqual([
+    "companion_my_text_gate",
+    "companion_save_my_text_story",
+  ]);
+  expect(ok.args("companion_save_my_text_story")).toMatchObject({
+    p_user_id: userId,
+    p_client_id: clientId,
+    p_background: "orange",
+    p_ko: "오늘 비가 와요",
+    p_lang: "en",
+  });
+  // 사진은 읽지 않는다.
+  expect(ok.storage).toEqual([]);
+
+  const blocked = setup({ rpc: { companion_my_text_gate: { result: "ok", ageBand: "adult" } } });
+  expect(
+    (
+      await blocked.call(
+        text({
+          ko: "",
+          overlays: [{ kind: "text", ko: "[block] 나쁜 말", x: 0, y: 0, scale: 1, rotation: 0 }],
+        }),
+      )
+    ).body,
+  ).toEqual({ result: "text_blocked" });
+  expect(blocked.rpcs.map((rpc) => rpc.fn)).toEqual(["companion_my_text_gate"]);
+
+  const crisis = setup({ rpc: { companion_my_text_gate: { result: "ok", ageBand: "adult" } } });
+  expect((await crisis.call(text({ ko: "죽고 싶어" }))).body).toEqual({ result: "crisis" });
+  expect(crisis.rpcs.map((rpc) => rpc.fn)).toEqual(["companion_my_text_gate"]);
+
+  // 문의 결과는 그대로 · 같은 요청은 그 스토리.
+  const used = setup({
+    rpc: { companion_my_text_gate: { result: "window_used", window: { used: true } } },
+  });
+  expect((await used.call(text())).body).toEqual({ result: "window_used", window: { used: true } });
+  const again = setup({
+    rpc: { companion_my_text_gate: { result: "exists", story: { id: "s9" } } },
+  });
+  expect((await again.call(text())).body).toEqual({ result: "ok", story: { id: "s9" } });
+
+  // 사진 경로와 바탕색은 정확히 하나 · 빈 스토리 · 긴 글은 invalid(문도 부르지 않는다).
+  for (const bad of [
+    text({ image_path: path }),
+    { ...post(), image_path: undefined },
+    text({ ko: "", overlays: [] }),
+    text({ ko: "가".repeat(201) }),
+  ]) {
+    const t = setup();
+    expect((await t.call(bad)).body).toEqual({ result: "invalid" });
+    expect(t.rpcs).toEqual([]);
+  }
+  expect((await setup().call(text({ background: "red" }))).status).toBe(400);
+});
+
 test("MU1. 뒷정리(파일) — 버킷별로 묶어 지우고, 지운 줄만 대기열에서 뺀다. 실패하면 남긴다", async () => {
   const purges = [
     { id: 1, bucket: "my-story-photos", path: "u1/a.jpg" },
@@ -429,4 +512,27 @@ test("RP5. 사진 반응 지시 — 장면 설명 · 글 · 각도, 신원 · �
   expect(reactionDirective({ ...story, angle: "together" })).toMatch(/doing something together/);
   expect(reactionDirective({ ...story, scene: null })).toMatch(/respond to their caption only/);
   expect(reactionUserText(story)).toContain("사진 스토리");
+});
+
+test("RP6. 글 스토리 반응 지시 — 쓴 글 · 얹은 글 · 각도(react · question · together), 쓴 글이 없으면 얹은 글로 안내", () => {
+  const story = {
+    kind: "text" as const,
+    ko: "오늘 비가 와요",
+    roman: "",
+    meaning: "",
+    exampleKo: null,
+    angle: "react" as const,
+    overlays: ["우산"],
+  };
+  const react = reactionDirective(story);
+  expect(react).toContain('What they wrote: "오늘 비가 와요"');
+  expect(react).toContain('Words placed on it: "우산"');
+  expect(react).toMatch(/React warmly/);
+  expect(reactionDirective({ ...story, angle: "question" })).toMatch(/Ask one light question/);
+  expect(reactionDirective({ ...story, angle: "together" })).toMatch(
+    /Suggest doing something together/,
+  );
+  expect(reactionUserText(story)).toContain("「오늘 비가 와요」");
+  expect(reactionUserText({ ...story, ko: "" })).toContain("「우산」");
+  expect(reactionDirective({ ...story, ko: "" })).not.toContain("What they wrote");
 });

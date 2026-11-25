@@ -1062,3 +1062,31 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
    `ANTHROPIC_API_KEY`가 없으면 `post`를 받지 않는다(500).
 3. 켜기 전: 개인정보 처리방침 · 스토어 개인정보 응답 갱신, 의심 건 처리 절차의 법무 확인(ADR-0191 D11). 그 뒤 `my_story_photo = 'testers'`.
 
+
+## 내 스토리 — 글 스토리 · 종류 목록 (20270107120000, ADR-0191 D13)
+
+- 스위치 `my_story_text`(off · testers · on, 기본 off). 나이 제한 없음.
+- 올리기: `POST /functions/v1/companion-my-story` `{ action: "post", client_id, background: "orange"|"green"|"blue"|"purple", ko, overlays?, lang, tz_offset_min? }`
+  (`image_path` 없이 — 둘 중 정확히 하나). `_shared/companion-my-story-text.ts`: 문 `companion_my_text_gate`(스위치 · 창 · 24시간 상한 · 하루 검수 시도 ·
+  같은 client id면 그 스토리) → 글 검수(쓴 글 + 직접 쓴 얹은 글, 그 사람의 연령대) → 저장 `companion_save_my_text_story`(늘 live, 반응 알람).
+  결과: `ok` · `text_blocked` · `crisis`(**올리지 않음**) · `window_used` · `daily_limit` · `check_limit` · `off` · `invalid`. 교정(draft) 없음, 뜻 줄은 빈 글.
+- 반응 각도는 사진과 같다(첫째 `react`, 둘째 `question` · `together`, 덕수쌤 고정 · 퀴즈 없음). claim은 얹은 글(`overlays`)도 돌려준다.
+- `companion_my_stories`에 `kinds`(word · card · photo(사진 스위치 + 성인) · text(글 스위치)). 스토리 한 건에 `background`.
+- 테스트: `migrations/my-story-text.integration.test.ts`(MT1 ~ MT4) · `_shared/companion-my-story-handler.unit.test.ts`(MH8 · RP6).
+
+## 내 스토리 — 덕수쌤 퀴즈의 무료 답 (20270108120000, ADR-0191 D14)
+
+- 퀴즈 반응(angle `quiz`)이 저장되면 방아쇠가 `my_story_quizzes`에 한 줄(답 단어 = 스토리 단어, 기한 = 스토리의 24시간).
+- `chat-send`(덕수쌤 방, 스토리 답장 · 고쳐 보내기 아님): 관문 전에 `companion_claim_quiz_answer` — 열린 퀴즈의 답이면 금액 0 예약(첫 답, 오답 뒤 한 통).
+  판정은 `_shared/chat-send-quiz.ts`(단어 · 활용형 포함 — 모델 없음) → 이번 턴 지시(맞힘 「맞아요, ○○!」 · 힌트 · 정답 공개).
+  턴이 complete면 `companion_quiz_answered`가 결과 · 내 메시지 meta.quiz · 맞히면 친밀도 +2(한 번)를 적는다. 실패한 턴은 세지 않는다.
+- 기록(`companion_list_messages` · `message_json`)에 공개 `meta`: 반응 `{ angle, myStoryId, quiz: { freeAnswer } }` · 무료 답 `{ quiz: { free, attempt, result } }`.
+- 음성 선물은 없다(사용자 결정).
+- 테스트: `migrations/my-story-quiz.integration.test.ts`(MQ1 ~ MQ5) · `_shared/chat-send-quiz.unit.test.ts`(QZ1 ~ QZ2) · `_shared/chat-send-handler.unit.test.ts`(CQ1 ~ CQ3).
+
+**적용 순서(둘 다 아직 운영에 적용하지 않았다)**
+
+1. 마이그레이션 `20270107120000_my_story_text.sql` → `20270108120000_my_story_quiz_answer.sql`(하나씩, `db push` 금지). 확인:
+   `select my_story_text from companion.settings;`(off) · `select to_regclass('companion.my_story_quizzes');`.
+2. 함수: `supabase functions deploy companion-my-story companion-story-reactions chat-send`(계약 사본 포함).
+3. 켜기: 앱이 받을 준비가 되면 `my_story_text = 'testers'`. 퀴즈 무료 답은 스위치 없이 퀴즈 반응이 있으면 바로 동작한다.

@@ -27,7 +27,7 @@ export type PhotoPostDeps = {
   readonly readTimeoutMs?: number;
 };
 
-type PostBody = Extract<MyStoryRequest, { action: "post" }>;
+type PostBody = Extract<MyStoryRequest, { action: "post" }> & { readonly image_path: string };
 type Json = Record<string, unknown>;
 
 /**
