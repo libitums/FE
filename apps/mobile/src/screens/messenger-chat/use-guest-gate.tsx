@@ -23,9 +23,9 @@ export type GuestGate = {
   readonly guard: (dispatch: (action: ChatRoomAction) => void) => (action: ChatRoomAction) => void;
   /** 보내기 관문을 감쌉니다 — 비회원이면 `onBlocked`(키보드 내리기) 뒤 대화상자(send)를 띄우고 거절합니다. */
   readonly authorize: (
-    inner: (idea?: boolean) => boolean,
+    inner: (fromSuggestion?: boolean) => boolean,
     onBlocked: () => void,
-  ) => (idea?: boolean) => boolean;
+  ) => (fromSuggestion?: boolean) => boolean;
   readonly layer: ReactNode;
 };
 
@@ -68,8 +68,8 @@ export function useGuestGate(
       dispatch({ type: "close-keyboard" });
       prompt(gated);
     },
-    authorize: (inner, onBlocked) => (idea) => {
-      if (!active) return inner(idea);
+    authorize: (inner, onBlocked) => (fromSuggestion) => {
+      if (!active) return inner(fromSuggestion);
       onBlocked();
       return !prompt("send");
     },

@@ -116,7 +116,7 @@ export function setRemoteIdeas(
   origin: ChatIdeasOrigin | null | undefined,
 ): void {
   room.remoteIdeas = ideas;
-  room.remoteIdeasOrigin = ideas === null ? null : (origin ?? null);
+  room.remoteIdeasOrigin = ideas === null || ideas.length === 0 ? null : (origin ?? null);
 }
 
 export function advanceIdeas(room: RoomState): void {

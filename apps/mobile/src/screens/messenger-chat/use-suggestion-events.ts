@@ -10,9 +10,11 @@ import type { ChatThread } from "./chat-source.contract";
 /** 판이 그려졌는지(`visible`)를 받아 보임을 내고, 보기를 누를 때 부를 함수를 돌려줍니다. */
 export function useSuggestionEvents(thread: ChatThread, visible: boolean): (index: number) => void {
   const { emit, roomId } = useChatEvents();
-  const key = suggestionsKeyOf(thread.ideas);
+  const characterId = roomId ?? thread.counterpart.id;
+  // 인물 id를 앞에 붙입니다 — 화면이 다른 방으로 재사용돼도 같은 글 묶음을 이미 셌다고 보지 않게(리뷰 #590).
+  const key = thread.ideas.length === 0 ? "" : `${characterId}:${suggestionsKeyOf(thread.ideas)}`;
   const room = {
-    characterId: roomId ?? thread.counterpart.id,
+    characterId,
     ideas: thread.ideas,
     ...(thread.ideasOrigin === undefined ? {} : { ideasOrigin: thread.ideasOrigin }),
     messages: thread.messages,

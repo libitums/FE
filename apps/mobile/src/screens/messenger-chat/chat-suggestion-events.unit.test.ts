@@ -8,6 +8,8 @@ import {
 } from "./chat-suggestion-events";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 import { historyFrom } from "./companion-parse";
+import { newRoomState, setRemoteIdeas } from "./chat-fixture-room";
+import { fixtureRoom } from "./chat-ui.test-support";
 
 // `unit` 계층(SE-U1 ~ U5): 답할 문장 추천 이벤트의 순수 조각(ADR-0194) — 내 글 번호 구간 · 묶음 키 · 출처 해석 · 이벤트 모양,
 // 서버 기록의 마지막 캐릭터 메시지 출처.
@@ -127,5 +129,20 @@ describe("historyFrom — 추천 출처", () => {
     expect(historyFrom(page("proactive"))?.ideasOrigin).toBe("proactive");
     expect(historyFrom(page("turn"))?.ideasOrigin).toBe("turn");
     expect(historyFrom(page("crisis"))?.ideasOrigin ?? null).toBeNull();
+  });
+});
+
+describe("setRemoteIdeas", () => {
+  test("SE-U6 추천과 출처를 함께 바꾸고, 추천이 없거나 비면 출처도 지운다(리뷰 #590)", () => {
+    const room = newRoomState(fixtureRoom("duksu"), []);
+    setRemoteIdeas(room, ideas, "turn");
+    expect(room.remoteIdeasOrigin).toBe("turn");
+    setRemoteIdeas(room, [], "turn");
+    expect(room.remoteIdeasOrigin).toBeNull();
+    setRemoteIdeas(room, ideas, "greeting");
+    setRemoteIdeas(room, null, "greeting");
+    expect(room.remoteIdeasOrigin).toBeNull();
+    setRemoteIdeas(room, ideas, undefined);
+    expect(room.remoteIdeasOrigin).toBeNull();
   });
 });
