@@ -9,7 +9,13 @@ import { useChatEvents } from "./chat-events";
 import type { ChatRoomSummary, ChatSource } from "./chat-source.contract";
 import type { CoinWallet } from "./coin-wallet";
 import { emptyKeyboardHeightStore } from "./keyboard-ports";
-import { listStoryOf, storyRowOf, viewerItemsOf, type ViewerOpen } from "./friend-stories";
+import {
+  listStoryOf,
+  storiesAfterLoad,
+  storyRowOf,
+  viewerItemsOf,
+  type ViewerOpen,
+} from "./friend-stories";
 import type {
   FriendStoriesPort,
   FriendStory,
@@ -28,6 +34,8 @@ import { useStoryInlineReply } from "./use-story-inline-reply";
 import { screenHeightFrom } from "../../lib/learning-density";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import type { StoryRowStats } from "./use-row-impressions";
+import { useMyStories } from "./use-my-stories";
+import { useStoryReload } from "./use-story-reload";
 import type { SuggestedFriendsUi } from "./use-suggested-friends";
 
 export type FriendStoriesUi = {
@@ -103,6 +111,8 @@ export function useFriendStories({
   const loadRef = useRef(port?.load ?? null);
   loadRef.current = port?.load ?? null;
   const hasLoader = loadRef.current !== null;
+  // 다시 읽기(앱이 앞으로 옴 · 5분마다, ADR-0178 「다시 읽기」) — 보기가 열려 있으면 보류했다가 닫은 뒤 반영합니다.
+  const reload = useStoryReload({ port, viewerOpen: viewer !== null, setStories });
   useEffect(() => {
     const load = loadRef.current;
     if (load === null) return undefined;
@@ -111,7 +121,8 @@ export function useFriendStories({
       .catch(() => null)
       .then((list) => {
         if (!live) return;
-        setStories(list);
+        reload.dropHeld();
+        setStories((previous) => storiesAfterLoad(previous, list));
         setLoadCount((count) => count + 1);
       });
     return () => {
@@ -123,6 +134,13 @@ export function useFriendStories({
   const seen = port?.seen.seenIds() ?? new Set<string>();
   const row = storyRowOf({ stories: stories ?? [], rooms, suggested: suggested.all, seen, now });
   const hasStories = port !== undefined && row.friends.length + row.unmet.length > 0;
+  // 내 스토리(ADR-0194) — 켜져 있으면 친구 스토리가 없어도 줄이 섭니다(맨 앞 「+」).
+  const mine = useMyStories({
+    port: port?.mine,
+    rooms,
+    onOpenRoom,
+    onFindFriends: suggested.openDirectory,
+  });
   const imageUrl = (path: string) => port?.imageUrl(path) ?? null;
 
   const open = (opened: ViewerOpen): boolean => {
@@ -215,26 +233,32 @@ export function useFriendStories({
   }
 
   return {
-    rowPending: port !== undefined && loadCount === 0,
-    rowStats: hasStories
-      ? {
-          count: row.friends.length + row.unmet.length,
-          unseen: row.friends.filter((entry) => !entry.seen).length,
-        }
-      : null,
-    row: !hasStories ? null : (
-      <FriendStoriesRow
-        row={row}
-        now={now}
-        onOpenFriend={(entry) => open({ from: "friend", characterId: entry.story.characterId })}
-        onOpenUnmet={(entry) => open({ from: "unmet", characterId: entry.story.characterId })}
-        onOpenSuggested={(friend) => suggested.openFriend(friend, "story_row")}
-        onWatchAll={() => open({ from: "watch_all" })}
-        onFindFriends={suggested.openDirectory}
-      />
-    ),
+    rowPending: (port !== undefined && loadCount === 0) || mine.loading,
+    rowStats:
+      hasStories || mine.slot !== null
+        ? {
+            count: row.friends.length + row.unmet.length,
+            unseen: row.friends.filter((entry) => !entry.seen).length,
+            mine: mine.slot !== null,
+          }
+        : null,
+    row:
+      !hasStories && mine.slot === null ? null : (
+        <FriendStoriesRow
+          row={row}
+          mine={mine.slot}
+          now={now}
+          onOpenFriend={(entry) => open({ from: "friend", characterId: entry.story.characterId })}
+          onOpenUnmet={(entry) => open({ from: "unmet", characterId: entry.story.characterId })}
+          onOpenSuggested={(friend) => suggested.openFriend(friend, "story_row")}
+          onWatchAll={() => open({ from: "watch_all" })}
+          onFindFriends={suggested.openDirectory}
+        />
+      ),
     layer:
-      viewer === null ? null : (
+      viewer === null ? (
+        mine.layer
+      ) : (
         <StoryViewer
           items={viewer.items}
           start={viewer.start}
@@ -262,7 +286,7 @@ export function useFriendStories({
           }}
         />
       ),
-    layerOpen: viewer !== null,
+    layerOpen: viewer !== null || mine.layerOpen,
     listStory: (characterId) => (port === undefined ? null : listStoryOf(row, characterId)),
     openFromList: (characterId) => {
       open({ from: "list", characterId });

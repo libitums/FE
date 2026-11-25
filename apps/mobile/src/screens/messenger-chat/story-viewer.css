@@ -386,6 +386,11 @@
   margin-bottom: var(--libitum-spacing-4);
 }
 
+/* 인물의 반응 위(ADR-0191 D2, 시안 20번) — 왼쪽 정렬. */
+.story-quote.incoming {
+  align-items: flex-start;
+}
+
 .story-quote-caption {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-caption-font-family);

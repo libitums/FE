@@ -10,8 +10,10 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - 타입 · 포트 · 문구표 · props · test-id: `apps/mobile/src/screens/messenger-chat/friend-stories.contract.ts`.
 - 순수 판정: `friend-stories.ts`
   - `liveStoriesOf(stories, now)` — `expiresAt > now`만.
-  - `storyRowOf({ stories, rooms, suggested, seen, now })` → `StoryRow` — 친구(열린 방의 인물) 안 본 것 → 본 것(각 최근 순), 안 만난 친구(추천 대상 순서), 그 밖 추천.
-    한 인물에 스토리가 둘 이상이면 가장 새 것 하나.
+  - `storyRowOf({ stories, rooms, suggested, seen, now })` → `StoryRow` — 친구(열린 방의 인물) · 안 만난 친구(추천 대상)를 각각 `byLatestStory` 순으로, 그 밖 추천.
+    한 인물에 스토리가 둘 이상이면 가장 새 것 하나. 본 것은 `seen` 표시만(순서에 안 씀, D3 개정 ⟨2026-11-25⟩).
+  - `story-order.ts` `storyOrderOf(row)` → 친구 · 안 만난 친구를 한 줄로 합친 칸 순서(최신 `postedAt` 내림차순, 같으면 인물 id 오름차순).
+    줄과 `viewerItemsOf`(이어 보기 · 친구 열기의 다음 인물)가 함께 쓴다. `byLatestStory`는 그 비교.
   - `storyAgeOf(postedAt, now)` → `StoryAge`.
   - `viewerItemsOf(row, from, …)` — 줄 · 목록 · 이어 보기 · 알림에서 연 보기의 장 목록과 시작 칸.
   - `listStoryOf(row, characterId)` — 채팅 목록 줄의 「New story」(안 본 친구 스토리, 없으면 null).
@@ -61,7 +63,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 ### 2.1 unit (앱)
 
 - FS-U1 `liveStoriesOf`: 만료 경계(= now는 뺌).
-- FS-U2 `storyRowOf`: 열린 방 인물 → friends, 안 본 것 먼저 · 각 최근 순; 추천 대상 → unmet(추천 순서), 스토리 없는 추천 → others; 방이 없는 인물 · 숨긴 인물은 없음.
+- FS-U2 `storyRowOf`: 열린 방 인물 → friends(본 것과 상관없이 최근 순); 추천 대상 → unmet(최근 순), 스토리 없는 추천 → others; 방이 없는 인물 · 숨긴 인물은 없음.
 - FS-U3 한 인물에 둘이면 최신 하나.
 - FS-U4 `storyAgeOf`: 59초 now · 1분 · 59분 · 1시간 · 23시간.
 - FS-U5 `listStoryOf`: 안 본 친구 스토리만, 본 것 · 안 만난 친구는 null.
@@ -69,27 +71,38 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U7 `seenRecordsWith`: 만료 지난 표시를 지우고 새 표시를 더함, 같은 id 덮어씀.
 - FS-U8 `friendStoriesFrom`: 정상 · 칸 빠짐 버림 · 몸 틀림 null · 시각 문자열 → ms · 칩 3개 넘으면 앞 3개.
 - FS-U9 콘텐츠 정합: 27줄 · id 유일 · 그림 경로가 에피소드 JSON에 있음 · 단어 ref가 그 에피소드 단어에 있음 · 뜻 일곱 언어.
-- FS-U10 `viewerItemsOf`: 줄 친구 → 그 칸부터 친구 스토리 끝까지, 안 만난 친구 → 한 장, 이어 보기 → 안 본 것부터, 알림 → 그 인물 한 장(없으면 null).
+- FS-U10 `viewerItemsOf`: 줄 친구 → 그 칸부터 친구 스토리 끝까지, 안 만난 친구 → 한 장, 이어 보기 → 처음부터, 알림 → 그 인물 한 장(없으면 null).
+  친구 장 순서는 `storyOrderOf`의 친구 칸 순서와 같다(D3 개정).
 - FS-U11 분석 이름 수(넷 추가) · Airbridge로 보내지 않음.
 - FS-U12 본 것 저장(기기): 계정마다 열쇠, 망가진 값은 빈 표시.
 - FS-U13 문구표 일곱 언어가 같은 칸을 가짐(문구 테스트 지원 함수).
-- FS-U15 `storyReplyGateOf`: 무료 안내 → story-free(엽전 0이어도) · 관문 재료 없음 · 무제한 → open · 체험 남음/모름 → trial · 엽전 → pay(서버 방은 지갑에서 안 뺌) · 모자람 → short.
-- FS-U16 `storyReplyStatusOf`: 방 없음 · 새 글 없음 · 다른 스토리 → failed, 가짜 출처 → sent, 앱 id → sending, 서버 id → sent, Not sent · 실패 줄 → failed(no-credits → coins), 입력 막힘 → failed.
-- FS-U17 `canSendStoryReply`: 빈 글 · 공백 · 보내는 중이면 거짓.
+- FS-U15 `storiesAfterLoad`(ADR-0178 「다시 읽기」): 읽으면 새 목록(빈 목록 포함), null이면 있던 목록, 첫 실패는 null. `STORY_RELOAD_MS` = 5분.
+- FS-U16 결선 `subscribeReload` · `notifyFriendStoriesReload`: 알리면 건 리스너가 불리고, 뗀 뒤로는 불리지 않음.
+- FS-U17 `storyOrderOf` · `byLatestStory`(`story-order.unit.test.ts`, D3 개정): 친구 · 안 만난 친구를 한 줄로 최신 순, 본 것은 순서에 안 씀, 같은 시각은 인물 id 순(입력 순서 무관),
+  한 인물은 그 최신 스토리로, 스토리 없는 추천은 빠지고 입력을 바꾸지 않음.
+- FS-U18 `storyReplyGateOf`: 무료 안내 → story-free(엽전 0이어도) · 관문 재료 없음 · 무제한 → open · 체험 남음/모름 → trial · 엽전 → pay(서버 방은 지갑에서 안 뺌) · 모자람 → short.
+- FS-U19 `storyReplyStatusOf`: 방 없음 · 새 글 없음 · 다른 스토리 → failed, 가짜 출처 → sent, 앱 id → sending, 서버 id → sent, Not sent · 실패 줄 → failed(no-credits → coins), 입력 막힘 → failed.
+- FS-U20 `canSendStoryReply`: 빈 글 · 공백 · 보내는 중이면 거짓.
 
 ### 2.2 ui (앱)
 
-- FS-UI1 줄: 제목 「Stories」(머리글) · Watch all · 친구 칸(이름 · 경과, 본 것은 Seen) · 구분 선 · 안 만난 친구(New) · 추천 · Find friends. 낭독 이름.
+- FS-UI1 줄: 제목 「Stories」(머리글) · Watch all · 스토리 있는 칸(친구 · 안 만난 친구 함께 최신 순 — 친구는 이름 · 경과, 본 것은 Seen, 안 만난 친구는 New) · 추천 · Find friends.
+  구분 선 없음(D3 개정 — 고리 모양으로만 가름). 낭독 이름.
 - FS-UI2 줄 탭 → 콜백(친구 · 안 만난 · 추천 · Watch all · Find friends).
 - FS-UI3 보기(친구): 진행 칸 수 · 이름 · 경과 · 한 줄 · 로마자(끄면 없음) · 뜻(화면 언어) · 단어 알약(있을 때만, 저장 뒤 Saved) · 무료 안내(freeReply만) · 칩 · 답장 칸.
 - FS-UI4 보기 이동: 다음 · 이전 탭, 6초 뒤 다음(가짜 타이머), 멈춤이면 넘어가지 않음, 모션 줄이기면 넘어가지 않음, 마지막 다음 → 닫힘, 칸마다 onShown.
 - FS-UI5 보기(안 만난 친구): 칩 · 답장 칸 없음, NEW FRIEND · 소개 카드 · addable이면 「Add friend and reply」, locked면 「See how to meet」.
 - FS-UI6 시스템 뒤로 = 닫기. covered면 낭독에서 가림.
 - FS-UI7 목록 화면: 스토리 포트가 없거나 비면 「Meet new friends」 줄 그대로, 스토리가 있으면 스토리 줄. 목록 줄 「New story · …」 탭 → 보기.
-- FS-UI14 ~ UI19 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
+- FS-UI19 ~ UI24 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
   onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
-- FS-UI20 ~ UI22 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
+- FS-UI25 ~ UI27 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
+- FS-UI14 목록이 서 있는 동안 5분마다 다시 읽어 새 스토리가 줄에 섬, 목록을 내리면 타이머 멈춤(가짜 타이머).
+- FS-UI15 포트의 다시 읽기 신호에 다시 읽음, 목록을 내리면 리스너를 뗌.
+- FS-UI16 보기가 열려 있으면 다시 읽은 목록을 보류(줄 그대로), 닫은 뒤 반영.
+- FS-UI17 다시 읽기 실패(null · 던짐)면 있던 줄을 지킴.
+- FS-UI18 `useMessengerRefresh`: `contentSyncOpportunity`에 스토리 목록에도 다시 읽기를 알림.
 
 ### 2.3 integration (앱)
 
@@ -100,6 +113,9 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
   · Android `PushTargetJsonTest`(불리언 `story` 옮김).
 - FSI6 스토리 RPC 실패 · 손님 → 추천 줄 그대로, 오류 없음.
+- FSI7 목록을 연 뒤 올라온 스토리: 다른 탭 → 채팅 탭으로 돌아오면 목록이 다시 마운트돼 다시 읽고 줄에 섬(마운트 읽기가 덮음을 고정).
+- FSI8 목록을 연 뒤 올라온 스토리: 앱이 앞으로 오면(`contentSyncOpportunity`) 그 자리에서 다시 읽고 줄에 섬.
+- FSI9 실제 앱 줄 순서 = 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 첫 장 · 다음 장이 같은 순서(D3 개정).
 
 ### 2.4 서버
 
@@ -116,7 +132,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 | 안 만난 고리 | 점선 brand | `brand-primary` · `border-style: dashed` |
 | 경과 · Seen | 11px #555D6D | `fg-neutral-muted` · caption |
 | New | 11px bold #B94208 | `fg-brand` |
-| 구분 선 | 1px #EEF0F3 | `gray-300` |
+| ~~구분 선~~ | 없앰(D3 개정 ⟨2026-11-25⟩) | — |
 | 목록 미리보기 New story | 14px 600 #B94208 | `fg-brand` |
 | 보기 바탕 | #1A1C20 | `gray-950` |
 | 위 · 아래 그늘 | 검정 55% → 0 · 0 → 70% | `black` + 그레이디언트(화면 지역 상수) |

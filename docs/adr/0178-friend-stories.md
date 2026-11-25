@@ -56,6 +56,19 @@
 - 본 것 표시는 **기기 저장**(키 하나 `libitum.friendStories.seen` 안에 계정마다 `{ 스토리 id: 만료 시각 }`, 그 계정 칸에 쓸 때 지난 것은 지움 — 다른 계정 칸은 그 계정이 쓸 때 정리). 서버에 쓰지 않는다
   (보는 것마다 RPC를 늘리지 않고, 푸시 판정은 「답했는가」만 본다).
 
+#### D3 개정 — 스토리 있는 인물을 최신 순으로 한 줄에 ⟨2026-11-25⟩
+
+사용자 말(2026-11-25): 「캐릭터 리스트도 스토리가 있는 걸 제일 좌측으로 하고, 있는 것끼리는 업로드 시간이 최근인 게 더 좌측으로」. 위 순서의 1 ~ 3을 바꾼다.
+
+- 줄 순서: **스토리가 있는 인물**(내 친구 · 안 만난 친구를 한 묶음으로) → 그 밖의 추천 친구(스토리 없음, 기존 추천 순서) → 「Find friends」.
+- 스토리 있는 인물끼리는 **그 인물의 최신 스토리 `postedAt` 내림차순**, 같은 시각이면 인물 id 오름차순(입력 · 방 순서와 무관하게 늘 같음).
+- 본 것 / 안 본 것은 **고리 색 · 「Seen」으로만** 보이고 순서에 쓰지 않는다. 안 만난 친구 칸은 섞여 서도 점선 고리 · 「New」 그대로.
+- **세로 구분 선(위 2번)은 없앤다**(사용자 결정 2026-11-25, A안) — 친구 / 안 만난 친구는 고리 모양(주황 · 회색 / 점선 주황 + 「New」)으로만 가른다.
+- 순서 판정은 순수 함수 하나 `storyOrderOf(row)`(`story-order.ts`, 비교는 `byLatestStory`)가 하고, 줄(`FriendStoriesRow`)과 보기(`viewerItemsOf`)가 함께 쓴다 —
+  「Watch all」은 그대로 내 친구 스토리만(기본값) — 순서만 새 시간순을 따른다. 「Watch all」 · 줄의 친구 칸을 눌러 연 보기의 다음 인물은 줄 순서에서 친구 칸만 고른 순서다(안 본 것부터가 아니다).
+- 안 만난 친구 칸을 누르면 지금처럼 그 인물 한 장(추가 흐름) — 이어 보기 목록에는 섞지 않는다.
+- 「+」(내 스토리)는 아직 없다 — 더해지면 순서와 무관하게 맨 앞이다.
+
 ### D4. 보기 화면
 
 - 목록 위 전체 화면 층(친구 찾기와 같은 floating 층, 시스템 뒤로 = 닫기). 진행 막대(이어 보기의 칸 수) · 아바타 · 이름 · 경과 시간 · 멈춤 · 닫기,
@@ -155,6 +168,21 @@
 - 흰 글 대비: 위 그늘을 머리 줄 아래까지 검정 60%로 고르게 · 무료 안내는 어두운 알약 · 단어 알약 · NEW FRIEND 바탕은 `brand-strong`(흰 글 약 5.5:1) · 칩 터치 높이 44.
 - 한 줄 카드 · 단어 알약은 답장 묶음 위 흐름에 둬 큰 글자에서도 겹치지 않는다. 저장한 단어 알약은 버튼이 아니다. 목록 줄 낭독에 「Opens the story」.
 
+## 다시 읽기 ⟨2026-11-25⟩
+
+테스터 확인: 목록을 연 뒤 올라온 스토리가 앱을 다시 켜기 전까지 보이지 않았다(D2는 목록 마운트마다 한 번만 읽음). 이제 목록은 이때 다시 읽는다.
+
+- **채팅 탭으로 돌아올 때 · 방에서 목록으로 돌아올 때** — 탭 루트 전환이면 목록 화면이 다시 마운트돼 D2의 마운트 읽기가 그대로 맡는다(새 코드 없음, 통합 테스트 FSI7로 고정).
+- **앱이 앞으로 올 때** — 열린 방을 다시 읽는 호스트 신호(`contentSyncOpportunity`, ADR-0138)를 같이 쓴다. 화면(`screens/`)이 `app/`을 가져오지 않게
+  포트에 선택 `subscribeReload(listener) => off`를 두고, 결선(`friend-stories-wiring`)이 리스너 집합을 들고 `use-messenger-refresh`가 알린다.
+- **목록이 서 있는 동안 5분마다**(`STORY_RELOAD_MS`) — 목록이 내려가면(방 · 다른 탭) 타이머도 멈춘다.
+- **보기가 열려 있으면** 받은 목록을 갈아 끼우지 않고 보류했다가 보기를 닫은 뒤 반영한다(보고 있는 줄 · 장 목록이 바뀌지 않게). 알림으로 다시 읽는 길(D7)은 예전처럼 곧바로 반영한다.
+- **못 읽으면**(null · 던짐) 있던 목록을 지킨다(`storiesAfterLoad`). 첫 읽기 실패는 예전처럼 스토리 없음(추천 줄).
+- 새 문구 · 새 분석 이벤트 없음. 다시 읽기 횟수만큼 `companion_friend_stories()` 호출이 는다(5분에 한 번 + 앞으로 올 때 한 번 — 목록이 서 있을 때만).
+- 스스로 정한 기본값: 5분 타이머는 보기가 열려 있어도 돌고(결과는 보류), 목록이 서 있는 동안만 돈다. 보류 중에 또 읽으면 마지막 결과만 남긴다.
+- 확인: unit `friend-stories-reload.unit.test.ts`(FS-U15) · `friend-stories-wiring.unit.test.ts`(FS-U16) · ui `MessengerListScreen.stories-reload.ui.test.tsx`(FS-UI14 ~ UI17) ·
+  `use-messenger-refresh.ui.test.tsx`(FS-UI18) · integration `App.friend-stories.integration.test.tsx`(FSI7 · FSI8) · e2e FS-E13 ~ E15.
+
 ## D5 개정 — 보기에서 바로 답장 ⟨2026-11-25⟩
 
 사용자 요청(「답장하기 누르면 채팅방으로 가는 게 아니라 input에 입력되어야지」)으로 D5의 답장 칸 · 칩을 바꾼다(인스타 방식). 서버 · 무료 판정(D6)은 그대로다.
@@ -179,18 +207,18 @@
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 
 - 스토리 데이터 = 서버 표(D1) · 하루 한 번 UTC 01 ~ 10시(인물마다 고정) · 24시간 만료 · 가장 적게 올린 줄부터 · 본 것 = 기기 저장(D3).
-- 줄 순서(D3) · 추천 친구는 스토리 줄 뒤에 그대로 · 「See all」 → 줄 끝 「Find friends」 · 목록 줄의 New story는 안 읽은 메시지가 없을 때만.
+- 줄 순서(D3, 2026-11-25 개정 — 같은 시각은 인물 id 순 · 구분 선 없음 · Watch all은 내 친구만 · 안 만난 친구는 이어 보기에 섞지 않음) · 추천 친구는 스토리 줄 뒤에 그대로 · 「See all」 → 줄 끝 「Find friends」 · 목록 줄의 New story는 안 읽은 메시지가 없을 때만.
 - ~~답장 칸 = 대화방 입력 줄 위 인용 띠(보기 안에 키보드를 띄우지 않음)~~ → 보기 안 입력 칸(D5 개정 2026-11-25) · 하트 없음 · 「First reply is free」 안내 · 6초 넘김 · 모션 줄이기면 자동 넘김 없음(D4 · D5).
 - 무료 판정의 범위(D6) · 알림 대상과 셈 범위(D7) · 이벤트 넷(D8).
 
 ## 확인
 
-- unit: `friend-stories.unit.test.ts`(FS-U1 ~ U7 · U10) · `friend-stories-parse.unit.test.ts`(FS-U8) · `friend-stories-content.unit.test.ts`(FS-U9) ·
+- unit: `friend-stories.unit.test.ts`(FS-U1 ~ U7 · U10) · `story-order.unit.test.ts`(FS-U17, D3 개정) · `friend-stories-parse.unit.test.ts`(FS-U8) · `friend-stories-content.unit.test.ts`(FS-U9) ·
   `friend-story-seen-store.unit.test.ts`(FS-U12) · `ui-copy-chat-stories.unit.test.ts`(FS-U13) · `friend-story-push.unit.test.ts`(FS-U14) ·
   `companion-api.stories.unit.test.ts`(SA-S1 · S2) · `companion-parse.story.unit.test.ts`(SS-S1) · `friend-stories-wiring.unit.test.ts`(SW-S1 ~ S5) ·
   분석 이름 수(AN1 104 · AB3 77/74).
 - ui: `FriendStoriesRow` · `StoryViewer` · `StoryQuote` · `MessengerListScreen.stories` · `MessengerChatScreen.story`(FS-UI1 ~ UI9).
-- integration: `App.friend-stories.integration.test.tsx`(FSI1 · FSI2 · FSI3 · FSI6) · `chat-fixture-remote.story.integration.test.ts`(FSI-R1 · R2).
+- integration: `App.friend-stories.integration.test.tsx`(FSI1 · FSI2 · FSI3 · FSI6 · FSI9) · `chat-fixture-remote.story.integration.test.ts`(FSI-R1 · R2).
 - 서버: SQL `friend-stories.integration.test.ts`(FS1 ~ FS19) · `friend-stories-pool.integration.test.ts`(FSP1 · FSP2) · `companion-proactive-push`(PG1 `pushedToday` · PP9) ·
   chat-send(CSS1 ~ CSS3) · `companion-stories-handler`(SH1 ~ SH4) · send-push(SP1) · 계약 패키지(CS3e).
 - e2e: [docs/e2e/friend-stories.md](../e2e/friend-stories.md)(기기 절차). 계약 · 테스트 계획: [docs/specs/friend-stories.md](../specs/friend-stories.md).

@@ -6,12 +6,14 @@ import { messengerChatMediaZhTw } from "./ui-copy-zh-tw-chat-media";
 import { messengerChatAlbumZhTw } from "./ui-copy-zh-tw-chat-album";
 import { messengerChatSuggestedZhTw } from "./ui-copy-zh-tw-chat-suggested";
 import { messengerChatStoriesZhTw } from "./ui-copy-zh-tw-chat-stories";
+import { myStoriesZhTw } from "./ui-copy-zh-tw-my-stories";
 
 export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
   media: messengerChatMediaZhTw,
   album: messengerChatAlbumZhTw,
   suggested: messengerChatSuggestedZhTw,
   stories: messengerChatStoriesZhTw,
+  myStories: myStoriesZhTw,
   access: {
     signInTitle: "傳訊息給你遇見的人",
     signInBody: "建立免費帳號，就能用韓文和故事裡的人物聊天。你目前的進度都會保留。",

@@ -15,6 +15,7 @@ import { myTextLine, storyIdIn } from "./friend-stories";
 import { hasReplyAfter, mergeLog, sameIdeas, serverCopyOf } from "./chat-log-merge";
 import { turnOutcomeOf, type TurnOutcome } from "./companion-outcome";
 import { applyTurnEvent, initialTurnState, type TurnState } from "./companion-turn";
+import { quizAnswerPending } from "./story-quiz";
 
 /** 끊긴 답 채우기 — 바로 한 번, 그 뒤 이 간격마다(누적 30초). 다 돌면 stalled. */
 const RECOVERY_RETRY_MS = [2_000, 3_000, 5_000, 20_000] as const;
@@ -32,7 +33,6 @@ export type RemoteRoomDeps = {
 };
 
 export { uuidV4 } from "./chat-remote-notes";
-
 export function remoteRoomMethods(deps: RemoteRoomDeps) {
   const { remote, live, changed, now, schedule } = deps;
   const roomIdOf = (room: RoomState) => room.seed.roomId;
@@ -188,6 +188,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     const clientMessageId = clientIds.get(localId) ?? deps.uuid();
     clientIds.set(localId, clientMessageId);
     const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0178 D5) — 다시 보내기에도 실림
+    const quiz = quizAnswerPending(room.messages, localId); // 퀴즈 답이면 턴 뒤 판정을 다시 읽음
     remote.openTurn(
       { characterId: characterOf(room), text, clientMessageId, ...(storyId ? { storyId } : {}) },
       {
@@ -208,6 +209,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
           settle(room, myId, outcome, turn);
           wallet.afterTurn(characterOf(room), turn.wallet);
           changed(room);
+          if (outcome.kind === "ok" && quiz) refresh(room);
           if (outcome.kind === "ok") sendNextUnsent(room);
         },
       },

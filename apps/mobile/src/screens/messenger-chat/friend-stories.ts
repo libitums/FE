@@ -11,6 +11,7 @@ import type {
   UnmetStoryEntry,
 } from "./friend-stories.contract";
 import { joinSpoken } from "../../lib/ui-copy-chat-parts";
+import { byLatestStory, storyOrderOf } from "./story-order";
 import type { SuggestedFriend } from "./suggested-friends";
 
 export type StoryRowInput = {
@@ -57,7 +58,7 @@ function latestByCharacter(stories: readonly FriendStory[], now: number): Map<st
   return latest;
 }
 
-/** 스토리 줄(ADR-0178 D3) — 친구(안 본 것 → 본 것, 각 최근 순) · 안 만난 친구(추천 순서) · 그 밖의 추천. */
+/** 스토리 줄(ADR-0178 D3) — 친구 · 안 만난 친구(각 `byLatestStory` 순, 한 줄 순서는 `storyOrderOf`) · 그 밖의 추천. */
 export function storyRowOf(input: StoryRowInput): StoryRow {
   const latest = latestByCharacter(input.stories, input.now);
   const friends: FriendStoryEntry[] = [];
@@ -66,10 +67,7 @@ export function storyRowOf(input: StoryRowInput): StoryRow {
     const story = latest.get(room.counterpart.id);
     if (story !== undefined) friends.push({ story, room, seen: input.seen.has(story.id) });
   }
-  // 정렬은 안정 정렬입니다 — 같은 시각은 방 순서 그대로.
-  friends.sort((a, b) =>
-    a.seen === b.seen ? b.story.postedAt - a.story.postedAt : a.seen ? 1 : -1,
-  );
+  friends.sort(byLatestStory);
   const unmet: UnmetStoryEntry[] = [];
   const others: SuggestedFriend[] = [];
   for (const friend of input.suggested) {
@@ -77,6 +75,7 @@ export function storyRowOf(input: StoryRowInput): StoryRow {
     if (story === undefined) others.push(friend);
     else unmet.push({ story, friend });
   }
+  unmet.sort(byLatestStory);
   return { friends, unmet, others };
 }
 
@@ -136,7 +135,7 @@ const unmetItem = (
 });
 
 /**
- * 보기의 장 목록과 시작 칸 — 줄의 친구는 친구 스토리 전체 중 그 칸부터, 이어 보기는 처음부터, 안 만난 친구 · 목록 줄 · 알림은 그 인물 한 장.
+ * 보기의 장 목록과 시작 칸 — 줄의 친구는 친구 스토리 전체(줄 순서 `storyOrderOf`) 중 그 칸부터, 이어 보기는 처음부터, 안 만난 친구 · 목록 줄 · 알림은 그 인물 한 장.
  * 그 인물(또는 친구 스토리)이 없으면 null.
  */
 export function viewerItemsOf(
@@ -144,7 +143,10 @@ export function viewerItemsOf(
   open: ViewerOpen,
   imageUrl: (path: string) => string | null,
 ): { readonly items: readonly StoryViewerItem[]; readonly start: number } | null {
-  const friends = row.friends.map((entry) => friendItem(entry, imageUrl));
+  const friends: StoryViewerItem[] = [];
+  for (const each of storyOrderOf(row)) {
+    if (each.kind === "friend") friends.push(friendItem(each.entry, imageUrl));
+  }
   if (open.from === "watch_all") return friends.length === 0 ? null : { items: friends, start: 0 };
   if (open.from === "friend") {
     const start = friends.findIndex((item) => item.story.characterId === open.characterId);
@@ -182,4 +184,15 @@ export function myTextLine(
 /** 낭독 조각을 그 언어의 구분자로 잇습니다(빈 조각은 건너뜀) — 구분자는 문구표가 줍니다(감사 다국어 minor 9). */
 export function spokenOf(separator: string, parts: readonly string[]): string {
   return joinSpoken(parts, separator);
+}
+
+/** 목록이 보이는 동안 스토리를 다시 읽는 주기(ADR-0178 「다시 읽기」) — 5분. */
+export const STORY_RELOAD_MS = 5 * MINUTE_MS;
+
+/** 다시 읽은 뒤의 목록 — 못 읽음(null)이면 있던 목록을 지킵니다(첫 읽기 실패는 null 그대로, ADR-0178 「다시 읽기」). */
+export function storiesAfterLoad(
+  previous: readonly FriendStory[] | null,
+  loaded: readonly FriendStory[] | null,
+): readonly FriendStory[] | null {
+  return loaded ?? previous;
 }
