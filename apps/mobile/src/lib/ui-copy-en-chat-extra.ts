@@ -41,6 +41,12 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     jump: "Jump to new messages",
     latest: "Scroll to latest",
   },
+  replyToast: {
+    dismiss: "Dismiss",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `New message from ${name}: ${preview}` + (more > 0 ? `. ${more} more` : ""),
+  },
   pushAsk: {
     title: (name) => `Get a ping when ${name} texts you?`,
     body: "I sometimes message first — about once a day, in the evening.",

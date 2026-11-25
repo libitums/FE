@@ -10,6 +10,7 @@ import {
 } from "./friend-stories.contract";
 import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
+import { setReplyToastShown } from "./reply-toast-presence";
 import { general, room } from "./suggested-friends.test-support";
 
 // `ui` 계층(FS-UI3 ~ UI6): 스토리 보기(ADR-0178 D4) — 장 · 한 줄 카드 · 단어 알약 · 무료 안내 · 칩 · 답장 칸, 6초 넘김 · 멈춤 ·
@@ -200,6 +201,17 @@ test("FS-UI4. 위에 시트가 덮으면 멈추고 낭독에서 숨는다", () =
   expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
   expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
   expect(props.onClose).not.toHaveBeenCalled();
+});
+
+test("RT-UI7. 답장 토스트가 떠 있으면 진행만 멈추고 낭독에서는 숨지 않는다(ADR-0200)", () => {
+  setReplyToastShown(true);
+  mount();
+  advance(20_000);
+  setReplyToastShown(false);
+  expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).not.toBe(
+    "true",
+  );
 });
 
 test("FS-UI5. 안 만난 친구: 칩 · 답장 칸 · 멈춤 없음, NEW FRIEND · 소개 카드, addable → Add friend and reply", () => {

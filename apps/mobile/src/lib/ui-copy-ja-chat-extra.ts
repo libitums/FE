@@ -41,6 +41,12 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     jump: "新着メッセージへ移動",
     latest: "最新のメッセージへ",
   },
+  replyToast: {
+    dismiss: "閉じる",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name}から新しいメッセージ：${preview}` + (more > 0 ? `。ほか${more}件` : ""),
+  },
   pushAsk: {
     title: (name) => `${name}からメッセージが来たら通知を受け取りますか？`,
     body: "ときどき私から先にメッセージします。だいたい1日1回、夕方から夜にかけてです。",
