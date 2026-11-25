@@ -174,6 +174,7 @@ export function SuggestedFriendSheet({
           <view className="suggested-sheet-body" bindlayoutchange={budget.onContentLayout}>
             {!locked && (character.voiceSamplePath ?? null) !== null ? (
               <ProfileVoiceButton
+                key={character.id}
                 characterId={character.id}
                 name={character.name}
                 url={voiceSampleUrl}
