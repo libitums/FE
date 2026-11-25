@@ -969,7 +969,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `{ rows, skippedCap, deferred, globalCapped }`을 돌려준다 — `deferred`는 그 대화가 도는 중(pending 턴 · 마지막 메시지 1분 안)이라 다음 회차로 미룬 수.
 - 누가 답하나(올릴 때, ADR-0191 D3 · D4): 친구 = 내가 말한 대화가 있는 · 켜진 · 숨기지 않은 인물. 1명이면 1, 여럿이면 2명(`twoReplyChance`) 또는 1명.
   가중 무작위 — `companion.reaction_weight` = 최근성 × 친밀도 × 직전 내 스토리에 답했으면 `repeatFactor`. 첫 답 1 ~ 5분, 둘째 5 ~ 60분(스토리 · 인물 해시로 결정적).
-  각도: 첫 인물 `word`, 둘째 `question` · `quiz` · `together` 중 하나. Seen by(`my_story_seen`)는 친구 전원 — 답하는 인물은 답 30 ~ 120초 전, 나머지는 1 ~ 30분.
+  각도: 첫 인물 `word`, 둘째 `question` · `together` 중 하나. **퀴즈는 덕수쌤만**(`20270106120000`) — 단어 · 카드 스토리에서 덕수쌤이 친구면
+  반드시 한 번 답하고(하나면 혼자, 둘이면 첫째 · 둘째 반반), 각도는 첫째 `word` · `quiz`, 둘째 `question` · `quiz` · `together` 중 하나. Seen by(`my_story_seen`)는 친구 전원 — 답하는 인물은 답 30 ~ 120초 전, 나머지는 1 ~ 30분.
 - 반응 만들기(`companion-story-reactions`, **매분**): 정리 → claim 12 → 알람마다(동시 넷) 선톡 맥락(`companion_proactive_context`) + 반응 지시
   (`_shared/companion-reaction-prompt.ts` — 각도, 단어는 필수 아님) → 답 → 출력 검사(항상) → 번역 · 추천 답안 칩(동시에) →
   `companion_finish_story_reaction`이 **그 인물 방의 메시지**(`messages.origin = 'story_reaction'`, meta에 `myStoryId` · `angle` · 사용량)로 저장 → 푸시.
@@ -1011,6 +1012,9 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 3. 예약: `supabase/cron/my-stories.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈) — **매분**. 확인:
    `select jobname, schedule from cron.job where jobname = 'companion-story-reactions';`.
 4. 켜기: `my_stories = 'testers'` → 앱 확인 → `story_reactions = 'testers'` → 비용 · 반응 품질 확인 → `story_reaction_push = 'testers'` → `'on'`.
+5. 퀴즈는 덕수쌤만(ADR-0191 D5 개정): `20261228140000` **뒤에** `20270106120000_my_story_duksu_quiz.sql`. 함수 하나(`companion.schedule_my_story_reactions`)만
+   다시 정의한다 — 함수 배포 없음. 평가 세트를 대시보드에 반영하려면 `companion-eval`을 배포. 확인:
+   `select pg_get_functiondef('companion.schedule_my_story_reactions(companion.my_stories, timestamptz)'::regprocedure) like '%duksu%';`(true).
 
 ## 내 스토리 — 사진 (20270104130000, ADR-0191 D11)
 
