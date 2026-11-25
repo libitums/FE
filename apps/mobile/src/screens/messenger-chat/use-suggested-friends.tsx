@@ -82,8 +82,7 @@ export function useSuggestedFriends({
   );
   const ack = useAdultAck(port?.adultAck);
 
-  // 서버 제안(ADR-0162 D5)은 목록 마운트마다 한 번 읽어 카탈로그에 얹습니다 — 못 읽으면 제안 없음.
-  // 포트 객체가 렌더마다 바뀌어도 다시 부르지 않게, 마운트 때 한 번 그때의 함수를 씁니다(리뷰 #503).
+  // 서버 제안(ADR-0162 D5)은 목록 마운트마다 한 번 읽어 카탈로그에 얹습니다 — 못 읽으면 제안 없음. 포트 객체가 렌더마다 바뀌어도 다시 부르지 않게, 마운트 때 한 번 그때의 함수를 씁니다(리뷰 #503).
   const loadOffersRef = useRef(port?.offers ?? null);
   loadOffersRef.current = port?.offers ?? null;
   // 손님 → 회원처럼 읽을 길이 새로 생길 때만 다시 읽습니다.
@@ -102,8 +101,7 @@ export function useSuggestedFriends({
     };
   }, [hasLoader]);
 
-  // 보이는 추천 친구(ADR-0164 D2)도 마운트마다 한 번 — 기억도 없이 읽기 전 · 못 읽음이면 일반 인물이 없습니다(서버 포트가 없으면
-  // 거르지 않음). 못 읽음(null)은 기억한 줄을 지우지 않습니다.
+  // 보이는 추천 친구(ADR-0164 D2)도 마운트마다 한 번 — 기억도 없이 읽기 전 · 못 읽음이면 일반 인물이 없습니다(서버 포트가 없으면 거르지 않음). 못 읽음(null)은 기억한 줄을 지우지 않습니다.
   const loadVisibleRef = useRef(port?.visibleFriends ?? null);
   loadVisibleRef.current = port?.visibleFriends ?? null;
   const filtersFriends = loadVisibleRef.current !== null;
@@ -136,13 +134,11 @@ export function useSuggestedFriends({
   const all = port === undefined ? [] : suggestedFriendsOf(input);
   const row = suggestedRowOf(all);
   const layerOpen = sheet !== null || directoryOpen || ack.open;
-
   const showToast = (text: string, model: SuggestedFriendSheetModel) => {
     toastKey.current += 1;
     const { name } = model.character;
     setToast({ key: toastKey.current, text, name, avatarUrl: model.avatarUrl });
   };
-
   const added = (open: OpenSheet, via: "free" | "early", after?: () => void) => {
     const { character } = open.model;
     emit({
@@ -157,7 +153,6 @@ export function useSuggestedFriends({
     showToast(copy.added(character.name), open.model);
     after?.();
   };
-
   // 프로필 시트를 연 순간(제품 이벤트 — 탭에서 보냄, ADR-0164 「분석 이벤트」).
   const openSheet = (model: SuggestedFriendSheetModel, from: From, after?: () => void) => {
     emit({
@@ -181,8 +176,7 @@ export function useSuggestedFriends({
       // 이미 열린 방이면(다른 길로 먼저 추가됨) 이어서 답장합니다.
       else after?.();
     };
-    // 수위 open 친구는 「Get closer」 시트를 먼저 물을 수 있습니다(ADR-0164 D4) — 그 시트가 설 때만 프로필 시트를 닫습니다
-    // (서버 프로필을 읽는 동안 빈 화면이 생기지 않게).
+    // 수위 open 친구는 「Get closer」 시트를 먼저 물을 수 있습니다(ADR-0164 D4) — 그 시트가 설 때만 프로필 시트를 닫습니다 (서버 프로필을 읽는 동안 빈 화면이 생기지 않게).
     ack.begin(open.model.character, open.model.avatarUrl, add, () => setSheet(null));
   };
 
@@ -236,8 +230,7 @@ export function useSuggestedFriends({
           setSheet(null);
           return onShortOfCoins();
         }
-        // 값을 치렀으니 기존 추가 길(방 열기 · 첫 인사 · 해금 저장)을 탑니다. 방이 없으면(unknown) 성공으로 보이지 않고 실패 줄 —
-        // 시트가 남아 다시 누르면 서버가 already로 두 번 빼지 않습니다(리뷰 #503).
+        // 값을 치렀으니 기존 추가 길(방 열기 · 첫 인사 · 해금 저장)을 탑니다. 방이 없으면(unknown) 성공으로 보이지 않고 실패 줄 — 시트가 남아 다시 누르면 서버가 already로 두 번 빼지 않습니다(리뷰 #503).
         if (port.add(character.id) === "unknown") {
           return showToast(copy.addFailed(character.name), open.model);
         }
