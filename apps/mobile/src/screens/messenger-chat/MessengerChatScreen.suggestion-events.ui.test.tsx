@@ -16,7 +16,7 @@ import {
 import { companionSeed } from "./companion-roster";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
-// `ui` 계층(SE-UI1 ~ UI5): 답할 문장 추천(보기 판)의 보임 · 누름 이벤트와 `chat_message_sent.fromSuggestion`(ADR-0194).
+// `ui` 계층(SE-UI1 ~ UI5): 답할 문장 추천(보기 판)의 보임 · 누름 이벤트와 `chat_message_sent.fromSuggestion`(ADR-0195).
 
 const A0 = "00000000-0000-4000-8000-000000000000";
 const A1 = "22222222-2222-4222-8222-222222222222";

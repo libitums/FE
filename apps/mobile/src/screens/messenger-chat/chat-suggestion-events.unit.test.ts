@@ -11,7 +11,7 @@ import { historyFrom } from "./companion-parse";
 import { newRoomState, setRemoteIdeas } from "./chat-fixture-room";
 import { fixtureRoom } from "./chat-ui.test-support";
 
-// `unit` 계층(SE-U1 ~ U5): 답할 문장 추천 이벤트의 순수 조각(ADR-0194) — 내 글 번호 구간 · 묶음 키 · 출처 해석 · 이벤트 모양,
+// `unit` 계층(SE-U1 ~ U5): 답할 문장 추천 이벤트의 순수 조각(ADR-0195) — 내 글 번호 구간 · 묶음 키 · 출처 해석 · 이벤트 모양,
 // 서버 기록의 마지막 캐릭터 메시지 출처.
 
 const mine = (id: string): ChatMessage => ({

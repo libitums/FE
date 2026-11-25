@@ -177,7 +177,7 @@ export function bubblesOf(
 function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
   const messages: ChatMessage[] = [];
   const corrections: Record<string, ChatCorrection> = {};
-  let last: Json | null = null; // 마지막 캐릭터 메시지 — 추천 답변과 그 출처(ADR-0194)
+  let last: Json | null = null; // 마지막 캐릭터 메시지 — 추천 답변과 그 출처(ADR-0195)
   for (const item of [...(raw.messages as unknown[])].reverse()) {
     const record = recordOf(item);
     const id = stringOf(record?.id);

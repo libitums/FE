@@ -18,7 +18,7 @@ import {
 import { openTab, present, renderTesterApp, tapId } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
 
-// `integration` 계층(SE-I1): 답할 문장 추천 이벤트(ADR-0194)가 실제 App의 이벤트 결선(메신저 `ChatEventsContext` → PostHog sink)과
+// `integration` 계층(SE-I1): 답할 문장 추천 이벤트(ADR-0195)가 실제 App의 이벤트 결선(메신저 `ChatEventsContext` → PostHog sink)과
 // 서버 방 출처(첫 인사 → greeting, 턴 → turn)를 지나 한 트리에서 맞물린다. 대역은 경계뿐 — 저장소 · `ChatRemote` 포트.
 
 const U1 = "11111111-1111-4111-8111-111111111111";

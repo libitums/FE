@@ -34,7 +34,7 @@ export type UseChatTurns = {
   readonly plan: TurnPlan;
   readonly sendCost: SendCost;
   readonly panelOpen: boolean;
-  /** `useChatRoom`의 `authorizeSend`로 넘깁니다. `fromSuggestion` — 답장 보기를 눌러 보냄(ADR-0194, 기본 false). */
+  /** `useChatRoom`의 `authorizeSend`로 넘깁니다. `fromSuggestion` — 답장 보기를 눌러 보냄(ADR-0195, 기본 false). */
   readonly authorizeSend: (fromSuggestion?: boolean) => boolean;
   readonly keepChatting: () => void;
 };

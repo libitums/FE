@@ -9,7 +9,7 @@
 | SV-E5 | 내 글 | 🌐 없음 · ✏️만 |
 | SV-E6 | 무료 등급으로 다른 인물 방 | 회색 줄 「You can't chat with {name} yet.」 |
 | SV-E7 | 실제 스크린리더 · Android | 미실행 |
-| SV-E8 | 추천 답변 판이 섬 → 보기 하나 누름 (ADR-0194) | `chat_suggestion_shown` 한 번(판을 접었다 다시 열어도 한 번) · `chat_suggestion_tapped { index, count, replyOrigin, myMessageNumber }` · `chat_message_sent { fromSuggestion: true }`. 입력 칸으로 보낸 글은 `fromSuggestion: false`. 추천 글은 이벤트에 없음 |
+| SV-E8 | 추천 답변 판이 섬 → 보기 하나 누름 (ADR-0195) | `chat_suggestion_shown` 한 번(판을 접었다 다시 열어도 한 번) · `chat_suggestion_tapped { index, count, replyOrigin, myMessageNumber }` · `chat_message_sent { fromSuggestion: true }`. 입력 칸으로 보낸 글은 `fromSuggestion: false`. 추천 글은 이벤트에 없음 |
 
 ## 실행 기록
 
@@ -24,7 +24,7 @@
   - 내 글 🌐 제거(SV-E5) · 추천 답변 판 저절로 열림(SV-E3).
   - 마지막 설치본의 화면 확인은 사용자 몫으로 남았다.
 
-### 2026-11-25 — iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5), 흉내 출처 — SV-E8 (ADR-0194)
+### 2026-11-25 — iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5), 흉내 출처 — SV-E8 (ADR-0195)
 - 로그인 없이 임시 진입점(커밋 안 함)으로 덕수쌤 서버 방을 **가짜 원격**으로 세웠다 — 기록의 마지막 캐릭터 메시지가 선톡(proactive) · 추천 둘,
   보내면 1.5초 뒤 턴 답 · 추천 셋. 이벤트는 sink를 화면 위 글 상자로 그려 확인했다(PostHog로 보내지 않음).
 - 전구 → 판: `chat_suggestion_shown { count: "2", replyOrigin: "proactive", myMessageNumber: "1" }` 한 번.

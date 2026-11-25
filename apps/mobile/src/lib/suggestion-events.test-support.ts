@@ -1,4 +1,4 @@
-// 채팅 보내기 · 답할 문장 추천 이벤트의 견본(ADR-0194) — airbridge 매핑 표(`airbridge-events.test-support`)가 줄 수 한도 안에서
+// 채팅 보내기 · 답할 문장 추천 이벤트의 견본(ADR-0195) — airbridge 매핑 표(`airbridge-events.test-support`)가 줄 수 한도 안에서
 // 가져다 씁니다. 모두 PostHog만(Airbridge로 나가지 않음).
 import type { AnalyticsEvent } from "./analytics.contract";
 

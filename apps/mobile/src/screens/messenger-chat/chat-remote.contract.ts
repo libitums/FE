@@ -17,7 +17,7 @@ export type RemoteHistory = {
   readonly chatWords?: Readonly<Record<string, ChatWordsResult>>;
   /** 마지막 캐릭터 메시지에 저장된 추천 답변 — 없으면 null. */
   readonly ideas: readonly ChatReplyIdea[] | null;
-  /** 그 마지막 캐릭터 메시지의 출처(ADR-0194) — 서버가 주지 않았으면 null · 없음. */
+  /** 그 마지막 캐릭터 메시지의 출처(ADR-0195) — 서버가 주지 않았으면 null · 없음. */
   readonly ideasOrigin?: ChatIdeasOrigin | null;
 };
 

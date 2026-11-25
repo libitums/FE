@@ -1,4 +1,4 @@
-// 답할 문장 추천(보기 판)의 보임 · 누름 이벤트입니다(ADR-0194). 모양은 순수 조각(`chat-suggestion-events`)이 정하고, 이 훅은
+// 답할 문장 추천(보기 판)의 보임 · 누름 이벤트입니다(ADR-0195). 모양은 순수 조각(`chat-suggestion-events`)이 정하고, 이 훅은
 // 언제 낼지만 봅니다 — 보임은 판이 그 묶음으로 처음 그려질 때 방 화면 마운트당 묶음마다 한 번, 누름은 같은 묶음 같은 자리에 한 번.
 
 import { useEffect, useRef } from "@lynx-js/react";

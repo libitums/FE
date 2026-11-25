@@ -33,7 +33,7 @@ export type RoomState = {
   /** 서버 모드(ADR-0137): 기록을 읽었는지 · 서버 추천 답변(있으면 씨앗 보기 대신). */
   remoteHistory: "idle" | "loading" | "loaded" | "failed";
   remoteIdeas: readonly ChatReplyIdea[] | null;
-  /** 서버 추천 답변이 붙은 답장의 출처(ADR-0194) — 모르면 null. */
+  /** 서버 추천 답변이 붙은 답장의 출처(ADR-0195) — 모르면 null. */
   remoteIdeasOrigin: ChatIdeasOrigin | null;
   origin: "local" | "server";
   /** 서버 모드 배달(ADR-0138): 서버가 받지 못한 내 글 id(보낸 순서) · 끊긴 답 채우기. */
@@ -109,7 +109,7 @@ export function ideasOf(room: RoomState): readonly ChatReplyIdea[] {
   return sets[room.ideaIndex % Math.max(sets.length, 1)] ?? [];
 }
 
-/** 서버 추천 답변과 그 출처를 함께 바꿉니다(ADR-0194) — 보기가 없으면 출처도 지웁니다. */
+/** 서버 추천 답변과 그 출처를 함께 바꿉니다(ADR-0195) — 보기가 없으면 출처도 지웁니다. */
 export function setRemoteIdeas(
   room: RoomState,
   ideas: readonly ChatReplyIdea[] | null,

@@ -109,7 +109,7 @@ export type ChatCoinEvent =
       readonly cost: string;
       /** 스토리 첫 답장 무료로 보냄(ADR-0178 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
       readonly storyFree?: true;
-      /** 답할 문장 추천(보기)을 눌러 보냄(ADR-0194) — 칩을 고쳐 보내는 길은 없습니다. */
+      /** 답할 문장 추천(보기)을 눌러 보냄(ADR-0195) — 칩을 고쳐 보내는 길은 없습니다. */
       readonly fromSuggestion: boolean;
     })
   | (Common & {
