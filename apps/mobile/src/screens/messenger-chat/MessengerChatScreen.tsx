@@ -25,6 +25,7 @@ import { useRoomGuide } from "./use-room-guide";
 import { useGuideKeyboard } from "./use-guide-keyboard";
 import { useGuestGate } from "./use-guest-gate";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
+import { ChatPushAskSlot } from "./ChatPushAsk";
 import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
@@ -217,6 +218,7 @@ export function MessengerChatScreen({
                 onOpenPhoto={(id) => dispatch(openPhotoAction(id))}
               />
             ))}
+            <ChatPushAskSlot thread={thread} busy={busy} />
             {thread.typing ? (
               <ChatTypingRow
                 avatar={{ name: thread.counterpart.name, imageUrl: thread.counterpart.avatarUrl }}
