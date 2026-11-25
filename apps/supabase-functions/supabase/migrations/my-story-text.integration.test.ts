@@ -169,7 +169,7 @@ test("MT3. 반응 — 사진과 같은 각도(첫째 react · 둘째 question ·
     const picked = await alarms(story);
     expect(picked).toHaveLength(2);
     expect(picked[0]!.angle).toBe("react");
-    expect(["question", "together"]).toContain(picked[1]!.angle);
+    expect(picked[1]!.angle).toBe("follow");
   }
   await db.admin.query("delete from companion.my_story_reactions where rank = 2");
   const claimed = (

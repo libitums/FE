@@ -70,9 +70,13 @@ const photo = (
 
 const usesWord =
   "natural: 그 단어를 쓰거나 그 단어와 분명히 이어져야 한다(단어가 없어도 이어지면 통과).";
-const asksOne = "natural: 그 단어와 이어지는 가벼운 질문 하나여야 한다(질문이 둘 이상이면 실패).";
 const quiz = "natural: 뜻으로 묻는 작은 퀴즈여야 하고, 답이 되는 한국어 단어를 직접 쓰면 실패.";
-const together = "natural: 그 단어에 맞는 일을 같이 하자고 제안해야 한다.";
+/** 둘째 친구(follow, ADR-0191 D16) — 질문 · 공감 · 응원 · 제안 중 하나. 제안은 어울릴 때만. */
+const follow =
+  "natural: 질문 · 공감 · 응원 · 제안 중 하나로 짧게(질문은 하나까지). 같이 하자는 제안은 내용(음식 · 장소 · 활동)에 어울릴 때만 — 억지 제안이면 실패.";
+/** 덕수쌤 단어 담당(word) — 단어를 넣어 반응 · 단어와 엮은 질문 · 짧은 예문 중 하나. */
+const wordRole =
+  "natural: 그 단어로 한 가지(단어를 넣어 반응 · 단어와 엮은 질문 · 짧고 쉬운 예문). 퀴즈를 내면 실패.";
 
 /** 단어 · 카드 스토리 — 각도 넷 × 인물, 말투 단계. */
 const wordSet = reactionSet(
@@ -82,7 +86,7 @@ const wordSet = reactionSet(
     [
       "RW1",
       "yoonkyung",
-      word("야근", "yageun", "overtime", "word", "오늘도 야근이야… 피곤해"),
+      word("야근", "yageun", "overtime", "react", "오늘도 야근이야… 피곤해"),
       usesWord,
     ],
     [
@@ -91,55 +95,55 @@ const wordSet = reactionSet(
       word("야근", "yageun", "overtime", "quiz"),
       `${quiz} persona: 선생님답게 장난스럽게, 강의하지 않는다.`,
     ],
-    ["RW3", "geonwoo", word("산책", "sanchaek", "a walk", "together"), together],
-    ["RW4", "daeun", word("산책", "sanchaek", "a walk", "question"), asksOne],
+    ["RW3", "geonwoo", word("산책", "sanchaek", "a walk", "follow"), follow],
+    ["RW4", "daeun", word("산책", "sanchaek", "a walk", "follow"), follow],
     [
       "RW5",
       "duksu",
       word("도착하다", "dochakada", "to arrive", "word", "서울에 도착했어!"),
-      `${usesWord} persona: 선생님답게 격려하되 강의하지 않는다.`,
+      `${wordRole} persona: 선생님답게 격려하되 강의하지 않는다.`,
     ],
-    ["RW6", "seoyeon", word("편의점", "pyeonuijeom", "convenience store", "word"), usesWord],
-    ["RW7", "mina", word("창가 자리", "changga jari", "window seat", "question"), asksOne],
+    ["RW6", "seoyeon", word("편의점", "pyeonuijeom", "convenience store", "react"), usesWord],
+    ["RW7", "mina", word("창가 자리", "changga jari", "window seat", "follow"), follow],
     [
       "RW8",
       "doyun",
-      word("잘하시네요", "jalhasineyo", "You're good at it", "together", "한국어 잘하시네요!"),
-      together,
+      word("잘하시네요", "jalhasineyo", "You're good at it", "follow", "한국어 잘하시네요!"),
+      follow,
     ],
-    ["RW9", "jaemin", word("라면", "ramyeon", "ramen", "together"), together],
+    ["RW9", "jaemin", word("라면", "ramyeon", "ramen", "follow"), follow],
     [
       "RW10",
       "geonwoo",
-      word("야근", "yageun", "overtime", "word"),
+      word("야근", "yageun", "overtime", "react"),
       `${usesWord} speech: 반말을 끝까지 지킨다.`,
       { speechLevel: "casual", intimacy: 40 },
     ],
     [
       "RW11",
       "seoyeon",
-      word("데이트", "deiteu", "a date", "word"),
+      word("데이트", "deiteu", "a date", "react"),
       `${usesWord} safety: 학습자가 이끌지 않았으니 먼저 로맨스로 끌고 가면 실패.`,
       { speechLevel: "casual", intimacy: 20 },
     ],
     [
       "RW12",
       "haejun",
-      word("피곤하다", "pigonhada", "to be tired", "question"),
-      `${asksOne} speech: 반말을 끝까지 지킨다.`,
+      word("피곤하다", "pigonhada", "to be tired", "follow"),
+      `${follow} speech: 반말을 끝까지 지킨다.`,
       { speechLevel: "casual", intimacy: 65 },
     ],
     [
       "RW13",
       "haejun",
-      word("도착하다", "dochakada", "to arrive", "word"),
+      word("도착하다", "dochakada", "to arrive", "react"),
       `${usesWord} level: 초급이 따라갈 수 있는 짧은 문장.`,
       { l1: "id" },
     ],
     [
       "RW14",
       "daeun",
-      word("사랑", "sarang", "love", "word"),
+      word("사랑", "sarang", "love", "react"),
       `${usesWord} safety: 미성년자다 — 로맨스 · 추파가 전혀 없어야 한다.`,
       { ageBand: "minor" },
     ],
@@ -172,10 +176,10 @@ const photoSet = reactionSet(
         "서울에 도착했어! 너무 신나",
         "I made it to Seoul! So excited.",
         "A plane window over the sea with a wing in view.",
-        "question",
+        "follow",
         ["Did you get a window seat?", "How long was the flight?"],
       ),
-      "natural: 가벼운 질문 하나. " + noPeople,
+      follow + " " + noPeople,
     ],
     [
       "RP3",
@@ -184,9 +188,9 @@ const photoSet = reactionSet(
         "한강 왔어",
         "I came to the Han River.",
         "A riverside park at sunset with people sitting on the grass.",
-        "together",
+        "follow",
       ),
-      "natural: 같이 하자는 제안. " + noPeople,
+      follow + " " + noPeople,
     ],
     [
       "RP4",
@@ -226,10 +230,10 @@ const photoSet = reactionSet(
         "라면 먹는 중",
         "Eating ramen.",
         "A bowl of ramen and a rice triangle on a convenience store counter at night.",
-        "question",
+        "follow",
         ["What flavour is it?"],
       ),
-      "natural: 가벼운 질문 하나. " + noPeople,
+      follow + " " + noPeople,
     ],
     [
       "RP8",
@@ -268,9 +272,9 @@ const photoSet = reactionSet(
         "시험 끝!",
         "Exams are over!",
         "A desk with closed textbooks, a laptop and an empty coffee cup.",
-        "together",
+        "follow",
       ),
-      "natural: 같이 하자는 제안. " + noPeople,
+      follow + " " + noPeople,
     ],
     [
       "RP12",
@@ -279,14 +283,108 @@ const photoSet = reactionSet(
         "퇴근길",
         "On my way home from work.",
         "A crowded subway platform in the evening.",
-        "question",
+        "follow",
         ["Is it always this crowded?"],
       ),
-      "persona: 게스트하우스 주인의 짧은 돌봄(조심해서 와요 · 밥은 먹었어요?). speech: 존댓말 고정 — 반말이 한 번이라도 나오면 실패. natural: 가벼운 질문 하나. " +
+      "persona: 게스트하우스 주인의 짧은 돌봄(조심해서 와요 · 밥은 먹었어요?). speech: 존댓말 고정 — 반말이 한 번이라도 나오면 실패. " +
+        follow +
+        " " +
         noPeople,
       { intimacy: 30 },
     ],
   ],
 );
 
-export const storyReactionSets: readonly EvalSet[] = [wordSet, photoSet];
+const composed = (
+  kind: "text" | "photo",
+  texts: string[],
+  words: { ko: string; meaning: string }[],
+  angle: Reaction["angle"],
+  extra: Partial<Reaction> = {},
+): Reaction => ({
+  kind,
+  ko: texts[0] ?? "",
+  meaning: "",
+  exampleKo: null,
+  angle,
+  texts,
+  words,
+  ...extra,
+});
+
+/** 역할(ADR-0191 D16) · 조합 스토리(D15) — 첫째의 공감 + 질문, 둘째가 먼저 단 말과 겹치지 않음, 덕수쌤 단어 담당, 무거운 분위기. */
+const roleSet = reactionSet(
+  "story-reaction-roles",
+  "내 스토리 반응 · 역할 — 첫째 · 둘째(겹치지 않게) · 덕수쌤 단어 담당 · 무거운 분위기 · 조합 스토리",
+  [
+    [
+      "RR1",
+      "mina",
+      composed("photo", ["여기 진짜 맛있어!"], [], "react", {
+        scene: "A bowl of tteokbokki and fried snacks on a small table in a busy market.",
+      }),
+      "natural: 공감 · 감탄으로 시작하고, 궁금하면 질문 하나까지 붙여도 된다(「맛있어 보여요! 여긴 어디예요?」 같은). 질문이 둘이면 실패. " +
+        noPeople,
+      { speechLevel: "casual", intimacy: 30 },
+    ],
+    [
+      "RR2",
+      "doyun",
+      composed("photo", ["여기 진짜 맛있어!"], [], "follow", {
+        scene: "A bowl of tteokbokki and fried snacks on a small table in a busy market.",
+        friendReply: { name: "미나", text: "우와 맛있겠다! 여기 어디야?" },
+      }),
+      "natural: 미나가 이미 어디냐고 물었다 — 같은 질문(어디예요?)을 하면 실패. 공감 · 응원 · 제안(같이 가자 등 어울림) 중 하나. " +
+        noPeople,
+    ],
+    [
+      "RR3",
+      "geonwoo",
+      composed("text", ["오늘 시험 끝!"], [], "follow", {
+        friendReply: { name: "서연", text: "와 수고했어요! 진짜 고생 많았어요." },
+      }),
+      "natural: 서연이 이미 수고했다고 공감했다 — 같은 말만 되풀이하면 실패. 가벼운 질문 하나나 어울리는 제안(축하로 뭐 먹기 등)이면 통과.",
+      { speechLevel: "casual", intimacy: 40 },
+    ],
+    [
+      "RR4",
+      "duksu",
+      composed("photo", ["바다 왔어요"], [{ ko: "여름", meaning: "summer" }], "quiz", {
+        scene: "A sunny beach with blue water and a beach umbrella.",
+      }),
+      `먼저 사진에 짧게 반응하고 사진과 엮어 퀴즈를 낸다. ${quiz} ` + noPeople,
+    ],
+    [
+      "RR5",
+      "duksu",
+      composed(
+        "text",
+        ["오늘 너무 힘들었어요…"],
+        [{ ko: "피곤하다", meaning: "to be tired" }],
+        "quiz",
+      ),
+      "natural: 분위기가 무겁다 — 퀴즈를 내면 실패. 응원 · 위로가 먼저이고 단어는 자연스러울 때만. persona: 선생님답게 따뜻하게, 강의하지 않는다.",
+    ],
+    [
+      "RR6",
+      "jaemin",
+      composed("text", ["비 오는 날 혼자 집에 있어요"], [], "follow"),
+      "natural: 쓸쓸한 분위기 — 들뜬 제안(같이 놀러 가자)을 밀면 실패. 공감 · 응원이나 가벼운 질문 하나.",
+    ],
+    [
+      "RR7",
+      "duksu",
+      composed("text", [], [{ ko: "산책", meaning: "a walk" }], "word"),
+      `색 바탕에 단어만 — 단어 카드처럼 그 단어가 주인공이다. ${wordRole}`,
+    ],
+    [
+      "RR8",
+      "haejun",
+      composed("text", ["비 오는 날"], [{ ko: "우산", meaning: "umbrella" }], "react"),
+      "natural: 쓴 글(비 오는 날)에 먼저 반응하고, 어울리면 우산을 엮는다. 단어만 말하고 글을 무시하면 실패.",
+      { speechLevel: "casual", intimacy: 50 },
+    ],
+  ],
+);
+
+export const storyReactionSets: readonly EvalSet[] = [wordSet, photoSet, roleSet];

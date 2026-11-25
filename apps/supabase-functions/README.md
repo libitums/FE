@@ -1105,3 +1105,13 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서** — 글 스토리 · 퀴즈 두 마이그레이션 뒤에 `20270109120000_my_story_compose.sql`(하나씩). 함수는 위와 같다
 (`companion-my-story companion-story-reactions chat-send`).
+
+## 내 스토리 — 역할 기반 반응 (20270110120000, ADR-0191 D16)
+
+- 알람의 `angle` 칸은 역할: `react`(첫째) · `follow`(둘째) · `word` · `quiz`(덕수쌤 단어 담당, `quiz`는 퀴즈를 권함 — 규칙 `quizChance` 기본 0.5).
+- claim 줄의 `friendReply`(같은 스토리에 먼저 단 친구의 반응 { characterId, name, text }) — 둘째 지시에 싣는다.
+- 반응 지시(`_shared/companion-reaction-prompt.ts`)는 역할만 알려 주고 방식은 모델이 고른다 → `@state`의 `mode` → `companion_finish_story_reaction`이
+  meta.angle(`companion.reaction_mode` — 아는 값만, 퀴즈는 덕수쌤 단어 담당만) · meta.role로 저장. 퀴즈 줄은 meta.angle이 quiz일 때만.
+- 평가 세트 `story-reaction-roles`(8) 추가. 테스트: `migrations/my-story-compose.integration.test.ts`(MC6) · `_shared/companion-reaction-prompt.unit.test.ts`(RP2 · RP3).
+
+**적용 순서** — `20270109120000` 뒤에 `20270110120000_my_story_reaction_roles.sql`. 함수 `companion-story-reactions companion-eval`.

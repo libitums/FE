@@ -539,7 +539,7 @@ test("RP5. 사진 반응 지시 — 장면 설명 · 글 · 각도, 신원 · �
   const react = reactionDirective(story);
   expect(react).toContain("What the photo shows: A plane window over the sea.");
   expect(react).toContain('What they wrote: "서울에 도착했어!" (meaning "I made it to Seoul!")');
-  expect(react).toMatch(/React warmly/);
+  expect(react).toMatch(/Respond with empathy or excitement/);
   expect(react).toMatch(/Never guess who the people in the photo are/);
   expect(react).toMatch(/never comment on anyone's looks, face, smile or body/);
   const question = reactionDirective({ ...story, angle: "question" });
@@ -549,7 +549,7 @@ test("RP5. 사진 반응 지시 — 장면 설명 · 글 · 각도, 신원 · �
   expect(reactionUserText(story)).toContain("사진 스토리");
 });
 
-test("RP6. 조합 스토리 지시 — 색 바탕 · 사진 × 글 · 단어. 사진 · 글이 먼저(단어는 엮기), 덕수쌤 퀴즈는 사진 · 글과 엮어 뜻으로 묻고, 색 + 단어만은 단어 카드처럼", () => {
+test("RP6. 조합 스토리 지시(D15 · D16) — 색 바탕 · 사진 × 글 · 단어. 첫째는 사진 · 글에 공감(단어는 엮기), 덕수쌤 단어 담당은 먼저 반응한 뒤 단어로 한 가지(퀴즈는 사진 · 글과 엮어 뜻으로), 색 + 단어만은 단어 카드처럼", () => {
   const base = {
     kind: "text" as const,
     ko: "",
@@ -558,7 +558,6 @@ test("RP6. 조합 스토리 지시 — 색 바탕 · 사진 × 글 · 단어. �
     exampleKo: null,
     angle: "react" as const,
   };
-  // 색 + 글 + 단어: 글에 먼저 반응하고 단어는 어울리면 엮는다.
   const colored = {
     ...base,
     texts: ["오늘 비가 와요"],
@@ -568,16 +567,17 @@ test("RP6. 조합 스토리 지시 — 색 바탕 · 사진 × 글 · 단어. �
   expect(react).toContain("colored background");
   expect(react).toContain('What they wrote: "오늘 비가 와요"');
   expect(react).toContain('Korean words they are learning, placed on it: "우산" (umbrella)');
-  expect(react).toMatch(/React warmly to what they wrote first/);
+  expect(react).toMatch(/Respond with empathy or excitement/);
   expect(react).toMatch(/weave in the word/);
-  expect(reactionDirective({ ...colored, angle: "question" })).toMatch(/Ask one light question/);
-  expect(reactionDirective({ ...colored, angle: "together" })).toMatch(/doing something together/);
-  // 덕수쌤 퀴즈: 뜻으로 묻고 단어는 쓰지 않는다.
+  // 덕수쌤 단어 담당 — 먼저 반응하고 단어로 한 가지, 퀴즈는 뜻으로(단어는 쓰지 않음).
+  const word = reactionDirective({ ...colored, angle: "word" });
+  expect(word).toMatch(/First respond briefly to what they shared, then one thing with the word/);
   const quiz = reactionDirective({ ...colored, angle: "quiz" });
+  expect(quiz).toContain("give one tiny, playful quiz tied to what they shared");
   expect(quiz).toContain('the Korean word for "umbrella"');
   expect(quiz).toContain('Do not write the word "우산" yourself');
   expect(reactionQuizWord(colored)).toBe("우산");
-  // 사진 + 단어(글 없음): 사진에 먼저 반응.
+  // 사진 + 단어(글 없음): 사진에 먼저.
   const photo = reactionDirective({
     ...base,
     kind: "photo",
@@ -585,14 +585,9 @@ test("RP6. 조합 스토리 지시 — 색 바탕 · 사진 × 글 · 단어. �
     words: [{ ko: "여름", meaning: "summer" }],
   });
   expect(photo).toContain("What the photo shows: A beach.");
-  expect(photo).toMatch(/React warmly to the photo first/);
   expect(photo).not.toContain("What they wrote");
   // 색 + 단어만: 단어 카드 모양(첫 단어가 주인공).
-  const wordOnly = reactionDirective({
-    ...base,
-    angle: "word",
-    words: [{ ko: "산책", meaning: "a walk" }],
-  });
+  const wordOnly = reactionDirective({ ...base, words: [{ ko: "산책", meaning: "a walk" }] });
   expect(wordOnly).toContain('the Korean word "산책"');
   expect(wordOnly).toContain('Use the word "산책"');
   expect(reactionUserText({ ...base, texts: [], words: [{ ko: "산책", meaning: "" }] })).toContain(
