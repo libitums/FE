@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
+import type { FriendProfile } from "./friend-catalog.contract";
 import type { DirectoryRow } from "./friend-directory";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
 import type { SuggestedFriend } from "./suggested-friends";
@@ -44,4 +45,33 @@ export const modelOfRow = (row: DirectoryRow): SuggestedFriendSheetModel => ({
   avatarUrl: row.room.counterpart.avatarUrl,
   status: row.action === "chat" ? "addable" : "locked",
   offer: row.offer,
+});
+
+/**
+ * 스토리 보기 아바타의 프로필 시트 — 이미 친구(열린 방)인 인물(ADR-0178). 카탈로그 인물이면 그 소개 · 태그 · 첫 말을 쓰고, 없으면
+ * (카탈로그 밖의 방 인물) 이름 · 얼굴만 섭니다. 이름 · 얼굴은 보기와 같게 방의 것, 추가할 것이 없으니 `added` · 제안 없음.
+ */
+export const modelOfMetFriend = (
+  profile: FriendProfile | null,
+  who: { readonly id: string; readonly name: string; readonly avatarUrl: string | null },
+): SuggestedFriendSheetModel => ({
+  character:
+    profile === null
+      ? {
+          id: who.id,
+          name: who.name,
+          avatarPath: null,
+          kind: "story",
+          unlockEpisodeId: null,
+          unlockEpisode: null,
+          intro: null,
+          tags: [],
+          category: null,
+          sheetOpening: null,
+          earlyAccess: null,
+        }
+      : { ...profile, name: who.name },
+  avatarUrl: who.avatarUrl,
+  status: "added",
+  offer: null,
 });

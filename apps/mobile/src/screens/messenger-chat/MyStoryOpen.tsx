@@ -31,6 +31,7 @@ export function MyStoryOpen({
   onFindFriends,
   onDeleted,
   onClose,
+  photoUrl,
 }: {
   readonly story: MyStory;
   readonly now: number;
@@ -41,6 +42,8 @@ export function MyStoryOpen({
   readonly onFindFriends?: () => void;
   readonly onDeleted: (storyId: string) => void;
   readonly onClose: () => void;
+  /** 사진 스토리의 서명 주소(ADR-0199). */
+  readonly photoUrl?: (imagePath: string) => Promise<string | null>;
 }): ReactNode {
   const [confirm, setConfirm] = useState<"ask" | "failed" | null>(null);
   // 두 번 탭해도 지우기는 한 번(감사 A10) — 상태는 다음 렌더까지 안 바뀌어 ref로 막습니다.
@@ -71,6 +74,7 @@ export function MyStoryOpen({
         onDelete={() => setConfirm("ask")}
         onClose={onClose}
         covered={confirm !== null}
+        {...(photoUrl === undefined ? {} : { photoUrl })}
       />
       {confirm === null ? null : (
         <MyStoryDeleteDialog

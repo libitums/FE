@@ -43,6 +43,8 @@ function storiesArgs(wiring: ScreenWiring) {
     imageUrlOf: wiring.episodeContent.imageUrlOf,
     catalog: () => wiring.episodeContent.catalog,
     romanization: () => wiring.more.romanization === "shown",
+    // 보기 답장의 앱 관문(ADR-0178 D5 개정) — 대화방 입력 줄과 같은 체험 · 등급.
+    replyPlan: { trial: wiring.messengerChat.trial, tier: wiring.messengerChat.tier },
   };
 }
 

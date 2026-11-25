@@ -6,9 +6,11 @@ import { isStarredIn, withStarred } from "../lib/wordbook";
 import type {
   FriendStoriesPort,
   FriendStoryWord,
+  StoryReplyPlan,
   StorySeenStore,
   StoryWordPort,
 } from "../screens/messenger-chat/friend-stories.contract";
+import { deviceKeyboardHeightStore } from "../screens/messenger-chat/chat-local-stores";
 import { deviceStorySeenStore } from "../screens/messenger-chat/friend-story-seen-store";
 import { loadCurrentWordbook, todayLocal, updateCurrentWordbook } from "./learning-trail-port";
 import { sourceKey } from "./messenger-chat-wiring";
@@ -21,6 +23,8 @@ export type FriendStoriesWiringArgs = {
   /** UI 언어로 바꾼 카탈로그 — 부를 때마다 지금 것을 읽습니다. */
   readonly catalog: () => readonly CatalogEntry[];
   readonly romanization?: () => boolean;
+  /** 보기 답장의 앱 관문 재료(체험 · 등급, D5 개정) — 없으면 앱 관문 없이 보냅니다. */
+  readonly replyPlan?: StoryReplyPlan;
 };
 
 export type FriendStoriesTestStores = {
@@ -67,6 +71,21 @@ const wordsPort: StoryWordPort = {
   },
 };
 
+// 다시 읽기 리스너(ADR-0178 「다시 읽기」) — 앱이 앞으로 오면(`use-messenger-refresh`) 서 있는 목록에 알립니다.
+const reloadListeners = new Set<() => void>();
+
+function subscribeReload(listener: () => void): () => void {
+  reloadListeners.add(listener);
+  return () => {
+    reloadListeners.delete(listener);
+  };
+}
+
+/** 앱이 앞으로 왔다 — 서 있는 스토리 목록이 다시 읽습니다. 목록이 없으면 아무것도 하지 않습니다. */
+export function notifyFriendStoriesReload(): void {
+  for (const listener of Array.from(reloadListeners)) listener();
+}
+
 async function loadStories() {
   try {
     return (await companionServerRemote()?.stories?.list()) ?? null;
@@ -96,12 +115,15 @@ export function friendStoriesPort(args: FriendStoriesWiringArgs): FriendStoriesP
     },
     words: wordsPort,
     romanization: () => latest?.romanization?.() ?? true,
+    subscribeReload,
     // 내 스토리(ADR-0194) — 같은 계정 저장 · 카탈로그를 씁니다.
     mine: myStoriesPortOf({
       catalog: () => latest?.catalog() ?? [],
       accountKey: sourceKey,
       seen: seenStore,
     }),
+    replyPlan: () => latest?.replyPlan ?? null,
+    keyboardHeightStore: deviceKeyboardHeightStore,
   };
   return cachedPort;
 }

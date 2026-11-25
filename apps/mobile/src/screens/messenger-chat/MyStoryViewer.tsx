@@ -16,6 +16,7 @@ import {
   type ReactionFace,
 } from "./my-stories.contract";
 import { MyStoryIconButton, MyStoryLayer } from "./MyStoryLayer";
+import { MyPhotoStoryCard } from "./MyPhotoStoryCard";
 import { MyTextStoryCard, ReactionRow, SeenBy } from "./MyStoryReactions";
 
 export type MyStoryViewerProps = {
@@ -32,6 +33,8 @@ export type MyStoryViewerProps = {
   readonly onClose: () => void;
   /** 위에 확인 상자가 떠 있는가 — 낭독에서 가립니다. */
   readonly covered?: boolean;
+  /** 사진 스토리의 서명 주소(ADR-0199) — 없으면 사진 자리에 빈 바탕. */
+  readonly photoUrl?: (imagePath: string) => Promise<string | null>;
 };
 
 /**
@@ -49,6 +52,7 @@ export function MyStoryViewer({
   onDelete,
   onClose,
   covered = false,
+  photoUrl,
 }: MyStoryViewerProps): ReactNode {
   const all = useUiCopy().messengerChat;
   const copy = all.myStories.viewer;
@@ -97,8 +101,16 @@ export function MyStoryViewer({
           <text className="my-story-menu-text danger">{copy.delete}</text>
         </view>
       ) : null}
-      <text className="my-story-meta">{`${ageOf(story.postedAt)} · ${story.kind === "text" ? copy.textLabel : copy.kindLabel(story.kind)}`}</text>
-      {story.kind === "text" ? (
+      <text className="my-story-meta">{`${ageOf(story.postedAt)} · ${
+        story.kind === "text"
+          ? copy.textLabel
+          : story.kind === "photo"
+            ? all.myStories.photo.kindLabel
+            : copy.kindLabel(story.kind)
+      }`}</text>
+      {story.kind === "photo" ? (
+        <MyPhotoStoryCard story={story} {...(photoUrl === undefined ? {} : { photoUrl })} />
+      ) : story.kind === "text" ? (
         <MyTextStoryCard story={story} />
       ) : (
         <view className="my-story-card" data-testid={ids.card}>

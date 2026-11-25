@@ -1,5 +1,5 @@
 // 내 스토리(ADR-0194 · ADR-0191) 계약입니다 — 단어 · 레슨 카드로 올리는 내 스토리의 앱 쪽 모양 · 포트 · props · test-id. 타입만 둡니다.
-// 사진은 없습니다(사진 화면은 다음 단계). 친구(AI 인물)만 보고, 친구에게는 24시간, 내 보관함에는 지울 때까지 남습니다(설정 스위치).
+// 사진은 `my-story-photo.contract.ts`(ADR-0199). 친구(AI 인물)만 보고, 친구에게는 24시간, 내 보관함에는 지울 때까지 남습니다(설정 스위치).
 // 서버 모양의 정본은 `@libitums/companion-contract`의 my-stories 스키마입니다 — 앱은 zod를 번들에 넣지 않아 타입만 가져와 이름 · 값을
 // 거기서 잇고(`import type`은 빌드에서 지워집니다), 시각은 epoch ms로 풉니다(`my-stories-parse.ts`).
 
@@ -11,13 +11,14 @@ import type {
 
 import type { ChatCrisisResource } from "./chat-source.contract";
 import type { FriendStoryWord } from "./friend-stories.contract";
+import type { MyStoryPhotoPort, MyStoryRejection } from "./my-story-photo.contract";
 
-/** 내 스토리의 종류 — 단어장 단어(`word`) · 레슨 카드(`card`). 서버의 `photo`는 이 앱 판이 건너뜁니다(사진 화면 전). */
+/** 단어 · 카드 스토리의 종류 — 단어장 단어(`word`) · 레슨 카드(`card`). 사진 · 글 스토리는 `MyStory.kind`가 따로 갖습니다. */
 export type MyStoryKind = Exclude<WireStory["kind"], "photo">;
 
 /**
  * 서버가 받는 스토리 종류(시안 26 ~ 28, **서버 반영 예상**) — `companion_my_stories`의 `kinds`. 없으면 `["word", "card"]`(지금 서버).
- * `text`: 바탕색 + 한국어 한 줄 + 얹은 단어 · 카드, `photo`: 사진(이 앱 판은 버튼만 숨김 — 업로드 화면은 범위 밖).
+ * `text`: 바탕색 + 한국어 한 줄 + 얹은 단어 · 카드, `photo`: 사진(성인만 — 서버 판정, ADR-0199).
  */
 export type MyStoryPostKind = "word" | "card" | "text" | "photo";
 
@@ -86,8 +87,12 @@ export type MyStoryReaction = {
 /** 서버 `companion_my_stories()`의 한 줄. 시각은 epoch ms. */
 export type MyStory = {
   readonly id: string;
-  /** 단어 · 카드, 또는 글 스토리(`text`, 서버 반영 예상). */
-  readonly kind: MyStoryKind | "text";
+  /** 단어 · 카드, 글 스토리(`text`, 서버 반영 예상) · 사진(`photo`, ADR-0199). */
+  readonly kind: MyStoryKind | "text" | "photo";
+  /** `checking`: 사진 검수를 다시 보는 중 — 나에게만 보이고 Seen · 반응이 아직 없습니다. 칸이 없으면 live. */
+  readonly status: "live" | "checking";
+  /** 사진 스토리의 버킷 경로(`<user_id>/<파일>`) — 그 밖은 null. 서명 주소는 포트(`photo.url`)가 만듭니다. */
+  readonly imagePath: string | null;
   /** 단어 · 카드 스토리의 단어 — 글 스토리는 null. */
   readonly word: FriendStoryWord | null;
   readonly ko: string;
@@ -157,7 +162,12 @@ export type MyStoryPostResult =
   | { readonly result: "window_used"; readonly window: MyStoryWindow | null }
   /** 글 검수의 위기 신호 — 올리지 않고 기존 위기 안내 카드(ADR-0125)를 띄웁니다. */
   | { readonly result: "crisis"; readonly resources: readonly ChatCrisisResource[] }
-  /** `check_limit`: 하루 검수 시도 상한, `invalid`: 서버가 요청 모양을 받지 않음(#598). */
+  /** 사진 검수가 거절함(ADR-0199) — 스토리는 만들어지지 않고 「다시 확인 요청」만 됩니다. */
+  | { readonly result: "rejected"; readonly rejection: MyStoryRejection | null }
+  /**
+   * `check_limit`: 하루 검수 시도 상한, `invalid`: 서버가 요청 모양을 받지 않음(#598), `upload_failed`: 사진을 버킷에 못 올림(게시 호출 전,
+   * ADR-0199).
+   */
   | {
       readonly result:
         | "off"
@@ -165,6 +175,7 @@ export type MyStoryPostResult =
         | "text_blocked"
         | "check_limit"
         | "invalid"
+        | "upload_failed"
         | "failed";
     };
 
@@ -190,6 +201,8 @@ export type MyStoriesPort = {
   readonly newClientId: () => string;
   /** 이번 실행에 읽은 서버가 켜져 있었는가 — 설정의 「My stories」 줄. 없으면 false. */
   readonly knownEnabled?: () => boolean;
+  /** 사진(ADR-0199) — 호스트 모듈(`StoryPhotoModule`)이 없으면 없음(Camera · 사진 선택지가 서지 않음). */
+  readonly photo?: MyStoryPhotoPort;
 };
 
 /** 스토리 줄 맨 앞의 내 스토리 칸(ADR-0194) — 「+」(만들기)와, 살아 있는 내 스토리가 있으면 「Your story」. */

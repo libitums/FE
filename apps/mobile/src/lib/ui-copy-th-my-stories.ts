@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요(ADR-0158 개정).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoTh } from "./ui-copy-story-photo-2";
 
 const replies = (count: number) => `${count} คำตอบ`;
 const MONTHS = [
@@ -99,6 +100,7 @@ export const myStoriesTh: MyStoriesCopy = {
     ok: "ตกลง",
     close: "ปิด",
   },
+  photo: storyPhotoTh,
   start: {
     title: "สตอรี่ใหม่",
     close: "ปิด",

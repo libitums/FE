@@ -18,6 +18,8 @@ const NOW = Date.UTC(2026, 10, 23, 12, 0, 0);
 const story = (id: string, hoursAgo: number, reactions: string[] = []): MyStory => ({
   id,
   kind: "word",
+  status: "live",
+  imagePath: null,
   word: { episodeId: "u01", ref: `voca:${id}` },
   ko: "야근",
   roman: "yageun",

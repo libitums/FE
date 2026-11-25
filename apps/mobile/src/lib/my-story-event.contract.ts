@@ -16,7 +16,10 @@ type Common = {
 export type MyStoryEvent =
   | (Common & { readonly name: "my_story_create_opened"; readonly first: boolean })
   | (Common & { readonly name: "my_story_guide_closed"; readonly choice: "start" | "later" })
-  | (Common & { readonly name: "my_story_posted"; readonly kind: "word" | "card" | "text" })
+  | (Common & {
+      readonly name: "my_story_posted";
+      readonly kind: "word" | "card" | "text" | "photo";
+    })
   | (Common & {
       readonly name: "my_story_post_failed";
       readonly reason:
@@ -27,8 +30,18 @@ export type MyStoryEvent =
         | "crisis"
         | "check_limit"
         | "invalid"
+        | "rejected"
+        | "upload_failed"
         | "failed";
     })
+  /** 사진 고르기 · 찍기의 결과(ADR-0199) — `outcome` = 고름 · 닫음 · 카메라 거부 · 카메라 없음 · 못 읽음. */
+  | (Common & {
+      readonly name: "my_story_photo_picked";
+      readonly source: "camera" | "library";
+      readonly outcome: "picked" | "cancelled" | "denied" | "unavailable" | "failed";
+    })
+  /** 거절된 사진의 「Ask for a review」(ADR-0199) — `ok` = 서버가 받았는가. */
+  | (Common & { readonly name: "my_story_review_requested"; readonly ok: boolean })
   | (Common & {
       readonly name: "my_story_viewed";
       readonly reactions: string;

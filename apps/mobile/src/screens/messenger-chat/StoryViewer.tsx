@@ -1,28 +1,20 @@
 import { useEffect, useGlobalProps, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import cross from "@libitums/icons/lynx/cross";
-import pause from "@libitums/icons/lynx/pause";
-import play from "@libitums/icons/lynx/play";
-import { Avatar } from "@libitums/ui-lynx/avatar";
-
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { announce } from "../../lib/accessibility";
 import { restoreAccessibilityFocus } from "./chat-input-focus";
-import { spokenOf, storyAgeOf, viewerStep } from "./friend-stories";
+import { spokenOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { localizedLine } from "./suggested-friends";
-import {
-  IconButton,
-  StoryMeet,
-  StoryProgress,
-  StoryReplyBar,
-  useAdvanceTimer,
-  WordPill,
-} from "./StoryViewerParts";
+import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
+import { StoryViewerHead } from "./StoryViewerHead";
+import { StoryReplyArea } from "./StoryReplyArea";
+import { useStoryNavigation } from "./use-story-navigation";
+import { useStoryViewerReply } from "./use-story-viewer-reply";
 
 import "./story-viewer.css";
 
@@ -33,7 +25,7 @@ const NEXT_FRAME_MS = 16;
 
 /**
  * 스토리 보기(ADR-0178 D4, 시안 2 · 4번) — 목록 위 전체 화면 층. 칸 이동은 `viewerStep`, 경과는 `storyAgeOf`가 정하고 여기서는 그리기 ·
- * 6초 넘김 · 멈춤만 합니다. 내 친구 스토리는 답장 칩 · 답장 칸, 안 만난 친구는 소개 카드 · 추가 단추입니다. 시스템 뒤로 = 닫기.
+ * 6초 넘김 · 멈춤만 합니다. 내 친구 스토리는 답장 칩 · 답장 칸, 안 만난 친구는 소개 카드 · 추가 단추(추가 가능만), 위 아바타는 프로필 시트입니다. 뒤로 = 닫기.
  * 이전(왼쪽 1/3) · 다음(나머지) 탭 자리는 화면 전체이고, 위 · 가운데 · 아래 조작은 문서 순서가 뒤라 그 위에 섭니다.
  */
 export function StoryViewer({
@@ -45,29 +37,43 @@ export function StoryViewer({
   words,
   onShown,
   onReply,
+  onOpenChat,
+  keyboardHeight,
+  onKeyboardHeight,
   onSaveWord,
   onMeet,
+  onProfile,
   onClose,
   onSkip,
   covered = false,
 }: StoryViewerProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   const insets = safeAreaInsetsFrom(useGlobalProps());
-  const [index, setIndex] = useState(Math.min(Math.max(0, start), items.length - 1));
+  const nav = useStoryNavigation({ items, start, reducedMotion, onClose, onSkip });
+  const { index, step } = nav;
+  // 위 진행 막대 · 「Story i of n」은 지금 인물의 묶음만 셉니다(D4 개정).
+  const group = viewerGroupOf(items, index);
+  const groupLabel = copy.viewer.progress(group.at + 1, group.count);
   const [paused, setPaused] = useState(false);
-  useLayerBack(() => onClose("back"));
+  const reply = useStoryViewerReply({
+    index,
+    copy,
+    covered,
+    keyboardHeight,
+    onReply,
+    onKeyboardHeight,
+  });
+  // 입력 중이면 뒤로 = 키보드 먼저 내림(D5 개정).
+  useLayerBack(() => {
+    if (!reply.dismissKeyboard()) onClose("back");
+  });
   const item = items[index];
 
-  const step = (action: "next" | "prev" | "tick") => {
-    const next = viewerStep({ index, count: items.length }, action);
-    if (next === "close") return onClose("completed");
-    // 끝내는 탭은 건너뜀이 아닙니다(다 본 것) — 다음 장으로 넘긴 탭만 셉니다.
-    if (action === "next") onSkip?.();
-    setIndex(next.index);
-  };
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
-  const running = !paused && !covered && !reducedMotion && item !== undefined;
+  // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도 멈춥니다(D5 개정).
+  const stopped = paused || covered || reply.holding;
+  const running = !stopped && !reducedMotion && item !== undefined;
   useAdvanceTimer(index, running, () => step("tick"));
 
   // 장이 설 때마다 한 번(본 것 표시 · 이벤트) — 효과(배경 스레드)에서.
@@ -82,10 +88,7 @@ export function StoryViewer({
   useEffect(() => {
     const current = items[index];
     if (current === undefined) return undefined;
-    const line = spokenOf(copy.listSeparator, [
-      copy.viewer.label(current.name),
-      copy.viewer.progress(index + 1, items.length),
-    ]);
+    const line = spokenOf(copy.listSeparator, [copy.viewer.label(current.name), groupLabel]);
     if (opened.current) announce(line);
     opened.current = true;
     const handle = setTimeout(() => restoreAccessibilityFocus(ids.name), NEXT_FRAME_MS);
@@ -96,6 +99,8 @@ export function StoryViewer({
   const { story, unmet } = item;
   const tap = (action: "next" | "prev") => () => {
     "background only";
+    // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음). 방금 가로로 넘긴 손가락의 탭도 넘기지 않습니다.
+    if (nav.consumeSwipe() || reply.dismissKeyboard()) return;
     step(action);
   };
 
@@ -108,15 +113,24 @@ export function StoryViewer({
       event-through={false}
       accessibility-elements-hidden={covered}
     >
-      {item.imageUrl === null ? null : (
-        <image
-          className="story-viewer-image"
-          data-testid={ids.image}
-          src={item.imageUrl}
-          mode="aspectFill"
-          accessibility-elements-hidden={true}
-        />
-      )}
+      {/* 인물이 바뀌면 그림 층이 옆으로 미끄러져 들어옵니다(인물마다 새로 — key). 모션 줄이기면 none. */}
+      <view
+        key={group.start}
+        className={`story-viewer-content story-viewer-slide-${nav.slide}`}
+        data-testid={ids.content}
+        data-slide={nav.slide}
+        accessibility-elements-hidden={true}
+      >
+        {item.imageUrl === null ? null : (
+          <image
+            className="story-viewer-image"
+            data-testid={ids.image}
+            src={item.imageUrl}
+            mode="aspectFill"
+            accessibility-elements-hidden={true}
+          />
+        )}
+      </view>
       {/* 흰 글 · 아이콘이 밝은 사진 위에서도 읽히게 머리 줄 아래까지 고른 그늘(접근성 C2) — 인셋이 들어가 높이는 인라인입니다. */}
       <view
         className="story-viewer-shade-top"
@@ -125,7 +139,7 @@ export function StoryViewer({
       />
       <view className="story-viewer-shade-bottom" accessibility-elements-hidden={true} />
 
-      {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 · 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
+      {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 → 프로필(아바타) → 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
       <view
         className="story-viewer-top"
         style={{
@@ -134,67 +148,30 @@ export function StoryViewer({
           paddingRight: `${insets.right + 10}px`,
         }}
       >
-        <view className="story-viewer-head">
-          <IconButton
-            testId={ids.close}
-            icon={cross}
-            label={copy.viewer.close}
-            onTap={() => onClose("closed")}
-          />
-          <IconButton
-            testId={ids.pause}
-            icon={paused ? play : pause}
-            label={paused ? copy.viewer.play : copy.viewer.pause}
-            onTap={() => setPaused((value) => !value)}
-          />
-          <view className="story-viewer-spacer" />
-          {unmet === null ? (
-            <text
-              className="story-viewer-age"
-              data-testid={ids.age}
-              accessibility-elements-hidden={true}
-            >
-              {copy.age(storyAgeOf(story.postedAt, now))}
-            </text>
-          ) : (
-            <view className="story-viewer-new" accessibility-elements-hidden={true}>
-              <text className="story-viewer-new-text">{copy.viewer.newFriend}</text>
-            </view>
-          )}
-          <text
-            className="story-viewer-name"
-            id={ids.name}
-            data-testid={ids.name}
-            accessibility-element={true}
-            accessibility-label={spokenOf(copy.listSeparator, [
-              copy.viewer.label(item.name),
-              copy.viewer.progress(index + 1, items.length),
-            ])}
-          >
-            {item.name}
-          </text>
-          <view className="story-viewer-avatar" accessibility-elements-hidden={true}>
-            <Avatar
-              imageSource={item.avatarUrl ?? undefined}
-              name={item.name}
-              size="sm"
-              accessibility="hidden"
-            />
-          </view>
-        </view>
+        <StoryViewerHead
+          item={item}
+          now={now}
+          copy={copy}
+          groupLabel={groupLabel}
+          paused={paused}
+          onPause={() => setPaused((value) => !value)}
+          onClose={() => onClose("closed")}
+          onProfile={() => onProfile(item)}
+        />
         <StoryProgress
-          items={items}
-          index={index}
+          items={items.slice(group.start, group.start + group.count)}
+          index={group.at}
           still={reducedMotion}
-          stopped={paused || covered}
-          label={copy.viewer.progress(index + 1, items.length)}
+          stopped={stopped}
+          label={groupLabel}
         />
       </view>
 
       <view
         className="story-viewer-bottom"
+        data-testid={ids.replyBottom}
         style={{
-          paddingBottom: `${insets.bottom + 16}px`,
+          paddingBottom: `${reply.bottomPadding(insets.bottom)}px`,
           paddingLeft: `${insets.left + 16}px`,
           paddingRight: `${insets.right + 16}px`,
         }}
@@ -232,13 +209,25 @@ export function StoryViewer({
           ) : null}
         </view>
         {unmet === null ? (
-          <StoryReplyBar item={item} copy={copy} onReply={(text) => onReply(item, text)} />
+          <StoryReplyArea item={item} copy={copy} reply={reply} onOpenChat={onOpenChat} />
         ) : (
           <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
         )}
       </view>
 
-      <view className="story-viewer-taps">
+      {/* 가로로 밀면 인물을 넘깁니다(D4 개정) — 탭 자리 전체에서 손가락의 시작 · 끝을 봅니다. */}
+      <view
+        className="story-viewer-taps"
+        data-testid={ids.taps}
+        bindtouchstart={(event: { detail?: { x?: unknown; y?: unknown } }) => {
+          "background only";
+          nav.touchStart(event);
+        }}
+        bindtouchend={(event: { detail?: { x?: unknown; y?: unknown } }) => {
+          "background only";
+          nav.touchEnd(event);
+        }}
+      >
         {(["prev", "next"] as const).map((action) => (
           <view
             key={action}

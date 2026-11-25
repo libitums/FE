@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 import camera from "@libitums/icons/lynx/camera";
+import image from "@libitums/icons/lynx/image";
 import { color } from "@libitums/design-tokens";
 
 import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
@@ -47,16 +48,21 @@ function StartOption({
 }
 
 /**
- * 「+」 → 시작 고르기(시안 26번) — Camera · Background · 최근 사진. 사진은 서버가 받을 때(`kinds`에 photo)와 부르는 쪽이 사진 길을 넘길 때만
- * 섭니다 — 이 앱 판에는 사진 업로드 화면이 없어 `onCamera`를 넘기지 않으므로 Background만 섭니다.
+ * 「+」 → 시작 고르기(시안 26번) — Camera · 사진(최근 사진) · Background. 사진 둘은 서버가 받을 때(`kinds`에 photo)와 호스트 모듈이 있을 때만
+ * 부르는 쪽이 넘깁니다(ADR-0199). 시안의 최근 사진 칸 격자는 사진 보관함 읽기 권한이 필요해 시스템 사진 고르기(권한 없음)를 여는 칸 하나로
+ * 바꿨습니다. 고르기가 거부 · 실패하면 `error` 줄이 시트 아래에 섭니다.
  */
 export function MyStoryStartSheet({
   onBackground,
   onCamera,
+  onPhotos,
+  error = null,
   onClose,
 }: {
   readonly onBackground: () => void;
   readonly onCamera?: () => void;
+  readonly onPhotos?: () => void;
+  readonly error?: string | null;
   readonly onClose: () => void;
 }): ReactNode {
   const copy = useUiCopy().messengerChat.myStories.start;
@@ -81,6 +87,22 @@ export function MyStoryStartSheet({
               onTap={onCamera}
             />
           )}
+          {onPhotos === undefined ? null : (
+            <StartOption
+              testId={ids.startPhotos}
+              label={copy.recent}
+              tone="neutral"
+              icon={
+                <svg
+                  className="my-story-start-icon"
+                  content={image}
+                  current-color={color.fg.neutral}
+                  accessibility-elements-hidden={true}
+                />
+              }
+              onTap={onPhotos}
+            />
+          )}
           <StartOption
             testId={ids.startBackground}
             label={copy.background}
@@ -93,6 +115,11 @@ export function MyStoryStartSheet({
             onTap={onBackground}
           />
         </view>
+        {error === null ? null : (
+          <text className="my-story-start-error" data-testid={ids.startError}>
+            {error}
+          </text>
+        )}
       </AppBottomSheet>
     </view>
   );

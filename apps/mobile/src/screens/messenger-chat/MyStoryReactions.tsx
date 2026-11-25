@@ -10,6 +10,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import {
   myStoriesTestIds as ids,
   type MyStory,
+  type MyStoryOverlay,
   type MyStoryReaction,
   type ReactionFace,
 } from "./my-stories.contract";
@@ -149,7 +150,21 @@ export function MyTextStoryCard({ story }: { readonly story: MyStory }): ReactNo
           )}
         </view>
       )}
-      {story.overlays.map((overlay, index) =>
+      <StoryOverlays overlays={story.overlays} />
+    </view>
+  );
+}
+
+/** 바탕(색 · 사진) 위에 얹은 단어 · 카드 · 글 — 제자리 · 크기 · 회전 그대로(글 스토리 · 사진 스토리 카드가 함께 씀). */
+export function StoryOverlays({
+  overlays,
+}: {
+  readonly overlays: readonly MyStoryOverlay[];
+}): ReactNode {
+  const copy = useUiCopy().messengerChat.myStories.editor;
+  return (
+    <>
+      {overlays.map((overlay, index) =>
         overlay.kind === "text" ? (
           <view key={`${overlay.ko}-${index}`} className="my-story-lane" style={laneStyle(overlay)}>
             <view
@@ -195,6 +210,6 @@ export function MyTextStoryCard({ story }: { readonly story: MyStory }): ReactNo
           </view>
         ),
       )}
-    </view>
+    </>
   );
 }

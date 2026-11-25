@@ -60,14 +60,6 @@
   font-weight: var(--libitum-font-weight-bold);
 }
 
-/* 친구 스토리와 안 만난 친구를 가르는 세로 선(시안). 아래 이름 몫만큼 짧습니다. */
-.story-divider {
-  width: 1px;
-  align-self: stretch;
-  margin: var(--libitum-spacing-8) 0 var(--libitum-spacing-24);
-  background-color: var(--libitum-color-gray-300);
-}
-
 /* Find friends — 고리 자리와 같은 지름의 옅은 brand 원. */
 .story-find {
   display: flex;

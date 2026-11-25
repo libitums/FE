@@ -7,6 +7,8 @@ import { getItem, setItem } from "../lib/storage";
 import { uuidV4 } from "../screens/messenger-chat/chat-remote-notes";
 import type { StorySeenStore } from "../screens/messenger-chat/friend-stories.contract";
 import type { MyStoriesPort } from "../screens/messenger-chat/my-stories.contract";
+import type { MyStoryPhotoPort } from "../screens/messenger-chat/my-story-photo.contract";
+import { discardStoryPhoto, pickStoryPhoto, storyPhotosAvailable } from "../lib/story-photo";
 import { tzOffsetMinOf } from "../screens/messenger-chat/my-stories";
 import { loadCurrentWordbook, todayLocal } from "./learning-trail-port";
 import { myStoryChoicesOf } from "./my-stories-choices";
@@ -52,6 +54,33 @@ export type MyStoriesWiringArgs = {
   readonly seen: () => StorySeenStore;
 };
 
+/** 서명 주소를 다시 쓰는 시간 — 서버 수명(한 시간)보다 짧게. */
+const SIGNED_REUSE_MS = 45 * 60_000;
+
+/** 사진 포트(ADR-0199) — 호스트 고르기 · 지우기 + 서버 원격의 업로드 · 게시 · 서명 · 다시 확인 요청. */
+function photoPortOf(remote: () => ReturnType<typeof companionServerRemote>): MyStoryPhotoPort {
+  const signed = new Map<string, { readonly url: string; readonly at: number }>();
+  const photo = () => remote()?.myStories?.photo ?? null;
+  return {
+    pick: pickStoryPhoto,
+    // 위기 연락처 지역 — 색 바탕과 같이 스토어 계정 나라를 알면 싣습니다(#598 `client_region`).
+    post: async (draft) =>
+      (await photo()?.post({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {
+        result: "failed",
+      },
+    url: async (imagePath) => {
+      const now = Date.now();
+      const kept = signed.get(imagePath);
+      if (kept !== undefined && now - kept.at < SIGNED_REUSE_MS) return kept.url;
+      const url = (await photo()?.sign(imagePath)) ?? null;
+      if (url !== null) signed.set(imagePath, { url, at: now });
+      return url;
+    },
+    requestReview: async (id) => (await photo()?.requestReview(id)) ?? false,
+    discard: discardStoryPhoto,
+  };
+}
+
 /** 내 스토리 포트 — 서버 원격이 없으면(손님 · 가짜 출처) 읽기 null이라 「+」가 서지 않습니다. */
 export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
   const remote = () => companionServerRemote()?.myStories ?? null;
@@ -59,7 +88,12 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
   const shownThisRun = new Set<string>();
   // 계정마다 — 계정을 바꾸면 앞 계정의 값이 설정 줄을 세우지 않게(리뷰 m8).
   const enabled = new Map<string, boolean>();
+  const photo = photoPortOf(companionServerRemote);
   return {
+    // 호스트 모듈이 있을 때만(옛 호스트 · Explorer에는 사진 선택지가 없음) — 부를 때마다 봅니다.
+    get photo() {
+      return storyPhotosAvailable() ? photo : undefined;
+    },
     load: async () => {
       try {
         const state = (await remote()?.list(tzOffsetMinOf(Date.now()))) ?? null;

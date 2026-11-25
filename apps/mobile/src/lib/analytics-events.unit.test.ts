@@ -236,10 +236,11 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0117 2026-11-25⟩ 「새 메시지 ↓」 알약 누름 `chat_new_messages_jumped`가 더해져 115다(PostHog만).
   // ⟨ADR-0198⟩ 프로필 시트 목소리 견본 `friend_voice_sample_played`가 더해져 116이다(PostHog만).
   // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 여덟이 더해져 124다(PostHog만).
-  test("AN1. 이벤트 이름은 124개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0199⟩ 내 스토리 사진 `my_story_photo_picked` · `my_story_review_requested`가 더해져 126이다(PostHog만).
+  test("AN1. 이벤트 이름은 126개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(124);
+    expect(names).toHaveLength(126);
     expect(names).toContain("friend_voice_sample_played");
     expect(names).toContain("subscription_bonus_shown");
     expect(names).toContain("chat_new_messages_jumped");
@@ -260,6 +261,8 @@ describe("AN1 분석 계약의 크기", () => {
       "my_story_chat_opened",
       "my_story_deleted",
       "my_story_keep_toggled",
+      "my_story_photo_picked",
+      "my_story_review_requested",
     ])
       expect(names).toContain(name);
     expect(names).toContain("friend_story_closed");

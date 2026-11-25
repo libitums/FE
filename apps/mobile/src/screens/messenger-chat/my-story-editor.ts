@@ -2,9 +2,10 @@
 // - 옛 서버(word · card): Aa 없음, 스티커 하나, 글 없이 스티커 하나일 때만 기존 단어 올리기.
 // - 새 서버(#598, ADR-0191 D13 · D15 — kinds text · photo): 단어는 「색 바탕 + 단어」로 — word가 없어도 text가 있으면 단어를 얹어 글 스토리로.
 // - `text`가 있으면: Aa(바탕 위 글 상자, 교정 없음 — 검수는 올리기 요청 안에서 서버가) · 얹을 것 여덟(서버 overlays 상한 `MY_STORY_OVERLAY_MAX`와 같음, 글 상자 포함), 글 스토리로 올리기.
-// - `photo`가 있어야 시작 시트의 Camera · 최근 사진이 섭니다(업로드 화면은 범위 밖).
+// - `photo`가 있어야 시작 시트의 Camera · 최근 사진이 섭니다. 사진 위 편집은 늘 Aa · 얹기 여덟이고 사진 스토리로 올립니다(ADR-0199).
 
 import { romanizeKorean } from "../../lib/korean-romanize";
+import { photoLineOf } from "./my-story-photo";
 import type {
   MyStoryChoice,
   MyStoryOverlay,
@@ -43,6 +44,13 @@ export type EditorCaps = {
 
 export type EditorShare =
   | { readonly kind: "choice"; readonly choice: MyStoryChoice }
+  /** 사진 위(ADR-0199) — `ko`는 올릴 한 줄(`photoLineOf`). */
+  | {
+      readonly kind: "photo";
+      readonly ko: string;
+      readonly text: EditorText | null;
+      readonly overlays: readonly MyStoryOverlay[];
+    }
   | {
       readonly kind: "text";
       readonly background: StoryBackground;
@@ -65,6 +73,15 @@ export const STORY_TEXT_COLORS: readonly StoryTextColor[] = ["brown", "black", "
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 export const round = (value: number) => Math.round(value * 1000) / 1000;
+
+/** 사진 위 편집(ADR-0199) — 사진 서버는 글 상자 · 얹기 여덟을 늘 받습니다(`my_stories.overlays` 상한). */
+export const photoEditorCaps: EditorCaps = {
+  text: true,
+  word: true,
+  wordRpc: false,
+  photo: true,
+  maxStickers: OVERLAY_MAX,
+};
 
 export function editorCapsOf(kinds: readonly MyStoryPostKind[]): EditorCaps {
   const text = kinds.includes("text");
@@ -197,7 +214,17 @@ export function editorShareOf(
   stickers: readonly EditorSticker[],
   text: EditorText | null,
   caps: EditorCaps,
+  photo = false,
 ): EditorShare | null {
+  const overlays = () => [
+    ...(text === null ? [] : [textOverlayOf(text)]),
+    ...stickers.map(overlayOf),
+  ];
+  // 사진 위(ADR-0199) — 스티커 하나여도 사진 스토리로. 한 줄(서버 필수)이 없으면 Share 꺼짐.
+  if (photo) {
+    const ko = photoLineOf(text, stickers);
+    return ko === null ? null : { kind: "photo", ko, text, overlays: overlays() };
+  }
   const [only] = stickers;
   if (caps.wordRpc && text === null && stickers.length === 1 && only !== undefined)
     return { kind: "choice", choice: only.choice };
@@ -206,6 +233,6 @@ export function editorShareOf(
     kind: "text",
     background,
     text,
-    overlays: [...(text === null ? [] : [textOverlayOf(text)]), ...stickers.map(overlayOf)],
+    overlays: overlays(),
   };
 }

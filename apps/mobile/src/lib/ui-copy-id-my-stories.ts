@@ -1,6 +1,7 @@
 // 내 스토리 문구(id, ADR-0194).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoId } from "./ui-copy-story-photo";
 
 const replies = (count: number) => `${count} balasan`;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -90,6 +91,7 @@ export const myStoriesId: MyStoriesCopy = {
     ok: "Oke",
     close: "Tutup",
   },
+  photo: storyPhotoId,
   start: {
     title: "Cerita baru",
     close: "Tutup",

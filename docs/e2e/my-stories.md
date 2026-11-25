@@ -18,4 +18,18 @@ Edge Function `chat-send` · `companion-story-reactions`, pg_cron이 적용되�
 | MS-E9 | (서버가 `meta.quiz.freeAnswer`를 싣은 뒤) 덕수쌤 퀴즈 반응 → 답 — 각도만 quiz면 퀴즈 표시 없이 보통 엽전 관문 | 입력 칸 위 「Quiz answer is free」 · 엽전 없이 보냄 · 내 답 아래 「Free · quiz answer」, 맞히면 「Correct! …」(음성 선물 없음), 틀리면 힌트 뒤 「Free · last try」 |
 | MS-E8 | 설정 › My stories | 보관 스위치 · 「N stories」 · 칸(LIVE · 날짜 · 반응 수) · 칸마다 지우기 · 「Delete all stories」(확인 상자). 스위치를 끄면 24시간 지난 칸이 사라짐. VoiceOver · TalkBack으로 칸 · 지우기 · 스위치가 이름과 함께 읽힘 |
 
+### 사진(ADR-0199)
+
+준비: `kinds`에 photo가 오는 시험 계정(성인 · `my_story_photo` testers) 또는 응답 흉내 탐침(커밋하지 않음). **실제 기기 · 운영 서버로 사진을 올리지 않는다** —
+탐침은 업로드 · 게시 응답을 흉내 낸다.
+
+| # | 절차 | 기대 |
+| --- | --- | --- |
+| MSP-E1 | 「+」(kinds에 photo) | 시트에 Camera · Recent photos · Background. kinds에 photo가 없거나 옛 호스트면 Background만 |
+| MSP-E2 | Recent photos | 시스템 사진 고르기(권한 묻지 않음). 고르면 그 사진이 바탕인 편집(색 고르기 없음 · Aa · Words), 닫으면 시트에 그대로 |
+| MSP-E3 | Camera(iOS 시뮬레이터 · 카메라 없는 에뮬레이터) | 「The camera isn't available on this device.」. 실제 기기 iOS는 권한 대화상자(번역된 문구), 거부 뒤 다시 누르면 「Camera access is off …」 |
+| MSP-E4 | 사진 위 아무것도 없이 → 단어 · Aa → Share | 처음 「Add a word or write a line to share your photo.」 · Share 꺼짐. 얹으면 켜지고 Share 동안 「Uploading your photo…」 → 보기에 사진 + 얹은 것 · 「Photo story」 |
+| MSP-E5 | (탐침) 게시 응답 `checking` | 보기 사진 위 「Checking your photo」 띠 |
+| MSP-E6 | (탐침) 게시 응답 `rejected` | 편집 아래 「This photo can't be shared」 판 · Share 꺼짐 · Ask for a review → 「Thanks — we'll take another look.」 |
+
 **확인 기록**: PR 본문 · 보고에 시뮬레이터 · `assembleBundled` 스크린샷 경로를 적는다. [성능 기록](../performance/reports/my-stories-01.md) · [v2](../performance/reports/my-stories-02.md).

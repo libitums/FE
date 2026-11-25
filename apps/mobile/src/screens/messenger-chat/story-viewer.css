@@ -114,6 +114,15 @@
   padding-left: var(--libitum-spacing-2);
 }
 
+/* 이름 · 아바타 묶음 — 누르면 프로필 시트. 머리 줄처럼 row-reverse라 그림은 아바타 · 이름 순. */
+.story-viewer-who {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  flex-shrink: 1;
+}
+
 .story-viewer-avatar {
   display: flex;
   padding: 1px;
@@ -486,4 +495,43 @@
 .story-quote-bar-icon {
   width: var(--libitum-spacing-20);
   height: var(--libitum-spacing-20);
+}
+
+/* 그림 층 — 인물이 바뀌면 옆으로 미끄러져 들어옵니다(D4 개정, 인스타의 넘김을 슬라이드로). 길이 · 가속은 토큰, 모션 줄이기면 none 클래스. */
+.story-viewer-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.story-viewer-slide-next {
+  animation-name: story-viewer-slide-from-right;
+  animation-duration: var(--libitum-motion-duration-page);
+  animation-timing-function: var(--libitum-motion-easing-enter);
+}
+
+.story-viewer-slide-prev {
+  animation-name: story-viewer-slide-from-left;
+  animation-duration: var(--libitum-motion-duration-page);
+  animation-timing-function: var(--libitum-motion-easing-enter);
+}
+
+@keyframes story-viewer-slide-from-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes story-viewer-slide-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
