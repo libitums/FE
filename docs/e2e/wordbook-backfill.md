@@ -20,4 +20,6 @@
 | WBF-E3 | 고친 번들로 바꿔 켬 → 더보기 › My words | 메뉴 줄 「8 words · 0 to review」 · 줄 8개 모두 New(안녕하세요 · 감사합니다 · 물 · 봉투 · 카드 · 현금 · 영수증 · 주스) | 통과(iOS · Android) |
 | WBF-E4 | 채운 단어(물)에 별 → 앱을 다시 켬 | 별이 남음(채움이 기존 줄을 덮지 않음) · 단어 수 8 그대로(두 번 더하지 않음) | 통과(iOS · Android) |
 
+복습 나눠 잡기(하루 최대 15개, ADR-0169 개정)는 기기에서 따로 보지 않았다 — 이 기기 상태(8개)는 15개 아래라 모두 내일로 잡히고(「0 to review」 · New), 나누는 규칙은 unit WB6 · WB7이 본다.
+
 실행 로그에 JS 오류(`ReferenceError` · `TypeError`)는 없었다(Android `onErrorOccurred`는 번들 주소를 찾던 앞 시도의 내려받기 실패뿐).

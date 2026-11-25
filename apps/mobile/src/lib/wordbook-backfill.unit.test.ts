@@ -1,8 +1,12 @@
 import { describe, expect, test } from "vitest";
 
 import type { CatalogEntry } from "./episode-catalog";
-import { completedLessonWordsOf, withCompletedLessonWords } from "./wordbook-backfill";
-import { emptyWordbook, withAnswer, withCardsSeen, withStarred } from "./wordbook";
+import {
+  BACKFILL_REVIEWS_PER_DAY,
+  completedLessonWordsOf,
+  withCompletedLessonWords,
+} from "./wordbook-backfill";
+import { emptyWordbook, withAnswer, withCardsSeen, withStarred, wordStatusOf } from "./wordbook";
 
 // `unit` 계층: 끝낸 레슨의 단어 채움(ADR-0169 개정 2026-11-25). 사용자 보고 — 단어장이 나오기 전에 끝낸 레슨 · 재설치 뒤 끝낸
 // 레슨의 단어가 단어장(My words · 스토리 단어 시트)에 없었습니다. 단어장은 레슨 중 카드를 볼 때만 쌓였기 때문입니다.
@@ -92,5 +96,42 @@ describe("채움", () => {
       once,
     );
     expect(withCompletedLessonWords(emptyWordbook, [water], {}, today)).toBe(emptyWordbook);
+  });
+});
+
+describe("복습 나눠 잡기(사용자 결정 2026-11-25)", () => {
+  const many = (count: number) =>
+    entry("u09-many", 9, [
+      {
+        id: "S1",
+        items: Array.from({ length: count }, (_, i) => card(`s1-${i}`, `voca:w${i}`)),
+      },
+    ]);
+
+  test("WB6. 채운 단어의 다음 복습은 내일부터 하루 최대 15개씩 — 레슨 순서대로 앞 단어가 먼저, 상태는 New", () => {
+    expect(BACKFILL_REVIEWS_PER_DAY).toBe(15);
+    const book = withCompletedLessonWords(emptyWordbook, [many(32)], { "u09-many": ["S1"] }, today);
+    const due = (i: number) => book.words[`u09-many|voca:w${i}`]?.due;
+    expect([due(0), due(14)]).toEqual(["2026-11-26", "2026-11-26"]);
+    expect([due(15), due(29)]).toEqual(["2026-11-27", "2026-11-27"]);
+    expect([due(30), due(31)]).toEqual(["2026-11-28", "2026-11-28"]);
+    for (const record of Object.values(book.words)) {
+      expect(record.firstSeen).toBe(today);
+      expect(wordStatusOf(record, today)).toBe("new");
+    }
+  });
+
+  test("WB7. 이미 있던 줄은 세지 않고 날짜도 그대로 — 새로 더하는 줄만 나눈다, 다시 돌아도 날짜가 바뀌지 않음", () => {
+    const before = withCardsSeen(emptyWordbook, "u09-many", ["voca:w0"], "2026-11-01");
+    const once = withCompletedLessonWords(before, [many(17)], { "u09-many": ["S1"] }, today);
+    expect(once.words["u09-many|voca:w0"]).toBe(before.words["u09-many|voca:w0"]);
+    expect(once.words["u09-many|voca:w1"]?.due).toBe("2026-11-26");
+    expect(once.words["u09-many|voca:w15"]?.due).toBe("2026-11-26");
+    expect(once.words["u09-many|voca:w16"]?.due).toBe("2026-11-27");
+    const more = many(40);
+    const again = withCompletedLessonWords(once, [more], { "u09-many": ["S1"] }, "2026-11-30");
+    for (let i = 0; i < 17; i += 1)
+      expect(again.words[`u09-many|voca:w${i}`]).toBe(once.words[`u09-many|voca:w${i}`]);
+    expect(again.words["u09-many|voca:w17"]?.due).toBe("2026-12-01");
   });
 });

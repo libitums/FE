@@ -219,12 +219,15 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
   끝낸 레슨은 단어가 없다. 끝낸 레슨(진행 `catalogProgress`)은 회원이면 서버에, 비회원이면 기기에 있다. 재현: integration WBI1 · WBI2가 고치기 전 빈 단어장(채워진 줄 0) ·
   unit WB1 · WB3 · WB4가 빈 목록으로 실패했다.
 - **채움 규칙**: 세션이 진행 · 카탈로그를 받거나 바뀔 때(효과 — 렌더마다 아님, `useLearningTrail`) **끝낸 유닛의 단어 카드 `voca:` ref**(레슨이 `withCardsSeen`에 넘기는 것과
-  같은 규칙)를 지금 단어장 칸(계정 · 비회원 `guest`)에 **없는 것만** 새 단어로 더한다 — 처음 본 날 = 채운 날, 상자 0 · 다음 복습 내일 · 답 없음(New). 이미 있는 줄 · 별 · 맞힘 ·
+  같은 규칙)를 지금 단어장 칸(계정 · 비회원 `guest`)에 **없는 것만** 새 단어로 더한다 — 처음 본 날 = 채운 날, 상자 0 · 답 없음(New), 다음 복습은 아래 「나눠 잡기」. 이미 있는 줄 · 별 · 맞힘 ·
   복습 기록은 그대로다(멱등). 더할 것이 없으면 쓰지 않는다. 카탈로그가 준비되지 않은 에피소드는 건너뛰고 준비되면 다음 효과에서 채운다. 순수 함수
   `completedLessonWordsOf` · `withCompletedLessonWords`(`lib/wordbook-backfill.ts`)가 규칙을, `learning-trail-port.ts`가 저장을 맡는다.
+- **복습 나눠 잡기**(사용자 결정 2026-11-25, 「2번 — 며칠에 나눠 잡기」): 이번에 새로 더하는 줄만 다음 복습일을 **내일부터 하루 최대 15개씩**(`BACKFILL_REVIEWS_PER_DAY`,
+  기본값 — 상수 하나) 레슨 순서(에피소드 · 유닛 · 문항 순, 앞 레슨 단어가 먼저)대로 나눈다. 상태는 New 그대로다(복습 날이 오기 전까지). 이미 있던 줄 · 레슨 중 만난 단어는
+  건드리지 않고, 그날 이미 예정된 기존 단어 수는 세지 않는다(단순하게). 다시 돌아도 이미 채운 줄의 날짜는 바뀌지 않는다(없는 줄만 더하므로).
 - My words · 스토리 단어 시트 · 레슨 카드 별이 같은 기기 칸을 읽으므로 한 곳에서 고쳤다. 서버 변경 없음.
 - **대가**: 진행에는 레슨을 끝낸 날이 없어 채운 단어의 처음 본 날은 채운 날이다 — 목록에서 앞서 레슨 중 만난 단어 뒤에 서고, 자세히의 「처음 본 날」이 실제보다 늦다.
-  채운 단어는 모두 New(상자 0)라 **다음 날 오늘의 복습에 한꺼번에 올라온다**(전 레슨을 끝낸 사람은 수십 ~ 백여 개). 단어 카드 활동만 끝내고 유닛을 끝내지 않은 단어는 지금처럼
+  채운 단어가 많으면 복습이 여러 날에 걸친다(예: 100개면 7일, 마지막 날 10개) — 뒤 레슨 단어는 늦게 복습에 오고, 그날 원래 예정된 단어가 있으면 하루 15개를 넘을 수 있다. 단어 카드 활동만 끝내고 유닛을 끝내지 않은 단어는 지금처럼
   카드 활동 때 적힌 것만 있다. 세션마다 진행이 바뀔 때 단어장 칸을 한 번 읽어 비교한다(쓰기는 바뀔 때만).
 - **여전히 범위 밖**: 단어장 서버 동기화(별 · 복습 기록은 다른 기기로 넘어가지 않는다 — 다른 기기에서는 끝낸 레슨의 단어만 New로 다시 선다).
-- 검사: unit WB1 ~ WB5(`wordbook-backfill.unit.test.ts`), integration WBI1 · WBI2(`App.wordbook-backfill.integration.test.tsx`), e2e [수동 절차](../e2e/wordbook-backfill.md) WBF-E1 ~ E4(2026-11-25 iOS 시뮬레이터 · Android assembleBundled에서 고치기 전 0개 재현 → 고친 뒤 8개 · 별 유지 통과). 번들 origin/main 5,801,585 B → 5,802,192 B(+607 B, .env.local 없음), 천장 5,850,000 B 그대로.
+- 검사: unit WB1 ~ WB7(`wordbook-backfill.unit.test.ts`, WB6 · WB7 = 나눠 잡기), integration WBI1 · WBI2(`App.wordbook-backfill.integration.test.tsx`), e2e [수동 절차](../e2e/wordbook-backfill.md) WBF-E1 ~ E4(2026-11-25 iOS 시뮬레이터 · Android assembleBundled에서 고치기 전 0개 재현 → 고친 뒤 8개 · 별 유지 통과). 번들 origin/main 5,801,585 B → 5,802,192 B(+607 B, .env.local 없음), 천장 5,850,000 B 그대로.
