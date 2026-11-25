@@ -75,8 +75,8 @@
 | 편집(27) | 전체 화면 층 `MyStoryEditor`: 뒤로 · 바탕색 넷(Orange · Green · Blue · Purple) · 오른쪽 도구 Aa(글 서버만) · Words(Cards는 2026-11-25에 뺌) · 바탕 위 스티커(끌기 · 두 손가락 크기 0.5 ~ 3 · 회전 · 고르면 ×) · 아래 안내 · Share with friends(올릴 길이 없으면 꺼짐) |
 | Aa(29 · 30) | `MyStoryTextEntry`: 바탕이 어두워지고 가운데 점선 상자에서 휴대폰 키보드로 바로 씀(80자) · 위에 글자색 넷 · Done. Done이면 `MyStoryTextBox`가 바탕 위 요소(끌기 · 두 손가락 · 모서리 손잡이로 크기 — 글자도 같은 비율 · 다시 누르면 고쳐 쓰기)가 되고 Share가 바로 켜짐. **교정 없음**(사용자 결정 2026-11-25) — 쓴 글 그대로 올리고 검수는 올리기 요청 안에서 서버가: `text_blocked` → 안내, `crisis` → 위기 안내 카드(`ChatCrisisCard`). 글 상자 overlay에 앱이 만든 로마자(`romanizeKorean`) · 글자색(`typedText` · `textOverlayOf` · `resizeSticker`) |
 | 넣기(28) | `MyStoryAddSheet` 「Add a word」: 단어장 단어 칸 격자만(탭 · 거르기 칩 없음 — 레슨 카드는 올리지 않음), 누르면 스티커로 놓고 닫힘. 검색 칸은 범위 밖 |
-| 판정 | `my-story-editor.ts` — `editorCapsOf(kinds)`(text → Aa · 스티커 8, 없으면 1) · `placeSticker` · `moveSticker` · `pinchSticker` · `editorShareOf`(글 없이 스티커 하나 → 단어 · 카드 RPC, 글 서버의 글 · 여러 스티커 → 글 스토리) |
-| 서버 반영 예상 | `kinds` · 글 스토리 올리기(`action: post` + `background`) · 읽기의 `kind: text`(`background` · `overlays`) — ADR-0194 적용 기록 「서버에 요청하는 모양」 |
+| 판정 | `my-story-editor.ts` — `editorCapsOf(kinds)`(text → Aa · 스티커 8, 없으면 1, 단어 도구는 word 또는 text, 옛 단어 RPC는 word가 있을 때만 — #598) · `placeSticker` · `moveSticker` · `pinchSticker` · `editorShareOf`(word를 받는 서버에서 글 없이 스티커 하나 → 단어 RPC, 그 밖의 글 서버 → 색 바탕 스토리) |
+| 서버 계약 | 서버 PR #598(ADR-0191 D13 · D14 · D15)에 맞춤 — `kinds`(text · photo) · 색 바탕 올리기(`action: post` + `background`, `client_region`) · 결과 `check_limit` · `invalid` · 읽기의 `kind: text`(`background` · `overlays` · 글 없는 단어만 스토리) · 퀴즈 답 `skipped`. 대조표는 ADR-0194 적용 기록 |
 | 보기 | 글 스토리는 바탕색 카드 + 한 줄 · 「뜻」 + 얹은 단어(제자리) |
 
 ## 2. 테스트 계획
@@ -100,6 +100,8 @@
 | unit | MS-U30 ~ U31 | 글 상자 · 모서리 손잡이 (`my-story-editor.unit.test.ts`) |
 | unit | MS-U23 ~ U29 | 만들기: 도구 · 스티커 놓기 · 끌기/두 손가락 · 올릴 길 · kinds/글 스토리 풀기 · 교정 없음(뜻 · 원래 글 안 실음, 로마자) · crisis 결과 (`my-story-editor.unit.test.ts`) |
 | ui | MS-UI31 ~ UI37 | 시작 시트 · 지금 서버 편집 · 스티커 × · 두 손가락 · 글 서버 Aa(바탕 위 상자 · 글자색 · Done) → 글 스토리 · crisis → 위기 카드 · text_blocked · 포트가 던져도 다시 Share (`MyStoryEditor.ui.test.tsx`) |
+| unit | MS-U40 ~ U44 | #598 계약 — 도구 · 올릴 길(새/옛 서버) · kinds · check_limit · invalid · 단어만 색 바탕 스토리 읽기 · 퀴즈 skipped · 요청 몸(`client_region`) (`my-stories-598.unit.test.ts`) |
+| ui | MS-UI38 | 새 서버: Aa · Words, 단어 하나도 색 바탕 스토리, check_limit 안내 (`MyStoryEditor.ui.test.tsx`) |
 | integration | MSI6 | 실제 App: kinds에 text → Aa → Done → Share가 함수 결선으로 글 스토리, 없으면 Aa 없음 |
 | integration | MSI4 ~ MSI5 | 기록 JSON → 풀기 → 서버 모드 출처 → 방: 무료 신호 있음(무료 답 → 다시 읽기 → 판정 표시) / 각도 quiz만(#592 — 보통 엽전 관문) (`story-quiz.integration.test.tsx`) |
 | integration(서버) | MS1 ~ MS17 | 스위치 · 올리기(창 · 24시간 상한) · 창 계산 · 답할 인물(가중 무작위 · 각도 · 시각) · Seen · claim(상한 · 대화 중 미룸 · 겹친 호출 · 오래된 claim) · 끝내기(인물 방의 메시지) · 지우기(메시지는 남음) · 정리 · mine 판정 · 푸시 문 · 스토리 맥락 |

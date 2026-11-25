@@ -123,6 +123,22 @@
 
 ## 적용 기록
 
+### ⟨2026-11-25⟩ 서버 PR #598(ADR-0191 D13 · D14 · D15) 계약에 맞춤
+
+사용자 승인(2026-11-25). #598은 아직 머지 · 운영 적용 전이라 그 PR의 계약 파일(`packages/companion-contract` my-stories · rpc)을 정본으로
+읽었다. 앱은 옛 서버(kinds 없음 → word · card)와 새 서버 둘 다에서 동작한다.
+
+| 칸 | #598 | 앱(이 PR) |
+|---|---|---|
+| `kinds` | `text` · `photo`만(word · card는 「색 + 단어」로 바뀌어 안 옴), 없으면 옛 서버 | 단어 도구는 `word` 또는 `text`가 있으면 선다. `text`만 오면 단어 하나도 색 바탕 스토리로 올린다(`wordRpc` — kinds에 word가 있을 때만 옛 단어 RPC) |
+| 색 바탕 올리기 | `companion-my-story` `post` + `background`(image_path 없이), `ko`는 쓴 글 그대로(없으면 "") · 교정 없음 | 같음. 단어만 얹은 스토리는 `ko: ""` |
+| 결과 | `ok` · `text_blocked` · `crisis`(+ `resources`) · `window_used` · `daily_limit` · `check_limit` · `off` · `invalid` | `check_limit` · `invalid`를 따로 받아 안내(여덟 언어), `my_story_post_failed.reason`에 둘을 더함. `off`는 실패 안내 |
+| `client_region` | 선택 — 위기 연락처 지역 | 스토어 계정 나라(두 글자)를 알면 싣고, 모르면 뺀다(서버가 국제 목록) |
+| 스토리 `background` · `kind: "text"` | 있음 | 그린다. 단어만 얹은(글 없는) 색 바탕 스토리(`ko: ""`)도 읽는다 — 전에는 빈 글이라 버려졌다 |
+| 얹은 글 `color` | brown · black · white · orange | 같음 |
+| 퀴즈 meta | 반응 `{ angle, myStoryId, quiz: { freeAnswer } }`, 무료 답 `{ quiz: { free, attempt, result: correct · hint · revealed · skipped } }` | 이름 · 모양 같음. `skipped`(상관없는 말로 퀴즈를 닫음)는 「Free · quiz answer」만 남기고 맞힘 줄 없음, 그 뒤로 무료 아님 |
+| 스위치 | `my_story_text`(색 바탕) | 앱은 kinds만 본다 |
+
 ### ⟨2026-11-25⟩ 레슨 카드 올리기 없앰
 
 사용자 결정(2026-11-25, 시안 27 X2Editor · 28 X3AddSheet). **앱은 `card`를 올리지 않는다.**
