@@ -35,10 +35,7 @@ export const myStoriesTh: MyStoriesCopy = {
     title: "แชร์คำศัพท์ภาษาเกาหลี",
     body: "เพื่อนที่นี่จะตอบกลับ — ทุกสตอรี่คือการฝึกภาษาเกาหลีเล็ก ๆ",
     steps: [
-      {
-        title: "เลือกคำศัพท์หรือการ์ดบทเรียน",
-        body: "จากคำที่คุณบันทึกไว้หรือจากบทเรียนของคุณ",
-      },
+      { title: "เลือกคำศัพท์", body: "จากคำที่คุณบันทึกไว้" },
       {
         title: "เพื่อนตอบภายในหนึ่งชั่วโมง",
         body: "คำตอบจะอยู่ในแชทของเพื่อนแต่ละคน",
@@ -55,17 +52,8 @@ export const myStoriesTh: MyStoriesCopy = {
   composer: {
     title: "สตอรี่ใหม่",
     close: "ปิด",
-    tabsLabel: "สิ่งที่จะแชร์",
-    tab: (kind) => (kind === "word" ? "คำศัพท์ของฉัน" : "การ์ดบทเรียน"),
-    wordsTitle: "เลือกคำที่คุณบันทึกไว้",
-    wordCount: (count) => `${count} คำ`,
-    all: "ทั้งหมด",
     emptyWords: "ยังไม่มีคำที่บันทึกไว้ คำจากบทเรียนของคุณจะแสดงที่นี่",
-    emptyCards: "เรียนบทเรียนให้จบเพื่อแชร์การ์ดของบทนั้น",
-    chipLabel: (label, on) => `${label}${on ? " เลือกแล้ว" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko} ${meaning}${selected ? " เลือกแล้ว" : ""}`,
-    share: (ko) => `สร้างการ์ดด้วยคำว่า ${ko}`,
-    shareCard: "แชร์การ์ด",
     posting: "กำลังแชร์…",
     dailyLimit: "วันนี้คุณแชร์สตอรี่ครบแล้ว ลองใหม่พรุ่งนี้นะ",
     windowUsed: (time) =>
@@ -131,10 +119,9 @@ export const myStoriesTh: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? " เลือกอยู่" : ""}`,
     text: "ข้อความ",
     words: "คำศัพท์",
-    cards: "การ์ด",
     share: "แชร์ให้เพื่อน",
     posting: "กำลังแชร์…",
-    hintOne: "เพิ่มคำหรือการ์ดหนึ่งอันเพื่อแชร์",
+    hintOne: "เพิ่มคำหนึ่งคำเพื่อแชร์",
     hintMove: "ลากเพื่อย้าย ใช้สองนิ้วเพื่อปรับขนาด",
     stickerLabel: (ko, meaning) => `${ko} ${meaning}`,
     remove: (ko) => `ลบ ${ko}`,
@@ -157,7 +144,7 @@ export const myStoriesTh: MyStoriesCopy = {
     editLabel: (ko) => `แก้ข้อความ: ${ko}`,
   },
   add: {
-    title: "เพิ่มในสตอรี่",
+    title: "เพิ่มคำ",
     hint: "แตะคำเพื่อวาง สูงสุด 8 อันต่อสตอรี่",
     hintOne: "แตะคำเพื่อวาง",
   },

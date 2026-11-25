@@ -1,11 +1,6 @@
 // 내 스토리 test-id(ADR-0194 · ADR-0191) — `my-stories.contract.ts`가 다시 내보냅니다.
 
-import type {
-  MyStoryKind,
-  MyStorySlot,
-  StoryBackground,
-  StoryTextColor,
-} from "./my-stories.contract";
+import type { MyStorySlot, StoryBackground, StoryTextColor } from "./my-stories.contract";
 
 const ms = (suffix: string): string => `my-stories-${suffix}`;
 
@@ -17,10 +12,7 @@ export const myStoriesTestIds = {
   guideLater: ms("guide-later"),
   composer: ms("composer"),
   composerClose: ms("composer-close"),
-  tab: (kind: MyStoryKind) => ms(`tab-${kind}`),
   choice: (key: string) => ms(`choice-${key}`),
-  filter: (episodeId: string) => ms(`filter-${episodeId}`),
-  filterAll: ms("filter-all"),
   empty: ms("empty"),
   share: ms("share"),
   composerError: ms("composer-error"),
@@ -50,7 +42,6 @@ export const myStoriesTestIds = {
   swatch: (background: StoryBackground) => ms(`swatch-${background}`),
   toolText: ms("tool-text"),
   toolWords: ms("tool-words"),
-  toolCards: ms("tool-cards"),
   stickers: ms("stickers"),
   sticker: (id: string) => ms(`sticker-${id}`),
   stickerRemove: (id: string) => ms(`sticker-remove-${id}`),

@@ -35,10 +35,7 @@ export const myStoriesEs: MyStoriesCopy = {
     title: "Comparte una palabra en coreano",
     body: "Tus amigos de aquí te responderán: cada historia es una pequeña práctica de coreano.",
     steps: [
-      {
-        title: "Elige una palabra o una tarjeta de lección",
-        body: "De tus palabras guardadas o de tus lecciones.",
-      },
+      { title: "Elige una palabra", body: "De tus palabras guardadas." },
       {
         title: "Tus amigos responden en una hora",
         body: "Sus respuestas aparecen en el chat de cada amigo.",
@@ -55,17 +52,8 @@ export const myStoriesEs: MyStoriesCopy = {
   composer: {
     title: "Nueva historia",
     close: "Cerrar",
-    tabsLabel: "Qué compartir",
-    tab: (kind) => (kind === "word" ? "Palabras" : "Tarjetas"),
-    wordsTitle: "Elige una palabra guardada",
-    wordCount: (count) => (count === 1 ? "1 palabra" : `${count} palabras`),
-    all: "Todas",
     emptyWords: "Aún no tienes palabras guardadas. Aquí aparecen las palabras de tus lecciones.",
-    emptyCards: "Termina una lección para compartir sus tarjetas.",
-    chipLabel: (label, on) => `${label}${on ? ", seleccionado" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko}, ${meaning}${selected ? ", seleccionada" : ""}`,
-    share: (ko) => `Crear una tarjeta con ${ko}`,
-    shareCard: "Compartir la tarjeta",
     posting: "Compartiendo…",
     dailyLimit: "Ya compartiste suficientes historias hoy. Vuelve a intentarlo mañana.",
     windowUsed: (time) =>
@@ -143,10 +131,9 @@ export const myStoriesEs: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? ", seleccionado" : ""}`,
     text: "Texto",
     words: "Palabras",
-    cards: "Tarjetas",
     share: "Compartir con amigos",
     posting: "Compartiendo…",
-    hintOne: "Agrega una palabra o tarjeta para compartirla.",
+    hintOne: "Agrega una palabra para compartirla.",
     hintMove: "Arrastra para mover y pellizca para cambiar el tamaño.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Quitar ${ko}`,
@@ -169,7 +156,7 @@ export const myStoriesEs: MyStoriesCopy = {
     editLabel: (ko) => `Editar texto: ${ko}`,
   },
   add: {
-    title: "Agregar a tu historia",
+    title: "Agregar una palabra",
     hint: "Toca una palabra para colocarla. Hasta 8 por historia.",
     hintOne: "Toca una palabra para colocarla.",
   },

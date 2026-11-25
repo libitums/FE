@@ -15,7 +15,7 @@ import type { SuggestedFriendsPort } from "./friend-catalog.contract";
 import type { FriendStoriesPort } from "./friend-stories.contract";
 import { messengerChatTestIds as chatIds } from "./messenger-chat.contract";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
-import { cardChoice, fakeMyStories, MS_NOW, wordChoice } from "./my-stories.test-support";
+import { fakeMyStories, MS_NOW, wordChoice } from "./my-stories.test-support";
 import { MessengerListScreen } from "./MessengerListScreen";
 import { catalogOf, friend } from "./suggested-friends.test-support";
 
@@ -83,7 +83,6 @@ async function mount(fake: ReturnType<typeof fakeMyStories>) {
 }
 
 const words = [wordChoice("w1"), wordChoice("w2", "찌개", "stew")];
-const cards = [{ episodeId: "u01", title: "Ep 1", cards: [cardChoice("c1", "u01", "도착하다")] }];
 
 test("MS-UI31. 시작 시트(시안 26) — 사진을 받지 않는 서버면 Background만, 누르면 편집", async () => {
   await mount(fakeMyStories({ guideSeen: true, words }));
@@ -96,12 +95,14 @@ test("MS-UI31. 시작 시트(시안 26) — 사진을 받지 않는 서버면 Ba
   expect(screen.getByTestId(ids.editor)).not.toBeNull();
 });
 
-test("MS-UI32. 지금 서버(word · card) — Aa 없음, 스티커는 하나(바꿔 끼움), 빈 바탕은 Share 꺼짐, 바탕색 고르기", async () => {
-  const fake = fakeMyStories({ guideSeen: true, words, cards });
+test("MS-UI32. 지금 서버(word · card) — Aa · Cards 없음, 「Add a word」 시트는 단어장 단어만(탭 없음), 스티커는 하나(바꿔 끼움), 빈 바탕은 Share 꺼짐, 바탕색 고르기", async () => {
+  const fake = fakeMyStories({ guideSeen: true, words });
   await mount(fake);
   tapId(ids.create);
   tapId(ids.startBackground);
   expect(screen.queryByTestId(ids.toolText)).toBeNull();
+  expect(screen.queryByTestId("my-stories-tool-cards")).toBeNull();
+  expect(screen.getByTestId(ids.editorHint).textContent).toBe("Add a word to share it.");
   tapId(ids.share);
   await flush();
   expect(fake.post).not.toHaveBeenCalled();
@@ -111,16 +112,19 @@ test("MS-UI32. 지금 서버(word · card) — Aa 없음, 스티커는 하나(�
   );
   expect(screen.getByTestId(ids.editor).getAttribute("class")).toContain("my-story-bg-green");
   tapId(ids.toolWords);
-  expect(screen.getByTestId(ids.composer).textContent).toContain("Add to your story");
-  expect(screen.getByTestId(ids.composer).textContent).toContain("Tap a word to place it.");
+  const sheet = screen.getByTestId(ids.composer).textContent;
+  expect(sheet).toContain("Add a word");
+  expect(sheet).toContain("Tap a word to place it.");
+  expect(sheet).not.toContain("Lesson cards");
+  expect(screen.queryByTestId("my-stories-tab-card")).toBeNull();
   tapId(ids.choice("w1"));
-  tapId(ids.toolCards);
-  tapId(ids.choice("c1"));
+  tapId(ids.toolWords);
+  tapId(ids.choice("w2"));
   expect(screen.queryByTestId(ids.sticker("s1"))).toBeNull();
-  expect(screen.getByTestId(ids.sticker("s2")).textContent).toContain("도착하다");
+  expect(screen.getByTestId(ids.sticker("s2")).textContent).toContain("찌개");
   tapId(ids.share);
   await flush();
-  expect(fake.post).toHaveBeenCalledWith(expect.objectContaining({ kind: "card", ko: "도착하다" }));
+  expect(fake.post).toHaveBeenCalledWith(expect.objectContaining({ kind: "word", ko: "찌개" }));
 });
 
 test("MS-UI33. 스티커 — 고르면 ×로 빼고, 두 손가락으로 크기 · 회전", async () => {

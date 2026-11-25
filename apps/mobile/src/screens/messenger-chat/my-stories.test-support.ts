@@ -3,7 +3,6 @@
 import { vi } from "vitest";
 
 import type {
-  LessonCardGroup,
   MyStoriesPort,
   MyStoriesState,
   MyStory,
@@ -65,17 +64,6 @@ export const wordChoice = (key: string, ko = "야근", meaning = "overtime"): My
   source: "Lesson 1",
 });
 
-export const cardChoice = (key: string, episodeId: string, ko: string): MyStoryChoice => ({
-  key,
-  kind: "card",
-  word: { episodeId, ref: `voca:${key}` },
-  ko,
-  roman: "",
-  meaning: `${ko} meaning`,
-  example: { ko: `${ko}!`, meaning: "example" },
-  source: episodeId,
-});
-
 export type FakeMyStories = {
   readonly port: MyStoriesPort;
   readonly post: ReturnType<typeof vi.fn<(draft: MyStoryDraft) => Promise<MyStoryPostResult>>>;
@@ -92,7 +80,6 @@ export function fakeMyStories(options: {
   readonly keep?: boolean;
   readonly stories?: readonly MyStory[];
   readonly words?: readonly MyStoryChoice[];
-  readonly cards?: readonly LessonCardGroup[];
   readonly guideSeen?: boolean;
   readonly postResult?: Exclude<MyStoryPostResult["result"], "crisis">;
   readonly removeOk?: boolean;
@@ -161,7 +148,7 @@ export function fakeMyStories(options: {
     postText,
     remove,
     setKeep,
-    choices: () => ({ words: options.words ?? [], cards: options.cards ?? [] }),
+    choices: () => ({ words: options.words ?? [] }),
     guideSeen: () => guide,
     markGuideSeen: () => {
       guide = true;

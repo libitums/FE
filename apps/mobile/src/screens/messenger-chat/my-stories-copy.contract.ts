@@ -30,18 +30,8 @@ export type MyStoriesCopy = {
   readonly composer: {
     readonly title: string;
     readonly close: string;
-    readonly tabsLabel: string;
-    readonly tab: (kind: MyStoryKind) => string;
-    readonly wordsTitle: string;
-    readonly wordCount: (count: number) => string;
-    readonly all: string;
     readonly emptyWords: string;
-    readonly emptyCards: string;
-    /** 탭 · 거르기 칩 — 고른 것은 「, selected」를 붙여 읽습니다(ADR-0016 D3). */
-    readonly chipLabel: (label: string, on: boolean) => string;
     readonly choiceLabel: (ko: string, meaning: string, selected: boolean) => string;
-    readonly share: (ko: string) => string;
-    readonly shareCard: string;
     readonly posting: string;
     readonly dailyLimit: string;
     /** 서버가 `window_used`로 막음 — 다음 창 시각(모르면 null). */
@@ -110,7 +100,6 @@ export type MyStoriesCopy = {
     readonly colorLabel: (name: string, on: boolean) => string;
     readonly text: string;
     readonly words: string;
-    readonly cards: string;
     readonly share: string;
     readonly posting: string;
     /** 지금 서버(단어 · 카드만) — 스티커 하나로 올림. */

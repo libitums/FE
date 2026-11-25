@@ -21,10 +21,7 @@ export const myStoriesVi: MyStoriesCopy = {
     title: "Chia sẻ một từ tiếng Hàn",
     body: "Bạn bè ở đây sẽ trả lời — mỗi tin là một lần luyện tiếng Hàn nho nhỏ.",
     steps: [
-      {
-        title: "Chọn một từ hoặc một thẻ bài học",
-        body: "Từ những từ bạn đã lưu hoặc từ bài học của bạn.",
-      },
+      { title: "Chọn một từ", body: "Từ những từ bạn đã lưu." },
       {
         title: "Bạn bè trả lời trong vòng một giờ",
         body: "Phản hồi hiện trong cuộc trò chuyện với từng người bạn.",
@@ -41,17 +38,8 @@ export const myStoriesVi: MyStoriesCopy = {
   composer: {
     title: "Tin mới",
     close: "Đóng",
-    tabsLabel: "Chia sẻ gì",
-    tab: (kind) => (kind === "word" ? "Từ của tôi" : "Thẻ bài học"),
-    wordsTitle: "Chọn một từ bạn đã lưu",
-    wordCount: (count) => `${count} từ`,
-    all: "Tất cả",
     emptyWords: "Bạn chưa lưu từ nào. Các từ trong bài học sẽ hiện ở đây.",
-    emptyCards: "Học xong một bài để chia sẻ các thẻ của bài đó.",
-    chipLabel: (label, on) => `${label}${on ? ", đã chọn" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko}, ${meaning}${selected ? ", đã chọn" : ""}`,
-    share: (ko) => `Tạo thẻ với ${ko}`,
-    shareCard: "Chia sẻ thẻ",
     posting: "Đang chia sẻ…",
     dailyLimit: "Hôm nay bạn đã chia sẻ đủ tin rồi. Hãy thử lại vào ngày mai.",
     windowUsed: (time) =>
@@ -120,10 +108,9 @@ export const myStoriesVi: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? ", đã chọn" : ""}`,
     text: "Chữ",
     words: "Từ",
-    cards: "Thẻ",
     share: "Chia sẻ với bạn bè",
     posting: "Đang chia sẻ…",
-    hintOne: "Thêm một từ hoặc thẻ để chia sẻ.",
+    hintOne: "Thêm một từ để chia sẻ.",
     hintMove: "Kéo để di chuyển, chụm hai ngón để đổi cỡ.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Xóa ${ko}`,
@@ -146,7 +133,7 @@ export const myStoriesVi: MyStoriesCopy = {
     editLabel: (ko) => `Sửa chữ: ${ko}`,
   },
   add: {
-    title: "Thêm vào tin",
+    title: "Thêm một từ",
     hint: "Chạm vào một từ để đặt. Tối đa 8 trong một tin.",
     hintOne: "Chạm vào một từ để đặt.",
   },

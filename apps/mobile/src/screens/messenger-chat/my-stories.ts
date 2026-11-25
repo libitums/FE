@@ -3,7 +3,6 @@
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { ChatStoryQuote } from "./friend-stories.contract";
 import type {
-  LessonCardGroup,
   MyStoriesState,
   MyStory,
   MyStoryChoice,
@@ -83,16 +82,6 @@ export function myQuoteOf(story: MyStory, characterId: string): ChatStoryQuote {
     postedAt: story.postedAt,
     kind: "mine",
   };
-}
-
-/** 레슨 카드 거르기 — null이면 전체. */
-export function visibleCardsOf(
-  groups: readonly LessonCardGroup[],
-  episodeId: string | null,
-): MyStoryChoice[] {
-  return groups
-    .filter((group) => episodeId === null || group.episodeId === episodeId)
-    .flatMap((group) => group.cards);
 }
 
 /** 기기의 UTC 차이(분, 동쪽이 +) — 서버 `p_tz_offset_min`(현지 = UTC + 차이). */

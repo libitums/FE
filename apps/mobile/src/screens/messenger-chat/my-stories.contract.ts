@@ -115,29 +115,24 @@ export type MyStoriesState = {
   readonly kinds: readonly MyStoryPostKind[];
 };
 
-/** 올릴 거리 하나 — 단어장 단어 또는 레슨 카드. 뜻 · 예문은 화면 언어입니다. */
+/**
+ * 올릴 거리 하나 — 단어장 단어. 뜻 · 예문은 화면 언어입니다. 레슨 카드는 앱이 올리지 않습니다(사용자 결정 2026-11-25) — 서버에 있는
+ * `card` 스토리는 보기만 그립니다.
+ */
 export type MyStoryChoice = {
   readonly key: string;
-  readonly kind: MyStoryKind;
+  readonly kind: "word";
   readonly word: FriendStoryWord;
   readonly ko: string;
   readonly roman: string;
   readonly meaning: string;
   readonly example: MyStoryExample | null;
-  /** 어디서 왔는가 — 레슨 이름(카드 묶음 · 단어 줄의 둘째 줄). */
+  /** 어디서 왔는가 — 레슨 이름. */
   readonly source: string;
-};
-
-/** 레슨 카드 묶음 — 에피소드마다(거르기 칩). */
-export type LessonCardGroup = {
-  readonly episodeId: string;
-  readonly title: string;
-  readonly cards: readonly MyStoryChoice[];
 };
 
 export type MyStoryChoices = {
   readonly words: readonly MyStoryChoice[];
-  readonly cards: readonly LessonCardGroup[];
 };
 
 /** 올리기 요청 — `clientId`가 같으면 서버가 한 번만 올립니다(두 번 눌러도 하나). */

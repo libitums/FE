@@ -12,7 +12,7 @@ import {
   type EditorText,
 } from "./my-story-editor";
 import { myStoriesFrom, myStoryPostFrom } from "./my-stories-parse";
-import { cardChoice, wordChoice } from "./my-stories.test-support";
+import { wordChoice } from "./my-stories.test-support";
 
 // `unit` 계층(MS-U23 ~ U29): 스토리 만들기 — 바탕 위 편집(시안 26 ~ 28) 판정과 서버 반영 예상 칸(`kinds` · 글 스토리 · 검수 결과) 풀기. 순수.
 
@@ -31,7 +31,7 @@ test("MS-U24. 스티커 놓기 — 가운데에 놓고, 하나만 되는 서버�
   expect(one).toEqual([
     { id: "s1", choice: wordChoice("w1"), x: 0.5, y: 0.55, scale: 1, rotation: -4 },
   ]);
-  const swapped = placeSticker(one, cardChoice("c1", "u01", "도착하다"), oldCaps, "s2");
+  const swapped = placeSticker(one, wordChoice("w9", "도착하다"), oldCaps, "s2");
   expect(swapped.map((s) => s.id)).toEqual(["s2"]);
   let many: readonly EditorSticker[] = [];
   for (let i = 0; i < 10; i += 1) many = placeSticker(many, wordChoice(`w${i}`), textCaps, `s${i}`);

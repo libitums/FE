@@ -78,12 +78,13 @@ describe("MS-U10 내 스토리 문구", () => {
     },
   );
 
-  test("오늘 지우기 · 단어장 이름 · 미얀마 날짜(감사 M1 · M3 · M4)", () => {
+  test("오늘 지우기 · 넣기 시트 제목 · 미얀마 날짜(감사 M1 · M3 · M4)", () => {
     expect(myStoriesEn.archive.deleteToday).toBe("Delete today's story");
     expect(myStoriesEs.archive.deleteToday).not.toContain("Hoy");
-    expect(myStoriesJa.composer.tab("word")).toBe("単語帳");
-    expect(myStoriesTh.composer.tab("word")).toBe("คำศัพท์ของฉัน");
-    expect(myStoriesId.composer.tab("word")).toBe("Kosakataku");
+    // 레슨 카드는 올리지 않음(사용자 결정 2026-11-25) — 넣기 시트 제목은 단어만
+    expect(myStoriesJa.add.title).toBe("単語を追加");
+    expect(myStoriesTh.add.title).toBe("เพิ่มคำ");
+    expect(myStoriesId.add.title).toBe("Tambahkan kata");
     expect(myStoriesMy.archive.date(11, 21)).toBe("21/11");
     expect(myStoriesEn.archive.tileLabel("야근", "overtime", "Today", 2, true)).toBe(
       "야근, overtime, Today, 2 replies, LIVE",

@@ -21,7 +21,7 @@ export const myStoriesZhTw: MyStoriesCopy = {
     title: "分享一個韓文單字",
     body: "這裡的朋友會回覆你——每一則限時動態都是一次小小的韓文練習。",
     steps: [
-      { title: "選一個單字或課程卡", body: "從你收藏的單字或課程中挑選。" },
+      { title: "選一個單字", body: "從你收藏的單字中挑選。" },
       { title: "朋友會在一小時內回覆", body: "回覆會出現在每位朋友的聊天中。" },
       {
         title: "只有你在 duru 的朋友看得到",
@@ -35,17 +35,8 @@ export const myStoriesZhTw: MyStoriesCopy = {
   composer: {
     title: "新的限時動態",
     close: "關閉",
-    tabsLabel: "要分享什麼",
-    tab: (kind) => (kind === "word" ? "我的單字" : "課程卡"),
-    wordsTitle: "選一個你收藏的單字",
-    wordCount: (count) => `${count}個單字`,
-    all: "全部",
     emptyWords: "還沒有收藏的單字。課程中學到的單字會出現在這裡。",
-    emptyCards: "完成一堂課後，就能分享那堂課的卡片。",
-    chipLabel: (label, on) => `${label}${on ? "，已選取" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko}，${meaning}${selected ? "，已選取" : ""}`,
-    share: (ko) => `用 ${ko} 做一張卡`,
-    shareCard: "分享這張卡",
     posting: "分享中…",
     dailyLimit: "今天分享的限時動態已達上限，明天再試試。",
     windowUsed: (time) =>
@@ -113,10 +104,9 @@ export const myStoriesZhTw: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? "，已選取" : ""}`,
     text: "文字",
     words: "單字",
-    cards: "卡片",
     share: "分享給朋友",
     posting: "分享中…",
-    hintOne: "放上一個單字或卡片就能分享。",
+    hintOne: "放上一個單字就能分享。",
     hintMove: "拖曳移動，用兩指縮放。",
     stickerLabel: (ko, meaning) => `${ko}，${meaning}`,
     remove: (ko) => `移除 ${ko}`,
@@ -139,7 +129,7 @@ export const myStoriesZhTw: MyStoriesCopy = {
     editLabel: (ko) => `編輯文字：${ko}`,
   },
   add: {
-    title: "加到你的限時動態",
+    title: "加一個單字",
     hint: "點一個單字放上去。每則最多 8 個。",
     hintOne: "點一個單字放上去。",
   },

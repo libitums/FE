@@ -21,7 +21,7 @@ export const myStoriesEn: MyStoriesCopy = {
     title: "Share a Korean word",
     body: "Your friends here will reply — every story is a little Korean practice.",
     steps: [
-      { title: "Pick a word or a lesson card", body: "From your saved words or your lessons." },
+      { title: "Pick a word", body: "From your saved words." },
       {
         title: "Friends reply within the hour",
         body: "Their replies show up in each friend's chat.",
@@ -38,17 +38,8 @@ export const myStoriesEn: MyStoriesCopy = {
   composer: {
     title: "New story",
     close: "Close",
-    tabsLabel: "What to share",
-    tab: (kind) => (kind === "word" ? "My words" : "Lesson cards"),
-    wordsTitle: "Pick a word you saved",
-    wordCount: (count) => (count === 1 ? "1 word" : `${count} words`),
-    all: "All",
     emptyWords: "No saved words yet. Words from your lessons show up here.",
-    emptyCards: "Finish a lesson to share its cards.",
-    chipLabel: (label, on) => `${label}${on ? ", selected" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko}, ${meaning}${selected ? ", selected" : ""}`,
-    share: (ko) => `Make a card with ${ko}`,
-    shareCard: "Share the card",
     posting: "Sharing…",
     dailyLimit: "You've shared enough stories for today. Try again tomorrow.",
     windowUsed: (time) =>
@@ -121,10 +112,9 @@ export const myStoriesEn: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? ", selected" : ""}`,
     text: "Text",
     words: "Words",
-    cards: "Cards",
     share: "Share with friends",
     posting: "Sharing…",
-    hintOne: "Add one word or card to share it.",
+    hintOne: "Add a word to share it.",
     hintMove: "Drag to move, pinch to resize.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Remove ${ko}`,
@@ -147,7 +137,7 @@ export const myStoriesEn: MyStoriesCopy = {
     editLabel: (ko) => `Edit text: ${ko}`,
   },
   add: {
-    title: "Add to your story",
+    title: "Add a word",
     hint: "Tap a word to place it. Up to 8 on one story.",
     hintOne: "Tap a word to place it.",
   },

@@ -7,9 +7,8 @@ import {
   mineRingOf,
   myQuoteOf,
   unseenReactionIdsOf,
-  visibleCardsOf,
 } from "./my-stories";
-import type { LessonCardGroup, MyStory, MyStoryChoice } from "./my-stories.contract";
+import type { MyStory, MyStoryChoice } from "./my-stories.contract";
 
 // `unit` 계층(MS-U1 ~ U6): 내 스토리 판정(ADR-0194) — 「Your story」 고리 · 보관함 · 날짜 · 올리기 요청 · 인용 · 카드 거르기.
 
@@ -106,21 +105,21 @@ test("MS-U3. 날짜 — 오늘(현지)이면 today, 아니면 월 · 일", () =>
   expect(dayOf(before, NOW)).toEqual({ kind: "date", month: d.getMonth() + 1, day: d.getDate() });
 });
 
-const choice = (key: string, kind: "word" | "card" = "word"): MyStoryChoice => ({
+const choice = (key: string): MyStoryChoice => ({
   key,
-  kind,
+  kind: "word",
   word: { episodeId: "u02", ref: `voca:${key}` },
   ko: "도착하다",
   roman: "dochakada",
   meaning: "to arrive",
-  example: kind === "card" ? { ko: "서울에 도착했어!", meaning: "I arrived in Seoul!" } : null,
+  example: { ko: "서울에 도착했어!", meaning: "I arrived in Seoul!" },
   source: "Lesson 2",
 });
 
 test("MS-U4. 올리기 요청 — 고른 거리 그대로 + clientId · 화면 언어", () => {
-  expect(draftOf(choice("k1", "card"), "cid-1", "ja", -300)).toEqual({
+  expect(draftOf(choice("k1"), "cid-1", "ja", -300)).toEqual({
     clientId: "cid-1",
-    kind: "card",
+    kind: "word",
     word: { episodeId: "u02", ref: "voca:k1" },
     ko: "도착하다",
     roman: "dochakada",
@@ -140,14 +139,4 @@ test("MS-U5. 대화 인용 — 내 스토리(kind mine, 그림 없음)", () => {
     postedAt: NOW - 2 * HOUR,
     kind: "mine",
   });
-});
-
-test("MS-U6. 레슨 카드 거르기 — 전체(null)면 모든 묶음의 카드, 아니면 그 에피소드만", () => {
-  const groups: LessonCardGroup[] = [
-    { episodeId: "u01", title: "Ep 1", cards: [choice("a", "card")] },
-    { episodeId: "u02", title: "Ep 2", cards: [choice("b", "card"), choice("c", "card")] },
-  ];
-  expect(visibleCardsOf(groups, null).map((c) => c.key)).toEqual(["a", "b", "c"]);
-  expect(visibleCardsOf(groups, "u02").map((c) => c.key)).toEqual(["b", "c"]);
-  expect(visibleCardsOf(groups, "zz")).toEqual([]);
 });

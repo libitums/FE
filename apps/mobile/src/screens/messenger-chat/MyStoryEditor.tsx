@@ -2,7 +2,6 @@ import { useGlobalProps, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import arrowLeft from "@libitums/icons/lynx/arrow-left";
 import book from "@libitums/icons/lynx/book";
-import cards from "@libitums/icons/lynx/cards";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 
@@ -23,7 +22,6 @@ import type { ChatCrisisResource } from "./chat-source.contract";
 import {
   myStoriesTestIds as ids,
   type MyStoryChoices,
-  type MyStoryKind,
   type StoryBackground,
 } from "./my-stories.contract";
 import { MyStoryAddSheet } from "./MyStoryComposer";
@@ -114,7 +112,7 @@ export function MyStoryEditor({
   const [background, setBackground] = useState<StoryBackground>("orange");
   const [stickers, setStickers] = useState<readonly EditorSticker[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<MyStoryKind | null>(null);
+  const [sheet, setSheet] = useState(false);
   const [canvas, setCanvas] = useState<CanvasSize>({ width: 0, height: 0 });
   const stickerIds = useRef(0); // 스티커 id — 이 편집 안에서만 씁니다(서버 clientId와 따로)
   useLayerBack(onClose);
@@ -137,7 +135,7 @@ export function MyStoryEditor({
         className={`my-story-editor my-story-bg-${background}`}
         data-testid={ids.editor}
         event-through={false}
-        accessibility-elements-hidden={sheet !== null || writing}
+        accessibility-elements-hidden={sheet || writing}
         style={{ paddingTop: `${insets.top}px` }}
       >
         <view className={`my-story-editor-top${writing ? " my-story-under-typing" : ""}`}>
@@ -220,11 +218,8 @@ export function MyStoryEditor({
               <text className="my-story-tool-aa">Aa</text>
             </Tool>
           ) : null}
-          <Tool testId={ids.toolWords} label={copy.words} onTap={() => setSheet("word")}>
+          <Tool testId={ids.toolWords} label={copy.words} onTap={() => setSheet(true)}>
             <svg className="my-story-icon" content={book} current-color={color.fg.brand} />
-          </Tool>
-          <Tool testId={ids.toolCards} label={copy.cards} onTap={() => setSheet("card")}>
-            <svg className="my-story-icon" content={cards} current-color={color.fg.brand} />
           </Tool>
         </view>
         <view
@@ -256,19 +251,18 @@ export function MyStoryEditor({
           </view>
         </view>
       </view>
-      {sheet === null ? null : (
+      {!sheet ? null : (
         <MyStoryAddSheet
           choices={choices()}
-          tab={sheet}
           many={caps.maxStickers > 1}
           onPick={(choice) => {
             stickerIds.current += 1;
             const id = `s${stickerIds.current}`;
             changed(() => setStickers((now) => placeSticker(now, choice, caps, id, text !== null)));
             setSelected(id);
-            setSheet(null);
+            setSheet(false);
           }}
-          onClose={() => setSheet(null)}
+          onClose={() => setSheet(false)}
         />
       )}
       {writing ? (

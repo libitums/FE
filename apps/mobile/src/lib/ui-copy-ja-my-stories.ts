@@ -21,10 +21,7 @@ export const myStoriesJa: MyStoriesCopy = {
     title: "韓国語の単語をシェアしよう",
     body: "ここの友だちが返信してくれます。ストーリーのひとつひとつが小さな韓国語の練習です。",
     steps: [
-      {
-        title: "単語かレッスンカードを選ぶ",
-        body: "保存した単語やレッスンから選べます。",
-      },
+      { title: "単語を選ぶ", body: "保存した単語から選べます。" },
       {
         title: "友だちが1時間以内に返信",
         body: "返信はそれぞれの友だちのチャットに届きます。",
@@ -41,17 +38,8 @@ export const myStoriesJa: MyStoriesCopy = {
   composer: {
     title: "新しいストーリー",
     close: "閉じる",
-    tabsLabel: "シェアするもの",
-    tab: (kind) => (kind === "word" ? "単語帳" : "レッスンカード"),
-    wordsTitle: "保存した単語を選ぶ",
-    wordCount: (count) => `${count}語`,
-    all: "すべて",
     emptyWords: "保存した単語はまだありません。レッスンで学んだ単語がここに表示されます。",
-    emptyCards: "レッスンを終えると、そのカードをシェアできます。",
-    chipLabel: (label, on) => `${label}${on ? "、選択中" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko}、${meaning}${selected ? "、選択中" : ""}`,
-    share: (ko) => `${ko}でカードを作る`,
-    shareCard: "カードをシェア",
     posting: "シェア中…",
     dailyLimit: "今日シェアできるストーリーの上限に達しました。また明日お試しください。",
     windowUsed: (time) =>
@@ -123,10 +111,9 @@ export const myStoriesJa: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? "、選択中" : ""}`,
     text: "テキスト",
     words: "単語",
-    cards: "カード",
     share: "友だちにシェア",
     posting: "シェア中…",
-    hintOne: "単語かカードを1つ置くとシェアできます。",
+    hintOne: "単語を1つ置くとシェアできます。",
     hintMove: "ドラッグで移動、ピンチで大きさを変えられます。",
     stickerLabel: (ko, meaning) => `${ko}、${meaning}`,
     remove: (ko) => `削除：${ko}`,
@@ -149,7 +136,7 @@ export const myStoriesJa: MyStoriesCopy = {
     editLabel: (ko) => `テキストを編集：${ko}`,
   },
   add: {
-    title: "ストーリーに追加",
+    title: "単語を追加",
     hint: "単語をタップして置きます。1つのストーリーに8つまで。",
     hintOne: "単語をタップして置きます。",
   },

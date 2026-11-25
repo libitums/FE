@@ -22,10 +22,7 @@ export const myStoriesId: MyStoriesCopy = {
     title: "Bagikan satu kata bahasa Korea",
     body: "Teman-temanmu di sini akan membalas — setiap cerita jadi latihan kecil bahasa Korea.",
     steps: [
-      {
-        title: "Pilih kata atau kartu pelajaran",
-        body: "Dari kata yang kamu simpan atau dari pelajaranmu.",
-      },
+      { title: "Pilih kata", body: "Dari kata yang kamu simpan." },
       {
         title: "Teman membalas dalam satu jam",
         body: "Balasan mereka muncul di obrolan masing-masing teman.",
@@ -42,17 +39,8 @@ export const myStoriesId: MyStoriesCopy = {
   composer: {
     title: "Cerita baru",
     close: "Tutup",
-    tabsLabel: "Apa yang dibagikan",
-    tab: (kind) => (kind === "word" ? "Kosakataku" : "Kartu"),
-    wordsTitle: "Pilih kata yang kamu simpan",
-    wordCount: (count) => `${count} kata`,
-    all: "Semua",
     emptyWords: "Belum ada kata yang disimpan. Kata dari pelajaranmu akan muncul di sini.",
-    emptyCards: "Selesaikan satu pelajaran untuk membagikan kartunya.",
-    chipLabel: (label, on) => `${label}${on ? ", dipilih" : ""}`,
     choiceLabel: (ko, meaning, selected) => `${ko}, ${meaning}${selected ? ", dipilih" : ""}`,
-    share: (ko) => `Buat kartu dengan ${ko}`,
-    shareCard: "Bagikan kartu",
     posting: "Membagikan…",
     dailyLimit: "Kamu sudah cukup banyak berbagi cerita hari ini. Coba lagi besok.",
     windowUsed: (time) =>
@@ -122,10 +110,9 @@ export const myStoriesId: MyStoriesCopy = {
     colorLabel: (name, on) => `${name}${on ? ", dipilih" : ""}`,
     text: "Teks",
     words: "Kata",
-    cards: "Kartu",
     share: "Bagikan ke teman",
     posting: "Membagikan…",
-    hintOne: "Tambahkan satu kata atau kartu untuk membagikannya.",
+    hintOne: "Tambahkan satu kata untuk membagikannya.",
     hintMove: "Seret untuk memindahkan, cubit untuk mengubah ukuran.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Hapus ${ko}`,
@@ -148,7 +135,7 @@ export const myStoriesId: MyStoriesCopy = {
     editLabel: (ko) => `Ubah teks: ${ko}`,
   },
   add: {
-    title: "Tambahkan ke ceritamu",
+    title: "Tambahkan kata",
     hint: "Ketuk kata untuk menaruhnya. Maksimal 8 per cerita.",
     hintOne: "Ketuk kata untuk menaruhnya.",
   },

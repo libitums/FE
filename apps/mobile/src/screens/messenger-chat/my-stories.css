@@ -78,58 +78,6 @@
   line-height: var(--libitum-typography-body-s-line-height);
 }
 
-/* 탭 · 거르기 칩 — 고른 것은 흰 면 + 진한 글(시안 11 · 15번). 높이 44(누를 자리). */
-.my-story-tabs {
-  display: flex;
-  flex-direction: row;
-  gap: var(--libitum-spacing-4);
-  padding: var(--libitum-spacing-4);
-  border-radius: var(--libitum-radius-lg);
-  background-color: var(--libitum-color-gray-100);
-}
-
-.my-story-tabs .my-story-chip {
-  flex: 1;
-}
-
-.my-story-filters {
-  width: 100%;
-}
-
-.my-story-filter-track {
-  display: flex;
-  flex-direction: row;
-  gap: var(--libitum-spacing-8);
-}
-
-.my-story-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0 var(--libitum-spacing-16);
-  border-radius: var(--libitum-radius-md);
-  background-color: var(--libitum-color-gray-100);
-}
-
-.my-story-chip-on {
-  background-color: var(--libitum-color-white);
-  box-shadow: var(--libitum-elevation-shadow-s1);
-}
-
-.my-story-chip-text {
-  white-space: nowrap;
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-label-l-font-size);
-  line-height: var(--libitum-typography-label-l-line-height);
-}
-
-.my-story-chip-on .my-story-chip-text {
-  color: var(--libitum-color-fg-neutral);
-}
-
 .my-story-section-head {
   display: flex;
   flex-direction: row;

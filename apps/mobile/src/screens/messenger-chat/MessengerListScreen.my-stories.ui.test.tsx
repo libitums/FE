@@ -14,14 +14,7 @@ import { createCoinWallet } from "./coin-wallet";
 import type { SuggestedFriendsPort } from "./friend-catalog.contract";
 import { friendStoriesTestIds as fsIds, type FriendStoriesPort } from "./friend-stories.contract";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
-import {
-  cardChoice,
-  fakeMyStories,
-  MS_HOUR,
-  MS_NOW,
-  myStory,
-  wordChoice,
-} from "./my-stories.test-support";
+import { fakeMyStories, MS_HOUR, MS_NOW, myStory, wordChoice } from "./my-stories.test-support";
 import { MessengerListScreen } from "./MessengerListScreen";
 import { takeStoryReplyHandoff } from "./story-reply-handoff";
 import { catalogOf, friend, general } from "./suggested-friends.test-support";
@@ -96,10 +89,9 @@ function openEditor() {
   tapId(ids.startBackground);
 }
 
-/** Words · Cards 도구 → 넣기 시트에서 칸 하나(시안 28번). */
-function place(tool: "word" | "card", key: string, filter?: string) {
-  tapId(tool === "word" ? ids.toolWords : ids.toolCards);
-  if (filter !== undefined) tapId(ids.filter(filter));
+/** Words 도구 → 「Add a word」 시트에서 칸 하나(시안 28번). */
+function place(key: string) {
+  tapId(ids.toolWords);
   tapId(ids.choice(key));
 }
 
@@ -142,8 +134,8 @@ test("MS-UI3. 안내 → 시작 → 편집 → 단어 스티커 → 올림 → �
   tapId(ids.create);
   tapId(ids.guideStart);
   tapId(ids.startBackground);
-  expect(screen.getByTestId(ids.editorHint).textContent).toBe("Add one word or card to share it.");
-  place("word", "w2");
+  expect(screen.getByTestId(ids.editorHint).textContent).toBe("Add a word to share it.");
+  place("w2");
   expect(screen.queryByTestId(ids.composer)).toBeNull();
   expect(screen.getByTestId(ids.editorHint).textContent).toBe("Drag to move, pinch to resize.");
   tapId(ids.share);
@@ -160,32 +152,25 @@ test("MS-UI3. 안내 → 시작 → 편집 → 단어 스티커 → 올림 → �
   );
 });
 
-test("MS-UI4. 레슨 카드 — 없으면 안내, 거르기 칩, 카드 스티커로 올림, 하루 상한이면 안내 글", async () => {
+test("MS-UI4. 단어가 없으면 안내, Cards 도구 없음(사용자 결정 2026-11-25), 하루 상한이면 안내 글", async () => {
   await mount(fakeMyStories({ guideSeen: true }));
   openEditor();
-  tapId(ids.toolCards);
-  expect(screen.getByTestId(ids.empty).textContent).toContain("Finish a lesson");
+  expect(screen.queryByTestId("my-stories-tool-cards")).toBeNull();
+  tapId(ids.toolWords);
+  expect(screen.getByTestId(ids.empty).textContent).toContain("No saved words yet");
   cleanup();
-  const withCards = fakeMyStories({
+  const limited = fakeMyStories({
     guideSeen: true,
     postResult: "daily_limit",
-    words: [wordChoice("w1")],
-    cards: [
-      { episodeId: "u01", title: "Ep 1", cards: [cardChoice("c1", "u01", "도착하다")] },
-      { episodeId: "u02", title: "Ep 2", cards: [cardChoice("c2", "u02", "창가 자리")] },
-    ],
+    words: [wordChoice("w1"), wordChoice("w2", "창가 자리", "window seat")],
   });
-  await mount(withCards);
+  await mount(limited);
   openEditor();
-  tapId(ids.toolCards);
-  expect(screen.getByTestId(ids.choice("c1"))).not.toBeNull();
-  tapId(ids.filter("u02"));
-  expect(screen.queryByTestId(ids.choice("c1"))).toBeNull();
-  tapId(ids.choice("c2"));
+  place("w2");
   tapId(ids.share);
   await flush();
-  expect(withCards.post).toHaveBeenCalledWith(
-    expect.objectContaining({ kind: "card", ko: "창가 자리" }),
+  expect(limited.post).toHaveBeenCalledWith(
+    expect.objectContaining({ kind: "word", ko: "창가 자리" }),
   );
   expect(screen.getByTestId(ids.composerError).textContent).toContain("enough stories for today");
   expect(screen.getByTestId(ids.editor)).not.toBeNull();
@@ -261,11 +246,11 @@ test("MS-UI16. 올리기가 실패한 뒤 다른 거리를 고르면 새 clientI
   });
   await mount(fake);
   openEditor();
-  place("word", "w1");
+  place("w1");
   tapId(ids.share);
   await flush();
   expect(screen.getByTestId(ids.composerError)).not.toBeNull();
-  place("word", "w2");
+  place("w2");
   expect(screen.queryByTestId(ids.composerError)).toBeNull();
   tapId(ids.share);
   await flush();
@@ -280,10 +265,10 @@ test("MS-UI16. 올리기가 실패한 뒤 다른 거리를 고르면 새 clientI
   ]);
 });
 
-test("MS-UI18. 이벤트 횟수 · 속성 고정 — 안내 닫힘 · 올림 실패 · 카드 올림 · 본 반응 수 · 「+」만 있는 줄 노출(감사 A5 · A7 · A9 · A16)", async () => {
+test("MS-UI18. 이벤트 횟수 · 속성 고정 — 안내 닫힘 · 올림 실패 · 단어 올림 · 본 반응 수 · 「+」만 있는 줄 노출(감사 A5 · A7 · A9 · A16)", async () => {
   const fake = fakeMyStories({
     postResult: "daily_limit",
-    cards: [{ episodeId: "u01", title: "Ep 1", cards: [cardChoice("c1", "u01", "도착하다")] }],
+    words: [wordChoice("w1")],
   });
   const { events } = await mount(fake);
   const of = (name: string) => events().filter((e) => e.name === name);
@@ -294,27 +279,27 @@ test("MS-UI18. 이벤트 횟수 · 속성 고정 — 안내 닫힘 · 올림 실
   tapId(ids.guideLater);
   expect(of("my_story_guide_closed")).toEqual([expect.objectContaining({ choice: "later" })]);
   openEditor();
-  place("card", "c1");
+  place("w1");
   tapId(ids.share);
   await flush();
   expect(of("my_story_post_failed")).toEqual([expect.objectContaining({ reason: "daily_limit" })]);
   expect(of("my_story_posted")).toEqual([]);
 });
 
-test("MS-UI19. 카드 올림 · 열 때 새 반응 수(unseen) · 올리기 두 번 탭은 한 번(감사 A9 · A10 · A16)", async () => {
+test("MS-UI19. 단어 올림 · 열 때 새 반응 수(unseen) · 올리기 두 번 탭은 한 번(감사 A9 · A10 · A16)", async () => {
   const fake = fakeMyStories({
     guideSeen: true,
-    cards: [{ episodeId: "u01", title: "Ep 1", cards: [cardChoice("c1", "u01", "도착하다")] }],
+    words: [wordChoice("w1")],
   });
   const { events } = await mount(fake);
   openEditor();
-  place("card", "c1");
+  place("w1");
   tapId(ids.share);
   tapId(ids.share);
   await flush();
   expect(fake.post).toHaveBeenCalledTimes(1);
   const of = (name: string) => events().filter((e) => e.name === name);
-  expect(of("my_story_posted")).toEqual([expect.objectContaining({ kind: "card" })]);
+  expect(of("my_story_posted")).toEqual([expect.objectContaining({ kind: "word" })]);
   expect(of("my_story_viewed")).toEqual([
     expect.objectContaining({ from: "posted", reactions: "0", unseen: "0" }),
   ]);

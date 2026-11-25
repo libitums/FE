@@ -65,17 +65,12 @@ test("MS-U11. 단어장 — 별 단 것 먼저, 그다음 처음 본 날 최근 
   });
 });
 
-test("MS-U12. 레슨 카드 — 단어장에 기록이 있는 레슨만, 예문 있는 카드만, 에피소드 순서", () => {
+test("MS-U12. 레슨 카드는 거리에 없다 — 배운 레슨이 있어도 단어장 단어만(사용자 결정 2026-11-25)", () => {
   let book = withCardsSeen(emptyWordbook, "u02", ["voca:c"], "2026-11-10");
   book = withCardsSeen(book, "u01", ["voca:a"], "2026-11-01");
-  const { cards } = myStoryChoicesOf(book, catalog, "2026-11-20");
-  expect(
-    cards.map((group) => [group.episodeId, group.title, group.cards.map((c) => c.key)]),
-  ).toEqual([
-    ["u01", "Arrival", ["card:u01:voca:b"]],
-    ["u02", "Cafés", ["card:u02:voca:d"]],
-  ]);
-  expect(cards[0]?.cards[0]).toMatchObject({ kind: "card", example: { ko: "voca:b 예문" } });
+  const choices = myStoryChoicesOf(book, catalog, "2026-11-20");
+  expect(Object.keys(choices)).toEqual(["words"]);
+  expect(choices.words.every((choice) => choice.kind === "word")).toBe(true);
 });
 
 test("MS-U13. 서버 한도를 넘는 거리는 빼고, 긴 예문은 떼어 보낸다(리뷰 m5)", () => {
@@ -88,8 +83,7 @@ test("MS-U13. 서버 한도를 넘는 거리는 빼고, 긴 예문은 떼어 보
   long.episode.words[0]!.ko = "가".repeat(41);
   long.episode.units[0]!.items[1]!.example = { ko: "나".repeat(121), en: "x" };
   const book = withCardsSeen(emptyWordbook, "u09", ["voca:l", "voca:m"], "2026-11-01");
-  const { words, cards } = myStoryChoicesOf(book, [long as unknown as CatalogEntry], "2026-11-20");
+  const { words } = myStoryChoicesOf(book, [long as unknown as CatalogEntry], "2026-11-20");
   expect(words.map((w) => w.key)).toEqual(["u09:voca:m"]);
   expect(words[0]?.example).toBeNull();
-  expect(cards).toEqual([]);
 });

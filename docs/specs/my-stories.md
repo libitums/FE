@@ -10,7 +10,7 @@
   (`UiCopy.messengerChat.myStories`, 일곱 언어 `lib/ui-copy-<lang>-my-stories.ts`).
 - 순수 판정 `my-stories.ts`: `mineRingOf(state, seen, now)`(「Your story」 — 꺼짐 null, 살아 있는 가장 새 스토리 · 안 본 반응) · `unseenReactionIdsOf` ·
   `archiveOf(state, now)`(최신 먼저, 보관 끄면 살아 있는 것만) · `dayOf(at, now)`(today · 월/일) · `draftOf(choice, clientId, lang)` ·
-  `myQuoteOf(story, characterId)`(kind mine 인용) · `visibleCardsOf(groups, episodeId | null)`.
+  `myQuoteOf(story, characterId)`(kind mine 인용). 레슨 카드 거르기(`visibleCardsOf`)는 없앴다(2026-11-25 — 앱은 card를 올리지 않음).
 - 고를 거리 `app/my-stories-choices.ts` `myStoryChoicesOf(book, catalog, today)` — 단어장(별 먼저 → 처음 본 날 최근) · 배운 레슨의 예문 있는 카드.
 - 응답 풀기 `my-stories-parse.ts`: `myStoriesFrom` · `myStoryPostFrom` · `myStoryWindowOf`. 인용 `friend-stories-parse.ts` `storyQuoteOf` — `kind: mine | deleted`.
   ⟨2026-11-25 앱 v2⟩ 서버 모양의 정본은 `@libitums/companion-contract` my-stories — 앱 계약(`my-stories.contract.ts`)은 그 타입을 `import type`으로
@@ -72,9 +72,9 @@
 | 무엇 | 앱 |
 | --- | --- |
 | 시작(26) | 「+」(처음이면 안내 뒤) → 시트 「New story」: Background(색 바탕). Camera · 최근 사진은 `kinds`에 photo가 있고 사진 길이 있을 때만 — 이 판은 숨김 |
-| 편집(27) | 전체 화면 층 `MyStoryEditor`: 뒤로 · 바탕색 넷(Orange · Green · Blue · Purple) · 오른쪽 도구 Aa(글 서버만) · Words · Cards · 바탕 위 스티커(끌기 · 두 손가락 크기 0.5 ~ 3 · 회전 · 고르면 ×) · 아래 안내 · Share with friends(올릴 길이 없으면 꺼짐) |
+| 편집(27) | 전체 화면 층 `MyStoryEditor`: 뒤로 · 바탕색 넷(Orange · Green · Blue · Purple) · 오른쪽 도구 Aa(글 서버만) · Words(Cards는 2026-11-25에 뺌) · 바탕 위 스티커(끌기 · 두 손가락 크기 0.5 ~ 3 · 회전 · 고르면 ×) · 아래 안내 · Share with friends(올릴 길이 없으면 꺼짐) |
 | Aa(29 · 30) | `MyStoryTextEntry`: 바탕이 어두워지고 가운데 점선 상자에서 휴대폰 키보드로 바로 씀(80자) · 위에 글자색 넷 · Done. Done이면 `MyStoryTextBox`가 바탕 위 요소(끌기 · 두 손가락 · 모서리 손잡이로 크기 — 글자도 같은 비율 · 다시 누르면 고쳐 쓰기)가 되고 Share가 바로 켜짐. **교정 없음**(사용자 결정 2026-11-25) — 쓴 글 그대로 올리고 검수는 올리기 요청 안에서 서버가: `text_blocked` → 안내, `crisis` → 위기 안내 카드(`ChatCrisisCard`). 글 상자 overlay에 앱이 만든 로마자(`romanizeKorean`) · 글자색(`typedText` · `textOverlayOf` · `resizeSticker`) |
-| 넣기(28) | `MyStoryAddSheet`(옛 만들기 화면의 탭 · 거르기 칩이 이 시트 안으로): My words · Lesson cards 칸 격자, 누르면 스티커로 놓고 닫힘 |
+| 넣기(28) | `MyStoryAddSheet` 「Add a word」: 단어장 단어 칸 격자만(탭 · 거르기 칩 없음 — 레슨 카드는 올리지 않음), 누르면 스티커로 놓고 닫힘. 검색 칸은 범위 밖 |
 | 판정 | `my-story-editor.ts` — `editorCapsOf(kinds)`(text → Aa · 스티커 8, 없으면 1) · `placeSticker` · `moveSticker` · `pinchSticker` · `editorShareOf`(글 없이 스티커 하나 → 단어 · 카드 RPC, 글 서버의 글 · 여러 스티커 → 글 스토리) |
 | 서버 반영 예상 | `kinds` · 글 스토리 올리기(`action: post` + `background`) · 읽기의 `kind: text`(`background` · `overlays`) — ADR-0194 적용 기록 「서버에 요청하는 모양」 |
 | 보기 | 글 스토리는 바탕색 카드 + 한 줄 · 「뜻」 + 얹은 단어(제자리) |
