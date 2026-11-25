@@ -10,6 +10,7 @@
 - OS: 해당 없음(계측 없음)
 - Lynx SDK: 4.0.1
 - 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 6,142,363 bytes(변경 전 origin/main fe970cbe 6,126,711 bytes, +15,652) — 로컬 빌드로는 천장 6,140,000을 2,363 bytes 넘지만 **CI 「Build and bundle size」 실측은 6,133.3 kB(main 6,117.7 kB 대비 +15.6 kB), 천장까지 6.7 kB로 통과** — 로컬 · CI 빌드 차이 약 9 kB
+- 천장: 2026-11-26 사용자 결정으로 6,140,000 → 6,170,000 bytes(ADR-0149 개정 6, #613 · #615 · #616을 모두 넣는 값)
 - 실행 회차: 01
 
 ## 시나리오
