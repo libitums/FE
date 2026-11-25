@@ -24,10 +24,10 @@ export function replyWatchNext(watch: ReplyWatch, messages: readonly ChatMessage
   const known = watch.known;
   if (known === null) return { known: ids, sent: false, heard: false };
   const fresh = messages.filter((message) => !known.has(message.id));
-  const mine = fresh.filter(isMine).length;
-  const theirs = fresh.filter((message) => !isMine(message)).length;
+  if (fresh.length === 0) return { known: ids, sent: watch.sent, heard: watch.heard };
+  const only = fresh.length === 1 ? fresh[0] : undefined;
   const heard = watch.heard || (watch.sent && fresh.some(isTheirText));
-  const sent = watch.sent || (mine === 1 && theirs === 0);
+  const sent = watch.sent || (only !== undefined && isMine(only));
   return { known: ids, sent, heard };
 }
 
