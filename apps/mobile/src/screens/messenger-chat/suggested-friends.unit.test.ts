@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { COMPANION_CATALOG, COMPANION_CHARACTERS, companionSeed } from "./companion-roster";
 import {
+  currentFriendOf,
   friendStatusOf,
   localizedLine,
   offerBadgeOf,
@@ -221,5 +222,43 @@ test("CS-U1 서버 씨앗은 일반 인물을 잠긴 방(unlockEpisode 0)으로 
   expect(seed.rooms.find((r) => r.roomId === "mina")?.access).toEqual({
     kind: "locked",
     unlockEpisode: 3,
+  });
+});
+
+describe("SF-U8 지금 판정으로 다시 묻기(구매 뒤 낡은 추천, 2026-11-25)", () => {
+  const catalog = catalogOf([friend("a"), friend("b")]);
+  const before = suggestedFriendsOf({
+    catalog,
+    rooms: [room("a", false), room("b", false)],
+    earlyAccess: false,
+    now: NOW,
+  });
+
+  test("아직 추천이면 지금의 추천(지금 상태)을 돌려준다", () => {
+    expect(currentFriendOf(before, "b")).toMatchObject({
+      character: { id: "b" },
+      status: "locked",
+    });
+  });
+
+  test("방이 열려 추천에서 빠졌으면 null — 이미 친구", () => {
+    const after = suggestedFriendsOf({
+      catalog,
+      rooms: [room("a", true), room("b", false)],
+      earlyAccess: false,
+      now: NOW,
+    });
+    expect(currentFriendOf(after, "a")).toBeNull();
+  });
+
+  test("구독으로 addable이 됐으면 연 때의 locked가 아니라 지금의 addable", () => {
+    const now = suggestedFriendsOf({
+      catalog,
+      rooms: [room("a", false)],
+      earlyAccess: false,
+      now: NOW,
+      allStory: true,
+    });
+    expect(currentFriendOf(now, "a")?.status).toBe("addable");
   });
 });
