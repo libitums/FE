@@ -25,6 +25,18 @@ export const messengerChatSuggestedVi: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `GIỚI HẠN · ${days} ngày ${hours} giờ`,
   added: (name) => `Đã thêm ${name} vào trò chuyện`,
   addFailed: (name) => `Không thêm được ${name}. Hãy thử lại.`,
+  voice: {
+    hear: "Nghe giọng",
+    pause: "Tạm dừng",
+    resume: "Tiếp tục",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `Nghe giọng của ${name}`
+        : phase === "playing"
+          ? `Tạm dừng giọng của ${name}`
+          : `Tiếp tục giọng của ${name}`,
+    unavailable: "Không phát được giọng mẫu",
+  },
   adultAck: {
     title: (name) => `Thân thiết hơn với ${name}?`,
     body: (gender) =>

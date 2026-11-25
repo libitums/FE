@@ -83,10 +83,11 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0195⟩ 채팅 답할 문장 추천 이벤트 둘이 더해져 81 · 73이다(PostHog만).
   // ⟨ADR-0197⟩ 채팅 알림 권한 카드 이벤트 셋이 더해져 84 · 76이다(PostHog만).
   // ⟨ADR-0117 2026-11-25⟩ 「새 메시지 ↓」 알약 누름 `chat_new_messages_jumped`가 더해져 85 · 77이다(PostHog만).
-  test("AB3. 이름 85개는 표의 77개와 매핑되는 여덟로 나뉜다", () => {
+  // ⟨ADR-0198⟩ 프로필 시트 목소리 견본 `friend_voice_sample_played`가 더해져 86 · 78이다(PostHog만).
+  test("AB3. 이름 86개는 표의 78개와 매핑되는 여덟로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(77);
-    expect(allEventNames).toHaveLength(85);
+    expect(tableNames.size).toBe(78);
+    expect(allEventNames).toHaveLength(86);
     expect([...tableNames, ...mappedNames].sort()).toEqual([...allEventNames].sort());
   });
 

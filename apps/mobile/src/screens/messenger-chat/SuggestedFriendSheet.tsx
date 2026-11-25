@@ -19,6 +19,8 @@ import type { SuggestedFriendsCopy, SuggestedFriendSheetProps } from "./suggeste
 import { suggestedFriendsTestIds as ids } from "./suggested-friends.contract";
 import { localizedLine, offerBadgeOf } from "./suggested-friends";
 import type { EarlyAccessOffer } from "./friend-catalog.contract";
+import { sheetLineOf } from "./profile-voice-sample";
+import { ProfileVoiceButton } from "./ProfileVoiceButton";
 import { useScrollBudget } from "./use-scroll-budget";
 
 import "../../components/chat/chat.css";
@@ -55,13 +57,20 @@ function limitedText(offer: EarlyAccessOffer, now: number, copy: SuggestedFriend
 export function SuggestedFriendSheet({
   model,
   now,
+  voiceSampleUrl = null,
+  romanization = "hidden",
   onStart,
   onEarly,
   onClose,
 }: SuggestedFriendSheetProps): ReactNode {
-  const copy = useUiCopy().messengerChat.suggested;
+  const ui = useUiCopy();
+  const copy = ui.messengerChat.suggested;
   const { character, offer } = model;
   const locked = model.status === "locked";
+  // 첫 말 칸 — 견본 대본이 있으면 대본(로마자는 스위치), 없으면 첫 말(ADR-0198 D2). 잠기면 없음.
+  const line = locked
+    ? null
+    : sheetLineOf(character, copy.language, romanization, ui.readAloud.pronunciation);
   const still = useMotion() === "reduced";
   const dragStartY = useRef<number | null>(null);
   const globalProps = useGlobalProps();
@@ -163,6 +172,14 @@ export function SuggestedFriendSheet({
           catchtouchend={budget.scrollable ? holdTouch : undefined}
         >
           <view className="suggested-sheet-body" bindlayoutchange={budget.onContentLayout}>
+            {!locked && (character.voiceSamplePath ?? null) !== null ? (
+              <ProfileVoiceButton
+                key={character.id}
+                characterId={character.id}
+                name={character.name}
+                url={voiceSampleUrl}
+              />
+            ) : null}
             {!locked && character.tags.length > 0 ? (
               <view
                 className="suggested-sheet-tags"
@@ -182,16 +199,17 @@ export function SuggestedFriendSheet({
                 ))}
               </view>
             ) : null}
-            {!locked && character.sheetOpening !== null ? (
+            {line === null ? null : (
               <view className="suggested-sheet-opening" data-testid={ids.sheetOpening}>
                 <ChatTextBubble
                   direction="incoming"
                   speaker={character.name}
-                  message={character.sheetOpening.ko}
-                  translation={localizedLine(character.sheetOpening, copy.language)}
+                  message={line.ko}
+                  translation={"translation" in line.lines ? line.lines.translation : null}
+                  {...("annotation" in line.lines ? { annotation: line.lines.annotation } : {})}
                 />
               </view>
-            ) : null}
+            )}
             {locked ? (
               <view className="suggested-sheet-info" data-testid={ids.sheetInfo}>
                 <text

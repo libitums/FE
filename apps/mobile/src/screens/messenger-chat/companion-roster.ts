@@ -3,6 +3,7 @@
 
 import type { ChatFixtureRoom, ChatFixtureSeed } from "./chat-source.contract";
 import { COMPANION_FRIENDS } from "./companion-friends-roster";
+import { voiceSampleOf } from "./companion-voice-samples";
 import type { FriendCatalog, FriendProfile } from "./friend-catalog.contract";
 
 /**
@@ -38,6 +39,7 @@ const storyProfile = (mbti: string, intro: FriendProfile["intro"]) =>
 export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   {
     id: "duksu",
+    ...voiceSampleOf("duksu"),
     name: "덕수쌤",
     avatarPath: profile("ducksoo-casual"),
     unlockEpisodeId: null,
@@ -57,6 +59,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   },
   {
     id: "yoonkyung",
+    ...voiceSampleOf("yoonkyung"),
     name: "정윤경",
     avatarPath: profile("yoonkyung-casual"),
     unlockEpisodeId: "u01-water",
@@ -86,6 +89,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   },
   {
     id: "mina",
+    ...voiceSampleOf("mina"),
     name: "미나",
     avatarPath: profile("mina-casual"),
     unlockEpisodeId: "u03-mina",
@@ -115,6 +119,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   },
   {
     id: "doyun",
+    ...voiceSampleOf("doyun"),
     name: "한도윤",
     avatarPath: profile("doyun-casual"),
     unlockEpisodeId: "u12-cafe-missed",
@@ -144,6 +149,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   },
   {
     id: "jaemin",
+    ...voiceSampleOf("jaemin"),
     name: "서재민",
     avatarPath: profile("jaemin-casual"),
     unlockEpisodeId: "u17-samgyeopsal",
