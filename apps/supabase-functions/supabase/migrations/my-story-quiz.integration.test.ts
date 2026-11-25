@@ -215,3 +215,11 @@ test("MQ5. 기한(스토리의 24시간)이 지나면 무료 답이 없다 · �
   );
   expect(await claim(paid)).toEqual({ result: "none" });
 });
+
+test("MQ6. 턴은 끝났는데 결과를 적지 못한 답은 차례를 붙잡지 않는다 — 다음 메시지가 같은 차례를 받는다", async () => {
+  await quizReaction();
+  const lost = await uuid();
+  await claim(lost);
+  await turn(lost); // 예약 확정, companion_quiz_answered는 부르지 못함
+  expect(await claim(await uuid())).toMatchObject({ result: "quiz", attempt: 1 });
+});

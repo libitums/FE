@@ -170,11 +170,12 @@ begin
     return jsonb_build_object('result', 'none');
   end if;
   v_attempt := companion.quiz_answers_done(v_quiz.id) + 1;
-  -- 같은 차례를 받은, 아직 끝나지 않은 다른 메시지가 있으면(동시 전송) 그 메시지가 차례를 가진다 — 예약이 살아 있을 때만.
+  -- 같은 차례를 받은 다른 메시지의 턴이 아직 도는 중이면(동시 전송 — 예약이 열려 있음) 그 메시지가 차례를 가진다.
+  -- 턴이 끝났는데 결과를 적지 못한 답(예약 확정 · 결과 없음)은 차례를 붙잡지 않는다.
   if exists (
     select 1 from companion.my_story_quiz_answers a
+    join companion.credit_holds h on h.user_id = a.user_id and h.client_message_id = a.client_message_id and h.status = 'open'
     where a.quiz_id = v_quiz.id and a.result is null and a.attempt = v_attempt
-      and companion.message_hold_exists(p_user_id, a.client_message_id)
   ) then
     return jsonb_build_object('result', 'none');
   end if;
