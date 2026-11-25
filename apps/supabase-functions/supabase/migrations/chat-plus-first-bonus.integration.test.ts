@@ -187,3 +187,61 @@ test("CB-S10 claim — 알리지 않은 보너스를 한 번 꺼내고 announced
   );
   expect(notices.rows).toEqual([{ amount: 100, announced: true }]);
 });
+
+// 2026-11-25 사용자 결정(ADR-0196 개정 1): 이미 Chat Plus를 구독 중인 사람은 다음 갱신을 기다리지 않고, 앱이 부르는 claim이 그 자리에서
+// 지급하고 알린다. 같은 reason · ref라 웹훅 · 앱 어느 쪽이 먼저여도 평생 한 번.
+const ledgerCount = async () => (await bonusRows()).length;
+
+test("CB-S11 활성 Chat Plus인데 아직 안 받음(옛 함수 시절 구독) — claim이 지급하고 announced 100", async () => {
+  await apply("INITIAL_PURCHASE", "activate", { periodType: null });
+  expect(await ledgerCount()).toBe(0);
+  expect(await claim()).toMatchObject({
+    amount: 100,
+    reason: "announced",
+    wallet: { balance: 400 },
+  });
+  expect(await ledgerCount()).toBe(1);
+  expect(await claim()).toMatchObject({ amount: 0, reason: "already_announced" });
+});
+
+test("CB-S12 권한 없음 · Premium만 · 만료된 Chat Plus는 none — 지급 없음", async () => {
+  expect(await claim()).toMatchObject({ amount: 0, reason: "none" });
+  await apply("INITIAL_PURCHASE", "activate", {
+    productId: "duru.premium.monthly.v1",
+    periodType: null,
+  });
+  expect(await claim()).toMatchObject({ amount: 0, reason: "none" });
+  await apply("INITIAL_PURCHASE", "activate", { periodType: null, expiresAt: iso(DAY) });
+  await apply("EXPIRATION", "expire", { expiresAt: iso(-1000) });
+  expect(await claim()).toMatchObject({ amount: 0, reason: "none" });
+  expect(await ledgerCount()).toBe(0);
+});
+
+test("CB-S13 앱 먼저 → 웹훅 유료 RENEWAL — 원장 한 행, 다음 claim은 already_announced", async () => {
+  await apply("INITIAL_PURCHASE", "activate", { periodType: null });
+  expect((await claim()).amount).toBe(100);
+  await apply("RENEWAL", "activate", { periodType: "NORMAL" });
+  expect(await ledgerCount()).toBe(1);
+  expect(await claim()).toMatchObject({ amount: 0, reason: "already_announced" });
+});
+
+test("CB-S14 웹훅 먼저 → claim은 알리기만(두 번째 지급 없음)", async () => {
+  await apply("INITIAL_PURCHASE", "activate", { periodType: "NORMAL" });
+  expect(await claim()).toMatchObject({ amount: 100, reason: "announced" });
+  expect(await ledgerCount()).toBe(1);
+});
+
+test("CB-S15 금액 0(끔)이면 활성 Chat Plus여도 none", async () => {
+  await db.admin.query("update companion.settings set chat_plus_first_bonus = 0");
+  await apply("INITIAL_PURCHASE", "activate", { periodType: null });
+  expect(await claim()).toMatchObject({ amount: 0, reason: "none" });
+  expect(await ledgerCount()).toBe(0);
+});
+
+test("CB-S16 권한 줄의 마지막 이벤트가 체험(periodType TRIAL)이면 claim도 주지 않는다 — 유료로 넘어간 뒤 받는다", async () => {
+  await apply("INITIAL_PURCHASE", "activate", { periodType: "TRIAL", expiresAt: iso(3 * DAY) });
+  expect(await claim()).toMatchObject({ amount: 0, reason: "none" });
+  expect(await ledgerCount()).toBe(0);
+  await apply("RENEWAL", "activate", { periodType: "NORMAL" });
+  expect(await claim()).toMatchObject({ amount: 100, reason: "announced" });
+});

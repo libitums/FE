@@ -1,6 +1,6 @@
 # ADR-0196 — Chat Plus 첫 구독 보너스: 유료 기간이 처음 시작될 때 엽전 100을 계정당 한 번
 
-- 상태: **채택 — 앱 · 서버 파일 구현, 서버 마이그레이션 운영 적용 · 웹훅 함수 배포 전.** (`20270107120000_chat_plus_first_bonus.sql` 적용과
+- 상태: **채택(같은 날 개정 1) — 앱 · 서버 파일 구현, 서버 마이그레이션 운영 적용 · 웹훅 함수 배포 전.** (`20270107120000_chat_plus_first_bonus.sql` 적용과
   `revenuecat-webhook` 배포는 사용자가 한다.)
 - 날짜: 2026-11-25.
 - **사용자 결정(2026-11-25)** — 「chat plus 구독자한텐 첫 구독 보너스로 100 엽전 주는걸로」. 배경: 첫날 무제한 티켓(ADR-0186 개정 2)은 구독자에게 주지 않게 됐고,
@@ -46,8 +46,8 @@
 ### D3. 앱이 아는 방법 — 알림 표 + 별도 RPC 한 번(「이미 알렸나」를 서버가 쥔다)
 - 지급하는 순간 `companion.subscription_bonus_notices(user_id, amount, granted_at, announced_at)`에 한 행(사용자 FK, 탈퇴하면 사라짐).
 - `public.companion_claim_subscription_bonus()`(로그인 필수, `authenticated`만): 알리지 않은 행이 있으면 `announced_at`을 찍고
-  `{ amount: N, reason: 'announced', wallet }`, 이미 알렸으면 `{ amount: 0, reason: 'already_announced' }`, 행이 없으면 `{ amount: 0, reason: 'none' }`. **지급하지 않는다**
-  — 지급은 웹훅만 한다(돈을 낸 사실의 정본).
+  `{ amount: N, reason: 'announced', wallet }`, 이미 알렸으면 `{ amount: 0, reason: 'already_announced' }`, 행이 없으면 `{ amount: 0, reason: 'none' }`.
+  ~~지급하지 않는다~~ → 개정 1(아래 D6): 이미 구독 중인데 아직 안 받았으면 이 RPC가 먼저 지급한다.
 - ⟨기본값⟩ 권한 응답(`companion_entitlements`)의 칸으로 두지 않은 까닭: 권한은 구매 뒤 60초 동안 · 만료 경계마다 다시 읽고(`sameEntitlements`가 견줌), 「본 것으로 표시」는
   쓰기라 읽기 RPC에 섞을 수 없다. 별도 RPC는 한 번에 「알림 꺼내기 + 표시」를 해 기기 둘 · 재설치에서도 모달이 한 번이다.
 - **언제 묻나**: 로그인했고, 권한에 Chat Plus 또는 Premium 줄이 있고, 지도가 한가하고, 이 기기 기록이 아직 없을 때 — **권한 줄의 모양(요금제 · 만료)이 바뀔 때마다 한 번**.
@@ -68,6 +68,17 @@
 ### D5. 분석 이벤트(ADR-0029 「D3 목적 구분」, 영역 `learning`)
 - **`subscription_bonus_shown { plan: chat_plus, amount }`** — 서버가 알린 보너스 모달이 설 때 한 번. 지급 자체는 원장 `chat_plus_first_bonus`가 센다.
 
+### D6. 개정 1 — 이미 구독 중인 사람은 앱에 돌아왔을 때 지급 · 알림 (2026-11-25 사용자 결정)
+- 「이미 Chat Plus를 구독 중인 사람도 다음 갱신을 기다리지 않고 앱에 돌아왔을 때 모달로 알리면서 지급한다.」
+- `companion_claim_subscription_bonus()`가 먼저 판정한다: 설정 금액 > 0 이고 호출한 사용자에게 **지금 활성 Chat Plus 권한**(`plan_active`)이 있으면
+  `grant_once(uid, 금액, 'chat_plus_first_bonus', uid)` + 알림 행 → 이어서 지금처럼 알림을 꺼내 `announced`(+금액). 웹훅과 같은 reason · ref라
+  **웹훅 · 앱 어느 쪽이 먼저여도 평생 한 번**(서버 CB-S13 · S14).
+- 웹훅의 유료 시작 지급(D1)은 그대로 — 앱을 열지 않아도 받는다.
+- **체험 처리**: 권한 표(`plan_entitlements`)에는 체험 칸이 없다. 대신 권한 줄의 마지막 이벤트(`source_event_id` → `store_events.payload.periodType`)가
+  `TRIAL` · `PROMOTIONAL`이면 주지 않는다(CB-S16 — 유료로 넘어간 뒤 받는다). RevenueCat은 체험 중 취소 · 결제 문제 이벤트에도 `period_type`을 싣는다.
+- 앱 · 모달 · 문구 · 묻는 조건(권한에 Chat Plus · Premium 줄)은 그대로. 「아직 안 받은 기존 구독자」는 첫 실행에서 묻게 되고 서버가 바로 준다.
+- 대가: 아래 「대가」의 체험 줄.
+
 ## 버린 대안
 1. **앱이 구매 성공을 보고 지급(claim이 지급)** — 앱은 체험인지 · 돈을 냈는지 모른다. 지급은 돈을 낸 사실(웹훅)에 둔다.
 2. **권한 응답에 `bonus` 칸** — D3.
@@ -76,15 +87,17 @@
 5. **`periodType`이 없으면 준다** — 배포 순서가 어긋나면 체험 시작에 준다. 안전한 쪽(주지 않음)을 골랐다.
 
 ## 대가
-- 웹훅 함수를 배포하기 전까지는 아무도 받지 않는다(`periodType` 없음). 마이그레이션만 적용하고 함수를 늦게 배포하면 그 사이 유료 시작한 계정은 놓친다(다음 RENEWAL에
-  받는다 — 다음 달 · 다음 해). 배포 → 적용 순서면 놓치는 사람이 없다(아래).
-- 이 마이그레이션 적용 **전에** 유료로 시작한 Chat Plus 구독자는 다음 RENEWAL에 받는다(그때 처음 지급 조건을 만난다). 소급 지급은 하지 않는다 — 확인 필요 2.
+- 웹훅 경로는 함수를 배포하기 전까지 아무도 주지 않는다(`periodType` 없음). 개정 1 뒤로는 그 사이 유료 시작한 계정도 앱에 돌아오면 claim이 준다.
+- ~~적용 전에 유료로 시작한 구독자는 다음 RENEWAL에 받는다~~ → 개정 1: 앱에 돌아오면 바로 받는다.
+- **체험 구분의 빈틈(개정 1)**: 앱 경로의 체험 판정은 권한 줄의 마지막 이벤트의 `periodType`에 기댄다. **periodType을 싣는 웹훅 함수를 배포하기 전에 온 이벤트**로
+  만들어진 권한(그 시절 체험을 시작한 사람 포함)은 체험인지 알 수 없어 체험 중이어도 받는다. 함수 배포 뒤 체험을 시작한 사람은 받지 않는다. 막으려면 권한 표에
+  체험 칸을 두거나 RevenueCat REST로 확인해야 한다 — 이번에는 두지 않았다.
 - 알림을 꺼낸 뒤 모달을 보기 전에 앱이 죽으면 기기 기록(`{ N, false }`)이 남아 다음 실행에 모달이 선다. 기록 쓰기까지 실패하면 그 기기에서는 모달 없이 잔액만 오른다.
 - 탈퇴 뒤 같은 신원으로 새 계정을 만들고 다시 구독하면 또 받는다(원장 cascade). 돈을 내야 받는 보상이라 막지 않는다.
 
 ## 확인 필요
 1. Premium · Unlimited Tickets를 먼저 구독했던 계정이 Chat Plus로 처음 유료 기간을 시작할 때도 줄까 — 지금은 준다(D1 기본값).
-2. 적용 전부터 Chat Plus를 내던 구독자에게 소급할까 — 지금은 다음 RENEWAL에 받는다.
+2. ~~적용 전부터 Chat Plus를 내던 구독자에게 소급할까~~ — 2026-11-25 사용자 결정으로 닫힘(D6: 앱에 돌아오면 지급).
 
 ## 운영 적용(사용자)
 1. **먼저** `revenuecat-webhook` 함수를 배포한다(`periodType`을 싣는다 — 옛 DB 함수는 모르는 키를 무시한다).
@@ -95,6 +108,6 @@
 
 ## 테스트
 - 서버 unit CB-W1 · W2(`revenuecat-event.unit.test.ts` — `periodType`).
-- 서버 integration CB-S1 ~ S10(`chat-plus-first-bonus.integration.test.ts`, 임베디드 Postgres).
+- 서버 integration CB-S1 ~ S16(`chat-plus-first-bonus.integration.test.ts`, 임베디드 Postgres — S11 ~ S16은 개정 1).
 - 앱 unit CB-U1 ~ U8, ui CB-UI1 · UI2, integration CB-I1 ~ I4.
 - e2e [수동](../e2e/chat-plus-first-bonus.md).

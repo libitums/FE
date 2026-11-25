@@ -5,7 +5,8 @@
 --    `grant_once(uid, 금액, 'chat_plus_first_bonus', uid)` — ref가 사용자 id라 재구독 · 기간 바꿈 · 재전송으로 두 번 받지 않는다. 체험(TRIAL) · 프로모션 ·
 --    기간 연장 · 임시 권한 · periodType 없음(periodType을 싣기 전의 웹훅 함수)은 주지 않는다. 늦게 온(stale) 유료 이벤트도 지급은 한다. 환불돼도 회수하지 않는다.
 -- 3. 앱 알림: 지급할 때 `companion.subscription_bonus_notices`에 한 행, 앱은 `public.companion_claim_subscription_bonus()`로 알리지 않은 보너스를 한 번
---    꺼낸다(announced → already_announced). 이 RPC는 지급하지 않는다.
+--    꺼낸다(announced → already_announced). 개정 1(2026-11-25 사용자 결정): 이미 구독 중이라 웹훅 지급이 없던 사람은 이 RPC가 지금 활성 Chat Plus
+--    권한을 보고 그 자리에서 같은 reason · ref로 지급한 뒤 알린다(권한 줄의 마지막 이벤트가 체험 · 프로모션이면 주지 않음).
 -- 4. `companion_apply_store_event` 본문은 20261215120000_companion_product_change_expiry.sql과 같고, 구독 갈래 끝에 지급 판정 한 덩어리만 더했다.
 
 alter table companion.settings
@@ -197,7 +198,7 @@ $$;
 revoke all on function public.companion_apply_store_event(jsonb) from public, anon, authenticated;
 grant execute on function public.companion_apply_store_event(jsonb) to service_role;
 
--- 앱이 부름(로그인 필수): 알리지 않은 보너스가 있으면 알린 것으로 찍고 그 수를, 아니면 0. 지급하지 않는다.
+-- 앱이 부름(로그인 필수): 활성 Chat Plus인데 아직 안 받았으면 먼저 지급하고, 알리지 않은 보너스가 있으면 알린 것으로 찍고 그 수를, 아니면 0.
 create function public.companion_claim_subscription_bonus()
 returns jsonb
 language plpgsql
@@ -212,6 +213,20 @@ begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
   end if;
+  -- 이미 구독 중인데 아직 안 받은 사람(ADR-0196 개정 1): 지금 활성 Chat Plus 권한이 있으면 그 자리에서 지급한다. 권한 줄의 마지막 이벤트가
+  -- 체험 · 프로모션이면(periodType) 주지 않는다 — periodType을 싣기 전의 이벤트는 구분할 수 없어 준다(ADR-0196 대가).
+  select chat_plus_first_bonus into v_amount from companion.settings limit 1;
+  if coalesce(v_amount, 0) > 0 and exists (
+    select 1 from companion.plan_entitlements e
+    left join companion.store_events s on s.id = e.source_event_id
+    where e.user_id = v_user and e.entitlement = 'chat_plus'
+      and companion.plan_active(e.status, e.expires_at, now())
+      and coalesce(s.payload->>'periodType', '') not in ('TRIAL', 'PROMOTIONAL')
+  ) and companion.grant_once(v_user, v_amount, 'chat_plus_first_bonus', v_user::text) then
+    insert into companion.subscription_bonus_notices (user_id, amount) values (v_user, v_amount)
+    on conflict (user_id) do nothing;
+  end if;
+  v_amount := null;
   update companion.subscription_bonus_notices set announced_at = now()
   where user_id = v_user and announced_at is null
   returning amount into v_amount;
