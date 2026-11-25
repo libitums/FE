@@ -14,6 +14,12 @@ import type {
   MyTextStoryDraft,
   MyStoryWindow,
 } from "./my-stories.contract";
+import type {
+  MyPhotoStoryDraft,
+  MyStoryPhotoPort,
+  PhotoPickResult,
+  StoryPhotoSource,
+} from "./my-story-photo.contract";
 
 export const MS_NOW = Date.UTC(2026, 10, 23, 12, 0, 0);
 export const MS_HOUR = 3_600_000;
@@ -23,6 +29,8 @@ export function myStory(id: string, patch: Partial<MyStory> = {}): MyStory {
   return {
     id,
     kind: "word",
+    status: "live",
+    imagePath: null,
     word: { episodeId: "u01", ref: `voca:${id}` },
     ko: "야근",
     roman: "yageun",
@@ -73,7 +81,28 @@ export type FakeMyStories = {
   >;
   readonly setKeep: ReturnType<typeof vi.fn<(keep: boolean) => Promise<boolean | null>>>;
   readonly state: () => MyStoriesState;
+  /** 사진 포트 대역(ADR-0199) — `photo` 옵션이 없으면 null(포트에 사진 없음). */
+  readonly photo: FakePhoto | null;
 };
+
+export type FakePhoto = {
+  readonly pick: ReturnType<typeof vi.fn<(source: StoryPhotoSource) => Promise<PhotoPickResult>>>;
+  readonly post: ReturnType<typeof vi.fn<(draft: MyPhotoStoryDraft) => Promise<MyStoryPostResult>>>;
+  readonly url: ReturnType<typeof vi.fn<(path: string) => Promise<string | null>>>;
+  readonly requestReview: ReturnType<typeof vi.fn<(id: string) => Promise<boolean>>>;
+  readonly discard: ReturnType<typeof vi.fn<(path: string) => void>>;
+};
+
+export const PICKED: PhotoPickResult = {
+  status: "picked",
+  photo: {
+    url: "file:///cache/story-photos/p1.jpg",
+    path: "/cache/story-photos/p1.jpg",
+    width: 1200,
+    height: 1600,
+  },
+};
+export const PHOTO_PATH = "0f8fad5b-d9cb-469f-a165-70867728950e/p1.jpg";
 
 export function fakeMyStories(options: {
   readonly enabled?: boolean;
@@ -81,12 +110,17 @@ export function fakeMyStories(options: {
   readonly stories?: readonly MyStory[];
   readonly words?: readonly MyStoryChoice[];
   readonly guideSeen?: boolean;
-  readonly postResult?: Exclude<MyStoryPostResult["result"], "crisis">;
+  readonly postResult?: Exclude<MyStoryPostResult["result"], "crisis" | "rejected">;
   readonly removeOk?: boolean;
   /** 지금의 올리기 창 — 없으면 null(옛 서버). 올리면 이 창을 쓴 것으로 돌려줍니다. */
   readonly window?: MyStoryWindow | null;
   /** 올릴 수 있는 종류(서버 반영 예상) — 없으면 word · card. */
   readonly kinds?: readonly MyStoryPostKind[];
+  /** 사진 포트(ADR-0199) — 고르기 결과 · 올리기 결과(없으면 live로 올림). */
+  readonly photo?: {
+    readonly pick?: PhotoPickResult;
+    readonly post?: MyStoryPostResult | "checking";
+  };
 }): FakeMyStories {
   let stories = [...(options.stories ?? [])];
   let keep = options.keep ?? true;
@@ -142,7 +176,36 @@ export function fakeMyStories(options: {
     keep = value;
     return value;
   });
+  const photo: FakePhoto | null =
+    options.photo === undefined
+      ? null
+      : {
+          pick: vi.fn(async () => options.photo?.pick ?? PICKED),
+          post: vi.fn(async (draft: MyPhotoStoryDraft): Promise<MyStoryPostResult> => {
+            const planned = options.photo?.post;
+            if (planned !== undefined && planned !== "checking") return planned;
+            const story = myStory(`photo-${draft.clientId}`, {
+              kind: "photo",
+              status: planned === "checking" ? "checking" : "live",
+              imagePath: PHOTO_PATH,
+              word: null,
+              ko: draft.ko,
+              roman: "",
+              meaning: "",
+              example: null,
+              overlays: draft.overlays,
+              postedAt: Date.now(),
+            });
+            stories = [story, ...stories];
+            return { result: "ok", story, window };
+          }),
+          url: vi.fn(async () => "https://signed.example/p1.jpg"),
+          requestReview: vi.fn(async () => true),
+          discard: vi.fn(),
+        };
+  const photoPort: MyStoryPhotoPort | undefined = photo === null ? undefined : photo;
   const port: MyStoriesPort = {
+    ...(photoPort === undefined ? {} : { photo: photoPort }),
     load: async () => state(),
     post,
     postText,
@@ -159,5 +222,5 @@ export function fakeMyStories(options: {
     },
     newClientId: () => `cid-${++ids}`,
   };
-  return { port, post, postText, remove, setKeep, state };
+  return { port, post, postText, remove, setKeep, state, photo };
 }

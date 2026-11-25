@@ -15,4 +15,7 @@ export const friendStoryEventNames = [
   "my_story_chat_opened",
   "my_story_deleted",
   "my_story_keep_toggled",
+  // 내 스토리 사진(ADR-0199).
+  "my_story_photo_picked",
+  "my_story_review_requested",
 ] as const;

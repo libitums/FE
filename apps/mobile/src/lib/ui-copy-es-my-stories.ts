@@ -1,6 +1,7 @@
 // 내 스토리 문구(es, ADR-0194).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoEs } from "./ui-copy-story-photo";
 
 const replies = (count: number) => (count === 1 ? "1 respuesta" : `${count} respuestas`);
 const MONTHS = [
@@ -109,6 +110,7 @@ export const myStoriesEs: MyStoriesCopy = {
     ok: "Aceptar",
     close: "Cerrar",
   },
+  photo: storyPhotoEs,
   start: {
     title: "Nueva historia",
     close: "Cerrar",

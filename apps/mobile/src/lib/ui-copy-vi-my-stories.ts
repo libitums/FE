@@ -1,6 +1,7 @@
 // 내 스토리 문구(vi, ADR-0194).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoVi } from "./ui-copy-story-photo-2";
 
 const replies = (count: number) => `${count} phản hồi`;
 
@@ -86,6 +87,7 @@ export const myStoriesVi: MyStoriesCopy = {
     ok: "Đã hiểu",
     close: "Đóng",
   },
+  photo: storyPhotoVi,
   start: {
     title: "Tin mới",
     close: "Đóng",

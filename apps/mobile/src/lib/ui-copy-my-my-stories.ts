@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요(ADR-0158 개정).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoMy } from "./ui-copy-story-photo-2";
 
 const replies = (count: number) => `ပြန်စာ ${count} ခု`;
 
@@ -85,6 +86,7 @@ export const myStoriesMy: MyStoriesCopy = {
     ok: "ရပြီ",
     close: "ပိတ်ရန်",
   },
+  photo: storyPhotoMy,
   start: {
     title: "စတိုရီ အသစ်",
     close: "ပိတ်ရန်",

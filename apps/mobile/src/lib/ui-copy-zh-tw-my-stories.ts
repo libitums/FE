@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요(ADR-0185).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoZhTw } from "./ui-copy-story-photo-2";
 
 const replies = (count: number) => `${count}則回覆`;
 
@@ -82,6 +83,7 @@ export const myStoriesZhTw: MyStoriesCopy = {
     ok: "知道了",
     close: "關閉",
   },
+  photo: storyPhotoZhTw,
   start: {
     title: "新的限時動態",
     close: "關閉",

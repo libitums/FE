@@ -30,7 +30,7 @@ const wireWindow = {
   used: true,
 };
 
-test("MS-U13. 읽기 — 반응의 messageId · seenBy · 창을 풀고, 사진(photo) · 확인 중(checking) 줄은 죽지 않고 건너뛴다", () => {
+test("MS-U13. 읽기 — 반응의 messageId · seenBy · 창을 풀고, 사진(photo)은 경로가 버킷 꼴이 아니면 건너뛰고 확인 중(checking) 줄은 읽는다(ADR-0199)", () => {
   const state = myStoriesFrom(
     JSON.stringify({
       enabled: true,
@@ -73,7 +73,8 @@ test("MS-U13. 읽기 — 반응의 messageId · seenBy · 창을 풀고, 사진(
     nextAt: Date.parse("2026-11-25T09:00:00.000Z"),
     used: true,
   });
-  expect(state?.stories.map((s) => s.id)).toEqual(["ms-1", "live-1"]);
+  expect(state?.stories.map((s) => s.id)).toEqual(["ms-1", "check-1", "live-1"]);
+  expect(state?.stories[1]?.status).toBe("checking");
   const [first] = state?.stories ?? [];
   expect(first?.reactions.map((r) => r.messageId)).toEqual(["m-1", null]);
   expect(first?.seenBy).toEqual([
@@ -114,7 +115,10 @@ test("MS-U14. 올리기 결과 — ok는 창과 함께, window_used는 창과 �
     result: "daily_limit",
   });
   expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "failed" });
-  expect(myStoryPostFrom(JSON.stringify({ result: "check_limit" }))).toEqual({ result: "failed" });
+  // 사진 검수 상한은 ADR-0199부터 따로 가립니다(MSP-U7).
+  expect(myStoryPostFrom(JSON.stringify({ result: "check_limit" }))).toEqual({
+    result: "check_limit",
+  });
 });
 
 test("MS-U15. 기기 UTC 차이 — 동쪽이 +(getTimezoneOffset의 반대), 올리기 요청에 실린다", () => {

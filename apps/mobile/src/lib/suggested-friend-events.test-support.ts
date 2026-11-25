@@ -105,6 +105,15 @@ export const suggestedFriendEventExamples = [
     from: "archive",
   },
   { name: "my_story_keep_toggled", surface: "chat", daysSinceFirstOpen: "3", keep: false },
+  // 내 스토리 사진(ADR-0199) — PostHog만.
+  {
+    name: "my_story_photo_picked",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    source: "camera",
+    outcome: "picked",
+  },
+  { name: "my_story_review_requested", surface: "chat", daysSinceFirstOpen: "3", ok: true },
   // 비회원 로그인 권유(ADR-0166) — 같은 메신저 목록 · 방에서 납니다.
   {
     name: "chat_sign_in_prompt_closed",

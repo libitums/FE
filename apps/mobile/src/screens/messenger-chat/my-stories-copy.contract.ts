@@ -83,6 +83,8 @@ export type MyStoriesCopy = {
     readonly ok: string;
     readonly close: string;
   };
+  /** 사진 스토리(ADR-0199) — 편집 · 올리기 · 거절 · 확인 중. */
+  readonly photo: MyStoryPhotoCopy;
   /** 「+」 → 시작 고르기(시안 26번). Camera · 최근 사진은 서버가 사진을 받을 때만. */
   readonly start: {
     readonly title: string;
@@ -178,4 +180,29 @@ export type MyStoriesCopy = {
     readonly deleted: string;
     readonly deletedLabel: string;
   };
+};
+
+/** 사진 스토리 문구(ADR-0199). 시작 시트의 사진 고르기 이름은 `start.recent`를 씁니다. */
+export type MyStoryPhotoCopy = {
+  /** 편집 바탕 사진 낭독. */
+  readonly label: string;
+  /** 한 줄이 없어 Share가 꺼짐. */
+  readonly hint: string;
+  readonly uploading: string;
+  readonly uploadFailed: string;
+  readonly checkLimit: string;
+  /** 시작 시트 — 카메라 권한 거부 · 카메라 없음 · 고른 사진을 못 읽음. */
+  readonly denied: string;
+  readonly unavailable: string;
+  readonly pickFailed: string;
+  readonly rejectedTitle: string;
+  readonly rejectedBody: string;
+  readonly review: string;
+  readonly reviewSent: string;
+  readonly reviewFailed: string;
+  /** 보기 — 다시 보는 중(나에게만). */
+  readonly checkingTitle: string;
+  readonly checkingBody: string;
+  /** 보기 메타 줄의 종류 이름. */
+  readonly kindLabel: string;
 };

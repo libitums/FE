@@ -240,6 +240,7 @@ export function MyStoriesScreen({
           now={now}
           rooms={rooms}
           remove={(id) => port.remove(id)}
+          {...(port.photo === undefined ? {} : { photoUrl: port.photo.url })}
           onOpenChat={(reaction) => {
             if (!openReactionChat(rooms, reaction, onOpenRoom)) return;
             emit({

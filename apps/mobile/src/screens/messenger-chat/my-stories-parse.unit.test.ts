@@ -38,6 +38,8 @@ test("MS-U7. companion_my_stories — 줄 · 반응을 풀고 틀린 반응 · �
       {
         id: "ms-1",
         kind: "card",
+        status: "live",
+        imagePath: null,
         word: { episodeId: "u02", ref: "voca:arrive" },
         ko: "도착하다",
         roman: "dochakada",

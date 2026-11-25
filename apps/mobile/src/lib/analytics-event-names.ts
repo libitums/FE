@@ -111,6 +111,8 @@ export type AnalyticsEventName =
   | "my_story_guide_closed"
   | "my_story_post_failed"
   | "my_story_keep_toggled"
+  | "my_story_photo_picked"
+  | "my_story_review_requested"
   | "more_menu_opened"
   | "more_menu_item_clicked"
   | "letters_cell_tapped"

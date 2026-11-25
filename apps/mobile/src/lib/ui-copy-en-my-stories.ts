@@ -1,6 +1,7 @@
 // 내 스토리 문구(en, ADR-0194 · ADR-0191 — 반응은 그 친구 방의 메시지 · 올리기 창 · 덕수쌤 퀴즈).
 
 import type { MyStoriesCopy } from "../screens/messenger-chat/my-stories-copy.contract";
+import { storyPhotoEn } from "./ui-copy-story-photo";
 
 const replies = (count: number) => (count === 1 ? "1 reply" : `${count} replies`);
 
@@ -90,6 +91,7 @@ export const myStoriesEn: MyStoriesCopy = {
     ok: "OK",
     close: "Close",
   },
+  photo: storyPhotoEn,
   start: {
     title: "New story",
     close: "Close",

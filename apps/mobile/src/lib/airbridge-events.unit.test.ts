@@ -83,10 +83,11 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0195⟩ 채팅 답할 문장 추천 이벤트 둘이 더해져 81 · 73이다(PostHog만).
   // ⟨ADR-0197⟩ 채팅 알림 권한 카드 이벤트 셋이 더해져 84 · 76이다(PostHog만).
   // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 이벤트 여덟이 더해져 92 · 84다(PostHog만).
-  test("AB3. 이름 92개는 표의 84개와 매핑되는 여덟로 나뉜다", () => {
+  // ⟨ADR-0199⟩ 내 스토리 사진 이벤트 둘이 더해져 94 · 86이다(PostHog만).
+  test("AB3. 이름 94개는 표의 86개와 매핑되는 여덟로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(84);
-    expect(allEventNames).toHaveLength(92);
+    expect(tableNames.size).toBe(86);
+    expect(allEventNames).toHaveLength(94);
     expect([...tableNames, ...mappedNames].sort()).toEqual([...allEventNames].sort());
   });
 
