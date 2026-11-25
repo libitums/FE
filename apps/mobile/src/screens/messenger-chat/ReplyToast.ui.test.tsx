@@ -66,6 +66,9 @@ test("RT-UI3. 누르면 onOpen, 닫기 단추는 onDismiss만(44pt 단추 · 낭
   expect(onDismiss).toHaveBeenCalledTimes(1);
   expect(onOpen).not.toHaveBeenCalled();
   expect(screen.getByTestId(ids.close).getAttribute("accessibility-label")).toBe("Dismiss");
+  // Android 낭독 나무에 남게 — 낭독 요소는 납작하게 펴지 않습니다.
+  expect(screen.getByTestId(ids.close).getAttribute("flatten")).toBe("false");
+  expect(screen.getByTestId(ids.open).getAttribute("flatten")).toBe("false");
   fireEvent.tap(screen.getByTestId(ids.open));
   expect(onOpen).toHaveBeenCalledTimes(1);
 });

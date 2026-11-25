@@ -5,11 +5,11 @@
 - 측정 일시: 2026-11-26T00:30:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 채팅 목록 · 그 방 밖에서 답이 오면 화면 위 카드를 띄우는 변경이다
 - 기능 PR: `feat/chat-reply-toast`
-- 대상 commit: origin/main 128c4126 위의 변경
+- 대상 commit: origin/main 998786dd(#611 머지 뒤) 위의 변경
 - 기기: iOS 시뮬레이터 · Android AVD에서 눈으로 확인(docs/e2e/messenger-chat-ui.md MC-E16) — 계측 없음
 - OS: 해당 없음(계측 없음)
 - Lynx SDK: 4.0.1
-- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 6,134,325 bytes, 천장 6,140,000 안
+- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 6,138,662 bytes(변경 전 origin/main 998786dd 6,122,948 bytes, +15,714), 천장 6,140,000 안 — 남은 여유 1,338 bytes
 - 실행 회차: 01
 
 ## 시나리오
@@ -22,7 +22,7 @@
 - 대화 출처가 바뀔 때마다 방 요약 두 판을 한 번 견준다(방 수에 비례, 방은 열 개 안팎). 카드가 떠 있는 동안만 다시 그린다.
 - 세션 루트(`AppSession`)는 도착 · 화면 바뀜 때만 리듀서 값이 바뀐다 — 출처 조각마다 루트가 다시 그려지지 않는다.
 - 카드 움직임은 CSS 애니메이션(토큰 d6 · d4) 하나뿐이다.
-- 번들 증가는 대부분 8개 언어 문구 · 카드 컴포넌트다.
+- 번들 증가: 배경 스레드 약 +6.9 kB(8개 언어 문구 · 결선 · 판정), 메인 스레드 약 +4.8 kB(카드 컴포넌트 — 자리 판정 · 리듀서는 `background only`로 뺌, 처음 +6.4 kB), CSS 약 +2.4 kB.
 
 ## 분석 결과
 

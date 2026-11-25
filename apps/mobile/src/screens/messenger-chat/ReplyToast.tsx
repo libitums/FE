@@ -99,6 +99,7 @@ export function ReplyToast({
     >
       <view
         className="reply-toast-open"
+        flatten={false}
         data-testid={ids.open}
         accessibility-element={true}
         accessibility-label={spoken}
@@ -132,6 +133,7 @@ export function ReplyToast({
       </view>
       <view
         className="reply-toast-close"
+        flatten={false}
         data-testid={ids.close}
         accessibility-element={true}
         accessibility-label={copy.dismiss}
