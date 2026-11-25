@@ -22,7 +22,7 @@ import {
   readBody,
 } from "./chat-send-http.ts";
 import { resolveChoice } from "./chat-send-choice.ts";
-import { claimStory } from "./chat-send-story.ts";
+import { claimStory, storyContextNote, withStoryNote } from "./chat-send-story.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
 import { memoryLine } from "./companion-memory.ts";
 import { runAfterTurn } from "./companion-after-turn.ts";
@@ -103,6 +103,12 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     })
       .then((value) => (typeof value?.strikes === "number" ? value : null))
       .catch(() => null);
+    // 스토리 맥락(ADR-0191 D9) — 학습자의 살아 있는 내 스토리 · 이 인물의 최근 스토리. 읽지 못해도 턴은 돈다.
+    const storyNote = storyContextNote(deps.outbound, env, {
+      userId: caller.userId,
+      characterId: body.character_id,
+      now: new Date(deps.nowMs()).toISOString(),
+    });
     let begun: BeginResult;
     let learning: LearningContext;
     try {
@@ -161,7 +167,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       playground: caller.playground,
       historyKeep,
       usage,
-      story,
+      story: withStoryNote(story, await storyNote),
     };
     const work = runTurn(context)
       .catch((): TurnOutcome => {
@@ -171,11 +177,11 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       .then(async ({ outcome, afterTurn, suggestions }) => {
         sink.close();
         const turnUsage = usageLine(usage.summary());
-        const storyNote = story === null ? "" : ` story=${story.result}`;
+        const storyLog = story === null ? "" : ` story=${story.result}`;
         deps.log({
           event: "chat_send",
           status: "stream",
-          outcome: `${turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`}${storyNote}`,
+          outcome: `${turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`}${storyLog}`,
         });
         // 입력 출처를 유저 메시지에, 앞 캐릭터 메시지의 칩 셋에 결과(고름 · 고침 · 무시)를 적는다. 실패해도 턴은 끝났다.
         await callRpc(deps.outbound, env, "companion_record_choice", {

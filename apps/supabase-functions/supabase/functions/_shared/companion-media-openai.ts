@@ -29,6 +29,10 @@ export async function openaiImageEdit(
     readonly complexity?: string | null;
     readonly partialImages?: number;
     readonly onPartial?: (png: Uint8Array, index: number) => Promise<void>;
+    /** 결과 파일 형식. 없으면 보내지 않는다(엔진 기본 PNG — 스냅샷은 C2PA를 지키려고 PNG 그대로 둔다). 친구 스토리는 webp. */
+    readonly outputFormat?: "png" | "webp" | "jpeg";
+    /** webp · jpeg의 압축 정도(0 ~ 100). 없으면 보내지 않는다(엔진 기본 100 — 1024x1536 webp가 1.5 MB). */
+    readonly outputCompression?: number;
   },
   timeoutMs: number,
 ): Promise<{ png: Uint8Array; usage: unknown; partials: number }> {
@@ -43,6 +47,9 @@ export async function openaiImageEdit(
   form.append("quality", input.quality);
   form.append("n", "1");
   if (input.complexity) form.append("complexity", input.complexity);
+  if (input.outputFormat) form.append("output_format", input.outputFormat);
+  if (input.outputCompression !== undefined)
+    form.append("output_compression", String(input.outputCompression));
   if (partialImages > 0) {
     form.append("stream", "true");
     form.append("partial_images", String(partialImages));
@@ -68,6 +75,13 @@ export async function openaiImageEdit(
     );
   }
   if (partialImages > 0) return readImageStream(response, input.onPartial);
+  return readImageJson(response);
+}
+
+/** 스트리밍이 아닌 이미지 응답(`data[0].b64_json`) → 그림 바이트. */
+async function readImageJson(
+  response: Response,
+): Promise<{ png: Uint8Array; usage: unknown; partials: number }> {
   let body: { data?: { b64_json?: string }[]; usage?: unknown };
   try {
     body = (await response.json()) as typeof body;
@@ -156,4 +170,54 @@ async function readImageStream(
     reader.releaseLock();
   }
   throw new EngineError("OpenAI: no image", true);
+}
+
+/**
+ * `POST /v1/images/generations` — 기준 이미지 없이 프롬프트만으로 한 장(친구 스토리의 사물 · 풍경 컷, ADR-0192 D5).
+ * 오류 · 거절 판정은 편집 호출과 같다.
+ */
+export async function openaiImageGenerate(
+  fetchImpl: Fetch,
+  apiKey: string,
+  input: {
+    readonly model: string;
+    readonly prompt: string;
+    readonly size: string;
+    readonly quality: string;
+    readonly outputFormat?: "png" | "webp" | "jpeg";
+    readonly outputCompression?: number;
+  },
+  timeoutMs: number,
+): Promise<{ png: Uint8Array; usage: unknown; partials: number }> {
+  let response: Response;
+  try {
+    response = await fetchImpl(`${OPENAI_URL}/images/generations`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: input.model,
+        prompt: input.prompt,
+        size: input.size,
+        quality: input.quality,
+        n: 1,
+        ...(input.outputFormat ? { output_format: input.outputFormat } : {}),
+        ...(input.outputCompression === undefined
+          ? {}
+          : { output_compression: input.outputCompression }),
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    throw new EngineError(`OpenAI connection failed: ${(error as Error).name}`, true);
+  }
+  if (response.status !== 200) {
+    const body = (await response.text().catch(() => "")).slice(0, 300);
+    const refused = response.status === 400 && refusalText.test(body);
+    throw new EngineError(
+      `OpenAI ${response.status}: ${body}`,
+      !refused && retryableStatus(response.status),
+      refused,
+    );
+  }
+  return readImageJson(response);
 }
