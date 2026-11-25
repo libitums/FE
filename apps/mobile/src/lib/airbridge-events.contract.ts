@@ -1,5 +1,6 @@
 // 제품 이벤트 일부를 Airbridge(MMP) 이벤트로 전달하는 계약입니다(ADR-0063). 타입만 둡니다.
-// 이벤트를 **새로 만들지 않습니다** — `analytics.contract.ts`가 모은 기존 이벤트 가운데 셋만 고릅니다(가입 · 최종 통과 · 엽전 팩 결제).
+// 이벤트를 **새로 만들지 않습니다** — `analytics.contract.ts`가 모은 기존 이벤트 가운데 여덟만 고릅니다(가입 · 최종 통과 · 엽전 팩 결제,
+// 2026-11-24 소재 테스트 깔때기 — 티켓 소진 · 첫 채팅 · 요금제 보기 · 고름 · 구매 단추).
 //
 // 모듈 셋이 이 타입을 나눠 가집니다.
 //   - `lib/airbridge-events.ts`         — 순수. 이벤트 → Airbridge 이벤트 매핑 · sink 합성. 어느 스레드든 안전
@@ -7,6 +8,7 @@
 //   - 호스트 `AirbridgeEventsModule`     — iOS · Android. 설정이 있을 때만 등록됩니다
 
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
+import type { MilestoneStore } from "./companion-events";
 
 // ------------------------------------------------------------------ 고르는 이벤트
 
@@ -14,7 +16,12 @@ import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./
 export type AirbridgeSourceEventName =
   | "entry_completed"
   | "episode_final_passed"
-  | "pack_purchased";
+  | "pack_purchased"
+  | "tickets_ran_out"
+  | "first_chat_message_sent"
+  | "plans_viewed"
+  | "plan_selected"
+  | "purchase_intent";
 
 // ------------------------------------------------------------------ Airbridge 이벤트
 
@@ -30,10 +37,28 @@ export type AirbridgeAchieveLevelCategory = "airbridge.achieveLevel";
  */
 export type AirbridgeOrderCompletedCategory = "airbridge.ecommerce.order.completed";
 
+/** ⟨2026-11-24⟩ 표준 `AirbridgeCategory.PRODUCT_LIST_VIEWED`의 와이어 값(SDK 4.12.0) — 요금제 보기(`plans_viewed`)에 씁니다. */
+export type AirbridgeProductListViewedCategory = "airbridge.ecommerce.productList.viewed";
+
+/** ⟨2026-11-24⟩ 표준 `AirbridgeCategory.INITIATE_CHECKOUT`의 와이어 값(SDK 4.12.0) — 구매 단추(`purchase_intent`)에 씁니다. */
+export type AirbridgeInitiateCheckoutCategory = "airbridge.initiateCheckout";
+
+/**
+ * ⟨2026-11-24⟩ 뜻이 맞는 표준이 없어 앱 이벤트 이름 그대로 쓰는 커스텀 카테고리입니다(소문자 · 밑줄). `airbridge.`로 시작하지 않습니다.
+ * 티켓 소진 · 기기당 첫 채팅 메시지 · 요금제 고름(장바구니가 없어 `addedToCart`가 아님 — ADR-0063 적용 기록 2026-11-24).
+ */
+export type AirbridgeCustomCategory =
+  | "tickets_ran_out"
+  | "first_chat_message_sent"
+  | "plan_selected";
+
 export type AirbridgeEventCategory =
   | AirbridgeSignUpCategory
   | AirbridgeAchieveLevelCategory
-  | AirbridgeOrderCompletedCategory;
+  | AirbridgeOrderCompletedCategory
+  | AirbridgeProductListViewedCategory
+  | AirbridgeInitiateCheckoutCategory
+  | AirbridgeCustomCategory;
 
 /** Order Complete의 상품 한 줄 — 키는 `AirbridgeAttribute.PRODUCT_ID` · `PRODUCT_NAME` · `PRODUCT_PRICE` · `PRODUCT_QUANTITY` · `PRODUCT_CURRENCY`. */
 export type AirbridgeOrderProduct = {
@@ -43,6 +68,23 @@ export type AirbridgeOrderProduct = {
   readonly quantity: number;
   readonly currency: string;
 };
+
+/**
+ * ⟨2026-11-24⟩ Initiate Checkout의 상품 한 줄 — Order Complete 줄과 같은 키, 단 가격 · 통화는 스토어 · 추천 가격의 금액과 통화를 알 때만.
+ */
+export type AirbridgeCheckoutProduct = {
+  readonly productID: string;
+  readonly name: string;
+  readonly quantity: number;
+  readonly price?: number;
+  readonly currency?: string;
+};
+
+/** 요금제가 보인 자리(`PlanEvent`의 `placement`)입니다 — 시맨틱 속성 `label`의 값. */
+export type AirbridgePlanPlacement = Extract<
+  AnalyticsEvent,
+  { readonly name: "plans_viewed" }
+>["placement"];
 
 /** 완료한 것의 종류입니다. 시맨틱 속성 `label`(`AirbridgeAttribute.LABEL`)의 값입니다. */
 export type AirbridgeLessonContentType = "episode_final";
@@ -75,6 +117,39 @@ export type AirbridgeEvent =
         readonly transactionID?: string;
         readonly products: readonly AirbridgeOrderProduct[];
       };
+    }
+  | {
+      readonly category: "tickets_ran_out" | "first_chat_message_sent";
+      readonly semanticAttributes: Readonly<Record<string, never>>;
+    }
+  | {
+      readonly category: AirbridgeProductListViewedCategory;
+      /** `productListID` = `plans_offer` · `plans_compare`(본 꼴), `label` = 자리. */
+      readonly semanticAttributes: {
+        readonly productListID: `plans_${"offer" | "compare"}`;
+        readonly label: AirbridgePlanPlacement;
+      };
+    }
+  | {
+      readonly category: "plan_selected";
+      /** `label` = 자리, `action` = `<요금제>.<기간>`(예: `premium.yearly`). */
+      readonly semanticAttributes: {
+        readonly label: AirbridgePlanPlacement;
+        readonly action: string;
+      };
+    }
+  | {
+      readonly category: AirbridgeInitiateCheckoutCategory;
+      /**
+       * `label` = 자리, `action` = `plan` · `pack`, `type` = `preview`(결제를 열지 못하고 「곧」 안내) · `checkout`(스토어 결제를 엶),
+       * `products` = 상품 한 줄. 최상위 `value`는 싣지 않습니다 — 매출 지표로 읽히지 않게.
+       */
+      readonly semanticAttributes: {
+        readonly label: AirbridgePlanPlacement;
+        readonly action: "plan" | "pack";
+        readonly type: "preview" | "checkout";
+        readonly products: readonly AirbridgeCheckoutProduct[];
+      };
     };
 
 /**
@@ -82,7 +157,11 @@ export type AirbridgeEvent =
  *   - `entry_completed`                                   → `airbridge.user.signup`, 속성 없음
  *   - `episode_final_passed`                              → `airbridge.achieveLevel`, level = 에피소드 id, `episode_final`
  *   - `pack_purchased`(스토어 금액 · 통화가 있을 때)       → `airbridge.ecommerce.order.completed`, 상품 한 줄(수량 1)
- *   - 그 밖 전부                                          → `null`
+ *   - ⟨2026-11-24⟩ `tickets_ran_out` · `first_chat_message_sent` → 같은 이름의 커스텀, 속성 없음
+ *   - ⟨2026-11-24⟩ `plans_viewed`                          → `airbridge.ecommerce.productList.viewed`
+ *   - ⟨2026-11-24⟩ `plan_selected`                         → 커스텀 `plan_selected`
+ *   - ⟨2026-11-24⟩ `purchase_intent`                       → `airbridge.initiateCheckout`(`preview`여도 — `type`으로 나눔)
+ *   - 그 밖 전부(`chat_message_sent` 포함)                → `null`
  */
 export type AirbridgeEventFrom = (event: AnalyticsEvent) => AirbridgeEvent | null;
 
@@ -95,7 +174,12 @@ export type AirbridgeEventsModuleName = "AirbridgeEventsModule";
  * 넘기고 나머지를 버립니다 — 그때 Order Complete는 금액 없이 갑니다.
  */
 export type AirbridgeSemanticAttributes = {
-  readonly [key: string]: string | number | readonly AirbridgeOrderProduct[] | undefined;
+  readonly [key: string]:
+    | string
+    | number
+    | readonly AirbridgeOrderProduct[]
+    | readonly AirbridgeCheckoutProduct[]
+    | undefined;
 };
 
 /**
@@ -169,8 +253,15 @@ export type WithAirbridgeEvents = (
   tracker: AirbridgeEventTracker | null,
 ) => AnalyticsEventSinks;
 
-/** 제품 진입점이 부르는 것입니다 — `withAirbridgeEvents(sinks, resolveAirbridgeEventTracker())`. */
-export type ProductEventSinks = (sinks: AnalyticsEventSinks) => AnalyticsEventSinks;
+/**
+ * 제품 진입점이 부르는 것입니다 — `withFirstMilestones(withAirbridgeEvents(sinks, resolveAirbridgeEventTracker()), store)`.
+ * ⟨2026-11-24⟩ 첫 경험 마일스톤(`first_chat_message_sent` 등)을 Airbridge 합성 **바깥**에서 만듭니다 — 안쪽(PostHog 세션)에서 만들면
+ * Airbridge 전달이 그 이벤트를 보지 못하고, PostHog 키가 없는 빌드에서는 마일스톤 자체가 나지 않았습니다. `store`를 빼면 기기 저장 판.
+ */
+export type ProductEventSinks = (
+  sinks: AnalyticsEventSinks,
+  store?: MilestoneStore,
+) => AnalyticsEventSinks;
 
 // ------------------------------------------------------------------ 컴파일 검사
 

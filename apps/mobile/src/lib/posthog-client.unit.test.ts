@@ -391,6 +391,23 @@ describe("전송 실패", () => {
 });
 
 describe("createAnalyticsSession", () => {
+  // ⟨ADR-0063 2026-11-24⟩ 첫 경험 마일스톤은 진입점 조립(`productEventSinks`)이 Airbridge 합성 바깥에서 만든다 — 세션은 더 감싸지 않는다(두 번 나지 않게).
+  test("PC9b: 세션 sink는 첫 경험 마일스톤을 스스로 내지 않는다", async () => {
+    const { calls, transport } = fakeTransport();
+    const session = createAnalyticsSession(config, transport);
+    const intro = session.sinks.episodeIntroEventSink as unknown as (event: object) => void;
+    intro({
+      name: "chat_message_sent",
+      surface: "chat",
+      daysSinceFirstOpen: "3",
+      characterId: "duksu",
+      paid: false,
+      cost: "0",
+    });
+    await vi.waitFor(() => expect(calls.length).toBeGreaterThan(0));
+    expect(batchEventsOf(calls).map((e) => e.event)).toStrictEqual(["chat_message_sent"]);
+  });
+
   test("PC9: config가 null이면 없음 세션이고 transport를 부르지 않는다", () => {
     const { calls, transport } = fakeTransport();
     const session = createAnalyticsSession(null, transport);
