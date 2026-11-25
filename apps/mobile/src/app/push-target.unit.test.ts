@@ -87,3 +87,13 @@ describe("PR-U12 보상 캠페인 id(ADR-0175)", () => {
     });
   });
 });
+
+// MS-U22(ADR-0191 D7): 내 스토리 반응 푸시는 선톡과 같은 목적지 `{ kind: "companion-chat", characterId }` — `story` 칸이 없어 목록의 스토리가
+// 아니라 그 인물의 방으로 갑니다(서버 `companion-reaction-push.ts`).
+test("MS-U22. 반응 푸시 목적지 — companion-chat + 인물만이면 그 방(story 없음)", () => {
+  expect(pushTargetFrom({ kind: "companion-chat", characterId: "duksu" })).toEqual({
+    kind: "companion-chat",
+    characterId: "duksu",
+    variant: null,
+  });
+});

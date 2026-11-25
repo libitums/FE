@@ -1,9 +1,9 @@
-// 엽전 출시 · 메신저 · 새 친구 · 영역 사용의 제품 사용 이벤트입니다(ADR-0029 「D3 목적 구분」). 타입만 둡니다.
-// 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
-// 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
+// 엽전 출시 · 메신저 · 새 친구 · 영역 사용의 제품 사용 이벤트(ADR-0029 「D3 목적 구분」, 타입만) — 공통 속성은 영역(`surface`) · 첫 실행일부터 지난 날 수
+// (`daysSinceFirstOpen`, 10진 문자열 — 속성은 문자열 · 불리언뿐, `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
 import type { ChatRoomEvent } from "./chat-push-ask-event.contract";
 import type { FriendStoryEvent } from "./friend-story-event.contract";
+import type { MyStoryEvent } from "./my-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
 
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
@@ -289,10 +289,10 @@ export type CompanionEvent =
   | CompanionUnlockEvent
   | SuggestedFriendEvent
   | FriendStoryEvent
+  | MyStoryEvent
   | ChatRoomEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
-
 type WithoutDays<T> = T extends unknown ? Omit<T, "daysSinceFirstOpen"> : never;
 /** 보내는 자리가 채우는 모양 — 날 수는 보낼 때 붙습니다(`emitCompanionEvent`). */
 export type CompanionEventInput = WithoutDays<CompanionEvent>;

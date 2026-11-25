@@ -59,6 +59,7 @@ export const suggestedFriendEventExamples = [
     daysSinceFirstOpen: "3",
     count: "4",
     unseen: "2",
+    mine: true,
   },
   {
     name: "friend_story_viewed",
@@ -93,6 +94,34 @@ export const suggestedFriendEventExamples = [
     daysSinceFirstOpen: "3",
     characterId: "mina",
   },
+  // 내 스토리(ADR-0194) — PostHog만.
+  { name: "my_story_create_opened", surface: "chat", daysSinceFirstOpen: "3", first: true },
+  { name: "my_story_guide_closed", surface: "chat", daysSinceFirstOpen: "3", choice: "start" },
+  { name: "my_story_posted", surface: "chat", daysSinceFirstOpen: "3", kind: "card" },
+  { name: "my_story_post_failed", surface: "chat", daysSinceFirstOpen: "3", reason: "daily_limit" },
+  {
+    name: "my_story_viewed",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    reactions: "2",
+    unseen: "1",
+    from: "row",
+  },
+  {
+    name: "my_story_chat_opened",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "mina",
+    message: true,
+  },
+  {
+    name: "my_story_deleted",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    scope: "one",
+    from: "archive",
+  },
+  { name: "my_story_keep_toggled", surface: "chat", daysSinceFirstOpen: "3", keep: false },
   // 비회원 로그인 권유(ADR-0166) — 같은 메신저 목록 · 방에서 납니다.
   {
     name: "chat_sign_in_prompt_closed",

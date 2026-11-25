@@ -25,8 +25,13 @@ export type ChatMessage =
       readonly kind: "text";
       readonly from: "me" | "them";
       readonly text: ChatText;
-      /** 친구 스토리에 단 답장이면 그 스토리 인용(ADR-0178 D5) — 내 글에만. */
+      /**
+       * 스토리 인용 — 내 글이면 친구 스토리에 단 답장(ADR-0178 D5), 상대 글이면 내 스토리에 단 반응(origin `story_reaction`,
+       * ADR-0191 D2 — 그 메시지의 첫 말풍선에만).
+       */
       readonly story?: ChatStoryQuote;
+      /** 덕수쌤 스토리 퀴즈 표시(서버 반영 예상 — `my-stories.contract.ts` `ChatQuizMark`). 없으면 퀴즈 표시 없음. */
+      readonly quiz?: ChatQuizMark;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
   | (ChatMessageBase & ChatPendingStart & ChatPendingStage & { readonly kind: "photo-pending" })
@@ -164,6 +169,7 @@ import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./cha
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
 import type { SampleSnapshotMethods } from "./chat-remote-sample";
 import type { ChatStoryQuote } from "./friend-stories.contract"; // 친구 스토리 인용(ADR-0178)
+import type { ChatQuizMark } from "./my-stories.contract"; // 스토리 퀴즈(서버 반영 예상)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }

@@ -1,0 +1,1079 @@
+/* 내 스토리(ADR-0194, 시안 8 · 9 · 10 · 11 · 12 · 15번) — 만들기 · 보기 층, 안내 걸음, 설정 › My stories. 토큰은 CSS 커스텀 프로퍼티로만
+   소비합니다(ADR-0014 D1). 층은 목록 위 floating이고 확인 상자(z-dialog)가 그 위에 섭니다. 보관함 화면은 셸 안 보통 화면이라 z-index가 없습니다.
+   화면 지역 상수(토큰 없음): 고른 줄 테두리 1.5 → 2 · 체크 원 26 · 카드 기울기 없음(사진이 없어 단색 카드). */
+
+.my-story-layer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-floating);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--libitum-color-background-primary);
+}
+
+.my-story-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x);
+}
+
+.my-story-title {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.my-story-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.my-story-icon {
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+}
+
+.my-story-scroll {
+  flex: 1;
+}
+
+.my-story-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x) var(--libitum-spacing-24);
+}
+
+.my-story-footer {
+  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x) 0;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-200);
+  background-color: var(--libitum-color-background-primary);
+}
+
+.my-story-footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.my-story-error {
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-story-section-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--libitum-spacing-8);
+}
+
+.my-story-section-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.my-story-section-meta,
+.my-story-meta,
+.my-story-note,
+.my-story-empty {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-story-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.my-story-choice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-200);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-choice-on {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-background-secondary);
+}
+
+.my-story-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-full);
+}
+
+.my-story-check-on {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.my-story-check-icon {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+.my-story-choice-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.my-story-choice-head {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--libitum-spacing-8);
+}
+
+.my-story-choice-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.my-story-choice-roman,
+.my-story-choice-meaning,
+.my-story-choice-example {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-story-choice-roman {
+  font-style: italic;
+}
+
+/* 내 스토리 카드(시안 12번) — 사진 대신 brand 면 위 흰 글. 흰 글 대비는 brand-strong 면(4.5:1 이상). */
+.my-story-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.my-story-card-tag {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: 1px;
+}
+
+.my-story-card-ko {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  text-align: center;
+}
+
+.my-story-card-roman,
+.my-story-card-meaning,
+.my-story-card-example-meaning {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  text-align: center;
+}
+
+.my-story-card-roman {
+  font-style: italic;
+}
+
+.my-story-card-example {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-card-example-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  text-align: center;
+}
+
+.my-story-card-example .my-story-card-example-meaning {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-story-menu-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  min-height: 48px;
+  padding: 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.my-story-menu-text {
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.my-story-reactions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-8);
+}
+
+/* 반응 한 줄(시안 16번) — 얼굴 · 이름 · 경과 / 말 / 「뜻」 / Open chat. */
+.my-story-reaction {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-8) 0;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--libitum-color-gray-200);
+}
+
+.my-story-reaction-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-4);
+}
+
+.my-story-reaction-words {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.my-story-reaction-name {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+/* Open chat(시안 16번) — brand.primary 바탕 · 흰 글, 알약 36. */
+.my-story-open-chat {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  height: 36px; /* 화면 지역 상수(시안 16번 알약 36, 토큰 없음) */
+  margin-top: var(--libitum-spacing-4);
+  padding: 0 var(--libitum-spacing-12) 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.my-story-open-chat-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-open-chat-icon {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+.my-story-reactions-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-8);
+}
+
+/* Seen by — 겹친 작은 얼굴 + 수. */
+.my-story-seen {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.my-story-seen-face {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-background-primary);
+  border-radius: var(--libitum-radius-full);
+}
+
+.my-story-seen-face.overlap {
+  margin-left: calc(-1 * var(--libitum-spacing-8));
+}
+
+.my-story-seen-text {
+  margin-left: var(--libitum-spacing-8);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-story-note.center {
+  text-align: center;
+}
+
+/* 막 올린 뒤 · 친구 0명(시안 17번). */
+.my-story-waiting,
+.my-story-no-friends {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.my-story-no-friends {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.my-story-waiting-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-waiting-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.my-story-waiting-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.my-story-reaction-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.my-story-reaction-meta {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 처음 안내 걸음(시안 8번). */
+.my-story-guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-12);
+}
+
+.my-story-guide-step {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-12);
+}
+
+.my-story-guide-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.my-story-guide-num-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.my-story-guide-step-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.my-story-guide-step-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.my-story-guide-step-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 올리기 창 시트(시안 18번) — 세 칸. 지금 칸(올렸음)은 brand 면, 다음 · 지금 열린 칸은 점선 brand 테두리. */
+.my-story-slots {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-8);
+}
+
+.my-story-slot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-lg);
+  border-width: 1.5px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.my-story-slot-shared {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.my-story-slot-upcoming,
+.my-story-slot-open {
+  border-style: dashed;
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-slot-name {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-slot-range,
+.my-story-slot-state-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  text-align: center;
+}
+
+.my-story-slot-shared .my-story-slot-state-text,
+.my-story-slot-upcoming .my-story-slot-state-text,
+.my-story-slot-open .my-story-slot-state-text {
+  color: var(--libitum-color-fg-brand);
+  font-weight: var(--libitum-font-weight-bold);
+}
+
+.my-story-slot-state {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.my-story-slot-tick {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+/* 스토리 만들기(시안 26 ~ 28). 바탕색 넷은 화면 지역 상수(시안 값, 토큰 없음) — 글 스토리 카드와 편집 바탕이 함께 씁니다. */
+.my-story-bg-orange {
+  background-color: #ffe4d1;
+}
+
+.my-story-bg-green {
+  background-color: #ddf2e4;
+}
+
+.my-story-bg-blue {
+  background-color: #dce8fb;
+}
+
+.my-story-bg-purple {
+  background-color: #ece2fa;
+}
+
+/* 시작 고르기(26번). */
+.my-story-start-options {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-8);
+}
+
+.my-story-start-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-96);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.my-story-start-option-brand {
+  background-color: #ffe4d1;
+}
+
+.my-story-start-option-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-start-icon {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+}
+
+.my-story-start-aa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-radius: var(--libitum-radius-sm);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.my-story-start-aa-text,
+.my-story-tool-aa {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-tool-aa {
+  color: var(--libitum-color-fg-neutral);
+}
+
+/* 바탕 위 편집(27번). */
+.my-story-editor {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-floating);
+  display: flex;
+  flex-direction: column;
+}
+
+.my-story-editor-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--libitum-spacing-12);
+}
+
+.my-story-editor-round {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-editor-spacer {
+  width: var(--libitum-spacing-48);
+}
+
+.my-story-swatches {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-swatch {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-full);
+}
+
+.my-story-swatch-on {
+  border-color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-canvas {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.my-story-tools {
+  position: absolute;
+  right: var(--libitum-spacing-12);
+  top: 30%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+.my-story-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  width: var(--libitum-spacing-64);
+}
+
+.my-story-tool-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-tool-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.my-story-editor-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x) 0;
+}
+
+.my-story-editor-hint {
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 스티커 — 가운데 기준으로 놓고(translate −50%) 회전 · 크기는 transform. */
+.my-story-sticker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-brand-reward-disabled-surface);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-sticker-on {
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.my-story-sticker-ko {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.my-story-sticker-roman {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-style: italic;
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.my-story-sticker-meaning {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-sticker-remove {
+  position: absolute;
+  top: calc(-1 * var(--libitum-spacing-12));
+  right: calc(-1 * var(--libitum-spacing-12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-sticker-remove-icon {
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+}
+
+.my-story-text-block {
+  position: absolute;
+  top: 12%;
+  left: var(--libitum-spacing-24);
+  right: var(--libitum-spacing-80);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.my-story-text-block-ko {
+  color: var(--libitum-color-brand-strong);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  text-align: center;
+}
+
+.my-story-text-block-meaning {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  text-align: center;
+}
+
+/* 글을 쓰는 동안 편집의 위 줄 · 도구 · 아래 줄을 숨깁니다(29번 — 위에는 글자색 · Done만). 누름은 쓰기 층이 막습니다. */
+.my-story-under-typing {
+  opacity: 0;
+}
+
+/* Aa — 바탕 위 글 상자에서 쓰기(29번). 바탕을 어둡게 덮고 위에 글자색 · Done, 가운데 점선 상자. 글자색 넷은 시안 값(화면 지역 상수). */
+.my-story-typing {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 var(--libitum-spacing-12);
+  background-color: rgba(26, 28, 32, 0.45);
+}
+
+.my-story-typing-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+}
+
+.my-story-typing-colors {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+}
+
+.my-story-text-swatch {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.7);
+  border-radius: var(--libitum-radius-full);
+}
+
+.my-story-text-swatch-on {
+  border-width: 3px;
+  border-color: var(--libitum-color-white);
+}
+
+.my-story-typing-done {
+  display: flex;
+  align-items: center;
+  height: var(--libitum-spacing-40);
+  padding: 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-typing-done-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+/* 글 상자 · 도움말 묶음 — 키보드가 오르면(인라인 style) 위 줄과 키보드 사이 가운데로(키보드에 가리지 않게). */
+.my-story-typing-middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  left: 0;
+  right: 0;
+}
+
+.my-story-typing-box {
+  display: flex;
+  align-self: stretch;
+  margin: 0 var(--libitum-spacing-20);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-width: 2px;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: var(--libitum-radius-lg);
+}
+
+.my-story-typing-input {
+  flex: 1;
+  height: var(--libitum-spacing-48);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  text-align: center;
+}
+
+.my-story-typing-help {
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-ink-brown {
+  color: #8a3a08;
+}
+
+.my-story-ink-black {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-ink-white {
+  color: var(--libitum-color-white);
+}
+
+.my-story-ink-orange {
+  color: var(--libitum-color-brand-primary);
+}
+
+.my-story-ink-bg-brown {
+  background-color: #8a3a08;
+}
+
+.my-story-ink-bg-black {
+  background-color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-ink-bg-white {
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-ink-bg-orange {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+/* 글 상자의 줄 — 바탕 너비, 가운데가 x(laneStyle). 위아래 가운데는 y. */
+.my-story-lane {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  transform: translateY(-50%);
+}
+
+/* 바탕 위 글 상자(30번) — 스티커와 같은 변환(가운데 기준 · scale이라 글자도 같은 비율). */
+.my-story-text-box {
+  position: relative;
+  /* 크게 하면 바탕보다 넓어질 수 있음 — 줄이 눌려 넘치지 않고 가운데 기준으로 양쪽으로 넘치게. */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0);
+  border-radius: var(--libitum-radius-md);
+}
+
+.my-story-text-box-on {
+  border-color: rgba(138, 58, 8, 0.35);
+}
+
+/* 줄은 `storyTextLines`가 정하고(다시 흐르지 않게 nowrap), 크기는 인라인 글자 크기(A안). */
+.my-story-text-box-ko {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* 모서리 손잡이(30번) — 오른쪽 아래. */
+.my-story-sticker-handle {
+  position: absolute;
+  right: calc(-1 * var(--libitum-spacing-12));
+  bottom: calc(-1 * var(--libitum-spacing-12));
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+  border-width: 2px;
+  border-style: solid;
+  border-color: #8a3a08;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+/* 넣기 시트(28번) — 칸 격자. */
+.my-story-add-scroll {
+  height: 280px; /* 화면 지역 상수(시안 28번 시트 안 격자 높이) */
+}
+
+.my-story-tile-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-8);
+}
+
+.my-story-tile-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 31%;
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-6);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-brand-reward-disabled-surface);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-tile-choice-ko {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  text-align: center;
+}
+
+.my-story-tile-choice-meaning {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  text-align: center;
+}
+
+/* 글 스토리 카드(보기). */
+.my-story-text-card {
+  position: relative;
+  height: 360px; /* 화면 지역 상수 — 바탕 위 비율 자리를 그리는 고정 높이 */
+  border-radius: var(--libitum-radius-xl);
+  overflow: hidden;
+}

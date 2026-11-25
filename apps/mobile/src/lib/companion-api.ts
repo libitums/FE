@@ -21,6 +21,7 @@ import {
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 import { earlyOffersFrom, earlyUnlockFrom } from "../screens/messenger-chat/early-access-parse";
 import { friendStoriesFrom } from "../screens/messenger-chat/friend-stories-parse";
+import { myStoriesRemote } from "./companion-my-stories-api";
 import {
   adultAckFrom,
   visibleFriendsFrom,
@@ -96,6 +97,8 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
     stories: {
       list: async () => friendStoriesFrom(await call("/rest/v1/rpc/companion_friend_stories", {})),
     },
+    // 내 스토리(ADR-0194) — 단어 · 카드 올리기 · 보관함 · 지우기.
+    myStories: myStoriesRemote(call),
     clearChat: async (characterId) =>
       clearOutcomeFrom(
         await call("/rest/v1/rpc/companion_clear_chat", { p_character_id: characterId }),
