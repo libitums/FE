@@ -11,6 +11,7 @@ const files = readdirSync(dir).filter((name) => name.endsWith(".sql"));
 
 describe("마이그레이션 판 번호", () => {
   test("MV1. 모든 파일이 14자리 번호 + 밑줄 + 이름이다", () => {
+    expect(files.length).toBeGreaterThan(0); // 경로가 틀려 빈 목록이면 아무것도 보지 않고 통과하지 않게
     expect(files.filter((name) => !/^\d{14}_[a-z0-9_]+\.sql$/.test(name))).toEqual([]);
   });
 
@@ -18,7 +19,9 @@ describe("마이그레이션 판 번호", () => {
     const seen = new Map<string, string[]>();
     for (const name of files) {
       const version = name.slice(0, 14);
-      seen.set(version, [...(seen.get(version) ?? []), name]);
+      const names = seen.get(version) ?? [];
+      names.push(name);
+      seen.set(version, names);
     }
     expect([...seen.values()].filter((names) => names.length > 1)).toEqual([]);
   });
