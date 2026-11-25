@@ -11,6 +11,7 @@ import { infinityHeroIcon } from "../../components/infinity-icon";
 import { ticketIcon } from "../../components/ticket-icon";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
+import { WELCOME_PASS_MS } from "../../lib/welcome-pass";
 import bigPouchArt from "../coin-shop/assets/big-pouch.webp";
 import { LAUNCH_FLYING_COINS, LaunchCoinFlight } from "../launch/LaunchCoinFlight";
 import { useCountUp } from "../launch/LaunchModals";
@@ -20,6 +21,7 @@ import {
   type RewardModalProps,
   type SignupRewardModalProps,
 } from "./signup-reward.contract";
+import { SignupRewardGifts } from "./SignupRewardGifts";
 
 import "../launch/launch.css";
 import "./signup-reward.css";
@@ -28,6 +30,8 @@ import "./signup-reward.css";
 const POPS = [0, 1, 2, 3, 4, 5];
 /** 금액이 오르기 시작하는 때 — 주머니가 튀어 앉은 뒤(d1 × 18). */
 const COUNT_DELAY_MS = 900;
+/** 무제한 줄 제목의 시간 — 첫날 이용권 길이(24시간). */
+const WELCOME_PASS_HOURS = WELCOME_PASS_MS / 3_600_000;
 
 // 보상 모달 틀 — 가입 보상(ADR-0174, 시안 Reward · Wallet)과 푸시 캠페인 보상(ADR-0175)이 함께 씁니다. 엽전 출시 모달(ADR-0140)과
 // 같은 틀(막 · 흰 상자 · 위 알약 · Got it)입니다.
@@ -35,12 +39,15 @@ const COUNT_DELAY_MS = 900;
 //   머리 엽전 칩으로 실제 자리를 재어 날아갑니다(LaunchCoinFlight).
 // - 무제한 티켓: 같은 무대에 주황 무한 기호(무제한 모달의 큰 값)와 티켓 아이콘 여섯이 톡 튑니다. 금액 줄은 시간(`24h`)이고 날지 않습니다 —
 //   「Got it」이면 곧바로 닫히고 머리 칩이 무제한 칩으로 서 있습니다. 새 그림은 없습니다.
+// - 선물 두 줄(`gifts`, 가입 보상에서 첫날 무제한이 적용될 때 — ADR-0186 개정 3): 무대 · 금액 줄 대신 엽전 줄 · 무제한 줄을 그립니다.
+//   금액은 엽전 줄에서 같은 꼴로 오르고, 날기는 엽전 줄의 주머니에서 출발합니다(`SignupRewardGifts`).
 // 움직임 줄이기면 처음부터 최종 값이고 날지 않고 곧바로 닫힙니다.
 export function RewardModal({
   tag,
   title,
   body,
   reward,
+  gifts,
   coinTargetId,
   onCoinLanded,
   onFlightStart,
@@ -94,53 +101,67 @@ export function RewardModal({
           scroll-orientation="vertical"
           scroll-bar-enable={false}
         >
-          <view className="launch-scroll-body">
-            <view
-              className="signup-reward-stage"
-              data-testid={coins ? undefined : ids.ticketStage}
-              accessibility-elements-hidden={true}
-            >
-              <view className="signup-reward-glow" />
-              {POPS.map((index) => (
-                <view key={index} className={`signup-reward-pop signup-reward-pop-${index}`}>
-                  <svg className="signup-reward-pop-icon" content={icon} current-color={tint} />
-                </view>
-              ))}
-              {coins ? (
-                <image className="signup-reward-pouch" src={bigPouchArt} mode="aspectFit" />
-              ) : (
-                <svg
-                  className="signup-reward-pouch reward-ticket-infinity"
-                  content={infinityHeroIcon}
-                  current-color={color.brand.secondary}
-                />
-              )}
-            </view>
-            <text className="launch-title" accessibility-traits="header">
-              {title}
-            </text>
-            <view
-              className="signup-reward-amount-row"
-              flatten={false}
-              accessibility-element={true}
-              accessibility-label={
-                coins
-                  ? copy.amountSpoken(reward.amount)
-                  : `${tickets.unlimited}, ${copy.hoursShort(reward.hours)}`
-              }
-            >
-              <svg
-                id={coins ? signupRewardCoinSourceId : undefined}
-                className="signup-reward-amount-icon"
-                content={icon}
-                current-color={tint}
-              />
-              <text className="signup-reward-amount" data-testid={ids.amount}>
-                {coins ? `+${shown}` : copy.hoursShort(reward.hours)}
+          {coins && gifts !== undefined ? (
+            <view className="launch-scroll-body">
+              <text className="launch-title" accessibility-traits="header">
+                {title}
               </text>
+              {body === null ? null : <text className="launch-body">{body}</text>}
+              <SignupRewardGifts
+                rows={gifts}
+                amountShown={copy.amountSpoken(shown)}
+                amountSpoken={copy.amountSpoken(reward.amount)}
+              />
             </view>
-            <text className="launch-body">{body}</text>
-          </view>
+          ) : (
+            <view className="launch-scroll-body">
+              <view
+                className="signup-reward-stage"
+                data-testid={coins ? undefined : ids.ticketStage}
+                accessibility-elements-hidden={true}
+              >
+                <view className="signup-reward-glow" />
+                {POPS.map((index) => (
+                  <view key={index} className={`signup-reward-pop signup-reward-pop-${index}`}>
+                    <svg className="signup-reward-pop-icon" content={icon} current-color={tint} />
+                  </view>
+                ))}
+                {coins ? (
+                  <image className="signup-reward-pouch" src={bigPouchArt} mode="aspectFit" />
+                ) : (
+                  <svg
+                    className="signup-reward-pouch reward-ticket-infinity"
+                    content={infinityHeroIcon}
+                    current-color={color.brand.secondary}
+                  />
+                )}
+              </view>
+              <text className="launch-title" accessibility-traits="header">
+                {title}
+              </text>
+              <view
+                className="signup-reward-amount-row"
+                flatten={false}
+                accessibility-element={true}
+                accessibility-label={
+                  coins
+                    ? copy.amountSpoken(reward.amount)
+                    : `${tickets.unlimited}, ${copy.hoursShort(reward.hours)}`
+                }
+              >
+                <svg
+                  id={coins ? signupRewardCoinSourceId : undefined}
+                  className="signup-reward-amount-icon"
+                  content={icon}
+                  current-color={tint}
+                />
+                <text className="signup-reward-amount" data-testid={ids.amount}>
+                  {coins ? `+${shown}` : copy.hoursShort(reward.hours)}
+                </text>
+              </view>
+              {body === null ? null : <text className="launch-body">{body}</text>}
+            </view>
+          )}
         </scroll-view>
         <view className="launch-actions" data-testid={ids.gotIt}>
           <Button label={copy.gotIt} variant="brand" size="xl" width="fill" bindtap={done} />
@@ -157,20 +178,33 @@ export function RewardModal({
   );
 }
 
-/** 가입 보상 모달(ADR-0174) — 보상 틀에 가입 문구를 꽂습니다. */
+/**
+ * 가입 보상 모달(ADR-0174) — 보상 틀에 가입 문구를 꽂습니다. 창이 선 순간 첫날 무제한이 적용되면(`unlimitedUntil`) 선물 두 줄
+ * (ADR-0186 개정 3) — 손님 이어받기 문장은 제목 아래 그대로 두고, 처음부터 가입이면 보조문 대신 엽전 줄의 짧은 설명이 그 뜻을 맡습니다.
+ */
 export function SignupRewardModal({
   amount,
   fromGuest,
+  unlimitedUntil,
   ...rest
 }: SignupRewardModalProps): ReactNode {
-  const copy = useUiCopy().signupReward;
+  const { signupReward: copy, tickets } = useUiCopy();
+  const gifts =
+    unlimitedUntil === null || unlimitedUntil === undefined
+      ? undefined
+      : {
+          coinsLine: copy.coinsLine,
+          unlimitedTitle: `${tickets.unlimited} · ${copy.hoursShort(WELCOME_PASS_HOURS)}`,
+          unlimitedLine: copy.unlimitedUntil(unlimitedUntil),
+        };
   return (
     <RewardModal
       {...rest}
       tag={copy.tag}
       title={copy.title}
-      body={fromGuest ? copy.bodyGuest : copy.bodyNew}
+      body={fromGuest ? copy.bodyGuest : gifts === undefined ? copy.bodyNew : null}
       reward={{ kind: "coins", amount }}
+      gifts={gifts}
     />
   );
 }

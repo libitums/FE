@@ -63,7 +63,11 @@ export function useMapNotices(input: MapNoticesInput): {
   // 알림 권한 창의 답을 기다리는 동안 어떤 안내도 그 밑에 서지 않습니다(ADR-0176 D5).
   const [promptAsking, setPromptAsking] = useState(false);
   const idle = input.idle && !promptAsking;
+  // 첫날 무제한 티켓(ADR-0186) — 회원만, 따로 안내 모달 없음. 구독 중이면 없고 구독 상태를 모르는 동안은 칩을 그리지 않습니다(개정 2).
+  // 요금제 결선이 없으면(비회원 · 플래그 꺼짐) 구독 없음과 같습니다. 가입 보상 창이 선물 두 줄로 알립니다(개정 3).
+  const welcomePass = useWelcomePass(input.wiring.plans?.subscription ?? "none");
   const signup = useSignupReward({
+    welcomePass,
     wiring: input.wiring,
     idle:
       idle &&
@@ -89,9 +93,6 @@ export function useMapNotices(input: MapNoticesInput): {
     acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
   });
   pushOpen.current = push.open;
-  // 첫날 무제한 티켓(ADR-0186) — 회원만, 안내 모달 없음. 구독 중이면 없고 구독 상태를 모르는 동안은 칩을 그리지 않습니다(개정 2).
-  // 요금제 결선이 없으면(비회원 · 플래그 꺼짐) 구독 없음과 같습니다.
-  const welcomePass = useWelcomePass(input.wiring.plans?.subscription ?? "none");
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
