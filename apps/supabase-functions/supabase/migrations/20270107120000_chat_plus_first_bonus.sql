@@ -31,8 +31,12 @@ begin
     or coalesce(p_event->>'periodType', '') not in ('NORMAL', 'INTRO', 'PREPAID') then
     return false;
   end if;
-  select chat_plus_first_bonus into v_amount from companion.settings;
-  if not companion.grant_once(p_user_id, coalesce(v_amount, 0), 'chat_plus_first_bonus', p_user_id::text) then
+  select chat_plus_first_bonus into v_amount from companion.settings limit 1;
+  -- 설정 행이 없거나 0(끔)이면 원장 · 알림 표를 건드리지 않는다(리뷰 #594).
+  if v_amount is null or v_amount <= 0 then
+    return false;
+  end if;
+  if not companion.grant_once(p_user_id, v_amount, 'chat_plus_first_bonus', p_user_id::text) then
     return false;
   end if;
   insert into companion.subscription_bonus_notices (user_id, amount) values (p_user_id, v_amount)

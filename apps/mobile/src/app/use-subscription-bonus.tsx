@@ -88,12 +88,14 @@ export function useSubscriptionBonus(input: SubscriptionBonusInput): Subscriptio
   useEffect(() => {
     if (askKey === null || !input.idle || asking || askedKey.current === askKey) return;
     // 기록이 있으면(받음 · 다른 곳에서 알림) 다시 묻지 않습니다 — 평생 한 번이라.
-    if (latest.current.record !== null || store.read() !== null) return;
+    // 저장소 · 주입은 `latest`로 읽습니다 — 효과가 지난 그림의 값에 묶이지 않게(리뷰 #594).
+    const { store: nowStore, input: nowInput } = latest.current;
+    if (latest.current.record !== null || nowStore.read() !== null) return;
     askedKey.current = askKey;
     setAsking(true);
     const asked = session.current;
     // 지도가 잠깐 바빠져도 응답은 버리지 않습니다 — 서버는 이미 알린 것으로 찍었습니다. 계정이 바뀌었을 때만 버립니다.
-    void (input.claim ?? (() => subscriptionBonusClient().claim()))().then((result) => {
+    void (nowInput.claim ?? (() => subscriptionBonusClient().claim()))().then((result) => {
       if (asked !== session.current) return;
       setAsking(false);
       if (result === null) return;
@@ -123,7 +125,7 @@ export function useSubscriptionBonus(input: SubscriptionBonusInput): Subscriptio
       plan: "chat_plus",
       amount: String(record.amount),
     });
-  }, [step]);
+  }, [step, record, sink]);
 
   const finish = () => {
     const now = latest.current.record;
