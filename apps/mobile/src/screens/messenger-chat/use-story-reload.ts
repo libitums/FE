@@ -20,7 +20,7 @@ export function useStoryReload({
 }: {
   readonly port: FriendStoriesPort | undefined;
   readonly viewerOpen: boolean;
-  readonly setStories: (update: (previous: Stories) => Stories) => void;
+  readonly setStories: (update: Stories | ((previous: Stories) => Stories)) => void;
 }): StoryReload {
   const [reloadVersion, setReloadVersion] = useState(0);
   const held = useRef<Stories>(null);
@@ -29,20 +29,22 @@ export function useStoryReload({
   // 포트 객체가 렌더마다 같아도 그때의 함수를 씁니다(마운트 읽기와 같은 꼴).
   const loadRef = useRef(port?.load ?? null);
   loadRef.current = port?.load ?? null;
-  const subscribeRef = useRef(port?.subscribeReload ?? null);
-  subscribeRef.current = port?.subscribeReload ?? null;
   const hasLoader = loadRef.current !== null;
+  // 결선은 같은 함수를 주므로 다시 걸지 않고, 포트가 바뀌면(로그인 등) 새 함수로 다시 겁니다.
+  const subscribeReload = port?.subscribeReload;
 
   useEffect(() => {
     if (!hasLoader) return undefined;
-    const bump = () => setReloadVersion((version) => version + 1);
-    const handle = setInterval(bump, STORY_RELOAD_MS);
-    const off = subscribeRef.current?.(bump);
+    const handle = setInterval(() => setReloadVersion((version) => version + 1), STORY_RELOAD_MS);
     return () => {
       clearInterval(handle);
-      off?.();
     };
   }, [hasLoader]);
+
+  useEffect(() => {
+    if (subscribeReload === undefined) return undefined;
+    return subscribeReload(() => setReloadVersion((version) => version + 1));
+  }, [subscribeReload]);
 
   useEffect(() => {
     const load = loadRef.current;
@@ -64,7 +66,7 @@ export function useStoryReload({
     const next = held.current;
     if (viewerOpen || next === null) return;
     held.current = null;
-    setStories(() => next);
+    setStories(next);
   }, [viewerOpen]);
 
   return {
