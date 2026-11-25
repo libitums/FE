@@ -137,19 +137,23 @@ test("F2. 끝으로 내린 스크롤이 멈춘 뒤에도(scrollend) 다음 말�
   expect(scrollTos()).toBe(1);
 });
 
-test("F2. 내려가는 도중(끝에서 멀다)에 내용이 또 늘어도 우리 스크롤이 진행 중이면 다시 끝으로 내린다", () => {
+// chat-scroll-follow E: 진행 중인 부드러운 스크롤을 다시 시작하지 않고 묶어 두었다가 멈춘 뒤(scrollend) 한 번 더 끝으로 내린다.
+test("F2. 내려가는 도중(끝에서 멀다)에 내용이 또 늘어도 우리 스크롤이 진행 중이면 멈춘 뒤 다시 끝으로 내린다", () => {
   render(
     <ChatLog testId="log">
       <view />
     </ChatLog>,
   );
   fire("layoutchange", { width: 360, height: 400 });
-  fire("contentsizechanged", { scrollHeight: 1000, scrollTop: 0, deltaY: 0 });
+  fire("contentsizechanged", { scrollHeight: 400, scrollTop: 0, deltaY: 0 }); // 첫 끝 맞춤(점프)
+  fire("contentsizechanged", { scrollHeight: 1000, scrollTop: 0, deltaY: 0 }); // 새 말 — 부드럽게
   fire("scroll", { scrollTop: 300, scrollHeight: 1000, deltaY: 80 });
   invoked = [];
 
   fire("contentsizechanged", { scrollHeight: 1100, scrollTop: 300, deltaY: 0 });
+  expect(scrollTos()).toBe(0);
 
+  fire("scrollend", { scrollTop: 600, scrollHeight: 1100, deltaY: 0 });
   expect(scrollTos()).toBe(1);
 });
 
@@ -173,8 +177,9 @@ test("F2. jumpKey가 바뀌면(내가 보냄) 위로 올려 읽던 중이어도 
   });
   expect(scrollTos()).toBe(1);
 
-  // 보낸 뒤 늘어나는 내용(답장)도 따라간다.
-  fire("contentsizechanged", { scrollHeight: 1000, scrollTop: 100, deltaY: 0 });
+  // 보낸 뒤 늘어나는 내용(답장)도 따라간다 — 끝으로 내린 스크롤이 멈춘 뒤.
+  fire("scrollend", { scrollTop: 500, scrollHeight: 900, deltaY: 0 });
+  fire("contentsizechanged", { scrollHeight: 1000, scrollTop: 500, deltaY: 0 });
   expect(scrollTos()).toBe(2);
 });
 

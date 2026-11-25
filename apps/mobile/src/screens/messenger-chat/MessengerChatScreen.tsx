@@ -6,6 +6,7 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { ChatRoomHeader } from "./ChatRoomHeader";
 import { ChatWordsStrip } from "./ChatWords";
 import { useChatWordsStrip, type ChatWordsProps } from "./use-chat-words-strip";
+import { jumpKeyOf } from "./chat-jump-key";
 import { ChatLog } from "../../components/chat/ChatLog";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { announce } from "../../lib/accessibility";
@@ -162,12 +163,6 @@ export function MessengerChatScreen({
     bottomInset: edges.bottom,
   });
 
-  // 내가 보낸 말이 늘거나 마지막 글 id가 바뀌면(고친 문장 다시 보내기, ADR-0129) 읽던 자리와 상관없이 끝으로 내립니다(기기 F2).
-  const lastOwnId =
-    [...thread.messages]
-      .reverse()
-      .find((message) => message.kind === "text" && message.from === "me")?.id ?? "";
-
   return (
     <view className="messenger-chat-screen" data-testid={ids.screen}>
       <view
@@ -192,7 +187,10 @@ export function MessengerChatScreen({
           <ChatLog
             testId={ids.log}
             followKey={slotHeight}
-            jumpKey={lastOwnId}
+            // 내가 보낸 글 · 사진 · 음성 요청 · 고친 문장 다시 보내기는 읽던 자리와 상관없이 끝으로 — id 교체는 계기 아님(기기 F2).
+            jumpKey={jumpKeyOf(thread.messages)}
+            loading={thread.server?.history === "loading"}
+            holdKey={tools.open}
             onTap={
               state.slot.kind === "closed" ? undefined : () => dispatch({ type: "close-keyboard" })
             }
