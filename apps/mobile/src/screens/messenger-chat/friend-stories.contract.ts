@@ -4,6 +4,9 @@ import type { ChatRoomSummary } from "./chat-source.contract";
 import type { LocalizedLine } from "./friend-catalog.contract";
 import type { MineRowSlot, MyStoriesPort } from "./my-stories.contract";
 import type { SuggestedFriend } from "./suggested-friends";
+import type { ChatTier } from "./free-turns";
+import type { TrialStore } from "./trial-store";
+import type { KeyboardHeightStore } from "./keyboard-ports";
 
 /** 스토리의 한국어 한 줄 — 한 줄은 번역하지 않고 뜻만 언어별로 둡니다(en 필수). */
 export type FriendStoryLine = {
@@ -66,7 +69,21 @@ export type FriendStoriesPort = {
   readonly subscribeReload?: (listener: () => void) => () => void;
   /** 내 스토리(ADR-0194) — 없으면 「+」가 서지 않습니다. */
   readonly mine?: MyStoriesPort;
+  /** 보기에서 바로 보내는 답장의 앱 관문(체험 · 등급) — 없으면 앱 관문 없이 보냅니다(정본은 서버, D5 개정). */
+  readonly replyPlan?: () => StoryReplyPlan | null;
+  /** 답장 칸이 잰 키보드 높이를 남기는 곳(대화방 입력 줄과 같은 저장) — 없으면 남기지 않고 화면 표로 시작합니다. */
+  readonly keyboardHeightStore?: KeyboardHeightStore;
 };
+
+/** 보기 답장의 앱 관문 재료 — 대화방 입력 줄의 관문(`useChatTurns`)과 같은 체험 · 등급입니다. */
+export type StoryReplyPlan = { readonly trial: TrialStore; readonly tier: ChatTier };
+
+/** 보기에서 보낸 답장의 끝(ADR-0178 D5 개정) — 보냄(서버가 받음), 엽전 부족(상점을 엶), 그 밖 실패(글을 칸에 남김). */
+export type StoryReplyOutcome =
+  | { readonly kind: "sent" }
+  | { readonly kind: "failed"; readonly reason: StoryReplyFailure };
+export type StoryReplyFailure = "coins" | "failed";
+export type StoryReplyVia = "chip" | "typed";
 
 /** 내 친구(열린 방)의 스토리 칸 — 본 것은 회색 고리. */
 export type FriendStoryEntry = {
@@ -162,6 +179,14 @@ export type FriendStoriesCopy = {
     readonly freeReply: string;
     readonly replyPlaceholder: (name: string) => string;
     readonly replyChipLabel: (text: string) => string;
+    /** 보내기 단추의 낭독 이름. */
+    readonly send: string;
+    /** 보낸 뒤 잠깐 뜨는 알림 — 글 · 낭독. */
+    readonly sent: string;
+    readonly sentLabel: (name: string) => string;
+    readonly openChat: string;
+    readonly sendFailed: string;
+    readonly coinsShort: string;
     readonly newFriend: string;
     readonly addAndReply: string;
     readonly seeHowToMeet: string;
@@ -196,8 +221,18 @@ export type StoryViewerProps = {
   readonly words?: StoryWordPort;
   /** 스토리 한 장이 섰을 때(본 것 표시 · 이벤트). */
   readonly onShown: (item: StoryViewerItem) => void;
-  /** 답장 — 칩이면 그 말, 답장 칸이면 null. */
-  readonly onReply: (item: StoryViewerItem, text: string | null) => void;
+  /** 답장 — 칩 말 · 칸에 쓴 글을 보기를 떠나지 않고 그 인물의 방으로 보냅니다(D5 개정). 서버가 받거나 실패하면 풀립니다. */
+  readonly onReply: (
+    item: StoryViewerItem,
+    text: string,
+    via: StoryReplyVia,
+  ) => Promise<StoryReplyOutcome>;
+  /** 「Sent」 알림의 「Open chat」 — 보기를 닫고 그 인물의 방을 엽니다. */
+  readonly onOpenChat: (item: StoryViewerItem) => void;
+  /** 휴대폰 키보드 높이(pt/dp) — 잰 값 · 기기에 남은 값 · 화면 표(대화방 입력 줄과 같은 규칙). 답장 칸이 그 위에 섭니다. */
+  readonly keyboardHeight: number;
+  /** 답장 칸이 잰 키보드 높이를 받습니다(`usePhoneKeyboardHeight.measure`). */
+  readonly onKeyboardHeight?: (height: number) => void;
   readonly onSaveWord: (item: StoryViewerItem) => void;
   /** 안 만난 친구 — 추가하고 답장(추가 가능) 또는 프로필 시트(잠김). */
   readonly onMeet: (item: StoryViewerItem) => void;
@@ -237,6 +272,12 @@ export const friendStoriesTestIds = {
   free: sv("free"),
   chip: (index: number) => sv(`chip-${index}`),
   reply: sv("reply"),
+  replyBottom: sv("bottom"),
+  replyInput: sv("reply-input"),
+  replySend: sv("reply-send"),
+  replyError: sv("reply-error"),
+  sent: sv("sent"),
+  openChat: sv("open-chat"),
   meetCard: sv("meet-card"),
   meet: sv("meet"),
   quote: "chat-story-quote",

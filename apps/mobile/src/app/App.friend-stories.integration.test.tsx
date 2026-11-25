@@ -32,6 +32,7 @@ import {
   tapId,
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
+import { nativeInput } from "../screens/messenger-chat/chat-ui.test-support";
 
 // `integration` 계층(FSI1 ~ FSI9, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
 // (`companion_friend_stories` · `companion_friends`). 목록 → 보기 → 칩 · 답장 칸 → 대화방(인용 카드 · 인용 띠), 안 만난 친구 추가 → 답장,
@@ -101,7 +102,7 @@ const live = [
   story("daeun", { id: "st-daeun", postedAt: NOW - HOUR, expiresAt: NOW + 23 * HOUR }),
 ];
 
-test("FSI1. 목록 → 친구 스토리 → 칩: 대화방이 열리고 보낸 글 위에 인용 카드, 내 글에 인용", async () => {
+test("FSI1. 목록 → 친구 스토리 → 칩: 보기에 남은 채 그 방에 인용과 함께 보내고 「Sent」, Open chat → 방", async () => {
   serverRemote(live);
   await openMessenger();
   expect(present(ids.row)).toBe(true);
@@ -109,8 +110,9 @@ test("FSI1. 목록 → 친구 스토리 → 칩: 대화방이 열리고 보낸 �
   expect(present(ids.viewer)).toBe(true);
   tapId(ids.chip(0));
   await settle();
-  expect(present(chat.screen)).toBe(true);
-  expect(screen.getByTestId(ids.quote).textContent).toContain("You replied to 사장님's story");
+  expect(present(ids.viewer)).toBe(true);
+  expect(present(chat.screen)).toBe(false);
+  expect(screen.getByTestId(ids.sent).textContent).toContain("Sent");
   const source = await appChatSource();
   const mine = source
     ?.thread("owner")
@@ -119,16 +121,33 @@ test("FSI1. 목록 → 친구 스토리 → 칩: 대화방이 열리고 보낸 �
     text: { ko: "맛있겠다!" },
     story: { storyId: "st-owner" },
   });
+  tapId(ids.openChat);
+  await settle();
+  expect(present(chat.screen)).toBe(true);
+  expect(screen.getByTestId(ids.quote).textContent).toContain("You replied to 사장님's story");
 });
 
-test("FSI2. 답장 칸 → 대화방 인용 띠, 그 뒤 목록의 그 줄은 보통 미리보기(본 것)", async () => {
+test("FSI2. 답장 칸에 쓰고 보내기 → 보기를 떠나지 않고 인용과 함께 보냄 · 칸이 비고, 목록 줄은 본 것", async () => {
   serverRemote(live);
   await openMessenger();
   expect(screen.getByTestId(list.rowPreview("owner")).textContent).toContain("New story");
   tapId(ids.friend("owner"));
-  tapId(ids.reply);
+  act(() => {
+    nativeInput("focus", "", ids.replyInput);
+    nativeInput("input", "저도 라면 좋아해요", ids.replyInput);
+  });
+  tapId(ids.replySend);
   await settle();
-  expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to 사장님's story");
+  expect(present(ids.viewer)).toBe(true);
+  expect(screen.getByTestId(ids.replyInput).getAttribute("default-value") ?? "").toBe("");
+  const source = await appChatSource();
+  const mine = source
+    ?.thread("owner")
+    ?.messages.filter((m) => m.kind === "text" && m.from === "me");
+  expect(mine?.[(mine?.length ?? 0) - 1]).toMatchObject({
+    text: { ko: "저도 라면 좋아해요" },
+    story: { storyId: "st-owner" },
+  });
   expect(seen.has("st-owner")).toBe(true);
 });
 

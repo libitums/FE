@@ -1,12 +1,14 @@
 // 목록 화면의 친구 스토리 상태(ADR-0178) — 읽기 · 줄 · 보기 · 본 것 표시 · 답장 넘김 · 이벤트를 한곳에서 잇습니다. 판정은 순수 모듈이 집니다.
 
-import { useEffect, useRef, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import { useChatEvents } from "./chat-events";
-import type { ChatRoomSummary } from "./chat-source.contract";
+import type { ChatRoomSummary, ChatSource } from "./chat-source.contract";
+import type { CoinWallet } from "./coin-wallet";
+import { emptyKeyboardHeightStore } from "./keyboard-ports";
 import {
   listStoryOf,
   storiesAfterLoad,
@@ -27,6 +29,10 @@ import {
   takePendingStoryOpen,
 } from "./story-reply-handoff";
 import { StoryViewer } from "./StoryViewer";
+import { usePhoneKeyboardHeight } from "./use-phone-keyboard-height";
+import { useStoryInlineReply } from "./use-story-inline-reply";
+import { screenHeightFrom } from "../../lib/learning-density";
+import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import type { StoryRowStats } from "./use-row-impressions";
 import { useMyStories } from "./use-my-stories";
 import { useStoryReload } from "./use-story-reload";
@@ -63,6 +69,9 @@ export function useFriendStories({
   suggested,
   covered,
   onOpenRoom,
+  source,
+  wallet,
+  onShortOfCoins,
 }: {
   readonly port: FriendStoriesPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
@@ -70,6 +79,10 @@ export function useFriendStories({
   /** 엽전 상점 · 추천 시트 · 성인 확인이 위에 떠 있는가 — 그동안 보기를 멈추고 낭독에서 가립니다. */
   readonly covered: boolean;
   readonly onOpenRoom: (roomId: string) => void;
+  /** 보기에서 바로 보내는 답장(D5 개정) — 대화 출처 · 엽전 지갑 · 엽전 부족이면 상점. */
+  readonly source: ChatSource;
+  readonly wallet: CoinWallet;
+  readonly onShortOfCoins: () => void;
 }): FriendStoriesUi {
   const { emit } = useChatEvents();
   const [stories, setStories] = useState<readonly FriendStory[] | null>(null);
@@ -80,6 +93,19 @@ export function useFriendStories({
   const [pendingVersion, setPendingVersion] = useState(0);
   useEffect(() => subscribePendingStoryOpen(() => setPendingVersion((value) => value + 1)), []);
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
+  const inline = useStoryInlineReply({
+    source,
+    rooms,
+    wallet,
+    plan: port?.replyPlan,
+    onShortOfCoins,
+  });
+  // 답장 칸의 키보드 높이 — 대화방 입력 줄과 같은 규칙(잰 값 → 기기에 남은 값 → 화면 표).
+  const keyboard = usePhoneKeyboardHeight(
+    port?.keyboardHeightStore ?? emptyKeyboardHeightStore,
+    screenHeightFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo),
+    safeAreaInsetsFrom(useGlobalProps()).bottom,
+  );
 
   // 목록 마운트마다 한 번 읽습니다 — 포트 객체가 렌더마다 같아도(결선이 같은 객체를 줌) 그때의 함수를 씁니다(추천 친구 리뷰 #503과 같은 꼴).
   const loadRef = useRef(port?.load ?? null);
@@ -116,9 +142,6 @@ export function useFriendStories({
     onFindFriends: suggested.openDirectory,
   });
   const imageUrl = (path: string) => port?.imageUrl(path) ?? null;
-
-  const roomIdOf = (characterId: string): string | null =>
-    rooms.find((room) => room.counterpart.id === characterId)?.roomId ?? null;
 
   const open = (opened: ViewerOpen): boolean => {
     const result = viewerItemsOf(row, opened, imageUrl);
@@ -170,12 +193,15 @@ export function useFriendStories({
     });
   }
 
-  const handOff = (item: StoryViewerItem, text: string | null) => {
-    const roomId = roomIdOf(item.story.characterId);
+  // 안 만난 친구 추가 뒤 — 방을 열고 입력 줄 위 인용 띠(D5).
+  const handOff = (item: StoryViewerItem) => {
+    // 방금 추가한 방은 이 렌더의 방 목록에서 아직 잠겨 있을 수 있어 열림을 보지 않습니다.
+    const roomId =
+      rooms.find((room) => room.counterpart.id === item.story.characterId)?.roomId ?? null;
     if (roomId === null) return;
     putStoryReplyHandoff({
       roomId,
-      text,
+      text: null,
       free: item.story.freeReply,
       quote: {
         storyId: item.story.id,
@@ -188,10 +214,12 @@ export function useFriendStories({
     onOpenRoom(roomId);
   };
 
-  function handleReply(item: StoryViewerItem, text: string | null) {
+  // 「Sent」 알림의 Open chat — 보기를 닫고 그 방으로(보낸 글은 이미 방에 있습니다).
+  function handleOpenChat(item: StoryViewerItem) {
     "background only";
+    const roomId = inline.roomIdOf(item.story.characterId);
     close("replied");
-    handOff(item, text);
+    if (roomId !== null) onOpenRoom(roomId);
   }
 
   function handleMeet(item: StoryViewerItem) {
@@ -200,7 +228,7 @@ export function useFriendStories({
     if (friend === null) return;
     suggested.meet(friend, () => {
       close("replied");
-      handOff(item, null);
+      handOff(item);
     });
   }
 
@@ -240,7 +268,10 @@ export function useFriendStories({
           {...(port?.words === undefined ? {} : { words: port.words })}
           covered={covered}
           onShown={handleShown}
-          onReply={handleReply}
+          onReply={inline.reply}
+          onOpenChat={handleOpenChat}
+          keyboardHeight={keyboard.height}
+          onKeyboardHeight={keyboard.measure}
           onSaveWord={(item) =>
             emit({
               name: "friend_story_word_saved",

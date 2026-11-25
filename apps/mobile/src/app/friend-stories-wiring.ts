@@ -6,9 +6,11 @@ import { isStarredIn, withStarred } from "../lib/wordbook";
 import type {
   FriendStoriesPort,
   FriendStoryWord,
+  StoryReplyPlan,
   StorySeenStore,
   StoryWordPort,
 } from "../screens/messenger-chat/friend-stories.contract";
+import { deviceKeyboardHeightStore } from "../screens/messenger-chat/chat-local-stores";
 import { deviceStorySeenStore } from "../screens/messenger-chat/friend-story-seen-store";
 import { loadCurrentWordbook, todayLocal, updateCurrentWordbook } from "./learning-trail-port";
 import { sourceKey } from "./messenger-chat-wiring";
@@ -21,6 +23,8 @@ export type FriendStoriesWiringArgs = {
   /** UI 언어로 바꾼 카탈로그 — 부를 때마다 지금 것을 읽습니다. */
   readonly catalog: () => readonly CatalogEntry[];
   readonly romanization?: () => boolean;
+  /** 보기 답장의 앱 관문 재료(체험 · 등급, D5 개정) — 없으면 앱 관문 없이 보냅니다. */
+  readonly replyPlan?: StoryReplyPlan;
 };
 
 export type FriendStoriesTestStores = {
@@ -118,6 +122,8 @@ export function friendStoriesPort(args: FriendStoriesWiringArgs): FriendStoriesP
       accountKey: sourceKey,
       seen: seenStore,
     }),
+    replyPlan: () => latest?.replyPlan ?? null,
+    keyboardHeightStore: deviceKeyboardHeightStore,
   };
   return cachedPort;
 }
