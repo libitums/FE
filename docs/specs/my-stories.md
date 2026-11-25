@@ -41,7 +41,7 @@
 | 반응 알림 | 푸시 목적지 `{ kind: "companion-chat", characterId }` | 새 처리 없음(선톡 푸시와 같은 목적지) |
 | 지우기 | 스토리 위 답 목록은 사라지고 대화방의 반응 글은 남는다 | 지우기 확인 문구 |
 
-### 1.4 사진 스토리 (ADR-0191 D11) — 서버만, 화면은 아직
+### 1.4 사진 스토리 (ADR-0191 D11) — ⟨2026-11-25⟩ 앱은 ADR-0199
 
 - 계약: `packages/companion-contract/src/my-stories.ts`의 `myStoryRequestSchema` · `myStoryResponseSchema` · `myStoryOverlaySchema`. 서버 설명은
   `apps/supabase-functions/README.md` 「내 스토리 — 사진」.
@@ -52,6 +52,8 @@
 - 읽기(`companion_my_stories`)의 스토리에 `status` · `imagePath` · `overlays` · `lineOriginal` · `edits`가 더해졌다. 사진 스토리는 `word`가 null이다
   — **지금 앱의 풀기(`my-stories-parse.ts`)는 `word`를 꼭 요구하므로 사진 스토리가 오면 그 줄을 버린다.** 사진 화면과 함께 고친다.
 - 화면이 그릴 상태: 올리는 중(앱 안) → 확인 중(`checking`) → 게시됨(`live`) / 거절. 글 고치기는 `{ action: "edit" }`(스토리당 3번).
+- ⟨2026-11-25 — [ADR-0199](../adr/0199-my-story-photo-app.md)⟩ 앱이 사진을 그린다: 풀기가 사진 · 확인 중 스토리를 읽고(`status` · `imagePath`), 교정 ①은
+  쓰지 않는다(Aa 글 상자 그대로 — 글 스토리와 같음), 글 고치기(`edit`)는 이번 범위 밖. 계약 · 테스트는 ADR-0199 「확인」. 호스트 `StoryPhotoModule`.
 
 ### 1.5 앱 v2 — 서버 #588 반영 + 덕수쌤 퀴즈 ⟨2026-11-25⟩ (시안 16 ~ 23)
 
