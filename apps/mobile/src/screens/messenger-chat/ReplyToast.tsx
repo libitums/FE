@@ -74,6 +74,7 @@ export function ReplyToast({
     announce(spoken);
     clear();
     timers.current.push(setTimeout(leave, REPLY_TOAST_MS - LEAVE_MS));
+    return () => clear(); // 바꿔 끼우거나 밖에서 걷히면(null) 남은 타이머를 풉니다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view?.key]);
   useEffect(() => () => clear(), []);

@@ -98,6 +98,24 @@ test("RT-UI4. 4초 뒤 올라가며 onDismiss 한 번, 새 key가 오면 처음�
   expect(onDismiss).toHaveBeenCalledTimes(1);
 });
 
+test("RT-UI4b. 카드가 밖에서 걷히면(null) 남은 4초 타이머도 풀려 onDismiss를 부르지 않는다(리뷰 지적)", () => {
+  vi.useFakeTimers();
+  const { onDismiss, rerender } = mount(view());
+  rerender(
+    <ReplyToast
+      view={null}
+      top={47}
+      reducedMotion={false}
+      onOpen={() => {}}
+      onDismiss={onDismiss}
+    />,
+  );
+  act(() => {
+    vi.advanceTimersByTime(REPLY_TOAST_MS + 1000);
+  });
+  expect(onDismiss).not.toHaveBeenCalled();
+});
+
 test("RT-UI5. 위로 밀면 닫히고, 조금만 밀거나 아래로 밀면 닫히지 않는다", () => {
   vi.useFakeTimers();
   const { onDismiss } = mount(view());
