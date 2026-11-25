@@ -106,20 +106,27 @@ export function useStoryCube({
   // 놓은 뒤(백그라운드) — 큐브가 다 돌 즈음 넘김을 반영하고 끌기를 풉니다. 그동안 6초 넘김은 멈춰 있습니다.
   const latest = useRef({ onSwipe, onDrag, onTurnEnd });
   latest.current = { onSwipe, onDrag, onTurnEnd };
-  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  type Pending = { handle: ReturnType<typeof setTimeout>; finish: () => void };
+  const pending = useRef<Pending | null>(null);
   const release = (direction: CubeDirection, commit: boolean, ms: number): void => {
     "background only";
+    // 앞 손가락의 반영이 아직 남았으면 먼저 끝냅니다 — 버리면 넘김이 사라지고, 두면 타이머가 겹칩니다(리뷰 반영).
+    const before = pending.current;
+    if (before !== null) {
+      clearTimeout(before.handle);
+      before.finish();
+    }
     const finish = () => {
       pending.current = null;
       if (commit) latest.current.onSwipe(direction);
       latest.current.onDrag(false);
     };
     if (ms <= 0) finish();
-    else pending.current = setTimeout(finish, ms + LAG_MS);
+    else pending.current = { handle: setTimeout(finish, ms + LAG_MS), finish };
   };
   useEffect(
     () => () => {
-      if (pending.current !== null) clearTimeout(pending.current);
+      if (pending.current !== null) clearTimeout(pending.current.handle);
     },
     [],
   );
@@ -256,7 +263,6 @@ export function useStoryCube({
   return { prevRef, currentRef, nextRef, touchStart, touchMove, touchEnd };
 }
 
-/** 터치 이벤트의 손가락 자리(없으면 0). */
 function pointOf(event: Point): { x: number; y: number } {
   "main thread";
   const x = event.detail?.x;
