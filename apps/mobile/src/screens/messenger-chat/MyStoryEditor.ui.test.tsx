@@ -342,7 +342,7 @@ test("MS-UI40. 글 상자 크기 A안 — 정해진 줄마다 글자 크기로 �
   expect(lines[0]?.getAttribute("style")).toContain("font-size: 22px");
 });
 
-test("MS-UI41. 글 상자 끝단 — 두 손가락으로 크게 해도 가장 긴 줄이 바탕 폭 안에서 멈추고(끄는 중에도), 손을 떼면 그 크기로 확정", async () => {
+test("MS-UI41. 글 상자 끝단 — 두 손가락으로 크게 해도 상자가 바탕 폭(좌우 여백 · 오른쪽 도구 열 뺌) 안에서 멈추고(끄는 중에도), 손을 떼면 그 크기로 확정", async () => {
   await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
   tapId(ids.create);
   tapId(ids.startBackground);
@@ -374,8 +374,8 @@ test("MS-UI41. 글 상자 끝단 — 두 손가락으로 크게 해도 가장 �
       ],
     });
   });
-  // 4배를 바랐지만 (390 − 72 − 28) / 189.2 ≈ 1.533에서 멈춤
-  expect(box().getAttribute("style")).toContain("scale(1.533)");
+  // 4배를 바랐지만 확정 1의 상자(221.2px)를 키운 폭이 390 − 72 − 64 = 254에 닿는 1.148에서 멈춤
+  expect(box().getAttribute("style")).toContain("scale(1.148)");
   act(() => {
     fireEvent.touchend(box(), { touches: [] });
   });
@@ -383,5 +383,5 @@ test("MS-UI41. 글 상자 끝단 — 두 손가락으로 크게 해도 가장 �
   const [first] = [...box().querySelectorAll("text")].filter((el) =>
     (el.getAttribute("style") ?? "").includes("font-size"),
   );
-  expect(first?.getAttribute("style")).toContain("font-size: 33.726px");
+  expect(first?.getAttribute("style")).toContain("font-size: 25.256px");
 });

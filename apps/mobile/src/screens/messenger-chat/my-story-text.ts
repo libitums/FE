@@ -1,11 +1,12 @@
 // 바탕 위 글 상자(Aa)의 줄 · 크기 · 끝단(A안, 사용자 결정 2026-11-25) — 순수. 편집 · 보기(친구 화면 · 보관함 · 내 스토리 보기)가 같은 규칙을 씁니다.
 
-import { clamp, MAX_SCALE, MIN_SCALE, round, type Placement } from "./my-story-editor";
+import { round, type Placement } from "./my-story-editor";
+import { placedFit } from "./my-story-fit";
 
 /** 글 상자 한 줄의 폭(한글 글자 수) — 바탕 80% 폭 · heading-m 22px 기준. */
 const LINE_UNITS = 12;
 const unitOf = (ch: string): number => (ch === " " ? 0.3 : ch.charCodeAt(0) > 0x2e7f ? 1 : 0.6);
-const unitsOf = (word: string): number => {
+export const unitsOf = (word: string): number => {
   let sum = 0;
   for (const ch of word) sum += unitOf(ch);
   return sum;
@@ -59,43 +60,38 @@ export function storyTextLines(ko: string): string[] {
  */
 export function textBoxSizeOf(scale: number, settled: number) {
   return {
-    fontSize: `${22 * settled}px`,
-    lineHeight: `${28 * settled}px`,
+    fontSize: `${round(22 * settled)}px`,
+    lineHeight: `${round(28 * settled)}px`,
     // 작게 해도 최소 여백 — ×·손잡이(상자 모서리, 고정 크기)가 글자와 겹치지 않고 끝 글자가 테두리에 닿지 않게.
-    padding: `${Math.max(8 * settled, 8)}px ${Math.max(12 * settled, 14)}px`,
+    padding: `${round(Math.max(8 * settled, 8))}px ${round(Math.max(12 * settled, 14))}px`,
     live: round(scale / settled),
   };
 }
 
-/** 바탕 좌우 여백(px) — 상자 모서리의 ×·손잡이가 바탕 안 · Android 화면 끝 제스처 영역(약 24dp) 밖에 남게. */
-const TEXT_EDGE = 36;
-/** 상자의 좌우 안쪽 여백 합(px, 최소값 기준). */
-const TEXT_PAD = 28;
+/** 글 상자의 테두리 합(px, 좌우 · 위아래 2px씩). */
+const TEXT_BORDER = 4;
 
-/**
- * 글 상자 끝단 — 크기는 가장 긴 줄이 바탕 폭(좌우 여백 뺌) 안에 들 때까지만(서버 상한 3과 둘 중 작은 값), 자리(x)는 상자가 바탕 안에
- * 남게 자릅니다. 끄는 중에도 같은 상한입니다. 바탕 폭을 모르면(0) 그대로.
- */
-export function textFit(
-  ko: string,
-  place: Pick<Placement, "scale" | "x" | "y">,
-  canvas: { readonly width: number; readonly height: number },
-) {
-  const { scale, x, y } = place;
+/** 글 상자를 크기 s로 확정했을 때의 px 크기(회전 전) — 가장 긴 줄 · 줄 수 · 안쪽 여백(`textBoxSizeOf`) · 테두리. */
+export function textBoxPx(ko: string, scale: number) {
   const lines = storyTextLines(ko);
   let line = 0;
   for (const each of lines) line = Math.max(line, unitsOf(each) * 22);
-  if (canvas.width <= 0 || canvas.height <= 0 || line <= 0) return { scale, x, y };
-  const fitted = round(
-    clamp(Math.min(scale, (canvas.width - 2 * TEXT_EDGE - TEXT_PAD) / line), MIN_SCALE, MAX_SCALE),
-  );
-  const inside = (value: number, half: number) =>
-    half >= 0.5 ? 0.5 : round(clamp(value, half, 1 - half));
-  const edgeX = TEXT_EDGE / canvas.width;
-  const edgeY = TEXT_EDGE / canvas.height;
   return {
-    scale: fitted,
-    x: inside(x, (line * fitted + TEXT_PAD) / 2 / canvas.width + edgeX),
-    y: inside(y, (lines.length * 28 * fitted + 16) / 2 / canvas.height + edgeY),
+    width: line * scale + 2 * Math.max(12 * scale, 14) + TEXT_BORDER,
+    height: lines.length * 28 * scale + 2 * Math.max(8 * scale, 8) + TEXT_BORDER,
   };
+}
+
+/**
+ * 글 상자 끝단 — 회전한 상자의 외접 사각형이 바탕(가장자리 여백 · 오른쪽 도구 열 뺌) 안에 들 때까지만 커지고(서버 상한 3과 둘 중 작은
+ * 값), 자리는 그 사각형이 바탕 안에 남게 안쪽으로 밉니다(`placedFit`). 끄는 중 · 돌리는 중에도 같은 상한. 바탕 폭을 모르면(0) 그대로.
+ */
+export function textFit(
+  ko: string,
+  place: Pick<Placement, "scale" | "x" | "y"> & { readonly rotation?: number },
+  canvas: { readonly width: number; readonly height: number },
+  settled: number = place.scale,
+) {
+  if (storyTextLines(ko).length === 0) return { scale: place.scale, x: place.x, y: place.y };
+  return placedFit((scale) => textBoxPx(ko, scale), place, canvas, settled);
 }
