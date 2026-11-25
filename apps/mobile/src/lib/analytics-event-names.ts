@@ -88,6 +88,7 @@ export type AnalyticsEventName =
   | "signup_reward_shown"
   | "push_reward_claimed"
   | "push_reward_failed"
+  | "subscription_bonus_shown"
   | "plans_viewed"
   | "plan_selected"
   | "purchase_intent"

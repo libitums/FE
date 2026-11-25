@@ -444,6 +444,9 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-21 — 푸시 캠페인 보상(ADR-0175). 적용 기록⟩ **`push_reward_claimed { kind, amount }`**(보상 알림을 눌러 서버가 지급했을 때 한 번 — amount는 엽전 수 또는
     무제한 티켓 시간) · **`push_reward_failed { reason }`**(already_claimed · not_recipient · expired · unknown · guest · error, 캠페인 id가 없는 알림은 내지 않음).
     공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-push-reward.tsx`). Airbridge 매핑 없음.
+  - ⟨2026-11-25 — Chat Plus 첫 구독 보너스(ADR-0196). 적용 기록⟩ **`subscription_bonus_shown { plan: chat_plus, amount }`**(서버가 알린 보너스 모달이 설 때 한 번).
+    공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-subscription-bonus.tsx`). 지급 수는 서버 원장 `chat_plus_first_bonus`가 센다. 이름이 110 → 111개,
+    Airbridge 매핑 없음.
 
   #### D3 목적 구분 — 쓰는 법
 
