@@ -30,6 +30,10 @@ export type ChatLogProps = {
   readonly followKey?: number;
   /** 바뀌면(내가 말을 보냄) 읽던 자리와 상관없이 늘 끝으로 내리고 다시 따라갑니다(기기 F2). */
   readonly jumpKey?: number | string;
+  /** 기록을 읽는 중이면 true — 그동안(과 읽은 뒤 첫 끝 맞춤)은 부드럽게 훑지 않고 끝으로 점프합니다(chat-scroll-follow D). */
+  readonly loading?: boolean;
+  /** 참조가 바뀌면 학습자가 말풍선을 펼친 것입니다(뜻 · 교정) — 그 직후의 내용 변화는 따라가지 않습니다(chat-scroll-follow H). */
+  readonly holdKey?: unknown;
   /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
   readonly onTap?: () => void;
   readonly children: ReactNode;
