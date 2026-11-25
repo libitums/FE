@@ -22,6 +22,22 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     promptKeepBody: "建立免費帳號，保留你的 Yeopjeon 和票券。",
   },
   pushNotice: { chatUnavailable: "這個聊天目前無法使用。" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "傳了一張照片"
+          : `傳了一張照片 · ${count} 則新訊息`
+        : latest === "voice"
+          ? count === 1
+            ? "傳了一則語音訊息"
+            : `傳了一則語音訊息 · ${count} 則新訊息`
+          : count === 1
+            ? "新訊息"
+            : `${count} 則新訊息`,
+    jump: "跳到新訊息",
+    latest: "捲動到最新訊息",
+  },
   chatSettings: {
     entryTitle: "聊天",
     entryDescription: "回覆建議、角色傳來的訊息、記憶",

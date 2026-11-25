@@ -23,6 +23,22 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     promptKeepBody: "Create a free account to keep your Yeopjeon and tickets.",
   },
   pushNotice: { chatUnavailable: "This chat isn't available right now." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Sent a photo"
+          : `Sent a photo · ${count} new`
+        : latest === "voice"
+          ? count === 1
+            ? "Sent a voice message"
+            : `Sent a voice message · ${count} new`
+          : count === 1
+            ? "New message"
+            : `${count} new messages`,
+    jump: "Jump to new messages",
+    latest: "Scroll to latest",
+  },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Reply ideas, messages from characters, memories",

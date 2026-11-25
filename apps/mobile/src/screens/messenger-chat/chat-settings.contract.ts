@@ -6,6 +6,7 @@ import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
 import type { SuggestedFriendsCopy } from "./suggested-friends.contract";
 import type { FriendStoriesCopy } from "./friend-stories.contract";
+import type { NewMessagePillCopy } from "./new-message-pill.contract";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
 export type ChatProactivePref = "off" | "daily1" | "daily2";
 /** 교정 방식입니다 — 카드만 · 답 안에서 자연스럽게 · 먼저 짚고. 카드는 셋 모두 옵니다. */
@@ -58,6 +59,8 @@ export type MessengerChatExtraCopy = {
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;
+  /** 위로 올려 읽는 중 「새 메시지 ↓」 알약 · 맨 아래로 단추. */
+  readonly newMessages: NewMessagePillCopy;
   /** 교정 카드 · 다시 보내기 · 답 평가(ADR-0129). */
   readonly feedback: FeedbackCopy;
   /** 덕수쌤 첫 입장 안내 — 목록 카드 · 방 코치마크(2026-11-13). */

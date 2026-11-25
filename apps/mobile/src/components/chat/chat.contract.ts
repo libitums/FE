@@ -25,6 +25,8 @@ export type ChatHeaderSideProps = {
   readonly onTap?: () => void;
   readonly children?: ReactNode;
 };
+/** 로그의 자리 — 끝 근처(48px 안)인지, 끝까지 남은 거리가 뷰포트 높이보다 큰지(한 화면 넘게 위). */
+export type ChatLogPosition = { readonly nearEnd: boolean; readonly far: boolean };
 export type ChatLogProps = {
   readonly testId: string;
   readonly followKey?: number;
@@ -34,6 +36,8 @@ export type ChatLogProps = {
   readonly loading?: boolean;
   /** 참조가 바뀌면 학습자가 말풍선을 펼친 것입니다(뜻 · 교정) — 그 직후의 내용 변화는 따라가지 않습니다(chat-scroll-follow H). */
   readonly holdKey?: unknown;
+  /** 끝 근처인지 · 한 화면 넘게 멀리 있는지가 바뀔 때 불립니다(「새 메시지 ↓」 알약). */
+  readonly onPositionChange?: (position: ChatLogPosition) => void;
   /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
   readonly onTap?: () => void;
   readonly children: ReactNode;

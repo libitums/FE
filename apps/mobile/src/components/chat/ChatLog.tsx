@@ -2,9 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
-import type { ChatLogProps } from "./chat.contract";
+import type { ChatLogPosition, ChatLogProps } from "./chat.contract";
 import {
   ENTER_SETTLE_MS,
+  farFromEnd,
   FOLLOW_STALE_MS,
   JUMP_RETRIES,
   JUMP_SETTLE_MS,
@@ -57,6 +58,7 @@ export function ChatLog({
   jumpKey,
   loading = false,
   holdKey,
+  onPositionChange,
   onTap,
   children,
 }: ChatLogProps): ReactNode {
@@ -101,11 +103,28 @@ export function ChatLog({
     };
   };
 
+  // 자리(끝 근처 · 한 화면 넘게 멂)가 바뀔 때만 알립니다(「새 메시지 ↓」 알약).
+  const listener = useRef(onPositionChange);
+  useEffect(() => {
+    listener.current = onPositionChange;
+  }, [onPositionChange]);
+  const reported = useRef<ChatLogPosition>({ nearEnd: true, far: false });
+  const report = useCallback(() => {
+    "background only";
+    const near = nearEnd.current;
+    const viewport = viewportHeight.current;
+    const far = !near && farFromEnd(endDistance(position.current, viewport), viewport);
+    if (reported.current.nearEnd === near && reported.current.far === far) return;
+    reported.current = { nearEnd: near, far };
+    listener.current?.(reported.current);
+  }, []);
+
   // 끝으로 내립니다. instant면 늘 점프(진행 중인 스크롤을 덮음), 아니면 진행 중인 부드러운 스크롤이 있으면 묶어 둡니다.
   const goEnd = useCallback(
     (instant = false, retry = false) => {
       "background only";
       nearEnd.current = true;
+      report();
       const now = Date.now();
       if (!instant && following.current && now - followingSince.current < FOLLOW_STALE_MS) {
         queued.current = true;
@@ -120,7 +139,7 @@ export function ChatLog({
       if (!retry) retries.current = 0;
       scrollToEnd(id, smooth);
     },
-    [id, motion],
+    [id, motion, report],
   );
 
   // 우리 점프가 아직 자리를 잡는 중인지 — 그동안의 먼 위치는 우리 점프의 것입니다.
@@ -146,6 +165,7 @@ export function ChatLog({
         // 펼친 말풍선을 제자리에 둡니다 — 끝 근처인지만 위치로 다시 압니다.
         const near = nearEndAt(position.current ?? {});
         if (near !== null) nearEnd.current = near;
+        report();
         return;
       }
     }
@@ -174,6 +194,43 @@ export function ChatLog({
     },
     [],
   );
+
+  const readScroll = (event: ScrollDetail): void => {
+    "background only";
+    remember(event.detail);
+    const deltaY = event.detail.deltaY ?? 0;
+    const near = nearEndAt(event.detail);
+    if (deltaY < 0 && !settling()) userScrolled.current = true; // 학습자가 스크롤했다 — 첫 진입 점프는 끝
+    if (near === null) {
+      if (deltaY < 0) {
+        nearEnd.current = false;
+        following.current = false;
+        queued.current = false;
+      }
+      return;
+    }
+    // 우리가 내리는 중 · 점프 직후에 내려가는 방향이면 중간 위치입니다 — 끝에서 멀어도 「떠났다」로 읽지 않습니다.
+    if ((following.current || settling()) && !near && deltaY >= 0) return;
+    if (near || deltaY < 0) following.current = false;
+    if (deltaY < 0) queued.current = false;
+    nearEnd.current = near;
+  };
+
+  const readScrollEnd = (event: ScrollDetail): void => {
+    "background only";
+    remember(event.detail);
+    const ours = following.current || settling();
+    following.current = false;
+    const near = nearEndAt(event.detail);
+    // 우리 스크롤이 끝에 못 미쳐 멈췄거나 그동안 끝 맞춤이 또 왔으면 한 번 더 — 이번엔 점프(횟수 상한, 되풀이 없음).
+    if (ours && (queued.current || near === false) && retries.current < JUMP_RETRIES) {
+      retries.current += 1;
+      goEnd(true, true);
+      return;
+    }
+    queued.current = false;
+    if (near !== null) nearEnd.current = near;
+  };
 
   const holdSeen = useRef(holdKey);
   useEffect(() => {
@@ -209,42 +266,18 @@ export function ChatLog({
       }}
       bindscroll={(event: ScrollDetail) => {
         "background only";
-        remember(event.detail);
-        const deltaY = event.detail.deltaY ?? 0;
-        const near = nearEndAt(event.detail);
-        if (deltaY < 0 && !settling()) userScrolled.current = true; // 학습자가 스크롤했다 — 첫 진입 점프는 끝
-        if (near === null) {
-          if (deltaY < 0) {
-            nearEnd.current = false;
-            following.current = false;
-            queued.current = false;
-          }
-          return;
-        }
-        // 우리가 내리는 중 · 점프 직후에 내려가는 방향이면 중간 위치입니다 — 끝에서 멀어도 「떠났다」로 읽지 않습니다.
-        if ((following.current || settling()) && !near && deltaY >= 0) return;
-        if (near || deltaY < 0) following.current = false;
-        if (deltaY < 0) queued.current = false;
-        nearEnd.current = near;
+        readScroll(event);
+        report();
       }}
       bindscrolltolower={() => {
         "background only";
         nearEnd.current = true;
+        report();
       }}
       bindscrollend={(event: ScrollDetail) => {
         "background only";
-        remember(event.detail);
-        const ours = following.current || settling();
-        following.current = false;
-        const near = nearEndAt(event.detail);
-        // 우리 스크롤이 끝에 못 미쳐 멈췄거나 그동안 끝 맞춤이 또 왔으면 한 번 더 — 이번엔 점프(횟수 상한, 되풀이 없음).
-        if (ours && (queued.current || near === false) && retries.current < JUMP_RETRIES) {
-          retries.current += 1;
-          goEnd(true, true);
-          return;
-        }
-        queued.current = false;
-        if (near !== null) nearEnd.current = near;
+        readScrollEnd(event);
+        report();
       }}
       bindtap={
         onTap === undefined

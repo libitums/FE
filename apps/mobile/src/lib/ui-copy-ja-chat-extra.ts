@@ -23,6 +23,22 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     promptKeepBody: "無料アカウントを作ると、Yeopjeonとチケットを保存できます。",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "写真が届きました"
+          : `写真が届きました · 新着${count}件`
+        : latest === "voice"
+          ? count === 1
+            ? "ボイスメッセージが届きました"
+            : `ボイスメッセージが届きました · 新着${count}件`
+          : count === 1
+            ? "新着メッセージ"
+            : `新着メッセージ ${count}件`,
+    jump: "新着メッセージへ移動",
+    latest: "最新のメッセージへ",
+  },
   chatSettings: {
     entryTitle: "チャット",
     entryDescription: "返信のヒント・キャラクターからのメッセージ・記憶",

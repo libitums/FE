@@ -22,6 +22,22 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     promptLater: "နောက်မှ",
   },
   pushNotice: { chatUnavailable: "ဒီချတ်ကို ယခု သုံး၍ မရပါ။" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "ဓာတ်ပုံ ပို့ထားသည်"
+          : `ဓာတ်ပုံ ပို့ထားသည် · အသစ် ${count} ခု`
+        : latest === "voice"
+          ? count === 1
+            ? "အသံမက်ဆေ့ချ် ပို့ထားသည်"
+            : `အသံမက်ဆေ့ချ် ပို့ထားသည် · အသစ် ${count} ခု`
+          : count === 1
+            ? "မက်ဆေ့ချ်အသစ်"
+            : `မက်ဆေ့ချ်အသစ် ${count} ခု`,
+    jump: "မက်ဆေ့ချ်အသစ်များသို့ သွားရန်",
+    latest: "နောက်ဆုံးမက်ဆေ့ချ်သို့ ဆင်းရန်",
+  },
   chatSettings: {
     entryTitle: "ချတ်",
     entryDescription: "အဖြေ အကြံပြုချက်၊ ဇာတ်ကောင်ထံမှ စာ၊ မှတ်ဉာဏ်",

@@ -72,6 +72,7 @@ export type AnalyticsEventName =
   | "chat_message_sent"
   | "chat_media_requested"
   | "chat_media_completed"
+  | "chat_new_messages_jumped"
   | "chat_coins_short"
   | "surface_session_ended"
   | "first_lesson_completed"
