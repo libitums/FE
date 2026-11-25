@@ -213,6 +213,7 @@ export function useFriendStories({
   const profile = useStoryProfile({
     suggested,
     profileOf,
+    now,
     onChat: (characterId) => {
       const roomId = inline.roomIdOf(characterId);
       close("profile");

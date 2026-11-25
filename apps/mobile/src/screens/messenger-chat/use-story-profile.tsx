@@ -25,12 +25,15 @@ export function useStoryProfile({
   suggested,
   profileOf,
   onChat,
+  now,
 }: {
   readonly suggested: SuggestedFriendsUi;
   /** 카탈로그의 그 인물 — 없으면 null(시트는 이름 · 얼굴만). */
   readonly profileOf: (characterId: string) => FriendProfile | null;
   /** 이미 친구 시트의 「Start chatting」 — 보기를 닫고 그 방으로. */
   readonly onChat: (characterId: string) => void;
+  /** 시트의 기준 시각 — 보기와 같은 값(목록 렌더의 `now`). */
+  readonly now: number;
 }): StoryProfileUi {
   const [sheet, setSheet] = useState<SuggestedFriendSheetModel | null>(null);
 
@@ -49,7 +52,7 @@ export function useStoryProfile({
       sheet === null ? null : (
         <SuggestedFriendSheet
           model={sheet}
-          now={Date.now()}
+          now={now}
           onStart={() => {
             setSheet(null);
             onChat(sheet.character.id);
