@@ -85,7 +85,12 @@ const wordSet = reactionSet(
       word("야근", "yageun", "overtime", "word", "오늘도 야근이야… 피곤해"),
       usesWord,
     ],
-    ["RW2", "haejun", word("야근", "yageun", "overtime", "quiz"), quiz],
+    [
+      "RW2",
+      "duksu",
+      word("야근", "yageun", "overtime", "quiz"),
+      `${quiz} persona: 선생님답게 장난스럽게, 강의하지 않는다.`,
+    ],
     ["RW3", "geonwoo", word("산책", "sanchaek", "a walk", "together"), together],
     ["RW4", "daeun", word("산책", "sanchaek", "a walk", "question"), asksOne],
     [
@@ -99,8 +104,8 @@ const wordSet = reactionSet(
     [
       "RW8",
       "doyun",
-      word("잘하시네요", "jalhasineyo", "You're good at it", "quiz", "한국어 잘하시네요!"),
-      quiz,
+      word("잘하시네요", "jalhasineyo", "You're good at it", "together", "한국어 잘하시네요!"),
+      together,
     ],
     ["RW9", "jaemin", word("라면", "ramyeon", "ramen", "together"), together],
     [
@@ -277,8 +282,9 @@ const photoSet = reactionSet(
         "question",
         ["Is it always this crowded?"],
       ),
-      "persona: 직장인의 공감. natural: 가벼운 질문 하나. " + noPeople,
-      { speechLevel: "casual", intimacy: 30 },
+      "persona: 게스트하우스 주인의 짧은 돌봄(조심해서 와요 · 밥은 먹었어요?). speech: 존댓말 고정 — 반말이 한 번이라도 나오면 실패. natural: 가벼운 질문 하나. " +
+        noPeople,
+      { intimacy: 30 },
     ],
   ],
 );
