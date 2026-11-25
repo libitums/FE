@@ -18,6 +18,7 @@ import { FriendDirectoryScreen } from "./FriendDirectoryScreen";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
 import {
   catalogWithOffers,
+  currentFriendOf,
   localizedLine,
   suggestedFriendsOf,
   suggestedRowOf,
@@ -34,7 +35,12 @@ import type { SuggestedFriendsUi, SuggestedFrom } from "./suggested-friends-ui";
 export type { SuggestedFriendsUi } from "./suggested-friends-ui";
 
 type From = SuggestedFrom;
-type OpenSheet = { readonly model: SuggestedFriendSheetModel; readonly from: From };
+/** `after` — 열려서 친구가 되면 이어 할 일(스토리 보기의 답장 넘김). 시트에서 값을 치러 열어도 같은 끝을 탑니다(2026-11-25 보고). */
+type OpenSheet = {
+  readonly model: SuggestedFriendSheetModel;
+  readonly from: From;
+  readonly after?: () => void;
+};
 
 const ALL: DirectoryFilter = { kind: "all" };
 
@@ -153,7 +159,7 @@ export function useSuggestedFriends({
   };
 
   // 프로필 시트를 연 순간(제품 이벤트 — 탭에서 보냄, ADR-0164 「분석 이벤트」).
-  const openSheet = (model: SuggestedFriendSheetModel, from: From) => {
+  const openSheet = (model: SuggestedFriendSheetModel, from: From, after?: () => void) => {
     emit({
       name: "suggested_friend_opened",
       surface: "chat",
@@ -161,7 +167,7 @@ export function useSuggestedFriends({
       kind: model.character.kind,
       from,
     });
-    setSheet({ model, from });
+    setSheet({ model, from, after });
   };
 
   /** 추가 길(ADR-0162 D5) — 성인 확인을 먼저 물을 수 있고(ADR-0164 D4), 추가되면 `after`. */
@@ -187,15 +193,19 @@ export function useSuggestedFriends({
       setSheet(null);
       return onBlocked();
     }
-    startAdd(sheet);
+    startAdd(sheet, sheet.after);
   }
 
   function meet(friend: SuggestedFriend, onAdded: () => void) {
     "background only";
     if (port === undefined) return;
-    if (friend.status !== "addable") return openSheet(modelOfFriend(friend), "story_viewer");
+    // 보기는 연 때의 추천을 들고 있습니다 — 지금 판정으로 다시 묻고, 이미 친구면(먼저 만나기 · 다른 길로 열림) 시트 없이 이어 갑니다.
+    const current = currentFriendOf(all, friend.character.id);
+    if (current === null) return onAdded();
+    const model = modelOfFriend(current);
+    if (current.status !== "addable") return openSheet(model, "story_viewer", onAdded);
     if (onBlocked !== undefined) return onBlocked();
-    startAdd({ model: modelOfFriend(friend), from: "story_viewer" }, onAdded);
+    startAdd({ model, from: "story_viewer" }, onAdded);
   }
 
   function handleEarly() {
@@ -231,7 +241,7 @@ export function useSuggestedFriends({
         if (port.add(character.id) === "unknown") {
           return showToast(copy.addFailed(character.name), open.model);
         }
-        return added(open, "early");
+        return added(open, "early", open.after);
       })
       .catch(failed);
   }
