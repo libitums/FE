@@ -427,7 +427,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - **메신저 보내기 · 엽전** — `chat_message_sent { characterId, paid, cost, fromSuggestion }`(보내기 관문 통과 — 무료 · 무제한은 `paid: false, cost: "0"`, `use-chat-turns.ts` · `fromSuggestion` = 답할 문장 추천 보기를 눌러 보냄, ADR-0195) · `chat_media_requested { characterId, media: photo | voice, price }`(요청 확인 · 엽전 지불) · `chat_coins_short { reason: message | photo | voice, shortBy }`(엽전이 모자라 상점으로 감). 본문은 싣지 않는다. 영역 `chat`.
   - **채팅 답할 문장 추천(ADR-0195, PostHog만)** — `chat_suggestion_shown { characterId, count, replyOrigin: greeting | turn | proactive | unknown, myMessageNumber: 1 | 2 | 3 | 4+ }`(보기 판이 그 묶음으로 처음 그려질 때 — 방 화면 마운트당 묶음마다 한 번) · `chat_suggestion_tapped { …같은 넷, index }`(보기를 누름 — 보내기 관문 전, 같은 묶음 같은 자리는 한 번). 추천 문장은 싣지 않는다. 영역 `chat`. 노출 대비 누름 = tapped ÷ shown, 보냄 중 추천 비율 = `chat_message_sent`의 `fromSuggestion` 참 비율 — `myMessageNumber`로 첫 대화 1 ~ 3통을 나눠 본다.
   - **`surface_session_ended { seconds }`** — 학습(여정 · 롤플레이 탭) ↔ 채팅(메신저 탭) 영역이 바뀌거나 설정 탭 · 진입 화면으로 가거나 세션이 내려갈 때, 머문 영역과 초(반올림, 1초 미만은 내지 않음). 탭 위에 쌓인 레슨 · 대화방은 그 탭의 영역이다(`app/use-surface-sessions.ts`). **한계**: 앱이 배경으로 가는 신호를 호스트가 아직 보내지 않아 배경 시간도 그 영역에 들고, 배경에서 종료되면 마지막 영역은 보내지 못한다.
-  - **첫 경험 마일스톤(기기당 한 번)** — `first_lesson_completed`(첫 `episode_lesson_finished { verdict: passed }` 뒤) · `first_chat_message_sent { characterId }`(첫 `chat_message_sent` 뒤). PostHog sink를 감싸 낸다(`withFirstMilestones`, 기기 키 `libitum.analytics.milestones`) — 시험 계정 거름이 바깥이라 시험 계정의 행동은 기록되지 않는다. 같은 capture에 사람 속성 `$set_once { first_lesson_day | first_chat_day }`(첫 날 수, 정수)를 싣는다 — 사람 속성은 다른 기기 · 재설치에서도 처음 값이 남는다.
+  - **첫 경험 마일스톤(기기당 한 번)** — `first_lesson_completed`(첫 `episode_lesson_finished { verdict: passed }` 뒤) · `first_chat_message_sent { characterId }`(첫 `chat_message_sent` 뒤). PostHog sink를 감싸 낸다(`withFirstMilestones`, 기기 키 `libitum.analytics.milestones`; ⟨2026-11-24 — [ADR-0063](0063-airbridge-events.md) 적용 기록⟩ 감싸는 자리는 진입점 조립 `productEventSinks`이고 Airbridge 합성 바깥이라 마일스톤이 Airbridge로도 간다) — 시험 계정 거름이 바깥이라 시험 계정의 행동은 기록되지 않는다. 같은 capture에 사람 속성 `$set_once { first_lesson_day | first_chat_day }`(첫 날 수, 정수)를 싣는다 — 사람 속성은 다른 기기 · 재설치에서도 처음 값이 남는다.
   - Airbridge 매핑은 열넷을 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
   - ⟨2026-11-19 — 비회원 메신저(ADR-0166). 적용 기록⟩ **`chat_sign_in_prompt_closed { trigger: send | media | menu | coins | add_friend, choice: sign_in | later }`**
     (공통 속성 둘 포함, `surface: chat`) — 비회원 「로그인 필요」 대화상자를 닫을 때 한 번(`screens/messenger-chat/use-guest-gate.tsx`). 뜬 수 = 이 이벤트 수,
@@ -438,6 +438,8 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-21 — 가입 보상(ADR-0174). 적용 기록⟩ **`signup_reward_card_shown`**(손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번) ·
     **`signup_reward_card_tapped`**(카드를 눌러 로그인 화면으로 갈 때마다) · **`signup_reward_shown { amount }`**(서버 지급 뒤 보상 모달이 설 때 한 번). 공통 속성 둘 포함,
     `surface: learning`, 제품 이벤트 sink(`app/use-signup-reward.tsx`). 카드 → 가입 전환 = `entry_login_method_selected` ÷ `signup_reward_card_tapped`. Airbridge 매핑 없음.
+  - ⟨2026-11-25 — 첫날 무제한 안내 줄(ADR-0186 개정 3). 적용 기록⟩ `signup_reward_shown`에 **`unlimited`**(`shown` · `none`)를 더한다 — 그 창에
+    첫날 무제한 줄이 섰는지. 새 이벤트 이름은 없다. 줄을 본 신규 회원과 아닌 회원의 u01 클리어율 · D1을 이 값으로 가른다.
   - ⟨2026-11-21 — 푸시 캠페인 보상(ADR-0175). 적용 기록⟩ **`push_reward_claimed { kind, amount }`**(보상 알림을 눌러 서버가 지급했을 때 한 번 — amount는 엽전 수 또는
     무제한 티켓 시간) · **`push_reward_failed { reason }`**(already_claimed · not_recipient · expired · unknown · guest · error, 캠페인 id가 없는 알림은 내지 않음).
     공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-push-reward.tsx`). Airbridge 매핑 없음.

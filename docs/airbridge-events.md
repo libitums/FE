@@ -107,6 +107,11 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 | `airbridge.achieveLevel` (에피소드 최종 통과) — `level`(에피소드 id, 예: `u00-tutorial` · `u01-water`) · `label`(`episode_final`) | 에피소드의 최종 테스트를 통과할 때(`episode_final_passed`) — 신규 사용자의 첫 건이 튜토리얼 u00 완료 | 앱 |
 | `airbridge.ecommerce.order.completed` (Order Complete, 엽전 팩 결제) — `value`(스토어 금액) · `currency` · `transactionID` · `products`(상품 id · 가격 · 수량 1) | 엽전 상점에서 스토어 결제가 끝날 때 한 번(`pack_purchased`, 2026-11-19). 스토어 금액을 모르면 보내지 않음 | 앱 |
 | Subscribe · Unsubscribe 등 구독 매출 | 구독 결제 · 갱신 · 해지 | RevenueCat 서버 연동(앱은 보내지 않음) |
+| ⟨2026-11-24⟩ `tickets_ran_out` (커스텀, 티켓 소진) — 속성 없음 | 무료 티켓이 바닥나 「티켓 없음」 판이 설 때(`tickets_ran_out`) | 앱 |
+| ⟨2026-11-24⟩ `first_chat_message_sent` (커스텀, 기기당 첫 채팅) — 속성 없음 | 이 기기에서 처음 채팅 메시지를 보낼 때 한 번(`first_chat_message_sent`). 메시지마다의 `chat_message_sent`는 보내지 않음 | 앱 |
+| ⟨2026-11-24⟩ `airbridge.ecommerce.productList.viewed` (Product List View, 요금제 보기) — `productListID`(`plans_offer` 맥락 카드 · `plans_compare` 비교 화면) · `label`(자리: `settings` · `tickets` · `messenger` · `header_chip` · `coin_shop` · `chat_send` · `tickets_chip`) | 요금제가 보일 때(`plans_viewed`) | 앱 |
+| ⟨2026-11-24⟩ `plan_selected` (커스텀, 요금제 고름) — `label`(자리) · `action`(`<요금제>.<기간>`, 예: `premium.yearly`) | 요금제 화면에서 Continue를 누를 때(`plan_selected`) | 앱 |
+| ⟨2026-11-24⟩ `airbridge.initiateCheckout` (Initiate Checkout, 구매 단추) — `label`(자리) · `action`(`plan` · `pack`) · `type`(`preview` = 결제를 열지 못하고 「곧」 안내 · `checkout` = 스토어 결제를 엶) · `products`(상품 id · 수량 1 · 보인 가격 · 통화 — 가격을 알 때만). 최상위 `value` 없음(매출 아님) | 요금제 Continue · 엽전 팩 사기를 누를 때(`purchase_intent`) | 앱 |
 
 ⟨2026-10-21 — [ADR-0081](adr/0081-tutorial-as-catalog-episode.md) D9, 사용자 결정⟩ **`achieveLevel`의 뜻이 바뀌었다** — 이전에는 「여정의 메신저 유닛을 처음 끝낼 때 · 비주얼 노벨 유닛이 끝날 때」(`level` = 유닛 ID · `label` = `messenger` | `visual_novel`)였고, 그 화면이 옛 튜토리얼과 함께 지워져 한 건도 나지 않게 됐다. **매체 쪽 전환 이름 · 값 매핑이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드에서 `episode_final`로 고친다**(아래 「대시보드에서 할 일」 9 — 사용자 몫).
 
@@ -151,6 +156,11 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 | 10 | Play Console 데이터 보안 양식 — 공유 대상을 Meta → Airbridge로, 「광고 ID」 선언은 「사용함」 유지 | Play Console — 아래 「스토어 고지」 |
 | 11 | App Store 개인정보 응답 — 「추적」 근거 갱신(restricted SDK) · 처리방침 문안 | App Store Connect — 아래 「스토어 고지」 |
 | 12 | (선택) Meta Install Referrer — Meta 앱 ID와 복호화 키 | 결정 뒤에만 — 앱 코드에 값이 하나 더 필요하다(ADR-0063 「사용자 확인 필요」 12) |
+| 13 | ⟨2026-11-24⟩ 커스텀 이벤트 셋(`tickets_ran_out` · `first_chat_message_sent` · `plan_selected`)이 들어온 뒤 이벤트 목록에 보이는지 확인 — 처음 들어온 커스텀 이벤트가 자동으로 등록되는지는 확인하지 못했다[추정]. 새 스토어 빌드가 있어야 들어온다 | [Raw Data] > [App Real-time Logs] · 이벤트 관리 화면 |
+| 14 | ⟨2026-11-24⟩ 소재 리포트 — Actuals Report에 깔때기 이벤트(Install · `airbridge.user.signup` · `tickets_ran_out` · `first_chat_message_sent` · Product List View · `plan_selected` · Initiate Checkout · Order Complete · 구독)를 지표로, GroupBy를 채널 · 캠페인 · 광고그룹 · **광고 소재**로 저장(소재 GroupBy의 정확한 메뉴 이름은 화면에서 확인 — 대조하지 않았다). 비율은 각 이벤트의 고유 사용자 수 ÷ 설치로 본다. Initiate Checkout은 `type = checkout`으로 거르면 실제 결제 창만 | [Reports] > [Actuals Report] |
+| 15 | ⟨2026-11-24⟩ 매체 포스트백 매핑 — 표준 둘(Product List View → 매체의 View Content 등 · Initiate Checkout → 매체의 Initiate Checkout)과 필요하면 커스텀 셋(매체의 맞춤 이벤트)을 각 매체 연동 화면에서 잇는다. 매체가 최적화 목표로 쓸 이벤트만 잇는다 | 각 매체 연동 화면(9번과 같은 자리) |
+| 16 | ⟨2026-11-24⟩ (선택) iOS SKAN 전환값 규칙에 새 이벤트를 넣을지 정한다 — 값 칸이 한정돼 있어 무엇을 뺄지 함께 정한다 | [Management] > [SKAN Conversion Value] |
+| 17 | ⟨2026-11-24⟩ RevenueCat → Airbridge 연동이 켜져 있고 구독 이벤트가 들어오는지 확인 — 앱은 구독을 보내지 않으므로 이 연동이 꺼지면 구독 매출이 0이다(두 번 세지 않게 앱 쪽은 그대로 둔다) | RevenueCat [Integrations] > Airbridge · Airbridge Real-time Logs |
 
 - Meta 연동은 이제 Airbridge를 거친다. **Meta Events Manager에 예전 Meta SDK 앱 설정이 있다면 더 쓰지 않는다** — 앱이 Meta로
   직접 보내는 것은 없다. 남겨 두면 같은 이벤트가 두 경로로 보인다고 오해하기 쉽다.

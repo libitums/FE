@@ -18,7 +18,7 @@ import type {
 import { analyticsConfig } from "./analytics-config";
 import { getItem, removeItem, setItem } from "./storage";
 import { analyticsEventSinksFrom, noAnalyticsSession } from "./analytics-events";
-import { deviceMilestoneStore, personOnceFor, withFirstMilestones } from "./companion-events";
+import { personOnceFor } from "./companion-events";
 import { readNetworkProperties } from "./network-status";
 import { readAppVersionProperties } from "./app-version-properties";
 
@@ -254,7 +254,8 @@ export const createAnalyticsSession: CreateAnalyticsSession = (config, transport
     identify: identifyWithAppVersion,
   };
   return {
-    sinks: withFirstMilestones(analyticsEventSinksFrom(capturing), deviceMilestoneStore()),
+    // 첫 경험 마일스톤은 진입점 조립(`productEventSinks`)이 Airbridge 합성 바깥에서 만듭니다(ADR-0063 적용 기록 2026-11-24).
+    sinks: analyticsEventSinksFrom(capturing),
     user: {
       identify: (userId) => {
         try {
