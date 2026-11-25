@@ -23,9 +23,15 @@ function mount() {
     <MyStoryEditor
       caps={editorCapsOf(["text"])}
       choices={() => ({ words: [wordChoice("w1", "김치찌개", "kimchi stew")] })}
-      busy={false}
-      error={null}
-      crisis={null}
+      sharing={{
+        busy: false,
+        error: null,
+        crisis: null,
+        rejected: null,
+        share: vi.fn(async () => undefined),
+        requestReview: vi.fn(async () => undefined),
+        reset: vi.fn(),
+      }}
       onShare={vi.fn()}
       onChange={vi.fn()}
       onClose={vi.fn()}
