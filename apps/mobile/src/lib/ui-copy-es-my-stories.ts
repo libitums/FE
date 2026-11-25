@@ -178,7 +178,6 @@ export const myStoriesEs: MyStoriesCopy = {
     freeAnswer: "Gratis · respuesta del quiz",
     lastTry: "Gratis · último intento",
     correct: (name) => `¡Correcto! Tú y ${name} ahora son más cercanos`,
-    gift: (name, word) => `Regalo de voz · ${name} dice «${word}»`,
   },
   remove: {
     title: "¿Borrar esta historia?",

@@ -61,13 +61,3 @@
   font-size: var(--libitum-typography-label-m-font-size);
   line-height: var(--libitum-typography-label-m-line-height);
 }
-
-.story-quiz-gift {
-  margin-top: var(--libitum-spacing-4);
-  padding-left: var(--libitum-spacing-4);
-  color: var(--libitum-color-fg-brand);
-  font-family: var(--libitum-typography-caption-font-family);
-  font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-caption-font-size);
-  line-height: var(--libitum-typography-caption-line-height);
-}

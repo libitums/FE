@@ -18,9 +18,7 @@ import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { StoryQuoteCard } from "./StoryQuote";
-import { StoryQuizCorrect, StoryQuizNote, VoiceGiftNote } from "./StoryQuizNotes";
-import { quizGiftWordOf } from "./story-quiz";
-import { mediaLineKey } from "./chat-media-rules";
+import { StoryQuizCorrect, StoryQuizNote } from "./StoryQuizNotes";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
 import { ChatMediaNoticeRow } from "./ChatMediaNotice";
 import type { ChatEntrance } from "./chat-entrance";
@@ -216,10 +214,7 @@ function RowBody({
           />
         </ChatIncomingRow>
       );
-    case "voice": {
-      // 퀴즈를 맞힌 뒤의 음성 선물(시안 22번, 서버 반영 예상) — 대상 메시지에 선물 표시가 있으면 아래 한 줄.
-      const targetId = mediaLineKey(message.id)?.targetId;
-      const gift = targetId === undefined ? null : quizGiftWordOf(thread.messages, targetId);
+    case "voice":
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
           <VoiceBubble
@@ -229,12 +224,8 @@ function RowBody({
             name={counterpart.name}
             testId={ids.voice}
           />
-          {gift === null ? null : (
-            <VoiceGiftNote lineId={message.id} name={counterpart.name} word={gift} />
-          )}
         </ChatIncomingRow>
       );
-    }
     case "notice":
       return <ChatNoticeRow notice={message.notice} name={counterpart.name} />;
     case "media-notice":

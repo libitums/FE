@@ -15,7 +15,7 @@ Edge Function `chat-send` · `companion-story-reactions`, pg_cron이 적용되�
 | MS-E5 | (서버) 1 ~ 5분 · 60분 안에 다시 메신저 | 「Your story」 주황 고리, 열면 「N friends replied」 · Seen by · 반응(말 · 「뜻」 · Open chat) · 「Replies are saved in each friend's chat.」. 반응 푸시를 누르면 그 인물 방 |
 | MS-E6 | 반응의 「Open chat」 | 그 인물 방이 열리고 반응 메시지 위 「Replied to your story」 카드. 인용 띠 없음, 답은 보통 요금 |
 | MS-E7 | ⋯ → Delete story → Delete | 확인 문구 「Your card and the N replies on it will be removed. Messages in your chats stay …」. 보기가 닫히고 「Your story」가 사라짐. 그 방의 반응 메시지는 남고 카드가 「Deleted story」 |
-| MS-E9 | (서버가 `meta.quiz.freeAnswer`를 싣은 뒤) 덕수쌤 퀴즈 반응 → 답 — 각도만 quiz면 퀴즈 표시 없이 보통 엽전 관문 | 입력 칸 위 「Quiz answer is free」 · 엽전 없이 보냄 · 내 답 아래 「Free · quiz answer」, 맞히면 「Correct! …」 + 음성 「Voice gift · …」, 틀리면 힌트 뒤 「Free · last try」 |
+| MS-E9 | (서버가 `meta.quiz.freeAnswer`를 싣은 뒤) 덕수쌤 퀴즈 반응 → 답 — 각도만 quiz면 퀴즈 표시 없이 보통 엽전 관문 | 입력 칸 위 「Quiz answer is free」 · 엽전 없이 보냄 · 내 답 아래 「Free · quiz answer」, 맞히면 「Correct! …」(음성 선물 없음), 틀리면 힌트 뒤 「Free · last try」 |
 | MS-E8 | 설정 › My stories | 보관 스위치 · 「N stories」 · 칸(LIVE · 날짜 · 반응 수) · 칸마다 지우기 · 「Delete all stories」(확인 상자). 스위치를 끄면 24시간 지난 칸이 사라짐. VoiceOver · TalkBack으로 칸 · 지우기 · 스위치가 이름과 함께 읽힘 |
 
 **확인 기록**: PR 본문 · 보고에 시뮬레이터 · `assembleBundled` 스크린샷 경로를 적는다. [성능 기록](../performance/reports/my-stories-01.md) · [v2](../performance/reports/my-stories-02.md).

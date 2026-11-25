@@ -158,7 +158,6 @@ export const myStoriesJa: MyStoriesCopy = {
     freeAnswer: "無料・クイズの答え",
     lastTry: "無料・最後のチャンス",
     correct: (name) => `正解！${name}ともっと仲良くなりました`,
-    gift: (name, word) => `ボイスのプレゼント・${name}が「${word}」と言っています`,
   },
   remove: {
     title: "このストーリーを削除しますか？",

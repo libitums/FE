@@ -148,7 +148,6 @@ export const myStoriesZhTw: MyStoriesCopy = {
     freeAnswer: "免費 · 測驗回答",
     lastTry: "免費 · 最後一次機會",
     correct: (name) => `答對了！你和 ${name} 更親近了`,
-    gift: (name, word) => `語音禮物 · ${name} 說「${word}」`,
   },
   remove: {
     title: "要刪除這則限時動態嗎？",

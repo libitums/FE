@@ -166,7 +166,6 @@ export const myStoriesTh: MyStoriesCopy = {
     freeAnswer: "ฟรี · คำตอบควิซ",
     lastTry: "ฟรี · โอกาสสุดท้าย",
     correct: (name) => `ถูกต้อง! คุณกับ ${name} สนิทกันมากขึ้น`,
-    gift: (name, word) => `ของขวัญเสียง · ${name} พูดว่า “${word}”`,
   },
   remove: {
     title: "ลบสตอรี่นี้ไหม",

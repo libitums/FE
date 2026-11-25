@@ -224,13 +224,11 @@ export { myStoriesTestIds } from "./my-stories-ids";
 /**
  * 덕수쌤 스토리 퀴즈(시안 21 ~ 23, 사용자 결정 2026-11-25) — **서버 반영 예상**. 서버 메시지 `meta`의 선택 칸을 앱이 풀어 둔 것입니다
  * (모양은 `companion-parse.ts` `quizMarkOf` · ADR-0194 적용 기록 「서버에 요청하는 모양」). 칸이 없으면 퀴즈 표시는 없습니다.
- * - `ask`: 퀴즈 반응(origin `story_reaction`, `meta.angle` quiz) — 인물 메시지의 첫 말풍선에.
+ * - `ask`: 퀴즈 반응(`meta.quiz.freeAnswer` true — 각도만으론 아님) — 인물 메시지의 첫 말풍선에.
  * - `answer`: 내 답(`meta.quiz { free, attempt, result? }`) — 무료로 받은 답만. `result`는 판정 뒤(없으면 null).
- * - `gift`: 맞힌 뒤 인물 답(`meta.quiz { gift: { word } }`) — 그 메시지를 대상으로 한 음성이 「Voice gift」입니다.
  * 엽전 차감 · 정답 판정은 서버 몫이고 앱은 표시만 합니다.
  */
 export type QuizResult = "correct" | "hint" | "revealed";
 export type ChatQuizMark =
   | { readonly kind: "ask" }
-  | { readonly kind: "answer"; readonly attempt: 1 | 2; readonly result: QuizResult | null }
-  | { readonly kind: "gift"; readonly word: string };
+  | { readonly kind: "answer"; readonly attempt: 1 | 2; readonly result: QuizResult | null };

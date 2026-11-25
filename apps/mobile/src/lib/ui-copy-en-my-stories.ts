@@ -156,7 +156,6 @@ export const myStoriesEn: MyStoriesCopy = {
     freeAnswer: "Free · quiz answer",
     lastTry: "Free · last try",
     correct: (name) => `Correct! You and ${name} got closer`,
-    gift: (name, word) => `Voice gift · ${name} says “${word}”`,
   },
   remove: {
     title: "Delete this story?",

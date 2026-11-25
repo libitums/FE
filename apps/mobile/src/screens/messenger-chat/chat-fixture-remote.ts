@@ -188,7 +188,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     const clientMessageId = clientIds.get(localId) ?? deps.uuid();
     clientIds.set(localId, clientMessageId);
     const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0178 D5) — 다시 보내기에도 실림
-    const quiz = quizAnswerPending(room.messages, localId); // 퀴즈 답이면 턴 뒤 판정 · 선물을 다시 읽음
+    const quiz = quizAnswerPending(room.messages, localId); // 퀴즈 답이면 턴 뒤 판정을 다시 읽음
     remote.openTurn(
       { characterId: characterOf(room), text, clientMessageId, ...(storyId ? { storyId } : {}) },
       {
@@ -209,7 +209,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
           settle(room, myId, outcome, turn);
           wallet.afterTurn(characterOf(room), turn.wallet);
           changed(room);
-          if (outcome.kind === "ok" && quiz) refresh(room, true);
+          if (outcome.kind === "ok" && quiz) refresh(room);
           if (outcome.kind === "ok") sendNextUnsent(room);
         },
       },
@@ -247,15 +247,14 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     startTurn(room, localId, trimmed);
   };
 
-  /** 열린 방을 조용히 다시 읽습니다 — 답을 기다리는 중이면 읽지 않습니다. `media`면 사진 · 음성 줄도 다시 묻습니다. */
-  const refresh = (room: RoomState, withMedia = false) => {
+  /** 열린 방을 조용히 다시 읽습니다 — 답을 기다리는 중이면 읽지 않습니다. */
+  const refresh = (room: RoomState) => {
     if (busy(room)) return;
     if (room.remoteHistory !== "loaded") return loadRoom(roomIdOf(room));
     void (async () => {
       const history = await remote.loadHistory(characterOf(room));
       if (live(roomIdOf(room)) !== room || history === null || busy(room)) return;
       applyHistory(room, history);
-      if (withMedia) media.resume(room);
       changed(room);
     })();
   };

@@ -73,7 +73,7 @@ const answer = {
   createdAt: "2026-11-25T06:01:00.000Z",
 };
 const reply = {
-  ...reaction({ quiz: { gift: { word: "야근" } } }),
+  ...reaction(undefined),
   id: A1,
   origin: "turn",
   story: null,

@@ -137,13 +137,11 @@ test("MS-UI28. 퀴즈 반응(시안 21) — 입력 칸 위 「Quiz answer is fre
   expect(screen.getByTestId(chatTurnsTestIds.coinSend)).not.toBeNull();
 });
 
-test("MS-UI29. 맞힘(시안 22) — 내 답 아래 「Free · quiz answer」, 가운데 「Correct! …」, 선물 음성 아래 「Voice gift · …」, 띠 없음", async () => {
+test("MS-UI29. 맞힘(시안 22) — 내 답 아래 「Free · quiz answer」, 가운데 「Correct! …」, 음성 선물 줄 없음, 띠 없음", async () => {
   await open([
     ask,
     me("u1", "야근!", { kind: "answer", attempt: 1, result: "correct" }),
-    them("m3#0", "맞아요, 야근! 오늘은 일찍 끝나면 좋겠네요", {
-      quiz: { kind: "gift", word: "야근" },
-    }),
+    them("m3#0", "맞아요, 야근! 오늘은 일찍 끝나면 좋겠네요"),
     {
       id: "m3~voice~v1",
       at: NOW,
@@ -155,7 +153,7 @@ test("MS-UI29. 맞힘(시안 22) — 내 답 아래 「Free · quiz answer」, �
   ]);
   expect(textOf(ids.quizNote("u1"))).toBe("Free · quiz answer");
   expect(textOf(ids.quizCorrect("u1"))).toBe("Correct! You and 덕수쌤 got closer");
-  expect(textOf(ids.voiceGift("m3~voice~v1"))).toBe("Voice gift · 덕수쌤 says “야근”");
+  expect(screen.queryByText("Voice gift", { exact: false })).toBeNull();
   expect(screen.queryByTestId(ids.quizFree)).toBeNull();
 });
 

@@ -144,7 +144,6 @@ export type MyStoriesCopy = {
     readonly freeAnswer: string;
     readonly lastTry: string;
     readonly correct: (name: string) => string;
-    readonly gift: (name: string, word: string) => string;
   };
   readonly remove: {
     readonly title: string;

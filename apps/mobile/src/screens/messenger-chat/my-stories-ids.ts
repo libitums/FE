@@ -66,7 +66,6 @@ export const myStoriesTestIds = {
   quizFree: ms("quiz-free"),
   quizNote: (messageId: string) => ms(`quiz-note-${messageId}`),
   quizCorrect: (messageId: string) => ms(`quiz-correct-${messageId}`),
-  voiceGift: (lineId: string) => ms(`voice-gift-${lineId}`),
   deleteDialog: ms("delete-dialog"),
   archive: ms("archive"),
   archiveBack: ms("archive-back"),

@@ -154,7 +154,6 @@ export const myStoriesMy: MyStoriesCopy = {
     freeAnswer: "အခမဲ့ · ပဟေဠိ အဖြေ",
     lastTry: "အခမဲ့ · နောက်ဆုံး အခွင့်အရေး",
     correct: (name) => `မှန်ပါတယ်! သင်နှင့် ${name} ပိုရင်းနှီးလာပါပြီ`,
-    gift: (name, word) => `အသံလက်ဆောင် · ${name} က “${word}” ဟု ပြောသည်`,
   },
   remove: {
     title: "ဤစတိုရီကို ဖျက်မလား။",

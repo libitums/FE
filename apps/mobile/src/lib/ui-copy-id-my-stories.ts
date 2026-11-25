@@ -157,7 +157,6 @@ export const myStoriesId: MyStoriesCopy = {
     freeAnswer: "Gratis · jawaban kuis",
     lastTry: "Gratis · kesempatan terakhir",
     correct: (name) => `Benar! Kamu dan ${name} jadi lebih akrab`,
-    gift: (name, word) => `Hadiah suara · ${name} mengucapkan “${word}”`,
   },
   remove: {
     title: "Hapus cerita ini?",

@@ -5,7 +5,7 @@ import { myStoriesFrom, myStoryPostFrom } from "./my-stories-parse";
 import { draftOf, hasFriendsOf, nextOpenOf, tzOffsetMinOf, windowSheetOf } from "./my-stories";
 import type { MyStoryWindow } from "./my-stories.contract";
 import { myStory, wordChoice } from "./my-stories.test-support";
-import { quizFreeOf, quizGiftWordOf } from "./story-quiz";
+import { quizFreeOf } from "./story-quiz";
 
 // `unit` 계층(MS-U13 ~ U19): 서버 #588 계약(ADR-0194 · ADR-0191) 반영 — 창 · Seen by · 반응 메시지 id · 사진/확인 중 건너뛰기 ·
 // 친구 0명 · 덕수쌤 퀴즈(서버 반영 예상) 판정. 순수.
@@ -208,8 +208,4 @@ test("MS-U19. 퀴즈 무료 — 퀴즈 반응 뒤 첫 답 · 힌트 뒤 둘째 �
   expect(quizFreeOf([ask, answer("u1", 1, "correct"), { ...ask, id: "m9#0" }])).toEqual({
     attempt: 1,
   });
-  // 음성 선물 — 대상 메시지의 말풍선에 gift가 있으면 그 단어
-  const gift = text("m3#0", "them", { quiz: { kind: "gift", word: "야근" } });
-  expect(quizGiftWordOf([ask, gift], "m3")).toBe("야근");
-  expect(quizGiftWordOf([ask, gift], "m1")).toBeNull();
 });

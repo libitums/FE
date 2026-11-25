@@ -85,7 +85,7 @@ test("MS-U20. 반응 메시지 — 첫 말풍선에만 내 스토리 인용(mine
   expect(quizOnlyAngle).not.toHaveProperty("quiz");
 });
 
-test("MS-U21. 퀴즈 meta — 내 답(free · attempt · result) · 선물(gift.word)을 풀고, 칸이 없거나 틀리면 표시 없음", () => {
+test("MS-U21. 퀴즈 meta — 내 답(free · attempt · result)을 풀고, 칸이 없거나 틀리면 표시 없음 — 음성 선물(gift)은 없앰", () => {
   const history = historyFrom(
     page([
       user("u1", 3, { meta: { quiz: { free: true, attempt: 1, result: "hint" } } }),
@@ -105,7 +105,7 @@ test("MS-U21. 퀴즈 meta — 내 답(free · attempt · result) · 선물(gift.
   expect(byId.get("u3")).not.toHaveProperty("quiz"); // 무료가 아닌 답은 퀴즈 답 표시 없음
   expect(byId.get("u4")).not.toHaveProperty("quiz"); // attempt는 1 · 2만
   expect(byId.get("u5")).toMatchObject({ quiz: { kind: "answer", attempt: 1, result: null } });
-  expect(byId.get("m5#0")).toMatchObject({ quiz: { kind: "gift", word: "야근" } });
+  expect(byId.get("m5#0")).not.toHaveProperty("quiz"); // 음성 선물 칸은 읽지 않음
   expect(byId.get("m5#1")).not.toHaveProperty("quiz");
   expect(byId.get("m6#0")).not.toHaveProperty("quiz");
   expect(byId.get("u6")).not.toHaveProperty("quiz");

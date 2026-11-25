@@ -64,7 +64,7 @@
 | 대화방(20) | 기록의 인물 메시지(origin `story_reaction`)의 `story`를 첫 말풍선에 싣고 그 위 인용 카드(「Replied to your story」 · 단어 · 경과), 지우면 「Deleted story」. 목록 미리보기는 반응 글 |
 | 처음 안내 | 둘째 걸음 「Friends reply within the hour — Their replies show up in each friend's chat.」(「Tap Answer」 · 「over the day」 없음) |
 | 반응 푸시 | 목적지 `{ kind: "companion-chat", characterId }`(story 없음) = 그 방 — 기존 경로 그대로(MS-U22) |
-| 덕수쌤 퀴즈(21 ~ 23) | **서버 반영 예상** — `companion-parse.ts` `quizMarkOf`가 기록 `meta`의 선택 칸을 `ChatQuizMark`로 푼다(ADR-0194 적용 기록 「서버에 요청하는 모양」). 무료 표시 · 관문 건너뛰기는 **서버가 명시적으로 무료라고 알릴 때만**(퀴즈 반응 `meta.quiz.freeAnswer === true`, 내 답 `meta.quiz.free === true`) — `meta.angle === "quiz"`만이면(지금 서버 #592) 보통 반응. 퀴즈 반응의 자리(첫째 · 둘째)는 가정하지 않음. `quizFreeOf`가 「다음 답 무료」면 입력 칸 위 「Quiz answer is free」 · 보내기 단추 엽전 없음 · 앱 관문(체험 · 엽전) 건너뜀. 내 답 아래 「Free · quiz answer」 · 「Free · last try」, 맞힘이면 가운데 「Correct! You and {name} got closer」, 선물 음성 아래 「Voice gift · {name} says “{word}”」. 무료 답 턴이 끝나면 기록 · 음성을 다시 읽는다. 칸이 없으면 퀴즈 표시 0 |
+| 덕수쌤 퀴즈(21 ~ 23) | **서버 반영 예상** — `companion-parse.ts` `quizMarkOf`가 기록 `meta`의 선택 칸을 `ChatQuizMark`로 푼다(ADR-0194 적용 기록 「서버에 요청하는 모양」). 무료 표시 · 관문 건너뛰기는 **서버가 명시적으로 무료라고 알릴 때만**(퀴즈 반응 `meta.quiz.freeAnswer === true`, 내 답 `meta.quiz.free === true`) — `meta.angle === "quiz"`만이면(지금 서버 #592) 보통 반응. 퀴즈 반응의 자리(첫째 · 둘째)는 가정하지 않음. `quizFreeOf`가 「다음 답 무료」면 입력 칸 위 「Quiz answer is free」 · 보내기 단추 엽전 없음 · 앱 관문(체험 · 엽전) 건너뜀. 내 답 아래 「Free · quiz answer」 · 「Free · last try」, 맞힘이면 가운데 「Correct! You and {name} got closer」(음성 선물은 없앰 — 사용자 결정 2026-11-25). 무료 답 턴이 끝나면 기록을 다시 읽는다(판정만). 칸이 없으면 퀴즈 표시 0 |
 | 이벤트 | `my_story_chat_opened { characterId, message }`(옛 answered · replied 대신) · `my_story_post_failed.reason`에 `window_used` |
 
 ### 1.6 스토리 만들기 — 시작 고르기 + 바탕 위 얹기 ⟨2026-11-25⟩ (시안 26 ~ 28)

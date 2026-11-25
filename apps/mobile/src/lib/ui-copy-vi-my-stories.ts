@@ -155,7 +155,6 @@ export const myStoriesVi: MyStoriesCopy = {
     freeAnswer: "Miễn phí · trả lời câu đố",
     lastTry: "Miễn phí · lần cuối",
     correct: (name) => `Chính xác! Bạn và ${name} thân hơn rồi`,
-    gift: (name, word) => `Quà giọng nói · ${name} nói “${word}”`,
   },
   remove: {
     title: "Xóa tin này?",

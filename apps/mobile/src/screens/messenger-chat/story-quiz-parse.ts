@@ -8,14 +8,12 @@ import type { ChatQuizMark } from "./my-stories.contract";
 type Json = Record<string, unknown>;
 const recordOf = (value: unknown): Json | null =>
   typeof value === "object" && value !== null && !Array.isArray(value) ? (value as Json) : null;
-const stringOf = (value: unknown): string | null => (typeof value === "string" ? value : null);
 
 /**
  * 덕수쌤 스토리 퀴즈 표시 — **서버 반영 예상**(ADR-0194 적용 기록 「서버에 요청하는 모양」). 기록 메시지의 `meta`(공개 칸만)에서:
  * - 인물 메시지 `meta.quiz.freeAnswer === true` → ask(다음 내 답이 무료). `meta.angle === "quiz"`만으로는 표시하지 않습니다 — 지금 서버(#592)는
  *   각도만 정하고 무료 답 · 판정 · 음성 선물이 없어 요금을 받습니다. 퀴즈 반응이 몇째 자리(첫째 · 둘째)로 오든 같게 봅니다.
  * - 내 메시지 `meta.quiz = { free: true, attempt: 1 | 2, result?: "correct" | "hint" | "revealed" }` → answer(모르는 result는 null).
- * - 인물 메시지 `meta.quiz = { gift: { word } }` → gift(이 메시지를 대상으로 한 음성이 선물).
  * 칸이 없거나 틀리면 null — 지금 서버에서는 퀴즈 표시가 없습니다.
  */
 export function quizMarkOf(role: unknown, meta: unknown): ChatQuizMark | null {
@@ -33,8 +31,6 @@ export function quizMarkOf(role: unknown, meta: unknown): ChatQuizMark | null {
     };
   }
   if (role !== "assistant") return null;
-  const word = stringOf(recordOf(quiz?.gift)?.word);
-  if (word !== null && word !== "") return { kind: "gift", word };
   return quiz?.freeAnswer === true ? { kind: "ask" } : null;
 }
 

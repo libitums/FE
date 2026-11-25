@@ -70,21 +70,3 @@ export function StoryQuizCorrect({
     </view>
   );
 }
-
-/** 음성 선물 말풍선 아래 「Voice gift · 덕수쌤 says “야근”」(시안 22번). */
-export function VoiceGiftNote({
-  lineId,
-  name,
-  word,
-}: {
-  readonly lineId: string;
-  readonly name: string;
-  readonly word: string;
-}): ReactNode {
-  const copy = useUiCopy().messengerChat.myStories.quiz;
-  return (
-    <text className="story-quiz-gift" data-testid={ids.voiceGift(lineId)}>
-      {copy.gift(name, word)}
-    </text>
-  );
-}
