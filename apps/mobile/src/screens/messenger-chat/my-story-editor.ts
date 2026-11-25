@@ -60,8 +60,8 @@ export type EditorShare =
 
 /** 서버 `MY_STORY_OVERLAY_MAX`(계약 패키지) — 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
 const OVERLAY_MAX = 8;
-const MIN_SCALE = 0.5;
-const MAX_SCALE = 3;
+export const MIN_SCALE = 0.5;
+export const MAX_SCALE = 3;
 /** 새 스티커 자리 — 가운데 조금 아래, 살짝 기울여(시안 27번), 겹치지 않게 하나마다 비켜 놓습니다. */
 const START = { x: 0.5, y: 0.55, rotation: -4, step: 0.06 } as const;
 /** 새 글 상자 자리 — 가운데 위쪽(시안 29번), 기울이지 않음. */
@@ -70,8 +70,9 @@ const TEXT_START: Placement = { x: 0.5, y: 0.3, scale: 1, rotation: 0 };
 export const STORY_BACKGROUNDS: readonly StoryBackground[] = ["orange", "green", "blue", "purple"];
 export const STORY_TEXT_COLORS: readonly StoryTextColor[] = ["brown", "black", "white", "orange"];
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-const round = (value: number) => Math.round(value * 1000) / 1000;
+export const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+export const round = (value: number) => Math.round(value * 1000) / 1000;
 
 /** 사진 위 편집(ADR-0199) — 사진 서버는 글 상자 · 얹기 여덟을 늘 받습니다(`my_stories.overlays` 상한). */
 export const photoEditorCaps: EditorCaps = {

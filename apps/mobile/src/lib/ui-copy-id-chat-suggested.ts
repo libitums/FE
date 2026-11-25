@@ -26,6 +26,18 @@ export const messengerChatSuggestedId: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `TERBATAS · ${days}h ${hours}j`,
   added: (name) => `${name} ditambahkan ke chat kamu`,
   addFailed: (name) => `Gagal menambahkan ${name}. Coba lagi.`,
+  voice: {
+    hear: "Dengar suara",
+    pause: "Jeda",
+    resume: "Lanjutkan",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `Dengar suara ${name}`
+        : phase === "playing"
+          ? `Jeda suara ${name}`
+          : `Lanjutkan suara ${name}`,
+    unavailable: "Contoh suara tidak tersedia",
+  },
   adultAck: {
     title: (name) => `Mau lebih dekat dengan ${name}?`,
     body: (gender) =>

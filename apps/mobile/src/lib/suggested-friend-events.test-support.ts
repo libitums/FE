@@ -1,5 +1,15 @@
 // 추천 친구 이벤트의 견본(ADR-0162) — airbridge 매핑 표(`airbridge-events.test-support`)가 줄 수 한도 안에서 가져다 씁니다.
-import type { AnalyticsEvent } from "./analytics.contract";
+import type { AnalyticsEvent, AnalyticsEventName } from "./analytics.contract";
+
+/** 추천 친구 줄 · 프로필 시트 · 먼저 만나기 이벤트 이름 — airbridge 이름 목록이 펼쳐 씁니다. */
+export const suggestedFriendEventNames = [
+  "suggested_friend_viewed",
+  "suggested_friend_opened",
+  "friend_voice_sample_played",
+  "suggested_friend_added",
+  "early_access_tapped",
+  "early_access_completed",
+] as const satisfies readonly AnalyticsEventName[];
 
 export const suggestedFriendEventExamples = [
   { name: "suggested_friend_viewed", surface: "chat", daysSinceFirstOpen: "3", count: "2" },
@@ -10,6 +20,13 @@ export const suggestedFriendEventExamples = [
     characterId: "seoyeon",
     kind: "general",
     from: "row",
+  },
+  // 프로필 시트 목소리 견본(ADR-0198 D4) — PostHog만.
+  {
+    name: "friend_voice_sample_played",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "seoyeon",
   },
   {
     name: "suggested_friend_added",

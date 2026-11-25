@@ -4,7 +4,7 @@ import { color } from "@libitums/design-tokens";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { playSound } from "../../lib/sound-effects";
-import { laneBoxStyle, laneStyle, stickerStyle } from "./MyStorySticker";
+import { laneStyle, stickerStyle, StoryTextLines, textBoxStyle } from "./MyStorySticker";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   myStoriesTestIds as ids,
@@ -168,20 +168,19 @@ export function StoryOverlays({
           <view key={`${overlay.ko}-${index}`} className="my-story-lane" style={laneStyle(overlay)}>
             <view
               className="my-story-text-box"
-              style={laneBoxStyle(overlay)}
+              style={textBoxStyle(overlay, overlay.scale)}
+              data-testid={ids.cardKo}
               flatten={false}
               accessibility-element={true}
               accessibility-label={
                 overlay.meaning === undefined ? overlay.ko : `${overlay.ko}. ${overlay.meaning}`
               }
             >
-              <text
-                className={`my-story-text-box-ko my-story-ink-${overlay.color ?? "brown"}`}
-                data-testid={ids.cardKo}
-                accessibility-elements-hidden={true}
-              >
-                {overlay.ko}
-              </text>
+              <StoryTextLines
+                ko={overlay.ko}
+                color={overlay.color ?? "brown"}
+                size={overlay.scale}
+              />
               {overlay.roman === undefined ? null : (
                 <text className="my-story-sticker-roman" accessibility-elements-hidden={true}>
                   {overlay.roman}

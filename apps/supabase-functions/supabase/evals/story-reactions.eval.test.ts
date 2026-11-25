@@ -6,7 +6,7 @@
 //
 // 고르기(환경 변수, 모두 선택):
 //   EVAL_MODELS  쉼표로 — 기본 `claude-opus-5-5,claude-sonnet-5-5,claude-haiku-5-5`
-//   EVAL_SETS    쉼표로 — 기본 `story-reaction-words,story-reaction-photos`
+//   EVAL_SETS    쉼표로 — 기본 모든 세트(`story-reaction-words,story-reaction-photos,story-reaction-roles`)
 //   EVAL_CASES   쉼표로 케이스 id — 기본 전부
 //   EVAL_JUDGE   채점 모델 — 기본 `claude-opus-5-5`(실행끼리 견주려면 바꾸지 않는다)
 //   EVAL_OUT     결과 파일 — 기본 `supabase/evals/out/story-reactions-<시각>.json`(+ 같은 이름의 `.md`)

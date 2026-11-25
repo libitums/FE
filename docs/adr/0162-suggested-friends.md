@@ -121,3 +121,14 @@
 - 스토리가 하나라도 있으면 목록 맨 위 줄은 스토리 줄(ADR-0178 D3)이 된다. 추천 친구는 그 줄의 안 만난 친구 스토리(점선 고리) · 그 밖의 추천 아바타로 이어지고,
   「See all」은 줄 끝 「Find friends」 동그라미로 옮겼다(친구 찾기 그대로). 스토리가 없으면(서버 적용 전 · 못 읽음 · 손님) 이 ADR의 R1 줄 그대로다.
 - 안 만난 친구 스토리의 「Add friend and reply」는 D5의 추가 길(성인 확인 포함)을 시트 없이 타고, 잠긴 인물이면 R4 시트를 연다. 이벤트 `from`에 `story`가 더해졌다.
+
+## 수정 ⟨2026-11-25, 스토리 보기에서 먼저 만나기를 산 뒤⟩
+
+- 보고: 스토리 보기의 「See how to meet」 → R4 시트 「Chat now · 100」으로 값을 치렀는데(서버 `early_access_unlocks` · 원장 한 번, 방 · 첫 인사도 생김) 보기가 그대로
+  「See how to meet」을 보이고, 다시 누르면 같은 시트(Chat now · 100)가 떴다. 원인 두 가지 — ① 시트의 먼저 만나기 성공이 스토리 보기의 `onAdded`(보기 닫기 ·
+  답장 넘김 · 방 열기)를 부르지 않았다. ② 보기는 연 때의 추천(locked)을 들고 있어, 다시 누르면 낡은 상태로 시트를 열었다.
+- 고침: 시트가 연 곳의 「이어 할 일」(`after`)을 들고, 먼저 만나기 열림 · Start chatting 추가 둘 다 같은 끝을 탄다 — 스토리 보기에서 왔으면 보기를 닫고 그 방을 인용 띠와
+  함께 연다(「Add friend and reply」와 같은 끝). 「See how to meet」은 누를 때 지금 판정(`currentFriendOf`)으로 다시 묻고, 이미 친구면 시트 없이 방으로 간다.
+- 줄 · 친구 찾기 · 스토리 줄 아바타는 렌더마다 지금 판정으로 그리므로 구매 뒤 바로 빠진다(ML5). 해금은 `unlockCharacter`가 그 자리에서 방을 여는 낙관 갱신이고,
+  서버가 정본이다 — 다시 사려 해도 `already`라 두 번 빼지 않는다.
+- 시험: `suggested-friends.unit.test.ts` SF-U8 · `MessengerListScreen.story-early.ui.test.tsx` SE-UI1 · SE-UI2 · `App.story-early-access.integration.test.tsx` SEI1.

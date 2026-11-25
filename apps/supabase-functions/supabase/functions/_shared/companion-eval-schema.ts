@@ -73,15 +73,26 @@ export const caseSchema = z.object({
   // 답장만: 내 스토리 반응(ADR-0191 D5). 있으면 `text` 대신 운영의 반응 지시 · 앱 안내 글로 답을 만든다 — 인물이 학습자의 스토리에 다는 한두 줄.
   storyReaction: z
     .object({
-      kind: z.enum(["word", "card", "photo"]),
-      ko: z.string().min(1).max(120),
+      kind: z.enum(["word", "card", "photo", "text"]),
+      ko: z.string().max(200),
       roman: z.string().max(400).optional(),
       meaning: z.string().max(300),
       exampleKo: z.string().max(120).nullable().optional(),
-      angle: z.enum(["word", "question", "quiz", "together", "react"]),
+      // 역할(ADR-0191 D16): react · follow · word · quiz. 옛 각도 question · together는 follow로 읽는다.
+      angle: z.enum(["word", "question", "quiz", "together", "react", "follow"]),
       // 사진 스토리만: 읽기 단계의 장면 설명 · 말 걸 거리.
       scene: z.string().max(600).nullable().optional(),
       hooks: z.array(z.string().max(120)).max(3).optional(),
+      // 조합 스토리(D15): 글 · 배운 단어. 둘째 친구(D16): 먼저 단 친구의 반응.
+      texts: z.array(z.string().max(200)).max(9).optional(),
+      words: z
+        .array(z.object({ ko: z.string().min(1).max(40), meaning: z.string().max(120) }))
+        .max(8)
+        .optional(),
+      friendReply: z
+        .object({ name: z.string().max(30), text: z.string().max(400) })
+        .nullable()
+        .optional(),
     })
     .optional(),
 });

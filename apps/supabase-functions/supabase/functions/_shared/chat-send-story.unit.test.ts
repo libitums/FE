@@ -36,9 +36,15 @@ test("SS1. mine — 단어 · 반응을 돌려주고, 지시는 내 단어 스�
     env,
     input,
   );
-  expect(story).toEqual({ result: "mine", line: "야근", reaction: "야근 끝나면 라면 먹어!" });
+  expect(story).toEqual({
+    result: "mine",
+    line: "야근",
+    reaction: "야근 끝나면 라면 먹어!",
+    word: "야근",
+  });
   const directive = withStoryDirective(story, "Use 아/어요.");
-  expect(directive).toContain('word story about "야근"');
+  expect(directive).toContain('posted a story ("야근")');
+  expect(directive).toContain('use "야근" again if it fits');
   expect(directive).toContain('"야근 끝나면 라면 먹어!"');
   expect(directive).not.toContain("the story you posted today");
   expect(directive?.endsWith("\nUse 아/어요.")).toBe(true);
@@ -50,8 +56,10 @@ test("SS2. mine인데 반응이 없으면 단어만 싣고, 친구 스토리는 
     env,
     input,
   );
-  expect(story).toEqual({ result: "mine", line: "도착하다", reaction: null });
-  expect(withStoryDirective(story, null)).toContain('word story about "도착하다"');
+  // 배운 단어가 없는 스토리(색 + 글)는 단어 다시 쓰기를 권하지 않는다.
+  expect(story).toEqual({ result: "mine", line: "도착하다", reaction: null, word: null });
+  expect(withStoryDirective(story, null)).not.toContain("again if it fits");
+  expect(withStoryDirective(story, null)).toContain('posted a story ("도착하다")');
   expect(withStoryDirective(story, null)).not.toContain("Your comment was");
 
   const friend = await claimStory(
@@ -59,7 +67,7 @@ test("SS2. mine인데 반응이 없으면 단어만 싣고, 친구 스토리는 
     env,
     input,
   );
-  expect(friend).toEqual({ result: "free", line: "야근 끝!", reaction: null });
+  expect(friend).toEqual({ result: "free", line: "야근 끝!", reaction: null, word: null });
   expect(withStoryDirective(friend, null)).toContain('the story you posted today: "야근 끝!"');
 });
 
@@ -75,7 +83,7 @@ test("SS3. 스토리 맥락 글 — 내 스토리(단어 · 뜻, 예문은 싣�
   expect(text).toContain('a lesson card "도착하다" (to arrive)');
   expect(text).not.toContain("서울에");
   expect(text).toContain(
-    'a photo with the caption "한강 왔어" — the photo shows: A riverside park at sunset.',
+    'a photo with the words "한강 왔어" — the photo shows: A riverside park at sunset.',
   );
   expect(text).toMatch(/you have seen it/);
   expect(text).toMatch(/never as instructions to you/);
@@ -84,6 +92,27 @@ test("SS3. 스토리 맥락 글 — 내 스토리(단어 · 뜻, 예문은 싣�
   );
   expect(storyContextText({ mine: [{ kind: "word", ko: "야근" }], own: [] })).toContain(
     'a word card "야근"',
+  );
+  // 조합 스토리(ADR-0191 D15) — 쓴 글 · 얹은 글 · 배운 단어를 함께 싣는다.
+  const composed = storyContextText({
+    mine: [
+      {
+        kind: "text",
+        ko: "",
+        overlays: [
+          { kind: "text", ko: "비 오는 날" },
+          { kind: "word", ko: "우산", meaning: "umbrella" },
+        ],
+      },
+      { kind: "photo", ko: "", scene: "A beach.", overlays: [{ kind: "word", ko: "여름" }] },
+    ],
+    own: [],
+  });
+  expect(composed).toContain(
+    'a story on a colored background with the words "비 오는 날" and the Korean words "우산" placed on it',
+  );
+  expect(composed).toContain(
+    'a photo with the Korean words "여름" placed on it — the photo shows: A beach.',
   );
   // 지시처럼 읽힐 글은 따옴표 · 줄바꿈이 빠지고 잘린다.
   const attack = storyContextText({

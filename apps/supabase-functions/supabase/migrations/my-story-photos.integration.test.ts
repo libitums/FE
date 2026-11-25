@@ -164,7 +164,7 @@ test("MP2. 저장 — 사진 칸 · live는 Seen · 알람(첫 인물 react), �
   expect((saved.story as { imagePath: string }).imagePath).toMatch(new RegExp(`^${adult}/`));
   const picked = await alarms(storyId(saved));
   expect(picked.map((alarm) => alarm.angle)[0]).toBe("react");
-  expect(["question", "together"]).toContain(picked[1]!.angle);
+  expect(picked[1]!.angle).toBe("follow");
   expect(await count("my_story_seen", `story_id = '${storyId(saved)}'`)).toBe(2);
 
   await reopen(adult);

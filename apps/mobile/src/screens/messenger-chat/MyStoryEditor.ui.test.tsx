@@ -175,7 +175,7 @@ test("MS-UI34. 글 서버(text) — Aa → 바탕 위 상자에 쓰기 · 글자
   tapId(ids.textDone);
   await flush();
   expect(screen.queryByTestId(ids.textEntry)).toBeNull();
-  expect(screen.getByTestId(ids.textBlock).textContent).toContain("오늘 처음 김치찌개 만들었어");
+  expect(screen.getByTestId(ids.textBlock).textContent).toBe("오늘 처음 김치찌개만들었어"); // 정해진 두 줄
   expect(screen.getByTestId(ids.editor).textContent).not.toContain("More natural");
   tapId(ids.toolWords);
   expect(screen.getByTestId(ids.composer).textContent).toContain("Up to 8 on one story.");
@@ -292,4 +292,96 @@ test("MS-UI38. 새 서버(#598 — kinds text · photo) — Aa · Words 둘 다,
   expect(screen.getByTestId(ids.composerError).textContent).toBe(
     "You've tried enough for today. Try again tomorrow.",
   );
+});
+
+/** 글 상자 입력 칸이 키보드 높이를 알립니다(iOS pt · Lynx `keyboardheightchange`). */
+function typingKeyboard(height: number): void {
+  const EventConstructor = screen.getByTestId(ids.textInput).ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select(`[data-testid="${ids.textInput}"]`);
+  fireEvent(
+    ref as unknown as Element,
+    new EventConstructor("bindEvent:keyboardheightchange", { detail: { height } }),
+  );
+}
+
+test("MS-UI39. Aa 쓰는 동안 키보드가 오르면 글 상자를 키보드 바로 위로(키보드 높이 + 틈), 내리면 원래 자리", async () => {
+  await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  // 글 상자 묶음(입력 칸의 상자 · 묶음)이 키보드 바로 위(키보드 높이 + 틈)에 섭니다.
+  const group = () =>
+    screen.getByTestId(ids.textInput).parentElement?.parentElement?.getAttribute("style") ?? "";
+  expect(group()).toContain("bottom: auto");
+  act(() => typingKeyboard(336));
+  expect(group()).toContain("position: absolute");
+  expect(group()).toContain("bottom: 348px");
+  // 글자색 줄 · Done은 위에 그대로
+  expect(screen.getByTestId(ids.textDone)).not.toBeNull();
+  act(() => typingKeyboard(0));
+  expect(group()).toContain("bottom: auto");
+  expect(group()).toContain("position: relative");
+});
+
+test("MS-UI40. 글 상자 크기 A안 — 정해진 줄마다 글자 크기로 그리고(22px · 줄 둘), transform은 회전 · 끄는 몫(1)만", async () => {
+  await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  act(() => nativeInput("input", "오늘 처음 김치찌개 만들었어", ids.textInput));
+  tapId(ids.textDone);
+  await flush();
+  const box = screen.getByTestId(ids.textBlock);
+  expect(box.getAttribute("style")).toContain("scale(1)");
+  expect(box.getAttribute("style")).toContain("padding: 8px 14px");
+  const lines = [...box.querySelectorAll("text")].filter((el) =>
+    (el.getAttribute("style") ?? "").includes("font-size"),
+  );
+  expect(lines.map((el) => el.textContent)).toEqual(["오늘 처음 김치찌개", "만들었어"]);
+  expect(lines[0]?.getAttribute("style")).toContain("font-size: 22px");
+});
+
+test("MS-UI41. 글 상자 끝단 — 두 손가락으로 크게 해도 가장 긴 줄이 바탕 폭 안에서 멈추고(끄는 중에도), 손을 떼면 그 크기로 확정", async () => {
+  await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  act(() => nativeInput("input", "오늘 처음 김치찌개 만들었어", ids.textInput));
+  tapId(ids.textDone);
+  await flush();
+  const canvas = screen.getByTestId(ids.stickers);
+  const EventConstructor = canvas.ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  act(() => {
+    fireEvent(
+      canvas,
+      new EventConstructor("bindEvent:layoutchange", { detail: { width: 390, height: 700 } }),
+    );
+  });
+  const box = () => screen.getByTestId(ids.textBlock);
+  act(() => {
+    fireEvent.touchstart(box(), {
+      touches: [
+        { pageX: 0, pageY: 0 },
+        { pageX: 100, pageY: 0 },
+      ],
+    });
+    fireEvent.touchmove(box(), {
+      touches: [
+        { pageX: 0, pageY: 0 },
+        { pageX: 400, pageY: 0 },
+      ],
+    });
+  });
+  // 4배를 바랐지만 (390 − 72 − 28) / 189.2 ≈ 1.533에서 멈춤
+  expect(box().getAttribute("style")).toContain("scale(1.533)");
+  act(() => {
+    fireEvent.touchend(box(), { touches: [] });
+  });
+  expect(box().getAttribute("style")).toContain("scale(1)");
+  const [first] = [...box().querySelectorAll("text")].filter((el) =>
+    (el.getAttribute("style") ?? "").includes("font-size"),
+  );
+  expect(first?.getAttribute("style")).toContain("font-size: 33.726px");
 });

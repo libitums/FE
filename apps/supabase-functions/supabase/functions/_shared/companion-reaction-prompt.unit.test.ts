@@ -31,29 +31,50 @@ test("RP1. 지시 — 단어 · 뜻 · 예문을 싣고, 한두 줄 · 문법 �
   expect(directive).toMatch(/do not open by repeating their story back as a question/);
   expect(directive).toMatch(/do not invent what they did/);
   const word = reactionDirective({ ...card, kind: "word", ko: "야근", exampleKo: null });
-  expect(word).not.toContain("example sentence");
+  expect(word).not.toContain("The card's example sentence");
   expect(word).toContain("word card");
   expect(reactionUserText(card)).toContain("도착하다");
 });
 
-test("RP2. 각도 — word는 쓰거나 이어지게(필수 아님), quiz는 단어를 쓰지 않고 뜻으로 묻는다", () => {
-  const word = reactionDirective(card);
-  expect(word).toMatch(/Use the word "도착하다"/);
-  expect(word).toMatch(/or keep your reply clearly connected to it/);
-  expect(word).not.toMatch(/must use/i);
+test("RP2. 역할(ADR-0191 D16) — react는 공감 · 감탄 + 궁금하면 질문 하나(단어 카드면 그 단어를 쓰거나 이어지게), 단어 담당 quiz는 단어를 쓰지 않고 뜻으로", () => {
+  const react = reactionDirective({ ...card, angle: "react" });
+  expect(react).toMatch(/first friend to reply/);
+  expect(react).toMatch(/you may add one light question/);
+  expect(react).toMatch(/Use the word "도착하다"/);
+  expect(react).not.toMatch(/must use/i);
   const quiz = reactionDirective({ ...card, angle: "quiz" });
-  expect(quiz).toMatch(/quiz/);
+  expect(quiz).toMatch(/helps with the Korean words/);
   expect(quiz).toContain('the Korean word for "to arrive"');
   expect(quiz).toMatch(/Do not write the word "도착하다" yourself/);
   expect(quiz).toMatch(/must not appear anywhere in your reply/);
-  expect(reactionDirective({ ...card, angle: "question" })).toMatch(/one light question/);
-  expect(reactionDirective({ ...card, angle: "together" })).toMatch(/doing something together/);
+  expect(quiz).toMatch(/cheer them on instead and skip the quiz/);
+  const word = reactionDirective({ ...card, angle: "word" });
+  expect(word).toMatch(/use it naturally in your reply, ask a light question connected to it/);
+  expect(word).toMatch(/one short, easy example sentence/);
+  expect(word).not.toMatch(/playful quiz/);
 });
 
-test("RP3. 각도마다 지시가 다르다 — 두 인물이 같은 말을 하지 않게", () => {
-  const directives = REACTION_ANGLES.map((angle) => reactionDirective({ ...card, angle }));
-  expect(new Set(directives).size).toBe(REACTION_ANGLES.length);
-  for (const directive of directives) expect(directive).toMatch(/Another friend may reply too/);
+test("RP3. 둘째(follow) — 먼저 단 친구의 말을 받아 겹치지 않게, 제안은 어울릴 때만 · 무거우면 응원. 모델은 @state mode로 알린다", () => {
+  const follow = reactionDirective({
+    ...card,
+    angle: "follow",
+    friendReply: { name: "미나", text: "우와 도착했구나! 어디야?" },
+  });
+  expect(follow).toContain('미나 already replied: "우와 도착했구나! 어디야?"');
+  expect(follow).toMatch(/Do not repeat what they said or ask the same question/);
+  expect(follow).toMatch(
+    /if they asked a question, empathize, cheer them on or suggest something instead/,
+  );
+  expect(follow).toMatch(/Suggest doing something together only if it truly fits/);
+  expect(follow).toMatch(/comfort or cheer them on instead of suggesting plans/);
+  expect(follow).not.toMatch(/Another friend may reply too/);
+  expect(reactionDirective({ ...card, angle: "follow" })).toMatch(/add a different angle/);
+  // 옛 각도(question · together)는 follow로 읽는다.
+  expect(reactionDirective({ ...card, angle: "question" })).toBe(
+    reactionDirective({ ...card, angle: "follow" }),
+  );
+  for (const angle of REACTION_ANGLES)
+    expect(reactionDirective({ ...card, angle })).toMatch(/"mode": the main thing you did/);
 });
 
 test("RP4. 보일 글 — 말(speech)만 이어 붙인다", () => {

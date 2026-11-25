@@ -906,10 +906,20 @@
   line-height: var(--libitum-typography-label-l-line-height);
 }
 
+/* 글 상자 · 도움말 묶음 — 키보드가 오르면(인라인 style) 위 줄과 키보드 사이 가운데로(키보드에 가리지 않게). */
+.my-story-typing-middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  left: 0;
+  right: 0;
+}
+
 .my-story-typing-box {
   display: flex;
   align-self: stretch;
-  margin: var(--libitum-spacing-96) var(--libitum-spacing-20) 0;
+  margin: 0 var(--libitum-spacing-20);
   padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
   border-width: 2px;
   border-style: dashed;
@@ -980,11 +990,11 @@
 /* 바탕 위 글 상자(30번) — 스티커와 같은 변환(가운데 기준 · scale이라 글자도 같은 비율). */
 .my-story-text-box {
   position: relative;
+  /* 크게 하면 바탕보다 넓어질 수 있음 — 줄이 눌려 넘치지 않고 가운데 기준으로 양쪽으로 넘치게. */
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 80%;
-  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
   border-width: 2px;
   border-style: solid;
   border-color: rgba(0, 0, 0, 0);
@@ -995,11 +1005,11 @@
   border-color: rgba(138, 58, 8, 0.35);
 }
 
+/* 줄은 `storyTextLines`가 정하고(다시 흐르지 않게 nowrap), 크기는 인라인 글자 크기(A안). */
 .my-story-text-box-ko {
   font-family: var(--libitum-typography-heading-m-font-family);
   font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-heading-m-font-size);
-  line-height: var(--libitum-typography-heading-m-line-height);
+  white-space: nowrap;
   text-align: center;
 }
 

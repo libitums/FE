@@ -24,6 +24,7 @@ test("ER1. 세트 모양 — 등록됨 · 답장 종류 · 한 번에 돌릴 수
   expect(storyReactionSets.map((set) => set.id)).toEqual([
     "story-reaction-words",
     "story-reaction-photos",
+    "story-reaction-roles",
   ]);
   for (const set of storyReactionSets) {
     expect(companionEvalSets).toContain(set);
@@ -38,9 +39,9 @@ test("ER1. 세트 모양 — 등록됨 · 답장 종류 · 한 번에 돌릴 수
     }
   }
   const [words, photos] = storyReactionSets;
-  // 각도 넷을 모두 본다. 사진 세트는 장면 설명이 없는 경우 · 신분증 · 사람이 나온 사진을 담는다.
+  // 역할 넷을 모두 본다(ADR-0191 D16). 사진 세트는 장면 설명이 없는 경우 · 신분증 · 사람이 나온 사진을 담는다.
   expect(new Set(words!.cases.map((item) => item.storyReaction!.angle))).toEqual(
-    new Set(["word", "question", "quiz", "together"]),
+    new Set(["react", "follow", "quiz", "word"]),
   );
   expect(photos!.cases.every((item) => item.storyReaction!.kind === "photo")).toBe(true);
   expect(photos!.cases.some((item) => item.storyReaction!.scene === null)).toBe(true);

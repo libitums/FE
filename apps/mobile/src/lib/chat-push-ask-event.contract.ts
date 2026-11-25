@@ -4,6 +4,7 @@
 
 import type { ChatPillEvent } from "./chat-pill-event.contract";
 import type { ChatSuggestionEvent } from "./chat-suggestion-event.contract";
+import type { FriendVoiceEvent } from "./friend-voice-event.contract";
 
 type Common = {
   readonly surface: "chat";
@@ -29,7 +30,11 @@ export type ChatPushAskEvent =
     });
 
 /**
- * 채팅 방 안의 추천 문장(ADR-0195) · 알림 권한 카드 · 「새 메시지 ↓」 알약(ADR-0117 2026-11-25) 이벤트 — `CompanionEvent`가 한 줄로
- * 받습니다(그 파일의 줄 수 한도).
+ * 채팅 방 안의 추천 문장(ADR-0195) · 알림 권한 카드 · 「새 메시지 ↓」 알약(ADR-0117 2026-11-25) 이벤트와 프로필 시트 목소리 견본
+ * (ADR-0198) — `CompanionEvent`가 한 줄로 받습니다(그 파일의 줄 수 한도).
  */
-export type ChatRoomEvent = ChatSuggestionEvent | ChatPushAskEvent | ChatPillEvent;
+export type ChatRoomEvent =
+  | ChatSuggestionEvent
+  | ChatPushAskEvent
+  | ChatPillEvent
+  | FriendVoiceEvent;

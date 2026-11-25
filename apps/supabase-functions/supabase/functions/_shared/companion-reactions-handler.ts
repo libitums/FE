@@ -10,7 +10,8 @@
 
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { makeReaction, type MadeReaction, type ReactionClaim } from "./companion-reaction-make.ts";
-import { REACTION_ANGLES } from "./companion-reaction-prompt.ts";
+import { REACTION_ANGLES, reactionQuizWord } from "./companion-reaction-prompt.ts";
+import { storyTexts, storyWords } from "./companion-story-compose.ts";
 import { pushReaction } from "./companion-reaction-push.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
 import { createUsageCollector } from "./companion-usage.ts";
@@ -59,6 +60,15 @@ const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const text = (value: unknown): string | null => (typeof value === "string" ? value : null);
 
+/** 먼저 단 다른 친구의 반응(ADR-0191 D16) — 모양이 틀리면 null. */
+function friendReplyOf(raw: unknown): { name: string; text: string } | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const row = raw as Record<string, unknown>;
+  const name = text(row["name"]);
+  const said = text(row["text"]);
+  return name === null || said === null || said.trim() === "" ? null : { name, text: said };
+}
+
 function claimOf(raw: unknown): ReactionClaim | null {
   if (typeof raw !== "object" || raw === null) return null;
   const row = raw as Record<string, unknown>;
@@ -73,13 +83,24 @@ function claimOf(raw: unknown): ReactionClaim | null {
   ];
   if (reactionId === null || userId === null || characterId === null || storyId === null)
     return null;
-  if (ko === null || ko.trim() === "" || meaning === null || lang === null) return null;
+  const kind =
+    row["kind"] === "word" || row["kind"] === "photo" || row["kind"] === "text"
+      ? row["kind"]
+      : "card";
+  // 조합 스토리(ADR-0191 D15): 글(쓴 글 · 직접 쓴 얹은 글)과 배운 단어(얹은 단어 · 카드). 색 바탕은 쓴 글이 빌 수 있다.
+  const texts = kind === "photo" || kind === "text" ? storyTexts(ko ?? "", row["overlays"]) : [];
+  const words = kind === "photo" || kind === "text" ? storyWords(row["overlays"]) : [];
+  if (ko === null || meaning === null || lang === null) return null;
+  if (ko.trim() === "" && texts.length === 0 && words.length === 0) return null;
   return {
     reactionId,
     userId,
     characterId,
     storyId,
-    kind: row["kind"] === "word" || row["kind"] === "photo" ? row["kind"] : "card",
+    kind,
+    texts,
+    words,
+    friendReply: friendReplyOf(row["friendReply"]),
     scene: text(row["scene"]),
     hooks: Array.isArray(row["hooks"])
       ? row["hooks"].filter((hook): hook is string => typeof hook === "string")
@@ -152,7 +173,7 @@ async function reactOne(
     name: made.name,
     segments: made.segments,
     lang: made.lang,
-    word: claim.ko,
+    word: reactionQuizWord(claim),
     angle: claim.angle,
     now,
   });

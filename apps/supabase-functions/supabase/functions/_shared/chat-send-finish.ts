@@ -54,6 +54,8 @@ export type TurnOutcome = {
   readonly outcome: string;
   readonly afterTurn: AfterTurnInput | null;
   readonly suggestions?: Extract<SuggestOutcome, { status: "ok" }> | null;
+  /** 퀴즈 답 턴에서 모델이 본 판정(ADR-0191 D14). 없으면 undefined. */
+  readonly quiz?: "correct" | "wrong" | "skip";
 };
 
 export type TurnStatusName = "complete" | "blocked" | "crisis" | "failed";
