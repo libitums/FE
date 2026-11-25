@@ -89,7 +89,9 @@ export function useMapNotices(input: MapNoticesInput): {
     acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
   });
   pushOpen.current = push.open;
-  const welcomePass = useWelcomePass(); // 첫날 무제한 티켓(ADR-0186 개정 1) — 회원만, 안내 모달 없음
+  // 첫날 무제한 티켓(ADR-0186) — 회원만, 안내 모달 없음. 구독 중이면 없고 구독 상태를 모르는 동안은 칩을 그리지 않습니다(개정 2).
+  // 요금제 결선이 없으면(비회원 · 플래그 꺼짐) 구독 없음과 같습니다.
+  const welcomePass = useWelcomePass(input.wiring.plans?.subscription ?? "none");
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
