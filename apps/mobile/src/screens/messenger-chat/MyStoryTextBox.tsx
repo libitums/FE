@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { typedText, type EditorText } from "./my-story-editor";
+import { textFit } from "./my-story-text";
 import { myStoriesTestIds as ids, type StoryTextColor } from "./my-stories.contract";
 import { MyStoryPlaced, StoryTextLines, type CanvasSize } from "./MyStorySticker";
 
@@ -53,7 +54,7 @@ export function MyStoryTextBox({
       selected={selected}
       className="my-story-text-box"
       onSelect={onSelect}
-      onChange={onChange}
+      onChange={(next) => onChange({ ...next, ...textFit(next.ko, next, canvas) })}
       onRemove={onRemove}
       onTap={onEdit}
       lane={true}

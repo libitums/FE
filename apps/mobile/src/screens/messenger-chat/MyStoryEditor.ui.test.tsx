@@ -334,10 +334,54 @@ test("MS-UI40. 글 상자 크기 A안 — 정해진 줄마다 글자 크기로 �
   await flush();
   const box = screen.getByTestId(ids.textBlock);
   expect(box.getAttribute("style")).toContain("scale(1)");
-  expect(box.getAttribute("style")).toContain("padding: 8px 12px");
+  expect(box.getAttribute("style")).toContain("padding: 8px 14px");
   const lines = [...box.querySelectorAll("text")].filter((el) =>
     (el.getAttribute("style") ?? "").includes("font-size"),
   );
   expect(lines.map((el) => el.textContent)).toEqual(["오늘 처음 김치찌개", "만들었어"]);
   expect(lines[0]?.getAttribute("style")).toContain("font-size: 22px");
+});
+
+test("MS-UI41. 글 상자 끝단 — 두 손가락으로 크게 해도 가장 긴 줄이 바탕 폭 안에서 멈추고(끄는 중에도), 손을 떼면 그 크기로 확정", async () => {
+  await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  act(() => nativeInput("input", "오늘 처음 김치찌개 만들었어", ids.textInput));
+  tapId(ids.textDone);
+  await flush();
+  const canvas = screen.getByTestId(ids.stickers);
+  const EventConstructor = canvas.ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  act(() => {
+    fireEvent(
+      canvas,
+      new EventConstructor("bindEvent:layoutchange", { detail: { width: 390, height: 700 } }),
+    );
+  });
+  const box = () => screen.getByTestId(ids.textBlock);
+  act(() => {
+    fireEvent.touchstart(box(), {
+      touches: [
+        { pageX: 0, pageY: 0 },
+        { pageX: 100, pageY: 0 },
+      ],
+    });
+    fireEvent.touchmove(box(), {
+      touches: [
+        { pageX: 0, pageY: 0 },
+        { pageX: 400, pageY: 0 },
+      ],
+    });
+  });
+  // 4배를 바랐지만 (390 − 72 − 28) / 189.2 ≈ 1.533에서 멈춤
+  expect(box().getAttribute("style")).toContain("scale(1.533)");
+  act(() => {
+    fireEvent.touchend(box(), { touches: [] });
+  });
+  expect(box().getAttribute("style")).toContain("scale(1)");
+  const [first] = [...box().querySelectorAll("text")].filter((el) =>
+    (el.getAttribute("style") ?? "").includes("font-size"),
+  );
+  expect(first?.getAttribute("style")).toContain("font-size: 33.726px");
 });

@@ -9,12 +9,11 @@ import {
   moveSticker,
   pinchSticker,
   resizeSticker,
-  storyTextLines,
-  textBoxSizeOf,
   type EditorSticker,
   type Placement,
   type Point,
 } from "./my-story-editor";
+import { storyTextLines, textBoxSizeOf } from "./my-story-text";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
 
 /** 바탕의 크기(px) — 끌기 거리를 비율로 바꿉니다. 아직 모르면 0(끌기 없음). */
