@@ -144,7 +144,7 @@ export function useFriendStories({
   const imageUrl = (path: string) => port?.imageUrl(path) ?? null;
 
   const open = (opened: ViewerOpen): boolean => {
-    const result = viewerItemsOf(row, opened, imageUrl);
+    const result = viewerItemsOf(row, opened, imageUrl, seen);
     if (result === null) return false;
     setViewer({ ...result, from: fromOf(opened) });
     return true;

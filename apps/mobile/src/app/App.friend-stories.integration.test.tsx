@@ -34,7 +34,7 @@ import {
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { nativeInput } from "../screens/messenger-chat/chat-ui.test-support";
 
-// `integration` 계층(FSI1 ~ FSI9, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
+// `integration` 계층(FSI1 ~ FSI10, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
 // (`companion_friend_stories` · `companion_friends`). 목록 → 보기 → 칩 · 답장 칸 → 대화방(인용 카드 · 인용 띠), 안 만난 친구 추가 → 답장,
 // 못 읽음이면 추천 줄 그대로.
 
@@ -207,6 +207,22 @@ test("FSI9. 줄은 스토리 있는 인물을 최신 순(친구 · 안 만난 �
   expect(screen.getByTestId(ids.name).textContent).toContain("익선 게스트하우스");
   tapId(ids.next);
   expect(screen.getByTestId(ids.name).textContent).toContain("사장님");
+});
+
+test("FSI10. 한 인물의 스토리 여럿 — 진행 막대는 그 인물만, 다 보면 닫히고 줄 칸은 가장 새 것", async () => {
+  serverRemote([
+    story("owner", { id: "st-owner-1", postedAt: NOW - 3 * HOUR, expiresAt: NOW + 21 * HOUR }),
+    story("owner", { id: "st-owner-2", postedAt: NOW - HOUR, expiresAt: NOW + 23 * HOUR }),
+    story("daeun", { id: "st-daeun", postedAt: NOW - HOUR, expiresAt: NOW + 23 * HOUR }),
+  ]);
+  await openMessenger();
+  tapId(ids.friend("owner"));
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 1 of 2");
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 2 of 2");
+  tapId(ids.next);
+  expect(present(ids.viewer)).toBe(false);
+  expect(seen.has("st-owner-1") && seen.has("st-owner-2")).toBe(true);
 });
 
 test("FSI6. 스토리를 못 읽으면 추천 줄 그대로 · 오류 없음", async () => {

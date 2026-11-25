@@ -83,6 +83,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U18 `storyReplyGateOf`: 무료 안내 → story-free(엽전 0이어도) · 관문 재료 없음 · 무제한 → open · 체험 남음/모름 → trial · 엽전 → pay(서버 방은 지갑에서 안 뺌) · 모자람 → short.
 - FS-U19 `storyReplyStatusOf`: 방 없음 · 새 글 없음 · 다른 스토리 → failed, 가짜 출처 → sent, 앱 id → sending, 서버 id → sent, Not sent · 실패 줄 → failed(no-credits → coins), 입력 막힘 → failed.
 - FS-U20 `canSendStoryReply`: 빈 글 · 공백 · 보내는 중이면 거짓.
+- FS-U21 ~ U24 인물 묶음(D4 개정, `friend-stories.groups.unit.test.ts`): 인물마다 올린 시각 순 · 줄 칸은 최신 · 본 것은 다 봤을 때, 보기 장 목록 = 묶음 이어 붙임 · 안 본 첫 장부터,
+  `viewerGroupOf`(묶음 시작 · 칸 수 · 자리), `viewerJump`(다음 인물 · 마지막이면 닫힘 · 이전 인물의 첫 장).
 
 ### 2.2 ui (앱)
 
@@ -97,6 +99,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI19 ~ UI24 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
   onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
 - FS-UI25 ~ UI27 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
+- FS-UI28 ~ UI31 인물 기준 보기(`StoryViewer.segments.ui.test.tsx`): 진행 막대 = 그 인물만, 왼쪽 탭은 이전 인물의 마지막 장, 가로 넘김(다음 · 이전 인물 · 짧은 움직임은 무시 · 마지막이면 닫힘), 슬라이드 방향 · 모션 줄이기면 없음, 6초 넘김은 인물을 넘어 이어 감.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
 - FS-UI14 목록이 서 있는 동안 5분마다 다시 읽어 새 스토리가 줄에 섬, 목록을 내리면 타이머 멈춤(가짜 타이머).
 - FS-UI15 포트의 다시 읽기 신호에 다시 읽음, 목록을 내리면 리스너를 뗌.
@@ -107,6 +110,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 ### 2.3 integration (앱)
 
 - FSI1 (D5 개정) 목록 → 친구 스토리 → 칩 → 보기에 남은 채 그 방에 인용과 함께 보냄 · 「Sent」 → Open chat → 방의 인용 카드.
+- FSI10 (D4 개정) 한 인물의 스토리 둘 → 진행 막대 「Story 1 of 2」 → 다 보면 닫힘 · 둘 다 본 것.
 - FSI2 (D5 개정) 답장 칸에 쓰고 보내기 → 보기에 남은 채 인용과 함께 보냄 · 칸이 빔.
 - FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
 - FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).
