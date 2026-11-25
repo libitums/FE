@@ -117,6 +117,7 @@ export const myStoriesId: MyStoriesCopy = {
     share: "Bagikan ke teman",
     posting: "Membagikan…",
     hintOne: "Tambahkan satu kata untuk membagikannya.",
+    hintOneText: "Tambahkan kata atau tulis satu kalimat untuk membagikannya.",
     hintMove: "Seret untuk memindahkan, cubit untuk mengubah ukuran.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Hapus ${ko}`,

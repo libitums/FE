@@ -114,6 +114,7 @@ export const myStoriesMy: MyStoriesCopy = {
     share: "သူငယ်ချင်းများနှင့် မျှဝေရန်",
     posting: "မျှဝေနေသည်…",
     hintOne: "မျှဝေရန် စကားလုံး တစ်ခု ထည့်ပါ။",
+    hintOneText: "မျှဝေရန် စကားလုံးတစ်လုံး ထည့်ပါ သို့မဟုတ် စာတစ်ကြောင်း ရေးပါ။",
     hintMove: "ရွှေ့ရန် ဆွဲပါ၊ အရွယ်အစား ပြောင်းရန် လက်ချောင်းနှစ်ချောင်းဖြင့် ဆွဲပါ။",
     stickerLabel: (ko, meaning) => `${ko}၊ ${meaning}`,
     remove: (ko) => `ဖယ်ရန် ${ko}`,

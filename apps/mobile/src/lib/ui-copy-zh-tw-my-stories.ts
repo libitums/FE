@@ -111,6 +111,7 @@ export const myStoriesZhTw: MyStoriesCopy = {
     share: "分享給朋友",
     posting: "分享中…",
     hintOne: "放上一個單字就能分享。",
+    hintOneText: "加一個單字或寫一句話，就能分享。",
     hintMove: "拖曳移動，用兩指縮放。",
     stickerLabel: (ko, meaning) => `${ko}，${meaning}`,
     remove: (ko) => `移除 ${ko}`,

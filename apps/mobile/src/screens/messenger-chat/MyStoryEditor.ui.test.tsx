@@ -159,11 +159,14 @@ test("MS-UI33. 스티커 — 고르면 ×로 빼고, 두 손가락으로 크기 
   expect(screen.getByTestId(ids.sticker("s1"))).not.toBeNull();
 });
 
-test("MS-UI34. 글 서버(text) — Aa → 바탕 위 상자에 쓰기 · 글자색 → Done → 상자(교정 없음) · Share 바로 켜짐 → 글 스토리(쓴 글 그대로 · 앱이 만든 로마자)", async () => {
+test("MS-UI34. 글 서버(text) — 빈 바탕 안내는 「단어 또는 한 줄」, Aa → 바탕 위 상자에 쓰기 · 글자색 → Done → 상자(교정 없음) · Share 바로 켜짐 → 글 스토리(쓴 글 그대로 · 앱이 만든 로마자)", async () => {
   const fake = fakeMyStories({ guideSeen: true, words, kinds: ["word", "card", "text"] });
   await mount(fake);
   tapId(ids.create);
   tapId(ids.startBackground);
+  expect(screen.getByTestId(ids.editorHint).textContent).toBe(
+    "Add a word or write a line to share it.",
+  );
   tapId(ids.swatch("purple"));
   tapId(ids.toolText);
   expect(screen.getByTestId(ids.textEntry).textContent).toContain("Korean or English — we'll help");
@@ -278,6 +281,9 @@ test("MS-UI38. 새 서버(#598 — kinds text · photo) — Aa · Words 둘 다,
   tapId(ids.create);
   tapId(ids.startBackground);
   expect(screen.getByTestId(ids.toolText)).not.toBeNull();
+  expect(screen.getByTestId(ids.editorHint).textContent).toBe(
+    "Add a word or write a line to share it.",
+  );
   tapId(ids.toolWords);
   tapId(ids.choice("w2"));
   tapId(ids.share);

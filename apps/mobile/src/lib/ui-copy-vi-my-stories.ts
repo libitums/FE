@@ -115,6 +115,7 @@ export const myStoriesVi: MyStoriesCopy = {
     share: "Chia sẻ với bạn bè",
     posting: "Đang chia sẻ…",
     hintOne: "Thêm một từ để chia sẻ.",
+    hintOneText: "Thêm một từ hoặc viết một câu để chia sẻ.",
     hintMove: "Kéo để di chuyển, chụm hai ngón để đổi cỡ.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Xóa ${ko}`,

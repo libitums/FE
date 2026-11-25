@@ -119,6 +119,7 @@ export const myStoriesEn: MyStoriesCopy = {
     share: "Share with friends",
     posting: "Sharing…",
     hintOne: "Add a word to share it.",
+    hintOneText: "Add a word or write a line to share it.",
     hintMove: "Drag to move, pinch to resize.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Remove ${ko}`,
