@@ -5,12 +5,14 @@ import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 import { messengerChatAlbumVi } from "./ui-copy-vi-chat-album";
 import { messengerChatSuggestedVi } from "./ui-copy-vi-chat-suggested";
 import { messengerChatStoriesVi } from "./ui-copy-vi-chat-stories";
+import { myStoriesVi } from "./ui-copy-vi-my-stories";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
   media: messengerChatMediaVi,
   album: messengerChatAlbumVi,
   suggested: messengerChatSuggestedVi,
   stories: messengerChatStoriesVi,
+  myStories: myStoriesVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:

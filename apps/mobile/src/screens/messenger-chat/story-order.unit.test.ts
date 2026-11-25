@@ -7,7 +7,7 @@ import { byLatestStory, storyOrderOf, type StoryOrderEntry } from "./story-order
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `unit` 계층(FS-U15): 스토리 줄 · 보기의 인물 순서(ADR-0178 D3 개정 ⟨2026-11-25⟩) — 스토리가 있는 인물을 최신 순으로 한 줄에.
+// `unit` 계층(FS-U17): 스토리 줄 · 보기의 인물 순서(ADR-0178 D3 개정 ⟨2026-11-25⟩) — 스토리가 있는 인물을 최신 순으로 한 줄에.
 
 const NOW = STORY_NOW;
 
@@ -27,7 +27,7 @@ function rowOf(stories: readonly FriendStory[], seen: readonly string[] = []) {
 const ids = (order: readonly StoryOrderEntry[]) =>
   order.map((each) => `${each.kind}:${each.entry.story.characterId}`);
 
-describe("FS-U15 스토리 인물 순서", () => {
+describe("FS-U17 스토리 인물 순서", () => {
   test("친구 · 안 만난 친구를 한 줄로, 최신 스토리 순", () => {
     const row = rowOf([
       story("a", { postedAt: NOW - 5 * HOUR_MS }),

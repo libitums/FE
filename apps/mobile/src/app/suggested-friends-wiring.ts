@@ -136,13 +136,26 @@ export function addSuggestedFriend(characterId: string): AddFriendResult {
 
 let cachedPort: SuggestedFriendsPort | null = null;
 
+/** 목록 결선이 렌더마다 넘기는 값 — 콘텐츠 주소 해석기 · 로마자 스위치(ADR-0198). 포트 객체는 같게 두고 이것만 갈아 끼웁니다. */
+export type SuggestedFriendsViewArgs = {
+  readonly contentUrlOf: (relativePath: string) => string | null;
+  readonly romanization: () => boolean;
+};
+let view: SuggestedFriendsViewArgs | null = null;
+const viewPort = {
+  voiceSampleUrl: (path: string) => view?.contentUrlOf(path) ?? null,
+  romanization: () => view?.romanization() ?? false,
+};
+
 /**
  * 목록 결선이 렌더마다 부릅니다 — 설정이 같으면 **같은 객체 · 같은 함수**를 돌려줍니다(리뷰 #503: 새 `offers` 함수가 렌더마다
  * 효과를 다시 돌려 제안 RPC를 거듭 불렀습니다).
  */
-export function suggestedFriendsPort(): SuggestedFriendsPort {
+export function suggestedFriendsPort(args?: SuggestedFriendsViewArgs): SuggestedFriendsPort {
+  if (args !== undefined) view = args;
   if (cachedPort !== null) return cachedPort;
   cachedPort = {
+    ...viewPort,
     catalog: () => catalogOverride ?? COMPANION_CATALOG,
     add: addSuggestedFriend,
     // 구독자(Chat Plus · Premium)는 못 만난 이야기 인물도 값 없이 엽니다 — 부를 때마다 지금 요금제를 읽습니다.
@@ -165,8 +178,10 @@ let guestPort: SuggestedFriendsPort | null = null;
  * 친구를 거르지 않는 것은 서버 규칙의 「나이 모름」과 같습니다(미성년자만 open 수위를 숨김, ADR-0164). 추가는 화면이 로그인 권유로
  * 막으므로 `add`는 부르지 않지만, 계약을 지키려 회원과 같은 함수를 둡니다.
  */
-export function guestSuggestedFriendsPort(): SuggestedFriendsPort {
+export function guestSuggestedFriendsPort(args?: SuggestedFriendsViewArgs): SuggestedFriendsPort {
+  if (args !== undefined) view = args;
   guestPort ??= {
+    ...viewPort,
     catalog: () => catalogOverride ?? COMPANION_CATALOG,
     add: addSuggestedFriend,
     earlyAccess: null,

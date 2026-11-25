@@ -14,7 +14,7 @@ import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `unit` 계층(FS-U1 ~ U7 · U10): 친구 스토리 판정(ADR-0178 D2 · D3 · D4). 인물 순서는 FS-U15(`story-order.unit.test.ts`).
+// `unit` 계층(FS-U1 ~ U7 · U10): 친구 스토리 판정(ADR-0178 D2 · D3 · D4). 인물 순서는 FS-U17(`story-order.unit.test.ts`).
 
 const NOW = STORY_NOW;
 const MIN = 60_000;

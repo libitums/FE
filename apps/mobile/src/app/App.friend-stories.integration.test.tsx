@@ -23,6 +23,7 @@ import {
   setMessengerChatStoresForTests,
 } from "./messenger-chat-wiring";
 import { setAdultAckAskedStoreForTests, setEarlyAccessRemote } from "./suggested-friends-wiring";
+import { contentSyncEventName } from "./use-episode-content-refresh";
 import {
   appChatSource,
   openTab,
@@ -32,7 +33,7 @@ import {
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 
-// `integration` 계층(FSI1 ~ FSI6, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
+// `integration` 계층(FSI1 ~ FSI9, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
 // (`companion_friend_stories` · `companion_friends`). 목록 → 보기 → 칩 · 답장 칸 → 대화방(인용 카드 · 인용 띠), 안 만난 친구 추가 → 답장,
 // 못 읽음이면 추천 줄 그대로.
 
@@ -142,7 +143,33 @@ test("FSI3. 안 만난 친구 스토리 → Add friend and reply: 방이 열리�
   expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to 송다은's story");
 });
 
-test("FSI7. 줄은 스토리 있는 인물을 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 다음 인물도 그 순서", async () => {
+test("FSI7. 목록을 연 뒤 올라온 스토리 — 다른 탭에 갔다 채팅 탭으로 돌아오면 다시 읽어 줄에 선다(ADR-0178 「다시 읽기」)", async () => {
+  const { list } = serverRemote([]);
+  await openMessenger();
+  expect(present(ids.row)).toBe(false);
+  list.mockResolvedValue(live);
+  openTab("journey");
+  await settle();
+  openTab("messenger");
+  await settle();
+  expect(list).toHaveBeenCalledTimes(2);
+  expect(present(ids.friend("owner"))).toBe(true);
+});
+
+test("FSI8. 목록을 연 뒤 올라온 스토리 — 앱이 앞으로 오면(contentSyncOpportunity) 그 자리에서 다시 읽어 줄에 선다", async () => {
+  const { list } = serverRemote([]);
+  await openMessenger();
+  expect(present(ids.row)).toBe(false);
+  list.mockResolvedValue(live);
+  act(() => {
+    lynx.getJSModule("GlobalEventEmitter").emit(contentSyncEventName, []);
+  });
+  await settle();
+  expect(list).toHaveBeenCalledTimes(2);
+  expect(present(ids.friend("owner"))).toBe(true);
+});
+
+test("FSI9. 줄은 스토리 있는 인물을 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 다음 인물도 그 순서", async () => {
   serverRemote([
     ...live,
     story("guesthouse", {

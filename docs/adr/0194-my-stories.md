@@ -28,6 +28,9 @@
 
 ### D2. 올릴 거리 — 「My words」 · 「Lesson cards」 두 탭
 
+> ⟨개정 2026-11-25, 사용자 결정⟩ **레슨 카드는 앱이 올리지 않는다** — 만들기는 단어장 단어만(「Add a word」 시트, 탭 · 거르기 칩 없음). 서버에 있는
+> `kind: "card"` 스토리(옛 것 · 보관함)는 지금처럼 그린다. 아래는 그 전 결정의 기록이다(적용 기록 「레슨 카드 올리기 없앰」).
+
 - My words: 단어장 기록(ADR-0169)을 UI 언어 카탈로그로 푼 단어 — 별 단 것 먼저, 그다음 처음 본 날 최근 순.
 - Lesson cards: 단어장에 기록이 하나라도 있는(=배운) 레슨의 단어 카드 중 **예문이 있는 것**, 에피소드 순서 · 에피소드 거르기 칩.
 - 단어 카드는 「Make a card with <단어>」, 레슨 카드는 「Share the card」. 사진 탭은 없다.
@@ -117,3 +120,157 @@
 - 서버: `my-stories.integration.test.ts`(MS1 ~ MS14) · `companion-reactions-handler.unit.test.ts`(RH1 ~ RH6) · `companion-reaction-prompt.unit.test.ts`
   (RP1 ~ RP4 · RP3b) · `chat-send-story.unit.test.ts`(SS1 ~ SS2).
 - 기기: [e2e](../e2e/my-stories.md).
+
+## 적용 기록
+
+### ⟨2026-11-25⟩ 사진 스토리 — 앱(ADR-0199)
+
+사용자 결정(2026-11-25 「사진 스토리 진행」). 시작 시트의 Camera · 사진(최근 사진), 사진 위 편집, 업로드 → 게시, 확인 중 · 거절 · 다시 확인 요청은
+[ADR-0199](0199-my-story-photo-app.md)가 정한다. 이 ADR의 「사진 · 확인 중 스토리는 건너뛴다」(앱 v2)는 그 ADR로 대체된다.
+
+### ⟨2026-11-25⟩ 서버 PR #598(ADR-0191 D13 · D14 · D15) 계약에 맞춤
+
+사용자 승인(2026-11-25). #598은 아직 머지 · 운영 적용 전이라 그 PR의 계약 파일(`packages/companion-contract` my-stories · rpc)을 정본으로
+읽었다. 앱은 옛 서버(kinds 없음 → word · card)와 새 서버 둘 다에서 동작한다.
+
+| 칸 | #598 | 앱(이 PR) |
+|---|---|---|
+| `kinds` | `text` · `photo`만(word · card는 「색 + 단어」로 바뀌어 안 옴), 없으면 옛 서버 | 단어 도구는 `word` 또는 `text`가 있으면 선다. `text`만 오면 단어 하나도 색 바탕 스토리로 올린다(`wordRpc` — kinds에 word가 있을 때만 옛 단어 RPC) |
+| 색 바탕 올리기 | `companion-my-story` `post` + `background`(image_path 없이), `ko`는 쓴 글 그대로(없으면 "") · 교정 없음 | 같음. 단어만 얹은 스토리는 `ko: ""` |
+| 결과 | `ok` · `text_blocked` · `crisis`(+ `resources`) · `window_used` · `daily_limit` · `check_limit` · `off` · `invalid` | `check_limit` · `invalid`를 따로 받아 안내(여덟 언어), `my_story_post_failed.reason`에 둘을 더함. `off`는 실패 안내 |
+| `client_region` | 선택 — 위기 연락처 지역 | 스토어 계정 나라(두 글자)를 알면 싣고, 모르면 뺀다(서버가 국제 목록) |
+| 스토리 `background` · `kind: "text"` | 있음 | 그린다. 단어만 얹은(글 없는) 색 바탕 스토리(`ko: ""`)도 읽는다 — 전에는 빈 글이라 버려졌다 |
+| 얹은 글 `color` | brown · black · white · orange | 같음 |
+| 퀴즈 meta | 반응 `{ angle, myStoryId, quiz: { freeAnswer } }`, 무료 답 `{ quiz: { free, attempt, result: correct · hint · revealed · skipped } }` | 이름 · 모양 같음. `skipped`(상관없는 말로 퀴즈를 닫음)는 「Free · quiz answer」만 남기고 맞힘 줄 없음, 그 뒤로 무료 아님 |
+| 스위치 | `my_story_text`(색 바탕) | 앱은 kinds만 본다 |
+
+### ⟨2026-11-25⟩ 레슨 카드 올리기 없앰
+
+사용자 결정(2026-11-25, 시안 27 X2Editor · 28 X3AddSheet). **앱은 `card`를 올리지 않는다.**
+
+- 편집 오른쪽 도구의 Cards, 넣기 시트의 Lesson cards 탭 · 에피소드 거르기 칩, 레슨 카드 고를 거리(`my-stories-choices`의 cards ·
+  `visibleCardsOf` · `LessonCardGroup`)를 지웠다. 시트 제목은 「Add a word」, 편집 안내는 「Add a word to share it.」, 처음 안내 첫 걸음은
+  「Pick a word — From your saved words.」(여덟 언어). 안 쓰게 된 문구 키(탭 · 칩 · 카드 빈 안내 · 옛 만들기 화면 문구)도 지웠다.
+- 앱의 올릴 거리 타입은 `kind: "word"`만 갖는다. 보기 쪽(`card` 스토리 그리기 · 「Lesson card」 꼬리표 · 보관함)과 계약 · 이벤트 값
+  (`my_story_posted.kind`의 `card`)은 그대로 두고, 앱에서 `card` 값이 더는 나오지 않는다. 서버 `kinds` 기본값(`["word", "card"]`)도 읽기만 한다.
+- 넣기 시트의 검색 칸(시안 28)은 이번 범위 밖이다.
+
+### ⟨2026-11-25⟩ 앱 v2 — 서버 #588(ADR-0191) 반영 + 덕수쌤 퀴즈(서버 반영 예상)
+
+사용자 결정(2026-11-25 「반영을 예상하고 화면 진행」, 시안 16 ~ 23 · 메모 `v2-what` · `v3-rules`). PR #565의 앱 작업을 main 위로 다시 올린
+초안 PR(앱만)이 대신한다. 화면 · 계약 · 테스트는 [spec §1.5](../specs/my-stories.md).
+
+- D3의 「Answer <이름>」 · 「You answered about your story」 띠 · 「Your friends will reply over the day.」와 D7의 `my_story_answered` ·
+  `my_story_replied`는 [ADR-0191](0191-my-stories-reactions-as-chat.md)에 맞춰 바뀌었다 — 반응마다 **「Open chat」**(그 인물 방) ·
+  `my_story_chat_opened { characterId, message }`, 막 올린 뒤 「Friends usually reply within an hour.」, Seen by, 올리기 창, 지우기 문구
+  「Your card and the N replies on it will be removed. Messages in your chats stay …」. 이벤트 이름은 아홉 → 여덟.
+- 앱 계약은 `@libitums/companion-contract` my-stories의 타입을 `import type`으로 잇는다(번들에 zod 없음, ADR-0132). 사진 · 확인 중 스토리는
+  건너뛴다(사진 화면은 다음 단계).
+- 문구는 여덟 언어(en · es · id · ja · my · th · vi · zh-TW — zh-TW 표를 새로 만듦, 원어민 검수 필요).
+
+#### 서버에 요청하는 모양 — 덕수쌤 스토리 퀴즈(시안 21 ~ 23)
+
+앱은 아래 칸을 **선택 칸**으로 읽는다. 칸이 없으면 퀴즈 표시가 하나도 없다(지금 서버에서 회귀 0). 엽전 차감 · 무료 판정 · 정답 판정 ·
+친밀도는 서버 몫이고 앱은 표시만 한다.
+
+1. **기록 읽기(`companion_list_messages`)의 메시지에 `meta`를 싣는다** — `companion.message_json`에 공개 칸만 골라 담은 객체, 없으면 `null`
+   (내부 칸 `replacedBy` · 사용량 · 모델 이름은 싣지 않는다):
+
+   ```json
+   { "meta": { "angle": "quiz", "myStoryId": "<uuid>", "quiz": { … } } }
+   ```
+
+2. **퀴즈 반응** — 덕수쌤(`duksu`)의 반응 메시지(`role` assistant · `origin` `story_reaction`)에 지금처럼 `meta.angle = "quiz"` ·
+   `meta.myStoryId`(20261228140000이 이미 저장), 그리고 **무료 답 신호 `meta.quiz.freeAnswer = true`**:
+
+   ```json
+   { "meta": { "angle": "quiz", "myStoryId": "<uuid>", "quiz": { "freeAnswer": true } } }
+   ```
+
+   **앱은 `freeAnswer === true`일 때만** 「Quiz answer is free」를 띄우고 보내기 관문을 건너뜁니다. 지금 서버(#592, 2026-11-25 main)는 퀴즈 각도를
+   덕수쌤에게만 배정할 뿐(첫째 자리 word · quiz 또는 둘째 자리 question · quiz · together) 무료 답 · 정답 판정이 없어 실제로 엽전을
+   받으므로, `angle`만 있는 반응은 퀴즈 표시 없이 보통 반응으로 다룹니다. 퀴즈 반응이 첫째 · 둘째 어느 자리로 오든 앱은 위치를 가정하지 않습니다
+   (대화 기록 순서대로 마지막 퀴즈 반응 뒤의 내 글만 봄).
+3. **내 답** — 퀴즈 반응 뒤 내 다음 글이 무료로 받아들여졌으면 그 user 메시지의 `meta.quiz`:
+
+   ```json
+   { "quiz": { "free": true, "attempt": 1, "result": "hint" } }
+   ```
+
+   - `free`: `true`일 때만 앱이 퀴즈 답으로 본다(엽전을 낸 글은 칸을 두지 않거나 `false`).
+   - `attempt`: `1`(퀴즈 반응 뒤 첫 답) · `2`(힌트 뒤 마지막 답). 다른 값은 무시.
+   - `result`: 판정이 끝나면 `"correct"`(그 단어 · 활용형이 들어 있음) · `"hint"`(1번째 틀림 — 다음 한 통 무료) · `"revealed"`(2번째 틀림 —
+     정답 공개, 끝). 그 턴 안에서 정해 기록에 남긴다. 모르는 값 · 없음 = 아직 판정 전(앱은 「다음 답 무료」를 끈다).
+4. **음성 선물은 없다**(사용자 결정 2026-11-25) — `meta.quiz.gift` · 무료 음성 줄을 요청하지 않고, 앱도 읽지 않는다. 맞힌 뒤 앱은 「Correct! You and {name} got closer」만 그린다.
+5. 앱의 「다음 답 무료」 판정(`story-quiz.ts` `quizFreeOf`): 퀴즈 반응 뒤 내 글이 없으면 1번 무료, 내 1번 답의 `result`가 `hint`이면 2번(마지막)
+   무료, 그 밖(판정 전 · `correct` · `revealed` · 퀴즈 표시 없는 내 글)은 무료 아님. 이 동안 앱은 보내기 관문(체험 · 엽전)을 건너뛰고
+   `chat_message_sent { paid: false, cost: "0" }`만 낸다 — **서버도 같은 규칙으로 차감하지 않아야** 앱의 엽전 표시와 어긋나지 않는다.
+6. 무료 퀴즈 답의 턴이 끝나면 앱이 기록을 한 번 다시 읽는다(판정만 — 음성은 다시 묻지 않음, SSE에는 퀴즈 칸이 없어도 된다).
+
+#### 서버에 요청하는 모양 — 스토리 만들기: 시작 고르기 + 바탕 위 얹기(시안 26 ~ 28, 사용자 결정 2026-11-25)
+
+앱은 아래를 **선택 칸**으로 읽습니다. 칸이 없으면 지금 서버(word · card)처럼 동작합니다(회귀 0).
+
+1. **`companion_my_stories` 응답에 `kinds`** — 이 사람이 지금 올릴 수 있는 종류:
+
+   ```json
+   { "enabled": true, "keep": true, "stories": [], "window": { … }, "kinds": ["word", "card", "text"] }
+   ```
+
+   - 값: `"word"` · `"card"` · `"text"` · `"photo"`. 모르는 값은 버립니다. **칸이 없으면 `["word", "card"]`**.
+   - `text`가 있어야 앱이 Aa(바탕 위 글 상자 — 교정 없음)와 스티커 여럿(최대 8 — `MY_STORY_OVERLAY_MAX`)을 켭니다. 없으면 바탕 위 스티커 **하나**, 글 없이 그 하나만 있을
+     때 지금의 `companion_post_my_story`(word · card)로 올립니다.
+   - `photo`가 있어도 이 앱 판은 사진 업로드 · 검수 화면이 없어 Camera · 최근 사진을 아직 그리지 않습니다(다음 단계).
+2. **글 스토리 올리기 — `POST /functions/v1/companion-my-story`**, 사진 `post`와 같은 action에서 `image_path` 대신 `background`:
+
+   ```json
+   {
+     "action": "post",
+     "client_id": "<uuid>",
+     "background": "orange",
+     "ko": "오늘 처음 김치찌개 만들었어",
+     "overlays": [
+       { "kind": "text", "ko": "오늘 처음 김치찌개 만들었어", "roman": "oneul cheoeum gimchijjigae mandeureosseo",
+         "color": "brown", "x": 0.5, "y": 0.3, "scale": 0.8, "rotation": 0 },
+       { "kind": "word", "ko": "찌개", "roman": "jjigae", "meaning": "stew",
+         "word": { "episodeId": "u05", "ref": "voca:jjigae" },
+         "x": 0.5, "y": 0.55, "scale": 1, "rotation": -4 }
+     ],
+     "lang": "en",
+     "tz_offset_min": 540
+   }
+   ```
+
+   - `background`: `"orange"` · `"green"` · `"blue"` · `"purple"`(색 값은 앱이 정함).
+   - `ko`: 한국어 한 줄. 글 없이 스티커만이면 빈 글(`""`) — 그때 overlays가 1개 이상.
+   - **교정은 없습니다**(사용자 결정 2026-11-25) — `ko`는 사용자가 쓴 글 그대로이고, 앱은 `companion-my-story` `draft`를 부르지 않습니다. 요청에
+     `meaning` · `original`을 싣지 않습니다. **뜻 줄(`meaning`)은 서버가 반응을 만들 때 채우거나 비워 둡니다**(앱은 없으면 뜻 줄을 그리지 않음).
+   - `overlays`: 계약 `myStoryOverlaySchema` 그대로(위치 · 크기는 0 ~ 1 비율, 가운데 기준, 회전은 도), 최대 8 — **글 상자(Aa)도 하나의 overlay**
+     (`kind: "text"`, `ko` · **앱이 만든 `roman`(`romanizeKorean`)**, 그리고 서버에 요청하는 새 선택 칸 **`color`: `"brown"` · `"black"` · `"white"` · `"orange"`**). 글 상자를
+     키우고 줄이면 글자도 같은 비율로 바뀌며 그 값은 `scale`에 그대로 실립니다(줄바꿈은 다시 흐르지 않음). 요청의 `ko`는 그 글 상자의 글과 같습니다.
+   - **검수는 이 올리기 요청 안에서만** 합니다. 막힌 글 = `{ "result": "text_blocked" }` → 앱은 「This text can't be shared. Try different words.」
+     위기 신호 = `{ "result": "crisis", "resources": [{ "name", "phone"?, "url"?, "hours"? }] }`(대화 턴의 `crisis`와 같은 기관 모양) → 앱은 올리지 않고
+     기존 위기 안내 카드(ADR-0125 `ChatCrisisCard`)를 Share 위에 띄웁니다.
+   - 응답은 `myStoryResponseSchema`(`result` · `story` · `window`). 앱이 가르는 `result`: `ok`(+ `story`) · `window_used`(+ `window`) ·
+     `daily_limit` · `off` · `text_blocked` · `crisis`(+ `resources`). 그 밖은 실패로 봅니다.
+   - 창 · 24시간 상한은 다른 스토리와 같이 셉니다. 사진과 달리 연령 제한은 두지 않는 것으로 가정했습니다(사용자 메모 「미성년 제한 없음(사진만)」).
+3. **읽기의 글 스토리** — `companion_my_stories`의 스토리:
+
+   ```json
+   { "id": "<uuid>", "kind": "text", "word": null, "ko": "…", "roman": "", "meaning": "…", "example": null,
+     "background": "orange", "overlays": [ … ], "postedAt": "…", "expiresAt": "…", "reactions": [], "seenBy": [] }
+   ```
+
+   `background`가 없거나 모르는 값이면 앱은 `orange`로 그립니다. 반응 · Seen · 창은 다른 스토리와 같습니다.
+4. **Aa(시안 29 · 30)** — 바탕 위 점선 상자에서 바로 쓰고(글자색 넷 · Done) Done이면 상자가 바탕 위 요소가 되며 Share가 바로 켜집니다. 상자는 스티커와 같은
+   변환(끌기 · 두 손가락 · 모서리 손잡이)으로 크기를 바꾸면 글자도 같은 비율로 바뀌고, 다시 누르면 고쳐 씁니다.
+
+#### 스스로 정한 것
+
+- Open chat은 방을 열기만 하고 `messageId`로 스크롤하지 않는다 — 방 로그는 늘 끝으로 따라가고 반응은 최근 메시지다.
+- 친구 0명 판정은 앱 근사(열린 방 중 대화가 있는 방이 하나도 없음). 서버 판정(내가 보낸 메시지가 있는 대화)과 다를 수 있다.
+- 창 시트의 칸 경계(4 · 12 · 18시)는 서버 기본값을 앱에 고정했다 — 서버가 `my_story_rules`로 바꾸면 시트의 시각만 어긋난다(창 판정은 서버).
+  지난 칸의 「올렸음」은 스토리 목록(24시간 안은 늘 있음)으로 본다.
+- 퀴즈 표시는 덕수쌤으로 거르지 않는다 — 서버가 퀴즈 각도를 덕수쌤에게만 주므로 무료 신호(`quiz.freeAnswer`)가 있는 메시지면 그린다.
+- 위기 신호(`crisis`)는 `my_story_post_failed { reason: "crisis" }`로 남긴다(이벤트 이유 값 하나 추가).
+- 글 스토리 보기의 글 상자는 `roman`(앱이 만든 것)을 작은 줄로, `meaning`은 서버가 채웠을 때만 그린다.

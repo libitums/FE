@@ -89,7 +89,8 @@ const rowAvatars = (): (string | null)[] =>
       [],
   ).map((el) => el.getAttribute("data-testid"));
 
-test("FI1. 서버가 보인 친구가 줄 맨 앞에 서고, 시트에 정본의 소개 · 직업 · 나이 · MBTI · 첫 말이 선다", async () => {
+// ⟨ADR-0198⟩ 첫 말 칸은 목소리 견본 대본이 대신합니다(첫 말은 방을 열면 첫 메시지로 옵니다).
+test("FI1. 서버가 보인 친구가 줄 맨 앞에 서고, 시트에 정본의 소개 · 직업 · 나이 · MBTI · 견본 대본이 선다", async () => {
   serverRemote(BOTH, { birthYear: 1990, adultAck: false });
   await openMessenger();
   expect(rowAvatars().slice(0, 2)).toEqual([ids.avatar("seoyeon"), ids.avatar("daeun")]);
@@ -100,7 +101,10 @@ test("FI1. 서버가 보인 친구가 줄 맨 앞에 서고, 시트에 정본의
   expect(screen.getByTestId(ids.sheetTags).textContent).toBe(
     "University student (Computer Science, 3rd year)23 years oldINFP",
   );
-  expect(screen.getByTestId(ids.sheetOpening).textContent).toContain("안녕하세요! 송다은이에요.");
+  expect(screen.getByTestId(ids.sheetOpening).textContent).toContain(
+    "송다은이에요! 외국인 친구 처음이에요 ㅎㅎ 대박!",
+  );
+  expect(screen.getByTestId(ids.sheetVoice).textContent).toBe("Hear voice");
 });
 
 test("FI2. 성인 · 동의 없음 · open 친구 → Get closer → Sounds good: 동의 RPC 후 방이 열리고 해금 저장 · 토스트", async () => {

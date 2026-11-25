@@ -2,7 +2,10 @@
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 import { entryPathEventExamples, entryPathEventNames } from "./entry-path-events.test-support";
 import { planEventExamples } from "./purchase-intent.test-support";
-import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
+import {
+  suggestedFriendEventExamples,
+  suggestedFriendEventNames,
+} from "./suggested-friend-events.test-support";
 import { friendStoryEventNames } from "./friend-story-events.test-support";
 import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
 import {
@@ -82,11 +85,7 @@ export const allEventNames = [
   "plan_selected",
   "purchase_intent",
   "shop_tab_switched",
-  "suggested_friend_viewed",
-  "suggested_friend_opened",
-  "suggested_friend_added",
-  "early_access_tapped",
-  "early_access_completed",
+  ...suggestedFriendEventNames,
   ...friendStoryEventNames,
   ...chatPushAskEventNames,
   "pack_purchased",

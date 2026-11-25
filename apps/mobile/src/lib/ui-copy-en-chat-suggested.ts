@@ -25,6 +25,18 @@ export const messengerChatSuggestedEn: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `LIMITED · ${days}d ${hours}h`,
   added: (name) => `${name} added to your chats`,
   addFailed: (name) => `Couldn't add ${name}. Try again.`,
+  voice: {
+    hear: "Hear voice",
+    pause: "Pause",
+    resume: "Resume",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `Hear ${name}'s voice`
+        : phase === "playing"
+          ? `Pause ${name}'s voice`
+          : `Resume ${name}'s voice`,
+    unavailable: "Voice sample unavailable",
+  },
   adultAck: {
     title: (name) => `Get closer with ${name}?`,
     body: (gender) =>

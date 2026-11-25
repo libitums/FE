@@ -185,3 +185,14 @@ export function myTextLine(
 export function spokenOf(separator: string, parts: readonly string[]): string {
   return joinSpoken(parts, separator);
 }
+
+/** 목록이 보이는 동안 스토리를 다시 읽는 주기(ADR-0178 「다시 읽기」) — 5분. */
+export const STORY_RELOAD_MS = 5 * MINUTE_MS;
+
+/** 다시 읽은 뒤의 목록 — 못 읽음(null)이면 있던 목록을 지킵니다(첫 읽기 실패는 null 그대로, ADR-0178 「다시 읽기」). */
+export function storiesAfterLoad(
+  previous: readonly FriendStory[] | null,
+  loaded: readonly FriendStory[] | null,
+): readonly FriendStory[] | null {
+  return loaded ?? previous;
+}

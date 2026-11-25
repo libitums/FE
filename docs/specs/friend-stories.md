@@ -73,7 +73,9 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U11 분석 이름 수(넷 추가) · Airbridge로 보내지 않음.
 - FS-U12 본 것 저장(기기): 계정마다 열쇠, 망가진 값은 빈 표시.
 - FS-U13 문구표 일곱 언어가 같은 칸을 가짐(문구 테스트 지원 함수).
-- FS-U15 `storyOrderOf` · `byLatestStory`(`story-order.unit.test.ts`, D3 개정): 친구 · 안 만난 친구를 한 줄로 최신 순, 본 것은 순서에 안 씀, 같은 시각은 인물 id 순(입력 순서 무관),
+- FS-U15 `storiesAfterLoad`(ADR-0178 「다시 읽기」): 읽으면 새 목록(빈 목록 포함), null이면 있던 목록, 첫 실패는 null. `STORY_RELOAD_MS` = 5분.
+- FS-U16 결선 `subscribeReload` · `notifyFriendStoriesReload`: 알리면 건 리스너가 불리고, 뗀 뒤로는 불리지 않음.
+- FS-U17 `storyOrderOf` · `byLatestStory`(`story-order.unit.test.ts`, D3 개정): 친구 · 안 만난 친구를 한 줄로 최신 순, 본 것은 순서에 안 씀, 같은 시각은 인물 id 순(입력 순서 무관),
   한 인물은 그 최신 스토리로, 스토리 없는 추천은 빠지고 입력을 바꾸지 않음.
 
 ### 2.2 ui (앱)
@@ -87,6 +89,11 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI6 시스템 뒤로 = 닫기. covered면 낭독에서 가림.
 - FS-UI7 목록 화면: 스토리 포트가 없거나 비면 「Meet new friends」 줄 그대로, 스토리가 있으면 스토리 줄. 목록 줄 「New story · …」 탭 → 보기.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
+- FS-UI14 목록이 서 있는 동안 5분마다 다시 읽어 새 스토리가 줄에 섬, 목록을 내리면 타이머 멈춤(가짜 타이머).
+- FS-UI15 포트의 다시 읽기 신호에 다시 읽음, 목록을 내리면 리스너를 뗌.
+- FS-UI16 보기가 열려 있으면 다시 읽은 목록을 보류(줄 그대로), 닫은 뒤 반영.
+- FS-UI17 다시 읽기 실패(null · 던짐)면 있던 줄을 지킴.
+- FS-UI18 `useMessengerRefresh`: `contentSyncOpportunity`에 스토리 목록에도 다시 읽기를 알림.
 
 ### 2.3 integration (앱)
 
@@ -97,7 +104,9 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
   · Android `PushTargetJsonTest`(불리언 `story` 옮김).
 - FSI6 스토리 RPC 실패 · 손님 → 추천 줄 그대로, 오류 없음.
-- FSI7 실제 앱 줄 순서 = 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 첫 장 · 다음 장이 같은 순서(D3 개정).
+- FSI7 목록을 연 뒤 올라온 스토리: 다른 탭 → 채팅 탭으로 돌아오면 목록이 다시 마운트돼 다시 읽고 줄에 섬(마운트 읽기가 덮음을 고정).
+- FSI8 목록을 연 뒤 올라온 스토리: 앱이 앞으로 오면(`contentSyncOpportunity`) 그 자리에서 다시 읽고 줄에 섬.
+- FSI9 실제 앱 줄 순서 = 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 첫 장 · 다음 장이 같은 순서(D3 개정).
 
 ### 2.4 서버
 

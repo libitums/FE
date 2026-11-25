@@ -6,7 +6,7 @@
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 스토리 줄 · 보기의 인물 순서만 바꾸는 변경이다(ADR-0178 D3 개정)
 - 기능 PR: `feat/story-row-order`(#607)
 - 대상 commit: origin/main 81f9d5fc 위의 변경
-- 기기: 확인하지 않음 — 기기 절차는 docs/e2e/friend-stories.md FS-E13
+- 기기: 확인하지 않음 — 기기 절차는 docs/e2e/friend-stories.md FS-E16
 - OS: 해당 없음(계측 없음)
 - Lynx SDK: 4.0.1
 - 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 5,801,581 bytes(구분 선 없앤 뒤), 천장 5,850,000 안
