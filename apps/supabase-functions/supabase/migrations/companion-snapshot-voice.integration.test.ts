@@ -198,7 +198,7 @@ test("SV1. 설정 기본값 · 버킷 · 캐릭터 설정 · 학습자 뒷모습
     voice_model: "'eleven_v3'::text",
   });
   const buckets = await db.admin.query(
-    "select id, public, allowed_mime_types from storage.buckets order by id",
+    "select id, public, allowed_mime_types from storage.buckets where id like 'companion-%' order by id",
   );
   expect(buckets.rows).toEqual([
     {

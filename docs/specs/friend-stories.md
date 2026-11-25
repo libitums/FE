@@ -30,6 +30,22 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - chat-send 요청 선택 칸 `story_id`(uuid). Edge Function `companion-stories`. `send-push` companion-chat 목적지에 `story: true`.
 - pg_cron `supabase/cron/friend-stories.sql`(매시 5분).
 
+### 1.3 AI 생성 (ADR-0192) — 서버만, 화면은 아직 ⟨2026-11-24⟩
+
+- 마이그레이션 `20270105120000_friend_story_generation.sql` · Edge Function `companion-story-studio`(주간 기획) · `companion-story-images`(그림 일꾼) ·
+  예약 `supabase/cron/friend-story-images.sql`. 앱 계약(`companion_friend_stories()`의 모양)은 **바뀌지 않았다** — 승인된 초안이 묶음의 그날짜 줄이 된다.
+- 운영 도구(ops-dashboard 「스토리 스튜디오」)가 서버 키로 부른다. 자세한 것은 함수 앱 README 「친구 스토리 — AI 생성」.
+
+**화면이 따라올 것**(서버 스위치 `story_schedule = 'cadence'`를 켜기 전에):
+
+| 무엇 | 지금 화면 | 바뀌는 것 |
+| --- | --- | --- |
+| 인물마다 늘 스토리가 하나 | 스토리 줄 · 목록 줄이 인물마다 살아 있는 스토리를 기대 | 차례가 아닌 날에는 그 인물의 스토리가 **없다**(덕수쌤 매일 · 윤경 주 1회 · 나머지는 사흘에 한 번). 응답에 없는 인물은 줄에서 빠지면 된다 |
+| 단어 알약(「Save word」) | 묶음 스토리는 거의 다 단어가 있음 | 덕수쌤이 아닌 인물의 스토리는 대부분 `word: null` — 알약 없이 그린다. `word`에 `ko` 칸이 더 올 수 있다(모르는 칸은 무시) |
+| 그림 | 가로 · 세로가 섞인 콘텐츠 그림 | 생성한 그림은 세로 2:3(1024x1536) webp, 경로는 `content/images/friend-stories/<인물>/…` — 지금 해석기 그대로. 셀카 · 남이 찍어 준 컷 · 인물 없는 컷(손까지)이 3 : 2 : 5로 섞인다 |
+| 잠긴 인물의 스토리(ADR-0192 D7) | 추천 대상 · 열린 방의 인물만 줄에 섬 | 아직 만나지 않은 이야기 인물의 스토리도 줄에 서고, 답하려고 하면 해금 안내(ADR-0162의 잠긴 인물 시트)를 띄운다. 서버 읽기는 지금도 해금으로 거르지 않는다 |
+| 한 줄의 길이 | 묶음은 20 ~ 30자 | 최대 60자(한두 문장). 로마자는 그만큼 길다 |
+
 ## 2. 계층별 테스트 계획
 
 | 계층 | 적용 | 무엇 |
