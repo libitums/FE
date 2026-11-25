@@ -2,6 +2,7 @@
 
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { LocalizedLine } from "./friend-catalog.contract";
+import type { MineRowSlot, MyStoriesPort } from "./my-stories.contract";
 import type { SuggestedFriend } from "./suggested-friends";
 
 /** 스토리의 한국어 한 줄 — 한 줄은 번역하지 않고 뜻만 언어별로 둡니다(en 필수). */
@@ -63,6 +64,8 @@ export type FriendStoriesPort = {
   readonly romanization?: () => boolean;
   /** 앱이 앞으로 오면 부를 리스너를 겁니다 — 돌려준 함수로 뗍니다. 없으면 그 신호로는 다시 읽지 않습니다(ADR-0178 「다시 읽기」). */
   readonly subscribeReload?: (listener: () => void) => () => void;
+  /** 내 스토리(ADR-0194) — 없으면 「+」가 서지 않습니다. */
+  readonly mine?: MyStoriesPort;
 };
 
 /** 내 친구(열린 방)의 스토리 칸 — 본 것은 회색 고리. */
@@ -109,6 +112,11 @@ export type ChatStoryQuote = {
   readonly imagePath: string | null;
   /** 올린 시각(ms) — 모르면 null(「Story」만). */
   readonly postedAt: number | null;
+  /**
+   * 무엇의 인용인가(ADR-0194) — 없거나 friend면 친구 스토리, mine이면 친구 반응에 답한 내 스토리(단어), deleted면 지운 내 스토리
+   * (「Deleted story」).
+   */
+  readonly kind?: "friend" | "mine" | "deleted";
 };
 
 /** 보기 → 대화방 넘김(ADR-0178 D5). `text`가 있으면 곧바로 보내고, null이면 입력 줄 위 인용 띠로 붙입니다. */
@@ -168,6 +176,8 @@ export type FriendStoriesCopy = {
 
 export type FriendStoriesRowProps = {
   readonly row: StoryRow;
+  /** 내 스토리 칸(ADR-0194) — 「+」와, 살아 있는 내 스토리가 있으면 「Your story」. 꺼져 있으면 없음. */
+  readonly mine?: MineRowSlot | null;
   readonly now: number;
   readonly onOpenFriend: (entry: FriendStoryEntry) => void;
   readonly onOpenUnmet: (entry: UnmetStoryEntry) => void;

@@ -139,3 +139,14 @@ export function catalogWithOffers(
     }),
   };
 }
+
+/**
+ * 지금 판정으로 본 그 인물 — 스토리 보기처럼 연 때의 추천을 들고 있는 곳이 누를 때 다시 묻습니다. 추천에 없으면(방이 열림 — 이미 친구) null.
+ * 먼저 만나기를 산 뒤에도 연 때의 「locked」를 믿으면 같은 시트(Chat now · 100)를 다시 엽니다(2026-11-25 보고).
+ */
+export function currentFriendOf(
+  list: readonly SuggestedFriend[],
+  characterId: string,
+): SuggestedFriend | null {
+  return list.find((friend) => friend.character.id === characterId) ?? null;
+}

@@ -117,7 +117,7 @@ export function AppSession({
   // 탭 루트 화면 안 겹침 레이어 — 화면이 알려 오고(`onScreenLayerChange`) 그 동안 전역 머리가 낭독에서 빠집니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false); // 더보기 메뉴 — 뒤 화면 낭독 가림(ADR-0169)
-  const learningTrail = useLearningTrail(); // 단어장 · 추천 신호(ADR-0169)
+  const learningTrail = useLearningTrail(catalogProgress, episodeContent.catalog); // 단어장 · 추천 신호 · 끝낸 레슨 단어 채움(ADR-0169)
 
   // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
   const catalog = { episodeContent, catalogSections, catalogProgress };

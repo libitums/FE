@@ -26,6 +26,18 @@ export const messengerChatSuggestedEs: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `LIMITADO · ${days} d ${hours} h`,
   added: (name) => `${name} se agregó a tus chats`,
   addFailed: (name) => `No se pudo agregar a ${name}. Inténtalo de nuevo.`,
+  voice: {
+    hear: "Escuchar voz",
+    pause: "Pausa",
+    resume: "Reanudar",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `Escuchar la voz de ${name}`
+        : phase === "playing"
+          ? `Pausar la voz de ${name}`
+          : `Reanudar la voz de ${name}`,
+    unavailable: "Muestra de voz no disponible",
+  },
   adultAck: {
     title: (name) => `¿Quieres acercarte más a ${name}?`,
     body: (gender) =>

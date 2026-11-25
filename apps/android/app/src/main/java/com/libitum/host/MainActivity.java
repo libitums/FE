@@ -59,6 +59,8 @@ public final class MainActivity extends Activity {
   private final PushTokenRefreshRelay.Listener tokenRefreshListener = this::sendPushTokenRefreshed;
   private ContentSyncSignal contentSync;
   private ConnectivityManager.NetworkCallback networkCallback;
+  /** 내 스토리 사진 고르기 · 찍기(ADR-0199). StoryPhotoModule이 메인 스레드에서 쓴다. */
+  StoryPhotoPicker storyPhotos;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -104,6 +106,9 @@ public final class MainActivity extends Activity {
     ChatStreamModule.setSink(this::sendChatStreamEvent);
     // 위기 안내의 전화 · 웹 주소를 시스템에 넘긴다(ADR-0125). tel: 번호 · https만.
     builder.registerModule("ExternalLinkModule", ExternalLinkModule.class, this);
+    // 내 스토리 사진 — 고르기 · 찍기 · 줄이기 · 올리기(ADR-0199). 사진 고르기는 Photo Picker, 찍기는 카메라 앱(권한 선언 없음).
+    storyPhotos = new StoryPhotoPicker(this);
+    builder.registerModule("StoryPhotoModule", StoryPhotoModule.class, this);
     // 측정 빌드의 성능 기록(ADR-0105 D2). JS가 PUBLIC_PERF_PROBE=1일 때만 부른다.
     builder.registerModule("PerfLogModule", PerfLogModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
@@ -409,7 +414,14 @@ public final class MainActivity extends Activity {
     if (soundEffects != null) soundEffects.release();
     if (speechRecognition != null) speechRecognition.destroy();
     if (pushNotifications != null) pushNotifications.destroy();
+    if (storyPhotos != null) storyPhotos.destroy();
     super.onDestroy();
+  }
+
+  // 사진 고르기 · 찍기 결과(ADR-0199). plain Activity라 registerForActivityResult 대신 여기로 온다.
+  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (storyPhotos != null && storyPhotos.onActivityResult(requestCode, resultCode, data)) return;
+    super.onActivityResult(requestCode, resultCode, data);
   }
 
   @Override public void onRequestPermissionsResult(

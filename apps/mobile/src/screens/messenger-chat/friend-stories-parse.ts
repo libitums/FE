@@ -91,6 +91,22 @@ export function friendStoriesFrom(body: string | null): readonly FriendStory[] |
 /** 내 글의 스토리 인용(`message_json.story`, ADR-0178 D5) — id · 인물 · 한 줄이 없으면 빈 칸(인용 없음). 그림 · 시각은 없어도 됩니다. */
 export function storyQuoteOf(raw: unknown): { readonly story?: ChatStoryQuote } {
   if (!isRecord(raw)) return {};
+  // 지운 내 스토리(ADR-0194) — 인물만 남습니다(「Deleted story」).
+  if (raw["kind"] === "deleted") {
+    const who = text(raw["characterId"]);
+    return who === null
+      ? {}
+      : {
+          story: {
+            storyId: "",
+            characterId: who,
+            line: "",
+            imagePath: null,
+            postedAt: null,
+            kind: "deleted",
+          },
+        };
+  }
   const storyId = text(raw["id"]);
   const characterId = text(raw["characterId"]);
   const line = text(raw["line"]);
@@ -102,6 +118,7 @@ export function storyQuoteOf(raw: unknown): { readonly story?: ChatStoryQuote } 
       line,
       imagePath: text(raw["imagePath"]),
       postedAt: time(raw["postedAt"]),
+      ...(raw["kind"] === "mine" ? { kind: "mine" as const } : {}),
     },
   };
 }

@@ -15,7 +15,7 @@ import { crisisResourceSchema } from "./sse-events";
 export const myStoryWordSchema = z.object({ episodeId: z.string(), ref: z.string() });
 
 export const myStoryKindSchema = z.enum(["word", "card", "photo", "text"]);
-/** 글 스토리의 바탕색(20270107120000). */
+/** 글 스토리의 바탕색(20270107130000). */
 export const myStoryBackgroundSchema = z.enum(["orange", "green", "blue", "purple"]);
 /** `checking`: 사진 검수가 제때 끝나지 않아 다시 보는 중 — 올린 사람에게만 보이고 Seen · 반응이 아직 없습니다. */
 export const myStoryStatusSchema = z.enum(["checking", "live"]);
@@ -104,7 +104,7 @@ export const myStoriesResponseSchema = z.object({
   stories: z.array(myStorySchema),
   window: z.optional(z.nullable(myStoryWindowSchema)),
   /**
-   * 지금 올릴 수 있는 종류(20270107120000 · 20270109120000). text(색 바탕)는 글 스위치, photo는 사진 스위치 + 성인. 단어 카드(word · card)는
+   * 지금 올릴 수 있는 종류(20270107130000 · 20270109120000). text(색 바탕)는 글 스위치, photo는 사진 스위치 + 성인. 단어 카드(word · card)는
    * 「색 + 단어」로 바뀌어 더 오지 않습니다. 없으면(옛 서버) word · card로 봅니다.
    * 모르는 새 종류가 와도 무시합니다.
    */

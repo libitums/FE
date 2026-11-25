@@ -1,6 +1,7 @@
 # ADR-0198 — 프로필 시트에 인물 목소리 견본을 넣고, 첫 말 칸을 견본 대본으로 바꾼다
 
-- 상태: **제안 — 앱 변경 없음.** 음성 파일 아홉 개는 운영 `content` 버킷에 올라가 있지만 앱은 아직 읽지 않는다. 정본 데이터는
+- 상태: **채택 — 사용자 지시 2026-11-25**(「아바타 클릭할 때 바텀시트 뜨는 화면에 음성 프로필도 추가했는데 반영해줘」). 아래 「앱으로 만들 때의
+  범위」 그대로 앱에 만들었다(브랜치 `feat/profile-voice-sample`, 아래 「적용 기록」). 음성 파일 아홉 개는 운영 `content` 버킷. 정본 데이터는
   [`docs/content/companion-voice-intros.json`](../content/companion-voice-intros.json).
 - 날짜: 2026-11-25. 브랜치 `hyesungKomet/profile-voice-proposal`.
 - **사용자 결정**(2026-11-20 ~ 25, 대화로): 프로필에 인물 목소리 견본을 넣는다 · 견본은 짧게(한 줄 30자 이내) · ㅋㅋ · ㅎㅎ 같은 웃음을 섞는다 ·
@@ -103,6 +104,28 @@ ja는 가타카나. 인물 칸 `LocalizedLine`(main은 th · my · zh-TW 칸이 
 - 테스트(unit: 정본과 앱 표 일치 · 여덟 언어 비지 않음 / ui: 단추 상태 · 첫 말 칸 분기 · 스위치 / integration: 시트 열기) · e2e 문서
   (`docs/e2e/suggested-friends.md`) · 성능 보고서 · ADR-0029.
 - 대화방 머리 이름을 눌러 같은 시트를 읽기 전용으로 여는 것(이전 시도 5ec1a57d에 있었다)은 **이 제안에 넣지 않는다** — 따로 정한다.
+
+## 적용 기록 ⟨2026-11-25, `feat/profile-voice-sample`⟩
+
+결정을 바꾸지 않는다. 만든 모양과 스스로 정한 기본값:
+
+- **D1 인물 칸** — `FriendProfile.voiceSamplePath` · `voiceSampleScript`(선택 칸). 표는 `companion-voice-samples.ts`(정본에서 옮김, 단위 테스트 VS1이
+  id · 경로 · 한글 · 로마자 · 여덟 언어 뜻을 맞춤)이고 추천 친구 넷 · 이야기 다섯 칸에 얹는다. 한글 대본은 학습 내용 허용 선언에 더했다.
+- **D2 단추** — `ProfileVoiceButton`: 본문 첫 줄(태그 위) 가운데 outline 단추, 재생 중 일시정지 아이콘. 재생은 `lib/audio.ts`(호스트
+  `AudioPlaybackModule`, 1.0배 — 대화방 음성의 0.85배는 쓰지 않음: 견본은 고른 그대로 들려 준다). 주소는 목록 결선이 아바타와 같은 해석기
+  (`episodeContent.imageUrlOf` — 받아 둔 파일 → 원격 버킷)로 풀어 시트에 넘긴다. 못 틀면(주소 없음 · 모듈 없음) 단추는 Hear voice로 남고 아래
+  「Voice sample unavailable」. 시트가 닫히면(언마운트) 재생 중 · 멈춰 둠일 때만 `stopAudio`.
+- **연타 막기** — 받아들인 누름 뒤 400 ms 안의 누름은 버린다(`VOICE_TAP_GUARD_MS`). 시제품의 「첫 탭이 바로 일시정지」는 한 번 누름이 두 번
+  들어온 것으로 보고 막았다 — 단추는 바깥 view 하나만 `bindtap`을 가진다(안쪽 Button은 탭 처리 없음).
+- **「다른 소리가 시작되면 처음으로」** — 시트가 화면을 덮어 시트 밖에서 소리가 시작될 길이 없다. 재생 모듈에 상태 조회가 없어(ADR-0017 D3) 더
+  넓히지 않았다. 대신 다시 틀면 늘 처음부터(`play`)다.
+- **첫 말 칸** — 대본이 있으면 대본 + (스위치 켬) 정본 로마자 · 구분선 · 뜻 / (끔) 뜻 한 줄(`bubbleLinesOf`에 정본 `roman`을 줘 변환 함수를 타지
+  않음). 대본이 없는 인물은 지금처럼 첫 말 + 뜻 한 줄(스위치와 무관). 스위치 값은 목록 결선이 `more.romanization`으로 넘긴다.
+- **시트 props** — `SuggestedFriendSheetProps`에 선택 칸 `voiceSampleUrl` · `romanization`(생략하면 null · hidden)이 더해졌다. `model` 모양은 그대로.
+  `SuggestedFriendsPort`에 선택 칸 `voiceSampleUrl(path)` · `romanization()`.
+- **D4 이벤트** — `friend_voice_sample_played { characterId }`: 시트가 설 때마다 처음 재생이 시작된 한 번(이어 듣기 · 끝난 뒤 다시 듣기 · 못 틈은
+  내지 않음). PostHog만. ADR-0029에 적었다.
+- 문구(여덟 언어): `Hear voice` · `Pause` · `Resume` · 낭독 이름(`Hear <이름>'s voice` 등 자리마다) · `Voice sample unavailable`. 원어민 검수 전.
 
 ## 버린 대안
 
