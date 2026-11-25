@@ -38,6 +38,15 @@ type OpenSheet = { readonly model: SuggestedFriendSheetModel; readonly from: Fro
 
 const ALL: DirectoryFilter = { kind: "all" };
 
+/** 시트 인물의 목소리 견본 재생 주소(ADR-0198) — 견본이 없거나 포트가 못 풀면 null. */
+const voiceUrlOf = (
+  model: SuggestedFriendSheetModel,
+  port: SuggestedFriendsPort | undefined,
+): string | null => {
+  const path = model.character.voiceSamplePath ?? null;
+  return path === null ? null : (port?.voiceSampleUrl?.(path) ?? null);
+};
+
 export function useSuggestedFriends({
   port,
   rooms,
@@ -272,6 +281,8 @@ export function useSuggestedFriends({
           <SuggestedFriendSheet
             model={sheet.model}
             now={now}
+            voiceSampleUrl={voiceUrlOf(sheet.model, port)}
+            romanization={port?.romanization?.() === true ? "shown" : "hidden"}
             onStart={handleStart}
             onEarly={handleEarly}
             onClose={() => setSheet(null)}

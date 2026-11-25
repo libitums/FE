@@ -40,6 +40,11 @@ function learnerNameOf(wiring: ScreenWiring): string {
 export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListNotice | null) {
   const chat = wiring.messengerChat;
   const access = messengerAccessFor(wiring);
+  // 프로필 시트 목소리 견본(ADR-0198) — 아바타와 같은 해석기 · 로마자 스위치.
+  const view = {
+    contentUrlOf: wiring.episodeContent.imageUrlOf,
+    romanization: () => wiring.more.romanization === "shown",
+  };
   return (
     <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId: null }}>
       <MessengerListScreen
@@ -53,7 +58,9 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
         access={access}
         onSignIn={wiring.onSignIn}
         // 비회원 미리보기(ADR-0166)는 앱 인물 표만 — 서버 RPC 0.
-        friends={access === "preview" ? guestSuggestedFriendsPort() : suggestedFriendsPort()}
+        friends={
+          access === "preview" ? guestSuggestedFriendsPort(view) : suggestedFriendsPort(view)
+        }
         // 친구 스토리(ADR-0178) — 회원 메신저만. 손님 · 접근 불가는 서버 RPC 0(목록 화면이 한 번 더 거릅니다).
         stories={
           access === "open"
