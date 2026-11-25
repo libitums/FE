@@ -305,17 +305,21 @@ function typingKeyboard(height: number): void {
   );
 }
 
-test("MS-UI39. Aa 쓰는 동안 키보드가 오르면 글 상자를 키보드 위 보이는 자리로 — 키보드 높이만큼 아래를 비우고, 내리면 원래 자리", async () => {
+test("MS-UI39. Aa 쓰는 동안 키보드가 오르면 글 상자를 키보드 바로 위로(키보드 높이 + 틈), 내리면 원래 자리", async () => {
   await mount(fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] }));
   tapId(ids.create);
   tapId(ids.startBackground);
   tapId(ids.toolText);
-  const entry = () => screen.getByTestId(ids.textEntry).getAttribute("style") ?? "";
-  expect(entry()).toContain("padding-bottom: 0px");
+  // 글 상자 묶음(입력 칸의 상자 · 묶음)이 키보드 바로 위(키보드 높이 + 틈)에 섭니다.
+  const group = () =>
+    screen.getByTestId(ids.textInput).parentElement?.parentElement?.getAttribute("style") ?? "";
+  expect(group()).toContain("bottom: auto");
   act(() => typingKeyboard(336));
-  expect(entry()).toContain("padding-bottom: 336px");
+  expect(group()).toContain("position: absolute");
+  expect(group()).toContain("bottom: 348px");
   // 글자색 줄 · Done은 위에 그대로
   expect(screen.getByTestId(ids.textDone)).not.toBeNull();
   act(() => typingKeyboard(0));
-  expect(entry()).toContain("padding-bottom: 0px");
+  expect(group()).toContain("bottom: auto");
+  expect(group()).toContain("position: relative");
 });

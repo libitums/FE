@@ -14,6 +14,8 @@ import "./my-stories.css";
 const TEXT_MAX = 80;
 /** 위 안전 영역 아래 글자색 줄까지의 틈(px, 편집 위 줄과 같은 높이). */
 const TOP_GAP = 12;
+/** 키보드가 내려가 있을 때 글자색 줄 아래 글 상자까지의 틈(px, 시안 29). */
+const BOX_TOP = 96;
 /** 바탕 위 글 상자의 입력 칸 id(초점 주기). 한 화면에 하나뿐입니다. */
 const TYPING_INPUT_ID = "my-story-typing-input";
 
@@ -74,7 +76,7 @@ export function MyStoryTextEntry({
       className="my-story-typing"
       data-testid={ids.textEntry}
       event-through={false}
-      style={{ paddingTop: `${insets.top + TOP_GAP}px`, paddingBottom: `${keyboard}px` }}
+      style={{ paddingTop: `${insets.top + TOP_GAP}px` }}
     >
       <view className="my-story-typing-top">
         <view className="my-story-typing-colors" accessibility-label={copy.colors}>
@@ -115,7 +117,11 @@ export function MyStoryTextEntry({
       </view>
       <view
         className="my-story-typing-middle"
-        style={keyboard > 0 ? { flex: 1, justifyContent: "center", paddingTop: 0 } : undefined}
+        style={{
+          position: keyboard > 0 ? "absolute" : "relative",
+          bottom: keyboard > 0 ? `${keyboard + TOP_GAP}px` : "auto",
+          paddingTop: keyboard > 0 ? "0px" : `${BOX_TOP}px`,
+        }}
       >
         <view className="my-story-typing-box">
           <input

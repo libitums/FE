@@ -912,7 +912,8 @@
   flex-direction: column;
   align-items: center;
   align-self: stretch;
-  padding-top: var(--libitum-spacing-96);
+  left: 0;
+  right: 0;
 }
 
 .my-story-typing-box {
