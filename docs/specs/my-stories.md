@@ -1,6 +1,6 @@
-# 내 스토리 — 계약 · 계층별 테스트 계획 (ADR-0179)
+# 내 스토리 — 계약 · 계층별 테스트 계획 (ADR-0194)
 
-결정은 [ADR-0179](../adr/0179-my-stories.md)이 정본이다. 친구 스토리([spec](friend-stories.md)) 위에 쌓는다(PR 2). 사진은 없다.
+결정은 [ADR-0194](../adr/0194-my-stories.md)이 정본이다. 친구 스토리([spec](friend-stories.md)) 위에 쌓는다(PR 2). 사진은 없다.
 
 ## 1. 계약
 

@@ -1,4 +1,4 @@
--- 내 스토리 — 단어 · 카드(ADR-0179 내 스토리 · ADR-0191). 사진은 없다(ADR-0191 D11은 다음 단계). 친구 스토리(20261228120000) 위에 쌓는다.
+-- 내 스토리 — 단어 · 카드(ADR-0194 내 스토리 · ADR-0191). 사진은 없다(ADR-0191 D11은 다음 단계). 친구 스토리(20261228120000) 위에 쌓는다.
 -- 운영에 올라가기 전에 ADR-0191(사용자 결정 2026-11-24)대로 제자리에서 고쳐 썼다 — 반응은 그 인물 방의 채팅 메시지다.
 -- 1. 스위치(companion.settings): `my_stories`(올리기 · 읽기 · 지우기) · `story_reactions`(반응 예약 · 만들기) · `story_reaction_push`(반응 알림)
 --    — off(기본) · testers · on. `my_story_seen`(Seen by, 기본 켬). 규칙 수치는 `my_story_rules`(jsonb, 비면 아래 기본값).
@@ -77,7 +77,7 @@ create table companion.my_story_reactions (
   character_id text not null references companion.characters (id),
   rank integer not null check (rank in (1, 2)),
   -- word: 그 단어를 쓰거나 이어지게 · question: 가벼운 질문 · quiz: 뜻으로 묻는 작은 퀴즈 · together: 같이 하자 ·
-  -- react: 본 것에 대한 첫 반응(사진 스토리 — 20270104120000).
+  -- react: 본 것에 대한 첫 반응(사진 스토리 — 20270104130000).
   angle text not null check (angle in ('word', 'question', 'quiz', 'together', 'react')),
   due_at timestamptz not null,
   status text not null default 'scheduled' check (status in ('scheduled', 'claimed', 'done', 'failed', 'skipped')),
@@ -278,7 +278,7 @@ returns text language sql immutable as $$
 $$;
 revoke all on function companion.reaction_meaning(jsonb) from public;
 
--- 앱이 받는 스토리 한 건. `reactions`는 알람 → 메시지를 따라가 읽는다(모양은 ADR-0179 그대로 + messageId). `seenBy`는 시각이 된 줄만.
+-- 앱이 받는 스토리 한 건. `reactions`는 알람 → 메시지를 따라가 읽는다(모양은 ADR-0194 그대로 + messageId). `seenBy`는 시각이 된 줄만.
 create function companion.my_story_json(p_story companion.my_stories)
 returns jsonb language sql stable as $$
   select jsonb_build_object(

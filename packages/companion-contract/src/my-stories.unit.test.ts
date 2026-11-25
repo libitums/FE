@@ -42,7 +42,7 @@ test("MC1. 읽기 — 스토리 · 반응(메시지 id) · Seen by · 창, 꺼�
     myStoriesResponseSchema.safeParse({ enabled: false, keep: true, stories: [], window: null })
       .success,
   ).toBe(true);
-  // 초안 서버(ADR-0179)의 모양 — messageId · seenBy · window가 없어도 읽는다.
+  // 초안 서버(ADR-0194)의 모양 — messageId · seenBy · window가 없어도 읽는다.
   const { seenBy: _seenBy, ...draft } = story;
   const [{ messageId: _messageId, ...reaction }] = story.reactions;
   expect(

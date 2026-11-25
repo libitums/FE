@@ -1,4 +1,4 @@
-// 내 스토리(단어 · 카드 · 사진)의 앱 RPC · Edge Function 모양입니다(ADR-0179 내 스토리 · ADR-0191).
+// 내 스토리(단어 · 카드 · 사진)의 앱 RPC · Edge Function 모양입니다(ADR-0194 내 스토리 · ADR-0191).
 // - `companion_my_stories(p_tz_offset_min?)` — 살아 있는 것 + 보관함 · 보관 설정 · 지금의 올리기 창.
 // - `companion_post_my_story(…, p_tz_offset_min?)` — 올리기. 창마다 하나 · 24시간 안 세 개(서버 설정).
 // - `companion_delete_my_story(p_story_id | null = 모두)` · `companion_set_keep_my_stories(p_keep)`.
@@ -53,7 +53,7 @@ export const myStorySeenSchema = z.object({
 export const myStorySchema = z.object({
   id: z.uuid(),
   kind: myStoryKindSchema,
-  /** 사진 스토리 서버(20270104)부터 옵니다. 없으면 live입니다. */
+  /** 사진 스토리 서버(20270104130000)부터 옵니다. 없으면 live입니다. */
   status: z.optional(myStoryStatusSchema),
   /** 단어 · 카드 스토리의 단어입니다. 사진 스토리는 null입니다. */
   word: z.nullable(myStoryWordSchema),

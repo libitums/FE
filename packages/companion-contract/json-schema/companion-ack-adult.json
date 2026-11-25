@@ -9,9 +9,6 @@
       "type": "boolean"
     }
   },
-  "required": [
-    "ok",
-    "adultAck"
-  ],
+  "required": ["ok", "adultAck"],
   "additionalProperties": false
 }

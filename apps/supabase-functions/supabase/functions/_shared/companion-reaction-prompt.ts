@@ -15,7 +15,7 @@ export const REACTION_ANGLES: readonly ReactionAngle[] = [
 ];
 
 export type ReactionStory = {
-  /** photo(20270104): `ko`는 올린 사람이 붙인 한 줄, `scene`은 읽기 단계가 쓴 장면 설명(개인정보 없음), `hooks`는 말 걸 거리. */
+  /** photo(20270104130000): `ko`는 올린 사람이 붙인 한 줄, `scene`은 읽기 단계가 쓴 장면 설명(개인정보 없음), `hooks`는 말 걸 거리. */
   readonly kind: "word" | "card" | "photo";
   readonly ko: string;
   readonly roman: string;

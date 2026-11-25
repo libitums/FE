@@ -938,13 +938,13 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
 
-1. 마이그레이션 `20270105120000_friend_story_generation.sql`(20270104 **뒤**). 확인: `select story_schedule from companion.settings;`(pool) ·
+1. 마이그레이션 `20270105120000_friend_story_generation.sql`(20270104130000 **뒤**). 확인: `select story_schedule from companion.settings;`(pool) ·
    `select companion.story_due('yoonkyung', current_date);`. `pool`인 동안 올림은 1단계와 같다.
 2. 함수: `supabase functions deploy companion-story-studio companion-story-images`. `COMPANION_CONTENT_BUCKET`을 앱이 읽는 버킷과 맞춘다(스테이징 `content-test`).
 3. 예약: `supabase/cron/friend-story-images.sql`을 SQL 편집기에서 한 번(`<project-ref>` 바꿈).
 4. 운영 도구에서 한 주를 기획 · 승인해 본 뒤 `update companion.settings set story_schedule = 'cadence';`. 이때부터 차례가 아닌 인물은 그날 스토리가 없다.
 
-## 내 스토리 (20261228, ADR-0179 내 스토리 · ADR-0191)
+## 내 스토리 (20261228, ADR-0194 내 스토리 · ADR-0191)
 
 `migrations/20261228140000_my_stories.sql`(친구 스토리 두 마이그레이션 **뒤**) · Edge Function `companion-story-reactions`(새) · `chat-send`(스토리 맥락 ·
 `story_id`가 내 스토리면 `mine`) · 예약 `cron/my-stories.sql`. 사진은 없다 — 단어장 단어 · 레슨 카드만(사진은 ADR-0191 D11, 다음 단계).
@@ -1012,9 +1012,9 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
    `select jobname, schedule from cron.job where jobname = 'companion-story-reactions';`.
 4. 켜기: `my_stories = 'testers'` → 앱 확인 → `story_reactions = 'testers'` → 비용 · 반응 품질 확인 → `story_reaction_push = 'testers'` → `'on'`.
 
-## 내 스토리 — 사진 (20270104, ADR-0191 D11)
+## 내 스토리 — 사진 (20270104130000, ADR-0191 D11)
 
-`migrations/20270104120000_my_story_photos.sql`(내 스토리 마이그레이션 **뒤**) · Edge Function `companion-my-story`(새 — 교정 · 올리기 · 글 고치기) ·
+`migrations/20270104130000_my_story_photos.sql`(내 스토리 마이그레이션 **뒤**) · Edge Function `companion-my-story`(새 — 교정 · 올리기 · 글 고치기) ·
 `companion-story-reactions`(같은 회차에 뒷정리) · `delete-account`(사진 · 격리 버킷 정리). 스위치 `my_story_photo`(기본 **off** · testers · on) —
 `my_stories`가 켜진 **성인**(생년으로 확인)에게만 뜻이 있다. 미성년 · 나이 모름은 사진을 올릴 수 없다(단어 · 카드는 된다).
 
@@ -1051,7 +1051,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서(사람이 한다 — 아직 운영에 적용하지 않았다, 사용자 승인 필요)**
 
-1. 마이그레이션 `20270104120000_my_story_photos.sql`(내 스토리 뒤). 확인:
+1. 마이그레이션 `20270104130000_my_story_photos.sql`(내 스토리 뒤). 확인:
    `select id, public from storage.buckets where id like 'my-story-%';` · `select my_story_photo from companion.settings;`(off).
 2. 함수: `supabase functions deploy companion-my-story companion-story-reactions chat-send delete-account`. `companion-my-story`는
    `ANTHROPIC_API_KEY`가 없으면 `post`를 받지 않는다(500).

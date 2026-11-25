@@ -9,7 +9,7 @@ import {
 } from "./chat-send-story.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
 
-// 스토리 답장 판정 · 지시(ADR-0178 D5 · ADR-0179). 내 스토리(인물의 반응에 답함)는 `mine` — 지시에 단어와 그 인물의 반응을 싣는다.
+// 스토리 답장 판정 · 지시(ADR-0178 D5 · ADR-0194). 내 스토리(인물의 반응에 답함)는 `mine` — 지시에 단어와 그 인물의 반응을 싣는다.
 const env = {
   supabaseUrl: "https://ref.supabase.co",
   supabaseAnonKey: "anon",

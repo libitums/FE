@@ -7,7 +7,7 @@ import {
   reactionEnvOf,
 } from "./companion-reaction-env.ts";
 
-// `unit`(RE1 ~ RE3): 내 스토리 반응의 모델(ADR-0191 D5 · ADR-0179 D5) — 답은 대화와 따로(기본 Sonnet 5.5), 출력 검사 · 번역 · 칩은 Haiku.
+// `unit`(RE1 ~ RE3): 내 스토리 반응의 모델(ADR-0191 D5 · ADR-0194 D5) — 답은 대화와 따로(기본 Sonnet 5.5), 출력 검사 · 번역 · 칩은 Haiku.
 // 선톡 · chat-send의 환경은 바꾸지 않는다(반응 함수만 이 환경을 쓴다).
 
 const base = (extra: Record<string, string> = {}) => {

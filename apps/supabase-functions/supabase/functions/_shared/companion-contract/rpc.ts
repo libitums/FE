@@ -127,7 +127,7 @@ export const companionMessageSchema = z.object({
   /** 캐릭터 메시지의 👍/👎(20261124). 평가가 없거나 유저 메시지면 null, 옛 서버는 칸이 없습니다. 고쳐서 숨긴 턴은 목록에 오지 않습니다. */
   rating: z.optional(z.nullable(messageRatingSchema)),
   /**
-   * 스토리 인용(20261228, ADR-0178 D5 · ADR-0179 · ADR-0191 D2). 유저 메시지가 `story_id`를 실어 보냈을 때와, 인물이 내 스토리에 단
+   * 스토리 인용(20261228, ADR-0178 D5 · ADR-0194 · ADR-0191 D2). 유저 메시지가 `story_id`를 실어 보냈을 때와, 인물이 내 스토리에 단
    * 반응 메시지(origin `story_reaction` — `kind` mine, 스토리를 지우면 deleted)에만 있고 아니면 null. 옛 서버는 칸이 없습니다.
    * - 친구 스토리(`kind` friend — 20261228120000 서버는 칸이 없음): `imagePath`는 버킷 상대 경로(앱이 아바타와 같은 해석기로 주소를 만듭니다).
    * - 내 스토리(`kind` mine — 인물의 반응에 답함): `line`은 단어(한국어), 그림 없음.

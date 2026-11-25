@@ -1,4 +1,4 @@
-// 내 스토리 반응의 모델(ADR-0191 D5 · ADR-0179 D5). 런타임 중립.
+// 내 스토리 반응의 모델(ADR-0191 D5 · ADR-0194 D5). 런타임 중립.
 // 반응 함수(`companion-story-reactions`)만 이 환경을 쓴다 — chat-send · 선톡의 환경은 그대로다.
 // - 답: `COMPANION_REACTION_MODEL`(기본 Sonnet 5.5). 대화(`COMPANION_MODEL`)와 따로 고른다 — 한두 줄짜리 반응이라 더 싼 모델로 시작하고,
 //   Haiku는 평가 세트로 견준 뒤 바꾼다.

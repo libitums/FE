@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20261228140000(ADR-0179 내 스토리 · ADR-0191): 내 스토리(단어 · 카드) — 스위치 · 올리기(두 번 눌러도 하나 · 시간대 창 · 24시간 상한) ·
+// 20261228140000(ADR-0194 내 스토리 · ADR-0191): 내 스토리(단어 · 카드) — 스위치 · 올리기(두 번 눌러도 하나 · 시간대 창 · 24시간 상한) ·
 // 답할 인물 고르기(가중 무작위 · 최대 둘) · Seen by · claim(상한 · 대화 중 미룸) · 끝내기(그 인물 방의 메시지로 저장) ·
 // 지우기(알람 cascade · 메시지는 남고 인용만 「Deleted story」) · 보관 끔 정리 · 반응 푸시 문 · 대화 턴에 싣는 스토리 맥락.
 const tester = "00000000-0000-4000-8000-000000000001";

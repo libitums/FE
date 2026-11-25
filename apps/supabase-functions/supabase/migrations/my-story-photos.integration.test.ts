@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20270104120000(ADR-0191 D11): 사진 스토리 — 문(스위치 · 성인 · 창 · 검수 시도) · 저장(live는 알람, checking · 위기는 없음) · 거절(격리 · 기한) ·
+// 20270104130000(ADR-0191 D11): 사진 스토리 — 문(스위치 · 성인 · 창 · 검수 시도) · 저장(live는 알람, checking · 위기는 없음) · 거절(격리 · 기한) ·
 // 다시 보기 · 글 고치기 · 교정 횟수 · 파일 정리 대기열 · 다시 확인 요청 · 반응 · 대화 턴이 읽는 장면 설명.
 const adult = "00000000-0000-4000-8000-000000000011";
 const minor = "00000000-0000-4000-8000-000000000012";
