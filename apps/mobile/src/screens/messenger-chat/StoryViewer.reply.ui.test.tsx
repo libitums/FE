@@ -155,7 +155,8 @@ test("FS-UI21. 키보드 return(confirm)으로도 보낸다, 빈 글은 보내�
   expect(props.onReply).toHaveBeenCalledWith(props.items[0], "좋아", "typed");
 });
 
-test("FS-UI21. Sent 알림이 떠 있는 동안 멈췄다가 사라지면 이어 간다 · 첫 답장 무료 안내는 보낸 뒤 사라진다", async () => {
+// 사용자 결정(2026-11-26, D5 개정): 보낸 뒤 「Sent」 알림 동안은 멈추지 않는다 — 전에는 알림 3초 동안 멈췄다가(9초에 다음 인물) 이어 갔다.
+test("FS-UI21. 보낸 뒤엔 멈추지 않는다 — Sent 알림이 떠 있어도 진행은 이어 가고 알림은 3초 뒤 사라진다 · 첫 답장 무료 안내는 보낸 뒤 사라진다", async () => {
   const { settle } = mount();
   expect(screen.queryByTestId(ids.free)).not.toBeNull();
   tapId(ids.chip(0));
@@ -166,8 +167,36 @@ test("FS-UI21. Sent 알림이 떠 있는 동안 멈췄다가 사라지면 이어
   expect(screen.queryByTestId(ids.sent)).not.toBeNull();
   advance(1);
   expect(screen.queryByTestId(ids.sent)).toBeNull();
-  advance(6_000);
+  advance(3_000);
   expect(name()).toBe("해준");
+});
+
+test("FS-UI21. 보내는 중(요청 진행 중)에는 멈춘다", () => {
+  mount();
+  tapId(ids.chip(0));
+  advance(10_000);
+  expect(name()).toBe("윤경");
+});
+
+test("FS-UI21. Sent 알림은 다음 장 · 다음 인물로 넘어가도 같은 자리에 남고(다시 그려지지 않음), Open chat은 보낸 인물의 방", async () => {
+  const { props, settle } = mount({
+    items: [item("a", "윤경"), item("a", "윤경", { id: "s-a2" }), item("b", "해준")],
+  });
+  tapId(ids.chip(0));
+  await settle({ kind: "sent" });
+  const toast = screen.getByTestId(ids.sent);
+  advance(1_000);
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 2 of 2");
+  expect(screen.getByTestId(ids.sent)).toBe(toast);
+  tapId(ids.next);
+  expect(name()).toBe("해준");
+  expect(screen.getByTestId(ids.sent)).toBe(toast);
+  expect(screen.getByTestId(ids.sent).textContent).toContain("Sent");
+  tapId(ids.openChat);
+  expect(props.onOpenChat).toHaveBeenCalledWith(props.items[0]);
+  advance(2_000);
+  expect(screen.queryByTestId(ids.sent)).toBeNull();
 });
 
 test("FS-UI22. 칩 = 그 자리에서 보냄(onReply(그 말, chip)) — 방으로 가지 않는다", async () => {

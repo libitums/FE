@@ -1,4 +1,5 @@
-// 스토리 보기 아래의 내 친구 답장 묶음(ADR-0178 D5 개정) — 「Sent · Open chat」 알림 → 무료 안내 · 칩(입력 중엔 숨김) → 답장 칸.
+// 스토리 보기 아래의 내 친구 답장 묶음(ADR-0178 D5 개정) — 무료 안내 · 칩(입력 중엔 숨김) → 답장 칸. 「Sent · Open chat」 알림은
+// 장 · 인물을 넘겨도 남도록 보기 단위(`StoryViewerSent`)로 따로 섭니다.
 
 import type { ReactNode } from "@lynx-js/react";
 
@@ -11,19 +12,13 @@ export function StoryReplyArea({
   item,
   copy,
   reply,
-  onOpenChat,
 }: {
   readonly item: StoryViewerItem;
   readonly copy: FriendStoriesCopy;
   readonly reply: StoryViewerReply;
-  readonly onOpenChat: (item: StoryViewerItem) => void;
 }): ReactNode {
-  const sent = reply.sentItem;
   return (
     <>
-      {sent === null ? null : (
-        <StorySentToast copy={copy} name={sent.name} onOpenChat={() => onOpenChat(sent)} />
-      )}
       {reply.typing ? null : (
         <StoryReplyBar
           item={item}
@@ -46,4 +41,19 @@ export function StoryReplyArea({
       />
     </>
   );
+}
+
+/** 「Sent · Open chat」 — 보기 단위 알림. 넘김과 무관하게 같은 자리에 3초 떠 있고, Open chat은 보낸 그 인물의 방입니다. */
+export function StoryViewerSent({
+  copy,
+  reply,
+  onOpenChat,
+}: {
+  readonly copy: FriendStoriesCopy;
+  readonly reply: StoryViewerReply;
+  readonly onOpenChat: (item: StoryViewerItem) => void;
+}): ReactNode {
+  const sent = reply.sentItem;
+  if (sent === null) return null;
+  return <StorySentToast copy={copy} name={sent.name} onOpenChat={() => onOpenChat(sent)} />;
 }

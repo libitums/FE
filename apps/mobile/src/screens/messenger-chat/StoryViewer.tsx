@@ -12,7 +12,7 @@ import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-sto
 import { localizedLine } from "./suggested-friends";
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
 import { StoryViewerHead } from "./StoryViewerHead";
-import { StoryReplyArea } from "./StoryReplyArea";
+import { StoryReplyArea, StoryViewerSent } from "./StoryReplyArea";
 import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
 import { useStoryToastLink } from "./reply-toast-presence";
@@ -210,8 +210,10 @@ export function StoryViewer({
             />
           ) : null}
         </view>
+        {/* 보낸 뒤 알림은 장 · 인물 넘김과 무관하게 같은 자리(사용자 결정 2026-11-26) — 장 · 인물 묶음 밖에 둡니다. */}
+        <StoryViewerSent copy={copy} reply={reply} onOpenChat={onOpenChat} />
         {unmet === null ? (
-          <StoryReplyArea item={item} copy={copy} reply={reply} onOpenChat={onOpenChat} />
+          <StoryReplyArea item={item} copy={copy} reply={reply} />
         ) : (
           <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
         )}

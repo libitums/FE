@@ -98,7 +98,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI6 시스템 뒤로 = 닫기. covered면 낭독에서 가림.
 - FS-UI7 목록 화면: 스토리 포트가 없거나 비면 「Meet new friends」 줄 그대로, 스토리가 있으면 스토리 줄. 목록 줄 「New story · …」 탭 → 보기.
 - FS-UI19 ~ UI24 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
-  onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
+  onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 이어 감(장 · 인물을 넘겨도 알림 남음, Open chat = 보낸 인물 — 2026-11-26) · 보내는 중 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
 - FS-UI25 ~ UI27 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
 - FS-UI28 ~ UI31 인물 기준 보기(`StoryViewer.segments.ui.test.tsx`): 진행 막대 = 그 인물만, 왼쪽 탭은 이전 인물의 마지막 장, 가로 넘김(다음 · 이전 인물 · 짧은 움직임은 무시 · 마지막이면 닫힘), 슬라이드 방향 · 모션 줄이기면 없음, 6초 넘김은 인물을 넘어 이어 감.
 - FS-UI32 보기 위 아바타(`StoryViewer.ui.test.tsx`): 「<이름>'s profile」 버튼 · flatten false, 아바타 · 이름 탭 → `onProfile(그 장)`, 안 만난 친구도. 잠긴 안 만난 친구는 소개 카드만(「See how to meet」 없음).
