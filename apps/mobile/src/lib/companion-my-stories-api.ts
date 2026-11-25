@@ -54,6 +54,7 @@ export function myStoriesRemote(call: Call): CompanionMyStoriesRemote {
           overlays: draft.overlays,
           lang: draft.lang,
           tz_offset_min: draft.tzOffsetMin,
+          ...(draft.region == null ? {} : { client_region: draft.region }),
         }),
       ),
     remove: async (storyId) =>
