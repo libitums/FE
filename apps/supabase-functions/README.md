@@ -1063,7 +1063,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 3. 켜기 전: 개인정보 처리방침 · 스토어 개인정보 응답 갱신, 의심 건 처리 절차의 법무 확인(ADR-0191 D11). 그 뒤 `my_story_photo = 'testers'`.
 
 
-## 내 스토리 — 글 스토리 · 종류 목록 (20270107120000, ADR-0191 D13)
+## 내 스토리 — 글 스토리 · 종류 목록 (20270107130000, ADR-0191 D13)
 
 - 스위치 `my_story_text`(off · testers · on, 기본 off). 나이 제한 없음.
 - 올리기: `POST /functions/v1/companion-my-story` `{ action: "post", client_id, background: "orange"|"green"|"blue"|"purple", ko, overlays?, lang, tz_offset_min? }`
@@ -1086,7 +1086,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서(둘 다 아직 운영에 적용하지 않았다)**
 
-1. 마이그레이션 `20270107120000_my_story_text.sql` → `20270108120000_my_story_quiz_answer.sql`(하나씩, `db push` 금지). 확인:
+1. 마이그레이션 `20270107130000_my_story_text.sql` → `20270108120000_my_story_quiz_answer.sql`(하나씩, `db push` 금지). 확인:
    `select my_story_text from companion.settings;`(off) · `select to_regclass('companion.my_story_quizzes');`.
 2. 함수: `supabase functions deploy companion-my-story companion-story-reactions chat-send`(계약 사본 포함).
 3. 켜기: 앱이 받을 준비가 되면 `my_story_text = 'testers'`. 퀴즈 무료 답은 스위치 없이 퀴즈 반응이 있으면 바로 동작한다.
