@@ -4,12 +4,12 @@
 
 - 측정 일시: 2026-11-25T16:50:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 위로 올려 읽는 중 새 메시지 알약 · 맨 아래로 단추를 더하는 변경이다
-- 기능 PR: `feat/chat-new-message-pill`(#596 위)
-- 대상 commit: `fix/chat-scroll-follow` 8f30e3e4 위의 변경
+- 기능 PR: `feat/chat-new-message-pill`(#600)
+- 대상 commit: origin/main 5ca9241a 위의 변경(#596 · #597 머지 뒤)
 - 기기: iOS 시뮬레이터 · Android AVD에서 눈으로 확인(docs/e2e/messenger-chat-ui.md MC-E15) — 계측 없음
 - OS: 해당 없음(계측 없음)
 - Lynx SDK: 4.0.1
-- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 5,776,504 bytes(아래 PR 대비 +12,598), 천장 5,850,000 안
+- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 5,793,257 bytes, 천장 5,850,000 안
 - 실행 회차: 01
 
 ## 시나리오
