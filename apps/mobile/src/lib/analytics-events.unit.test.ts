@@ -232,10 +232,11 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0190⟩ 방 안내 키보드 단계 `messenger_guide_keyboard`가 더해져 108이다(PostHog만).
   // ⟨ADR-0195⟩ 채팅 답할 문장 추천 `chat_suggestion_shown` · `chat_suggestion_tapped`가 더해져 110이다(PostHog만).
   // ⟨ADR-0197⟩ 채팅 알림 권한 카드 `chat_push_ask_shown` · `chat_push_ask_tapped` · `chat_push_ask_answered`가 더해져 113이다(PostHog만).
-  test("AN1. 이벤트 이름은 113개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0117 2026-11-25⟩ 「새 메시지 ↓」 알약 누름 `chat_new_messages_jumped`가 더해져 114다(PostHog만).
+  test("AN1. 이벤트 이름은 114개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(113);
+    expect(names).toHaveLength(114);
     expect(names).toContain("chat_suggestion_shown");
     expect(names).toContain("chat_suggestion_tapped");
     expect(names).toContain("chat_push_ask_shown");

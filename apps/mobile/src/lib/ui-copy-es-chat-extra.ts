@@ -23,6 +23,22 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Envió una foto"
+          : `Envió una foto · ${count} nuevos`
+        : latest === "voice"
+          ? count === 1
+            ? "Envió un mensaje de voz"
+            : `Envió un mensaje de voz · ${count} nuevos`
+          : count === 1
+            ? "Mensaje nuevo"
+            : `${count} mensajes nuevos`,
+    jump: "Ir a los mensajes nuevos",
+    latest: "Ir al último mensaje",
+  },
   pushAsk: {
     title: (name) => `¿Quieres un aviso cuando ${name} te escriba?`,
     body: "A veces te escribo yo primero: más o menos una vez al día, por la noche.",

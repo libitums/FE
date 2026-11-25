@@ -23,6 +23,22 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     promptKeepBody: "Tạo tài khoản miễn phí để giữ Yeopjeon và vé của bạn.",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Đã gửi một ảnh"
+          : `Đã gửi một ảnh · ${count} tin mới`
+        : latest === "voice"
+          ? count === 1
+            ? "Đã gửi tin nhắn thoại"
+            : `Đã gửi tin nhắn thoại · ${count} tin mới`
+          : count === 1
+            ? "Tin nhắn mới"
+            : `${count} tin nhắn mới`,
+    jump: "Đi tới tin nhắn mới",
+    latest: "Cuộn xuống tin mới nhất",
+  },
   pushAsk: {
     title: (name) => `Nhận thông báo khi ${name} nhắn cho bạn?`,
     body: "Thỉnh thoảng mình sẽ nhắn trước — khoảng một lần mỗi ngày, vào buổi tối.",
