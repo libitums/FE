@@ -497,7 +497,7 @@
   height: var(--libitum-spacing-20);
 }
 
-/* 그림 층 — 인물이 바뀌면 옆으로 미끄러져 들어옵니다(D4 개정, 인스타의 넘김을 슬라이드로). 길이 · 가속은 토큰, 모션 줄이기면 none 클래스. */
+/* 그림 층 — 큐브 면 안에서 화면을 채웁니다. */
 .story-viewer-content {
   position: absolute;
   top: 0;
@@ -506,32 +506,32 @@
   left: 0;
 }
 
-.story-viewer-slide-next {
-  animation-name: story-viewer-slide-from-right;
-  animation-duration: var(--libitum-motion-duration-page);
-  animation-timing-function: var(--libitum-motion-easing-enter);
+/* 큐브 면(D4 개정 ⟨큐브⟩, 시안 32번) — 인물마다 한 면. 변환 · 축은 인라인(쉬는 자리)과 메인 스레드(손가락 · 전환)가 정합니다.
+   Lynx의 perspective는 웹과 달리 변환하는 그 요소 자신에 겁니다(iOS m34 · Android cameraDistance) — 원근 거리 1000px은 시안 값(화면 지역 상수).
+   z-index 0은 면 안의 층(z-index 1 · 2)이 면과 함께 돌도록 쌓임 맥락을 묶습니다. */
+.story-face {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  overflow: hidden;
+  perspective: 1000px;
 }
 
-.story-viewer-slide-prev {
-  animation-name: story-viewer-slide-from-left;
-  animation-duration: var(--libitum-motion-duration-page);
-  animation-timing-function: var(--libitum-motion-easing-enter);
+/* 면 그늘 — 돌아 나갈수록 짙어집니다(불투명도는 인라인 · 메인 스레드). 맨 위에 있지만 손을 받지 않습니다. */
+.story-face-shade {
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--libitum-color-black);
 }
 
-@keyframes story-viewer-slide-from-right {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes story-viewer-slide-from-left {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+/* 옆 인물 면의 머리 줄은 조작이 없어 보이는 순서(얼굴 · 이름 · 경과) 그대로 놓습니다. */
+.story-face-head {
+  flex-direction: row;
 }

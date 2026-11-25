@@ -273,7 +273,8 @@ export const friendStoriesTestIds = {
   image: sv("image"),
   previous: sv("previous"),
   taps: sv("taps"),
-  content: sv("content"),
+  /** 큐브 면(ADR-0178 D4 개정 ⟨큐브⟩) — 지금 면 · 옆 인물 면. */
+  face: (role: "prev" | "current" | "next") => sv(`face-${role}`),
   next: sv("next"),
   line: sv("line"),
   roman: sv("roman"),

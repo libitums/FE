@@ -9,10 +9,11 @@ import { announce } from "../../lib/accessibility";
 import { restoreAccessibilityFocus } from "./chat-input-focus";
 import { spokenOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
-import { localizedLine } from "./suggested-friends";
+import { sideFace, StoryFaceBackdrop, StoryFaceShell, StoryLineCard } from "./StoryCubeFace";
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
 import { StoryViewerHead } from "./StoryViewerHead";
 import { StoryReplyArea } from "./StoryReplyArea";
+import { useViewerCube } from "./use-story-cube";
 import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
 
@@ -54,6 +55,8 @@ export function StoryViewer({
   // 위 진행 막대 · 「Story i of n」은 지금 인물의 묶음만 셉니다(D4 개정).
   const group = viewerGroupOf(items, index);
   const groupLabel = copy.viewer.progress(group.at + 1, group.count);
+  // 인물 넘김 큐브(D4 개정 ⟨큐브⟩) — 옆 인물 면 · 쉬는 자리, 손가락은 메인 스레드가 따라갑니다.
+  const { cube, sides, rest } = useViewerCube(items, nav, reducedMotion);
   const [paused, setPaused] = useState(false);
   const reply = useStoryViewerReply({
     index,
@@ -71,8 +74,8 @@ export function StoryViewer({
 
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
-  // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도 멈춥니다(D5 개정).
-  const stopped = paused || covered || reply.holding;
+  // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도, 가로로 끄는 동안에도 멈춥니다(D5 · D4 개정).
+  const stopped = paused || covered || reply.holding || nav.dragging;
   const running = !stopped && !reducedMotion && item !== undefined;
   useAdvanceTimer(index, running, () => step("tick"));
 
@@ -104,144 +107,126 @@ export function StoryViewer({
     step(action);
   };
 
+  const side = (role: "prev" | "next"): ReactNode =>
+    sideFace({
+      role,
+      at: sides[role],
+      items,
+      style: rest[role],
+      faceRef: role === "prev" ? cube.prevRef : cube.nextRef,
+      insets,
+      romanization,
+      copy,
+    });
+
   return (
     <view
       className="story-viewer"
       data-testid={ids.viewer}
       data-statusbar={lightStatusBarIcons}
       data-motion={reducedMotion ? "reduced" : "standard"}
+      data-turn={nav.turn?.direction ?? "none"}
       event-through={false}
       accessibility-elements-hidden={covered}
     >
-      {/* 인물이 바뀌면 그림 층이 옆으로 미끄러져 들어옵니다(인물마다 새로 — key). 모션 줄이기면 none. */}
-      <view
-        key={group.start}
-        className={`story-viewer-content story-viewer-slide-${nav.slide}`}
-        data-testid={ids.content}
-        data-slide={nav.slide}
-        accessibility-elements-hidden={true}
+      {side("prev")}
+      <StoryFaceShell
+        key={`face-${group.start}`}
+        role="current"
+        style={rest.current}
+        faceRef={cube.currentRef}
       >
-        {item.imageUrl === null ? null : (
-          <image
-            className="story-viewer-image"
-            data-testid={ids.image}
-            src={item.imageUrl}
-            mode="aspectFill"
-            accessibility-elements-hidden={true}
+        <StoryFaceBackdrop item={item} insetTop={insets.top} marked={true} />
+
+        {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 → 프로필(아바타) → 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
+        <view
+          className="story-viewer-top"
+          style={{
+            paddingTop: `${insets.top + 8}px`,
+            paddingLeft: `${insets.left + 10}px`,
+            paddingRight: `${insets.right + 10}px`,
+          }}
+        >
+          <StoryViewerHead
+            item={item}
+            now={now}
+            copy={copy}
+            groupLabel={groupLabel}
+            paused={paused}
+            onPause={() => setPaused((value) => !value)}
+            onClose={() => onClose("closed")}
+            onProfile={() => onProfile(item)}
           />
-        )}
-      </view>
-      {/* 흰 글 · 아이콘이 밝은 사진 위에서도 읽히게 머리 줄 아래까지 고른 그늘(접근성 C2) — 인셋이 들어가 높이는 인라인입니다. */}
-      <view
-        className="story-viewer-shade-top"
-        style={{ height: `${insets.top + 150}px` }}
-        accessibility-elements-hidden={true}
-      />
-      <view className="story-viewer-shade-bottom" accessibility-elements-hidden={true} />
+          <StoryProgress
+            items={items.slice(group.start, group.start + group.count)}
+            index={group.at}
+            still={reducedMotion}
+            stopped={stopped}
+            label={groupLabel}
+          />
+        </view>
 
-      {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 → 프로필(아바타) → 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
-      <view
-        className="story-viewer-top"
-        style={{
-          paddingTop: `${insets.top + 8}px`,
-          paddingLeft: `${insets.left + 10}px`,
-          paddingRight: `${insets.right + 10}px`,
-        }}
-      >
-        <StoryViewerHead
-          item={item}
-          now={now}
-          copy={copy}
-          groupLabel={groupLabel}
-          paused={paused}
-          onPause={() => setPaused((value) => !value)}
-          onClose={() => onClose("closed")}
-          onProfile={() => onProfile(item)}
-        />
-        <StoryProgress
-          items={items.slice(group.start, group.start + group.count)}
-          index={group.at}
-          still={reducedMotion}
-          stopped={stopped}
-          label={groupLabel}
-        />
-      </view>
-
-      <view
-        className="story-viewer-bottom"
-        data-testid={ids.replyBottom}
-        style={{
-          paddingBottom: `${reply.bottomPadding(insets.bottom)}px`,
-          paddingLeft: `${insets.left + 16}px`,
-          paddingRight: `${insets.right + 16}px`,
-        }}
-      >
-        <view className="story-viewer-middle">
-          {item.imageUrl === null ? null : (
-            <view
-              className="story-viewer-photo-label"
-              accessibility-element={true}
-              accessibility-label={copy.viewer.photoLabel(item.name)}
-            />
-          )}
-          <view className="story-card">
-            <text className="story-card-ko" data-testid={ids.line}>
-              {story.line.ko}
-            </text>
-            {romanization && story.line.roman !== "" ? (
-              <text className="story-card-roman" data-testid={ids.roman}>
-                {story.line.roman}
-              </text>
+        <view
+          className="story-viewer-bottom"
+          data-testid={ids.replyBottom}
+          style={{
+            paddingBottom: `${reply.bottomPadding(insets.bottom)}px`,
+            paddingLeft: `${insets.left + 16}px`,
+            paddingRight: `${insets.right + 16}px`,
+          }}
+        >
+          <view className="story-viewer-middle">
+            {item.imageUrl === null ? null : (
+              <view
+                className="story-viewer-photo-label"
+                accessibility-element={true}
+                accessibility-label={copy.viewer.photoLabel(item.name)}
+              />
+            )}
+            <StoryLineCard item={item} romanization={romanization} copy={copy} marked={true} />
+            {unmet === null ? (
+              // 장마다 새로 — 저장 표시(`saved`)가 다음 장으로 넘어가지 않게.
+              <WordPill
+                key={item.story.id}
+                item={item}
+                words={words}
+                copy={copy}
+                onSaved={() => onSaveWord(item)}
+              />
             ) : null}
-            <text className="story-card-meaning" data-testid={ids.meaning}>
-              {localizedLine(story.line.meaning, copy.language)}
-            </text>
           </view>
           {unmet === null ? (
-            // 장마다 새로 — 저장 표시(`saved`)가 다음 장으로 넘어가지 않게.
-            <WordPill
-              key={item.story.id}
-              item={item}
-              words={words}
-              copy={copy}
-              onSaved={() => onSaveWord(item)}
-            />
-          ) : null}
+            <StoryReplyArea item={item} copy={copy} reply={reply} onOpenChat={onOpenChat} />
+          ) : (
+            <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
+          )}
         </view>
-        {unmet === null ? (
-          <StoryReplyArea item={item} copy={copy} reply={reply} onOpenChat={onOpenChat} />
-        ) : (
-          <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
-        )}
-      </view>
 
-      {/* 가로로 밀면 인물을 넘깁니다(D4 개정) — 탭 자리 전체에서 손가락의 시작 · 끝을 봅니다. */}
-      <view
-        className="story-viewer-taps"
-        data-testid={ids.taps}
-        bindtouchstart={(event: { detail?: { x?: unknown; y?: unknown } }) => {
-          "background only";
-          nav.touchStart(event);
-        }}
-        bindtouchend={(event: { detail?: { x?: unknown; y?: unknown } }) => {
-          "background only";
-          nav.touchEnd(event);
-        }}
-      >
-        {(["prev", "next"] as const).map((action) => (
-          <view
-            key={action}
-            className={`story-viewer-tap-${action}`}
-            data-testid={action === "prev" ? ids.previous : ids.next}
-            accessibility-element={true}
-            accessibility-label={action === "prev" ? copy.viewer.previous : copy.viewer.next}
-            accessibility-traits="button"
-            accessibility-enable-tap={true}
-            flatten={false}
-            bindtap={tap(action)}
-          />
-        ))}
-      </view>
+        {/* 가로로 밀면 인물을 넘깁니다(D4 개정) — 탭 자리 전체에서 손가락을 따라 큐브가 돕니다(메인 스레드). */}
+        <view
+          className="story-viewer-taps"
+          data-testid={ids.taps}
+          main-thread:bindtouchstart={cube.touchStart}
+          main-thread:bindtouchmove={cube.touchMove}
+          main-thread:bindtouchend={cube.touchEnd}
+          main-thread:bindtouchcancel={cube.touchEnd}
+        >
+          {(["prev", "next"] as const).map((action) => (
+            <view
+              key={action}
+              className={`story-viewer-tap-${action}`}
+              data-testid={action === "prev" ? ids.previous : ids.next}
+              accessibility-element={true}
+              accessibility-label={action === "prev" ? copy.viewer.previous : copy.viewer.next}
+              accessibility-traits="button"
+              accessibility-enable-tap={true}
+              flatten={false}
+              bindtap={tap(action)}
+            />
+          ))}
+        </view>
+      </StoryFaceShell>
+      {side("next")}
     </view>
   );
 }

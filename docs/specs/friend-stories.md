@@ -86,6 +86,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U21 ~ U24 인물 묶음(D4 개정, `friend-stories.groups.unit.test.ts`): 인물마다 올린 시각 순 · 줄 칸은 최신 · 본 것은 다 봤을 때, 보기 장 목록 = 묶음 이어 붙임 · 안 본 첫 장부터,
   `viewerGroupOf`(묶음 시작 · 칸 수 · 자리), `viewerJump`(다음 인물 · 마지막이면 닫힘 · 이전 인물의 첫 장).
 - FS-U25 `modelOfMetFriend`(`suggested-friends-ui.unit.test.ts`): 카탈로그 인물 → 소개 · 태그 · 첫 말 + 방 이름 · 얼굴, 없으면 이름 · 얼굴만, 상태 `added` · 제안 없음.
+- FS-U26 ~ U32 인물 넘김 큐브(D4 개정 ⟨큐브⟩, `story-cube.unit.test.ts`): 손가락 방향(8px · 가로 우세) · 넘김 방향, 돈 몫(폭 비례 · 옆 인물 없으면 1/4), 두 면의 변환(축 · 각도 · 맞닿은 모서리 · 그늘),
+  놓았을 때(48px · 반 · 0.5px/ms 같은 방향), 남은 몫의 시간, 옆 인물 면의 장(전환 중엔 방금 장), 쉬는 자리 = 다 돈 끝 값.
 
 ### 2.2 ui (앱)
 
@@ -100,10 +102,13 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI19 ~ UI24 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
   onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
 - FS-UI25 ~ UI27 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
-- FS-UI28 ~ UI31 인물 기준 보기(`StoryViewer.segments.ui.test.tsx`): 진행 막대 = 그 인물만, 왼쪽 탭은 이전 인물의 마지막 장, 가로 넘김(다음 · 이전 인물 · 짧은 움직임은 무시 · 마지막이면 닫힘), 슬라이드 방향 · 모션 줄이기면 없음, 6초 넘김은 인물을 넘어 이어 감.
+- FS-UI28 ~ UI31 인물 기준 보기(`StoryViewer.segments.ui.test.tsx`): 진행 막대 = 그 인물만, 왼쪽 탭은 이전 인물의 마지막 장, 가로 넘김(다음 · 이전 인물 · 짧은 움직임은 무시 · 마지막이면 닫힘), 인물 전환 방향(`data-turn`) · 모션 줄이기면 없음, 6초 넘김은 인물을 넘어 이어 감.
 - FS-UI32 보기 위 아바타(`StoryViewer.ui.test.tsx`): 「<이름>'s profile」 버튼 · flatten false, 아바타 · 이름 탭 → `onProfile(그 장)`, 안 만난 친구도. 잠긴 안 만난 친구는 소개 카드만(「See how to meet」 없음).
 - FS-UI33 목록 + 보기 + 프로필 시트(`MessengerListScreen.stories.ui.test.tsx` · `SuggestedFriendSheet.ui.test.tsx`): 친구 아바타 → 시트(소개 · Start chatting, 추가 없음) · 보기 covered로 멈춤 → Not now면 이어 감,
   Start chatting → 보기 닫힘(`closed` reason `profile`) · 그 방, 안 만난 친구 → 추천 시트(from `story_viewer`), `added` 모델은 NEW 배지 없음.
+- FS-UI34 ~ UI41 인물 넘김 큐브(D4 개정 ⟨큐브⟩, `StoryViewer.cube.ui.test.tsx`): 면 셋(옆 면은 미리보기 · 가려짐 · 손 안 받음) · 끄는 동안 각도가 손가락을 따름 · 진행 막대 멈춤,
+  반 넘게 → 넘어가 들어온 면 제자리 · 나간 면 이전 자리, 덜 밀고 천천히 → 되돌아옴 · 그 손가락의 탭 무시, 빠르게 → 넘어감, 옆 인물 없음 → 조금만 돌고 되돌아옴 · 마지막이면 닫힘,
+  탭으로 인물이 바뀌면 한 번 돎(접혀 나가는 면 = 방금 장), 모션 줄이기면 돌지 않고 바로.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
 - FS-UI14 목록이 서 있는 동안 5분마다 다시 읽어 새 스토리가 줄에 섬, 목록을 내리면 타이머 멈춤(가짜 타이머).
 - FS-UI15 포트의 다시 읽기 신호에 다시 읽음, 목록을 내리면 리스너를 뗌.

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { cleanup, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
-import { advance, clearBackHandlers, fireOnRef, tapId } from "./chat-ui.test-support";
+import { advance, clearBackHandlers, tapId } from "./chat-ui.test-support";
 import {
   friendStoriesTestIds as ids,
   type StoryViewerItem,
@@ -56,9 +56,16 @@ function mount(over: Partial<StoryViewerProps> = {}) {
 
 const name = () => screen.getByTestId(ids.name).textContent;
 const progress = () => screen.getByTestId(ids.progress).getAttribute("accessibility-label");
+/** 가로로 밀고 놓은 뒤 큐브가 다 돌 때까지 기다립니다(메인 스레드 이벤트 — 큐브 FS-UI32 ~ UI39). */
 const swipe = (fromX: number, toX: number) => {
-  fireOnRef(ids.taps, "touchstart", { x: fromX, y: 400 });
-  fireOnRef(ids.taps, "touchend", { x: toX, y: 410 });
+  const taps = screen.getByTestId(ids.taps);
+  act(() => {
+    fireEvent.touchstart(taps, { detail: { x: fromX, y: 400 } });
+  });
+  act(() => {
+    fireEvent.touchend(taps, { detail: { x: toX, y: 410 } });
+  });
+  advance(400);
 };
 
 test("FS-UI28. 진행 막대는 지금 인물의 스토리 수만큼 — 다른 인물 스토리는 넣지 않는다", () => {
@@ -98,18 +105,20 @@ test("FS-UI30. 왼쪽으로 밀면 다음 인물, 오른쪽으로 밀면 이전 
   expect(props.onClose).toHaveBeenCalledWith("completed");
 });
 
-test("FS-UI31. 인물이 바뀌면 옆으로 미끄러지고(방향), 모션 줄이기면 전환 없이 바뀐다 · 6초 넘김은 그대로", () => {
-  mount();
-  expect(screen.getByTestId(ids.content).getAttribute("data-slide")).toBe("none");
-  swipe(300, 80);
-  expect(screen.getByTestId(ids.content).getAttribute("data-slide")).toBe("next");
-  swipe(80, 300);
-  expect(screen.getByTestId(ids.content).getAttribute("data-slide")).toBe("prev");
+test("FS-UI31. 인물이 바뀌면 큐브가 돌고(방향), 모션 줄이기면 전환 없이 바뀐다", () => {
+  const turn = () => screen.getByTestId(ids.viewer).getAttribute("data-turn");
+  mount({ start: 1 });
+  expect(turn()).toBe("none");
+  tapId(ids.next);
+  expect(turn()).toBe("next");
+  advance(400);
+  tapId(ids.previous);
+  expect(turn()).toBe("prev");
   cleanup();
   mount({ reducedMotion: true });
   swipe(300, 80);
   expect(name()).toBe("해준");
-  expect(screen.getByTestId(ids.content).getAttribute("data-slide")).toBe("none");
+  expect(turn()).toBe("none");
 });
 
 test("FS-UI31. 6초마다 다음 장 — 인물을 넘어 이어 간다", () => {
