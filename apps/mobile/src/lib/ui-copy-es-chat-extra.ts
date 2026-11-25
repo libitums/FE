@@ -41,6 +41,12 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     jump: "Ir a los mensajes nuevos",
     latest: "Ir al último mensaje",
   },
+  replyToast: {
+    dismiss: "Cerrar",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Nuevo mensaje de ${name}: ${preview}` + (more > 0 ? `. ${more} más` : ""),
+  },
   pushAsk: {
     title: (name) => `¿Quieres un aviso cuando ${name} te escriba?`,
     body: "A veces te escribo yo primero: más o menos una vez al día, por la noche.",

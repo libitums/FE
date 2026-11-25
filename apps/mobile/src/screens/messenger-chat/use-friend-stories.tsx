@@ -35,6 +35,7 @@ import { screenHeightFrom } from "../../lib/learning-density";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import type { StoryRowStats } from "./use-row-impressions";
 import { useMyStories } from "./use-my-stories";
+import { useStoryToastLink } from "./reply-toast-presence";
 import { useStoryReload } from "./use-story-reload";
 import type { SuggestedFriendsUi } from "./use-suggested-friends";
 
@@ -141,6 +142,7 @@ export function useFriendStories({
     onOpenRoom,
     onFindFriends: suggested.openDirectory,
   });
+  const toastShown = useStoryToastLink(viewer !== null || mine.layerOpen); // 답장 토스트가 떠 있으면 멈춤(ADR-0200)
   const imageUrl = (path: string) => port?.imageUrl(path) ?? null;
 
   const open = (opened: ViewerOpen): boolean => {
@@ -267,6 +269,7 @@ export function useFriendStories({
           romanization={port?.romanization?.() ?? true}
           {...(port?.words === undefined ? {} : { words: port.words })}
           covered={covered}
+          held={toastShown}
           onShown={handleShown}
           onReply={inline.reply}
           onOpenChat={handleOpenChat}

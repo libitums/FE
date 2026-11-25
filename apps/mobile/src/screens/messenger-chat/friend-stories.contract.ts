@@ -242,6 +242,8 @@ export type StoryViewerProps = {
   readonly onSkip?: () => void;
   /** 위에 시트가 떠 있는가 — 그동안 낭독에서 가리고 멈춥니다. */
   readonly covered?: boolean;
+  /** 답장 도착 토스트가 머리 위에 떠 있는가(ADR-0200) — 그동안 진행만 멈춥니다(키보드 · 입력은 그대로). */
+  readonly held?: boolean;
 };
 
 const fs = (suffix: string): string => `friend-stories-${suffix}`;

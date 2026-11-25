@@ -200,6 +200,15 @@ test("FS-UI4. 위에 시트가 덮으면 멈추고 낭독에서 숨는다", () =
   expect(props.onClose).not.toHaveBeenCalled();
 });
 
+test("RT-UI7. 답장 토스트가 떠 있으면(held) 진행만 멈추고 낭독에서는 숨지 않는다(ADR-0200)", () => {
+  mount({ held: true });
+  advance(20_000);
+  expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).not.toBe(
+    "true",
+  );
+});
+
 test("FS-UI5. 안 만난 친구: 칩 · 답장 칸 · 멈춤 없음, NEW FRIEND · 소개 카드, addable → Add friend and reply", () => {
   const unmet = {
     character: general("g", { name: "다은", intro: { en: "Loves cafés and old alleys." } }),

@@ -41,6 +41,12 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     jump: "Lompat ke pesan baru",
     latest: "Gulir ke pesan terbaru",
   },
+  replyToast: {
+    dismiss: "Tutup",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Pesan baru dari ${name}: ${preview}` + (more > 0 ? `. ${more} lainnya` : ""),
+  },
   pushAsk: {
     title: (name) => `Mau dapat notifikasi saat ${name} mengirim pesan?`,
     body: "Kadang aku yang mengirim pesan duluan — sekitar sekali sehari, di malam hari.",

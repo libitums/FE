@@ -41,6 +41,12 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     jump: "Đi tới tin nhắn mới",
     latest: "Cuộn xuống tin mới nhất",
   },
+  replyToast: {
+    dismiss: "Đóng",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Tin nhắn mới từ ${name}: ${preview}` + (more > 0 ? `. Còn ${more} tin khác` : ""),
+  },
   pushAsk: {
     title: (name) => `Nhận thông báo khi ${name} nhắn cho bạn?`,
     body: "Thỉnh thoảng mình sẽ nhắn trước — khoảng một lần mỗi ngày, vào buổi tối.",
