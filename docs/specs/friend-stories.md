@@ -78,8 +78,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 
 ### 2.2 ui (앱)
 
-- FS-UI1 줄: 제목 「Stories」(머리글) · Watch all · 스토리 있는 칸(친구 · 안 만난 친구 함께 최신 순 — 친구는 이름 · 경과, 본 것은 Seen, 안 만난 친구는 New) · 구분 선 · 추천 · Find friends.
-  구분 선은 스토리 칸과 스토리 없는 추천이 둘 다 있을 때만(안 만난 친구 스토리만 있어도). 낭독 이름.
+- FS-UI1 줄: 제목 「Stories」(머리글) · Watch all · 스토리 있는 칸(친구 · 안 만난 친구 함께 최신 순 — 친구는 이름 · 경과, 본 것은 Seen, 안 만난 친구는 New) · 추천 · Find friends.
+  구분 선 없음(D3 개정 — 고리 모양으로만 가름). 낭독 이름.
 - FS-UI2 줄 탭 → 콜백(친구 · 안 만난 · 추천 · Watch all · Find friends).
 - FS-UI3 보기(친구): 진행 칸 수 · 이름 · 경과 · 한 줄 · 로마자(끄면 없음) · 뜻(화면 언어) · 단어 알약(있을 때만, 저장 뒤 Saved) · 무료 안내(freeReply만) · 칩 · 답장 칸.
 - FS-UI4 보기 이동: 다음 · 이전 탭, 6초 뒤 다음(가짜 타이머), 멈춤이면 넘어가지 않음, 모션 줄이기면 넘어가지 않음, 마지막 다음 → 닫힘, 칸마다 onShown.
@@ -97,7 +97,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
   · Android `PushTargetJsonTest`(불리언 `story` 옮김).
 - FSI6 스토리 RPC 실패 · 손님 → 추천 줄 그대로, 오류 없음.
-- FSI7 실제 앱 줄 순서 = 최신 순(친구 · 안 만난 친구 함께), Watch all의 첫 장 · 다음 장이 같은 순서(D3 개정).
+- FSI7 실제 앱 줄 순서 = 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 첫 장 · 다음 장이 같은 순서(D3 개정).
 
 ### 2.4 서버
 
@@ -114,7 +114,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 | 안 만난 고리 | 점선 brand | `brand-primary` · `border-style: dashed` |
 | 경과 · Seen | 11px #555D6D | `fg-neutral-muted` · caption |
 | New | 11px bold #B94208 | `fg-brand` |
-| 구분 선 | 1px #EEF0F3 | `gray-300` |
+| ~~구분 선~~ | 없앰(D3 개정 ⟨2026-11-25⟩) | — |
 | 목록 미리보기 New story | 14px 600 #B94208 | `fg-brand` |
 | 보기 바탕 | #1A1C20 | `gray-950` |
 | 위 · 아래 그늘 | 검정 55% → 0 · 0 → 70% | `black` + 그레이디언트(화면 지역 상수) |

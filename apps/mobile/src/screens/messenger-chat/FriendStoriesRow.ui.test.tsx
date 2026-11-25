@@ -9,7 +9,7 @@ import { suggestedFriendsTestIds } from "./suggested-friends.contract";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `ui` 계층(FS-UI1 · UI2): 스토리 줄(ADR-0178 D3 · 개정 ⟨2026-11-25⟩) — 제목 · Watch all · 스토리 있는 인물(친구 · 안 만난 친구, 최신 순) · 구분 선 · 추천 · Find friends.
+// `ui` 계층(FS-UI1 · UI2): 스토리 줄(ADR-0178 D3 · 개정 ⟨2026-11-25⟩) — 제목 · Watch all · 스토리 있는 인물(친구 · 안 만난 친구, 최신 순) · 추천 · Find friends(구분 선 없음).
 
 afterEach(cleanup);
 
@@ -54,7 +54,7 @@ const order = () =>
     .map((el) => el.getAttribute("data-testid") ?? "")
     .filter((id) => /^friend-stories-(friend|unmet|suggested|divider|find)/.test(id));
 
-test("FS-UI1. 제목 · Watch all, 순서는 스토리 있는 인물(친구 · 안 만난 친구 함께 최신 순) · 선 · 추천 · Find friends", () => {
+test("FS-UI1. 제목 · Watch all, 순서는 스토리 있는 인물(친구 · 안 만난 친구 함께 최신 순) · 추천 · Find friends, 구분 선 없음", () => {
   mount();
   expect(screen.getByTestId(ids.title).textContent).toBe("Stories");
   expect(screen.getByTestId(ids.title).getAttribute("accessibility-traits")).toBe("header");
@@ -64,7 +64,6 @@ test("FS-UI1. 제목 · Watch all, 순서는 스토리 있는 인물(친구 · �
     ids.unmet("g"),
     ids.friend("a"),
     ids.friend("b"),
-    ids.divider,
     ids.suggested("h"),
     ids.findFriends,
   ]);
@@ -110,7 +109,7 @@ test("FS-UI2. 탭은 저마다의 콜백으로", () => {
   expect(h.onFindFriends).toHaveBeenCalledTimes(1);
 });
 
-test("FS-UI1. 친구 스토리가 없으면 Watch all이 없고, 스토리 없는 추천이 없으면 구분 선이 없다", () => {
+test("FS-UI1. 친구 스토리가 없으면 Watch all이 없다", () => {
   const catalog = catalogOf([general("g", { name: "다은" })]);
   const rooms = [room("g", false)];
   const row = storyRowOf({
@@ -132,11 +131,10 @@ test("FS-UI1. 친구 스토리가 없으면 Watch all이 없고, 스토리 없�
     />,
   );
   expect(screen.queryByTestId(ids.watchAll)).toBeNull();
-  expect(screen.queryByTestId(ids.divider)).toBeNull();
   expect(screen.getByTestId(ids.unmet("g"))).not.toBeNull();
 });
 
-test("FS-UI1. 안 만난 친구 스토리만 있어도 구분 선은 스토리 칸과 스토리 없는 추천 사이", () => {
+test("FS-UI1. 스토리 칸 바로 뒤에 스토리 없는 추천 — 사이에 구분 선이 없다", () => {
   const catalog = catalogOf([general("g", { name: "다은" }), general("h", { name: "건우" })]);
   const rooms = [room("g", false), room("h", false)];
   const row = storyRowOf({
@@ -158,5 +156,5 @@ test("FS-UI1. 안 만난 친구 스토리만 있어도 구분 선은 스토리 �
     />,
   );
   expect(screen.queryByTestId(ids.watchAll)).toBeNull();
-  expect(order()).toEqual([ids.unmet("g"), ids.divider, ids.suggested("h"), ids.findFriends]);
+  expect(order()).toEqual([ids.unmet("g"), ids.suggested("h"), ids.findFriends]);
 });

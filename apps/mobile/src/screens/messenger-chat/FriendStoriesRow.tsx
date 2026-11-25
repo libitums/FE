@@ -77,7 +77,7 @@ function StoryFace({
 
 /**
  * 채팅 목록 맨 위 스토리 줄(ADR-0178 D3, 시안 1번) — 추천 친구 줄(ADR-0162) 자리를 바꿉니다. 판정은 `storyRowOf`, 칸 순서는
- * `storyOrderOf`(스토리 있는 인물 최신 순 → 구분 선 → 스토리 없는 추천, D3 개정)가 하고 여기서는 그리기만 합니다. 목록 스크롤 안이라 z-index 없이 문서 순서로 그립니다.
+ * `storyOrderOf`(스토리 있는 인물 최신 순 → 스토리 없는 추천, 구분 선 없음 — D3 개정)가 하고 여기서는 그리기만 합니다. 목록 스크롤 안이라 z-index 없이 문서 순서로 그립니다.
  */
 export function FriendStoriesRow({
   row,
@@ -170,13 +170,6 @@ export function FriendStoriesRow({
           {order.map((each) =>
             each.kind === "friend" ? friendFace(each.entry) : unmetFace(each.entry),
           )}
-          {order.length > 0 && row.others.length > 0 ? (
-            <view
-              className="story-divider"
-              data-testid={ids.divider}
-              accessibility-elements-hidden={true}
-            />
-          ) : null}
           {row.others.map((friend) => (
             <view key={friend.character.id} data-testid={ids.suggested(friend.character.id)}>
               <SuggestedAvatar friend={friend} onOpen={onOpenSuggested} />
