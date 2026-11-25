@@ -101,7 +101,8 @@ export async function evalReply(input: {
         mode: item.target.mode as "expose" | "elicit",
       }
     : null;
-  const speechLevel = item.speechLevel ?? "polite";
+  // 운영 턴처럼 페르소나의 말투 상한(`maxSpeechLevel`)을 넘지 않는다 — 존댓말 고정 인물(윤경 · 덕수쌤)에 casual 케이스를 넣어도 polite로 돈다.
+  const speechLevel = capSpeechLevel(item.speechLevel ?? "polite", persona.maxSpeechLevel);
   const ageBand = item.ageBand ?? "adult";
   const line = romanceLine(ageBand, item.romanceTier, persona, speechLevel);
   const expressions = (item.expressions ?? []).map((entry, index) => ({
@@ -219,4 +220,12 @@ export async function evalReply(input: {
     judge: judgement,
     judgeError,
   };
+}
+
+const speechOrder: readonly SpeechLevel[] = ["polite", "casual", "slang"];
+
+/** 말투 단계를 상한까지로 자른다. 상한이 없으면(추천 친구 · 이름만 준 케이스) 그대로. */
+export function capSpeechLevel(level: SpeechLevel, max: SpeechLevel | undefined): SpeechLevel {
+  if (max === undefined) return level;
+  return speechOrder.indexOf(level) > speechOrder.indexOf(max) ? max : level;
 }
