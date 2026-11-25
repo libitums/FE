@@ -59,6 +59,7 @@ export function useStoryReply(
       paid: false,
       cost: "0",
       ...(storyFree ? { storyFree: true } : {}),
+      fromSuggestion: false,
     });
     return true;
   };

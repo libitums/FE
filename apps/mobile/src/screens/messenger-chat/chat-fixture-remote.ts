@@ -1,7 +1,7 @@
 // 출처의 서버 모드입니다(ADR-0137) — 방을 열면 서버 기록을 읽고(비면 첫 인사), 보내기는 서버 턴(SSE)으로 답을 받습니다. 해금 선톡(ADR-0152).
 // 배달 실패(ADR-0138): 받지 못한 글은 Not sent로 남아 다시 보내고, 받은 뒤 끊긴 답은 기록을 다시 읽어 채웁니다. 던지지 않습니다.
 
-import type { RoomState } from "./chat-fixture-room";
+import { setRemoteIdeas, type RoomState } from "./chat-fixture-room";
 import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
@@ -64,7 +64,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     room.messages = mergeLog(room.messages, history.messages);
     room.notes = withHistoryNotes(room.notes, history);
     if (room.pendingReplies === 0 && !sameIdeas(room.remoteIdeas, history.ideas))
-      room.remoteIdeas = history.ideas;
+      setRemoteIdeas(room, history.ideas, history.ideasOrigin);
     if (room.recovery === "stalled" && recoveryTargets.get(room)?.(history.messages) === true)
       room.recovery = "none";
     return confirmed;

@@ -7,6 +7,8 @@ export type ChatReplyIdea = {
   readonly roman: string;
   readonly en: string;
 };
+/** 추천 답변이 붙은 캐릭터 답장의 출처(서버 `messages.origin`, ADR-0195). */
+export type ChatIdeasOrigin = "greeting" | "turn" | "proactive";
 export type ChatMediaKind = "photo" | "voice";
 export type ChatCounterpart = {
   readonly id: string;
@@ -134,6 +136,8 @@ export type ChatThread = {
   /** 보낸 글의 답을 기다리는 중(입력 중 점 전 포함) — 다시 보내기 판정(ADR-0129). */
   readonly awaitingReply: boolean;
   readonly ideas: readonly ChatReplyIdea[];
+  /** 그 추천이 붙은 캐릭터 답장의 출처(서버 `origin`, ADR-0195) — 가짜 출처 · 모르면 없음. 이벤트에만 씁니다. */
+  readonly ideasOrigin?: ChatIdeasOrigin;
   readonly settings: ChatRoomSettings;
   readonly storyPoints: readonly ChatStoryPoint[];
   /** 내 텍스트 글 id만 키. 없는 키 = NO_NOTES. */

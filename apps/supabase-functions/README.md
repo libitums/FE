@@ -980,7 +980,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `COMPANION_REACTION_CHECK_MODEL` · `COMPANION_REACTION_TRANSLATION_MODEL`(기본 `claude-haiku-5-5`) · 칩 `COMPANION_REACTION_SUGGEST_MODEL` →
   `COMPANION_SUGGEST_MODEL` → Haiku. 추정(캐시 없이, 입력 약 2.8k · 출력 약 300): Sonnet 5.5($2 / $10 per MTok) 답 ≈ $0.0086 + 검사 · 번역 ≈ $0.0003 —
   **반응 하나 약 $0.009**, 전체 상한이 다 차면 하루 약 $9. Haiku 답은 약 $0.0004 — 평가로 견준 뒤 바꾼다.
-- 반응 푸시(ADR-0191 D7, `_shared/companion-reaction-push.ts`): 문 `companion_story_reaction_push_gate`(스위치 · 시험 계정 · 기기 · 방). 배정을
+- 반응 푸시(ADR-0191 D7, `_shared/companion-reaction-push.ts`): 제목 인물 이름 · 본문 **모국어 번역 첫 줄 하나**(없거나 퀴즈 답이 새면 한국어 첫 줄,
+  `reactionPushBody`). 문 `companion_story_reaction_push_gate`(스위치 · 시험 계정 · 기기 · 방). 배정을
   `push_campaign_sends`(묶음 「스토리 반응」)에 먼저 남기고 `send-push`(목적지 그 인물 방). 「하루 한 번」에 세지 않지만, 그 줄이 있으면 그날 선톡 푸시
   (`companion_proactive_push_gate.pushedToday`) · 친구 스토리 알림은 건너뛴다.
 - 대화 턴(`chat-send`): `companion_story_context` — 학습자의 살아 있는 내 스토리 · 그 인물이 최근 올린 스토리 셋을 이번 턴 지시에 싣는다(ADR-0191 D9).

@@ -230,11 +230,13 @@ describe("AN1 분석 계약의 크기", () => {
   // 더해져 104이고, 보기 닫힘 `friend_story_closed`(감사 A4)가 더해져 105다(PostHog만).
   // ⟨ADR-0189⟩ 다시 듣기 `sentence_audio_replayed` · 칩 소리 `choice_chip_sound_played`가 더해져 107이다(PostHog만).
   // ⟨ADR-0190⟩ 방 안내 키보드 단계 `messenger_guide_keyboard`가 더해져 108이다(PostHog만).
-  // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 여덟이 더해져 116이다(PostHog만 — 옛 answered · replied 대신 chat_opened).
-  test("AN1. 이벤트 이름은 116개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0194 D7 · ADR-0191 · ADR-0195⟩ 내 스토리 여덟 · 채팅 답할 문장 추천 둘이 더해져 118이다(PostHog만).
+  test("AN1. 이벤트 이름은 118개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(116);
+    expect(names).toHaveLength(118);
+    expect(names).toContain("chat_suggestion_shown");
+    expect(names).toContain("chat_suggestion_tapped");
     expect(names).toContain("sentence_audio_replayed");
     expect(names).toContain("choice_chip_sound_played");
     expect(names).toContain("messenger_guide_keyboard");

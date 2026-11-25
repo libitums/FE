@@ -19,6 +19,7 @@ export const chatMessageSent = {
   characterId: "duksu",
   paid: true,
   cost: "3",
+  fromSuggestion: false,
 } as const satisfies AnalyticsEvent;
 
 export const plansViewedExample = planEventExamples[0];
