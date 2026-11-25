@@ -43,17 +43,33 @@ export function StoryReplyArea({
   );
 }
 
-/** 「Sent · Open chat」 — 보기 단위 알림. 넘김과 무관하게 같은 자리에 3초 떠 있고, Open chat은 보낸 그 인물의 방입니다. */
+/** 「Sent · Open chat」 — 보기 단위 알림(인물마다 새로 서는 큐브 면 밖의 층). 넘김과 무관하게 같은 자리에 3초 떠 있고, Open chat은
+ *  보낸 그 인물의 방입니다. `bottom`은 답장 묶음 윗변(px), `sides`는 좌우 여백(px)입니다. */
 export function StoryViewerSent({
   copy,
   reply,
+  bottom,
+  sides,
   onOpenChat,
 }: {
   readonly copy: FriendStoriesCopy;
   readonly reply: StoryViewerReply;
+  readonly bottom: number;
+  readonly sides: { readonly left: number; readonly right: number };
   readonly onOpenChat: (item: StoryViewerItem) => void;
 }): ReactNode {
   const sent = reply.sentItem;
   if (sent === null) return null;
-  return <StorySentToast copy={copy} name={sent.name} onOpenChat={() => onOpenChat(sent)} />;
+  return (
+    <view
+      className="story-viewer-sent-layer"
+      style={{
+        bottom: `${bottom}px`,
+        paddingLeft: `${sides.left}px`,
+        paddingRight: `${sides.right}px`,
+      }}
+    >
+      <StorySentToast copy={copy} name={sent.name} onOpenChat={() => onOpenChat(sent)} />
+    </view>
+  );
 }
