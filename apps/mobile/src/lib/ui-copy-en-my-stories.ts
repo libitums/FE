@@ -131,17 +131,20 @@ export const myStoriesEn: MyStoriesCopy = {
     textBlocked: "This text can't be shared. Try different words.",
   },
   textEntry: {
-    title: "Write a line",
-    placeholder: "Write in Korean or your language",
-    check: "Check",
-    checking: "Checking…",
-    suggested: "Suggested",
-    useThis: "Use this",
-    keepMine: "Keep mine",
-    blocked: "We can't use this text.",
-    limit: "You've checked enough for today.",
-    failed: "Couldn't check. Try again.",
-    cancel: "Cancel",
+    label: "Story text, Korean or English",
+    help: "Korean or English — we'll help",
+    done: "Done",
+    colors: "Text color",
+    color: (textColor) =>
+      textColor === "brown"
+        ? "Brown"
+        : textColor === "black"
+          ? "Black"
+          : textColor === "white"
+            ? "White"
+            : "Orange",
+    colorLabel: (name, on) => `${name}${on ? ", selected" : ""}`,
+    editLabel: (ko) => `Edit text: ${ko}`,
   },
   add: {
     title: "Add to your story",

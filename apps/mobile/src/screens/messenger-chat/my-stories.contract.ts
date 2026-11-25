@@ -5,11 +5,11 @@
 
 import type {
   MyStory as WireStory,
-  MyStoryDraft as WireCorrection,
   MyStoryOverlay as WireOverlay,
   MyStoryWindow as WireWindow,
 } from "@libitums/companion-contract";
 
+import type { ChatCrisisResource } from "./chat-source.contract";
 import type { FriendStoryWord } from "./friend-stories.contract";
 
 /** 내 스토리의 종류 — 단어장 단어(`word`) · 레슨 카드(`card`). 서버의 `photo`는 이 앱 판이 건너뜁니다(사진 화면 전). */
@@ -23,6 +23,8 @@ export type MyStoryPostKind = "word" | "card" | "text" | "photo";
 
 /** 글 스토리의 바탕색(시안 27번 네 가지). 색 값은 화면이 정합니다(`my-story-editor.ts`). */
 export type StoryBackground = "orange" | "green" | "blue" | "purple";
+/** 글(Aa) 상자의 글자색(시안 29번 네 가지). */
+export type StoryTextColor = "brown" | "black" | "white" | "orange";
 
 /** 사진 · 바탕 위에 얹은 단어 · 카드 · 글 하나 — 서버 `myStoryOverlaySchema`와 같은 모양(위치 · 크기는 0 ~ 1 비율, 회전은 도). */
 export type MyStoryOverlay = {
@@ -31,22 +33,13 @@ export type MyStoryOverlay = {
   readonly roman?: string;
   readonly meaning?: string;
   readonly word?: FriendStoryWord;
+  /** 글(Aa) 상자의 글자색 — 서버 반영 예상 칸(계약 overlay에 없음, ADR-0194 적용 기록). */
+  readonly color?: StoryTextColor;
   readonly x: number;
   readonly y: number;
   readonly scale: number;
   readonly rotation: number;
 };
-
-/** 올리기 전 교정 결과(`companion-my-story` `draft`) — kind same면 고칠 것 없음. */
-export type MyStoryCorrection = {
-  readonly kind: WireCorrection["kind"];
-  readonly ko: string;
-  readonly meaning: string | null;
-  readonly tip: string | null;
-};
-export type MyStoryCorrectionResult =
-  | { readonly result: "ok"; readonly correction: MyStoryCorrection }
-  | { readonly result: "blocked" | "limit" | "failed" };
 
 /** 글 스토리 올리기 요청(시안 27번, 서버 반영 예상 — ADR-0194 적용 기록 「서버에 요청하는 모양」). */
 export type MyTextStoryDraft = {
@@ -54,9 +47,6 @@ export type MyTextStoryDraft = {
   readonly background: StoryBackground;
   /** 한국어 한 줄 — 글 없이 단어 · 카드만 얹었으면 빈 글. */
   readonly ko: string;
-  readonly meaning: string | null;
-  /** 교정 전 내가 쓴 글 — 「Use this」로 바꿨을 때만. */
-  readonly original: string | null;
   readonly overlays: readonly MyStoryOverlay[];
   readonly lang: string;
   readonly tzOffsetMin: number;
@@ -168,6 +158,8 @@ export type MyStoryDraft = {
 export type MyStoryPostResult =
   | { readonly result: "ok"; readonly story: MyStory; readonly window: MyStoryWindow | null }
   | { readonly result: "window_used"; readonly window: MyStoryWindow | null }
+  /** 글 검수의 위기 신호 — 올리지 않고 기존 위기 안내 카드(ADR-0125)를 띄웁니다. */
+  | { readonly result: "crisis"; readonly resources: readonly ChatCrisisResource[] }
   | { readonly result: "off" | "daily_limit" | "text_blocked" | "failed" };
 
 /** 내 스토리 포트 — 서버 RPC · 고를 거리 · 처음 안내 표시. 어떤 호출도 던지지 않습니다. */
@@ -177,8 +169,6 @@ export type MyStoriesPort = {
   readonly post: (draft: MyStoryDraft) => Promise<MyStoryPostResult>;
   /** 글 스토리 올리기(`kinds`에 text가 있을 때만 부름). */
   readonly postText: (draft: MyTextStoryDraft) => Promise<MyStoryPostResult>;
-  /** 올리기 전 교정(글 스토리의 Aa). */
-  readonly correct: (text: string) => Promise<MyStoryCorrectionResult>;
   /** 하나(id) 또는 모두(null) 지움 — 성공이면 true. */
   readonly remove: (storyId: string | null) => Promise<boolean>;
   /** 보관 스위치 — 바뀐 값, 못 바꾸면 null. */

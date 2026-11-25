@@ -9,7 +9,6 @@ import type {
   MyStory,
   MyStoryChoice,
   MyStoryDraft,
-  MyStoryCorrectionResult,
   MyStoryPostKind,
   MyStoryPostResult,
   MyStoryReaction,
@@ -84,7 +83,6 @@ export type FakeMyStories = {
   readonly postText: ReturnType<
     typeof vi.fn<(draft: MyTextStoryDraft) => Promise<MyStoryPostResult>>
   >;
-  readonly correct: ReturnType<typeof vi.fn<(text: string) => Promise<MyStoryCorrectionResult>>>;
   readonly setKeep: ReturnType<typeof vi.fn<(keep: boolean) => Promise<boolean | null>>>;
   readonly state: () => MyStoriesState;
 };
@@ -96,13 +94,12 @@ export function fakeMyStories(options: {
   readonly words?: readonly MyStoryChoice[];
   readonly cards?: readonly LessonCardGroup[];
   readonly guideSeen?: boolean;
-  readonly postResult?: MyStoryPostResult["result"];
+  readonly postResult?: Exclude<MyStoryPostResult["result"], "crisis">;
   readonly removeOk?: boolean;
   /** 지금의 올리기 창 — 없으면 null(옛 서버). 올리면 이 창을 쓴 것으로 돌려줍니다. */
   readonly window?: MyStoryWindow | null;
   /** 올릴 수 있는 종류(서버 반영 예상) — 없으면 word · card. */
   readonly kinds?: readonly MyStoryPostKind[];
-  readonly correction?: MyStoryCorrectionResult;
 }): FakeMyStories {
   let stories = [...(options.stories ?? [])];
   let keep = options.keep ?? true;
@@ -140,7 +137,7 @@ export function fakeMyStories(options: {
       word: null,
       ko: draft.ko,
       roman: "",
-      meaning: draft.meaning ?? "",
+      meaning: "",
       example: null,
       background: draft.background,
       overlays: draft.overlays,
@@ -149,10 +146,6 @@ export function fakeMyStories(options: {
     stories = [story, ...stories];
     return { result: "ok", story, window };
   });
-  const correct = vi.fn(
-    async (_text: string): Promise<MyStoryCorrectionResult> =>
-      options.correction ?? { result: "failed" },
-  );
   const remove = vi.fn(async (id: string | null) => {
     if (options.removeOk === false) return false;
     stories = id === null ? [] : stories.filter((story) => story.id !== id);
@@ -166,7 +159,6 @@ export function fakeMyStories(options: {
     load: async () => state(),
     post,
     postText,
-    correct,
     remove,
     setKeep,
     choices: () => ({ words: options.words ?? [], cards: options.cards ?? [] }),
@@ -180,5 +172,5 @@ export function fakeMyStories(options: {
     },
     newClientId: () => `cid-${++ids}`,
   };
-  return { port, post, postText, correct, remove, setKeep, state };
+  return { port, post, postText, remove, setKeep, state };
 }

@@ -13,6 +13,7 @@ import { ChatEventsContext } from "./chat-events";
 import { createCoinWallet } from "./coin-wallet";
 import type { SuggestedFriendsPort } from "./friend-catalog.contract";
 import type { FriendStoriesPort } from "./friend-stories.contract";
+import { messengerChatTestIds as chatIds } from "./messenger-chat.contract";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
 import { cardChoice, fakeMyStories, MS_NOW, wordChoice } from "./my-stories.test-support";
 import { MessengerListScreen } from "./MessengerListScreen";
@@ -154,50 +155,45 @@ test("MS-UI33. 스티커 — 고르면 ×로 빼고, 두 손가락으로 크기 
   expect(screen.getByTestId(ids.sticker("s1"))).not.toBeNull();
 });
 
-test("MS-UI34. 글 서버(text) — Aa → 쓰고 Check → 고친 글 제안 → Use this → 바탕 위 글, Share는 글 스토리(바탕 · 원래 글 · overlays)", async () => {
-  const fake = fakeMyStories({
-    guideSeen: true,
-    words,
-    kinds: ["word", "card", "text"],
-    correction: {
-      result: "ok",
-      correction: {
-        kind: "correction",
-        ko: "오늘 처음으로 김치찌개를 만들었어!",
-        meaning: "I made kimchi stew for the first time today!",
-        tip: "처음 → 처음으로",
-      },
-    },
-  });
+test("MS-UI34. 글 서버(text) — Aa → 바탕 위 상자에 쓰기 · 글자색 → Done → 상자(교정 없음) · Share 바로 켜짐 → 글 스토리(쓴 글 그대로 · 앱이 만든 로마자)", async () => {
+  const fake = fakeMyStories({ guideSeen: true, words, kinds: ["word", "card", "text"] });
   await mount(fake);
   tapId(ids.create);
   tapId(ids.startBackground);
   tapId(ids.swatch("purple"));
   tapId(ids.toolText);
-  act(() => nativeInput("input", "오늘 처음 김치찌개를 만들었어!", "ui-lynx-text-field-input"));
-  tapId(ids.textCheck);
-  await flush();
-  expect(fake.correct).toHaveBeenCalledWith("오늘 처음 김치찌개를 만들었어!");
-  expect(screen.getByTestId(ids.textSuggestion).textContent).toContain("처음 → 처음으로");
-  tapId(ids.textUse);
-  expect(screen.queryByTestId(ids.textEntry)).toBeNull();
-  expect(screen.getByTestId(ids.textBlock).textContent).toContain(
-    "오늘 처음으로 김치찌개를 만들었어!",
+  expect(screen.getByTestId(ids.textEntry).textContent).toContain("Korean or English — we'll help");
+  tapId(ids.textColor("white"));
+  expect(screen.getByTestId(ids.textColor("white")).getAttribute("accessibility-label")).toBe(
+    "White, selected",
   );
+  act(() => nativeInput("input", "오늘 처음 김치찌개 만들었어", ids.textInput));
+  tapId(ids.textDone);
+  await flush();
+  expect(screen.queryByTestId(ids.textEntry)).toBeNull();
+  expect(screen.getByTestId(ids.textBlock).textContent).toContain("오늘 처음 김치찌개 만들었어");
+  expect(screen.getByTestId(ids.editor).textContent).not.toContain("More natural");
   tapId(ids.toolWords);
   expect(screen.getByTestId(ids.composer).textContent).toContain("Up to 8 on one story.");
   tapId(ids.choice("w2"));
   tapId(ids.share);
   await flush();
-  expect(fake.postText).toHaveBeenCalledWith(
+  const [draft] = fake.postText.mock.calls[0] ?? [];
+  expect(draft).toEqual(
     expect.objectContaining({
       background: "purple",
-      ko: "오늘 처음으로 김치찌개를 만들었어!",
-      original: "오늘 처음 김치찌개를 만들었어!",
-      overlays: [expect.objectContaining({ kind: "word", ko: "찌개", x: 0.5, y: 0.55 })],
+      ko: "오늘 처음 김치찌개 만들었어",
+      overlays: [
+        expect.objectContaining({ kind: "text", color: "white", x: 0.5, y: 0.3, scale: 1 }),
+        expect.objectContaining({ kind: "word", ko: "찌개", x: 0.5, y: 0.55 }),
+      ],
       lang: "en",
     }),
   );
+  expect(draft).not.toHaveProperty("meaning");
+  expect(draft).not.toHaveProperty("original");
+  expect(draft?.overlays[0]?.roman).toBe("oneul cheoeum gimchijjigae mandeureosseo");
+  expect(draft?.overlays[0]).not.toHaveProperty("meaning");
   expect(fake.post).not.toHaveBeenCalled();
   // 올린 글 스토리 보기 — 바탕 · 글 · 얹은 단어
   const card = screen.getByTestId(ids.storyBackground);
@@ -205,40 +201,40 @@ test("MS-UI34. 글 서버(text) — Aa → 쓰고 Check → 고친 글 제안 �
   expect(card.textContent).toContain("찌개");
 });
 
-test("MS-UI35. 교정이 막히면 안내만 · 글을 놓지 않는다, Keep mine은 내 글 그대로", async () => {
-  const blocked = fakeMyStories({
-    guideSeen: true,
-    kinds: ["word", "card", "text"],
-    correction: { result: "blocked" },
+test("MS-UI35. 올리기 검수의 위기 신호(crisis) — 올리지 않고 위기 안내 카드 · post_failed(crisis), 상자를 다시 누르면 고쳐 쓰기", async () => {
+  const fake = fakeMyStories({ guideSeen: true, kinds: ["word", "card", "text"] });
+  fake.postText.mockResolvedValueOnce({
+    result: "crisis",
+    resources: [{ name: "Helpline", phone: "1393", url: null, hours: "24/7" }],
   });
-  await mount(blocked);
+  const { events } = await mount(fake);
   tapId(ids.create);
   tapId(ids.startBackground);
   tapId(ids.toolText);
-  act(() => nativeInput("input", "나쁜 말", "ui-lynx-text-field-input"));
-  tapId(ids.textCheck);
+  act(() => nativeInput("input", "힘들어", ids.textInput));
+  tapId(ids.textDone);
   await flush();
-  expect(screen.getByTestId(ids.textEntry).textContent).toContain("We can't use this text.");
-  expect(screen.queryByTestId(ids.textBlock)).toBeNull();
+  tapId(ids.share);
+  await flush();
+  expect(screen.getByTestId(chatIds.crisis).textContent).toContain("Helpline");
+  expect(events().filter((e) => e.name === "my_story_post_failed")).toEqual([
+    expect.objectContaining({ reason: "crisis" }),
+  ]);
+  act(() => {
+    fireEvent.tap(screen.getByTestId(ids.textBlock), { eventType: "catchEvent" });
+  });
+  expect(screen.getByTestId(ids.textEntry)).not.toBeNull();
 });
 
 test("MS-UI36. 글 스토리 올리기가 text_blocked면 편집에 안내 · post_failed(text_blocked)", async () => {
-  const fake = fakeMyStories({
-    guideSeen: true,
-    words,
-    kinds: ["word", "card", "text"],
-    correction: {
-      result: "ok",
-      correction: { kind: "same", ko: "안녕", meaning: "Hi", tip: null },
-    },
-  });
+  const fake = fakeMyStories({ guideSeen: true, words, kinds: ["word", "card", "text"] });
   fake.postText.mockResolvedValueOnce({ result: "text_blocked" });
   const { events } = await mount(fake);
   tapId(ids.create);
   tapId(ids.startBackground);
   tapId(ids.toolText);
-  act(() => nativeInput("input", "안녕", "ui-lynx-text-field-input"));
-  tapId(ids.textCheck);
+  act(() => nativeInput("input", "안녕", ids.textInput));
+  tapId(ids.textDone);
   await flush();
   expect(screen.getByTestId(ids.textBlock).textContent).toContain("안녕");
   tapId(ids.share);

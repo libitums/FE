@@ -19,7 +19,7 @@ export type MyStoryEvent =
   | (Common & { readonly name: "my_story_posted"; readonly kind: "word" | "card" | "text" })
   | (Common & {
       readonly name: "my_story_post_failed";
-      readonly reason: "off" | "daily_limit" | "window_used" | "text_blocked" | "failed";
+      readonly reason: "off" | "daily_limit" | "window_used" | "text_blocked" | "crisis" | "failed";
     })
   | (Common & {
       readonly name: "my_story_viewed";

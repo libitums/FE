@@ -141,17 +141,20 @@ export const myStoriesTh: MyStoriesCopy = {
     textBlocked: "แชร์ข้อความนี้ไม่ได้ ลองใช้คำอื่น",
   },
   textEntry: {
-    title: "เขียนหนึ่งประโยค",
-    placeholder: "เขียนเป็นภาษาเกาหลีหรือภาษาของคุณ",
-    check: "ตรวจ",
-    checking: "กำลังตรวจ…",
-    suggested: "คำแนะนำ",
-    useThis: "ใช้อันนี้",
-    keepMine: "ใช้ของฉัน",
-    blocked: "ใช้ข้อความนี้ไม่ได้",
-    limit: "วันนี้ตรวจครบแล้ว",
-    failed: "ตรวจไม่สำเร็จ ลองอีกครั้ง",
-    cancel: "ยกเลิก",
+    label: "ข้อความสตอรี่ ภาษาเกาหลีหรืออังกฤษ",
+    help: "ภาษาเกาหลีหรืออังกฤษก็ได้ เราช่วยได้",
+    done: "เสร็จ",
+    colors: "สีตัวอักษร",
+    color: (textColor) =>
+      textColor === "brown"
+        ? "น้ำตาล"
+        : textColor === "black"
+          ? "ดำ"
+          : textColor === "white"
+            ? "ขาว"
+            : "ส้ม",
+    colorLabel: (name, on) => `${name}${on ? " เลือกอยู่" : ""}`,
+    editLabel: (ko) => `แก้ข้อความ: ${ko}`,
   },
   add: {
     title: "เพิ่มในสตอรี่",

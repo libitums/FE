@@ -9,7 +9,6 @@ import type { VisibleFriend } from "./friend-catalog.contract";
 import type { FriendStory } from "./friend-stories.contract";
 import type {
   MyStoriesState,
-  MyStoryCorrectionResult,
   MyStoryDraft,
   MyStoryPostResult,
   MyTextStoryDraft,
@@ -86,7 +85,6 @@ export type CompanionMyStoriesRemote = {
   readonly post: (draft: MyStoryDraft) => Promise<MyStoryPostResult>;
   /** 글 스토리(서버 반영 예상) · 올리기 전 교정 — Edge Function `companion-my-story`. */
   readonly postText: (draft: MyTextStoryDraft) => Promise<MyStoryPostResult>;
-  readonly correct: (text: string) => Promise<MyStoryCorrectionResult>;
   readonly remove: (storyId: string | null) => Promise<boolean>;
   readonly setKeep: (keep: boolean) => Promise<boolean | null>;
 };

@@ -123,17 +123,20 @@ export const myStoriesZhTw: MyStoriesCopy = {
     textBlocked: "這段文字無法分享，請換個說法。",
   },
   textEntry: {
-    title: "寫一句話",
-    placeholder: "用韓文或你的語言寫",
-    check: "檢查",
-    checking: "檢查中…",
-    suggested: "建議",
-    useThis: "用這句",
-    keepMine: "保留我的",
-    blocked: "無法使用這段文字。",
-    limit: "今天的檢查次數已用完。",
-    failed: "無法檢查，請再試一次。",
-    cancel: "取消",
+    label: "限時動態文字，韓文或英文",
+    help: "韓文或英文都可以，我們會幫忙",
+    done: "完成",
+    colors: "文字顏色",
+    color: (textColor) =>
+      textColor === "brown"
+        ? "咖啡色"
+        : textColor === "black"
+          ? "黑色"
+          : textColor === "white"
+            ? "白色"
+            : "橘色",
+    colorLabel: (name, on) => `${name}${on ? "，已選取" : ""}`,
+    editLabel: (ko) => `編輯文字：${ko}`,
   },
   add: {
     title: "加到你的限時動態",

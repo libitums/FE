@@ -2,11 +2,7 @@
 // 함수가 없는 서버(배포 전)는 404 → null · failed. 글 스토리 · 교정은 Edge Function `companion-my-story`(글 스토리는 서버 반영 예상).
 
 import type { CompanionMyStoriesRemote } from "../screens/messenger-chat/chat-remote.contract";
-import {
-  myStoriesFrom,
-  myStoryCorrectionFrom,
-  myStoryPostFrom,
-} from "../screens/messenger-chat/my-stories-parse";
+import { myStoriesFrom, myStoryPostFrom } from "../screens/messenger-chat/my-stories-parse";
 
 type Call = (path: string, body: unknown) => Promise<string | null>;
 
@@ -55,15 +51,11 @@ export function myStoriesRemote(call: Call): CompanionMyStoriesRemote {
           client_id: draft.clientId,
           background: draft.background,
           ko: draft.ko,
-          ...(draft.meaning === null ? {} : { meaning: draft.meaning }),
-          ...(draft.original === null ? {} : { original: draft.original }),
           overlays: draft.overlays,
           lang: draft.lang,
           tz_offset_min: draft.tzOffsetMin,
         }),
       ),
-    correct: async (text) =>
-      myStoryCorrectionFrom(await call(MY_STORY_FUNCTION, { action: "draft", text })),
     remove: async (storyId) =>
       (await call("/rest/v1/rpc/companion_delete_my_story", { p_story_id: storyId })) !== null,
     setKeep: async (keep) =>

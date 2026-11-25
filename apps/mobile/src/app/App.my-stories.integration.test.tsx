@@ -49,22 +49,13 @@ function serverRemote(state: MyStoriesState | "fail") {
       word: null,
       ko: draft.ko,
       roman: "",
-      meaning: draft.meaning ?? "",
+      meaning: "",
       example: null,
       background: draft.background,
       postedAt: Date.now(),
       expiresAt: Date.now() + 24 * HOUR,
     }),
     window: null,
-  }));
-  const correct = vi.fn(async (_text: string) => ({
-    result: "ok" as const,
-    correction: {
-      kind: "same" as const,
-      ko: "오늘 너무 좋았어",
-      meaning: "Today was great",
-      tip: null,
-    },
   }));
   setEarlyAccessRemote(
     () =>
@@ -76,13 +67,12 @@ function serverRemote(state: MyStoriesState | "fail") {
           list,
           post: async () => ({ result: "failed" }),
           postText,
-          correct,
           remove: async () => true,
           setKeep: async (keep: boolean) => keep,
         },
       }) as unknown as ChatRemote,
   );
-  return { list, postText, correct };
+  return { list, postText };
 }
 
 const seen = new Set<string>();
@@ -192,7 +182,7 @@ test("MSI2. 내 스토리를 못 읽거나 꺼져 있으면 「+」가 없다", 
   expect(present(ids.create)).toBe(false);
 });
 
-test("MSI6. 서버가 글 스토리를 받으면(kinds에 text) 「+」 → Background → Aa → 교정 → Share가 함수 결선으로 글 스토리를 올린다, 없으면 Aa가 없다", async () => {
+test("MSI6. 서버가 글 스토리를 받으면(kinds에 text) 「+」 → Background → Aa(바탕 위 상자) → Done → Share(교정 없음)가 함수 결선으로 글 스토리를 올린다, 없으면 Aa가 없다", async () => {
   const remote = serverRemote({
     enabled: true,
     keep: true,
@@ -206,19 +196,16 @@ test("MSI6. 서버가 글 스토리를 받으면(kinds에 text) 「+」 → Back
   tapId(ids.startBackground);
   tapId(ids.swatch("blue"));
   tapId(ids.toolText);
-  await act(async () => nativeInput("input", "오늘 너무 좋았어", "ui-lynx-text-field-input"));
-  tapId(ids.textCheck);
+  await act(async () => nativeInput("input", "오늘 너무 좋았어", ids.textInput));
+  tapId(ids.textDone);
   await settle();
-  expect(remote.correct).toHaveBeenCalledWith("오늘 너무 좋았어");
   tapId(ids.share);
   await settle();
   expect(remote.postText).toHaveBeenCalledWith(
     expect.objectContaining({
       background: "blue",
       ko: "오늘 너무 좋았어",
-      meaning: "Today was great",
-      original: null,
-      overlays: [],
+      overlays: [expect.objectContaining({ kind: "text", ko: "오늘 너무 좋았어" })],
       tzOffsetMin: -new Date().getTimezoneOffset() || 0,
     }),
   );

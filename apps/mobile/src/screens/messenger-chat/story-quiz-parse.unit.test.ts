@@ -48,18 +48,23 @@ const mine = {
 const page = (messages: unknown[]) =>
   JSON.stringify({ messages: [...messages].reverse(), hasMore: false });
 
-test("MS-U20. 반응 메시지 — 첫 말풍선에만 내 스토리 인용(mine · deleted), 퀴즈 각도면 ask", () => {
+test("MS-U20. 반응 메시지 — 첫 말풍선에만 내 스토리 인용(mine · deleted), 서버가 무료 답을 알릴 때(quiz.freeAnswer)만 ask — 각도 quiz만으론 없음", () => {
   const history = historyFrom(
     page([
       assistant("m1", 1, {
         origin: "story_reaction",
         story: mine,
-        meta: { myStoryId: "ms-1", angle: "quiz" },
+        meta: { myStoryId: "ms-1", angle: "quiz", quiz: { freeAnswer: true } },
       }),
       assistant("m2", 2, {
         origin: "story_reaction",
         story: { kind: "deleted", characterId: "haejun" },
         meta: { myStoryId: "ms-1", angle: "question" },
+      }),
+      assistant("m3", 3, {
+        origin: "story_reaction",
+        story: mine,
+        meta: { myStoryId: "ms-1", angle: "quiz" },
       }),
     ]),
   );
@@ -75,6 +80,9 @@ test("MS-U20. 반응 메시지 — 첫 말풍선에만 내 스토리 인용(mine
   expect(second).not.toHaveProperty("quiz");
   expect(third).toMatchObject({ id: "m2#0", story: { kind: "deleted" } });
   expect(third).not.toHaveProperty("quiz");
+  const quizOnlyAngle = history?.messages.find((m) => m.id === "m3#0");
+  expect(quizOnlyAngle).toMatchObject({ story: { kind: "mine" } });
+  expect(quizOnlyAngle).not.toHaveProperty("quiz");
 });
 
 test("MS-U21. 퀴즈 meta — 내 답(free · attempt · result) · 선물(gift.word)을 풀고, 칸이 없거나 틀리면 표시 없음", () => {

@@ -138,7 +138,7 @@ export function MyTextStoryCard({ story }: { readonly story: MyStory }): ReactNo
       className={`my-story-text-card my-story-bg-${story.background ?? "orange"}`}
       data-testid={ids.storyBackground}
     >
-      {story.ko === "" ? null : (
+      {story.ko === "" || story.overlays.some((overlay) => overlay.kind === "text") ? null : (
         <view className="my-story-text-block" accessibility-element={true} flatten={false}>
           <text className="my-story-text-block-ko" data-testid={ids.cardKo}>
             {story.ko}
@@ -148,25 +148,56 @@ export function MyTextStoryCard({ story }: { readonly story: MyStory }): ReactNo
           )}
         </view>
       )}
-      {story.overlays.map((overlay, index) => (
-        <view
-          key={`${overlay.ko}-${index}`}
-          className="my-story-sticker"
-          style={stickerStyle(overlay)}
-          flatten={false}
-          accessibility-element={true}
-          accessibility-label={copy.stickerLabel(overlay.ko, overlay.meaning ?? "")}
-        >
-          <text className="my-story-sticker-ko" accessibility-elements-hidden={true}>
-            {overlay.ko}
-          </text>
-          {overlay.meaning === undefined ? null : (
-            <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
-              {overlay.meaning}
+      {story.overlays.map((overlay, index) =>
+        overlay.kind === "text" ? (
+          <view
+            key={`${overlay.ko}-${index}`}
+            className="my-story-text-box"
+            style={stickerStyle(overlay)}
+            flatten={false}
+            accessibility-element={true}
+            accessibility-label={
+              overlay.meaning === undefined ? overlay.ko : `${overlay.ko}. ${overlay.meaning}`
+            }
+          >
+            <text
+              className={`my-story-text-box-ko my-story-ink-${overlay.color ?? "brown"}`}
+              data-testid={ids.cardKo}
+              accessibility-elements-hidden={true}
+            >
+              {overlay.ko}
             </text>
-          )}
-        </view>
-      ))}
+            {overlay.roman === undefined ? null : (
+              <text className="my-story-sticker-roman" accessibility-elements-hidden={true}>
+                {overlay.roman}
+              </text>
+            )}
+            {overlay.meaning === undefined ? null : (
+              <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
+                {`“${overlay.meaning}”`}
+              </text>
+            )}
+          </view>
+        ) : (
+          <view
+            key={`${overlay.ko}-${index}`}
+            className="my-story-sticker"
+            style={stickerStyle(overlay)}
+            flatten={false}
+            accessibility-element={true}
+            accessibility-label={copy.stickerLabel(overlay.ko, overlay.meaning ?? "")}
+          >
+            <text className="my-story-sticker-ko" accessibility-elements-hidden={true}>
+              {overlay.ko}
+            </text>
+            {overlay.meaning === undefined ? null : (
+              <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
+                {overlay.meaning}
+              </text>
+            )}
+          </view>
+        ),
+      )}
     </view>
   );
 }

@@ -130,17 +130,20 @@ export const myStoriesVi: MyStoriesCopy = {
     textBlocked: "Không thể chia sẻ đoạn chữ này. Hãy thử từ khác.",
   },
   textEntry: {
-    title: "Viết một câu",
-    placeholder: "Viết bằng tiếng Hàn hoặc tiếng của bạn",
-    check: "Kiểm tra",
-    checking: "Đang kiểm tra…",
-    suggested: "Gợi ý",
-    useThis: "Dùng câu này",
-    keepMine: "Giữ câu của tôi",
-    blocked: "Không thể dùng đoạn chữ này.",
-    limit: "Hôm nay bạn đã kiểm tra đủ rồi.",
-    failed: "Không kiểm tra được. Hãy thử lại.",
-    cancel: "Hủy",
+    label: "Chữ trên tin, tiếng Hàn hoặc tiếng Anh",
+    help: "Tiếng Hàn hay tiếng Anh — chúng tôi giúp bạn",
+    done: "Xong",
+    colors: "Màu chữ",
+    color: (textColor) =>
+      textColor === "brown"
+        ? "Nâu"
+        : textColor === "black"
+          ? "Đen"
+          : textColor === "white"
+            ? "Trắng"
+            : "Cam",
+    colorLabel: (name, on) => `${name}${on ? ", đã chọn" : ""}`,
+    editLabel: (ko) => `Sửa chữ: ${ko}`,
   },
   add: {
     title: "Thêm vào tin",

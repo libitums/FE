@@ -1,176 +1,127 @@
-import { useRef, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-import { Button } from "@libitums/ui-lynx/button";
-import { TextField } from "@libitums/ui-lynx/text-field";
 
+import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
-import type { EditorText } from "./my-story-editor";
-import {
-  myStoriesTestIds as ids,
-  type MyStoryCorrection,
-  type MyStoryCorrectionResult,
-} from "./my-stories.contract";
+import { STORY_TEXT_COLORS } from "./my-story-editor";
+import { myStoriesTestIds as ids, type StoryTextColor } from "./my-stories.contract";
 
 import "./my-stories.css";
 
 /** 글 한 줄의 길이 상한 — 사진 스토리 한 줄과 같게 둡니다(서버 반영 예상). */
 const TEXT_MAX = 80;
+/** 위 안전 영역 아래 글자색 줄까지의 틈(px, 편집 위 줄과 같은 높이). */
+const TOP_GAP = 12;
+/** 바탕 위 글 상자의 입력 칸 id(초점 주기). 한 화면에 하나뿐입니다. */
+const TYPING_INPUT_ID = "my-story-typing-input";
 
-type Step =
-  | { readonly kind: "write" }
-  | { readonly kind: "checking" }
-  | { readonly kind: "suggested"; readonly correction: MyStoryCorrection }
-  | { readonly kind: "notice"; readonly message: string };
+type NativeInputEvent = { readonly detail: { readonly value: string } };
+
+/** 휴대폰 키보드를 올립니다 — 테스트 환경 · 요소 없음에서는 조용히 넘어갑니다. */
+function focusTyping(): void {
+  "background only";
+  try {
+    lynx
+      .createSelectorQuery()
+      .select(`#${TYPING_INPUT_ID}`)
+      .invoke({ method: "focus", params: undefined })
+      .exec();
+  } catch {
+    // 초점을 못 주면 사용자가 칸을 누릅니다.
+  }
+}
 
 /**
- * Aa — 내 글 한 줄 + 교정 제안(시안 27번, 글 서버에서만). 쓰고 「Check」를 누르면 서버 교정(`companion-my-story` draft)을 받아 고친 글을
- * 보이고 「Use this」(고친 글 · 원래 글은 `original`) / 「Keep mine」. 고칠 것이 없으면(same) 그대로 놓습니다. 막힌 글은 놓지 않습니다.
+ * Aa — 바탕 위 글 상자 안에서 바로 쓰기(시안 29번, 글 서버에서만). 바탕이 어두워지고 가운데 점선 상자에 휴대폰 키보드로 쓰며, 위에 글자색
+ * 넷 · Done. Done이면 상자가 바탕 위 요소가 되고(부르는 쪽), 빈 글이면 상자를 없앱니다. 시스템 뒤로 = Done.
  */
 export function MyStoryTextEntry({
   initial,
-  correct,
+  initialColor,
   onDone,
-  onCancel,
 }: {
   readonly initial: string;
-  readonly correct: (text: string) => Promise<MyStoryCorrectionResult>;
-  readonly onDone: (text: EditorText) => void;
-  readonly onCancel: () => void;
+  readonly initialColor: StoryTextColor;
+  readonly onDone: (ko: string, color: StoryTextColor) => void;
 }): ReactNode {
   const copy = useUiCopy().messengerChat.myStories.textEntry;
-  const [step, setStep] = useState<Step>({ kind: "write" });
+  const insets = safeAreaInsetsFrom(useGlobalProps());
+  const [textColor, setTextColor] = useState<StoryTextColor>(initialColor);
   const value = useRef(initial);
-  const checking = useRef(false);
-  useLayerBack(onCancel);
-
-  async function handleCheck() {
-    "background only";
-    const mine = value.current.trim();
-    if (mine === "" || checking.current) return;
-    checking.current = true;
-    setStep({ kind: "checking" });
-    const checked = await correct(mine);
-    checking.current = false;
-    if (checked.result === "ok") {
-      const { correction } = checked;
-      if (correction.kind === "same" || correction.ko === mine)
-        return onDone({ ko: mine, meaning: correction.meaning, original: null });
-      return setStep({ kind: "suggested", correction });
-    }
-    setStep({
-      kind: "notice",
-      message:
-        checked.result === "blocked"
-          ? copy.blocked
-          : checked.result === "limit"
-            ? copy.limit
-            : copy.failed,
-    });
-  }
+  const colorRef = useRef(textColor);
+  colorRef.current = textColor;
+  const done = () => onDone(value.current, colorRef.current);
+  useLayerBack(done);
+  useEffect(() => {
+    focusTyping();
+  }, []);
 
   return (
-    <view className="my-story-text-entry" data-testid={ids.textEntry} event-through={false}>
-      <view className="my-story-text-entry-card">
-        <text className="my-story-section-title" accessibility-traits="header" flatten={false}>
-          {copy.title}
-        </text>
-        <view data-testid={ids.textInput}>
-          <TextField
-            accessibilityLabel={copy.title}
-            placeholder={copy.placeholder}
-            defaultValue={initial}
-            counter={{ maxLength: TEXT_MAX }}
-            bindinput={(text) => {
-              value.current = text;
-              if (step.kind !== "write") setStep({ kind: "write" });
-            }}
-            bindconfirm={() => void handleCheck()}
-          />
+    <view
+      className="my-story-typing"
+      data-testid={ids.textEntry}
+      event-through={false}
+      style={{ paddingTop: `${insets.top + TOP_GAP}px` }}
+    >
+      <view className="my-story-typing-top">
+        <view className="my-story-typing-colors" accessibility-label={copy.colors}>
+          {STORY_TEXT_COLORS.map((each) => (
+            <view
+              key={each}
+              className={`my-story-text-swatch my-story-ink-bg-${each}${each === textColor ? " my-story-text-swatch-on" : ""}`}
+              data-testid={ids.textColor(each)}
+              accessibility-element={true}
+              accessibility-label={copy.colorLabel(copy.color(each), each === textColor)}
+              accessibility-traits="button"
+              accessibility-enable-tap={true}
+              flatten={false}
+              bindtap={() => {
+                "background only";
+                setTextColor(each);
+              }}
+            />
+          ))}
         </view>
-        {step.kind === "suggested" ? (
-          <view
-            className="my-story-text-suggestion"
-            data-testid={ids.textSuggestion}
-            flatten={false}
-            accessibility-element={true}
-            accessibility-label={`${copy.suggested}: ${step.correction.ko}`}
-          >
-            <text className="my-story-note" accessibility-elements-hidden={true}>
-              {copy.suggested}
-            </text>
-            <text className="my-story-waiting-title" accessibility-elements-hidden={true}>
-              {step.correction.ko}
-            </text>
-            {step.correction.tip === null ? null : (
-              <text className="my-story-note" accessibility-elements-hidden={true}>
-                {step.correction.tip}
-              </text>
-            )}
-          </view>
-        ) : null}
-        {step.kind === "notice" ? <text className="my-story-error">{step.message}</text> : null}
-        {step.kind === "suggested" ? (
-          <view className="my-story-text-actions">
-            <view className="my-story-text-action" data-testid={ids.textKeep}>
-              <Button
-                label={copy.keepMine}
-                variant="outline"
-                size="m"
-                width="fill"
-                bindtap={() => {
-                  "background only";
-                  onDone({ ko: value.current.trim(), meaning: null, original: null });
-                }}
-              />
-            </view>
-            <view className="my-story-text-action" data-testid={ids.textUse}>
-              <Button
-                label={copy.useThis}
-                variant="brand"
-                size="m"
-                width="fill"
-                bindtap={() => {
-                  "background only";
-                  onDone({
-                    ko: step.correction.ko,
-                    meaning: step.correction.meaning,
-                    original: value.current.trim(),
-                  });
-                }}
-              />
-            </view>
-          </view>
-        ) : (
-          <view className="my-story-text-actions">
-            <view className="my-story-text-action">
-              <Button
-                label={copy.cancel}
-                variant="outline"
-                size="m"
-                width="fill"
-                bindtap={() => {
-                  "background only";
-                  onCancel();
-                }}
-              />
-            </view>
-            <view className="my-story-text-action" data-testid={ids.textCheck}>
-              <Button
-                label={step.kind === "checking" ? copy.checking : copy.check}
-                variant="brand"
-                size="m"
-                width="fill"
-                loading={step.kind === "checking"}
-                bindtap={() => {
-                  "background only";
-                  void handleCheck();
-                }}
-              />
-            </view>
-          </view>
-        )}
+        <view
+          className="my-story-typing-done"
+          data-testid={ids.textDone}
+          accessibility-element={true}
+          accessibility-label={copy.done}
+          accessibility-traits="button"
+          accessibility-enable-tap={true}
+          flatten={false}
+          bindtap={() => {
+            "background only";
+            done();
+          }}
+        >
+          <text className="my-story-typing-done-text" accessibility-elements-hidden={true}>
+            {copy.done}
+          </text>
+        </view>
       </view>
+      <view className="my-story-typing-box">
+        <input
+          id={TYPING_INPUT_ID}
+          className={`my-story-typing-input my-story-ink-${textColor}`}
+          data-testid={ids.textInput}
+          default-value={initial}
+          maxlength={TEXT_MAX}
+          confirm-type="done"
+          accessibility-element={true}
+          accessibility-label={copy.label}
+          bindinput={(event: NativeInputEvent) => {
+            "background only";
+            value.current = event.detail.value;
+          }}
+          bindconfirm={() => {
+            "background only";
+            done();
+          }}
+        />
+      </view>
+      <text className="my-story-typing-help">{copy.help}</text>
     </view>
   );
 }

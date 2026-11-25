@@ -6,6 +6,7 @@ import cards from "@libitums/icons/lynx/cards";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 
+import { openExternalLink } from "../../lib/external-link";
 import { safeAreaInsetsFrom, sheetBottomInsetFrom } from "../../lib/safe-area";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -17,23 +18,30 @@ import {
   type EditorCaps,
   type EditorShare,
   type EditorSticker,
-  type EditorText,
 } from "./my-story-editor";
+import type { ChatCrisisResource } from "./chat-source.contract";
 import {
   myStoriesTestIds as ids,
   type MyStoryChoices,
-  type MyStoryCorrectionResult,
   type MyStoryKind,
   type StoryBackground,
 } from "./my-stories.contract";
 import { MyStoryAddSheet } from "./MyStoryComposer";
 import { MyStorySticker, type CanvasSize } from "./MyStorySticker";
+import { MyStoryTextBox, useEditorText } from "./MyStoryTextBox";
 import { MyStoryTextEntry } from "./MyStoryTextEntry";
+import { ChatCrisisCard } from "./SafetyParts";
 
 import "./my-stories.css";
 
 /** 아래 단추 줄의 기본 여백(CSS `--libitum-spacing-16`). */
 const FOOTER_PADDING = 16;
+
+// 위기 카드의 전화 · 웹 주소는 호스트가 엽니다(ADR-0125, 대화 화면과 같음).
+const openLink = (url: string): void => {
+  "background only";
+  openExternalLink(url);
+};
 
 function Tool({
   testId,
@@ -74,10 +82,11 @@ function Tool({
 export type MyStoryEditorProps = {
   readonly caps: EditorCaps;
   readonly choices: () => MyStoryChoices;
-  readonly correct: (text: string) => Promise<MyStoryCorrectionResult>;
   readonly busy: boolean;
   /** 올리기 실패 안내 글 — 문구는 부르는 쪽이 고릅니다. */
   readonly error: string | null;
+  /** 올리기 검수의 위기 신호 — 기존 위기 안내 카드(ADR-0125)를 Share 위에 띄웁니다. */
+  readonly crisis: readonly ChatCrisisResource[] | null;
   readonly onShare: (share: EditorShare) => void;
   /** 바탕 · 얹은 것이 바뀜 — 부르는 쪽이 clientId · 안내를 새로 합니다. */
   readonly onChange: () => void;
@@ -91,9 +100,9 @@ export type MyStoryEditorProps = {
 export function MyStoryEditor({
   caps,
   choices,
-  correct,
   busy,
   error,
+  crisis,
   onShare,
   onChange,
   onClose,
@@ -104,19 +113,21 @@ export function MyStoryEditor({
   const bottom = sheetBottomInsetFrom(globalProps, FOOTER_PADDING);
   const [background, setBackground] = useState<StoryBackground>("orange");
   const [stickers, setStickers] = useState<readonly EditorSticker[]>([]);
-  const [text, setText] = useState<EditorText | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [sheet, setSheet] = useState<MyStoryKind | null>(null);
-  const [writing, setWriting] = useState(false);
   const [canvas, setCanvas] = useState<CanvasSize>({ width: 0, height: 0 });
   const stickerIds = useRef(0); // 스티커 id — 이 편집 안에서만 씁니다(서버 clientId와 따로)
   useLayerBack(onClose);
 
-  const share = editorShareOf(background, stickers, text, caps);
   const changed = (apply: () => void) => {
     apply();
     onChange();
   };
+  const typing = useEditorText(changed);
+  const { text, writing } = typing;
+  const share = editorShareOf(background, stickers, text, caps);
+  // 아래 안내 — 실패, 얹은 것이 있음, 빈 바탕 순.
+  const hint = error ?? (stickers.length > 0 || text !== null ? copy.hintMove : copy.hintOne);
   const update = (next: EditorSticker) =>
     setStickers((now) => now.map((each) => (each.id === next.id ? next : each)));
 
@@ -179,28 +190,15 @@ export function MyStoryEditor({
           }}
         >
           {text === null ? null : (
-            <view
-              className="my-story-text-block"
-              data-testid={ids.textBlock}
-              flatten={false}
-              accessibility-element={true}
-              accessibility-label={text.meaning === null ? text.ko : `${text.ko}. ${text.meaning}`}
-              accessibility-traits="button"
-              accessibility-enable-tap={true}
-              catchtap={() => {
-                "background only";
-                setWriting(true);
-              }}
-            >
-              <text className="my-story-text-block-ko" accessibility-elements-hidden={true}>
-                {text.ko}
-              </text>
-              {text.meaning === null ? null : (
-                <text className="my-story-text-block-meaning" accessibility-elements-hidden={true}>
-                  {`“${text.meaning}”`}
-                </text>
-              )}
-            </view>
+            <MyStoryTextBox
+              text={text}
+              canvas={canvas}
+              selected={selected === "text"}
+              onSelect={() => setSelected("text")}
+              onChange={typing.update}
+              onRemove={typing.remove}
+              onEdit={typing.start}
+            />
           )}
           {stickers.map((sticker) => (
             <MyStorySticker
@@ -218,7 +216,7 @@ export function MyStoryEditor({
         </view>
         <view className="my-story-tools">
           {caps.text ? (
-            <Tool testId={ids.toolText} label={copy.text} onTap={() => setWriting(true)}>
+            <Tool testId={ids.toolText} label={copy.text} onTap={typing.start}>
               <text className="my-story-tool-aa">Aa</text>
             </Tool>
           ) : null}
@@ -233,13 +231,14 @@ export function MyStoryEditor({
           className="my-story-editor-footer"
           style={{ paddingBottom: `${FOOTER_PADDING + bottom}px` }}
         >
+          {crisis === null ? null : <ChatCrisisCard resources={crisis} onOpen={openLink} />}
           <text
             className={
               error === null ? "my-story-editor-hint" : "my-story-editor-hint my-story-error"
             }
             data-testid={error === null ? ids.editorHint : ids.composerError}
           >
-            {error ?? (stickers.length > 0 ? copy.hintMove : copy.hintOne)}
+            {hint}
           </text>
           <view data-testid={ids.share}>
             <Button
@@ -265,7 +264,7 @@ export function MyStoryEditor({
           onPick={(choice) => {
             stickerIds.current += 1;
             const id = `s${stickerIds.current}`;
-            changed(() => setStickers((now) => placeSticker(now, choice, caps, id)));
+            changed(() => setStickers((now) => placeSticker(now, choice, caps, id, text !== null)));
             setSelected(id);
             setSheet(null);
           }}
@@ -274,13 +273,9 @@ export function MyStoryEditor({
       )}
       {writing ? (
         <MyStoryTextEntry
-          initial={text?.original ?? text?.ko ?? ""}
-          correct={correct}
-          onDone={(next) => {
-            changed(() => setText(next.ko === "" ? null : next));
-            setWriting(false);
-          }}
-          onCancel={() => setWriting(false)}
+          initial={text?.ko ?? ""}
+          initialColor={text?.color ?? "brown"}
+          onDone={typing.finish}
         />
       ) : null}
     </>

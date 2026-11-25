@@ -6,7 +6,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { useChatEvents } from "./chat-events";
-import type { ChatRoomSummary } from "./chat-source.contract";
+import type { ChatCrisisResource, ChatRoomSummary } from "./chat-source.contract";
 import { draftOf, mineRingOf, nextOpenOf, tzOffsetMinOf, unseenReactionIdsOf } from "./my-stories";
 import type {
   MineRowSlot,
@@ -83,6 +83,7 @@ export function useMyStories({
   const [view, setView] = useState<View | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [crisis, setCrisis] = useState<readonly ChatCrisisResource[] | null>(null);
   const [, setSeenVersion] = useState(0);
   // 만들기 한 번에 clientId 하나 — 두 번 눌러도(또는 다시 시도해도) 서버가 한 번만 올립니다.
   const clientId = useRef<string | null>(null);
@@ -132,6 +133,7 @@ export function useMyStories({
     emit({ name: "my_story_create_opened", surface: "chat", first });
     clientId.current = null;
     setError(null);
+    setCrisis(null);
     if (first) port.markGuideSeen();
     setView({ kind: first ? "guide" : "start" });
   }
@@ -145,6 +147,7 @@ export function useMyStories({
     if (clientId.current === null) clientId.current = port.newClientId();
     setBusy(true);
     setError(null);
+    setCrisis(null);
     const now = Date.now();
     const tz = tzOffsetMinOf(now);
     const posted =
@@ -154,8 +157,6 @@ export function useMyStories({
             clientId: clientId.current,
             background: share.background,
             ko: share.text?.ko ?? "",
-            meaning: share.text?.meaning ?? null,
-            original: share.text?.original ?? null,
             overlays: share.overlays,
             lang: language,
             tzOffsetMin: tz,
@@ -170,7 +171,8 @@ export function useMyStories({
         if (window !== null)
           setState((before) => (before === null ? before : { ...before, window }));
         setError(copy.composer.windowUsed(window === null ? null : clockOf(window)));
-      } else
+      } else if (posted.result === "crisis") setCrisis(posted.resources);
+      else
         setError(
           posted.result === "daily_limit"
             ? copy.composer.dailyLimit
@@ -223,14 +225,15 @@ export function useMyStories({
       <MyStoryEditor
         caps={editorCapsOf(state?.kinds ?? ["word", "card"])}
         choices={port.choices}
-        correct={port.correct}
         busy={busy}
         error={error}
+        crisis={crisis}
         onShare={(share) => void handleShare(share)}
         onChange={() => {
           // 다른 것을 올리면 다른 요청 — 앞 실패의 clientId를 다시 쓰지 않습니다(리뷰 m4).
           clientId.current = null;
           setError(null);
+          setCrisis(null);
         }}
         onClose={close}
       />

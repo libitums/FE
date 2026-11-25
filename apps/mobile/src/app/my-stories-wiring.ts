@@ -68,7 +68,6 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
     knownEnabled: () => enabled.get(args.accountKey()) === true,
     post: async (draft) => (await remote()?.post(draft)) ?? { result: "failed" },
     postText: async (draft) => (await remote()?.postText(draft)) ?? { result: "failed" },
-    correct: async (text) => (await remote()?.correct(text)) ?? { result: "failed" },
     remove: async (storyId) => (await remote()?.remove(storyId)) ?? false,
     setKeep: async (keep) => (await remote()?.setKeep(keep)) ?? null,
     choices: () => myStoryChoicesOf(loadCurrentWordbook(), args.catalog(), todayLocal()),

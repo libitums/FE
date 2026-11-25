@@ -132,17 +132,20 @@ export const myStoriesId: MyStoriesCopy = {
     textBlocked: "Teks ini tidak bisa dibagikan. Coba kata lain.",
   },
   textEntry: {
-    title: "Tulis satu kalimat",
-    placeholder: "Tulis dalam bahasa Korea atau bahasamu",
-    check: "Periksa",
-    checking: "Memeriksa…",
-    suggested: "Saran",
-    useThis: "Pakai ini",
-    keepMine: "Pakai punyaku",
-    blocked: "Teks ini tidak bisa dipakai.",
-    limit: "Kamu sudah cukup memeriksa hari ini.",
-    failed: "Gagal memeriksa. Coba lagi.",
-    cancel: "Batal",
+    label: "Teks cerita, bahasa Korea atau Inggris",
+    help: "Korea atau Inggris — kami bantu",
+    done: "Selesai",
+    colors: "Warna teks",
+    color: (textColor) =>
+      textColor === "brown"
+        ? "Cokelat"
+        : textColor === "black"
+          ? "Hitam"
+          : textColor === "white"
+            ? "Putih"
+            : "Oranye",
+    colorLabel: (name, on) => `${name}${on ? ", dipilih" : ""}`,
+    editLabel: (ko) => `Ubah teks: ${ko}`,
   },
   add: {
     title: "Tambahkan ke ceritamu",

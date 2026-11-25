@@ -106,10 +106,16 @@ function quizRoom(pages: readonly string[]) {
   return { source, turns, loadHistory };
 }
 
-test("MSI4. 퀴즈 meta가 있으면 무료 띠 → 엽전 없이 답이 나가고, 턴이 끝나면 기록을 다시 읽어 「Free · quiz answer」 · 맞힘 줄", async () => {
+test("MSI4. 서버가 무료 답을 알리면(meta.quiz.freeAnswer) 무료 띠 → 엽전 없이 답이 나가고, 턴이 끝나면 기록을 다시 읽어 「Free · quiz answer」 · 맞힘 줄", async () => {
   const room = quizRoom([
-    page([reaction({ myStoryId: "33333333-3333-4333-8333-333333333333", angle: "quiz" })]),
-    page([reaction({ angle: "quiz" }), answer, reply]),
+    page([
+      reaction({
+        myStoryId: "33333333-3333-4333-8333-333333333333",
+        angle: "quiz",
+        quiz: { freeAnswer: true },
+      }),
+    ]),
+    page([reaction({ angle: "quiz", quiz: { freeAnswer: true } }), answer, reply]),
   ]);
   mountChat({
     source: room.source,
@@ -140,8 +146,10 @@ test("MSI4. 퀴즈 meta가 있으면 무료 띠 → 엽전 없이 답이 나가�
   expect(screen.queryByTestId(ids.quizFree)).toBeNull();
 });
 
-test("MSI5. 퀴즈 meta가 없으면(지금 서버) 반응 인용만 — 무료 띠 · 퀴즈 표시 없음, 보통 엽전 관문", async () => {
-  const room = quizRoom([page([reaction(undefined)])]);
+test("MSI5. 각도만 quiz(지금 서버 #592 — 무료 신호 없음)면 반응 인용만 — 무료 띠 · 퀴즈 표시 없음, 보통 엽전 관문", async () => {
+  const room = quizRoom([
+    page([reaction({ myStoryId: "33333333-3333-4333-8333-333333333333", angle: "quiz" })]),
+  ]);
   mountChat({
     source: room.source,
     roomId: "duksu",

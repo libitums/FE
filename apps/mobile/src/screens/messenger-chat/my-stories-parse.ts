@@ -1,11 +1,11 @@
 // 내 스토리 서버 응답을 앱 모양으로 풉니다(ADR-0194 · ADR-0191 — 모양은 `@libitums/companion-contract` my-stories). 순수 · 던지지
 // 않습니다. 틀린 줄 · 반응은 버리고, 몸이 틀리면 null(못 읽음). 사진(`photo`) · 확인 중(`checking`) 스토리는 이 앱 판이 그리지 않아 건너뜁니다.
-// 글 스토리(`text`) · `kinds` · 교정은 서버 반영 예상 칸입니다(ADR-0194 적용 기록).
+// 글 스토리(`text`) · `kinds` · 글 검수의 `crisis`는 서버 반영 예상 칸입니다(ADR-0194 적용 기록).
 
+import { crisisOf } from "./companion-parse";
 import type {
   MyStoriesState,
   MyStory,
-  MyStoryCorrectionResult,
   MyStoryExample,
   MyStoryOverlay,
   MyStoryPostKind,
@@ -14,6 +14,7 @@ import type {
   MyStorySeen,
   MyStoryWindow,
   StoryBackground,
+  StoryTextColor,
 } from "./my-stories.contract";
 
 type Raw = Readonly<Record<string, unknown>>;
@@ -86,6 +87,7 @@ const number = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) ? value : null;
 const BACKGROUNDS = new Set(["orange", "green", "blue", "purple"]);
 const KINDS = new Set(["word", "card", "text", "photo"]);
+const INKS = new Set(["brown", "black", "white", "orange"]);
 
 /** 얹은 단어 · 카드 · 글(계약 `myStoryOverlaySchema`) — 한국어 · 위치가 틀리면 버립니다. */
 function overlayOf(raw: unknown): MyStoryOverlay | null {
@@ -107,6 +109,9 @@ function overlayOf(raw: unknown): MyStoryOverlay | null {
     ...(roman === null ? {} : { roman }),
     ...(meaning === null ? {} : { meaning }),
     ...(episodeId === null || ref === null ? {} : { word: { episodeId, ref } }),
+    ...(typeof raw["color"] === "string" && INKS.has(raw["color"])
+      ? { color: raw["color"] as StoryTextColor }
+      : {}),
     x,
     y,
     scale: number(raw["scale"]) ?? 1,
@@ -195,28 +200,10 @@ export function myStoryPostFrom(body: string | null): MyStoryPostResult {
   if (!isRecord(value)) return { result: "failed" };
   const result = value["result"];
   if (result === "off" || result === "daily_limit" || result === "text_blocked") return { result };
+  if (result === "crisis") return { result, resources: crisisOf(value) ?? [] };
   const window = myStoryWindowOf(value["window"]);
   if (result === "window_used") return { result, window };
   if (result !== "ok") return { result: "failed" };
   const story = myStoryOf(value["story"]);
   return story === null ? { result: "failed" } : { result: "ok", story, window };
-}
-
-/** `companion-my-story` `draft`(교정) 응답. */
-export function myStoryCorrectionFrom(body: string | null): MyStoryCorrectionResult {
-  const value = parsed(body);
-  if (!isRecord(value)) return { result: "failed" };
-  const result = value["result"];
-  if (result === "text_blocked" || result === "crisis") return { result: "blocked" };
-  if (result === "draft_limit") return { result: "limit" };
-  const draft = isRecord(value["draft"]) ? value["draft"] : null;
-  const kind = draft?.["kind"];
-  const ko = text(draft?.["ko"]);
-  if (result !== "ok" || ko === null) return { result: "failed" };
-  if (kind !== "same" && kind !== "correction" && kind !== "better" && kind !== "l1_to_ko")
-    return { result: "failed" };
-  return {
-    result: "ok",
-    correction: { kind, ko, meaning: text(draft?.["meaning"]), tip: text(draft?.["tip"]) },
-  };
 }

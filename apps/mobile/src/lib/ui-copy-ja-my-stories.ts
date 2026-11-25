@@ -133,17 +133,20 @@ export const myStoriesJa: MyStoriesCopy = {
     textBlocked: "このテキストはシェアできません。別の言葉で試してください。",
   },
   textEntry: {
-    title: "ひとこと書く",
-    placeholder: "韓国語かあなたの言語で書いてください",
-    check: "チェック",
-    checking: "チェック中…",
-    suggested: "提案",
-    useThis: "これを使う",
-    keepMine: "自分のままにする",
-    blocked: "このテキストは使えません。",
-    limit: "今日のチェックは上限に達しました。",
-    failed: "チェックできませんでした。もう一度お試しください。",
-    cancel: "キャンセル",
+    label: "ストーリーのテキスト（韓国語か英語）",
+    help: "韓国語でも英語でも大丈夫、手伝います",
+    done: "完了",
+    colors: "文字の色",
+    color: (textColor) =>
+      textColor === "brown"
+        ? "ブラウン"
+        : textColor === "black"
+          ? "ブラック"
+          : textColor === "white"
+            ? "ホワイト"
+            : "オレンジ",
+    colorLabel: (name, on) => `${name}${on ? "、選択中" : ""}`,
+    editLabel: (ko) => `テキストを編集：${ko}`,
   },
   add: {
     title: "ストーリーに追加",

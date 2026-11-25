@@ -893,8 +893,8 @@
   text-align: center;
 }
 
-/* Aa 글 쓰기 — 편집 위 겹침. */
-.my-story-text-entry {
+/* Aa — 바탕 위 글 상자에서 쓰기(29번). 바탕을 어둡게 덮고 위에 글자색 · Done, 가운데 점선 상자. 글자색 넷은 시안 값(화면 지역 상수). */
+.my-story-typing {
   position: fixed;
   top: 0;
   right: 0;
@@ -903,37 +903,155 @@
   z-index: var(--libitum-elevation-z-dialog);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: var(--libitum-layout-screen-padding-x);
-  background-color: rgba(26, 28, 32, 0.45);
+  align-items: center;
+  padding: 0 var(--libitum-spacing-12);
+  background-color: rgba(26, 28, 32, 0.35);
 }
 
-.my-story-text-entry-card {
+.my-story-typing-top {
   display: flex;
-  flex-direction: column;
-  gap: var(--libitum-spacing-12);
-  padding: var(--libitum-spacing-20);
-  border-radius: var(--libitum-radius-xl);
-  background-color: var(--libitum-color-background-primary);
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
 }
 
-.my-story-text-suggestion {
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-spacing-4);
-  padding: var(--libitum-spacing-12);
-  border-radius: var(--libitum-radius-lg);
-  background-color: var(--libitum-color-background-elevated);
-}
-
-.my-story-text-actions {
+.my-story-typing-colors {
   display: flex;
   flex-direction: row;
   gap: var(--libitum-spacing-8);
 }
 
-.my-story-text-action {
+.my-story-text-swatch {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.7);
+  border-radius: var(--libitum-radius-full);
+}
+
+.my-story-text-swatch-on {
+  border-width: 3px;
+  border-color: var(--libitum-color-white);
+}
+
+.my-story-typing-done {
+  display: flex;
+  align-items: center;
+  height: var(--libitum-spacing-40);
+  padding: 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-typing-done-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.my-story-typing-box {
+  display: flex;
+  align-self: stretch;
+  margin: var(--libitum-spacing-96) var(--libitum-spacing-20) 0;
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-width: 2px;
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: var(--libitum-radius-lg);
+}
+
+.my-story-typing-input {
   flex: 1;
+  height: var(--libitum-spacing-48);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  text-align: center;
+}
+
+.my-story-typing-help {
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.my-story-ink-brown {
+  color: #8a3a08;
+}
+
+.my-story-ink-black {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-ink-white {
+  color: var(--libitum-color-white);
+}
+
+.my-story-ink-orange {
+  color: var(--libitum-color-brand-primary);
+}
+
+.my-story-ink-bg-brown {
+  background-color: #8a3a08;
+}
+
+.my-story-ink-bg-black {
+  background-color: var(--libitum-color-fg-neutral);
+}
+
+.my-story-ink-bg-white {
+  background-color: var(--libitum-color-white);
+}
+
+.my-story-ink-bg-orange {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+/* 바탕 위 글 상자(30번) — 스티커와 같은 변환(가운데 기준 · scale이라 글자도 같은 비율). */
+.my-story-text-box {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 80%;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0);
+  border-radius: var(--libitum-radius-md);
+}
+
+.my-story-text-box-on {
+  border-color: rgba(138, 58, 8, 0.35);
+}
+
+.my-story-text-box-ko {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  text-align: center;
+}
+
+/* 모서리 손잡이(30번) — 오른쪽 아래. */
+.my-story-sticker-handle {
+  position: absolute;
+  right: calc(-1 * var(--libitum-spacing-12));
+  bottom: calc(-1 * var(--libitum-spacing-12));
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+  border-width: 2px;
+  border-style: solid;
+  border-color: #8a3a08;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
 }
 
 /* 넣기 시트(28번) — 칸 격자. */

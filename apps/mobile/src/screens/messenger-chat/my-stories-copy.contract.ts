@@ -1,6 +1,11 @@
 // 내 스토리 문구표(`UiCopy.messengerChat.myStories`, ADR-0194). 한국어 단어 · 예문은 그대로, 뜻은 데이터가 줍니다.
 
-import type { MyStoryKind, MyStorySlot, StoryBackground } from "./my-stories.contract";
+import type {
+  MyStoryKind,
+  MyStorySlot,
+  StoryBackground,
+  StoryTextColor,
+} from "./my-stories.contract";
 
 export type MyStoriesCopy = {
   readonly language: string;
@@ -115,19 +120,17 @@ export type MyStoriesCopy = {
     readonly remove: (ko: string) => string;
     readonly textBlocked: string;
   };
-  /** Aa — 내 글 한 줄 + 교정 제안(시안 27번, 글 서버에서만). */
+  /** Aa — 바탕 위 글 상자에서 바로 쓰기(시안 29 · 30번, 글 서버에서만, 교정 없음). */
   readonly textEntry: {
-    readonly title: string;
-    readonly placeholder: string;
-    readonly check: string;
-    readonly checking: string;
-    readonly suggested: string;
-    readonly useThis: string;
-    readonly keepMine: string;
-    readonly blocked: string;
-    readonly limit: string;
-    readonly failed: string;
-    readonly cancel: string;
+    /** 입력 칸 낭독 — 「Story text, Korean or English」. */
+    readonly label: string;
+    readonly help: string;
+    readonly done: string;
+    readonly colors: string;
+    readonly color: (color: StoryTextColor) => string;
+    readonly colorLabel: (name: string, on: boolean) => string;
+    /** 바탕 위 글 상자 낭독 — 누르면 고쳐 쓰기. */
+    readonly editLabel: (ko: string) => string;
   };
   /** 단어 · 카드 넣기 시트(시안 28번). */
   readonly add: {

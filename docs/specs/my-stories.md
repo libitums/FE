@@ -64,7 +64,7 @@
 | 대화방(20) | 기록의 인물 메시지(origin `story_reaction`)의 `story`를 첫 말풍선에 싣고 그 위 인용 카드(「Replied to your story」 · 단어 · 경과), 지우면 「Deleted story」. 목록 미리보기는 반응 글 |
 | 처음 안내 | 둘째 걸음 「Friends reply within the hour — Their replies show up in each friend's chat.」(「Tap Answer」 · 「over the day」 없음) |
 | 반응 푸시 | 목적지 `{ kind: "companion-chat", characterId }`(story 없음) = 그 방 — 기존 경로 그대로(MS-U22) |
-| 덕수쌤 퀴즈(21 ~ 23) | **서버 반영 예상** — `companion-parse.ts` `quizMarkOf`가 기록 `meta`의 선택 칸을 `ChatQuizMark`로 푼다(ADR-0194 적용 기록 「서버에 요청하는 모양」). `quizFreeOf`가 「다음 답 무료」면 입력 칸 위 「Quiz answer is free」 · 보내기 단추 엽전 없음 · 앱 관문(체험 · 엽전) 건너뜀. 내 답 아래 「Free · quiz answer」 · 「Free · last try」, 맞힘이면 가운데 「Correct! You and {name} got closer」, 선물 음성 아래 「Voice gift · {name} says “{word}”」. 무료 답 턴이 끝나면 기록 · 음성을 다시 읽는다. 칸이 없으면 퀴즈 표시 0 |
+| 덕수쌤 퀴즈(21 ~ 23) | **서버 반영 예상** — `companion-parse.ts` `quizMarkOf`가 기록 `meta`의 선택 칸을 `ChatQuizMark`로 푼다(ADR-0194 적용 기록 「서버에 요청하는 모양」). 무료 표시 · 관문 건너뛰기는 **서버가 명시적으로 무료라고 알릴 때만**(퀴즈 반응 `meta.quiz.freeAnswer === true`, 내 답 `meta.quiz.free === true`) — `meta.angle === "quiz"`만이면(지금 서버 #592) 보통 반응. 퀴즈 반응의 자리(첫째 · 둘째)는 가정하지 않음. `quizFreeOf`가 「다음 답 무료」면 입력 칸 위 「Quiz answer is free」 · 보내기 단추 엽전 없음 · 앱 관문(체험 · 엽전) 건너뜀. 내 답 아래 「Free · quiz answer」 · 「Free · last try」, 맞힘이면 가운데 「Correct! You and {name} got closer」, 선물 음성 아래 「Voice gift · {name} says “{word}”」. 무료 답 턴이 끝나면 기록 · 음성을 다시 읽는다. 칸이 없으면 퀴즈 표시 0 |
 | 이벤트 | `my_story_chat_opened { characterId, message }`(옛 answered · replied 대신) · `my_story_post_failed.reason`에 `window_used` |
 
 ### 1.6 스토리 만들기 — 시작 고르기 + 바탕 위 얹기 ⟨2026-11-25⟩ (시안 26 ~ 28)
@@ -73,7 +73,7 @@
 | --- | --- |
 | 시작(26) | 「+」(처음이면 안내 뒤) → 시트 「New story」: Background(색 바탕). Camera · 최근 사진은 `kinds`에 photo가 있고 사진 길이 있을 때만 — 이 판은 숨김 |
 | 편집(27) | 전체 화면 층 `MyStoryEditor`: 뒤로 · 바탕색 넷(Orange · Green · Blue · Purple) · 오른쪽 도구 Aa(글 서버만) · Words · Cards · 바탕 위 스티커(끌기 · 두 손가락 크기 0.5 ~ 3 · 회전 · 고르면 ×) · 아래 안내 · Share with friends(올릴 길이 없으면 꺼짐) |
-| Aa | `MyStoryTextEntry`: 한 줄(80자) → Check → 교정(`companion-my-story` draft) → 제안이면 Use this / Keep mine, same이면 바로 놓음, 막히면 안내 |
+| Aa(29 · 30) | `MyStoryTextEntry`: 바탕이 어두워지고 가운데 점선 상자에서 휴대폰 키보드로 바로 씀(80자) · 위에 글자색 넷 · Done. Done이면 `MyStoryTextBox`가 바탕 위 요소(끌기 · 두 손가락 · 모서리 손잡이로 크기 — 글자도 같은 비율 · 다시 누르면 고쳐 쓰기)가 되고 Share가 바로 켜짐. **교정 없음**(사용자 결정 2026-11-25) — 쓴 글 그대로 올리고 검수는 올리기 요청 안에서 서버가: `text_blocked` → 안내, `crisis` → 위기 안내 카드(`ChatCrisisCard`). 글 상자 overlay에 앱이 만든 로마자(`romanizeKorean`) · 글자색(`typedText` · `textOverlayOf` · `resizeSticker`) |
 | 넣기(28) | `MyStoryAddSheet`(옛 만들기 화면의 탭 · 거르기 칩이 이 시트 안으로): My words · Lesson cards 칸 격자, 누르면 스티커로 놓고 닫힘 |
 | 판정 | `my-story-editor.ts` — `editorCapsOf(kinds)`(text → Aa · 스티커 8, 없으면 1) · `placeSticker` · `moveSticker` · `pinchSticker` · `editorShareOf`(글 없이 스티커 하나 → 단어 · 카드 RPC, 글 서버의 글 · 여러 스티커 → 글 스토리) |
 | 서버 반영 예상 | `kinds` · 글 스토리 올리기(`action: post` + `background`) · 읽기의 `kind: text`(`background` · `overlays`) — ADR-0194 적용 기록 「서버에 요청하는 모양」 |
@@ -97,10 +97,11 @@
 | ui | MS-UI22 ~ UI26 | 목록 v2: 반응 목록(Open chat · Seen by · 저장 안내) · 막 올린 뒤 · 친구 0명 · 창 「+」 · 창 시트 · window_used · 지우기 문구 (`MessengerListScreen.my-stories-v2.ui.test.tsx`) |
 | ui | MS-UI27 ~ UI30 | 대화방: 반응 인용 · 지운 스토리 · 미리보기 · 퀴즈 띠 · 무료 보내기 · 맞힘 · 틀림 (`MessengerChatScreen.my-stories.ui.test.tsx`) |
 | integration | MSI1 ~ MSI3 | 실제 App: Your story → Open chat → 그 방(띠 없음) · 읽기에 UTC 차이 · 못 읽으면 「+」 없음 · 창을 쓴 「+」 → 창 시트 |
-| unit | MS-U23 ~ U29 | 만들기: 도구 · 스티커 놓기 · 끌기/두 손가락 · 올릴 길 · kinds/글 스토리/교정 풀기 (`my-story-editor.unit.test.ts`) |
-| ui | MS-UI31 ~ UI36 | 시작 시트 · 지금 서버 편집 · 스티커 × · 두 손가락 · 글 서버 Aa → 교정 → 글 스토리 · 교정 막힘 · text_blocked (`MyStoryEditor.ui.test.tsx`) |
-| integration | MSI6 | 실제 App: kinds에 text → Aa → 교정 → Share가 함수 결선으로 글 스토리, 없으면 Aa 없음 |
-| integration | MSI4 ~ MSI5 | 기록 JSON → 풀기 → 서버 모드 출처 → 방: 퀴즈 meta 있음(무료 답 → 다시 읽기 → 판정 표시) / 없음(회귀 0) (`story-quiz.integration.test.tsx`) |
+| unit | MS-U30 ~ U31 | 글 상자 · 모서리 손잡이 (`my-story-editor.unit.test.ts`) |
+| unit | MS-U23 ~ U29 | 만들기: 도구 · 스티커 놓기 · 끌기/두 손가락 · 올릴 길 · kinds/글 스토리 풀기 · 교정 없음(뜻 · 원래 글 안 실음, 로마자) · crisis 결과 (`my-story-editor.unit.test.ts`) |
+| ui | MS-UI31 ~ UI36 | 시작 시트 · 지금 서버 편집 · 스티커 × · 두 손가락 · 글 서버 Aa(바탕 위 상자 · 글자색 · Done) → 글 스토리 · crisis → 위기 카드 · text_blocked (`MyStoryEditor.ui.test.tsx`) |
+| integration | MSI6 | 실제 App: kinds에 text → Aa → Done → Share가 함수 결선으로 글 스토리, 없으면 Aa 없음 |
+| integration | MSI4 ~ MSI5 | 기록 JSON → 풀기 → 서버 모드 출처 → 방: 무료 신호 있음(무료 답 → 다시 읽기 → 판정 표시) / 각도 quiz만(#592 — 보통 엽전 관문) (`story-quiz.integration.test.tsx`) |
 | integration(서버) | MS1 ~ MS17 | 스위치 · 올리기(창 · 24시간 상한) · 창 계산 · 답할 인물(가중 무작위 · 각도 · 시각) · Seen · claim(상한 · 대화 중 미룸 · 겹친 호출 · 오래된 claim) · 끝내기(인물 방의 메시지) · 지우기(메시지는 남음) · 정리 · mine 판정 · 푸시 문 · 스토리 맥락 |
 | unit(서버) | RH1 ~ RH10 · RP1 ~ RP4 · RE1 ~ RE3 · SS1 ~ SS5 · MC1 ~ MC2 | 반응 함수(저장 · 푸시 · 칩) · 지시(각도) · 모델 환경 · chat-send mine 지시 · 스토리 맥락 · 계약 모양 |
 | e2e | MS-E1 ~ E8 | [e2e](../e2e/my-stories.md) |
