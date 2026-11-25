@@ -12,7 +12,7 @@ import { takeStoryReplyHandoff } from "./story-reply-handoff";
 import { suggestedFriendsTestIds as suggestedIds } from "./suggested-friends.contract";
 import { catalogOf, friend } from "./suggested-friends.test-support";
 
-// `ui` 계층(SE-UI1 · SE-UI2, 2026-11-25 보고): 안 만난 친구 스토리의 「See how to meet」 → 시트 「Chat now · 100」 → 열림이면
+// `ui` 계층(SE-UI1 · SE-UI2, 2026-11-25 보고): 안 만난 친구 스토리의 위 아바타(프로필) → 시트 「Chat now · 100」 → 열림이면
 // 「Add friend and reply」와 같은 끝(ADR-0178 D4 · ADR-0162 D5) — 시트 · 보기가 닫히고 그 방이 인용 띠와 함께 열린다.
 // 보기가 연 때의 추천(locked)을 들고 있어도, 이미 친구가 된 인물이면 다시 시트(Chat now · 100)를 열지 않고 방으로 간다.
 
@@ -81,11 +81,10 @@ async function mount(result: () => Promise<EarlyAccessResult>) {
   return { source, early, onOpenRoom, events };
 }
 
-test("SE-UI1. See how to meet → Chat now · 100 → 열림: 시트 · 보기가 닫히고 그 방이 인용 띠(넘김)와 함께 열린다", async () => {
+test("SE-UI1. 보기 위 아바타(잠긴 안 만난 친구) → Chat now · 100 → 열림: 시트 · 보기가 닫히고 그 방이 인용 띠(넘김)와 함께 열린다", async () => {
   const { early, onOpenRoom, events } = await mount(async () => ({ kind: "unlocked" }));
   tapId(ids.unmet("mina"));
-  expect(screen.getByTestId(ids.meet).textContent).toContain("See how to meet");
-  tapId(ids.meet);
+  tapId(ids.profile);
   expect(screen.getByTestId(suggestedIds.sheetEarly).textContent).toContain("Chat now · 100");
   tapId(suggestedIds.sheetEarly);
   await flush();
@@ -102,14 +101,14 @@ test("SE-UI1. See how to meet → Chat now · 100 → 열림: 시트 · 보기�
   expect(screen.getByTestId(ids.friend("mina"))).not.toBeNull();
 });
 
-test("SE-UI2. 보기를 연 뒤 다른 길로 이미 친구가 됐으면 See how to meet은 시트 없이 방으로 — 값을 다시 묻지 않는다", async () => {
+test("SE-UI2. 보기를 연 뒤 다른 길로 이미 친구가 됐으면 아바타는 시트 없이 방으로 — 값을 다시 묻지 않는다", async () => {
   const { source, early, onOpenRoom } = await mount(async () => ({ kind: "unlocked" }));
   tapId(ids.unmet("mina"));
   await act(async () => {
     source.unlockCharacter("mina");
     await Promise.resolve();
   });
-  tapId(ids.meet);
+  tapId(ids.profile);
   await flush();
   expect(screen.queryByTestId(suggestedIds.sheet)).toBeNull();
   expect(early).not.toHaveBeenCalled();

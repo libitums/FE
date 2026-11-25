@@ -24,18 +24,19 @@ import type {
 } from "./friend-stories.contract";
 import { FriendStoriesRow } from "./FriendStoriesRow";
 import {
-  putStoryReplyHandoff,
+  putStoryQuoteHandoff,
   subscribePendingStoryOpen,
   takePendingStoryOpen,
 } from "./story-reply-handoff";
 import { StoryViewer } from "./StoryViewer";
 import { usePhoneKeyboardHeight } from "./use-phone-keyboard-height";
 import { useStoryInlineReply } from "./use-story-inline-reply";
+import { useStoryProfile } from "./use-story-profile";
+import type { FriendProfile } from "./friend-catalog.contract";
 import { screenHeightFrom } from "../../lib/learning-density";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import type { StoryRowStats } from "./use-row-impressions";
 import { useMyStories } from "./use-my-stories";
-import { useStoryToastLink } from "./reply-toast-presence";
 import { useStoryReload } from "./use-story-reload";
 import type { SuggestedFriendsUi } from "./use-suggested-friends";
 
@@ -73,6 +74,7 @@ export function useFriendStories({
   source,
   wallet,
   onShortOfCoins,
+  profileOf = () => null,
 }: {
   readonly port: FriendStoriesPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
@@ -84,6 +86,8 @@ export function useFriendStories({
   readonly source: ChatSource;
   readonly wallet: CoinWallet;
   readonly onShortOfCoins: () => void;
+  /** 보기 위 아바타의 프로필 시트가 그릴 카탈로그 인물(이미 친구) — 없으면 이름 · 얼굴만. */
+  readonly profileOf?: (characterId: string) => FriendProfile | null;
 }): FriendStoriesUi {
   const { emit } = useChatEvents();
   const [stories, setStories] = useState<readonly FriendStory[] | null>(null);
@@ -142,7 +146,6 @@ export function useFriendStories({
     onOpenRoom,
     onFindFriends: suggested.openDirectory,
   });
-  const toastShown = useStoryToastLink(viewer !== null || mine.layerOpen); // 답장 토스트가 떠 있으면 멈춤(ADR-0200)
   const imageUrl = (path: string) => port?.imageUrl(path) ?? null;
 
   const open = (opened: ViewerOpen): boolean => {
@@ -164,7 +167,7 @@ export function useFriendStories({
 
   // 보기 한 번의 장 기록 — 닫힐 때 `friend_story_closed` 한 번(감사 A4).
   const session = useRef({ shown: new Set<string>(), skipped: 0 });
-  const close = (reason: StoryCloseReason | "replied") => {
+  const close = (reason: StoryCloseReason | "replied" | "profile") => {
     if (viewer !== null)
       emit({
         name: "friend_story_closed",
@@ -201,18 +204,7 @@ export function useFriendStories({
     const roomId =
       rooms.find((room) => room.counterpart.id === item.story.characterId)?.roomId ?? null;
     if (roomId === null) return;
-    putStoryReplyHandoff({
-      roomId,
-      text: null,
-      free: item.story.freeReply,
-      quote: {
-        storyId: item.story.id,
-        characterId: item.story.characterId,
-        line: item.story.line.ko,
-        imagePath: item.story.imagePath,
-        postedAt: item.story.postedAt,
-      },
-    });
+    putStoryQuoteHandoff(item, roomId);
     onOpenRoom(roomId);
   };
 
@@ -224,15 +216,21 @@ export function useFriendStories({
     if (roomId !== null) onOpenRoom(roomId);
   }
 
-  function handleMeet(item: StoryViewerItem) {
-    "background only";
-    const friend = item.unmet;
-    if (friend === null) return;
-    suggested.meet(friend, () => {
+  // 위 아바타 → 프로필 시트. 이미 친구의 「Start chatting」 = 보기를 닫고 그 방(추가 없음). 안 만난 친구가 친구가 되면 보기를 닫고 인용 띠(#608).
+  const profile = useStoryProfile({
+    suggested,
+    profileOf,
+    now,
+    onChat: (characterId) => {
+      const roomId = inline.roomIdOf(characterId);
+      close("profile");
+      if (roomId !== null) onOpenRoom(roomId);
+    },
+    onMet: (item) => {
       close("replied");
       handOff(item);
-    });
-  }
+    },
+  });
 
   return {
     rowPending: (port !== undefined && loadCount === 0) || mine.loading,
@@ -261,33 +259,36 @@ export function useFriendStories({
       viewer === null ? (
         mine.layer
       ) : (
-        <StoryViewer
-          items={viewer.items}
-          start={viewer.start}
-          now={now}
-          reducedMotion={reducedMotion}
-          romanization={port?.romanization?.() ?? true}
-          {...(port?.words === undefined ? {} : { words: port.words })}
-          covered={covered}
-          held={toastShown}
-          onShown={handleShown}
-          onReply={inline.reply}
-          onOpenChat={handleOpenChat}
-          keyboardHeight={keyboard.height}
-          onKeyboardHeight={keyboard.measure}
-          onSaveWord={(item) =>
-            emit({
-              name: "friend_story_word_saved",
-              surface: "chat",
-              characterId: item.story.characterId,
-            })
-          }
-          onMeet={handleMeet}
-          onClose={close}
-          onSkip={() => {
-            session.current.skipped += 1;
-          }}
-        />
+        <>
+          <StoryViewer
+            items={viewer.items}
+            start={viewer.start}
+            now={now}
+            reducedMotion={reducedMotion}
+            romanization={port?.romanization?.() ?? true}
+            {...(port?.words === undefined ? {} : { words: port.words })}
+            covered={covered || profile.covering}
+            onShown={handleShown}
+            onReply={inline.reply}
+            onOpenChat={handleOpenChat}
+            keyboardHeight={keyboard.height}
+            onKeyboardHeight={keyboard.measure}
+            onSaveWord={(item) =>
+              emit({
+                name: "friend_story_word_saved",
+                surface: "chat",
+                characterId: item.story.characterId,
+              })
+            }
+            onMeet={profile.meet}
+            onProfile={profile.open}
+            onClose={close}
+            onSkip={() => {
+              session.current.skipped += 1;
+            }}
+          />
+          {profile.layer}
+        </>
       ),
     layerOpen: viewer !== null || mine.layerOpen,
     listStory: (characterId) => (port === undefined ? null : listStoryOf(row, characterId)),

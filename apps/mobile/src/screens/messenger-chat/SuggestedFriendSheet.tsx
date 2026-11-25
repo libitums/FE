@@ -145,7 +145,7 @@ export function SuggestedFriendSheet({
             <text className="suggested-sheet-name" data-testid={ids.sheetName}>
               {character.name}
             </text>
-            {character.kind === "general" ? (
+            {character.kind === "general" && model.status !== "added" ? (
               <view className="messenger-list-new">
                 <text className="messenger-list-new-text">{copy.newBadge}</text>
               </view>

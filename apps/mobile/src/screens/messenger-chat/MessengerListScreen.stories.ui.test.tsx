@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
 
-import { clearBackHandlers, fixtureRoom, makeSource, seedOf, tapId } from "./chat-ui.test-support";
+import {
+  advance,
+  clearBackHandlers,
+  fixtureRoom,
+  makeSource,
+  seedOf,
+  tapId,
+} from "./chat-ui.test-support";
 import { ChatEventsContext } from "./chat-events";
 import { createCoinWallet } from "./coin-wallet";
 import type { SuggestedFriendsPort } from "./friend-catalog.contract";
@@ -267,4 +274,52 @@ test("FS-UI11. 스토리 줄이 추천 줄을 대신하면 suggested_friend_view
   const { events } = await mount(live);
   expect(events().filter((e) => e.name === "friend_story_row_viewed")).toHaveLength(1);
   expect(events().filter((e) => e.name === "suggested_friend_viewed")).toEqual([]);
+});
+
+test("FS-UI33. 친구 스토리의 아바타 → 프로필 시트(소개 · Start chatting) · 보기는 덮여 멈춤, Not now → 이어 감", async () => {
+  const { events } = await mount(live);
+  tapId(ids.friend("mina"));
+  tapId(ids.profile);
+  expect(screen.getByTestId(suggestedIds.sheet)).not.toBeNull();
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("미나");
+  expect(screen.getByTestId(suggestedIds.sheetIntro).textContent).toBe("mina intro");
+  expect(screen.getByTestId(suggestedIds.sheetStart)).not.toBeNull();
+  // 이미 친구라 먼저 만나기 · 추가 이벤트가 없다.
+  expect(screen.queryByTestId(suggestedIds.sheetEarly)).toBeNull();
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+  advance(20_000);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  tapId(suggestedIds.sheetLater);
+  expect(screen.queryByTestId(suggestedIds.sheet)).toBeNull();
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe(
+    "false",
+  );
+  advance(6_000);
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([]);
+});
+
+test("FS-UI33. 친구 프로필 시트의 Start chatting → 보기를 닫고 그 방(추가 없음, closed reason profile)", async () => {
+  const { onOpenRoom, events } = await mount(live);
+  tapId(ids.friend("mina"));
+  tapId(ids.profile);
+  tapId(suggestedIds.sheetStart);
+  expect(screen.queryByTestId(suggestedIds.sheet)).toBeNull();
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(onOpenRoom).toHaveBeenCalledWith("mina");
+  expect(events().filter((e) => e.name === "friend_story_closed")).toEqual([
+    expect.objectContaining({ reason: "profile" }),
+  ]);
+  expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([]);
+});
+
+test("FS-UI33. 안 만난 친구의 아바타 → 추천 친구 프로필 시트(from story_viewer) · 보기는 덮임", async () => {
+  const { events } = await mount(live);
+  tapId(ids.unmet("daeun"));
+  tapId(ids.profile);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("다은");
+  expect(events().filter((e) => e.name === "suggested_friend_opened")).toEqual([
+    expect.objectContaining({ characterId: "daeun", from: "story_viewer" }),
+  ]);
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
 });

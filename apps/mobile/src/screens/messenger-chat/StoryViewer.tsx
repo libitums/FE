@@ -1,30 +1,21 @@
 import { useEffect, useGlobalProps, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import cross from "@libitums/icons/lynx/cross";
-import pause from "@libitums/icons/lynx/pause";
-import play from "@libitums/icons/lynx/play";
-import { Avatar } from "@libitums/ui-lynx/avatar";
-
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { announce } from "../../lib/accessibility";
 import { restoreAccessibilityFocus } from "./chat-input-focus";
-import { spokenOf, storyAgeOf, viewerGroupOf } from "./friend-stories";
+import { spokenOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { localizedLine } from "./suggested-friends";
-import {
-  IconButton,
-  StoryMeet,
-  StoryProgress,
-  useAdvanceTimer,
-  WordPill,
-} from "./StoryViewerParts";
+import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
+import { StoryViewerHead } from "./StoryViewerHead";
 import { StoryReplyArea } from "./StoryReplyArea";
 import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
+import { useStoryToastLink } from "./reply-toast-presence";
 
 import "./story-viewer.css";
 
@@ -35,7 +26,7 @@ const NEXT_FRAME_MS = 16;
 
 /**
  * 스토리 보기(ADR-0178 D4, 시안 2 · 4번) — 목록 위 전체 화면 층. 칸 이동은 `viewerStep`, 경과는 `storyAgeOf`가 정하고 여기서는 그리기 ·
- * 6초 넘김 · 멈춤만 합니다. 내 친구 스토리는 답장 칩 · 답장 칸, 안 만난 친구는 소개 카드 · 추가 단추입니다. 시스템 뒤로 = 닫기.
+ * 6초 넘김 · 멈춤만 합니다. 내 친구 스토리는 답장 칩 · 답장 칸, 안 만난 친구는 소개 카드 · 추가 단추(추가 가능만), 위 아바타는 프로필 시트입니다. 뒤로 = 닫기.
  * 이전(왼쪽 1/3) · 다음(나머지) 탭 자리는 화면 전체이고, 위 · 가운데 · 아래 조작은 문서 순서가 뒤라 그 위에 섭니다.
  */
 export function StoryViewer({
@@ -52,10 +43,10 @@ export function StoryViewer({
   onKeyboardHeight,
   onSaveWord,
   onMeet,
+  onProfile,
   onClose,
   onSkip,
   covered = false,
-  held = false,
 }: StoryViewerProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   const insets = safeAreaInsetsFrom(useGlobalProps());
@@ -82,6 +73,7 @@ export function StoryViewer({
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
   // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도 멈춥니다(D5 개정).
+  const held = useStoryToastLink(true); // 답장 도착 토스트가 머리 위에 떠 있는 동안 진행만 멈춤(ADR-0200)
   const stopped = paused || covered || held || reply.holding;
   const running = !stopped && !reducedMotion && item !== undefined;
   useAdvanceTimer(index, running, () => step("tick"));
@@ -149,7 +141,7 @@ export function StoryViewer({
       />
       <view className="story-viewer-shade-bottom" accessibility-elements-hidden={true} />
 
-      {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 · 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
+      {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 → 프로필(아바타) → 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
       <view
         className="story-viewer-top"
         style={{
@@ -158,54 +150,16 @@ export function StoryViewer({
           paddingRight: `${insets.right + 10}px`,
         }}
       >
-        <view className="story-viewer-head">
-          <IconButton
-            testId={ids.close}
-            icon={cross}
-            label={copy.viewer.close}
-            onTap={() => onClose("closed")}
-          />
-          <IconButton
-            testId={ids.pause}
-            icon={paused ? play : pause}
-            label={paused ? copy.viewer.play : copy.viewer.pause}
-            onTap={() => setPaused((value) => !value)}
-          />
-          <view className="story-viewer-spacer" />
-          {unmet === null ? (
-            <text
-              className="story-viewer-age"
-              data-testid={ids.age}
-              accessibility-elements-hidden={true}
-            >
-              {copy.age(storyAgeOf(story.postedAt, now))}
-            </text>
-          ) : (
-            <view className="story-viewer-new" accessibility-elements-hidden={true}>
-              <text className="story-viewer-new-text">{copy.viewer.newFriend}</text>
-            </view>
-          )}
-          <text
-            className="story-viewer-name"
-            id={ids.name}
-            data-testid={ids.name}
-            accessibility-element={true}
-            accessibility-label={spokenOf(copy.listSeparator, [
-              copy.viewer.label(item.name),
-              groupLabel,
-            ])}
-          >
-            {item.name}
-          </text>
-          <view className="story-viewer-avatar" accessibility-elements-hidden={true}>
-            <Avatar
-              imageSource={item.avatarUrl ?? undefined}
-              name={item.name}
-              size="sm"
-              accessibility="hidden"
-            />
-          </view>
-        </view>
+        <StoryViewerHead
+          item={item}
+          now={now}
+          copy={copy}
+          groupLabel={groupLabel}
+          paused={paused}
+          onPause={() => setPaused((value) => !value)}
+          onClose={() => onClose("closed")}
+          onProfile={() => onProfile(item)}
+        />
         <StoryProgress
           items={items.slice(group.start, group.start + group.count)}
           index={group.at}

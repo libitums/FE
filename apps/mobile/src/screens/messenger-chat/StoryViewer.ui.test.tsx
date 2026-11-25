@@ -10,6 +10,7 @@ import {
 } from "./friend-stories.contract";
 import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
+import { setReplyToastShown } from "./reply-toast-presence";
 import { general, room } from "./suggested-friends.test-support";
 
 // `ui` 계층(FS-UI3 ~ UI6): 스토리 보기(ADR-0178 D4) — 장 · 한 줄 카드 · 단어 알약 · 무료 안내 · 칩 · 답장 칸, 6초 넘김 · 멈춤 ·
@@ -59,6 +60,7 @@ function mount(over: Partial<StoryViewerProps> = {}) {
     onOpenChat: vi.fn(),
     onSaveWord: vi.fn(),
     onMeet: vi.fn(),
+    onProfile: vi.fn(),
     onClose: vi.fn(),
     ...over,
   };
@@ -201,9 +203,11 @@ test("FS-UI4. 위에 시트가 덮으면 멈추고 낭독에서 숨는다", () =
   expect(props.onClose).not.toHaveBeenCalled();
 });
 
-test("RT-UI7. 답장 토스트가 떠 있으면(held) 진행만 멈추고 낭독에서는 숨지 않는다(ADR-0200)", () => {
-  mount({ held: true });
+test("RT-UI7. 답장 토스트가 떠 있으면 진행만 멈추고 낭독에서는 숨지 않는다(ADR-0200)", () => {
+  setReplyToastShown(true);
+  mount();
   advance(20_000);
+  setReplyToastShown(false);
   expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
   expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).not.toBe(
     "true",
@@ -232,7 +236,7 @@ test("FS-UI5. 안 만난 친구: 칩 · 답장 칸 · 멈춤 없음, NEW FRIEND 
   expect(props.onMeet).toHaveBeenCalledWith(props.items[0]);
 });
 
-test("FS-UI5. 잠긴 안 만난 친구 → See how to meet", () => {
+test("FS-UI5. 잠긴 안 만난 친구 → 소개 카드만, 단추 없음(프로필 시트는 위 아바타로 옮김)", () => {
   const unmet = {
     character: general("g", { name: "다은" }),
     room: room("g", false),
@@ -240,7 +244,39 @@ test("FS-UI5. 잠긴 안 만난 친구 → See how to meet", () => {
     offer: null,
   };
   mount({ items: [{ ...friendItem("g", "다은"), unmet }] });
-  expect(screen.getByTestId(ids.meet).textContent).toContain("See how to meet");
+  expect(screen.getByTestId(ids.meetCard)).not.toBeNull();
+  expect(screen.queryByTestId(ids.meet)).toBeNull();
+  expect(screen.getByTestId(ids.viewer).textContent).not.toContain("See how to meet");
+});
+
+test("FS-UI32. 위 아바타 = 「<이름>'s profile」 버튼(flatten false) — 아바타 · 이름을 누르면 onProfile(그 장)", () => {
+  const props = mount();
+  const avatar = screen.getByTestId(ids.profile);
+  expect(avatar.getAttribute("accessibility-label")).toBe("윤경's profile");
+  expect(avatar.getAttribute("accessibility-traits")).toBe("button");
+  expect(avatar.getAttribute("accessibility-enable-tap")).toBe("true");
+  expect(avatar.getAttribute("flatten")).toBe("false");
+  tapId(ids.profile);
+  expect(props.onProfile).toHaveBeenCalledWith(props.items[0]);
+  tapId(ids.name);
+  expect(props.onProfile).toHaveBeenCalledTimes(2);
+  // 누른 것은 넘김이 아니다 — 장이 그대로.
+  expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
+});
+
+test("FS-UI32. 안 만난 친구도 아바타가 프로필 버튼", () => {
+  const unmet = {
+    character: general("g", { name: "다은" }),
+    room: room("g", false),
+    status: "locked" as const,
+    offer: null,
+  };
+  const props = mount({ items: [{ ...friendItem("g", "다은"), unmet }] });
+  expect(screen.getByTestId(ids.profile).getAttribute("accessibility-label")).toBe(
+    "다은's profile",
+  );
+  tapId(ids.profile);
+  expect(props.onProfile).toHaveBeenCalledWith(props.items[0]);
 });
 
 test("FS-UI6. 닫기 · 시스템 뒤로 = onClose", () => {
@@ -251,7 +287,7 @@ test("FS-UI6. 닫기 · 시스템 뒤로 = onClose", () => {
   expect(props.onClose).toHaveBeenCalledTimes(2);
 });
 
-test("FS-UI6. 낭독 순서 — 닫기 · 멈춤이 먼저, 이전/다음은 맨 뒤(접근성 M1) · 탭 자리는 flatten false", () => {
+test("FS-UI6. 낭독 순서 — 닫기 · 멈춤 → 이름 → 프로필(아바타), 이전/다음은 맨 뒤(접근성 M1) · 탭 자리는 flatten false", () => {
   mount();
   const order = Array.from(screen.getByTestId(ids.viewer).querySelectorAll("[data-testid]"))
     .map((el) => el.getAttribute("data-testid") ?? "")
@@ -260,6 +296,7 @@ test("FS-UI6. 낭독 순서 — 닫기 · 멈춤이 먼저, 이전/다음은 맨
         ids.close,
         ids.pause,
         ids.name,
+        ids.profile,
         ids.chip(0),
         ids.replyInput,
         ids.replySend,
@@ -271,13 +308,14 @@ test("FS-UI6. 낭독 순서 — 닫기 · 멈춤이 먼저, 이전/다음은 맨
     ids.close,
     ids.pause,
     ids.name,
+    ids.profile,
     ids.chip(0),
     ids.replyInput,
     ids.replySend,
     ids.previous,
     ids.next,
   ]);
-  for (const id of [ids.close, ids.pause, ids.previous, ids.next, ids.chip(0)]) {
+  for (const id of [ids.close, ids.pause, ids.profile, ids.previous, ids.next, ids.chip(0)]) {
     expect(screen.getByTestId(id).getAttribute("accessibility-traits"), id).toBe("button");
   }
   expect(screen.getByTestId(ids.previous).getAttribute("flatten")).toBe("false");

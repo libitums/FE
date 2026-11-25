@@ -43,7 +43,7 @@ export const messengerChatStoriesVi: FriendStoriesCopy = {
     coinsShort: "Không đủ xu",
     newFriend: "BẠN MỚI",
     addAndReply: "Kết bạn và trả lời",
-    seeHowToMeet: "Cách gặp",
+    profile: (name) => `Hồ sơ của ${name}`,
   },
   reply: {
     caption: (name) => `Bạn đã trả lời tin của ${name}`,

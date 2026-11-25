@@ -42,7 +42,7 @@ export const messengerChatStoriesEn: FriendStoriesCopy = {
     coinsShort: "Not enough coins",
     newFriend: "NEW FRIEND",
     addAndReply: "Add friend and reply",
-    seeHowToMeet: "See how to meet",
+    profile: (name) => `${name}'s profile`,
   },
   reply: {
     caption: (name) => `You replied to ${name}'s story`,

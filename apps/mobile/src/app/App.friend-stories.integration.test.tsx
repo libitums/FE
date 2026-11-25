@@ -34,7 +34,7 @@ import {
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { nativeInput } from "../screens/messenger-chat/chat-ui.test-support";
 
-// `integration` 계층(FSI1 ~ FSI10, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
+// `integration` 계층(FSI1 ~ FSI11, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
 // (`companion_friend_stories` · `companion_friends`). 목록 → 보기 → 칩 · 답장 칸 → 대화방(인용 카드 · 인용 띠), 안 만난 친구 추가 → 답장,
 // 못 읽음이면 추천 줄 그대로.
 
@@ -223,6 +223,29 @@ test("FSI10. 한 인물의 스토리 여럿 — 진행 막대는 그 인물만, 
   tapId(ids.next);
   expect(present(ids.viewer)).toBe(false);
   expect(seen.has("st-owner-1") && seen.has("st-owner-2")).toBe(true);
+});
+
+test("FSI11. 보기 위 아바타 → 프로필 시트(보기는 덮임) → Start chatting: 보기를 닫고 그 방, 안 만난 친구는 추천 시트", async () => {
+  serverRemote(live);
+  await openMessenger();
+  tapId(ids.friend("owner"));
+  tapId(ids.profile);
+  expect(present(suggestedIds.sheet)).toBe(true);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("사장님");
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+  tapId(suggestedIds.sheetStart);
+  await settle();
+  expect(present(ids.viewer)).toBe(false);
+  expect(present(suggestedIds.sheet)).toBe(false);
+  expect(present(chat.screen)).toBe(true);
+
+  cleanup();
+  serverRemote(live);
+  await openMessenger();
+  tapId(ids.unmet("daeun"));
+  tapId(ids.profile);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("송다은");
+  expect(present(ids.viewer)).toBe(true);
 });
 
 test("FSI6. 스토리를 못 읽으면 추천 줄 그대로 · 오류 없음", async () => {
