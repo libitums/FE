@@ -6,6 +6,7 @@ import { color } from "@libitums/design-tokens";
 
 import { safeAreaInsetsFrom, sheetBottomInsetFrom } from "../../lib/safe-area";
 import { playSound } from "../../lib/sound-effects";
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import {
@@ -33,6 +34,8 @@ import "./my-stories.css";
 
 /** 아래 단추 줄의 기본 여백(CSS `--libitum-spacing-16`). */
 const FOOTER_PADDING = 16;
+/** 사진 위 그라데이션이 인셋 아래로 덮는 높이 — 머리 줄(72) 아래로 조금 더 흐립니다. */
+const SHADE_BELOW_INSET = 120;
 
 function Tool({
   testId,
@@ -134,7 +137,27 @@ export function MyStoryEditor({
         event-through={false}
         accessibility-elements-hidden={sheet || writing}
         style={{ paddingTop: `${insets.top}px` }}
+        data-statusbar={photo === null ? undefined : lightStatusBarIcons}
       >
+        {/* 화면 끝까지(2026-11-26) — 사진은 캔버스가 아니라 층 전체(상태 표시줄 아래까지), 위는 보기 머리처럼 어둡게 흐립니다. */}
+        {photo === null ? null : (
+          <>
+            <image
+              className="my-story-photo"
+              src={photo.url}
+              mode="aspectFill"
+              data-testid={ids.editorPhoto}
+              accessibility-element={true}
+              accessibility-label={all.photo.label}
+            />
+            <view
+              className="my-story-editor-shade"
+              data-testid={ids.editorShade}
+              style={{ height: `${insets.top + SHADE_BELOW_INSET}px` }}
+              accessibility-elements-hidden={true}
+            />
+          </>
+        )}
         <view className={`my-story-editor-top${writing ? " my-story-under-typing" : ""}`}>
           <view
             className="my-story-editor-round"
@@ -150,7 +173,7 @@ export function MyStoryEditor({
               onClose();
             }}
           >
-            <svg className="my-story-icon" content={arrowLeft} current-color={color.fg.neutral} />
+            <svg className="my-story-icon" content={arrowLeft} current-color={color.white} />
           </view>
           {photo !== null ? null : (
             <view className="my-story-swatches" accessibility-label={copy.colors}>
@@ -186,16 +209,6 @@ export function MyStoryEditor({
             setSelected(null);
           }}
         >
-          {photo === null ? null : (
-            <image
-              className="my-story-photo"
-              src={photo.url}
-              mode="aspectFill"
-              data-testid={ids.editorPhoto}
-              accessibility-element={true}
-              accessibility-label={all.photo.label}
-            />
-          )}
           {text === null || writing ? null : (
             <MyStoryTextBox
               text={text}
@@ -229,7 +242,7 @@ export function MyStoryEditor({
           ) : null}
           {caps.word ? (
             <Tool testId={ids.toolWords} label={copy.words} onTap={() => setSheet(true)}>
-              <svg className="my-story-icon" content={book} current-color={color.fg.brand} />
+              <svg className="my-story-icon" content={book} current-color={color.white} />
             </Tool>
           ) : null}
         </view>

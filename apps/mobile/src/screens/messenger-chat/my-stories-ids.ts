@@ -39,6 +39,7 @@ export const myStoriesTestIds = {
   startPhotos: ms("start-photos"),
   startError: ms("start-error"),
   editorPhoto: ms("editor-photo"),
+  editorShade: ms("editor-shade"),
   photoCard: ms("photo-card"),
   storyPhoto: ms("story-photo"),
   photoChecking: ms("photo-checking"),

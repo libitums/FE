@@ -632,11 +632,8 @@
   line-height: var(--libitum-typography-label-m-line-height);
 }
 
-.my-story-tool-aa {
-  color: var(--libitum-color-fg-neutral);
-}
-
-/* 바탕 위 편집(27번). */
+/* 바탕 위 편집(27번). 화면 끝까지(2026-11-26) — 바탕(색 · 사진)이 상태 표시줄 아래까지, 머리 줄은 바탕 없음. 둥근 단추 · 색 알약 ·
+   도구 원은 어두운 반투명(검정 45%) + 흰 그림 — 가장 밝은 바탕(흰 사진)에서도 흰 그림 3.4:1 · 가장 밝은 색 바탕과 원 3.3:1. */
 .my-story-editor {
   position: fixed;
   top: 0;
@@ -663,7 +660,20 @@
   width: var(--libitum-spacing-48);
   height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-white);
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+/* 사진 위 — 스토리 보기 머리(`story-viewer-shade-top`)와 같은 흐림. 높이는 인셋을 더해 인라인. */
+.my-story-editor-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-image: linear-gradient(
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.6) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 .my-story-editor-spacer {
@@ -676,7 +686,7 @@
   gap: var(--libitum-spacing-8);
   padding: var(--libitum-spacing-6) var(--libitum-spacing-8);
   border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-white);
+  background-color: rgba(0, 0, 0, 0.45);
 }
 
 .my-story-swatch {
@@ -684,12 +694,12 @@
   height: var(--libitum-spacing-32);
   border-width: 2px;
   border-style: solid;
-  border-color: var(--libitum-color-white);
+  border-color: rgba(0, 0, 0, 0);
   border-radius: var(--libitum-radius-full);
 }
 
 .my-story-swatch-on {
-  border-color: var(--libitum-color-fg-neutral);
+  border-color: var(--libitum-color-white);
 }
 
 .my-story-canvas {
@@ -722,7 +732,7 @@
   width: var(--libitum-spacing-48);
   height: var(--libitum-spacing-48);
   border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-white);
+  background-color: rgba(0, 0, 0, 0.45);
 }
 
 .my-story-tool-text {
@@ -731,6 +741,12 @@
   font-weight: var(--libitum-font-weight-bold);
   font-size: var(--libitum-typography-caption-font-size);
   line-height: var(--libitum-typography-caption-line-height);
+}
+
+/* 사진 위 도구 이름 — 어두운 글자는 어두운 사진에서 사라져 흰 글자 + 그림자. */
+.my-story-photo-bg .my-story-tool-text {
+  color: var(--libitum-color-white);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .my-story-editor-footer {
