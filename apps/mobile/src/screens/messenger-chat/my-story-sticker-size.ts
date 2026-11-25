@@ -40,8 +40,8 @@ export function stickerSizeOf(scale: number, settled: number) {
   };
 }
 
-/** 스티커를 크기 s로 확정했을 때의 px 크기(회전 전) — 가장 넓은 줄 · 줄 높이 합 · 사이 · 여백 · 테두리. */
-export function stickerBoxPx(words: StickerWords, scale: number) {
+/** 크기 1의 글자 몫(여백 · 테두리 빼고) — 가장 넓은 줄 · 줄 높이 합 · 사이. 끝단 찾기가 크기마다 다시 세지 않게 한 번만 셉니다. */
+function stickerBaseOf(words: StickerWords) {
   const rows = [
     { text: words.ko, size: KO },
     { text: words.roman, size: ROMAN },
@@ -53,11 +53,17 @@ export function stickerBoxPx(words: StickerWords, scale: number) {
     width = Math.max(width, unitsOf(row.text) * row.size.font);
     height += row.size.line;
   }
-  height += GAP * (rows.length - 1);
-  return {
-    width: width * scale + 2 * padX(scale) + STICKER_BORDER,
-    height: height * scale + 2 * padY(scale) + STICKER_BORDER,
-  };
+  return { width, height: height + GAP * (rows.length - 1) };
+}
+
+const stickerBoxAt = (base: { width: number; height: number }, scale: number) => ({
+  width: base.width * scale + 2 * padX(scale) + STICKER_BORDER,
+  height: base.height * scale + 2 * padY(scale) + STICKER_BORDER,
+});
+
+/** 스티커를 크기 s로 확정했을 때의 px 크기(회전 전) — 가장 넓은 줄 · 줄 높이 합 · 사이 · 여백 · 테두리. */
+export function stickerBoxPx(words: StickerWords, scale: number) {
+  return stickerBoxAt(stickerBaseOf(words), scale);
 }
 
 /** 스티커 끝단 — 글 상자와 같은 규칙(`placedFit`): 회전한 외접 사각형이 바탕(여백 · 도구 열 뺌) 안. */
@@ -67,5 +73,6 @@ export function stickerFit(
   canvas: CanvasBox,
   settled: number = place.scale,
 ) {
-  return placedFit((scale) => stickerBoxPx(words, scale), place, canvas, settled);
+  const base = stickerBaseOf(words);
+  return placedFit((scale) => stickerBoxAt(base, scale), place, canvas, settled);
 }

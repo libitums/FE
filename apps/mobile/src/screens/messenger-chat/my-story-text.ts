@@ -73,14 +73,21 @@ const TEXT_BORDER = 4;
 
 /** 글 상자를 크기 s로 확정했을 때의 px 크기(회전 전) — 가장 긴 줄 · 줄 수 · 안쪽 여백(`textBoxSizeOf`) · 테두리. */
 export function textBoxPx(ko: string, scale: number) {
+  return textBoxAt(textBaseOf(ko), scale);
+}
+
+/** 크기 1의 가장 긴 줄 폭 · 줄 수 — 끝단 찾기가 크기마다 줄을 다시 나누지 않게 한 번만 셉니다. */
+function textBaseOf(ko: string) {
   const lines = storyTextLines(ko);
   let line = 0;
   for (const each of lines) line = Math.max(line, unitsOf(each) * 22);
-  return {
-    width: line * scale + 2 * Math.max(12 * scale, 14) + TEXT_BORDER,
-    height: lines.length * 28 * scale + 2 * Math.max(8 * scale, 8) + TEXT_BORDER,
-  };
+  return { line, count: lines.length };
 }
+
+const textBoxAt = (base: { line: number; count: number }, scale: number) => ({
+  width: base.line * scale + 2 * Math.max(12 * scale, 14) + TEXT_BORDER,
+  height: base.count * 28 * scale + 2 * Math.max(8 * scale, 8) + TEXT_BORDER,
+});
 
 /**
  * 글 상자 끝단 — 회전한 상자의 외접 사각형이 바탕(가장자리 여백 · 오른쪽 도구 열 뺌) 안에 들 때까지만 커지고(서버 상한 3과 둘 중 작은
@@ -92,6 +99,7 @@ export function textFit(
   canvas: { readonly width: number; readonly height: number },
   settled: number = place.scale,
 ) {
-  if (storyTextLines(ko).length === 0) return { scale: place.scale, x: place.x, y: place.y };
-  return placedFit((scale) => textBoxPx(ko, scale), place, canvas, settled);
+  const base = textBaseOf(ko);
+  if (base.count === 0) return { scale: place.scale, x: place.x, y: place.y };
+  return placedFit((scale) => textBoxAt(base, scale), place, canvas, settled);
 }
