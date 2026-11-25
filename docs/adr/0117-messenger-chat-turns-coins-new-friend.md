@@ -188,3 +188,17 @@ ui-lynx dist는 예산 559.0 kB 중 557.8 kB를 쓰고 있어 이 변경도 ui-l
 - 버린 대안: 출처(`ChatSource`)를 감싸 보낸 동작을 세는 카운터 — 보내기 경로(입력 · 보기 · 스토리 답장 · 안내 예시 · 다시 보내기 · 매체)가 많아 감쌀 곳이 넓고 순수 함수로 시험하기 어렵다. 시간만으로 첫 진입을 끝내는 규칙 — 느린 망에서 기록이 늦게 오면 다시 훑어 내린다.
 - 대가: 같은 대상 · 같은 종류의 매체를 고지 뒤 다시 요청하면 계기가 되지 않는다(정체 수가 같음). 펼친 직후 700 ms 안에 답이 도착하면 그 한 번은 따라가지 않는다.
 - 테스트: `chat-log-follow.unit` · `chat-jump-key.unit` · `ChatLog.realign.ui` · `ChatLog.follow.ui`(F2 두 건을 묶음 · 첫 진입 점프에 맞춤) · `ChatLog.motion.ui`(첫 맞춤은 점프) · `MessengerChatScreen.scroll.ui` · `chat-jump-key.integration`. 기하(B · E)는 기기 — `docs/e2e/messenger-chat-ui.md` MC-E14.
+
+## 적용 기록 — 「새 메시지 ↓」 알약 (2026-11-25, `feat/chat-new-message-pill`)
+
+사용자 결정(2026-11-25 「진행」, 시안 artifact RWxYCQsM3kFvVbj3DoJYcH A · B · C). 끝 맞춤 보정(위 개정) 위에 쌓는다.
+
+- **알약.** 끝에서 떨어져 읽는 중(`nearEnd` false)에 상대 줄(말 · 지문 · 사진 · 음성)이 오면 대화 영역 아래 가운데(입력 독 바로 위)에 알약 — 보낸 사람 얼굴 · 문구 · ↓. 끌어내리지 않는다(지금 그대로). 문구: 1개 「New message」, N개 「N new messages」, 마지막 새 줄이 사진 · 음성이면 「Sent a photo」 · 「Sent a photo · N new」(음성도 같은 꼴). 8개 언어.
+- **세는 것.** 끝을 떠나는 순간 로그의 상대 줄 id를 찍어 두고 그 뒤 온 상대 줄만 센다(`new-message-pill.ts`). 내 글 · 만드는 중 대기 줄 · 공지 · 위기 카드 · 매체 회색 줄은 세지 않는다. 스트리밍으로 자라는 말풍선은 한 번.
+- **누름.** 알약 · ↓ 단추를 누르면 `jumpKey`에 누른 수를 붙여 끝으로(부드럽게, 움직임 줄이기면 점프 — `ChatLog` 규칙 그대로). 끝에 닿거나(`scrolltolower` · 위치) 내가 보내면(늘 끝으로) 사라진다.
+- **↓ 단추.** 새 것 없이 끝까지 남은 거리가 뷰포트보다 크면(한 화면 넘게 위) 오른쪽 아래 작은 ↓ 단추(「Scroll to latest」).
+- **로그 자리 알림.** `ChatLog`의 새 선택 prop `onPositionChange({ nearEnd, far })` — 바뀔 때만 부른다. 학습 메신저는 쓰지 않는다.
+- **접근성.** 알약(「Jump to new messages」) · ↓ 단추(「Scroll to latest」)는 단추로 읽힌다. 얼굴 · 아이콘은 숨긴다. 도착 낭독(`useAnnounceArrivals`)은 그대로라 알약이 따로 낭독하지 않는다.
+- **이벤트.** `chat_new_messages_jumped { characterId, count, media }` — 알약 누름마다 한 번, PostHog만(ADR-0029).
+- 버린 대안: 알약 문구를 낭독으로도 알림 — 도착 낭독과 겹친다. 로그 안 줄(「여기부터 새 메시지」 구분선) — 시안 범위 밖.
+- 테스트: `new-message-pill.unit` · `ui-copy-chat-pill.unit` · `chat-log-follow.unit`(farFromEnd) · `ChatLog.position.ui` · `MessengerChatScreen.pill.ui`. 기기 — `docs/e2e/messenger-chat-ui.md` MC-E15.

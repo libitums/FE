@@ -22,6 +22,22 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     promptLater: "ไว้ทีหลัง",
   },
   pushNotice: { chatUnavailable: "ตอนนี้แชทนี้ใช้งานไม่ได้" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "ส่งรูปภาพมา"
+          : `ส่งรูปภาพมา · ใหม่ ${count} ข้อความ`
+        : latest === "voice"
+          ? count === 1
+            ? "ส่งข้อความเสียงมา"
+            : `ส่งข้อความเสียงมา · ใหม่ ${count} ข้อความ`
+          : count === 1
+            ? "ข้อความใหม่"
+            : `ข้อความใหม่ ${count} ข้อความ`,
+    jump: "ไปที่ข้อความใหม่",
+    latest: "เลื่อนไปข้อความล่าสุด",
+  },
   pushAsk: {
     title: (name) => `รับการแจ้งเตือนเมื่อ ${name} ส่งข้อความมาไหม?`,
     body: "บางครั้งเราจะทักไปก่อน — ประมาณวันละครั้ง ช่วงเย็น",

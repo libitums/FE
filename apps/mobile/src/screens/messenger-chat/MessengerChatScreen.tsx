@@ -6,7 +6,7 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { ChatRoomHeader } from "./ChatRoomHeader";
 import { ChatWordsStrip } from "./ChatWords";
 import { useChatWordsStrip, type ChatWordsProps } from "./use-chat-words-strip";
-import { jumpKeyOf } from "./chat-jump-key";
+import { useNewMessagePill } from "./use-new-message-pill";
 import { ChatLog } from "../../components/chat/ChatLog";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { announce } from "../../lib/accessibility";
@@ -153,6 +153,7 @@ export function MessengerChatScreen({
   );
 
   const strip = useChatWordsStrip(chatWords, thread); // 이번 주 채팅 단어(ADR-0170)
+  const pill = useNewMessagePill(roomId, thread); // 「새 메시지 ↓」 · 로그의 jumpKey(내가 보낸 것 · 누름은 늘 끝으로)
   if (thread === null) return <view className="messenger-chat-screen" data-testid={ids.screen} />; // 지운 직후 — onExit이 곧 걷음
 
   const slotHeight = chatKeyboardSlotHeight({
@@ -188,8 +189,7 @@ export function MessengerChatScreen({
           <ChatLog
             testId={ids.log}
             followKey={slotHeight}
-            // 내가 보낸 글 · 사진 · 음성 요청 · 고친 문장 다시 보내기는 읽던 자리와 상관없이 끝으로 — id 교체는 계기 아님(기기 F2).
-            jumpKey={jumpKeyOf(thread.messages)}
+            {...pill.logProps}
             loading={thread.server?.history === "loading"}
             holdKey={tools.open}
             onTap={
@@ -229,6 +229,7 @@ export function MessengerChatScreen({
               onRefresh={() => source.server?.reload(roomId)}
             />
           </ChatLog>
+          {pill.view}
           <RoomCoach guide={guide} thread={thread} />
           {state.overlay.kind === "more-menu" ? (
             <MoreMenu
