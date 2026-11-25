@@ -6,6 +6,12 @@ export type LocalizedLine = { readonly en: string } & Partial<
   Readonly<Record<"es" | "id" | "ja" | "vi" | "th" | "my" | "zh-TW", string>>
 >;
 
+/**
+ * 프로필 시트 목소리 견본의 대본(ADR-0198) — 한글 · 콘텐츠 로마자(`roman`, 손으로 적은 값) · 여덟 화면 언어 뜻. 정본은
+ * `docs/content/companion-voice-intros.json`입니다.
+ */
+export type VoiceSampleScript = { readonly ko: string; readonly roman: string } & LocalizedLine;
+
 /** 이야기에서 만나는 인물(`story`) · 이야기 밖에서 새로 만나는 인물(`general`). */
 export type FriendKind = "story" | "general";
 
@@ -55,6 +61,10 @@ export type FriendProfile = {
    */
   readonly sheetOpening: ({ readonly ko: string } & LocalizedLine) | null;
   readonly earlyAccess: EarlyAccessOffer | null;
+  /** 목소리 견본(ADR-0198) — 버킷 상대 경로(`content/audio/companion/<id>-intro.mp3`, 아바타와 같은 해석기). 없으면 단추가 없습니다. */
+  readonly voiceSamplePath?: string | null;
+  /** 견본이 읽는 대본 — 있으면 시트의 첫 말 칸이 첫 말 대신 이것을 보입니다(ADR-0198 D2). */
+  readonly voiceSampleScript?: VoiceSampleScript | null;
   /** 인물의 로맨스 수위(ADR-0164) — 서버의 보이는 친구 목록이 덮어씁니다. 없으면 standard. */
   readonly romanceTier?: RomanceTier;
   /** 문구의 대명사(she · he)를 고릅니다. 없으면 대명사 없는 문구. */
@@ -105,4 +115,8 @@ export type SuggestedFriendsPort = {
   readonly lastVisibleFriends?: () => readonly VisibleFriend[] | null;
   /** 성인 확인(ADR-0164 D4) — 없으면 묻지 않습니다. */
   readonly adultAck?: AdultAckPort;
+  /** 목소리 견본 경로(버킷 상대)를 재생 주소로 — 아바타와 같은 해석기(ADR-0198). 없거나 못 풀면 null(누를 때 못 읽음 줄). */
+  readonly voiceSampleUrl?: (path: string) => string | null;
+  /** 로마자 스위치(ADR-0188) — 견본 대본 아래 줄을 고릅니다. 없으면 끔(뜻 한 줄). */
+  readonly romanization?: () => boolean;
 };
