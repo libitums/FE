@@ -23,7 +23,7 @@
 
 | 번들 | 크기 |
 | --- | --- |
-| `main.lynx.bundle` | origin/main 5,801,585 B → 5,802,192 B(+607 B, `.env.local` 없음). PR CI 번들 보고(ADR-0149)로도 확인 |
+| `main.lynx.bundle` | origin/main 5,801,585 B → 5,802,257 B(+672 B, `.env.local` 없음). PR CI 번들 보고(ADR-0149)로도 확인 |
 
 렌더링 · 메모리 값은 **없습니다** — 재지 않았습니다.
 

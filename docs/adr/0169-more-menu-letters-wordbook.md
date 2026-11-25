@@ -230,4 +230,4 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
   채운 단어가 많으면 복습이 여러 날에 걸친다(예: 100개면 7일, 마지막 날 10개) — 뒤 레슨 단어는 늦게 복습에 오고, 그날 원래 예정된 단어가 있으면 하루 15개를 넘을 수 있다. 단어 카드 활동만 끝내고 유닛을 끝내지 않은 단어는 지금처럼
   카드 활동 때 적힌 것만 있다. 세션마다 진행이 바뀔 때 단어장 칸을 한 번 읽어 비교한다(쓰기는 바뀔 때만).
 - **여전히 범위 밖**: 단어장 서버 동기화(별 · 복습 기록은 다른 기기로 넘어가지 않는다 — 다른 기기에서는 끝낸 레슨의 단어만 New로 다시 선다).
-- 검사: unit WB1 ~ WB7(`wordbook-backfill.unit.test.ts`, WB6 · WB7 = 나눠 잡기), integration WBI1 · WBI2(`App.wordbook-backfill.integration.test.tsx`), e2e [수동 절차](../e2e/wordbook-backfill.md) WBF-E1 ~ E4(2026-11-25 iOS 시뮬레이터 · Android assembleBundled에서 고치기 전 0개 재현 → 고친 뒤 8개 · 별 유지 통과). 번들 origin/main 5,801,585 B → 5,802,192 B(+607 B, .env.local 없음), 천장 5,850,000 B 그대로.
+- 검사: unit WB1 ~ WB7(`wordbook-backfill.unit.test.ts`, WB6 · WB7 = 나눠 잡기), integration WBI1 · WBI2(`App.wordbook-backfill.integration.test.tsx`), e2e [수동 절차](../e2e/wordbook-backfill.md) WBF-E1 ~ E4(2026-11-25 iOS 시뮬레이터 · Android assembleBundled에서 고치기 전 0개 재현 → 고친 뒤 8개 · 별 유지 통과). 번들 origin/main 5,801,585 B → 5,802,257 B(+672 B, .env.local 없음, 나눠 잡기 포함), 천장 5,850,000 B 그대로.
