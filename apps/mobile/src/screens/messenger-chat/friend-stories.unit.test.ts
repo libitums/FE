@@ -110,8 +110,8 @@ describe("FS-U2 스토리 줄", () => {
   });
 });
 
-describe("FS-U3 한 인물에 둘이면 최신 하나", () => {
-  test("올린 시각이 늦은 것", () => {
+describe("FS-U3 한 인물에 둘이면 줄 칸은 최신 것(묶음은 FS-U21)", () => {
+  test("올린 시각이 늦은 것이 줄 칸, 둘 다 묶음에", () => {
     const row = storyRowOf(
       input({
         stories: [
@@ -121,6 +121,7 @@ describe("FS-U3 한 인물에 둘이면 최신 하나", () => {
       }),
     );
     expect(row.friends.map((e) => e.story.id)).toEqual(["new"]);
+    expect(row.friends[0]?.stories.map((e) => e.id)).toEqual(["old", "new"]);
   });
 });
 

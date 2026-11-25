@@ -12,7 +12,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { announce } from "../../lib/accessibility";
 import { restoreAccessibilityFocus } from "./chat-input-focus";
-import { spokenOf, storyAgeOf, viewerStep } from "./friend-stories";
+import { spokenOf, storyAgeOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { localizedLine } from "./suggested-friends";
 import {
@@ -23,6 +23,7 @@ import {
   WordPill,
 } from "./StoryViewerParts";
 import { StoryReplyArea } from "./StoryReplyArea";
+import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
 
 import "./story-viewer.css";
@@ -58,7 +59,11 @@ export function StoryViewer({
 }: StoryViewerProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   const insets = safeAreaInsetsFrom(useGlobalProps());
-  const [index, setIndex] = useState(Math.min(Math.max(0, start), items.length - 1));
+  const nav = useStoryNavigation({ items, start, reducedMotion, onClose, onSkip });
+  const { index, step } = nav;
+  // 위 진행 막대 · 「Story i of n」은 지금 인물의 묶음만 셉니다(D4 개정).
+  const group = viewerGroupOf(items, index);
+  const groupLabel = copy.viewer.progress(group.at + 1, group.count);
   const [paused, setPaused] = useState(false);
   const reply = useStoryViewerReply({
     index,
@@ -74,13 +79,6 @@ export function StoryViewer({
   });
   const item = items[index];
 
-  const step = (action: "next" | "prev" | "tick") => {
-    const next = viewerStep({ index, count: items.length }, action);
-    if (next === "close") return onClose("completed");
-    // 끝내는 탭은 건너뜀이 아닙니다(다 본 것) — 다음 장으로 넘긴 탭만 셉니다.
-    if (action === "next") onSkip?.();
-    setIndex(next.index);
-  };
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
   // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도 멈춥니다(D5 개정).
@@ -100,10 +98,7 @@ export function StoryViewer({
   useEffect(() => {
     const current = items[index];
     if (current === undefined) return undefined;
-    const line = spokenOf(copy.listSeparator, [
-      copy.viewer.label(current.name),
-      copy.viewer.progress(index + 1, items.length),
-    ]);
+    const line = spokenOf(copy.listSeparator, [copy.viewer.label(current.name), groupLabel]);
     if (opened.current) announce(line);
     opened.current = true;
     const handle = setTimeout(() => restoreAccessibilityFocus(ids.name), NEXT_FRAME_MS);
@@ -114,8 +109,8 @@ export function StoryViewer({
   const { story, unmet } = item;
   const tap = (action: "next" | "prev") => () => {
     "background only";
-    // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음).
-    if (reply.dismissKeyboard()) return;
+    // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음). 방금 가로로 넘긴 손가락의 탭도 넘기지 않습니다.
+    if (nav.consumeSwipe() || reply.dismissKeyboard()) return;
     step(action);
   };
 
@@ -128,15 +123,24 @@ export function StoryViewer({
       event-through={false}
       accessibility-elements-hidden={covered}
     >
-      {item.imageUrl === null ? null : (
-        <image
-          className="story-viewer-image"
-          data-testid={ids.image}
-          src={item.imageUrl}
-          mode="aspectFill"
-          accessibility-elements-hidden={true}
-        />
-      )}
+      {/* 인물이 바뀌면 그림 층이 옆으로 미끄러져 들어옵니다(인물마다 새로 — key). 모션 줄이기면 none. */}
+      <view
+        key={group.start}
+        className={`story-viewer-content story-viewer-slide-${nav.slide}`}
+        data-testid={ids.content}
+        data-slide={nav.slide}
+        accessibility-elements-hidden={true}
+      >
+        {item.imageUrl === null ? null : (
+          <image
+            className="story-viewer-image"
+            data-testid={ids.image}
+            src={item.imageUrl}
+            mode="aspectFill"
+            accessibility-elements-hidden={true}
+          />
+        )}
+      </view>
       {/* 흰 글 · 아이콘이 밝은 사진 위에서도 읽히게 머리 줄 아래까지 고른 그늘(접근성 C2) — 인셋이 들어가 높이는 인라인입니다. */}
       <view
         className="story-viewer-shade-top"
@@ -188,7 +192,7 @@ export function StoryViewer({
             accessibility-element={true}
             accessibility-label={spokenOf(copy.listSeparator, [
               copy.viewer.label(item.name),
-              copy.viewer.progress(index + 1, items.length),
+              groupLabel,
             ])}
           >
             {item.name}
@@ -203,11 +207,11 @@ export function StoryViewer({
           </view>
         </view>
         <StoryProgress
-          items={items}
-          index={index}
+          items={items.slice(group.start, group.start + group.count)}
+          index={group.at}
           still={reducedMotion}
           stopped={stopped}
-          label={copy.viewer.progress(index + 1, items.length)}
+          label={groupLabel}
         />
       </view>
 
@@ -259,7 +263,19 @@ export function StoryViewer({
         )}
       </view>
 
-      <view className="story-viewer-taps">
+      {/* 가로로 밀면 인물을 넘깁니다(D4 개정) — 탭 자리 전체에서 손가락의 시작 · 끝을 봅니다. */}
+      <view
+        className="story-viewer-taps"
+        data-testid={ids.taps}
+        bindtouchstart={(event: { detail?: { x?: unknown; y?: unknown } }) => {
+          "background only";
+          nav.touchStart(event);
+        }}
+        bindtouchend={(event: { detail?: { x?: unknown; y?: unknown } }) => {
+          "background only";
+          nav.touchEnd(event);
+        }}
+      >
         {(["prev", "next"] as const).map((action) => (
           <view
             key={action}
