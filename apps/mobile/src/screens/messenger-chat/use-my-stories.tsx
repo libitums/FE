@@ -13,6 +13,7 @@ import type {
   MyStoriesPort,
   MyStoriesState,
   MyStory,
+  MyStoryPostResult,
   MyStoryReaction,
   MyStoryWindow,
 } from "./my-stories.contract";
@@ -150,17 +151,19 @@ export function useMyStories({
     setCrisis(null);
     const now = Date.now();
     const tz = tzOffsetMinOf(now);
-    const posted =
+    // 포트는 던지지 않는 약속이지만, 던져도 busy가 풀리게 실패로 받습니다(리뷰 지적).
+    const posted = await (
       share.kind === "choice"
-        ? await port.post(draftOf(share.choice, clientId.current, language, tz))
-        : await port.postText({
+        ? port.post(draftOf(share.choice, clientId.current, language, tz))
+        : port.postText({
             clientId: clientId.current,
             background: share.background,
             ko: share.text?.ko ?? "",
             overlays: share.overlays,
             lang: language,
             tzOffsetMin: tz,
-          });
+          })
+    ).catch((): MyStoryPostResult => ({ result: "failed" }));
     posting.current = false;
     setBusy(false);
     if (posted.result !== "ok") {

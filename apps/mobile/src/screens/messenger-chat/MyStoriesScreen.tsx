@@ -113,7 +113,7 @@ export function MyStoriesScreen({
     "background only";
     if (confirm === null || removing.current) return;
     removing.current = true;
-    const ok = await port.remove(confirm.storyId);
+    const ok = await port.remove(confirm.storyId).catch(() => false); // 던져도 다시 누를 수 있게(리뷰 지적)
     removing.current = false;
     if (!ok) return setConfirm({ ...confirm, failed: true });
     dropped(confirm.storyId);

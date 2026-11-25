@@ -246,3 +246,23 @@ test("MS-UI36. 글 스토리 올리기가 text_blocked면 편집에 안내 · po
     expect.objectContaining({ reason: "text_blocked" }),
   ]);
 });
+
+test("MS-UI37. 올리기 포트가 던져도 실패 안내 · 다시 Share할 수 있다(리뷰 지적)", async () => {
+  const fake = fakeMyStories({ guideSeen: true, words, kinds: ["word", "card", "text"] });
+  fake.postText.mockRejectedValueOnce(new Error("network"));
+  await mount(fake);
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  tapId(ids.toolText);
+  act(() => nativeInput("input", "안녕", ids.textInput));
+  tapId(ids.textDone);
+  await flush();
+  tapId(ids.share);
+  await flush();
+  expect(screen.getByTestId(ids.composerError).textContent).toBe(
+    "Couldn't share your story. Try again.",
+  );
+  tapId(ids.share);
+  await flush();
+  expect(fake.postText).toHaveBeenCalledTimes(2);
+});

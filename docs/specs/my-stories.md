@@ -99,7 +99,7 @@
 | integration | MSI1 ~ MSI3 | 실제 App: Your story → Open chat → 그 방(띠 없음) · 읽기에 UTC 차이 · 못 읽으면 「+」 없음 · 창을 쓴 「+」 → 창 시트 |
 | unit | MS-U30 ~ U31 | 글 상자 · 모서리 손잡이 (`my-story-editor.unit.test.ts`) |
 | unit | MS-U23 ~ U29 | 만들기: 도구 · 스티커 놓기 · 끌기/두 손가락 · 올릴 길 · kinds/글 스토리 풀기 · 교정 없음(뜻 · 원래 글 안 실음, 로마자) · crisis 결과 (`my-story-editor.unit.test.ts`) |
-| ui | MS-UI31 ~ UI36 | 시작 시트 · 지금 서버 편집 · 스티커 × · 두 손가락 · 글 서버 Aa(바탕 위 상자 · 글자색 · Done) → 글 스토리 · crisis → 위기 카드 · text_blocked (`MyStoryEditor.ui.test.tsx`) |
+| ui | MS-UI31 ~ UI37 | 시작 시트 · 지금 서버 편집 · 스티커 × · 두 손가락 · 글 서버 Aa(바탕 위 상자 · 글자색 · Done) → 글 스토리 · crisis → 위기 카드 · text_blocked · 포트가 던져도 다시 Share (`MyStoryEditor.ui.test.tsx`) |
 | integration | MSI6 | 실제 App: kinds에 text → Aa → Done → Share가 함수 결선으로 글 스토리, 없으면 Aa 없음 |
 | integration | MSI4 ~ MSI5 | 기록 JSON → 풀기 → 서버 모드 출처 → 방: 무료 신호 있음(무료 답 → 다시 읽기 → 판정 표시) / 각도 quiz만(#592 — 보통 엽전 관문) (`story-quiz.integration.test.tsx`) |
 | integration(서버) | MS1 ~ MS17 | 스위치 · 올리기(창 · 24시간 상한) · 창 계산 · 답할 인물(가중 무작위 · 각도 · 시각) · Seen · claim(상한 · 대화 중 미룸 · 겹친 호출 · 오래된 claim) · 끝내기(인물 방의 메시지) · 지우기(메시지는 남음) · 정리 · mine 판정 · 푸시 문 · 스토리 맥락 |
