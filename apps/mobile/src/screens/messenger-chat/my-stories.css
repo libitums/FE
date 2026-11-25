@@ -893,6 +893,11 @@
   text-align: center;
 }
 
+/* 글을 쓰는 동안 편집의 위 줄 · 도구 · 아래 줄을 숨깁니다(29번 — 위에는 글자색 · Done만). 누름은 쓰기 층이 막습니다. */
+.my-story-under-typing {
+  opacity: 0;
+}
+
 /* Aa — 바탕 위 글 상자에서 쓰기(29번). 바탕을 어둡게 덮고 위에 글자색 · Done, 가운데 점선 상자. 글자색 넷은 시안 값(화면 지역 상수). */
 .my-story-typing {
   position: fixed;
@@ -905,7 +910,7 @@
   flex-direction: column;
   align-items: center;
   padding: 0 var(--libitum-spacing-12);
-  background-color: rgba(26, 28, 32, 0.35);
+  background-color: rgba(26, 28, 32, 0.45);
 }
 
 .my-story-typing-top {

@@ -140,7 +140,7 @@ export function MyStoryEditor({
         accessibility-elements-hidden={sheet !== null || writing}
         style={{ paddingTop: `${insets.top}px` }}
       >
-        <view className="my-story-editor-top">
+        <view className={`my-story-editor-top${writing ? " my-story-under-typing" : ""}`}>
           <view
             className="my-story-editor-round"
             data-testid={ids.composerClose}
@@ -189,7 +189,7 @@ export function MyStoryEditor({
             setSelected(null);
           }}
         >
-          {text === null ? null : (
+          {text === null || writing ? null : (
             <MyStoryTextBox
               text={text}
               canvas={canvas}
@@ -214,7 +214,7 @@ export function MyStoryEditor({
             />
           ))}
         </view>
-        <view className="my-story-tools">
+        <view className={`my-story-tools${writing ? " my-story-under-typing" : ""}`}>
           {caps.text ? (
             <Tool testId={ids.toolText} label={copy.text} onTap={typing.start}>
               <text className="my-story-tool-aa">Aa</text>
@@ -228,7 +228,7 @@ export function MyStoryEditor({
           </Tool>
         </view>
         <view
-          className="my-story-editor-footer"
+          className={`my-story-editor-footer${writing ? " my-story-under-typing" : ""}`}
           style={{ paddingBottom: `${FOOTER_PADDING + bottom}px` }}
         >
           {crisis === null ? null : <ChatCrisisCard resources={crisis} onOpen={openLink} />}
