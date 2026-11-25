@@ -16,6 +16,7 @@ import { KeyboardSlot, PhoneKeyboardSpacer } from "./KeyboardSlot";
 import { KeyboardToggleRow } from "./KeyboardToggleRow";
 import { ReplyIdeasPanel } from "./ReplyIdeasPanel";
 import { BlockedComposer } from "./SafetyParts";
+import { useSuggestionEvents } from "./use-suggestion-events";
 import type { PhoneKeyboardHeight } from "./use-phone-keyboard-height";
 
 import "./messenger-chat.css";
@@ -83,6 +84,7 @@ export function ChatRoomDock({
   const content = chatSlotContent(state);
   const menuOpen = state.overlay.kind === "more-menu";
   const ideasOpen = state.slot.kind === "ideas";
+  const suggestionTapped = useSuggestionEvents(thread, content === "ideas"); // 보임 · 누름 이벤트(ADR-0194)
   // 서버 방의 사진 · 음성 알약 상태(ADR-0146 「앱 연결」) — 대상 메시지 · 답 기다림 · 만드는 중 · 이미 있음.
   const mediaRoom = {
     messages: thread.messages,
@@ -186,7 +188,9 @@ export function ChatRoomDock({
             ideas={thread.ideas}
             onSend={(index) => {
               const idea = thread.ideas[index];
-              if (idea !== undefined) onSend(idea.ko);
+              if (idea === undefined) return;
+              suggestionTapped(index);
+              onSend(idea.ko);
             }}
             onTypeMyself={() => dispatch({ type: "type-myself" })}
             bottomInset={edges.bottom}

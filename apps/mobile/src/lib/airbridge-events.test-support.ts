@@ -4,6 +4,7 @@ import { entryPathEventExamples, entryPathEventNames } from "./entry-path-events
 import { planEventExamples } from "./purchase-intent.test-support";
 import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
 import { friendStoryEventNames } from "./friend-story-events.test-support";
+import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
 import {
   messengerGuideEventExamples,
   messengerGuideEventNames,
@@ -64,6 +65,7 @@ export const allEventNames = [
   "new_friend_sheet_closed",
   "chat_sign_in_prompt_closed",
   "chat_message_sent",
+  ...suggestionEventNames,
   "chat_media_requested",
   "chat_media_completed",
   "chat_coins_short",
@@ -210,14 +212,7 @@ export const unmappedEvents = [
     characterId: "mina",
     choice: "reply",
   },
-  {
-    name: "chat_message_sent",
-    surface: "chat",
-    daysSinceFirstOpen: "3",
-    characterId: "duksu",
-    paid: true,
-    cost: "3",
-  },
+  ...suggestionEvents,
   {
     name: "chat_media_requested",
     surface: "chat",

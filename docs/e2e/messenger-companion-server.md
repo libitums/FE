@@ -9,6 +9,7 @@
 | SV-E5 | 내 글 | 🌐 없음 · ✏️만 |
 | SV-E6 | 무료 등급으로 다른 인물 방 | 회색 줄 「You can't chat with {name} yet.」 |
 | SV-E7 | 실제 스크린리더 · Android | 미실행 |
+| SV-E8 | 추천 답변 판이 섬 → 보기 하나 누름 (ADR-0194) | `chat_suggestion_shown` 한 번(판을 접었다 다시 열어도 한 번) · `chat_suggestion_tapped { index, count, replyOrigin, myMessageNumber }` · `chat_message_sent { fromSuggestion: true }`. 입력 칸으로 보낸 글은 `fromSuggestion: false`. 추천 글은 이벤트에 없음 |
 
 ## 실행 기록
 

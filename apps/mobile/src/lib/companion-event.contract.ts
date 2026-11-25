@@ -2,6 +2,7 @@
 // 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
 // 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
+import type { ChatSuggestionEvent } from "./chat-suggestion-event.contract";
 import type { FriendStoryEvent } from "./friend-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
 
@@ -108,6 +109,8 @@ export type ChatCoinEvent =
       readonly cost: string;
       /** 스토리 첫 답장 무료로 보냄(ADR-0178 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
       readonly storyFree?: true;
+      /** 답할 문장 추천(보기)을 눌러 보냄(ADR-0194) — 칩을 고쳐 보내는 길은 없습니다. */
+      readonly fromSuggestion: boolean;
     })
   | (Common & {
       readonly name: "chat_media_requested";
@@ -285,6 +288,7 @@ export type CompanionEvent =
   | CompanionUnlockEvent
   | SuggestedFriendEvent
   | FriendStoryEvent
+  | ChatSuggestionEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

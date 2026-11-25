@@ -1,7 +1,7 @@
 // 서버 방의 첫 인사 둘입니다 — 방을 열었는데 비어 있을 때의 첫 인사(ADR-0137)와 인물이 해금된 순간의 해금 선톡(ADR-0152).
 // `chat-fixture-remote.ts`가 방을 열 때 · 출처가 인물을 해금할 때 부릅니다. 던지지 않습니다.
 
-import type { RoomState } from "./chat-fixture-room";
+import { setRemoteIdeas, type RoomState } from "./chat-fixture-room";
 import type { ChatRemote, RemoteGreeting } from "./chat-remote.contract";
 
 export type RemoteGreetingDeps = {
@@ -24,7 +24,7 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
   const place = (room: RoomState, greeting: RemoteGreeting) => {
     const known = new Set(room.messages.map((message) => message.id));
     room.messages = [...greeting.messages.filter((m) => !known.has(m.id)), ...room.messages];
-    if (room.pendingReplies === 0) room.remoteIdeas = greeting.ideas;
+    if (room.pendingReplies === 0) setRemoteIdeas(room, greeting.ideas, "greeting");
   };
 
   return {

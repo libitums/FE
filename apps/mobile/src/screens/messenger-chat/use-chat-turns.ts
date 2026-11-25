@@ -34,8 +34,8 @@ export type UseChatTurns = {
   readonly plan: TurnPlan;
   readonly sendCost: SendCost;
   readonly panelOpen: boolean;
-  /** `useChatRoom`의 `authorizeSend`로 넘깁니다. */
-  readonly authorizeSend: () => boolean;
+  /** `useChatRoom`의 `authorizeSend`로 넘깁니다. `fromSuggestion` — 답장 보기를 눌러 보냄(ADR-0194, 기본 false). */
+  readonly authorizeSend: (fromSuggestion?: boolean) => boolean;
   readonly keepChatting: () => void;
 };
 
@@ -119,57 +119,61 @@ export function useChatTurns({
     announce(plan.kind === "last-free" ? `${line}, ${words.strip(plan.price)}` : line);
   }, [remaining, plan]);
 
-  const authorizeSend = useCallback((): boolean => {
-    "background only";
-    // 한 통마다 최신 체험 수 · 잔액으로 다시 판정합니다(같은 커밋 안의 연속 보내기에도 어긋나지 않게).
-    const latest = turnPlanFor({
-      tier,
-      trialRemaining: trial.remaining(),
-      price: PRICE,
-    });
-    const gate = sendGateFor(latest, wallet.balance());
-    const sent = (cost: number) =>
-      emitCompanionEvent(sink, {
-        name: "chat_message_sent",
-        surface: "chat",
-        characterId: roomId ?? "",
-        paid: cost > 0,
-        cost: String(cost),
+  const authorizeSend = useCallback(
+    (fromSuggestion = false): boolean => {
+      "background only";
+      // 한 통마다 최신 체험 수 · 잔액으로 다시 판정합니다(같은 커밋 안의 연속 보내기에도 어긋나지 않게).
+      const latest = turnPlanFor({
+        tier,
+        trialRemaining: trial.remaining(),
+        price: PRICE,
       });
-    const short = () =>
-      emitCompanionEvent(sink, {
-        name: "chat_coins_short",
-        surface: "chat",
-        reason: "message",
-        shortBy: String(Math.max(0, PRICE - wallet.balance())),
-      });
-    switch (gate.kind) {
-      case "open":
-        sent(0);
-        return true;
-      case "free":
-        trial.consume();
-        sent(0);
-        return true;
-      case "pay":
-        // 서버 방은 서버가 냅니다 — 잔액은 턴의 `done`이 칩으로 알립니다.
-        if (charging === "server" || wallet.spend(gate.price, "message").kind === "spent") {
-          sent(gate.price);
+      const gate = sendGateFor(latest, wallet.balance());
+      const sent = (cost: number) =>
+        emitCompanionEvent(sink, {
+          name: "chat_message_sent",
+          surface: "chat",
+          characterId: roomId ?? "",
+          paid: cost > 0,
+          cost: String(cost),
+          fromSuggestion,
+        });
+      const short = () =>
+        emitCompanionEvent(sink, {
+          name: "chat_coins_short",
+          surface: "chat",
+          reason: "message",
+          shortBy: String(Math.max(0, PRICE - wallet.balance())),
+        });
+      switch (gate.kind) {
+        case "open":
+          sent(0);
           return true;
+        case "free":
+          trial.consume();
+          sent(0);
+          return true;
+        case "pay":
+          // 서버 방은 서버가 냅니다 — 잔액은 턴의 `done`이 칩으로 알립니다.
+          if (charging === "server" || wallet.spend(gate.price, "message").kind === "spent") {
+            sent(gate.price);
+            return true;
+          }
+          short();
+          onTopUp();
+          return false;
+        case "top-up":
+          short();
+          onTopUp();
+          return false;
+        default: {
+          const unreachable: never = gate;
+          return unreachable;
         }
-        short();
-        onTopUp();
-        return false;
-      case "top-up":
-        short();
-        onTopUp();
-        return false;
-      default: {
-        const unreachable: never = gate;
-        return unreachable;
       }
-    }
-  }, [tier, charging, trial, wallet, onTopUp, sink, roomId]);
+    },
+    [tier, charging, trial, wallet, onTopUp, sink, roomId],
+  );
 
   const keepChatting = useCallback((): void => {
     "background only";
