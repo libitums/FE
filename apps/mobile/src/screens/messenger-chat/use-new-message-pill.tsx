@@ -2,7 +2,7 @@
 // 끝을 떠나는 순간 로그의 상대 줄 id를 찍어 두고 그 뒤 온 줄만 셉니다. 누르면 jumpKey에 붙는 수를 올려 끝으로 내리고(움직임 줄이기면
 // 점프 — ChatLog), 끝에 닿으면(내가 보내도 끝으로 감) 찍어 둔 것을 지웁니다.
 
-import { useEffect, useRef, useState } from "@lynx-js/react";
+import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { ChatLogPosition } from "../../components/chat/chat.contract";
@@ -38,13 +38,14 @@ export function useNewMessagePill(roomId: string, thread: ChatThread | null): Ne
   messages.current = thread?.messages ?? [];
 
   const last = useRef<ChatLogPosition>(AT_END);
-  const onPositionChange = (next: ChatLogPosition) => {
+  // ref · 상태 설정 함수만 쓰므로 한 번 만든 것을 그대로 씁니다(로그의 효과가 매 렌더 다시 돌지 않게).
+  const onPositionChange = useCallback((next: ChatLogPosition) => {
     "background only";
     if (last.current.nearEnd && !next.nearEnd) setSeen(arrivalIds(messages.current));
     if (next.nearEnd) setSeen(null);
     last.current = next;
     setPosition(next);
-  };
+  }, []);
 
   // 떠나 있는 동안 온 순서 — 사진 · 음성 줄은 로그 가운데에 끼어 서므로 마지막 종류는 온 순서로 정합니다.
   const [order, setOrder] = useState<ReadonlyMap<string, number>>(NO_ORDER);
