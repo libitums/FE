@@ -66,6 +66,21 @@ const wordsPort: StoryWordPort = {
   },
 };
 
+// 다시 읽기 리스너(ADR-0178 「다시 읽기」) — 앱이 앞으로 오면(`use-messenger-refresh`) 서 있는 목록에 알립니다.
+const reloadListeners = new Set<() => void>();
+
+function subscribeReload(listener: () => void): () => void {
+  reloadListeners.add(listener);
+  return () => {
+    reloadListeners.delete(listener);
+  };
+}
+
+/** 앱이 앞으로 왔다 — 서 있는 스토리 목록이 다시 읽습니다. 목록이 없으면 아무것도 하지 않습니다. */
+export function notifyFriendStoriesReload(): void {
+  for (const listener of Array.from(reloadListeners)) listener();
+}
+
 async function loadStories() {
   try {
     return (await companionServerRemote()?.stories?.list()) ?? null;
@@ -90,6 +105,7 @@ export function friendStoriesPort(args: FriendStoriesWiringArgs): FriendStoriesP
     },
     words: wordsPort,
     romanization: () => latest?.romanization?.() ?? true,
+    subscribeReload,
   };
   return cachedPort;
 }

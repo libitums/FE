@@ -155,6 +155,21 @@
 - 흰 글 대비: 위 그늘을 머리 줄 아래까지 검정 60%로 고르게 · 무료 안내는 어두운 알약 · 단어 알약 · NEW FRIEND 바탕은 `brand-strong`(흰 글 약 5.5:1) · 칩 터치 높이 44.
 - 한 줄 카드 · 단어 알약은 답장 묶음 위 흐름에 둬 큰 글자에서도 겹치지 않는다. 저장한 단어 알약은 버튼이 아니다. 목록 줄 낭독에 「Opens the story」.
 
+## 다시 읽기 ⟨2026-11-25⟩
+
+테스터 확인: 목록을 연 뒤 올라온 스토리가 앱을 다시 켜기 전까지 보이지 않았다(D2는 목록 마운트마다 한 번만 읽음). 이제 목록은 이때 다시 읽는다.
+
+- **채팅 탭으로 돌아올 때 · 방에서 목록으로 돌아올 때** — 탭 루트 전환이면 목록 화면이 다시 마운트돼 D2의 마운트 읽기가 그대로 맡는다(새 코드 없음, 통합 테스트 FSI7로 고정).
+- **앱이 앞으로 올 때** — 열린 방을 다시 읽는 호스트 신호(`contentSyncOpportunity`, ADR-0138)를 같이 쓴다. 화면(`screens/`)이 `app/`을 가져오지 않게
+  포트에 선택 `subscribeReload(listener) => off`를 두고, 결선(`friend-stories-wiring`)이 리스너 집합을 들고 `use-messenger-refresh`가 알린다.
+- **목록이 서 있는 동안 5분마다**(`STORY_RELOAD_MS`) — 목록이 내려가면(방 · 다른 탭) 타이머도 멈춘다.
+- **보기가 열려 있으면** 받은 목록을 갈아 끼우지 않고 보류했다가 보기를 닫은 뒤 반영한다(보고 있는 줄 · 장 목록이 바뀌지 않게). 알림으로 다시 읽는 길(D7)은 예전처럼 곧바로 반영한다.
+- **못 읽으면**(null · 던짐) 있던 목록을 지킨다(`storiesAfterLoad`). 첫 읽기 실패는 예전처럼 스토리 없음(추천 줄).
+- 새 문구 · 새 분석 이벤트 없음. 다시 읽기 횟수만큼 `companion_friend_stories()` 호출이 는다(5분에 한 번 + 앞으로 올 때 한 번 — 목록이 서 있을 때만).
+- 스스로 정한 기본값: 5분 타이머는 보기가 열려 있어도 돌고(결과는 보류), 목록이 서 있는 동안만 돈다. 보류 중에 또 읽으면 마지막 결과만 남긴다.
+- 확인: unit `friend-stories-reload.unit.test.ts`(FS-U15) · `friend-stories-wiring.unit.test.ts`(FS-U16) · ui `MessengerListScreen.stories-reload.ui.test.tsx`(FS-UI14 ~ UI17) ·
+  `use-messenger-refresh.ui.test.tsx`(FS-UI18) · integration `App.friend-stories.integration.test.tsx`(FSI7 · FSI8) · e2e FS-E13 ~ E15.
+
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 
 - 스토리 데이터 = 서버 표(D1) · 하루 한 번 UTC 01 ~ 10시(인물마다 고정) · 24시간 만료 · 가장 적게 올린 줄부터 · 본 것 = 기기 저장(D3).

@@ -61,6 +61,8 @@ export type FriendStoriesPort = {
   readonly words?: StoryWordPort;
   /** 로마자를 보이는가(로마자 보기 설정) — 없으면 보입니다. */
   readonly romanization?: () => boolean;
+  /** 앱이 앞으로 오면 부를 리스너를 겁니다 — 돌려준 함수로 뗍니다. 없으면 그 신호로는 다시 읽지 않습니다(ADR-0178 「다시 읽기」). */
+  readonly subscribeReload?: (listener: () => void) => () => void;
 };
 
 /** 내 친구(열린 방)의 스토리 칸 — 본 것은 회색 고리. */

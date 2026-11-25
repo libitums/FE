@@ -7,7 +7,13 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import { useChatEvents } from "./chat-events";
 import type { ChatRoomSummary } from "./chat-source.contract";
-import { listStoryOf, storyRowOf, viewerItemsOf, type ViewerOpen } from "./friend-stories";
+import {
+  listStoryOf,
+  storiesAfterLoad,
+  storyRowOf,
+  viewerItemsOf,
+  type ViewerOpen,
+} from "./friend-stories";
 import type {
   FriendStoriesPort,
   FriendStory,
@@ -22,6 +28,7 @@ import {
 } from "./story-reply-handoff";
 import { StoryViewer } from "./StoryViewer";
 import type { StoryRowStats } from "./use-row-impressions";
+import { useStoryReload } from "./use-story-reload";
 import type { SuggestedFriendsUi } from "./use-suggested-friends";
 
 export type FriendStoriesUi = {
@@ -77,6 +84,8 @@ export function useFriendStories({
   const loadRef = useRef(port?.load ?? null);
   loadRef.current = port?.load ?? null;
   const hasLoader = loadRef.current !== null;
+  // 다시 읽기(앱이 앞으로 옴 · 5분마다, ADR-0178 「다시 읽기」) — 보기가 열려 있으면 보류했다가 닫은 뒤 반영합니다.
+  const reload = useStoryReload({ port, viewerOpen: viewer !== null, setStories });
   useEffect(() => {
     const load = loadRef.current;
     if (load === null) return undefined;
@@ -85,7 +94,8 @@ export function useFriendStories({
       .catch(() => null)
       .then((list) => {
         if (!live) return;
-        setStories(list);
+        reload.dropHeld();
+        setStories((previous) => storiesAfterLoad(previous, list));
         setLoadCount((count) => count + 1);
       });
     return () => {
