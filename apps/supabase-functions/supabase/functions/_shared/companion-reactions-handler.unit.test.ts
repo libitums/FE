@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
+import { reactionPushBody } from "./companion-reaction-push.ts";
 import {
   createReactionsHandler,
   REACTION_BATCH,
@@ -366,12 +367,15 @@ test("RH9. 푸시 — 스위치 on · 기기 · 방이 있으면 기록(묶음 �
       user_id: claimed(1).userId,
       character_id: "mina",
       title: "윤경",
-      body: "야근 끝나면 라면 먹어! 내가 쏠게",
+      // 본문은 모국어 한 줄만(번역의 첫 말풍선) — 가짜 번역은 `[en] ` 머리를 붙인다.
+      body: "[en] 야근 끝나면 라면 먹어! 내가 쏠게",
+      lang: "en",
     }),
   ]);
   expect(t.sends[1]!.body).toMatchObject({
     audience: { userIds: [claimed(1).userId] },
     title: "윤경",
+    body: "[en] 야근 끝나면 라면 먹어! 내가 쏠게",
     target: { kind: "companion-chat", characterId: "mina" },
   });
   for (const gate of [
@@ -398,4 +402,41 @@ test("RH10. 칩 스위치가 켜진 사람에게는 추천 답안 칩을 같이 
   await off.call();
   expect(off.finishes()[0]).toMatchObject({ p_suggestions: null });
   expect(off.finishes()[0]!["p_meta"]).not.toHaveProperty("suggestions");
+});
+
+test("RH11. 푸시 본문 — 모국어 한 줄만 · 번역이 없거나 모국어가 한국어면 한국어 · 퀴즈 답이 번역에 새면 한국어", () => {
+  const speech = (text: string, translation?: string) => ({
+    kind: "speech" as const,
+    text,
+    ...(translation === undefined ? {} : { translation }),
+  });
+  const base = { lang: "en", word: "산책", angle: "word" as const };
+  expect(
+    reactionPushBody({
+      ...base,
+      segments: [{ kind: "action", text: "웃는다" }, speech("산책 좋죠!", "Walks are nice!")],
+    }),
+  ).toEqual({ body: "Walks are nice!", lang: "en" });
+  expect(reactionPushBody({ ...base, segments: [speech("산책 좋죠!")] })).toEqual({
+    body: "산책 좋죠!",
+    lang: "ko",
+  });
+  expect(
+    reactionPushBody({ ...base, lang: "ko", segments: [speech("산책 좋죠!", "산책 좋죠!")] }),
+  ).toEqual({ body: "산책 좋죠!", lang: "ko" });
+  expect(
+    reactionPushBody({
+      ...base,
+      angle: "quiz",
+      segments: [speech("퀴즈! a walk를 한국어로?", "Quiz! Is it 산책?")],
+    }),
+  ).toEqual({ body: "퀴즈! a walk를 한국어로?", lang: "ko" });
+  expect(
+    reactionPushBody({
+      ...base,
+      angle: "quiz",
+      segments: [speech("퀴즈! a walk를 한국어로?", "Quiz! How do you say a walk in Korean?")],
+    }),
+  ).toEqual({ body: "Quiz! How do you say a walk in Korean?", lang: "en" });
+  expect(reactionPushBody({ ...base, segments: [{ kind: "action", text: "웃는다" }] })).toBeNull();
 });
