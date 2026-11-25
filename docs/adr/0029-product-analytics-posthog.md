@@ -529,6 +529,10 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   `sentence_audio_replayed { episodeId, surface: story_cut | lesson_answer, stage?, unitKey? }`(켜진 스피커를 누를 때마다) ·
   `choice_chip_sound_played { episodeId, unitKey, surface: word_choice | sentence_order }`(소리가 난 칩 누름마다). 기존 이벤트의 모양 · 발생 시점은 그대로다.
   GitHub wiki 사전은 따로 고친다.
+- ⟨2026-11-25 — [ADR-0197](0197-chat-push-ask-card.md) D4⟩ 채팅 첫 답장 뒤 알림 권한 카드 이벤트 셋을 더한다(`episodeIntroEventSink`, 공통 속성 둘 ·
+  `surface: chat`, 이름 110 → 113, PostHog만 — Airbridge 매핑 없음): `chat_push_ask_shown { characterId, count }`(카드가 섬, 이번이 몇 번째 "1" | "2") ·
+  `chat_push_ask_tapped { characterId, choice: turn_on | not_now }` · `chat_push_ask_answered { characterId, result: allowed | denied }`(Turn on 뒤 시스템 창의
+  결과, 권한을 모르면 내지 않음). 보낸 곳은 `screens/messenger-chat/ChatPushAsk.tsx`. 허용률 = `answered.allowed` ÷ `shown`. GitHub wiki 사전은 따로 고친다.
 
 ## 재검토 조건
 

@@ -22,6 +22,13 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     promptKeepBody: "建立免費帳號，保留你的 Yeopjeon 和票券。",
   },
   pushNotice: { chatUnavailable: "這個聊天目前無法使用。" },
+  pushAsk: {
+    title: (name) => `${name} 傳訊息給你時，要通知你嗎？`,
+    body: "我有時會先傳訊息給你 — 大約一天一次，在傍晚。",
+    turnOn: "開啟",
+    notNow: "稍後再說",
+    on: (name) => `通知已開啟 — ${name} 傳訊息時會通知你。`,
+  },
   chatSettings: {
     entryTitle: "聊天",
     entryDescription: "回覆建議、角色傳來的訊息、記憶",
