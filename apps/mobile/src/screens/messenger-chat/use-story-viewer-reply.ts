@@ -100,11 +100,16 @@ export function useStoryViewerReply({
     const handle = setTimeout(() => setSentItem(null), LIST_NOTICE_MS);
     return () => clearTimeout(handle);
   }, [sentItem]);
-  // 덮던 시트(엽전 상점 등)가 닫히면 다음 프레임에 입력 초점을 내립니다.
+  // 시트(엽전 상점 등)가 덮으면 키보드를 내리고(시트 위에 키보드가 남지 않게 — Android 기기 확인), 닫히면 다음 프레임에 한 번 더
+  // 입력 초점을 내립니다.
   const wasCovered = useRef(covered);
   useEffect(() => {
     const uncovered = wasCovered.current && !covered;
     wasCovered.current = covered;
+    if (covered) {
+      dismissKeyboard();
+      return undefined;
+    }
     if (!uncovered) return undefined;
     const handle = setTimeout(() => blurInputById(STORY_REPLY_INPUT_ID), NEXT_FRAME_MS);
     return () => clearTimeout(handle);

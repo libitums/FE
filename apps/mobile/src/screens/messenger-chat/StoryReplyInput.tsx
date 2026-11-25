@@ -83,6 +83,8 @@ export function StoryReplyInput({
           accessibility-label={placeholder}
           bindinput={(event: NativeInputEvent) => {
             "background only";
+            // Android는 키보드가 내려가며 조합을 마칠 때 같은 글로 input을 한 번 더 보냅니다 — 글이 바뀐 때만 안내를 걷습니다(기기 확인).
+            if (event.detail.value === text) return;
             setText(event.detail.value);
             onEdit();
           }}

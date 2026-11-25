@@ -170,6 +170,8 @@
 - 실패하면 글을 칸에 남기고 짧은 안내(「Couldn't send. Try again.」). 엽전이 모자라면(앱 관문 · 서버 `no-credits`) 「Not enough coins」 + 목록의 엽전 상점(`chat_coins_short`).
 - 키보드가 내려가거나 칸 밖(탭 자리)을 누르면 키보드만 내리고 이어 간다. Android 뒤로 = 키보드 먼저, 그다음 닫기. 덮던 시트가 닫히면 다음 프레임에 입력 초점을 내린다
   (Android가 남은 입력 칸으로 초점을 옮겨 키보드를 올리지 않게).
+- 시트(엽전 상점 등)가 덮으면 키보드를 먼저 내린다(Android에서 상점 위에 키보드가 남았다). 실패 안내는 글이 실제로 바뀔 때만 걷는다
+  (Android는 키보드가 내려가며 같은 글로 input을 한 번 더 보낸다). 자리표시는 흰 86%(기본 회색은 어두운 그늘 위 대비가 모자랐다) — 기기 확인 2026-11-25.
 - 안 만난 친구(`StoryMeet`)는 그대로 — 추가 뒤 방의 인용 띠. 그래서 보기 → 방 넘김(`story-reply-handoff`)은 그 길에만 남는다.
 - 이벤트: 새 이벤트 없이 `friend_story_replied`에 `where: viewer | room`을 더했다. 보기에서 보낸 무료 · 유료 답장도 `chat_message_sent`(무료면 `storyFree`)를 낸다.
 - 문구 6개(Send · Sent · Sent to <이름> · Open chat · 실패 · 엽전 부족) 8개 언어.

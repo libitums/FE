@@ -190,7 +190,9 @@ test("FS-UI18. 실패면 글을 칸에 남기고 짧은 안내 — 엽전 부족
   tapId(ids.replySend);
   await settle({ kind: "failed", reason: "coins" });
   expect(screen.getByTestId(ids.replyError).textContent).toBe("Not enough coins");
-  // 글을 고치면 안내가 걷힌다.
+  // 같은 글로 다시 온 input(Android가 조합을 마칠 때)은 안내를 걷지 않고, 글을 고치면 걷힌다.
+  type("다시 보내");
+  expect(screen.getByTestId(ids.replyError).textContent).toBe("Not enough coins");
   type("다시 보내!");
   expect(screen.queryByTestId(ids.replyError)).toBeNull();
 });
@@ -207,6 +209,18 @@ test("FS-UI19. 입력 중 뒤로 = 키보드 먼저(보기는 닫히지 않음),
   blur();
   expect(systemBack()).toBe(true);
   expect(props.onClose).toHaveBeenCalledTimes(1);
+});
+
+test("FS-UI19. 시트(엽전 상점 등)가 덮으면 키보드를 내린다 — 칸이 바닥으로", () => {
+  const { props } = mount();
+  focus();
+  const bottom = () => screen.getByTestId(ids.replyBottom).getAttribute("style") ?? "";
+  expect(bottom()).toContain("padding-bottom: 308px");
+  cleanup();
+  const view = render(<StoryViewer {...props} />);
+  focus();
+  view.rerender(<StoryViewer {...props} covered={true} />);
+  expect(bottom()).not.toContain("308px");
 });
 
 test("FS-UI19. 답장 칸 접근성 — 입력은 자리표시 이름, 보내기는 버튼 · flatten false", () => {
