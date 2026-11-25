@@ -11,13 +11,15 @@ type Common = {
 };
 
 /**
- * `shown`: 새 카드가 섬(같은 인물의 내용 바꿔 끼움은 내지 않음) — `more` = 「+N」, `deferred` = 레슨 중 미뤘다가 띄움,
+ * `shown`: 새 카드가 섬(같은 인물의 내용 바꿔 끼움은 내지 않음) — `more` = 맨 아래 「+N」, `stack` = 그때 쌓인 장 수(1 ~ 3, 개정 1),
+ * `deferred` = 레슨 중 미뤘다가 띄움,
  * `screen` = 그때 화면 이름. `opened`: 카드를 눌러 그 방으로 감.
  */
 export type ChatReplyToastEvent =
   | (Common & {
       readonly name: "chat_reply_toast_shown";
       readonly more: string;
+      readonly stack: string;
       readonly deferred: "true" | "false";
       readonly screen: string;
     })

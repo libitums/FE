@@ -18,7 +18,7 @@ import {
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { contentSyncEventName } from "./use-episode-content-refresh";
 
-// `integration` 계층(RT-I1 ~ I5): 답장 도착 토스트(ADR-0200) — 실제 App 트리에서 대화 출처(앱 안 가짜 출처의 답) → 결선 → 카드 →
+// `integration` 계층(RT-I1 ~ I6): 답장 도착 토스트(ADR-0200) — 실제 App 트리에서 대화 출처(앱 안 가짜 출처의 답) → 결선 → 카드 →
 // 누름 → 메신저 탭의 그 방. 대역은 경계뿐(출처 씨앗 · 시계). 기본 씨앗: 미나(해금된 설치).
 
 let events: EpisodeIntroEvent[] = [];
@@ -132,5 +132,34 @@ test("RT-I5 앱이 앞으로 막 돌아온 3초 안의 도착은 띄우지 않�
     lynx.getJSModule("GlobalEventEmitter").emit(contentSyncEventName, []);
   });
   advance(9_000);
+  expect(present(ids.card)).toBe(false);
+});
+
+test("RT-I6 두 인물의 답은 카드 두 장으로 쌓이고(새 것이 위, shown의 stack 1 → 2), 아래 카드를 누르면 그 방이 열리고 모두 닫힌다", async () => {
+  vi.useFakeTimers();
+  const source = await boot();
+  const owner = source.snapshot().rooms.find((each) => each.counterpart.id === "owner");
+  if (owner === undefined || owner.access.kind !== "open") throw new Error("사장님 방 없음");
+  act(() => {
+    source.sendText(minaRoom(source), "안녕");
+  });
+  advance(1_000);
+  act(() => {
+    source.sendText(owner.roomId, "안녕하세요");
+  });
+  advance(9_000);
+
+  const cards = screen.getAllByTestId(ids.open);
+  expect(cards).toHaveLength(2);
+  expect(cards[0]?.textContent).toContain("사장님");
+  expect(cards[1]?.textContent).toContain("미나");
+  expect(named("chat_reply_toast_shown").map((event) => event["stack"])).toEqual(["1", "2"]);
+
+  if (cards[1] === undefined) throw new Error("카드 없음");
+  fireEvent.tap(cards[1], {});
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+  expect(textOf("messenger-chat-header")).toContain("미나");
   expect(present(ids.card)).toBe(false);
 });

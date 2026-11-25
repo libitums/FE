@@ -98,93 +98,103 @@ export function useReplyToast(
     });
   }, [source, now]);
 
-  // 새 카드(빈 자리 · 다른 인물)가 설 때만 — 같은 인물의 내용 바꿔 끼움은 세지 않습니다.
-  const shownRef = useRef<ReplyToastCard | null>(null);
+  // 새 카드(그 앞에 없던 인물)가 설 때만 — 같은 인물의 갈아 끼움은 세지 않습니다. `stack` = 그때 장 수, `more` = 맨 아래 「+N」.
+  const shownRef = useRef<readonly ReplyToastCard[]>([]);
   useEffect(() => {
     const before = shownRef.current;
-    const card = state.card;
-    shownRef.current = card;
-    setReplyToastShown(card !== null);
-    if (card === null || (before !== null && before.characterId === card.characterId)) return;
+    const { cards } = state;
+    shownRef.current = cards;
+    setReplyToastShown(cards.length > 0);
+    const fresh = cards.filter(
+      (card) => !before.some((old) => old.characterId === card.characterId),
+    );
+    if (fresh.length === 0) return;
     createKeyHaptic()();
-    emitCompanionEvent(eventSink, {
-      name: "chat_reply_toast_shown",
-      surface: "chat",
-      characterId: card.characterId,
-      kind: card.kind,
-      more: String(card.more),
-      deferred: card.deferred ? "true" : "false",
-      screen: screenRef.current,
-    });
+    // 한 번에 여러 장이 서면(레슨 뒤 · 같은 순간) 아래(먼저)부터 — 장 수는 그 카드가 섰을 때 그 아래까지의 수입니다.
+    for (const card of [...fresh].reverse())
+      emitCompanionEvent(eventSink, {
+        name: "chat_reply_toast_shown",
+        surface: "chat",
+        characterId: card.characterId,
+        kind: card.kind,
+        more: String(state.more),
+        stack: String(cards.length - cards.indexOf(card)),
+        deferred: card.deferred ? "true" : "false",
+        screen: screenRef.current,
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.card?.key]);
+  }, [state.cards]);
   useEffect(() => () => setReplyToastShown(false), []);
 
-  const card = state.card;
   return (
     <ReplyToastLayer
-      card={card}
+      cards={state.cards}
+      more={state.more}
       source={source}
       top={top}
-      onOpen={() => {
-        if (card === null) return;
+      onOpen={(key) => {
+        const card = state.cards.find((each) => each.key === key);
+        if (card === undefined) return;
         emitCompanionEvent(eventSink, {
           name: "chat_reply_toast_opened",
           surface: "chat",
           characterId: card.characterId,
           kind: card.kind,
         });
-        send({ type: "dismiss" });
+        send({ type: "clear" });
         closeSheets();
         for (const action of companionPushActions(source, card.characterId, canOpenChats))
           dispatch(action);
       }}
-      onDismiss={() => send({ type: "dismiss" })}
+      onDismiss={(key) => send({ type: "dismiss", key })}
     />
   );
 }
 
-/** 떠 있는 카드를 그리는 층 — 그 방의 마지막 미리보기 줄을 출처가 바뀔 때마다 다시 읽습니다(카드가 떠 있는 동안만 구독). */
+/** 쌓인 카드를 그리는 층 — 그 방들의 마지막 미리보기 줄을 출처가 바뀔 때마다 다시 읽습니다(카드가 떠 있는 동안만 구독). */
 function ReplyToastLayer({
-  card,
+  cards,
+  more,
   source,
   top,
   onOpen,
   onDismiss,
 }: {
-  readonly card: ReplyToastCard | null;
+  readonly cards: readonly ReplyToastCard[];
+  readonly more: number;
   readonly source: ChatSource;
   readonly top: number;
-  readonly onOpen: () => void;
-  readonly onDismiss: () => void;
+  readonly onOpen: (key: number) => void;
+  readonly onDismiss: (key: number) => void;
 }): ReactNode {
   const [, setVersion] = useState(0);
-  const shown = card !== null;
+  const shown = cards.length > 0;
   useEffect(() => {
     if (!shown) return undefined;
     return source.subscribe(() => setVersion((value) => value + 1));
   }, [source, shown]);
   const copy = useUiCopy().messengerChat;
   const reducedMotion = useMotion() === "reduced";
-  const room =
-    card === null ? undefined : source.snapshot().rooms.find((each) => each.roomId === card.roomId);
-  let view: ReplyToastView | null = null;
-  if (card !== null && room !== undefined) {
+  const rooms = shown ? source.snapshot().rooms : [];
+  const views: ReplyToastView[] = [];
+  cards.forEach((card, index) => {
+    const room = rooms.find((each) => each.roomId === card.roomId);
+    if (room === undefined) return;
     const preview = replyToastPreviewOf(room.lastMessage);
-    view = {
+    views.push({
       key: card.key,
       name: room.counterpart.name,
       avatarUrl: room.counterpart.avatarUrl,
-      more: card.more,
+      more: index === cards.length - 1 ? more : 0,
       preview:
         preview?.kind === "text"
           ? preview.text
           : copy.newMessages.label({ count: 1, latest: preview?.kind ?? "message" }),
-    };
-  }
+    });
+  });
   return (
     <ReplyToast
-      view={view}
+      views={views}
       top={top}
       reducedMotion={reducedMotion}
       onOpen={onOpen}
