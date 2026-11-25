@@ -6,12 +6,14 @@ import { messengerChatMediaTh } from "./ui-copy-th-chat-media";
 import { messengerChatAlbumTh } from "./ui-copy-th-chat-album";
 import { messengerChatSuggestedTh } from "./ui-copy-th-chat-suggested";
 import { messengerChatStoriesTh } from "./ui-copy-th-chat-stories";
+import { myStoriesTh } from "./ui-copy-th-my-stories";
 
 export const messengerChatExtraTh: MessengerChatExtraCopy = {
   media: messengerChatMediaTh,
   album: messengerChatAlbumTh,
   suggested: messengerChatSuggestedTh,
   stories: messengerChatStoriesTh,
+  myStories: myStoriesTh,
   access: {
     signInTitle: "แชทกับคนที่คุณได้พบ",
     signInBody: "สร้างบัญชีฟรีเพื่อแชทภาษาเกาหลีกับตัวละครในเรื่องราวของคุณ ความคืบหน้าของคุณจะยังอยู่ครบ",

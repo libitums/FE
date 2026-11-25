@@ -12,6 +12,7 @@ import type {
   ChatReplyIdea,
 } from "./chat-source.contract";
 import { myTextOf } from "./friend-stories-parse";
+import { reactionLinesOf, withQuizAnswer } from "./story-quiz-parse";
 
 export type RemoteSegment = {
   readonly kind: string;
@@ -191,11 +192,11 @@ function messagesOf(raw: Json): {
       if (record.status === "failed") continue;
       const text = stringOf(record.text);
       if (text === null) continue;
-      messages.push(myTextOf(id, at, text, record.story)); // 스토리 답장이면 인용과 함께(ADR-0178 D5)
+      messages.push(withQuizAnswer(myTextOf(id, at, text, record.story), record.meta)); // 스토리 답장 인용(ADR-0178 D5) · 퀴즈 답
       const card = correctionOf(record.feedback);
       if (card !== null) corrections[id] = card;
     } else if (record.role === "assistant") {
-      messages.push(...bubblesOf(id, at, segmentsOf(record.segments)));
+      messages.push(...reactionLinesOf(bubblesOf(id, at, segmentsOf(record.segments)), record)); // 반응 인용 · 퀴즈(ADR-0191)
       ideas = ideasOf(record.suggestions);
     } else if (record.role === "notice") {
       const notice = noticeKindOf(recordOf(record.notice)?.kind);

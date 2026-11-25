@@ -261,7 +261,7 @@ export function MessengerChatScreen({
             keyboard={{ height: keyboardHeight, measure: measurePhoneKeyboard }}
             dispatch={dispatch}
             onSend={send}
-            sendCost={turn.sendCost}
+            sendCost={story.quizFree ? { kind: "free" } : turn.sendCost}
             birthYear={birthYear}
             guideClass={guideTargetClass(guide.step)}
             {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}

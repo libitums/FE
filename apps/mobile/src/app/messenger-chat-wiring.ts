@@ -54,6 +54,7 @@ export type MessengerChatWiring = {
   readonly onGoToJourney: () => void;
   /** 대화 설정(ADR-0126) — 설정 탭 Chats 화면 · 기억 화면을 쌓고 내립니다. */
   readonly onOpenChatSettings: () => void;
+  readonly onOpenMyStories: () => void; // 설정 › My stories(ADR-0194)
   readonly onOpenMemories: (characterId: string | null, name: string | null) => void;
   /** 인물 앨범(ADR-0150). */
   readonly onOpenAlbum: (roomId: string, name: string) => void;
@@ -271,6 +272,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       onOpenChatSettings: () => {
         args.dispatch({ type: "push", screen: { name: "chat-settings" } });
       },
+      onOpenMyStories: () => args.dispatch({ type: "push", screen: { name: "my-stories" } }),
       onOpenMemories: (characterId, name) => {
         args.dispatch({
           type: "push",

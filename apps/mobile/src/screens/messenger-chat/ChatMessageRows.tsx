@@ -18,6 +18,9 @@ import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { StoryQuoteCard } from "./StoryQuote";
+import { StoryQuizCorrect, StoryQuizNote, VoiceGiftNote } from "./StoryQuizNotes";
+import { quizGiftWordOf } from "./story-quiz";
+import { mediaLineKey } from "./chat-media-rules";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
 import { ChatMediaNoticeRow } from "./ChatMediaNotice";
 import type { ChatEntrance } from "./chat-entrance";
@@ -116,23 +119,47 @@ function RowBody({
             chatWords={notes.chatWords ?? null}
           />
         );
-        // 스토리 답장(ADR-0178 D5)이면 말풍선 위에 인용 카드 — 줄은 가로라 둘을 세로 묶음에 담습니다.
-        return (
+        // 스토리 답장(ADR-0178 D5)이면 말풍선 위에 인용 카드 — 줄은 가로라 둘을 세로 묶음에 담습니다. 덕수쌤 퀴즈의 무료 답이면 말풍선 아래
+        // 「Free · quiz answer」, 맞혔으면 그 아래 가운데 줄(시안 22 · 23, 서버 반영 예상).
+        const answer = message.quiz?.kind === "answer" ? message.quiz : null;
+        const row = (
           <ChatOutgoingRow testId={ids.outgoing}>
-            {message.story === undefined ? (
+            {message.story === undefined && answer === null ? (
               bubble
             ) : (
               <view className="story-reply-stack">
-                <StoryQuoteCard quote={message.story} name={counterpart.name} now={Date.now()} />
+                {message.story === undefined ? null : (
+                  <StoryQuoteCard quote={message.story} name={counterpart.name} now={Date.now()} />
+                )}
                 {bubble}
+                {answer === null ? null : (
+                  <StoryQuizNote messageId={message.id} attempt={answer.attempt} />
+                )}
               </view>
             )}
           </ChatOutgoingRow>
+        );
+        return answer?.result === "correct" ? (
+          <>
+            {row}
+            <StoryQuizCorrect messageId={message.id} name={counterpart.name} />
+          </>
+        ) : (
+          row
         );
       }
       const rating = thread.ratings[message.id];
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
+          {/* 내 스토리에 단 반응(ADR-0191 D2, 시안 20번) — 첫 말풍선 위 인용 카드. */}
+          {message.story === undefined ? null : (
+            <StoryQuoteCard
+              quote={message.story}
+              name={counterpart.name}
+              now={Date.now()}
+              from="them"
+            />
+          )}
           <ChatTextBubble
             direction="incoming"
             speaker={counterpart.name}
@@ -189,7 +216,10 @@ function RowBody({
           />
         </ChatIncomingRow>
       );
-    case "voice":
+    case "voice": {
+      // 퀴즈를 맞힌 뒤의 음성 선물(시안 22번, 서버 반영 예상) — 대상 메시지에 선물 표시가 있으면 아래 한 줄.
+      const targetId = mediaLineKey(message.id)?.targetId;
+      const gift = targetId === undefined ? null : quizGiftWordOf(thread.messages, targetId);
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
           <VoiceBubble
@@ -199,8 +229,12 @@ function RowBody({
             name={counterpart.name}
             testId={ids.voice}
           />
+          {gift === null ? null : (
+            <VoiceGiftNote lineId={message.id} name={counterpart.name} word={gift} />
+          )}
         </ChatIncomingRow>
       );
+    }
     case "notice":
       return <ChatNoticeRow notice={message.notice} name={counterpart.name} />;
     case "media-notice":

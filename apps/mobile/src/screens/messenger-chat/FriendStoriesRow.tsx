@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 import search from "@libitums/icons/lynx/search";
 import { color } from "@libitums/design-tokens";
-import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -12,67 +11,12 @@ import {
   type FriendStoryEntry,
   type UnmetStoryEntry,
 } from "./friend-stories.contract";
+import { MyStoryRowFaces } from "./MyStoryRowFaces";
+import { StoryFace } from "./StoryFace";
 import { SuggestedAvatar } from "./SuggestedFriendsRow";
 
 import "./suggested-friends.css";
 import "./friend-stories.css";
-
-type Ring = "unseen" | "seen" | "unmet";
-
-function StoryFace({
-  testId,
-  ring,
-  name,
-  avatarUrl,
-  caption,
-  captionTone,
-  label,
-  onTap,
-}: {
-  readonly testId: string;
-  readonly ring: Ring;
-  readonly name: string;
-  readonly avatarUrl: string | null;
-  readonly caption: string;
-  readonly captionTone: "muted" | "brand";
-  readonly label: string;
-  readonly onTap: () => void;
-}): ReactNode {
-  function handleTap() {
-    "background only";
-    playSound("button");
-    onTap();
-  }
-  return (
-    <view
-      className="story-item"
-      data-testid={testId}
-      data-state={ring}
-      accessibility-element={true}
-      accessibility-label={label}
-      accessibility-traits="button"
-      accessibility-enable-tap={true}
-      flatten={false}
-      bindtap={handleTap}
-    >
-      <view className={`story-ring story-ring-${ring}`}>
-        <Avatar imageSource={avatarUrl ?? undefined} name={name} size="lg" accessibility="hidden" />
-      </view>
-      <text
-        className={ring === "seen" ? "story-name story-name-seen" : "story-name"}
-        accessibility-elements-hidden={true}
-      >
-        {name}
-      </text>
-      <text
-        className={captionTone === "brand" ? "story-caption story-caption-brand" : "story-caption"}
-        accessibility-elements-hidden={true}
-      >
-        {caption}
-      </text>
-    </view>
-  );
-}
 
 /**
  * 채팅 목록 맨 위 스토리 줄(ADR-0178 D3, 시안 1번) — 추천 친구 줄(ADR-0162) 자리를 바꿉니다. 판정은 `storyRowOf`가 하고 여기서는
@@ -80,6 +24,7 @@ function StoryFace({
  */
 export function FriendStoriesRow({
   row,
+  mine = null,
   now,
   onOpenFriend,
   onOpenUnmet,
@@ -166,6 +111,7 @@ export function FriendStoriesRow({
         scroll-bar-enable={false}
       >
         <view className="suggested-row-track">
+          {mine === null ? null : <MyStoryRowFaces slot={mine} />}
           {row.friends.map(friendFace)}
           {hasFriends && hasRest ? (
             <view

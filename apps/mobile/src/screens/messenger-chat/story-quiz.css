@@ -1,0 +1,73 @@
+/* 덕수쌤 스토리 퀴즈 표시(시안 21 ~ 23) — 입력 칸 위 무료 알약 · 내 답 아래 글 · 가운데 맞힘 줄 · 음성 선물 글. 토큰은 CSS 커스텀
+   프로퍼티로만(ADR-0014 D1). */
+
+.story-quiz-free {
+  display: flex;
+  flex-direction: row;
+  align-self: flex-start;
+  align-items: center;
+  height: 26px; /* 화면 지역 상수(시안 21번 알약 26, 토큰 없음) */
+  margin: 0 var(--libitum-layout-screen-padding-x) var(--libitum-spacing-8);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.story-quiz-free-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.story-quiz-note {
+  margin-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.story-quiz-correct-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding: var(--libitum-spacing-4) 0;
+}
+
+.story-quiz-correct {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-feedback-correct);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.story-quiz-correct-icon {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+.story-quiz-correct-text {
+  color: var(--libitum-color-feedback-correct-text);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.story-quiz-gift {
+  margin-top: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-4);
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}

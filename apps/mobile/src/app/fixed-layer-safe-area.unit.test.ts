@@ -18,6 +18,7 @@ const EXEMPT: Readonly<Record<string, string>> = {
   "first-unit-guide": "가운데 안내 상자 — 위에 누를 것 없음",
   "first-unit-map-scrim": "맵을 덮는 딤만 — 누를 것 없음",
   "more-menu-catch": "더보기 메뉴 바깥 막(투명) — 누르면 닫힘만, 위에 누를 것 없음(ADR-0169)",
+  "my-story-text-entry": "가운데 글 쓰기 상자(내 스토리 Aa) — 위에 누를 것 없음(ADR-0194 적용 기록)",
 };
 
 function walk(dir: string): string[] {

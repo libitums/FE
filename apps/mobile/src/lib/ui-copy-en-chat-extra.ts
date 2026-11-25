@@ -5,12 +5,14 @@ import { messengerChatMediaEn } from "./ui-copy-en-chat-media";
 import { messengerChatAlbumEn } from "./ui-copy-en-chat-album";
 import { messengerChatSuggestedEn } from "./ui-copy-en-chat-suggested";
 import { messengerChatStoriesEn } from "./ui-copy-en-chat-stories";
+import { myStoriesEn } from "./ui-copy-en-my-stories";
 
 export const messengerChatExtraEn: MessengerChatExtraCopy = {
   media: messengerChatMediaEn,
   album: messengerChatAlbumEn,
   suggested: messengerChatSuggestedEn,
   stories: messengerChatStoriesEn,
+  myStories: myStoriesEn,
   access: {
     signInTitle: "Text the people you meet",
     signInBody:
