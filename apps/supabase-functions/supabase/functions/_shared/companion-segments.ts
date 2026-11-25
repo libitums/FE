@@ -54,6 +54,9 @@ export function parseTurnState(text: string): TurnState | null {
       userWantsSwitch: raw["user_wants_switch"] === true,
       ...learnedFrom(raw["learned"], raw["learned_how"]),
       ...(raw["heavy"] === true ? { heavy: true as const } : {}),
+      ...(raw["quiz"] === "correct" || raw["quiz"] === "wrong" || raw["quiz"] === "skip"
+        ? { quiz: raw["quiz"] }
+        : {}),
     };
   } catch {
     return null;

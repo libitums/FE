@@ -2077,7 +2077,7 @@ describe("덕수쌤 퀴즈의 답(ADR-0191 D14)", () => {
     expect(rpcs.find((rpc) => rpc.fn === "companion_quiz_answered")?.args).toEqual({
       p_user_id: userId,
       p_client_message_id: "6f1c3a2e-8d4b-4c1a-9f2e-1a2b3c4d5e6f",
-      p_correct: true,
+      p_result: "correct",
       p_now: "2026-11-09T09:00:00.000Z",
     });
   });
@@ -2089,9 +2089,13 @@ describe("덕수쌤 퀴즈의 답(ADR-0191 D14)", () => {
     await one.settle();
     expect(first.directives[0]).toContain("hint");
     expect(first.directives[0]).toContain('"도"');
-    expect(first.directives[0]).toContain('Do not write the word "도착하다"');
+    expect(first.directives[0]).toContain('do not write "도착하다" itself');
+    // 퀴즈와 상관없는 말이면 그 말에 답하고 퀴즈를 놓아준다 — 모델이 @state의 quiz로 알린다.
+    expect(first.directives[0]).toContain("if it is about something else or they want to move on");
+    expect(first.directives[0]).toContain('"quiz": "correct"');
+    // 모델이 판정을 주지 않으면 틀림으로 적는다.
     expect(one.rpcs.find((rpc) => rpc.fn === "companion_quiz_answered")?.args).toMatchObject({
-      p_correct: false,
+      p_result: "wrong",
     });
 
     const second = watch();
@@ -2099,7 +2103,7 @@ describe("덕수쌤 퀴즈의 답(ADR-0191 D14)", () => {
     await (await two.handler(post(body({ text: "출발?" })))).text();
     await two.settle();
     expect(second.directives[0]).toContain("정답은 도착하다예요!");
-    expect(second.directives[0]).toContain("The quiz is over");
+    expect(second.directives[0]).toContain("the quiz is over");
   });
 
   test("CQ3. 퀴즈가 아니면 지시 없음 · 다른 인물 · 스토리 답장 · 고쳐 보내기는 판정을 부르지 않는다 · 실패한 턴은 적지 않는다", async () => {

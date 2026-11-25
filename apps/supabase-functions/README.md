@@ -1090,3 +1090,18 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
    `select my_story_text from companion.settings;`(off) · `select to_regclass('companion.my_story_quizzes');`.
 2. 함수: `supabase functions deploy companion-my-story companion-story-reactions chat-send`(계약 사본 포함).
 3. 켜기: 앱이 받을 준비가 되면 `my_story_text = 'testers'`. 퀴즈 무료 답은 스위치 없이 퀴즈 반응이 있으면 바로 동작한다.
+
+## 내 스토리 — 조합 스토리 (20270109120000, ADR-0191 D15)
+
+- 스토리 = 바탕(색 `text` · 사진 `photo`) × 얹은 것(직접 쓴 글 · 배운 단어). 단어 카드(word · card)는 `kinds`에서 빠졌다(「색 + 단어」).
+- 사진 · 색 바탕 올리기는 같은 흐름: 글 검수(사진 설명 · 쓴 글 + 직접 쓴 얹은 글 — `_shared/companion-story-compose.ts`) → (사진만) 사진 읽기 → 저장.
+  위기 신호(글 · 사진)는 둘 다 올리지 않고 `{ result: "crisis", resources }`(요청의 `client_region`으로 고름).
+- 답할 인물 · 각도: 사진 · 글 + 단어면 첫째 다른 인물 react, 덕수쌤 둘째(quiz · question · together). 색 + 단어만은 옛 단어 카드 규칙.
+  단어 없으면 사진 규칙. 퀴즈 단어 = 첫 배운 단어(`companion.my_story_quiz_word`).
+- 퀴즈 답: 답을 만드는 모델이 `@state`의 `quiz`(correct · wrong · skip)로 판정 — skip이면 그 메시지는 무료로 두고 퀴즈를 닫는다(`skipped`).
+  `companion_quiz_answered(p_user_id, p_client_message_id, p_result, p_now)`로 바뀌었다(boolean → text).
+- 테스트: `migrations/my-story-compose.integration.test.ts`(MC1 ~ MC5) · `_shared/companion-my-story-handler.unit.test.ts`(MH5 · RP6) ·
+  `_shared/chat-send-story.unit.test.ts`(SS1 ~ SS3) · `_shared/chat-send-quiz.unit.test.ts`(QZ3).
+
+**적용 순서** — 글 스토리 · 퀴즈 두 마이그레이션 뒤에 `20270109120000_my_story_compose.sql`(하나씩). 함수는 위와 같다
+(`companion-my-story companion-story-reactions chat-send`).

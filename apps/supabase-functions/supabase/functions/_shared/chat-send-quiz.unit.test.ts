@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
-import { quizCorrect, quizForms } from "./chat-send-quiz.ts";
+import { quizCorrect, quizForms, quizResultOf } from "./chat-send-quiz.ts";
+import { parseTurnState } from "./companion-segments.ts";
 
 // 덕수쌤 퀴즈의 판정(ADR-0191 D14) — 답에 그 단어 · 활용형이 들어 있는가. 모델을 부르지 않는다.
 test("QZ1. 꼴 — 단어 그대로 · 하다 용언은 어근 · 다 용언은 어간, 띄어쓰기 · 문장부호 무시", () => {
@@ -21,4 +22,14 @@ test("QZ2. 판정 — 활용형 · 띄어쓰기는 맞힘, 다른 말은 틀림.
   expect(quizCorrect("어제 학교에서 공부했어요", "먹다")).toBe(false);
   expect(quizCorrect("가요", "가다")).toBe(true);
   expect(quizCorrect("학교에서 공부했어요", "가다")).toBe(false);
+});
+
+test("QZ3. 결과 — 코드가 맞힘이면 맞힘, 아니면 모델의 @state quiz(없으면 틀림). @state의 quiz 칸을 읽는다", () => {
+  const quiz = { attempt: 1 as const, word: "덥다", meaning: "to be hot", correct: false };
+  expect(quizResultOf({ ...quiz, correct: true }, "skip")).toBe("correct");
+  expect(quizResultOf(quiz, "correct")).toBe("correct"); // 「더워요」처럼 코드가 못 잡은 맞힘
+  expect(quizResultOf(quiz, "skip")).toBe("skip");
+  expect(quizResultOf(quiz, undefined)).toBe("wrong");
+  expect(parseTurnState('{"intimacy_delta": 1, "quiz": "skip"}')?.quiz).toBe("skip");
+  expect(parseTurnState('{"intimacy_delta": 1, "quiz": "maybe"}')?.quiz).toBeUndefined();
 });

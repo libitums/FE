@@ -22,7 +22,12 @@ import {
   readBody,
 } from "./chat-send-http.ts";
 import { resolveChoice } from "./chat-send-choice.ts";
-import { claimQuizAnswer, quizDirective, recordQuizAnswer } from "./chat-send-quiz.ts";
+import {
+  claimQuizAnswer,
+  quizDirective,
+  quizResultOf,
+  recordQuizAnswer,
+} from "./chat-send-quiz.ts";
 import { claimStory, storyContextNote, withQuiz, withStoryNote } from "./chat-send-story.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
 import { memoryLine } from "./companion-memory.ts";
@@ -190,18 +195,18 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
         sink.send({ event: "error", data: { code: "internal_error", retryable: true } });
         return { outcome: "internal_error", afterTurn: null };
       })
-      .then(async ({ outcome, afterTurn, suggestions }) => {
+      .then(async ({ outcome, afterTurn, suggestions, quiz: judged }) => {
         sink.close();
         const turnUsage = usageLine(usage.summary());
         const storyLog =
           (story === null ? "" : ` story=${story.result}`) +
-          (quiz === null ? "" : ` quiz=${quiz.attempt}:${quiz.correct ? "correct" : "wrong"}`);
+          (quiz === null ? "" : ` quiz=${quiz.attempt}:${quizResultOf(quiz, judged)}`);
         // 퀴즈의 답은 턴이 끝났을 때만 센다 — 실패한 턴은 예약이 풀려 그 차례가 다음 메시지로 넘어간다.
         if (quiz !== null && outcome === "complete")
           await recordQuizAnswer(deps.outbound, env, {
             userId: caller.userId,
             clientMessageId: body.client_message_id,
-            correct: quiz.correct,
+            result: quizResultOf(quiz, judged),
             now: new Date(deps.nowMs()).toISOString(),
           });
         deps.log({

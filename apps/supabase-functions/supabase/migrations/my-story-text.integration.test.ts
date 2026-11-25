@@ -185,11 +185,11 @@ test("MT3. 반응 — 사진과 같은 각도(첫째 react · 둘째 question ·
   });
 });
 
-test("MT4. 목록 — kinds: word · card는 늘, photo는 사진 스위치 + 성인, text는 글 스위치. 꺼져 있으면 빈 목록", async () => {
-  expect((await listAs(adult))["kinds"]).toEqual(["word", "card", "photo", "text"]);
-  expect((await listAs(minor))["kinds"]).toEqual(["word", "card", "text"]);
+test("MT4. 목록 — kinds: 단어 카드는 빠지고(20270109120000) text는 글 스위치, photo는 사진 스위치 + 성인. 꺼져 있으면 빈 목록", async () => {
+  expect((await listAs(adult))["kinds"]).toEqual(["text", "photo"]);
+  expect((await listAs(minor))["kinds"]).toEqual(["text"]);
   await settings("my_story_text = 'off', my_story_photo = 'off'");
-  expect((await listAs(adult))["kinds"]).toEqual(["word", "card"]);
+  expect((await listAs(adult))["kinds"]).toEqual([]);
   await settings("my_stories = 'off'");
   expect(await listAs(adult)).toMatchObject({ enabled: false, kinds: [] });
 });

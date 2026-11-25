@@ -1,12 +1,15 @@
 // 사진 스토리 올리기(ADR-0191 D11) — `companion-my-story`의 `post`. 요청 안에서 사진을 읽어 게시 · 거절 · 다시 보기를 정한다.
 // 1. 문(`companion_my_photo_gate`): 스위치 · 성인 · 창 · 24시간 상한 · 하루 검수 시도. 같은 요청이 다시 오면 그 스토리(두 번 눌러도 하나).
-// 2. 글 검수(입력 층). 막힌 글은 `text_blocked`. 위기 신호는 막지 않고 읽기 결과의 `crisis`에 합친다(보통 반응을 끈다).
+// 2. 글 검수(입력 층): 사진 설명 + 직접 쓴 얹은 글(ADR-0191 D15 — 배운 단어는 넣지 않음, 글이 없으면 건너뜀). 막힌 글은 `text_blocked`.
+//    위기 신호(글이든 사진 읽기든)는 올리지 않고 `crisis` + 그 지역의 상담 연락처(색 바탕과 같다).
 // 3. 사진 읽기(검수 · 장면 설명, 기본 8초). 거절이면 사진을 격리 버킷으로 옮기고 거절을 적는다 — 창은 쓰지 않는다.
 //    제때 끝나지 않거나 실패하면 `checking`으로 올린다(나에게만 보임) — 매분 도는 뒷정리(`companion-story-upkeep.ts`)가 다시 본다.
 
 import type { CompanionLlm } from "./chat-send.contract.ts";
 import type { MyStoryRequest } from "./companion-contract/index.ts";
 import { callRpc, type RpcEnv } from "./companion-rpc.ts";
+import { crisisResourcesFor } from "./companion-safety.ts";
+import { storyCheckText } from "./companion-story-compose.ts";
 import { checkStoryText } from "./companion-story-draft.ts";
 import type { StoryRead, StoryReader } from "./companion-story-read.ts";
 import {
@@ -88,8 +91,21 @@ export async function postPhotoStory(
   if (gate?.["result"] !== "ok") return gate ?? { result: "off" };
 
   // 사진 스토리는 성인만 올린다(문이 봤다) — 글 검수도 성인 기준이다.
-  const text = await checkStoryText(llm, body.ko, "adult", AbortSignal.timeout(STORAGE_TIMEOUT_MS));
-  if (text === "block") return { result: "text_blocked" };
+  const crisis = () => ({
+    result: "crisis",
+    resources: crisisResourcesFor(body.client_region ?? null).resources,
+  });
+  const checkText = storyCheckText(body.ko, body.overlays ?? []);
+  if (checkText !== "") {
+    const text = await checkStoryText(
+      llm,
+      checkText,
+      "adult",
+      AbortSignal.timeout(STORAGE_TIMEOUT_MS),
+    );
+    if (text === "block") return { result: "text_blocked" };
+    if (text === "crisis") return crisis();
+  }
 
   const photo = await downloadStoryPhoto(deps.fetch, env, body.image_path, STORAGE_TIMEOUT_MS);
   if (photo === null) return { result: "no_photo" };
@@ -117,13 +133,8 @@ export async function postPhotoStory(
     });
     return { result: "rejected", rejection };
   }
-  // 글에서 읽힌 위기 신호는 사진을 아직 못 읽었어도 남긴다 — 다시 보기가 덮지 못한다(서버 판정).
-  const scene =
-    read !== null
-      ? { ...read.scene, crisis: read.scene.crisis || text === "crisis" }
-      : text === "crisis"
-        ? { description: "", hooks: [], crisis: true }
-        : null;
+  if (read?.scene.crisis === true) return crisis();
+  const scene = read !== null ? read.scene : null;
   const saved = await callRpc<Json | null>(deps.outbound, env, "companion_save_my_photo_story", {
     p_user_id: userId,
     p_client_id: body.client_id,

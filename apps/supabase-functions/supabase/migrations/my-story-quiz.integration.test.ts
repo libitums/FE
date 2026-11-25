@@ -46,12 +46,12 @@ const claim = async (client: string) =>
       client,
     ])
   ).rows[0].r as Json;
-const answered = async (client: string, correct: boolean) =>
+const answered = async (client: string, result: "correct" | "wrong" | "skip") =>
   (
     await server.query("select public.companion_quiz_answered($1, $2, $3, now()) as r", [
       member,
       client,
-      correct,
+      result,
     ])
   ).rows[0].r as Json;
 const gate = async (client: string) =>
@@ -152,14 +152,14 @@ test("MQ2. 오답 → 힌트 · 다음 한 통도 무료 → 또 틀리면 정�
   const first = await uuid();
   await claim(first);
   await turn(first);
-  expect(await answered(first, false)).toEqual({ result: "hint", attempt: 1 });
+  expect(await answered(first, "wrong")).toEqual({ result: "hint", attempt: 1 });
   expect(await userMeta(first)).toEqual({ quiz: { free: true, attempt: 1, result: "hint" } });
   expect(await meta(message)).toMatchObject({ quiz: { freeAnswer: true } });
 
   const second = await uuid();
   expect(await claim(second)).toMatchObject({ result: "quiz", attempt: 2 });
   await turn(second);
-  expect(await answered(second, false)).toEqual({ result: "revealed", attempt: 2 });
+  expect(await answered(second, "wrong")).toEqual({ result: "revealed", attempt: 2 });
   expect(await userMeta(second)).toEqual({ quiz: { free: true, attempt: 2, result: "revealed" } });
   expect(await meta(message)).toMatchObject({ quiz: { freeAnswer: false } });
   // 끝난 퀴즈 — 다음 메시지는 보통 턴.
@@ -172,8 +172,8 @@ test("MQ3. 맞히면 끝 · 친밀도 +2(재전송해도 한 번)", async () => 
   const first = await uuid();
   await claim(first);
   await turn(first);
-  expect(await answered(first, true)).toEqual({ result: "correct", attempt: 1 });
-  expect(await answered(first, true)).toEqual({ result: "correct", attempt: 1 });
+  expect(await answered(first, "correct")).toEqual({ result: "correct", attempt: 1 });
+  expect(await answered(first, "correct")).toEqual({ result: "correct", attempt: 1 });
   expect(await intimacy()).toBe(12);
   expect(await userMeta(first)).toEqual({ quiz: { free: true, attempt: 1, result: "correct" } });
   expect(await claim(await uuid())).toEqual({ result: "none" });

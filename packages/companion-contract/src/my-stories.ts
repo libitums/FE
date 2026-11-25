@@ -9,6 +9,8 @@
 // 요청 키는 Postgres 인자 이름 · snake_case, 응답은 camelCase입니다. 선택 칸만 더하므로 계약 판은 그대로입니다.
 import { z } from "zod/mini";
 
+import { crisisResourceSchema } from "./sse-events";
+
 /** 카탈로그 단어 카드의 참조입니다(단어장과 같은 키). */
 export const myStoryWordSchema = z.object({ episodeId: z.string(), ref: z.string() });
 
@@ -30,6 +32,8 @@ export const myStoryOverlaySchema = z.object({
   roman: z.optional(z.string()),
   meaning: z.optional(z.string()),
   word: z.optional(myStoryWordSchema),
+  /** 직접 쓴 글(`text`) 상자의 글자색(앱 시안 29). 서버는 저장만 합니다. */
+  color: z.optional(z.enum(["brown", "black", "white", "orange"])),
   x: z.number(),
   y: z.number(),
   scale: z.number(),
@@ -100,7 +104,8 @@ export const myStoriesResponseSchema = z.object({
   stories: z.array(myStorySchema),
   window: z.optional(z.nullable(myStoryWindowSchema)),
   /**
-   * 지금 올릴 수 있는 종류(20270107120000). word · card는 늘, photo는 사진 스위치 + 성인, text는 글 스위치. 없으면(옛 서버) word · card로 봅니다.
+   * 지금 올릴 수 있는 종류(20270107120000 · 20270109120000). text(색 바탕)는 글 스위치, photo는 사진 스위치 + 성인. 단어 카드(word · card)는
+   * 「색 + 단어」로 바뀌어 더 오지 않습니다. 없으면(옛 서버) word · card로 봅니다.
    * 모르는 새 종류가 와도 무시합니다.
    */
   kinds: z.optional(z.array(z.string())),
@@ -156,6 +161,8 @@ export const myStoryRequestSchema = z.discriminatedUnion("action", [
     overlays: z.optional(z.array(myStoryOverlaySchema).check(z.maxLength(MY_STORY_OVERLAY_MAX))),
     lang: z.string(),
     tz_offset_min: z.optional(z.nullable(z.int())),
+    /** 기기 지역(ISO 3166-1 alpha-2) — 위기 신호일 때 그 지역의 상담 연락처를 고릅니다. 없으면 국제 목록. */
+    client_region: z.optional(z.nullable(z.string())),
   }),
   z.object({
     action: z.literal("edit"),
@@ -187,8 +194,8 @@ export const myStoryRejectionSchema = z.object({
  * - draft: `ok`(+ `draft`) · `text_blocked` · `crisis` · `draft_limit` · `off` · `unavailable`.
  * - post: `ok`(+ `story` — `status`가 checking일 수 있음) · `rejected`(+ `rejection`) · `text_blocked` · `window_used` · `daily_limit` ·
  *   `check_limit`(하루 검수 시도 상한) · `age`(성인만) · `off` · `no_photo`(경로에 사진이 없음) · `invalid`.
- *   글 스토리는 `ok` · `text_blocked` · `crisis`(위기 신호 — 올리지 않음, 앱의 위기 안내) · `window_used` · `daily_limit` · `check_limit` ·
- *   `off` · `invalid`.
+ *   글 스토리는 `ok` · `text_blocked` · `crisis` · `window_used` · `daily_limit` · `check_limit` · `off` · `invalid`.
+ *   `crisis`(20270109120000 — 사진 · 색 바탕 모두): 글이나 사진에서 위기 신호가 읽힘 — 올리지 않고 `resources`(상담 연락처)를 함께 줍니다.
  * - edit: `ok`(+ `story`) · `text_blocked` · `edit_limit` · `draft_limit` · `not_found` · `invalid`.
  * 모르는 새 결과가 와도 실패로 다룹니다.
  */
@@ -198,6 +205,8 @@ export const myStoryResponseSchema = z.object({
   window: z.optional(z.nullable(myStoryWindowSchema)),
   rejection: z.optional(z.nullable(myStoryRejectionSchema)),
   draft: z.optional(z.nullable(myStoryDraftSchema)),
+  /** `crisis`일 때 그 지역의 상담 연락처(채팅 SSE `crisis`와 같은 모양). */
+  resources: z.optional(z.array(crisisResourceSchema)),
 });
 
 export type MyStory = z.infer<typeof myStorySchema>;

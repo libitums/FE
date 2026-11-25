@@ -6,6 +6,7 @@
 // (`companion_story_context`). 「Seen by」로 봤다고 표시된 인물이 모른다고 답하지 않게 하는 장치입니다. 읽지 못하면 싣지 않습니다.
 
 import { STORY_TEXT_IS_DATA, storyText } from "./companion-reaction-prompt.ts";
+import { storyTexts, storyWords } from "./companion-story-compose.ts";
 import { callRpc, type RpcEnv } from "./companion-rpc.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 
@@ -27,6 +28,8 @@ export type TurnStory = {
   readonly result: StoryClaimResult;
   readonly line: string | null;
   readonly reaction?: string | null;
+  /** 내 스토리 답장의 배운 단어(첫 단어) — 없으면 null. */
+  readonly word?: string | null;
   readonly note?: string | null;
   /** 덕수쌤 퀴즈의 답(ADR-0191 D14) — 이번 턴 지시(맞힘 · 힌트 · 정답 공개). 퀴즈의 답이 아니면 없음. */
   readonly quiz?: string | null;
@@ -57,7 +60,7 @@ export async function claimStory(
   try {
     const claimed = await callRpc<{
       result?: unknown;
-      story?: { line?: unknown; reaction?: unknown } | null;
+      story?: { line?: unknown; reaction?: unknown; wordKo?: unknown } | null;
     } | null>(outbound, env, "companion_claim_story_reply", {
       p_user_id: input.userId,
       p_story_id: input.storyId,
@@ -68,6 +71,7 @@ export async function claimStory(
     const result = RESULTS.find((candidate) => candidate === claimed?.result) ?? "claim_failed";
     const line = claimed?.story?.line;
     const reaction = claimed?.story?.reaction;
+    const word = claimed?.story?.wordKo;
     return {
       result,
       line: QUOTED.has(result) && typeof line === "string" && line.trim() !== "" ? line : null,
@@ -75,6 +79,7 @@ export async function claimStory(
         result === "mine" && typeof reaction === "string" && reaction.trim() !== ""
           ? reaction
           : null,
+      word: result === "mine" && typeof word === "string" && word.trim() !== "" ? word : null,
     };
   } catch {
     return { result: "claim_failed", line: null, reaction: null };
@@ -83,7 +88,14 @@ export async function claimStory(
 
 type StoryContext = {
   mine?:
-    | { kind?: unknown; ko?: unknown; meaning?: unknown; exampleKo?: unknown; scene?: unknown }[]
+    | {
+        kind?: unknown;
+        ko?: unknown;
+        meaning?: unknown;
+        exampleKo?: unknown;
+        scene?: unknown;
+        overlays?: unknown;
+      }[]
     | null;
   own?: { line?: unknown }[] | null;
 } | null;
@@ -98,16 +110,33 @@ const filled = (value: unknown): value is string =>
  */
 export function storyContextText(context: StoryContext): string | null {
   const mine = (context?.mine ?? []).flatMap((story) => {
+    // 조합 스토리(ADR-0191 D15) — 글(사진 설명 · 쓴 글 · 얹은 글)과 배운 단어. 사진은 사진이 아니라 읽기 단계의 장면 설명만 싣는다.
+    if (story.kind === "photo" || story.kind === "text") {
+      const texts = storyTexts(typeof story.ko === "string" ? story.ko : "", story.overlays);
+      const words = storyWords(story.overlays);
+      if (
+        texts.length === 0 &&
+        words.length === 0 &&
+        !(story.kind === "photo" && filled(story.scene))
+      )
+        return [];
+      const wrote =
+        texts.length === 0
+          ? ""
+          : ` with the words "${texts.map((text) => storyText(text, 120)).join(" / ")}"`;
+      const learning =
+        words.length === 0
+          ? ""
+          : `${wrote === "" ? " with" : " and"} the Korean words ${words.map((word) => `"${storyText(word.ko, 40)}"`).join(", ")} placed on it`;
+      return [
+        story.kind === "photo"
+          ? `a photo${wrote}${learning}` +
+            (filled(story.scene) ? ` — the photo shows: ${oneLine(story.scene)}` : "")
+          : `a story on a colored background${wrote}${learning}`,
+      ];
+    }
     if (!filled(story.ko)) return [];
     const meaning = filled(story.meaning) ? ` (${storyText(story.meaning, 60)})` : "";
-    // 사진 스토리(ADR-0191 D11) — 사진이 아니라 읽기 단계의 장면 설명만 싣는다.
-    if (story.kind === "photo")
-      return [
-        `a photo with the caption "${storyText(story.ko)}"${meaning}` +
-          (filled(story.scene) ? ` — the photo shows: ${oneLine(story.scene)}` : ""),
-      ];
-    // 글 스토리(ADR-0191 D13) — 쓴 글만(얹은 글이 전부인 스토리는 위에서 빠진다).
-    if (story.kind === "text") return [`a text post: "${storyText(story.ko, 200)}"`];
     const what = story.kind === "card" ? "a lesson card" : "a word card";
     return [`${what} "${storyText(story.ko, 40)}"${meaning}`];
   });
@@ -165,12 +194,15 @@ export function withStoryDirective(
   const parts: string[] = [];
   if (story?.quiz != null && story.quiz !== "") parts.push(story.quiz);
   if (story?.line != null) {
-    const line = story.result === "mine" ? storyText(story.line, 40) : oneLine(story.line);
+    const line = story.result === "mine" ? storyText(story.line, 120) : oneLine(story.line);
     parts.push(
       story.result === "mine"
-        ? `The learner posted a word story about "${line}" and is now replying to what you said about it.` +
+        ? `The learner posted a story ("${line}") and is now replying to what you said about it.` +
             (story.reaction == null ? "" : ` Your comment was: "${oneLine(story.reaction)}".`) +
-            ` Keep chatting naturally, in character, and use "${line}" again if it fits.`
+            " Keep chatting naturally, in character" +
+            (story.word == null
+              ? "."
+              : `, and use "${storyText(story.word, 40)}" again if it fits.`)
         : `The learner is replying to the story you posted today: "${line}". ` +
             "React to it naturally, in character, as a friend who just got a reply to their story.",
     );
