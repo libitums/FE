@@ -82,13 +82,20 @@ export type StoryReplyVia = "chip" | "typed";
 
 /** 내 친구(열린 방)의 스토리 칸 — 본 것은 회색 고리. */
 export type FriendStoryEntry = {
+  /** 그 인물의 가장 새 스토리 — 줄 칸 · 목록 줄 미리보기가 씁니다. */
   readonly story: FriendStory;
+  /** 그 인물의 살아 있는 스토리 전부, 올린 시각 순 — 보기의 한 인물 묶음(D4 개정). */
+  readonly stories: readonly FriendStory[];
   readonly room: ChatRoomSummary;
   readonly seen: boolean;
 };
 
 /** 안 만난 친구(추천 대상)의 스토리 칸 — 추가 길은 추천 친구 그대로(ADR-0162). */
-export type UnmetStoryEntry = { readonly story: FriendStory; readonly friend: SuggestedFriend };
+export type UnmetStoryEntry = {
+  readonly story: FriendStory;
+  readonly stories: readonly FriendStory[];
+  readonly friend: SuggestedFriend;
+};
 
 /** 스토리 줄(ADR-0178 D3): 친구 스토리 → 구분 선 → 안 만난 친구 스토리 → 그 밖의 추천 친구 → Find friends. */
 export type StoryRow = {
@@ -253,6 +260,8 @@ export const friendStoriesTestIds = {
   close: sv("close"),
   image: sv("image"),
   previous: sv("previous"),
+  taps: sv("taps"),
+  content: sv("content"),
   next: sv("next"),
   line: sv("line"),
   roman: sv("roman"),

@@ -75,11 +75,12 @@ test("FS-UI3. 장 · 이름 · 경과 · 한 줄 · 로마자 · 뜻 · 단어 �
   mount();
   // 이름이 열 때 초점을 받는 자리 — 「<이름>'s story, Story i of n」(접근성 M3).
   expect(screen.getByTestId(ids.name).getAttribute("accessibility-label")).toBe(
-    "윤경's story, Story 1 of 2",
+    "윤경's story, Story 1 of 1",
   );
-  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 1 of 2");
+  // 진행 막대는 지금 인물의 스토리만 — 윤경 한 장(D4 개정, 자세히는 StoryViewer.segments).
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 1 of 1");
   expect(screen.getByTestId(ids.segment(0))).not.toBeNull();
-  expect(screen.getByTestId(ids.segment(1))).not.toBeNull();
+  expect(screen.queryByTestId(ids.segment(1))).toBeNull();
   expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
   expect(screen.getByTestId(ids.age).textContent).toBe("2h");
   expect(screen.getByTestId(ids.image).getAttribute("src")).toBe("https://cdn/a.webp");
@@ -131,7 +132,7 @@ test("FS-UI4. 6초 뒤 다음 장, 마지막 뒤 닫힘 — 장마다 onShown", 
   expect(screen.getByTestId(ids.name).textContent).toBe("윤경");
   advance(1);
   expect(screen.getByTestId(ids.name).textContent).toBe("해준");
-  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 2 of 2");
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 1 of 1");
   expect(shownIds(props.onShown)).toEqual(["s-a", "s-b"]);
   // 다음 장도 처음부터 6초 — 앞 장에서 흐른 시간이 빠지지 않는다.
   advance(5_999);

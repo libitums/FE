@@ -161,6 +161,22 @@ test("FSI3. 안 만난 친구 스토리 → Add friend and reply: 방이 열리�
   expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to 송다은's story");
 });
 
+test("FSI8. 한 인물의 스토리 여럿 — 진행 막대는 그 인물만, 다 보면 닫히고 줄 칸은 가장 새 것", async () => {
+  serverRemote([
+    story("owner", { id: "st-owner-1", postedAt: NOW - 3 * HOUR, expiresAt: NOW + 21 * HOUR }),
+    story("owner", { id: "st-owner-2", postedAt: NOW - HOUR, expiresAt: NOW + 23 * HOUR }),
+    story("daeun", { id: "st-daeun", postedAt: NOW - HOUR, expiresAt: NOW + 23 * HOUR }),
+  ]);
+  await openMessenger();
+  tapId(ids.friend("owner"));
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 1 of 2");
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.progress).getAttribute("accessibility-label")).toBe("Story 2 of 2");
+  tapId(ids.next);
+  expect(present(ids.viewer)).toBe(false);
+  expect(seen.has("st-owner-1") && seen.has("st-owner-2")).toBe(true);
+});
+
 test("FSI6. 스토리를 못 읽으면 추천 줄 그대로 · 오류 없음", async () => {
   serverRemote("fail");
   await openMessenger();
