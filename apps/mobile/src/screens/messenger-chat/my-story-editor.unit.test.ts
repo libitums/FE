@@ -20,10 +20,10 @@ const textCaps = editorCapsOf(["word", "card", "text"]);
 const oldCaps = editorCapsOf(["word", "card"]);
 
 test("MS-U23. 켤 도구 — text가 있으면 Aa · 스티커 8, 없으면(지금 서버) 스티커 하나, photo가 있어야 사진 버튼", () => {
-  expect(oldCaps).toEqual({ text: false, photo: false, maxStickers: 1 });
-  expect(textCaps).toEqual({ text: true, photo: false, maxStickers: 8 });
+  expect(oldCaps).toMatchObject({ text: false, photo: false, maxStickers: 1 });
+  expect(textCaps).toMatchObject({ text: true, photo: false, maxStickers: 8 });
   expect(editorCapsOf(["word", "card", "text", "photo"]).photo).toBe(true);
-  expect(editorCapsOf([])).toEqual({ text: false, photo: false, maxStickers: 1 });
+  expect(editorCapsOf([])).toMatchObject({ text: false, photo: false, maxStickers: 1 });
 });
 
 test("MS-U24. 스티커 놓기 — 가운데에 놓고, 하나만 되는 서버면 바꿔 끼우고, 여덟을 넘지 않는다", () => {

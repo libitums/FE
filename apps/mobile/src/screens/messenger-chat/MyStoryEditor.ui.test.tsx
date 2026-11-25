@@ -270,3 +270,26 @@ test("MS-UI37. 올리기 포트가 던져도 실패 안내 · 다시 Share할 �
   await flush();
   expect(fake.postText).toHaveBeenCalledTimes(2);
 });
+
+test("MS-UI38. 새 서버(#598 — kinds text · photo) — Aa · Words 둘 다, 단어 하나만 얹어도 색 바탕 스토리로 올리고, check_limit이면 안내", async () => {
+  const fake = fakeMyStories({ guideSeen: true, words, kinds: ["text", "photo"] });
+  fake.postText.mockResolvedValueOnce({ result: "check_limit" });
+  await mount(fake);
+  tapId(ids.create);
+  tapId(ids.startBackground);
+  expect(screen.getByTestId(ids.toolText)).not.toBeNull();
+  tapId(ids.toolWords);
+  tapId(ids.choice("w2"));
+  tapId(ids.share);
+  await flush();
+  expect(fake.post).not.toHaveBeenCalled();
+  expect(fake.postText).toHaveBeenCalledWith(
+    expect.objectContaining({
+      ko: "",
+      overlays: [expect.objectContaining({ kind: "word", ko: "찌개" })],
+    }),
+  );
+  expect(screen.getByTestId(ids.composerError).textContent).toBe(
+    "You've tried enough for today. Try again tomorrow.",
+  );
+});
