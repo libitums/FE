@@ -227,9 +227,11 @@ export function MyStoryEditor({
               <text className="my-story-tool-aa">Aa</text>
             </Tool>
           ) : null}
-          <Tool testId={ids.toolWords} label={copy.words} onTap={() => setSheet(true)}>
-            <svg className="my-story-icon" content={book} current-color={color.fg.brand} />
-          </Tool>
+          {caps.word ? (
+            <Tool testId={ids.toolWords} label={copy.words} onTap={() => setSheet(true)}>
+              <svg className="my-story-icon" content={book} current-color={color.fg.brand} />
+            </Tool>
+          ) : null}
         </view>
         <MyStoryEditorFooter
           sharing={sharing}

@@ -28,8 +28,9 @@ export type MyStoryEvent =
         | "window_used"
         | "text_blocked"
         | "crisis"
-        | "rejected"
         | "check_limit"
+        | "invalid"
+        | "rejected"
         | "upload_failed"
         | "failed";
     })

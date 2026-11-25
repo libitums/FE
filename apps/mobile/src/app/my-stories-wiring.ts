@@ -2,6 +2,7 @@
 // 계정마다 기기 저장(본 반응은 친구 스토리 본 것 저장과 같은 곳 — id가 겹치지 않습니다). 배경 전용 라이브러리를 값으로 가져오지 않습니다.
 
 import type { CatalogEntry } from "../lib/episode-catalog";
+import { purchaseStore } from "../lib/purchase-intent";
 import { getItem, setItem } from "../lib/storage";
 import { uuidV4 } from "../screens/messenger-chat/chat-remote-notes";
 import type { StorySeenStore } from "../screens/messenger-chat/friend-stories.contract";
@@ -12,6 +13,9 @@ import { tzOffsetMinOf } from "../screens/messenger-chat/my-stories";
 import { loadCurrentWordbook, todayLocal } from "./learning-trail-port";
 import { myStoryChoicesOf } from "./my-stories-choices";
 import { companionServerRemote } from "./suggested-friends-wiring";
+
+const regionOf = (code: string | null): string | null =>
+  code !== null && /^[A-Z]{2}$/.test(code) ? code : null;
 
 /** `{ <출처 키>: true }` — 처음 안내를 본 계정. */
 export const MY_STORY_GUIDE_KEY = "libitum.myStories.guideSeen";
@@ -59,7 +63,11 @@ function photoPortOf(remote: () => ReturnType<typeof companionServerRemote>): My
   const photo = () => remote()?.myStories?.photo ?? null;
   return {
     pick: pickStoryPhoto,
-    post: async (draft) => (await photo()?.post(draft)) ?? { result: "failed" },
+    // 위기 연락처 지역 — 색 바탕과 같이 스토어 계정 나라를 알면 싣습니다(#598 `client_region`).
+    post: async (draft) =>
+      (await photo()?.post({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {
+        result: "failed",
+      },
     url: async (imagePath) => {
       const now = Date.now();
       const kept = signed.get(imagePath);
@@ -97,7 +105,11 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
     },
     knownEnabled: () => enabled.get(args.accountKey()) === true,
     post: async (draft) => (await remote()?.post(draft)) ?? { result: "failed" },
-    postText: async (draft) => (await remote()?.postText(draft)) ?? { result: "failed" },
+    // 위기 연락처 지역(#598 `client_region`) — 스토어 계정 나라(두 글자)를 알면 싣고, 모르면 서버가 국제 목록을 씁니다.
+    postText: async (draft) =>
+      (await remote()?.postText({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {
+        result: "failed",
+      },
     remove: async (storyId) => (await remote()?.remove(storyId)) ?? false,
     setKeep: async (keep) => (await remote()?.setKeep(keep)) ?? null,
     choices: () => myStoryChoicesOf(loadCurrentWordbook(), args.catalog(), todayLocal()),

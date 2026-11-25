@@ -48,6 +48,8 @@ export const myStoriesVi: MyStoriesCopy = {
         ? "Bạn đã chia sẻ tin cho khung giờ này."
         : `Bạn đã chia sẻ tin cho khung giờ này. Tin tiếp theo mở lúc ${time}.`,
     failed: "Không chia sẻ được tin. Hãy thử lại.",
+    checkLimit: "Hôm nay bạn đã thử đủ rồi. Hãy thử lại vào ngày mai.",
+    invalid: "Không thể chia sẻ tin này. Hãy thử sửa lại.",
   },
   viewer: {
     yourStory: "Tin của bạn",

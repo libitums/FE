@@ -67,7 +67,9 @@ export function useStoryShare({
       case "text_blocked":
         return copy.editor.textBlocked;
       case "check_limit":
-        return copy.photo.checkLimit;
+        return copy.composer.checkLimit;
+      case "invalid":
+        return copy.composer.invalid;
       case "upload_failed":
         return copy.photo.uploadFailed;
       default:

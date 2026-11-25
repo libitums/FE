@@ -1,5 +1,6 @@
 // 스토리 만들기 — 바탕 위 편집(시안 26 ~ 30) 판정. 순수. 서버가 받는 종류(`kinds`, 서버 반영 예상)에 따라 켤 도구 · 스티커 수 · 올릴 길을 가립니다.
-// - 지금 서버(word · card): Aa 없음, 스티커 하나, 글 없이 스티커 하나일 때만 기존 단어 · 카드 올리기.
+// - 옛 서버(word · card): Aa 없음, 스티커 하나, 글 없이 스티커 하나일 때만 기존 단어 올리기.
+// - 새 서버(#598, ADR-0191 D13 · D15 — kinds text · photo): 단어는 「색 바탕 + 단어」로 — word가 없어도 text가 있으면 단어를 얹어 글 스토리로.
 // - `text`가 있으면: Aa(바탕 위 글 상자, 교정 없음 — 검수는 올리기 요청 안에서 서버가) · 얹을 것 여덟(서버 overlays 상한 `MY_STORY_OVERLAY_MAX`와 같음, 글 상자 포함), 글 스토리로 올리기.
 // - `photo`가 있어야 시작 시트의 Camera · 최근 사진이 섭니다. 사진 위 편집은 늘 Aa · 얹기 여덟이고 사진 스토리로 올립니다(ADR-0199).
 
@@ -32,6 +33,10 @@ export type EditorText = Placement & {
 
 export type EditorCaps = {
   readonly text: boolean;
+  /** 단어를 얹을 수 있는가 — 옛 서버의 word, 또는 색 바탕(text) 위 단어. */
+  readonly word: boolean;
+  /** 옛 단어 RPC(`companion_post_my_story`)로 올릴 수 있는가 — kinds에 word가 있을 때만. */
+  readonly wordRpc: boolean;
   readonly photo: boolean;
   /** 얹을 수 있는 것의 수(글 상자 포함). */
   readonly maxStickers: number;
@@ -69,11 +74,23 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 const round = (value: number) => Math.round(value * 1000) / 1000;
 
 /** 사진 위 편집(ADR-0199) — 사진 서버는 글 상자 · 얹기 여덟을 늘 받습니다(`my_stories.overlays` 상한). */
-export const photoEditorCaps: EditorCaps = { text: true, photo: true, maxStickers: OVERLAY_MAX };
+export const photoEditorCaps: EditorCaps = {
+  text: true,
+  word: true,
+  wordRpc: false,
+  photo: true,
+  maxStickers: OVERLAY_MAX,
+};
 
 export function editorCapsOf(kinds: readonly MyStoryPostKind[]): EditorCaps {
   const text = kinds.includes("text");
-  return { text, photo: kinds.includes("photo"), maxStickers: text ? OVERLAY_MAX : 1 };
+  return {
+    text,
+    word: text || kinds.includes("word"),
+    wordRpc: kinds.includes("word"),
+    photo: kinds.includes("photo"),
+    maxStickers: text ? OVERLAY_MAX : 1,
+  };
 }
 
 /** 스티커 하나를 놓습니다 — 하나만 되는 서버면 바꿔 끼우고, 상한(글 상자 몫 포함)이면 그대로. */
@@ -187,7 +204,8 @@ export function textOverlayOf(text: EditorText): MyStoryOverlay {
 }
 
 /**
- * 올릴 길 — 글 없이 스티커 하나면 기존 단어 · 카드 올리기(반응 각도 word를 살림), 글 서버에서 글이 있거나 스티커가 둘 이상이면 글 스토리.
+ * 올릴 길 — 옛 단어 RPC를 받는 서버에서 글 없이 스티커 하나면 기존 단어 올리기(반응 각도 word를 살림), 그 밖에 글 서버면 글 스토리
+ * (새 서버는 단어 하나도 「색 바탕 + 단어」).
  * 빈 바탕 · 지금 서버(text 없음)의 글은 null — Share가 꺼집니다. 글을 마치면(Done) 바로 켜집니다.
  */
 export function editorShareOf(
@@ -207,7 +225,7 @@ export function editorShareOf(
     return ko === null ? null : { kind: "photo", ko, text, overlays: overlays() };
   }
   const [only] = stickers;
-  if (text === null && stickers.length === 1 && only !== undefined)
+  if (caps.wordRpc && text === null && stickers.length === 1 && only !== undefined)
     return { kind: "choice", choice: only.choice };
   if (!caps.text || (text === null && stickers.length === 0)) return null;
   return {

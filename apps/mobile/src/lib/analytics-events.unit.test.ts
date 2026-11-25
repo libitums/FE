@@ -233,13 +233,15 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0195⟩ 채팅 답할 문장 추천 `chat_suggestion_shown` · `chat_suggestion_tapped`가 더해져 110이다(PostHog만).
   // ⟨ADR-0197⟩ 채팅 알림 권한 카드 `chat_push_ask_shown` · `chat_push_ask_tapped` · `chat_push_ask_answered`가 더해져 113이다(PostHog만).
   // ⟨ADR-0196⟩ Chat Plus 첫 구독 보너스 `subscription_bonus_shown`이 더해져 114다(PostHog만).
-  // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 여덟이 더해져 122다(PostHog만).
-  // ⟨ADR-0199⟩ 내 스토리 사진 `my_story_photo_picked` · `my_story_review_requested`가 더해져 124다(PostHog만).
-  test("AN1. 이벤트 이름은 124개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0117 2026-11-25⟩ 「새 메시지 ↓」 알약 누름 `chat_new_messages_jumped`가 더해져 115다(PostHog만).
+  // ⟨ADR-0194 D7 · ADR-0191⟩ 내 스토리 여덟이 더해져 123이다(PostHog만).
+  // ⟨ADR-0199⟩ 내 스토리 사진 `my_story_photo_picked` · `my_story_review_requested`가 더해져 125다(PostHog만).
+  test("AN1. 이벤트 이름은 125개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(124);
+    expect(names).toHaveLength(125);
     expect(names).toContain("subscription_bonus_shown");
+    expect(names).toContain("chat_new_messages_jumped");
     expect(names).toContain("chat_suggestion_shown");
     expect(names).toContain("chat_suggestion_tapped");
     expect(names).toContain("chat_push_ask_shown");

@@ -49,6 +49,8 @@ export const myStoriesId: MyStoriesCopy = {
         ? "Kamu sudah membagikan cerita di waktu ini."
         : `Kamu sudah membagikan cerita di waktu ini. Cerita berikutnya dibuka pukul ${time}.`,
     failed: "Ceritamu gagal dibagikan. Coba lagi.",
+    checkLimit: "Kamu sudah cukup banyak mencoba hari ini. Coba lagi besok.",
+    invalid: "Cerita ini tidak bisa dibagikan. Coba ubah dulu.",
   },
   viewer: {
     yourStory: "Ceritamu",

@@ -45,6 +45,8 @@ export const myStoriesZhTw: MyStoriesCopy = {
         ? "這個時段你已經分享過限時動態了。"
         : `這個時段你已經分享過限時動態了。下一則${time}開放。`,
     failed: "無法分享限時動態，請再試一次。",
+    checkLimit: "今天的嘗試次數已用完，明天再試試。",
+    invalid: "無法分享這則限時動態，試著修改看看。",
   },
   viewer: {
     yourStory: "你的限時動態",

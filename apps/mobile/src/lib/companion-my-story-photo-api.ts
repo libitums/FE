@@ -78,7 +78,7 @@ export function myStoryPhotoRemote(deps: MyStoryPhotoRemoteDeps): CompanionMySto
           overlays: draft.overlays,
           lang: draft.lang,
           tz_offset_min: draft.tzOffsetMin,
-          client_region: draft.region,
+          ...(draft.region === null ? {} : { client_region: draft.region }),
         }),
       );
     },

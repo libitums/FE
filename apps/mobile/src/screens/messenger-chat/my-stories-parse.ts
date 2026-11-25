@@ -148,7 +148,8 @@ export function myStoryOf(raw: unknown): MyStory | null {
   const word = isRecord(raw["word"]) ? raw["word"] : null;
   const episodeId = text(word?.["episodeId"]);
   const ref = text(word?.["ref"]);
-  const ko = text(raw["ko"]);
+  // 색 바탕 + 단어만(#598)이면 글이 없어 빈 글("")입니다. 사진은 한 줄이 있어야 합니다(서버 1 ~ 120자).
+  const ko = isText ? (typeof raw["ko"] === "string" ? raw["ko"] : null) : text(raw["ko"]);
   const meaning = wordless
     ? typeof raw["meaning"] === "string"
       ? raw["meaning"]
@@ -220,7 +221,7 @@ function rejectionOf(raw: unknown): MyStoryRejection | null {
   return id === null ? null : { id, category: text(raw["category"]) ?? "other" };
 }
 
-/** `companion_post_my_story(…)` — `window_used`는 다음 창과 함께. 모르는 결과 · `invalid` · 스토리 없는 ok는 failed. */
+/** `companion_post_my_story(…)` · `companion-my-story` post — `window_used`는 다음 창과 함께, `crisis`는 기관과 함께. 모르는 결과 · 스토리 없는 ok는 failed. */
 export function myStoryPostFrom(body: string | null): MyStoryPostResult {
   const value = parsed(body);
   if (!isRecord(value)) return { result: "failed" };
@@ -229,7 +230,8 @@ export function myStoryPostFrom(body: string | null): MyStoryPostResult {
     result === "off" ||
     result === "daily_limit" ||
     result === "text_blocked" ||
-    result === "check_limit"
+    result === "check_limit" ||
+    result === "invalid"
   )
     return { result };
   // 사진(ADR-0199): 성인 아님은 꺼짐과 같게, 버킷에 사진이 없음은 업로드 실패(다시 올림)로.

@@ -129,7 +129,13 @@ describe("MSP-U4 올릴 한 줄", () => {
 
 describe("MSP-U5 사진 위 편집 판정", () => {
   test("사진 편집은 Aa · 얹기 여덟, 한 줄이 없으면 Share 꺼짐, 있으면 사진 올리기(글 상자 먼저)", () => {
-    expect(photoEditorCaps).toEqual({ text: true, photo: true, maxStickers: 8 });
+    expect(photoEditorCaps).toEqual({
+      text: true,
+      word: true,
+      wordRpc: false,
+      photo: true,
+      maxStickers: 8,
+    });
     expect(editorShareOf("orange", [], null, photoEditorCaps, true)).toBeNull();
     const one = editorShareOf("orange", [sticker("a", "창가 자리")], null, photoEditorCaps, true);
     expect(one).toEqual({
@@ -207,7 +213,7 @@ describe("MSP-U6 사진 스토리 읽기", () => {
 });
 
 describe("MSP-U7 사진 올리기 결과", () => {
-  test("rejected(+ rejection) · check_limit · age → off · no_photo → upload_failed · invalid → failed", () => {
+  test("rejected(+ rejection) · check_limit · age → off · no_photo → upload_failed · invalid(#598)", () => {
     expect(
       myStoryPostFrom(
         JSON.stringify({ result: "rejected", rejection: { id: "r-1", category: "nudity" } }),
@@ -224,6 +230,6 @@ describe("MSP-U7 사진 올리기 결과", () => {
     expect(myStoryPostFrom(JSON.stringify({ result: "no_photo" }))).toEqual({
       result: "upload_failed",
     });
-    expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "failed" });
+    expect(myStoryPostFrom(JSON.stringify({ result: "invalid" }))).toEqual({ result: "invalid" });
   });
 });

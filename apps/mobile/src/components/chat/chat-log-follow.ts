@@ -47,6 +47,11 @@ export function smoothToEnd(input: {
   return input.distance === null || input.distance > SHORT_SCROLL_PX;
 }
 
+/** 한 화면 넘게 위에 있는지 — 끝까지 남은 거리가 뷰포트 높이보다 큽니다. 모르면 false(「맨 아래로」 단추를 세우지 않음). */
+export function farFromEnd(distance: number | null, viewport: number | null): boolean {
+  return distance !== null && viewport !== null && distance > viewport;
+}
+
 /** 뷰포트가 줄었고(띠 · 판 · 키보드가 섬) 끝 근처였으면 다시 끝에 맞춥니다 — 마지막 말이 잘리지 않게. */
 export function realignOnShrink(previous: number | null, next: number, nearEnd: boolean): boolean {
   return previous !== null && next < previous && nearEnd;

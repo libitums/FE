@@ -264,7 +264,7 @@ test("MSP-UI6. 업로드 실패 · 하루 검수 상한은 편집에 안내, 다
   tapId(ids.share);
   await flush();
   expect(screen.getByTestId(ids.composerError).textContent).toBe(
-    "You've used today's photo checks. Try again tomorrow.",
+    "You've tried enough for today. Try again tomorrow.",
   );
   expect(fake.photo?.post).toHaveBeenCalledTimes(2);
 });

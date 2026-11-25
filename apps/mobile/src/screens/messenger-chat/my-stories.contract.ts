@@ -46,11 +46,13 @@ export type MyStoryOverlay = {
 export type MyTextStoryDraft = {
   readonly clientId: string;
   readonly background: StoryBackground;
-  /** 한국어 한 줄 — 글 없이 단어 · 카드만 얹었으면 빈 글. */
+  /** 한국어 한 줄 — 글 없이 단어만 얹었으면 빈 글. */
   readonly ko: string;
   readonly overlays: readonly MyStoryOverlay[];
   readonly lang: string;
   readonly tzOffsetMin: number;
+  /** 기기 지역(ISO 3166-1 alpha-2) — 위기 신호일 때 서버가 그 지역 상담 연락처를 고릅니다(#598 `client_region`). 모르면 없음. */
+  readonly region?: string | null;
 };
 
 /** 올리기 창의 칸 — 현지 아침 04 ~ 12 · 낮 12 ~ 18 · 밤 18 ~ 04(ADR-0191 D8). */
@@ -163,7 +165,8 @@ export type MyStoryPostResult =
   /** 사진 검수가 거절함(ADR-0199) — 스토리는 만들어지지 않고 「다시 확인 요청」만 됩니다. */
   | { readonly result: "rejected"; readonly rejection: MyStoryRejection | null }
   /**
-   * `check_limit`: 하루 사진 검수 시도 상한 · `upload_failed`: 사진을 버킷에 못 올림(게시 호출 전). 사진 스토리만 냅니다.
+   * `check_limit`: 하루 검수 시도 상한, `invalid`: 서버가 요청 모양을 받지 않음(#598), `upload_failed`: 사진을 버킷에 못 올림(게시 호출 전,
+   * ADR-0199).
    */
   | {
       readonly result:
@@ -171,6 +174,7 @@ export type MyStoryPostResult =
         | "daily_limit"
         | "text_blocked"
         | "check_limit"
+        | "invalid"
         | "upload_failed"
         | "failed";
     };
@@ -243,7 +247,8 @@ export { myStoriesTestIds } from "./my-stories-ids";
  * - `answer`: 내 답(`meta.quiz { free, attempt, result? }`) — 무료로 받은 답만. `result`는 판정 뒤(없으면 null).
  * 엽전 차감 · 정답 판정은 서버 몫이고 앱은 표시만 합니다.
  */
-export type QuizResult = "correct" | "hint" | "revealed";
+/** `skipped`: 퀴즈와 상관없는 말이라 서버가 퀴즈를 닫음(#598, ADR-0191 D14) — 답은 무료였고 다음은 무료가 아님. */
+export type QuizResult = "correct" | "hint" | "revealed" | "skipped";
 export type ChatQuizMark =
   | { readonly kind: "ask" }
   | { readonly kind: "answer"; readonly attempt: 1 | 2; readonly result: QuizResult | null };

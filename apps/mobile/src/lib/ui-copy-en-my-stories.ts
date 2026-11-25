@@ -48,6 +48,8 @@ export const myStoriesEn: MyStoriesCopy = {
         ? "You've already shared a story in this part of the day."
         : `You've already shared a story in this part of the day. The next one opens at ${time}.`,
     failed: "Couldn't share your story. Try again.",
+    checkLimit: "You've tried enough for today. Try again tomorrow.",
+    invalid: "Couldn't share this story. Try changing it.",
   },
   viewer: {
     yourStory: "Your story",
