@@ -23,3 +23,12 @@
   - 덕수쌤 아바타: `staging`에만 있어 `content`에 복사(새 파일).
   - 내 글 🌐 제거(SV-E5) · 추천 답변 판 저절로 열림(SV-E3).
   - 마지막 설치본의 화면 확인은 사용자 몫으로 남았다.
+
+### 2026-11-25 — iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5), 흉내 출처 — SV-E8 (ADR-0194)
+- 로그인 없이 임시 진입점(커밋 안 함)으로 덕수쌤 서버 방을 **가짜 원격**으로 세웠다 — 기록의 마지막 캐릭터 메시지가 선톡(proactive) · 추천 둘,
+  보내면 1.5초 뒤 턴 답 · 추천 셋. 이벤트는 sink를 화면 위 글 상자로 그려 확인했다(PostHog로 보내지 않음).
+- 전구 → 판: `chat_suggestion_shown { count: "2", replyOrigin: "proactive", myMessageNumber: "1" }` 한 번.
+- 「쉬어요」(둘째) 누름 → `chat_suggestion_tapped { index: "1", count: "2", replyOrigin: "proactive", myMessageNumber: "1" }` →
+  `chat_message_sent { paid: false, cost: "0", fromSuggestion: true }` → 답과 함께 판이 저절로 열려
+  `chat_suggestion_shown { count: "3", replyOrigin: "turn", myMessageNumber: "2" }`. 추천 글은 이벤트에 없음. JS 오류 없음.
+- 하지 않은 것: 실제 서버 · 로그인 · PostHog 수신 확인, Android, 실기기. 앱 소리 설정은 임시 진입점에 없어 끄지 못했다.
