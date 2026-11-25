@@ -5,11 +5,11 @@
 - 측정 일시: 2026-11-26T00:30:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 채팅 목록 · 그 방 밖에서 답이 오면 화면 위 카드를 띄우는 변경이다
 - 기능 PR: `feat/chat-reply-toast`
-- 대상 commit: origin/main 998786dd(#611 머지 뒤) 위의 변경
+- 대상 commit: origin/main fe970cbe(#611 · #612 머지 뒤) 위의 변경
 - 기기: iOS 시뮬레이터 · Android AVD에서 눈으로 확인(docs/e2e/messenger-chat-ui.md MC-E16) — 계측 없음
 - OS: 해당 없음(계측 없음)
 - Lynx SDK: 4.0.1
-- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 6,138,693 bytes(변경 전 origin/main 998786dd 6,122,948 bytes, +15,745), 천장 6,140,000 안 — 남은 여유 1,307 bytes
+- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 6,142,363 bytes(변경 전 origin/main fe970cbe 6,126,711 bytes, +15,652) — **천장 6,140,000을 2,363 bytes 넘음, 천장은 올리지 않고 사용자 결정 대기**
 - 실행 회차: 01
 
 ## 시나리오
