@@ -158,7 +158,7 @@ export function useSuggestedFriends({
       kind: model.character.kind,
       from,
     });
-    setSheet(after === undefined ? { model, from } : { model, from, after });
+    setSheet({ model, from, after });
   };
 
   /** 추가 길(ADR-0162 D5) — 성인 확인을 먼저 물을 수 있고(ADR-0164 D4), 추가되면 `after`. */
