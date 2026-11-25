@@ -13,8 +13,10 @@ import {
   type Placement,
   type Point,
 } from "./my-story-editor";
-import { storyTextLines, textBoxSizeOf } from "./my-story-text";
+import { stickerFit, stickerSizeOf } from "./my-story-sticker-size";
+import { textBoxSizeOf } from "./my-story-text";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
+import { StickerWordLines } from "./StoryOverlayLines";
 
 /** 바탕의 크기(px) — 끌기 거리를 비율로 바꿉니다. 아직 모르면 0(끌기 없음). */
 export type CanvasSize = { readonly width: number; readonly height: number };
@@ -22,12 +24,21 @@ export type CanvasSize = { readonly width: number; readonly height: number };
 const pointsOf = (event: TouchEvent): Point[] =>
   (event.touches ?? []).map((touch) => ({ x: touch.pageX, y: touch.pageY }));
 
-/** 자리 → 그리기 값(가운데 기준). 크기는 transform scale이라 글자도 같은 비율로 바뀝니다(줄바꿈은 다시 흐르지 않음). */
-export function stickerStyle(place: Pick<Placement, "x" | "y" | "scale" | "rotation">) {
+/**
+ * 단어 스티커의 그리기 값(가운데 기준) — 확정 크기(`settled`)는 글자 · 사이 · 안쪽 여백에(`StickerWordLines`), 끄는 동안의 몫만
+ * transform(글 상자와 같은 A안, 선명하게). 손을 떼면 settled = scale이 되어 live 1(같은 가운데 기준이라 튀지 않음).
+ */
+export function stickerStyle(
+  place: Pick<Placement, "x" | "y" | "scale" | "rotation">,
+  settled: number,
+) {
+  const size = stickerSizeOf(place.scale, settled);
   return {
     left: `${place.x * 100}%`,
     top: `${place.y * 100}%`,
-    transform: `translate(-50%, -50%) rotate(${place.rotation}deg) scale(${place.scale})`,
+    transform: `translate(-50%, -50%) rotate(${place.rotation}deg) scale(${size.live})`,
+    padding: size.padding,
+    gap: size.gap,
   };
 }
 
@@ -65,6 +76,7 @@ export function MyStoryPlaced<T extends Placement>({
   onChange,
   onRemove,
   onTap,
+  fit,
   lane = false,
   children,
 }: {
@@ -81,15 +93,16 @@ export function MyStoryPlaced<T extends Placement>({
   readonly onRemove: () => void;
   /** 누름(끌지 않음) — 글 상자는 다시 쓰기. */
   readonly onTap?: () => void;
+  /** 끝단 — 바뀐 자리 · 크기를 바탕 안(도구 열 앞 · 회전 외접 사각형)으로 고칩니다. 확정 크기를 함께 받아 끄는 중의 상자도 잽니다. */
+  readonly fit: (next: T, settled: number) => T;
   /** 글 상자 — 바탕 너비 줄 안에 놓아 옮겨도 줄바꿈이 그대로입니다(`laneStyle`). */
   readonly lane?: boolean;
-  /** 글 상자는 확정 크기를 받아 글자를 그립니다(손을 떼면 확정 — 끄는 동안은 transform). */
-  readonly children: ReactNode | ((settled: number) => ReactNode);
+  /** 확정 크기를 받아 글자를 그립니다(손을 떼면 확정 — 끄는 동안은 transform). */
+  readonly children: (settled: number) => ReactNode;
 }): ReactNode {
   const [settled, setSettled] = useState(item.scale);
-  const settle = () => {
-    if (lane) setSettled(item.scale);
-  };
+  const settle = () => setSettled(item.scale);
+  const change = (next: T) => onChange(fit(next, settled));
   const start = useRef<{ item: T; points: Point[] } | null>(null);
   const resize = useRef<{ item: T; point: Point } | null>(null);
 
@@ -106,14 +119,14 @@ export function MyStoryPlaced<T extends Placement>({
     const [a1, b1] = now;
     if (from === null || a0 === undefined || a1 === undefined) return;
     if (b0 !== undefined && b1 !== undefined)
-      return onChange(pinchSticker(from.item, [a0, b0], [a1, b1]));
+      return change(pinchSticker(from.item, [a0, b0], [a1, b1]));
     if (b0 !== undefined && b1 === undefined) {
       // 두 손가락에서 하나를 뗌 — 그 자리부터 다시 끕니다.
       start.current = { item, points: now };
       return;
     }
     if (canvas.width <= 0 || canvas.height <= 0) return;
-    onChange(moveSticker(from.item, (a1.x - a0.x) / canvas.width, (a1.y - a0.y) / canvas.height));
+    change(moveSticker(from.item, (a1.x - a0.x) / canvas.width, (a1.y - a0.y) / canvas.height));
   };
   const end = () => {
     "background only";
@@ -130,7 +143,7 @@ export function MyStoryPlaced<T extends Placement>({
     const from = resize.current;
     const [point] = pointsOf(event);
     if (from === null || point === undefined) return;
-    onChange(resizeSticker(from.item, point.x - from.point.x, point.y - from.point.y));
+    change(resizeSticker(from.item, point.x - from.point.x, point.y - from.point.y));
   };
   const resizeEnd = () => {
     "background only";
@@ -142,7 +155,7 @@ export function MyStoryPlaced<T extends Placement>({
     <view
       className={`${className}${selected ? ` ${className}-on` : ""}`}
       data-testid={testId}
-      style={lane ? textBoxStyle(item, settled) : stickerStyle(item)}
+      style={lane ? textBoxStyle(item, settled) : stickerStyle(item, settled)}
       flatten={false}
       accessibility-element={true}
       accessibility-label={label}
@@ -159,7 +172,7 @@ export function MyStoryPlaced<T extends Placement>({
             },
           })}
     >
-      {typeof children === "function" ? children(settled) : children}
+      {children(settled)}
       {selected ? (
         <>
           <view
@@ -202,30 +215,7 @@ export function MyStoryPlaced<T extends Placement>({
   );
 }
 
-/** 글 상자의 줄들 — 정해진 줄(`storyTextLines`)을 한 줄씩, 글자 크기에 크기를 곱해 그립니다(편집 · 보기 같은 함수). */
-export function StoryTextLines({
-  ko,
-  color: ink,
-  size,
-}: {
-  readonly ko: string;
-  readonly color: string;
-  readonly size: number;
-}): ReactNode {
-  const { fontSize, lineHeight } = textBoxSizeOf(size, size);
-  return storyTextLines(ko).map((line, index) => (
-    <text
-      key={index}
-      className={`my-story-text-box-ko my-story-ink-${ink}`}
-      style={{ fontSize, lineHeight }}
-      accessibility-elements-hidden={true}
-    >
-      {line}
-    </text>
-  ));
-}
-
-/** 단어 · 카드 스티커(시안 27번). */
+/** 단어 · 카드 스티커(시안 27번) — 글 상자와 같은 끝단(`stickerFit`) · 같은 크기 방식. */
 export function MyStorySticker({
   sticker,
   canvas,
@@ -256,18 +246,9 @@ export function MyStorySticker({
       onSelect={onSelect}
       onChange={onChange}
       onRemove={onRemove}
+      fit={(next, settled) => ({ ...next, ...stickerFit(choice, next, canvas, settled) })}
     >
-      <text className="my-story-sticker-ko" accessibility-elements-hidden={true}>
-        {choice.ko}
-      </text>
-      {choice.roman === "" ? null : (
-        <text className="my-story-sticker-roman" accessibility-elements-hidden={true}>
-          {choice.roman}
-        </text>
-      )}
-      <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
-        {choice.meaning}
-      </text>
+      {(settled: number) => <StickerWordLines words={choice} size={settled} />}
     </MyStoryPlaced>
   );
 }
