@@ -143,7 +143,18 @@ final class StoryPhotoPicker {
         return true;
       }
       Uri source = uri;
-      WORKER.execute(() -> finishFromWorker(shrink(() -> resolver.openInputStream(source), root)));
+      // 고른 사진은 한 번만 읽어 임시 파일로 옮긴 뒤 줄인다 — 클라우드 사진 등 다시 열기가 비싸거나 한 번만 읽히는 Uri가 있다(리뷰 지적).
+      WORKER.execute(() -> {
+        File copy = new File(new File(root, StoryPhotoPaths.CAPTURE_NAME), StoryPhotoPaths.newFileName());
+        Map<String, String> payload;
+        if (copyOnce(resolver, source, copy)) {
+          payload = shrink(() -> new java.io.FileInputStream(copy), root);
+        } else {
+          payload = StoryPhotoPaths.status("failed");
+        }
+        copy.delete();
+        finishFromWorker(payload);
+      });
       return true;
     }
     File capture = captureFile;
@@ -176,6 +187,22 @@ final class StoryPhotoPicker {
     Result result = pending;
     pending = null;
     if (result != null) result.deliver(payload);
+  }
+
+  /** Uri를 한 번 읽어 파일로 쓴다. 실패하면 false(쓴 조각은 부르는 쪽이 지운다). */
+  private static boolean copyOnce(ContentResolver resolver, Uri source, File target) {
+    File folder = target.getParentFile();
+    if (folder == null || (!folder.isDirectory() && !folder.mkdirs())) return false;
+    try (InputStream in = resolver.openInputStream(source);
+        java.io.OutputStream out = new java.io.FileOutputStream(target)) {
+      if (in == null) return false;
+      byte[] buffer = new byte[64 * 1024];
+      int read;
+      while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+      return true;
+    } catch (IOException | RuntimeException error) {
+      return false;
+    }
   }
 
   private interface Opener {
