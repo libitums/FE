@@ -4,6 +4,7 @@ import {
   NEAR_END_PX,
   SHORT_SCROLL_PX,
   endDistance,
+  farFromEnd,
   realignOnShrink,
   smoothToEnd,
 } from "./chat-log-follow";
@@ -28,6 +29,15 @@ describe("smoothToEnd", () => {
     expect(smoothToEnd({ motion: true, entering: false, distance: 20 })).toBe(false);
     expect(smoothToEnd({ motion: true, entering: true, distance: 800 })).toBe(false);
     expect(smoothToEnd({ motion: false, entering: false, distance: 800 })).toBe(false);
+  });
+});
+
+describe("farFromEnd", () => {
+  test("CLF-U5. 끝까지 남은 거리가 뷰포트보다 클 때만 한 화면 넘게 멀다 — 모르면 아님", () => {
+    expect(farFromEnd(500, 400)).toBe(true);
+    expect(farFromEnd(400, 400)).toBe(false);
+    expect(farFromEnd(null, 400)).toBe(false);
+    expect(farFromEnd(500, null)).toBe(false);
   });
 });
 

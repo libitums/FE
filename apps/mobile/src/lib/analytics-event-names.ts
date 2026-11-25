@@ -74,6 +74,7 @@ export type AnalyticsEventName =
   | "chat_suggestion_tapped"
   | "chat_media_requested"
   | "chat_media_completed"
+  | "chat_new_messages_jumped"
   | "chat_coins_short"
   | "chat_push_ask_shown"
   | "chat_push_ask_tapped"

@@ -2,6 +2,7 @@
 // 공통 속성(`surface` · `daysSinceFirstOpen`)은 `companion-event.contract.ts`의 묶음과 같은 규약으로 붙습니다 — 보내는 자리는
 // `emitCompanionEvent`입니다. 값은 문자열뿐입니다(수는 10진 문자열).
 
+import type { ChatPillEvent } from "./chat-pill-event.contract";
 import type { ChatSuggestionEvent } from "./chat-suggestion-event.contract";
 
 type Common = {
@@ -27,5 +28,8 @@ export type ChatPushAskEvent =
       readonly result: "allowed" | "denied";
     });
 
-/** 채팅 방 안의 추천 문장(ADR-0195) · 알림 권한 카드 이벤트 — `CompanionEvent`가 한 줄로 받습니다(그 파일의 줄 수 한도). */
-export type ChatRoomEvent = ChatSuggestionEvent | ChatPushAskEvent;
+/**
+ * 채팅 방 안의 추천 문장(ADR-0195) · 알림 권한 카드 · 「새 메시지 ↓」 알약(ADR-0117 2026-11-25) 이벤트 — `CompanionEvent`가 한 줄로
+ * 받습니다(그 파일의 줄 수 한도).
+ */
+export type ChatRoomEvent = ChatSuggestionEvent | ChatPushAskEvent | ChatPillEvent;
