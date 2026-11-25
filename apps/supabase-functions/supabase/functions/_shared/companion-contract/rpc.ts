@@ -156,6 +156,28 @@ export const companionMessageSchema = z.object({
       ]),
     ),
   ),
+  /**
+   * 공개 meta(20270108120000, ADR-0191 D14). 없으면 null, 옛 서버는 칸이 없습니다. 모르는 칸이 와도 무시합니다.
+   * - 내 스토리 반응(origin `story_reaction`): `angle` · `myStoryId`, 덕수쌤 퀴즈면 `quiz.freeAnswer`(지금 무료로 답할 수 있는가).
+   * - 무료로 받은 퀴즈 답(유저 메시지): `quiz.free` · `attempt`(1 · 2) · `result`(correct · hint · revealed · skipped — 퀴즈와 상관없는 말이라 퀴즈를 닫음).
+   * 앱은 `freeAnswer` · `free`가 참일 때만 무료 표시 · 엽전 관문을 건너뜁니다. `angle`만 있으면 보통 메시지입니다.
+   */
+  meta: z.optional(
+    z.nullable(
+      z.object({
+        angle: z.optional(z.string()),
+        myStoryId: z.optional(z.uuid()),
+        quiz: z.optional(
+          z.object({
+            freeAnswer: z.optional(z.boolean()),
+            free: z.optional(z.boolean()),
+            attempt: z.optional(z.int()),
+            result: z.optional(z.enum(["correct", "hint", "revealed", "skipped"])),
+          }),
+        ),
+      }),
+    ),
+  ),
   createdAt: z.iso.datetime({ offset: true }),
 });
 

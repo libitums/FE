@@ -3,7 +3,11 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv } from "./chat-send.contract.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import { createMyStoryHandler, type MyStoryLogEntry } from "./companion-my-story-handler.ts";
-import { reactionDirective, reactionUserText } from "./companion-reaction-prompt.ts";
+import {
+  reactionDirective,
+  reactionQuizWord,
+  reactionUserText,
+} from "./companion-reaction-prompt.ts";
 import { fakeStoryReader, type StoryReader } from "./companion-story-read.ts";
 import { storyUpkeep } from "./companion-story-upkeep.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
@@ -217,7 +221,7 @@ test("MH4. 거절 — 사진을 격리 버킷으로 옮기고 거절을 적는�
   expect(t.args("companion_save_my_photo_story")).toBeUndefined();
 });
 
-test("MH5. 읽기가 실패 · 늦으면 checking으로 올리고, 글이나 사진의 위기 신호는 장면의 crisis로 남는다", async () => {
+test("MH5. 읽기가 실패 · 늦으면 checking으로 올리고, 위기 신호(글 · 얹은 글 · 사진)는 올리지 않고 crisis + 상담 연락처", async () => {
   const failed = setup();
   expect((await failed.call(post({ ko: "서울 [slow]" }))).body).toMatchObject({
     result: "ok",
@@ -233,22 +237,50 @@ test("MH5. 읽기가 실패 · 늦으면 checking으로 올리고, 글이나 사
       new Promise((resolve) => setTimeout(() => resolve(fakeStoryReader as never), 500)),
   });
   expect((await slow.call(post())).body).toMatchObject({ story: { status: "checking" } });
-  const text = setup();
-  await text.call(post({ ko: "죽고 싶어" }));
-  expect(text.args("companion_save_my_photo_story")).toMatchObject({
-    p_status: "live",
-    p_scene: { crisis: true },
-  });
-  // 글의 위기 신호는 사진을 못 읽어 checking으로 올라가도 남는다.
-  const both = setup();
-  await both.call(post({ ko: "죽고 싶어 [slow]" }));
-  expect(both.args("companion_save_my_photo_story")).toMatchObject({
-    p_status: "checking",
-    p_scene: { description: "", hooks: [], crisis: true },
-  });
-  const photo = setup();
-  await photo.call(post({ ko: "힘든 하루 [crisis]" }));
-  expect(photo.args("companion_save_my_photo_story")).toMatchObject({ p_scene: { crisis: true } });
+  // 위기 신호(글 · 얹은 글 · 사진 읽기)는 올리지 않고 crisis + 그 지역의 상담 연락처(ADR-0191 D15 — 색 바탕과 같다).
+  for (const body of [
+    post({ ko: "죽고 싶어", client_region: "KR" }),
+    post({
+      ko: "오늘",
+      client_region: "KR",
+      overlays: [{ kind: "text", ko: "죽고 싶어", x: 0, y: 0, scale: 1, rotation: 0 }],
+    }),
+    post({ ko: "힘든 하루 [crisis]", client_region: "KR" }),
+  ]) {
+    const t = setup();
+    const result = (await t.call(body)).body;
+    expect(result).toMatchObject({ result: "crisis" });
+    expect((result["resources"] as unknown[]).length).toBeGreaterThan(0);
+    expect(t.args("companion_save_my_photo_story")).toBeUndefined();
+  }
+  // 직접 쓴 얹은 글도 검수한다 · 배운 단어는 검수하지 않는다.
+  const overlayBlocked = setup();
+  expect(
+    (
+      await overlayBlocked.call(
+        post({
+          overlays: [{ kind: "text", ko: "[block] 나쁜 말", x: 0, y: 0, scale: 1, rotation: 0 }],
+        }),
+      )
+    ).body,
+  ).toEqual({ result: "text_blocked" });
+  const word = setup();
+  await word.call(
+    post({
+      overlays: [
+        {
+          kind: "word",
+          ko: "[block]",
+          word: { episodeId: "e", ref: "w" },
+          x: 0,
+          y: 0,
+          scale: 1,
+          rotation: 0,
+        },
+      ],
+    }),
+  );
+  expect(word.args("companion_save_my_photo_story")).toBeDefined();
 });
 
 test("MH6. 교정 — 횟수 상한 → 글 검수 → 한국어 한 줄 · 뜻. 모국어는 한국어로, 막힌 글 · 위기 · 상한", async () => {
@@ -348,6 +380,92 @@ function upkeepSetup(options: {
   return { rpcs, storage, deps: { outbound, fetch: fetchImpl, reader: fakeStoryReader } };
 }
 
+test("MH8. 글 스토리 — 바탕색이 오면 사진 없이: 문 → 글 검수(쓴 글 + 직접 쓴 얹은 글) → 저장. 막힌 글 · 위기는 저장하지 않는다", async () => {
+  const text = (extra: Record<string, unknown> = {}) => ({
+    action: "post",
+    client_id: clientId,
+    background: "orange",
+    ko: " 오늘 비가  와요 ",
+    overlays: [
+      { kind: "text", ko: "우산", x: 0.5, y: 0.5, scale: 1, rotation: 0 },
+      {
+        kind: "word",
+        ko: "비",
+        word: { episodeId: "e1", ref: "w1" },
+        x: 0.2,
+        y: 0.2,
+        scale: 1,
+        rotation: 0,
+      },
+    ],
+    lang: "en",
+    ...extra,
+  });
+  const ok = setup({
+    rpc: {
+      companion_my_text_gate: { result: "ok", ageBand: "minor" },
+      companion_save_my_text_story: { result: "ok", story: { id: "s9", kind: "text" } },
+    },
+  });
+  expect((await ok.call(text())).body).toEqual({ result: "ok", story: { id: "s9", kind: "text" } });
+  expect(ok.rpcs.map((rpc) => rpc.fn)).toEqual([
+    "companion_my_text_gate",
+    "companion_save_my_text_story",
+  ]);
+  expect(ok.args("companion_save_my_text_story")).toMatchObject({
+    p_user_id: userId,
+    p_client_id: clientId,
+    p_background: "orange",
+    p_ko: "오늘 비가 와요",
+    p_lang: "en",
+  });
+  // 사진은 읽지 않는다.
+  expect(ok.storage).toEqual([]);
+
+  const blocked = setup({ rpc: { companion_my_text_gate: { result: "ok", ageBand: "adult" } } });
+  expect(
+    (
+      await blocked.call(
+        text({
+          ko: "",
+          overlays: [{ kind: "text", ko: "[block] 나쁜 말", x: 0, y: 0, scale: 1, rotation: 0 }],
+        }),
+      )
+    ).body,
+  ).toEqual({ result: "text_blocked" });
+  expect(blocked.rpcs.map((rpc) => rpc.fn)).toEqual(["companion_my_text_gate"]);
+
+  const crisis = setup({ rpc: { companion_my_text_gate: { result: "ok", ageBand: "adult" } } });
+  expect((await crisis.call(text({ ko: "죽고 싶어" }))).body).toMatchObject({
+    result: "crisis",
+    resources: [expect.objectContaining({ name: expect.any(String) })],
+  });
+  expect(crisis.rpcs.map((rpc) => rpc.fn)).toEqual(["companion_my_text_gate"]);
+
+  // 문의 결과는 그대로 · 같은 요청은 그 스토리.
+  const used = setup({
+    rpc: { companion_my_text_gate: { result: "window_used", window: { used: true } } },
+  });
+  expect((await used.call(text())).body).toEqual({ result: "window_used", window: { used: true } });
+  const again = setup({
+    rpc: { companion_my_text_gate: { result: "exists", story: { id: "s9" } } },
+  });
+  expect((await again.call(text())).body).toEqual({ result: "ok", story: { id: "s9" } });
+
+  // 사진 경로와 바탕색은 정확히 하나 · 빈 스토리 · 긴 글은 invalid(문도 부르지 않는다).
+  for (const bad of [
+    text({ image_path: path }),
+    { ...post(), image_path: undefined },
+    text({ ko: "", overlays: [] }),
+    text({ ko: "가".repeat(201) }),
+  ]) {
+    const t = setup();
+    expect((await t.call(bad)).body).toEqual({ result: "invalid" });
+    expect(t.rpcs).toEqual([]);
+  }
+  expect((await setup().call(text({ background: "red" }))).status).toBe(400);
+});
+
 test("MU1. 뒷정리(파일) — 버킷별로 묶어 지우고, 지운 줄만 대기열에서 뺀다. 실패하면 남긴다", async () => {
   const purges = [
     { id: 1, bucket: "my-story-photos", path: "u1/a.jpg" },
@@ -420,13 +538,65 @@ test("RP5. 사진 반응 지시 — 장면 설명 · 글 · 각도, 신원 · �
   };
   const react = reactionDirective(story);
   expect(react).toContain("What the photo shows: A plane window over the sea.");
-  expect(react).toContain('Their caption: "서울에 도착했어!" (meaning "I made it to Seoul!")');
+  expect(react).toContain('What they wrote: "서울에 도착했어!" (meaning "I made it to Seoul!")');
   expect(react).toMatch(/React warmly/);
   expect(react).toMatch(/Never guess who the people in the photo are/);
   expect(react).toMatch(/never comment on anyone's looks, face, smile or body/);
   const question = reactionDirective({ ...story, angle: "question" });
   expect(question).toContain('Things you could pick up on: "Where are you flying?"');
   expect(reactionDirective({ ...story, angle: "together" })).toMatch(/doing something together/);
-  expect(reactionDirective({ ...story, scene: null })).toMatch(/respond to their caption only/);
+  expect(reactionDirective({ ...story, scene: null })).toMatch(/respond to what they wrote only/);
   expect(reactionUserText(story)).toContain("사진 스토리");
+});
+
+test("RP6. 조합 스토리 지시 — 색 바탕 · 사진 × 글 · 단어. 사진 · 글이 먼저(단어는 엮기), 덕수쌤 퀴즈는 사진 · 글과 엮어 뜻으로 묻고, 색 + 단어만은 단어 카드처럼", () => {
+  const base = {
+    kind: "text" as const,
+    ko: "",
+    roman: "",
+    meaning: "",
+    exampleKo: null,
+    angle: "react" as const,
+  };
+  // 색 + 글 + 단어: 글에 먼저 반응하고 단어는 어울리면 엮는다.
+  const colored = {
+    ...base,
+    texts: ["오늘 비가 와요"],
+    words: [{ ko: "우산", meaning: "umbrella" }],
+  };
+  const react = reactionDirective(colored);
+  expect(react).toContain("colored background");
+  expect(react).toContain('What they wrote: "오늘 비가 와요"');
+  expect(react).toContain('Korean words they are learning, placed on it: "우산" (umbrella)');
+  expect(react).toMatch(/React warmly to what they wrote first/);
+  expect(react).toMatch(/weave in the word/);
+  expect(reactionDirective({ ...colored, angle: "question" })).toMatch(/Ask one light question/);
+  expect(reactionDirective({ ...colored, angle: "together" })).toMatch(/doing something together/);
+  // 덕수쌤 퀴즈: 뜻으로 묻고 단어는 쓰지 않는다.
+  const quiz = reactionDirective({ ...colored, angle: "quiz" });
+  expect(quiz).toContain('the Korean word for "umbrella"');
+  expect(quiz).toContain('Do not write the word "우산" yourself');
+  expect(reactionQuizWord(colored)).toBe("우산");
+  // 사진 + 단어(글 없음): 사진에 먼저 반응.
+  const photo = reactionDirective({
+    ...base,
+    kind: "photo",
+    scene: "A beach.",
+    words: [{ ko: "여름", meaning: "summer" }],
+  });
+  expect(photo).toContain("What the photo shows: A beach.");
+  expect(photo).toMatch(/React warmly to the photo first/);
+  expect(photo).not.toContain("What they wrote");
+  // 색 + 단어만: 단어 카드 모양(첫 단어가 주인공).
+  const wordOnly = reactionDirective({
+    ...base,
+    angle: "word",
+    words: [{ ko: "산책", meaning: "a walk" }],
+  });
+  expect(wordOnly).toContain('the Korean word "산책"');
+  expect(wordOnly).toContain('Use the word "산책"');
+  expect(reactionUserText({ ...base, texts: [], words: [{ ko: "산책", meaning: "" }] })).toContain(
+    "「산책」",
+  );
+  expect(reactionUserText(colored)).toContain("「오늘 비가 와요 · 우산」");
 });

@@ -870,6 +870,7 @@ test("MS17. 스토리 맥락 — 살아 있는 내 스토리(지우면 빠짐 ·
       meaning: "to arrive",
       exampleKo: "서울에 도착했어!",
       scene: null,
+      overlays: [],
       postedAt: expect.any(String),
     },
   ]);
