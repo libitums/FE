@@ -19,10 +19,11 @@ import {
   IconButton,
   StoryMeet,
   StoryProgress,
-  StoryReplyBar,
   useAdvanceTimer,
   WordPill,
 } from "./StoryViewerParts";
+import { StoryReplyArea } from "./StoryReplyArea";
+import { useStoryViewerReply } from "./use-story-viewer-reply";
 
 import "./story-viewer.css";
 
@@ -45,6 +46,9 @@ export function StoryViewer({
   words,
   onShown,
   onReply,
+  onOpenChat,
+  keyboardHeight,
+  onKeyboardHeight,
   onSaveWord,
   onMeet,
   onClose,
@@ -55,7 +59,18 @@ export function StoryViewer({
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const [index, setIndex] = useState(Math.min(Math.max(0, start), items.length - 1));
   const [paused, setPaused] = useState(false);
-  useLayerBack(() => onClose("back"));
+  const reply = useStoryViewerReply({
+    index,
+    copy,
+    covered,
+    keyboardHeight,
+    onReply,
+    onKeyboardHeight,
+  });
+  // 입력 중이면 뒤로 = 키보드 먼저 내림(D5 개정).
+  useLayerBack(() => {
+    if (!reply.dismissKeyboard()) onClose("back");
+  });
   const item = items[index];
 
   const step = (action: "next" | "prev" | "tick") => {
@@ -67,7 +82,9 @@ export function StoryViewer({
   };
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
-  const running = !paused && !covered && !reducedMotion && item !== undefined;
+  // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도 멈춥니다(D5 개정).
+  const stopped = paused || covered || reply.holding;
+  const running = !stopped && !reducedMotion && item !== undefined;
   useAdvanceTimer(index, running, () => step("tick"));
 
   // 장이 설 때마다 한 번(본 것 표시 · 이벤트) — 효과(배경 스레드)에서.
@@ -96,6 +113,8 @@ export function StoryViewer({
   const { story, unmet } = item;
   const tap = (action: "next" | "prev") => () => {
     "background only";
+    // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음).
+    if (reply.dismissKeyboard()) return;
     step(action);
   };
 
@@ -186,15 +205,16 @@ export function StoryViewer({
           items={items}
           index={index}
           still={reducedMotion}
-          stopped={paused || covered}
+          stopped={stopped}
           label={copy.viewer.progress(index + 1, items.length)}
         />
       </view>
 
       <view
         className="story-viewer-bottom"
+        data-testid={ids.replyBottom}
         style={{
-          paddingBottom: `${insets.bottom + 16}px`,
+          paddingBottom: `${reply.bottomPadding(insets.bottom)}px`,
           paddingLeft: `${insets.left + 16}px`,
           paddingRight: `${insets.right + 16}px`,
         }}
@@ -232,7 +252,7 @@ export function StoryViewer({
           ) : null}
         </view>
         {unmet === null ? (
-          <StoryReplyBar item={item} copy={copy} onReply={(text) => onReply(item, text)} />
+          <StoryReplyArea item={item} copy={copy} reply={reply} onOpenChat={onOpenChat} />
         ) : (
           <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
         )}

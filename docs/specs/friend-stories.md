@@ -19,7 +19,10 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   - `seenRecordsWith(records, id, expiresAt, now)` — 본 것 표시(만료 지난 것 지움).
 - 응답 풀기: `friend-stories-parse.ts` `friendStoriesFrom(body)` — 모양이 틀린 줄은 버리고, 몸이 틀리면 null.
 - 대화 출처: `ChatSource.sendText(roomId, text, options?: { story?: ChatStoryQuote })`. 서버 방은 `story_id`를 실어 보낸다. 텍스트 메시지 `story?: ChatStoryQuote`.
-- 넘김: `story-reply-handoff.ts` — 목록이 남기고 대화방이 마운트 때 한 번 꺼낸다.
+- 넘김: `story-reply-handoff.ts` — 목록이 남기고 대화방이 마운트 때 한 번 꺼낸다(D5 개정 뒤에는 안 만난 친구 추가 → 인용 띠만).
+- 보기에서 바로 답장(D5 개정): 순수 `story-inline-reply.ts` — `storyReplyGateOf`(첫 답장 무료 · 체험 · 엽전) · `storyReplyStatusOf`(보낸 글의 배달 상태) ·
+  `canSendStoryReply`. 목록 훅 `use-story-inline-reply.ts`(관문 · 보냄 · 상태 구독), 보기 훅 `use-story-viewer-reply.ts`(입력 중 · 보내는 중 · 알림 · 키보드 높이),
+  부품 `StoryReplyInput.tsx` · `StoryReplyArea.tsx`. 포트 `FriendStoriesPort.replyPlan`(체험 · 등급) · `keyboardHeightStore`.
 
 ### 1.2 서버 (파일만 — 운영 미적용)
 
@@ -70,6 +73,9 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U11 분석 이름 수(넷 추가) · Airbridge로 보내지 않음.
 - FS-U12 본 것 저장(기기): 계정마다 열쇠, 망가진 값은 빈 표시.
 - FS-U13 문구표 일곱 언어가 같은 칸을 가짐(문구 테스트 지원 함수).
+- FS-U15 `storyReplyGateOf`: 무료 안내 → story-free(엽전 0이어도) · 관문 재료 없음 · 무제한 → open · 체험 남음/모름 → trial · 엽전 → pay(서버 방은 지갑에서 안 뺌) · 모자람 → short.
+- FS-U16 `storyReplyStatusOf`: 방 없음 · 새 글 없음 · 다른 스토리 → failed, 가짜 출처 → sent, 앱 id → sending, 서버 id → sent, Not sent · 실패 줄 → failed(no-credits → coins), 입력 막힘 → failed.
+- FS-U17 `canSendStoryReply`: 빈 글 · 공백 · 보내는 중이면 거짓.
 
 ### 2.2 ui (앱)
 
@@ -80,12 +86,15 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI5 보기(안 만난 친구): 칩 · 답장 칸 없음, NEW FRIEND · 소개 카드 · addable이면 「Add friend and reply」, locked면 「See how to meet」.
 - FS-UI6 시스템 뒤로 = 닫기. covered면 낭독에서 가림.
 - FS-UI7 목록 화면: 스토리 포트가 없거나 비면 「Meet new friends」 줄 그대로, 스토리가 있으면 스토리 줄. 목록 줄 「New story · …」 탭 → 보기.
+- FS-UI14 ~ UI19 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
+  onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
+- FS-UI20 ~ UI22 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
 
 ### 2.3 integration (앱)
 
-- FSI1 목록 → 친구 스토리 → 칩 → 대화방으로 이동, 보낸 글에 인용 카드, 서버 요청 몸 `story_id`, 이벤트 `friend_story_replied { via: chip }`.
-- FSI2 답장 칸 → 대화방 인용 띠 → 입력 보냄 → 인용 카드 · `story_id` · `via: typed`, 띠가 사라짐.
+- FSI1 (D5 개정) 목록 → 친구 스토리 → 칩 → 보기에 남은 채 그 방에 인용과 함께 보냄 · 「Sent」 → Open chat → 방의 인용 카드.
+- FSI2 (D5 개정) 답장 칸에 쓰고 보내기 → 보기에 남은 채 인용과 함께 보냄 · 칸이 빔.
 - FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
 - FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)

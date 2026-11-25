@@ -128,21 +128,17 @@ test("FS-UI7. 친구 스토리 → 보기(본 것 표시 · viewed) → 칩 → 
       total: "1",
     }),
   ]);
+  // 칩은 그 자리에서 보냅니다(D5 개정) — 넘김을 남기지 않고, Open chat을 눌러야 방이 열립니다.
   tapId(ids.chip(0));
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(onOpenRoom).not.toHaveBeenCalled();
+  expect(takeStoryReplyHandoff("mina")).toBeNull();
+  tapId(ids.openChat);
   expect(screen.queryByTestId(ids.viewer)).toBeNull();
   expect(onOpenRoom).toHaveBeenCalledWith("mina");
-  expect(takeStoryReplyHandoff("mina")).toEqual({
-    roomId: "mina",
-    text: "맛있겠다!",
-    free: true,
-    quote: {
-      storyId: "st-mina",
-      characterId: "mina",
-      line: "야근 끝! 편의점 라면이 최고야",
-      imagePath: "content/images/mina.webp",
-      postedAt: STORY_NOW - 2 * HOUR_MS,
-    },
-  });
 });
 
 test("FS-UI7. 목록 줄의 New story → 보기, 본 뒤 줄은 보통 미리보기", async () => {

@@ -43,6 +43,7 @@ export function useStoryReply(
       characterId: quote.characterId,
       via,
       free,
+      where: "room",
     });
 
   const freeSent = (characterId: string) => {

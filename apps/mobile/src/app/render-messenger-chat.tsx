@@ -61,6 +61,7 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
                 imageUrlOf: wiring.episodeContent.imageUrlOf,
                 catalog: () => wiring.episodeContent.catalog,
                 romanization: () => wiring.more.romanization === "shown",
+                replyPlan: { trial: chat.trial, tier: chat.tier },
               })
             : undefined
         }

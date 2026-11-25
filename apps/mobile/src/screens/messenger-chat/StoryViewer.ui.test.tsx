@@ -53,8 +53,10 @@ function mount(over: Partial<StoryViewerProps> = {}) {
     reducedMotion: false,
     romanization: true,
     words: words(),
+    keyboardHeight: 300,
     onShown: vi.fn(),
-    onReply: vi.fn(),
+    onReply: vi.fn(async () => ({ kind: "sent" as const })),
+    onOpenChat: vi.fn(),
     onSaveWord: vi.fn(),
     onMeet: vi.fn(),
     onClose: vi.fn(),
@@ -96,7 +98,7 @@ test("FS-UI3. 장 · 이름 · 경과 · 한 줄 · 로마자 · 뜻 · 단어 �
   expect(screen.getByTestId(ids.free).textContent).toBe("First reply is free");
   expect(screen.getByTestId(ids.chip(0)).textContent).toBe("맛있겠다!");
   expect(screen.getByTestId(ids.chip(2)).textContent).toBe("나도 배고파");
-  expect(screen.getByTestId(ids.reply).textContent).toBe("Reply to 윤경…");
+  expect(screen.getByTestId(ids.replyInput).getAttribute("placeholder")).toBe("Reply to 윤경…");
 });
 
 test("FS-UI3. 로마자를 끄면 없고, 단어 포트가 없거나 못 찾으면 알약이 없다, 무료가 아니면 안내가 없다", () => {
@@ -115,12 +117,11 @@ test("FS-UI3. Save word → 저장 · 콜백, 그 뒤 Saved", () => {
   expect(screen.getByTestId(ids.word).textContent).toBe("물 saved to My words");
 });
 
-test("FS-UI3. 칩 → onReply(그 말), 답장 칸 → onReply(null)", () => {
+test("FS-UI3. 칩 → onReply(그 말, chip) — 보내기는 보기 안에서(D5 개정, 자세히는 StoryViewer.reply)", () => {
   const props = mount();
   tapId(ids.chip(1));
-  expect(props.onReply).toHaveBeenCalledWith(props.items[0], "수고했어!");
-  tapId(ids.reply);
-  expect(props.onReply).toHaveBeenLastCalledWith(props.items[0], null);
+  expect(props.onReply).toHaveBeenCalledWith(props.items[0], "수고했어!", "chip");
+  expect(screen.getByTestId(ids.replyInput).getAttribute("placeholder")).toBe("Reply to 윤경…");
 });
 
 test("FS-UI4. 6초 뒤 다음 장, 마지막 뒤 닫힘 — 장마다 onShown", () => {
@@ -210,7 +211,7 @@ test("FS-UI5. 안 만난 친구: 칩 · 답장 칸 · 멈춤 없음, NEW FRIEND 
     items: [{ ...friendItem("g", "다은", { postedAt: STORY_NOW - HOUR_MS }), unmet }],
   });
   expect(screen.queryByTestId(ids.chip(0))).toBeNull();
-  expect(screen.queryByTestId(ids.reply)).toBeNull();
+  expect(screen.queryByTestId(ids.replyInput)).toBeNull();
   // 안 만난 친구에도 멈춤이 있다 — 자동 넘김을 멈출 길(WCAG 2.2.1, 접근성 C1).
   expect(screen.getByTestId(ids.pause)).not.toBeNull();
   expect(screen.queryByTestId(ids.free)).toBeNull();
@@ -245,18 +246,28 @@ test("FS-UI6. 낭독 순서 — 닫기 · 멈춤이 먼저, 이전/다음은 맨
   const order = Array.from(screen.getByTestId(ids.viewer).querySelectorAll("[data-testid]"))
     .map((el) => el.getAttribute("data-testid") ?? "")
     .filter((id) =>
-      [ids.close, ids.pause, ids.name, ids.chip(0), ids.reply, ids.previous, ids.next].includes(id),
+      [
+        ids.close,
+        ids.pause,
+        ids.name,
+        ids.chip(0),
+        ids.replyInput,
+        ids.replySend,
+        ids.previous,
+        ids.next,
+      ].includes(id),
     );
   expect(order).toEqual([
     ids.close,
     ids.pause,
     ids.name,
     ids.chip(0),
-    ids.reply,
+    ids.replyInput,
+    ids.replySend,
     ids.previous,
     ids.next,
   ]);
-  for (const id of [ids.close, ids.pause, ids.previous, ids.next, ids.chip(0), ids.reply]) {
+  for (const id of [ids.close, ids.pause, ids.previous, ids.next, ids.chip(0)]) {
     expect(screen.getByTestId(id).getAttribute("accessibility-traits"), id).toBe("button");
   }
   expect(screen.getByTestId(ids.previous).getAttribute("flatten")).toBe("false");

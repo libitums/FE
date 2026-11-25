@@ -12,11 +12,11 @@
 | FS-E3 | 친구 스토리를 누른다 | 전체 화면: 위 진행 막대(이어 볼 칸 수) · 얼굴 · 이름 · 경과 · 멈춤 · 닫기, 그림 가득, 흰 카드(한국어 · 로마자 · 뜻, 살짝 기울어짐), 주황 단어 알약 「<단어> · <뜻> — Save word」, 「First reply is free」, 답장 칩 셋, 「Reply to <이름>…」. 상태 표시줄 글자 흰색 · 노치 · 홈 인디케이터에 가리지 않음 |
 | FS-E4 | 6초 기다림 · 오른쪽 탭 · 왼쪽 1/3 탭 · 멈춤 | 6초마다 다음 장, 막대가 왼쪽부터 참. 탭으로 앞뒤. 멈추면 막대 · 넘김이 멈추고 「Play」. 마지막 장 뒤 닫힘. 기기 「동작 줄이기」면 막대가 꽉 찬 채 멈춰 있고 넘김은 탭으로만 |
 | FS-E5 | Save word | 알약이 「<단어> saved to My words」(어두운 면)로 바뀌고, 더보기 › My words · Starred에 그 단어 |
-| FS-E6 | 칩을 누른다 | 보기가 닫히고 그 인물 방이 열리며 보낸 글 위에 「You replied to <이름>'s story」 + 그림 · 한 줄 카드. 답장 칸을 누르면 입력 줄 위 「Replying to <이름>'s story」 띠 — 글을 보내면 카드가 붙고 띠가 사라짐, ×로 떼면 카드 없음 |
+| FS-E6 | (D5 개정) 「Reply to <이름>…」을 누른다 · 쓴다 · 보낸다 · 칩 | 키보드가 오르고 **답장 칸이 키보드 바로 위**(가리지 않음, iOS · Android 둘 다) · 진행 막대 멈춤 · 칩 · 무료 안내 숨김. 보내면(단추 · return) 보기에 남은 채 칸이 비고 키보드가 내려가며 「Sent · Open chat」 3초 → 이어 감. 칩도 그 자리에서 보냄. Open chat → 방, 보낸 글 위 「You replied to <이름>'s story」. 비행기 모드면 글이 남고 「Couldn't send. Try again.」. 칸 밖 누름 · 키보드 내림 = 이어 감, Android 뒤로 = 키보드 먼저 |
 | FS-E7 | (서버) FS-E6 뒤 캐릭터 답 | 답이 스토리 내용(그 한 줄)을 알고 이어짐. 앱을 다시 켜고 방을 열면 인용 카드가 그대로(서버 기록 `story`) |
 | FS-E8 | (서버, 체험 다 씀 · 엽전 0) 같은 스토리 첫 답장 → 둘째 답장 | 첫 답장은 보내지고 엽전 그대로(`credit_holds` 금액 0 · `story_replies.free = true`), 둘째는 엽전 부족 안내. 다른 스토리의 첫 답장은 다시 무료 |
 | FS-E9 | 안 만난 친구 스토리 | 「NEW FRIEND」 · 칩 · 답장 칸 · 멈춤 없음, 아래 얼굴 · 이름 · 소개 카드 + 「Add friend and reply」. 누르면 방이 열리고(목록 맨 위 NEW) 인용 띠. 잠긴 이야기 인물이면 「See how to meet」 → 프로필 시트(회차 · 먼저 만나기) |
-| FS-E10 | VoiceOver · TalkBack | 줄 제목 머리글, 칸 「<이름>'s story, 2h, new」 · 「…, seen」 · 「<이름>'s story, new friend」. 보기 = dialog 「<이름>'s story」, 진행 「Story 1 of 3」, 이전 · 다음 · 멈춤 · 닫기 · 칩(「Reply: …」) · 답장 칸이 버튼. 보기가 떠 있는 동안 뒤 목록 · 탭 바가 읽히지 않음. Android 뒤로 = 닫기 |
+| FS-E10 | VoiceOver · TalkBack | 줄 제목 머리글, 칸 「<이름>'s story, 2h, new」 · 「…, seen」 · 「<이름>'s story, new friend」. 보기 = dialog 「<이름>'s story」, 진행 「Story 1 of 3」, 이전 · 다음 · 멈춤 · 닫기 · 칩(「Reply: …」)이 버튼, 답장 칸은 입력(「Reply to <이름>…」) · 보내기(「Send」) 버튼. 보기가 떠 있는 동안 뒤 목록 · 탭 바가 읽히지 않음. Android 뒤로 = 닫기 |
 | FS-E11 | (서버, `story_push = testers`) 스토리가 올라온 뒤 1시간 안 | 시험 계정 기기에 「<이름> · posted a story — <한 줄>」 한 통(현지 09 ~ 21시). 누르면 메신저 목록 위 그 스토리. 같은 날 선톡 푸시는 오지 않음(`pushedToday`) |
 | FS-E12 | 비행기 모드로 메신저 탭 | 스토리 줄 없이 「Meet new friends」 줄(예전 그대로), 오류 없음 |
 

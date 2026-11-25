@@ -88,6 +88,9 @@ export function MessengerListScreen({
     suggested,
     covered: coinShopOpen || suggested.layerOpen,
     onOpenRoom,
+    source,
+    wallet,
+    onShortOfCoins: () => setCoinShopOpen(true),
   });
 
   // 맨 위 줄의 노출 — 실제로 그린 줄만(감사 A5).

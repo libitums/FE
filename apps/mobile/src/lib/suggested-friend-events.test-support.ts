@@ -69,6 +69,7 @@ export const suggestedFriendEventExamples = [
     characterId: "mina",
     via: "chip",
     free: true,
+    where: "viewer",
   },
   {
     name: "friend_story_word_saved",
