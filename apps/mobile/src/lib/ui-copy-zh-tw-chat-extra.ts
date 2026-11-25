@@ -40,6 +40,12 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     jump: "跳到新訊息",
     latest: "捲動到最新訊息",
   },
+  replyToast: {
+    dismiss: "關閉",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name} 傳來新訊息：${preview}` + (more > 0 ? `。還有 ${more} 則` : ""),
+  },
   pushAsk: {
     title: (name) => `${name} 傳訊息給你時，要通知你嗎？`,
     body: "我有時會先傳訊息給你 — 大約一天一次，在傍晚。",

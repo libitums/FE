@@ -16,6 +16,7 @@ import { StoryReplyArea } from "./StoryReplyArea";
 import { useViewerCube } from "./use-viewer-cube";
 import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
+import { useStoryToastLink } from "./reply-toast-presence";
 
 import "./story-viewer.css";
 
@@ -75,7 +76,8 @@ export function StoryViewer({
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
   // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도, 가로로 끄는 동안에도 멈춥니다(D5 · D4 개정).
-  const stopped = paused || covered || reply.holding || nav.dragging;
+  const held = useStoryToastLink(true); // 답장 도착 토스트가 머리 위에 떠 있는 동안 진행만 멈춤(ADR-0200)
+  const stopped = paused || covered || held || reply.holding || nav.dragging;
   const running = !stopped && !reducedMotion && item !== undefined;
   useAdvanceTimer(index, running, () => step("tick"));
 

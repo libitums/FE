@@ -8,10 +8,7 @@ import {
 } from "./suggested-friend-events.test-support";
 import { friendStoryEventNames } from "./friend-story-events.test-support";
 import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
-import {
-  chatPushAskEventExamples,
-  chatPushAskEventNames,
-} from "./chat-push-ask-events.test-support";
+import { chatNoticeEventExamples, chatNoticeEventNames } from "./chat-push-ask-events.test-support";
 import {
   messengerGuideEventExamples,
   messengerGuideEventNames,
@@ -87,7 +84,7 @@ export const allEventNames = [
   "shop_tab_switched",
   ...suggestedFriendEventNames,
   ...friendStoryEventNames,
-  ...chatPushAskEventNames,
+  ...chatNoticeEventNames,
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
@@ -201,7 +198,7 @@ export const unmappedEvents = [
   { name: "launch_chat_shown", surface: "learning", daysSinceFirstOpen: "1", met: "1", total: "4" },
   { name: "launch_chat_closed", surface: "learning", daysSinceFirstOpen: "1", choice: "start" },
   ...messengerGuideEventExamples,
-  ...chatPushAskEventExamples,
+  ...chatNoticeEventExamples,
   {
     name: "companion_unlocked",
     surface: "learning",

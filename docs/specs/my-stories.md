@@ -104,6 +104,8 @@
 | ui | MS-UI31 ~ UI37 | 시작 시트 · 지금 서버 편집 · 스티커 × · 두 손가락 · 글 서버 Aa(바탕 위 상자 · 글자색 · Done) → 글 스토리 · crisis → 위기 카드 · text_blocked · 포트가 던져도 다시 Share (`MyStoryEditor.ui.test.tsx`) |
 | unit | MS-U40 ~ U44 | #598 계약 — 도구 · 올릴 길(새/옛 서버) · kinds · check_limit · invalid · 단어만 색 바탕 스토리 읽기 · 퀴즈 skipped · 요청 몸(`client_region`) (`my-stories-598.unit.test.ts`) |
 | ui | MS-UI38 | 새 서버: Aa · Words, 단어 하나도 색 바탕 스토리, check_limit 안내 (`MyStoryEditor.ui.test.tsx`) |
+| unit | MS-U45 ~ U51 | 글 상자 줄 · 크기(A안) · 끝단 — 오른쪽 도구 열(64px) 앞에서 멈춤 · 회전한 상자의 외접 사각형으로 크기 상한 · 자리 · 끄는 중 확정 크기 상자로 잼 · 단어 스티커도 같은 방식(글자 셋 크기로 확정) (`my-story-text-size.unit.test.ts` · `my-story-fit.unit.test.ts`) |
+| ui | MS-UI40 ~ UI44 | 글 상자 · 단어 스티커: 끄는 동안 transform → 놓으면 글자 크기, 도구 열 앞 · 돌린 상자 끝단, 보기도 같은 그리기 함수 (`MyStoryEditor.ui.test.tsx` · `MyStoryEditor.edges.ui.test.tsx`) |
 | integration | MSI6 | 실제 App: kinds에 text → Aa → Done → Share가 함수 결선으로 글 스토리, 없으면 Aa 없음 |
 | integration | MSI4 ~ MSI5 | 기록 JSON → 풀기 → 서버 모드 출처 → 방: 무료 신호 있음(무료 답 → 다시 읽기 → 판정 표시) / 각도 quiz만(#592 — 보통 엽전 관문) (`story-quiz.integration.test.tsx`) |
 | integration(서버) | MS1 ~ MS17 | 스위치 · 올리기(창 · 24시간 상한) · 창 계산 · 답할 인물(가중 무작위 · 각도 · 시각) · Seen · claim(상한 · 대화 중 미룸 · 겹친 호출 · 오래된 claim) · 끝내기(인물 방의 메시지) · 지우기(메시지는 남음) · 정리 · mine 판정 · 푸시 문 · 스토리 맥락 |

@@ -79,6 +79,8 @@ export type AnalyticsEventName =
   | "chat_push_ask_shown"
   | "chat_push_ask_tapped"
   | "chat_push_ask_answered"
+  | "chat_reply_toast_shown"
+  | "chat_reply_toast_opened"
   | "surface_session_ended"
   | "first_lesson_completed"
   | "first_chat_message_sent"

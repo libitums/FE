@@ -4,7 +4,8 @@ import { color } from "@libitums/design-tokens";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { playSound } from "../../lib/sound-effects";
-import { laneStyle, stickerStyle, StoryTextLines, textBoxStyle } from "./MyStorySticker";
+import { laneStyle, stickerStyle, textBoxStyle } from "./MyStorySticker";
+import { StickerWordLines, StoryTextLines } from "./StoryOverlayLines";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   myStoriesTestIds as ids,
@@ -197,19 +198,15 @@ export function StoryOverlays({
           <view
             key={`${overlay.ko}-${index}`}
             className="my-story-sticker"
-            style={stickerStyle(overlay)}
+            style={stickerStyle(overlay, overlay.scale)}
             flatten={false}
             accessibility-element={true}
             accessibility-label={copy.stickerLabel(overlay.ko, overlay.meaning ?? "")}
           >
-            <text className="my-story-sticker-ko" accessibility-elements-hidden={true}>
-              {overlay.ko}
-            </text>
-            {overlay.meaning === undefined ? null : (
-              <text className="my-story-sticker-meaning" accessibility-elements-hidden={true}>
-                {overlay.meaning}
-              </text>
-            )}
+            <StickerWordLines
+              words={{ ko: overlay.ko, roman: overlay.roman ?? "", meaning: overlay.meaning ?? "" }}
+              size={overlay.scale}
+            />
           </view>
         ),
       )}

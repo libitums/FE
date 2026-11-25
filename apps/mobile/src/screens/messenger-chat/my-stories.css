@@ -750,9 +750,11 @@
   line-height: var(--libitum-typography-body-s-line-height);
 }
 
-/* 스티커 — 가운데 기준으로 놓고(translate −50%) 회전 · 크기는 transform. */
+/* 스티커 — 가운데 기준으로 놓고(translate −50%) 회전 · 끄는 동안의 크기만 transform. 글자 · 사이 · 여백은 확정 크기를 곱한 인라인 값
+   (`stickerStyle` · `StickerWordLines`). 오른쪽에 놓여도 남은 폭에 눌려 줄이 바뀌지 않게 내용 폭 그대로(`stickerBoxPx`와 같은 크기). */
 .my-story-sticker {
   position: absolute;
+  width: max-content;
   display: flex;
   flex-direction: column;
   align-items: center;

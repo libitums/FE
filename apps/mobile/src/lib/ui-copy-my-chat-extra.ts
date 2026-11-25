@@ -40,6 +40,12 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     jump: "မက်ဆေ့ချ်အသစ်များသို့ သွားရန်",
     latest: "နောက်ဆုံးမက်ဆေ့ချ်သို့ ဆင်းရန်",
   },
+  replyToast: {
+    dismiss: "ပိတ်ရန်",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name} ထံမှ မက်ဆေ့ချ်အသစ်: ${preview}` + (more > 0 ? `။ နောက်ထပ် ${more} ခု` : ""),
+  },
   pushAsk: {
     title: (name) => `${name} စာပို့တဲ့အခါ အသိပေးချက် ရယူမလား?`,
     body: "တစ်ခါတလေ ကျွန်ုပ်က အရင် စာပို့တတ်ပါတယ် — တစ်ရက် တစ်ကြိမ်လောက်၊ ညနေပိုင်းမှာပါ။",

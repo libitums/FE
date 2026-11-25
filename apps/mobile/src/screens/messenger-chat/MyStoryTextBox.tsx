@@ -5,7 +5,8 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { typedText, type EditorText } from "./my-story-editor";
 import { textFit } from "./my-story-text";
 import { myStoriesTestIds as ids, type StoryTextColor } from "./my-stories.contract";
-import { MyStoryPlaced, StoryTextLines, type CanvasSize } from "./MyStorySticker";
+import { MyStoryPlaced, type CanvasSize } from "./MyStorySticker";
+import { StoryTextLines } from "./StoryOverlayLines";
 
 /** 바탕 위 글 상자 상태(시안 29 · 30번) — 쓰기(Done)면 사용자가 쓴 글 그대로 놓습니다(교정 없음, 검수는 올리기 요청 안에서 서버가). */
 export function useEditorText(changed: (apply: () => void) => void) {
@@ -54,7 +55,8 @@ export function MyStoryTextBox({
       selected={selected}
       className="my-story-text-box"
       onSelect={onSelect}
-      onChange={(next) => onChange({ ...next, ...textFit(next.ko, next, canvas) })}
+      onChange={onChange}
+      fit={(next, settled) => ({ ...next, ...textFit(next.ko, next, canvas, settled) })}
       onRemove={onRemove}
       onTap={onEdit}
       lane={true}

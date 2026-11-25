@@ -40,6 +40,12 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     jump: "ไปที่ข้อความใหม่",
     latest: "เลื่อนไปข้อความล่าสุด",
   },
+  replyToast: {
+    dismiss: "ปิด",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `ข้อความใหม่จาก ${name}: ${preview}` + (more > 0 ? ` และอีก ${more} รายการ` : ""),
+  },
   pushAsk: {
     title: (name) => `รับการแจ้งเตือนเมื่อ ${name} ส่งข้อความมาไหม?`,
     body: "บางครั้งเราจะทักไปก่อน — ประมาณวันละครั้ง ช่วงเย็น",
