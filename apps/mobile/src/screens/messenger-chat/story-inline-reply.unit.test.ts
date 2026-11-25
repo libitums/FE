@@ -9,7 +9,7 @@ import {
   type StoryReplyGateInput,
 } from "./story-inline-reply";
 
-// `unit` 계층(FS-U15 ~ U17): 보기에서 바로 보내는 답장(ADR-0178 D5 개정) — 앱 관문 · 배달 상태 · 보내기 단추.
+// `unit` 계층(FS-U18 ~ U20): 보기에서 바로 보내는 답장(ADR-0178 D5 개정) — 앱 관문 · 배달 상태 · 보내기 단추.
 
 const QUOTE = {
   storyId: "st-1",
@@ -30,7 +30,7 @@ const gate = (over: Partial<StoryReplyGateInput> = {}) =>
     ...over,
   });
 
-describe("FS-U15 storyReplyGateOf — 대화방 입력 줄과 같은 관문, 첫 답장 무료는 앞에서", () => {
+describe("FS-U18 storyReplyGateOf — 대화방 입력 줄과 같은 관문, 첫 답장 무료는 앞에서", () => {
   test("무료 안내면 체험 · 엽전을 보지 않는다", () => {
     expect(gate({ free: true, balance: 0 })).toEqual({ kind: "story-free" });
   });
@@ -82,7 +82,7 @@ const mine = (id: string) => myTextLine(id, 2, "맛있겠다!", QUOTE);
 const notice = (id: string, kind: "no-credits" | "server-error"): ChatMessage =>
   ({ id: `${id}~failed`, at: 3, kind: "notice", notice: kind }) as ChatMessage;
 
-describe("FS-U16 storyReplyStatusOf — 보낸 답장의 배달 상태", () => {
+describe("FS-U19 storyReplyStatusOf — 보낸 답장의 배달 상태", () => {
   test("방이 없거나 새 글이 서지 않았으면(출처가 거절) 실패", () => {
     expect(storyReplyStatusOf(null, before, "st-1")).toEqual({ kind: "failed", reason: "failed" });
     expect(storyReplyStatusOf(thread([old]), before, "st-1")).toEqual({
@@ -141,7 +141,7 @@ describe("FS-U16 storyReplyStatusOf — 보낸 답장의 배달 상태", () => {
   });
 });
 
-describe("FS-U17 canSendStoryReply — 빈 글 · 보내는 중이면 보내기 없음", () => {
+describe("FS-U20 canSendStoryReply — 빈 글 · 보내는 중이면 보내기 없음", () => {
   test("공백만이면 없음, 글이 있으면 있음, 보내는 중이면 없음", () => {
     expect(canSendStoryReply("", false)).toBe(false);
     expect(canSendStoryReply("   ", false)).toBe(false);

@@ -5,7 +5,7 @@ import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `unit` 계층(FS-U18 ~ U21): 인물 기준 묶음(ADR-0178 D4 개정) — 한 인물의 여러 스토리를 올린 시각 순으로 모으고, 보기는 인물 묶음 단위로
+// `unit` 계층(FS-U21 ~ U24): 인물 기준 묶음(ADR-0178 D4 개정) — 한 인물의 여러 스토리를 올린 시각 순으로 모으고, 보기는 인물 묶음 단위로
 // 진행 막대 · 가로 넘김을 셉니다.
 
 const NOW = STORY_NOW;
@@ -25,7 +25,7 @@ const b1 = story("b", { id: "b1", postedAt: NOW - 2 * HOUR_MS });
 const g1 = story("g", { id: "g1", postedAt: NOW - 4 * HOUR_MS });
 const g2 = story("g", { id: "g2", postedAt: NOW - 2 * HOUR_MS });
 
-describe("FS-U18 인물마다 스토리를 모은다", () => {
+describe("FS-U21 인물마다 스토리를 모은다", () => {
   test("올린 시각 순으로 모으고, 줄 칸은 가장 새 것 · 안 만난 친구도 같다", () => {
     const row = storyRowOf(input([a3, b1, a1, a2, g2, g1]));
     const a = row.friends.find((entry) => entry.story.characterId === "a");
@@ -48,7 +48,7 @@ describe("FS-U18 인물마다 스토리를 모은다", () => {
   });
 });
 
-describe("FS-U19 보기의 장 목록 — 인물 묶음을 이어 붙이고, 그 인물의 안 본 첫 장부터", () => {
+describe("FS-U22 보기의 장 목록 — 인물 묶음을 이어 붙이고, 그 인물의 안 본 첫 장부터", () => {
   const seen = new Set(["a1"]);
   const row = storyRowOf(input([a1, a2, a3, b1, g1, g2], [...seen]));
 
@@ -79,7 +79,7 @@ describe("FS-U19 보기의 장 목록 — 인물 묶음을 이어 붙이고, 그
   });
 });
 
-describe("FS-U20 viewerGroupOf — 지금 장의 인물 묶음", () => {
+describe("FS-U23 viewerGroupOf — 지금 장의 인물 묶음", () => {
   const items =
     viewerItemsOf(storyRowOf(input([a1, a2, a3, b1])), { from: "watch_all" }, url)?.items ?? [];
 
@@ -90,7 +90,7 @@ describe("FS-U20 viewerGroupOf — 지금 장의 인물 묶음", () => {
   });
 });
 
-describe("FS-U21 viewerJump — 가로 넘김은 인물 단위", () => {
+describe("FS-U24 viewerJump — 가로 넘김은 인물 단위", () => {
   const items =
     viewerItemsOf(storyRowOf(input([a1, a2, a3, b1])), { from: "watch_all" }, url)?.items ?? [];
 

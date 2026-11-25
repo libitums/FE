@@ -2,6 +2,7 @@
 // 첫 말이 그 파일과 같아야 합니다(단위 테스트 FA1이 맞춥니다). 순수 데이터. 이름 · 첫 말은 학습 내용이라 한글 그대로 둡니다.
 // 얼굴 그림은 이야기 인물처럼 콘텐츠 버킷의 `content/images/profiles/<id>-casual.webp`입니다 — 올라가기 전에는 빈 얼굴(아바타 자리표시)입니다.
 
+import { voiceSampleOf } from "./companion-voice-samples";
 import type { FriendProfile, LocalizedLine } from "./friend-catalog.contract";
 
 /** `companion-roster.ts`의 `CompanionCharacter`와 같은 모양입니다(그 파일이 이 표를 가져가 순환을 피해 여기 둡니다). */
@@ -60,6 +61,7 @@ const entryOf = (source: FriendSource): FriendRosterEntry => ({
     "zh-TW": joined(source.first["zh-TW"], "zh-TW"),
   },
   earlyAccess: null,
+  ...voiceSampleOf(source.id),
   romanceTier: source.romanceTier,
   gender: source.gender,
   firstLine: source.first.ko[0] ?? null,

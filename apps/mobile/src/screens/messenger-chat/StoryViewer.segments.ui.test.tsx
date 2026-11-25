@@ -10,7 +10,7 @@ import {
 import { STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
 
-// `ui` 계층(FS-UI23 ~ UI26): 인물 기준 진행 막대 · 탭 이동 · 가로 넘김(ADR-0178 D4 개정, 인스타 방식).
+// `ui` 계층(FS-UI28 ~ UI31): 인물 기준 진행 막대 · 탭 이동 · 가로 넘김(ADR-0178 D4 개정, 인스타 방식).
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -60,7 +60,7 @@ const swipe = (fromX: number, toX: number) => {
   fireOnRef(ids.taps, "touchend", { x: toX, y: 410 });
 };
 
-test("FS-UI23. 진행 막대는 지금 인물의 스토리 수만큼 — 다른 인물 스토리는 넣지 않는다", () => {
+test("FS-UI28. 진행 막대는 지금 인물의 스토리 수만큼 — 다른 인물 스토리는 넣지 않는다", () => {
   mount();
   expect(screen.queryByTestId(ids.segment(0))).not.toBeNull();
   expect(screen.queryByTestId(ids.segment(1))).not.toBeNull();
@@ -75,14 +75,14 @@ test("FS-UI23. 진행 막대는 지금 인물의 스토리 수만큼 — 다른 
   expect(screen.queryByTestId(ids.segment(1))).toBeNull();
 });
 
-test("FS-UI24. 왼쪽 탭 — 그 인물의 첫 장이면 이전 인물의 마지막 장", () => {
+test("FS-UI29. 왼쪽 탭 — 그 인물의 첫 장이면 이전 인물의 마지막 장", () => {
   mount({ start: 2 });
   tapId(ids.previous);
   expect(name()).toBe("윤경");
   expect(progress()).toBe("Story 2 of 2");
 });
 
-test("FS-UI25. 왼쪽으로 밀면 다음 인물, 오른쪽으로 밀면 이전 인물의 첫 장 — 마지막 인물에서 밀면 닫힘", () => {
+test("FS-UI30. 왼쪽으로 밀면 다음 인물, 오른쪽으로 밀면 이전 인물의 첫 장 — 마지막 인물에서 밀면 닫힘", () => {
   const props = mount();
   swipe(300, 80);
   expect(name()).toBe("해준");
@@ -97,7 +97,7 @@ test("FS-UI25. 왼쪽으로 밀면 다음 인물, 오른쪽으로 밀면 이전 
   expect(props.onClose).toHaveBeenCalledWith("completed");
 });
 
-test("FS-UI26. 인물이 바뀌면 옆으로 미끄러지고(방향), 모션 줄이기면 전환 없이 바뀐다 · 6초 넘김은 그대로", () => {
+test("FS-UI31. 인물이 바뀌면 옆으로 미끄러지고(방향), 모션 줄이기면 전환 없이 바뀐다 · 6초 넘김은 그대로", () => {
   mount();
   expect(screen.getByTestId(ids.content).getAttribute("data-slide")).toBe("none");
   swipe(300, 80);
@@ -111,7 +111,7 @@ test("FS-UI26. 인물이 바뀌면 옆으로 미끄러지고(방향), 모션 줄
   expect(screen.getByTestId(ids.content).getAttribute("data-slide")).toBe("none");
 });
 
-test("FS-UI26. 6초마다 다음 장 — 인물을 넘어 이어 간다", () => {
+test("FS-UI31. 6초마다 다음 장 — 인물을 넘어 이어 간다", () => {
   mount();
   advance(6_000);
   expect(progress()).toBe("Story 2 of 2");

@@ -23,6 +23,7 @@ import {
   setMessengerChatStoresForTests,
 } from "./messenger-chat-wiring";
 import { setAdultAckAskedStoreForTests, setEarlyAccessRemote } from "./suggested-friends-wiring";
+import { contentSyncEventName } from "./use-episode-content-refresh";
 import {
   appChatSource,
   openTab,
@@ -33,7 +34,7 @@ import {
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { nativeInput } from "../screens/messenger-chat/chat-ui.test-support";
 
-// `integration` 계층(FSI1 ~ FSI6, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
+// `integration` 계층(FSI1 ~ FSI10, ADR-0178): 실제 App · 메신저 탭 · 스토리 결선(`friend-stories-wiring`) · 가짜 서버 포트
 // (`companion_friend_stories` · `companion_friends`). 목록 → 보기 → 칩 · 답장 칸 → 대화방(인용 카드 · 인용 띠), 안 만난 친구 추가 → 답장,
 // 못 읽음이면 추천 줄 그대로.
 
@@ -161,7 +162,54 @@ test("FSI3. 안 만난 친구 스토리 → Add friend and reply: 방이 열리�
   expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to 송다은's story");
 });
 
-test("FSI8. 한 인물의 스토리 여럿 — 진행 막대는 그 인물만, 다 보면 닫히고 줄 칸은 가장 새 것", async () => {
+test("FSI7. 목록을 연 뒤 올라온 스토리 — 다른 탭에 갔다 채팅 탭으로 돌아오면 다시 읽어 줄에 선다(ADR-0178 「다시 읽기」)", async () => {
+  const { list } = serverRemote([]);
+  await openMessenger();
+  expect(present(ids.row)).toBe(false);
+  list.mockResolvedValue(live);
+  openTab("journey");
+  await settle();
+  openTab("messenger");
+  await settle();
+  expect(list).toHaveBeenCalledTimes(2);
+  expect(present(ids.friend("owner"))).toBe(true);
+});
+
+test("FSI8. 목록을 연 뒤 올라온 스토리 — 앱이 앞으로 오면(contentSyncOpportunity) 그 자리에서 다시 읽어 줄에 선다", async () => {
+  const { list } = serverRemote([]);
+  await openMessenger();
+  expect(present(ids.row)).toBe(false);
+  list.mockResolvedValue(live);
+  act(() => {
+    lynx.getJSModule("GlobalEventEmitter").emit(contentSyncEventName, []);
+  });
+  await settle();
+  expect(list).toHaveBeenCalledTimes(2);
+  expect(present(ids.friend("owner"))).toBe(true);
+});
+
+test("FSI9. 줄은 스토리 있는 인물을 최신 순(친구 · 안 만난 친구 함께, 구분 선 없음), Watch all의 다음 인물도 그 순서", async () => {
+  serverRemote([
+    ...live,
+    story("guesthouse", {
+      id: "st-guesthouse",
+      postedAt: NOW - HOUR / 2,
+      expiresAt: NOW + 23 * HOUR,
+    }),
+  ]);
+  await openMessenger();
+  const faces = Array.from(screen.getByTestId(ids.row).querySelectorAll("[data-testid]"))
+    .map((el) => el.getAttribute("data-testid") ?? "")
+    .filter((id) => /^friend-stories-(friend|unmet)-/.test(id));
+  expect(faces).toEqual([ids.friend("guesthouse"), ids.unmet("daeun"), ids.friend("owner")]);
+  expect(present("friend-stories-divider")).toBe(false);
+  tapId(ids.watchAll);
+  expect(screen.getByTestId(ids.name).textContent).toContain("익선 게스트하우스");
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.name).textContent).toContain("사장님");
+});
+
+test("FSI10. 한 인물의 스토리 여럿 — 진행 막대는 그 인물만, 다 보면 닫히고 줄 칸은 가장 새 것", async () => {
   serverRemote([
     story("owner", { id: "st-owner-1", postedAt: NOW - 3 * HOUR, expiresAt: NOW + 21 * HOUR }),
     story("owner", { id: "st-owner-2", postedAt: NOW - HOUR, expiresAt: NOW + 23 * HOUR }),

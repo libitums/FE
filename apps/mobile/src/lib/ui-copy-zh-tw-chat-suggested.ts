@@ -26,6 +26,18 @@ export const messengerChatSuggestedZhTw: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `限時 · ${days}天${hours}小時`,
   added: (name) => `已把 ${name} 加入聊天`,
   addFailed: (name) => `無法加入 ${name}，請再試一次。`,
+  voice: {
+    hear: "聽聲音",
+    pause: "暫停",
+    resume: "繼續",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `聽 ${name} 的聲音`
+        : phase === "playing"
+          ? `暫停 ${name} 的聲音`
+          : `繼續播放 ${name} 的聲音`,
+    unavailable: "無法播放聲音範例",
+  },
   adultAck: {
     title: (name) => `想和 ${name} 更親近嗎？`,
     body: (gender) =>

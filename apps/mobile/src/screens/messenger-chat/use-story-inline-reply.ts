@@ -56,7 +56,9 @@ export function useStoryInlineReply({
     rooms.find((room) => room.counterpart.id === characterId && room.access.kind === "open")
       ?.roomId ?? null;
 
-  const sent = (characterId: string, cost: number, storyFree: boolean) =>
+  // 보내기 · 관문 · 이벤트는 누름에서만 돕니다 — 메인 스레드 번들에서 빠집니다(ADR-0149).
+  const sent = (characterId: string, cost: number, storyFree: boolean) => {
+    "background only";
     emit({
       name: "chat_message_sent",
       surface: "chat",
@@ -66,8 +68,10 @@ export function useStoryInlineReply({
       ...(storyFree ? { storyFree: true as const } : {}),
       fromSuggestion: false,
     });
+  };
 
   const short = (shortBy: number): StoryReplyOutcome => {
+    "background only";
     emit({
       name: "chat_coins_short",
       surface: "chat",
@@ -80,6 +84,7 @@ export function useStoryInlineReply({
 
   /** 앱 관문 — 통과면 null, 막히면 그 끝. */
   const authorize = (item: StoryViewerItem, free: boolean, server: boolean) => {
+    "background only";
     const current = plan?.() ?? null;
     const price = CHAT_COIN_PRICES.message;
     const gate = storyReplyGateOf({
@@ -117,6 +122,7 @@ export function useStoryInlineReply({
     text: string,
     via: StoryReplyVia,
   ): Promise<StoryReplyOutcome> => {
+    "background only";
     const { story } = item;
     const trimmed = text.trim();
     const roomId = roomIdOf(story.characterId);
