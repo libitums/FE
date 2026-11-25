@@ -990,6 +990,8 @@
 /* 바탕 위 글 상자(30번) — 스티커와 같은 변환(가운데 기준 · scale이라 글자도 같은 비율). */
 .my-story-text-box {
   position: relative;
+  /* 크게 하면 바탕보다 넓어질 수 있음 — 줄이 눌려 넘치지 않고 가운데 기준으로 양쪽으로 넘치게. */
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
