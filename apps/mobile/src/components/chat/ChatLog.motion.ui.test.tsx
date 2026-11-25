@@ -42,7 +42,7 @@ function followTwice(motion: "standard" | "reduced"): void {
   );
   const { rerender } = render(tree(1));
   act(() => {
-    vi.advanceTimersByTime(16);
+    vi.advanceTimersByTime(1000); // 첫 끝 맞춤(점프) 뒤 첫 진입 창이 지난다
   });
   rerender(tree(2));
   act(() => {

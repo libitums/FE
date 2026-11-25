@@ -146,6 +146,9 @@ test("F2. 내려가는 도중(끝에서 멀다)에 내용이 또 늘어도 우�
   );
   fire("layoutchange", { width: 360, height: 400 });
   fire("contentsizechanged", { scrollHeight: 400, scrollTop: 0, deltaY: 0 }); // 첫 끝 맞춤(점프)
+  act(() => {
+    vi.advanceTimersByTime(1000); // 첫 진입(점프) 창이 지난다
+  });
   fire("contentsizechanged", { scrollHeight: 1000, scrollTop: 0, deltaY: 0 }); // 새 말 — 부드럽게
   fire("scroll", { scrollTop: 300, scrollHeight: 1000, deltaY: 80 });
   invoked = [];

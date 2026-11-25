@@ -4,8 +4,12 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import type { ChatLogProps } from "./chat.contract";
 import {
+  ENTER_SETTLE_MS,
   FOLLOW_STALE_MS,
+  JUMP_RETRIES,
+  JUMP_SETTLE_MS,
   NEAR_END_PX,
+  REALIGN_RECHECK_MS,
   endDistance,
   realignOnShrink,
   smoothToEnd,
@@ -64,12 +68,24 @@ export function ChatLog({
   const following = useRef(false);
   const followingSince = useRef(0);
   const queued = useRef(false);
-  // 첫 끝 맞춤 전(기록을 읽는 동안 포함) — 끝 맞춤은 점프입니다. 학습자가 스크롤하면 끝납니다.
-  const entering = useRef(true);
+  // 우리가 마지막으로 점프한 때 · 그 점프가 끝에 못 미쳐 다시 점프한 횟수 · 뷰포트가 준 뒤 한 번 더 맞출 타이머.
+  const jumpedAt = useRef(Number.NEGATIVE_INFINITY);
+  const retries = useRef(0);
+  const recheck = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 첫 진입 — 기록을 읽는 동안과 그 뒤(방이 선 뒤) 잠시는 끝 맞춤이 점프입니다. 학습자가 스크롤하면 끝납니다.
+  const userScrolled = useRef(false);
   const loadingNow = useRef(loading);
+  const enterUntil = useRef<number | null>(null);
   useEffect(() => {
     loadingNow.current = loading;
+    if (!loading) enterUntil.current = Date.now() + ENTER_SETTLE_MS;
   }, [loading]);
+  const entering = (): boolean => {
+    "background only";
+    if (userScrolled.current) return false;
+    if (loadingNow.current) return true;
+    return enterUntil.current === null || Date.now() < enterUntil.current;
+  };
   // 말풍선을 펼친 때(ms) — 그 직후의 내용 변화는 따라가지 않습니다. null = 펼침 없음.
   const heldAt = useRef<number | null>(null);
   // 움직임 줄이기에서는 부드러운 스크롤이 아니라 점프로 끝에 닿습니다(design 9절 · 접근성 M6).
@@ -87,7 +103,7 @@ export function ChatLog({
 
   // 끝으로 내립니다. instant면 늘 점프(진행 중인 스크롤을 덮음), 아니면 진행 중인 부드러운 스크롤이 있으면 묶어 둡니다.
   const goEnd = useCallback(
-    (instant = false) => {
+    (instant = false, retry = false) => {
       "background only";
       nearEnd.current = true;
       const now = Date.now();
@@ -96,15 +112,22 @@ export function ChatLog({
         return;
       }
       const distance = endDistance(position.current, viewportHeight.current);
-      const smooth = !instant && smoothToEnd({ motion, entering: entering.current, distance });
-      if (!loadingNow.current) entering.current = false;
+      const smooth = !instant && smoothToEnd({ motion, entering: entering(), distance });
       queued.current = false;
       following.current = smooth;
       followingSince.current = now;
+      if (!smooth) jumpedAt.current = now;
+      if (!retry) retries.current = 0;
       scrollToEnd(id, smooth);
     },
     [id, motion],
   );
+
+  // 우리 점프가 아직 자리를 잡는 중인지 — 그동안의 먼 위치는 우리 점프의 것입니다.
+  const settling = (): boolean => {
+    "background only";
+    return Date.now() - jumpedAt.current < JUMP_SETTLE_MS;
+  };
 
   // 위치로 끝 근처인지 정합니다. 뷰포트 · 위치 값이 없으면 null(모름).
   const nearEndAt = (detail: ScrollPosition): boolean | null => {
@@ -145,6 +168,13 @@ export function ChatLog({
     return () => clearTimeout(handle);
   }, [jumpKey, goEnd]);
 
+  useEffect(
+    () => () => {
+      if (recheck.current !== null) clearTimeout(recheck.current);
+    },
+    [],
+  );
+
   const holdSeen = useRef(holdKey);
   useEffect(() => {
     if (holdSeen.current === holdKey) return;
@@ -168,14 +198,21 @@ export function ChatLog({
         const previous = viewportHeight.current;
         viewportHeight.current = height;
         // 띠 · 판 · 여러 줄 입력 · 키보드로 로그가 줄면 마지막 말이 잘리지 않게 바로 끝에 다시 맞춥니다.
-        if (realignOnShrink(previous, height, nearEnd.current)) goEnd(true);
+        // 스크롤 범위가 늦게 바뀌면 첫 점프가 옛 끝에 막히므로 잠시 뒤 한 번 더 맞춥니다.
+        if (!realignOnShrink(previous, height, nearEnd.current)) return;
+        goEnd(true);
+        if (recheck.current !== null) clearTimeout(recheck.current);
+        recheck.current = setTimeout(() => {
+          recheck.current = null;
+          if (nearEnd.current) goEnd(true, true);
+        }, REALIGN_RECHECK_MS);
       }}
       bindscroll={(event: ScrollDetail) => {
         "background only";
         remember(event.detail);
         const deltaY = event.detail.deltaY ?? 0;
         const near = nearEndAt(event.detail);
-        if (deltaY < 0) entering.current = false; // 학습자가 스크롤했다 — 첫 진입 점프는 끝
+        if (deltaY < 0 && !settling()) userScrolled.current = true; // 학습자가 스크롤했다 — 첫 진입 점프는 끝
         if (near === null) {
           if (deltaY < 0) {
             nearEnd.current = false;
@@ -184,8 +221,8 @@ export function ChatLog({
           }
           return;
         }
-        // 우리가 내리는 중에 내려가는 방향이면 중간 위치입니다 — 끝에서 멀어도 「떠났다」로 읽지 않습니다.
-        if (following.current && !near && deltaY >= 0) return;
+        // 우리가 내리는 중 · 점프 직후에 내려가는 방향이면 중간 위치입니다 — 끝에서 멀어도 「떠났다」로 읽지 않습니다.
+        if ((following.current || settling()) && !near && deltaY >= 0) return;
         if (near || deltaY < 0) following.current = false;
         if (deltaY < 0) queued.current = false;
         nearEnd.current = near;
@@ -197,12 +234,13 @@ export function ChatLog({
       bindscrollend={(event: ScrollDetail) => {
         "background only";
         remember(event.detail);
-        const ours = following.current;
+        const ours = following.current || settling();
         following.current = false;
         const near = nearEndAt(event.detail);
-        // 우리 스크롤이 끝에 못 미쳐 멈췄거나 그동안 끝 맞춤이 또 왔으면 한 번 더 — 이번엔 점프(되풀이 없음).
-        if (ours && (queued.current || near === false)) {
-          goEnd(true);
+        // 우리 스크롤이 끝에 못 미쳐 멈췄거나 그동안 끝 맞춤이 또 왔으면 한 번 더 — 이번엔 점프(횟수 상한, 되풀이 없음).
+        if (ours && (queued.current || near === false) && retries.current < JUMP_RETRIES) {
+          retries.current += 1;
+          goEnd(true, true);
           return;
         }
         queued.current = false;

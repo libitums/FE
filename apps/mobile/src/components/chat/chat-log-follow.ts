@@ -6,6 +6,20 @@ export const NEAR_END_PX = 48;
 export const SHORT_SCROLL_PX = 160;
 /** 우리가 시작한 부드러운 스크롤이 이만큼(ms) 지나도 scrollend가 없으면 끝난 것으로 봅니다. */
 export const FOLLOW_STALE_MS = 700;
+/**
+ * 우리가 점프한 뒤 이만큼(ms) 동안의 scroll · scrollend는 우리 점프의 것으로 봅니다 — 끝에서 멀어 보여도 「떠났다」로 읽지 않고,
+ * 멈춘 자리가 끝이 아니면 다시 점프합니다(뷰포트가 잇달아 줄 때 점프가 옛 스크롤 범위에 막힘, 기기 Android).
+ */
+export const JUMP_SETTLE_MS = 300;
+/** 뷰포트가 준 뒤 이만큼(ms) 지나 끝 근처면 한 번 더 점프합니다 — 스크롤 범위가 늦게 바뀌어 첫 점프가 막혀도 닿게. */
+export const REALIGN_RECHECK_MS = 120;
+/**
+ * 방에 들어온 뒤(기록을 읽는 방이면 다 읽은 뒤) 이만큼(ms)은 「첫 진입」입니다 — 그동안의 끝 맞춤은 점프입니다. 기록 도착 직후의 끝
+ * 맞춤이 내용 배치보다 먼저 돌아도 곧 오는 기록 배치를 훑어 내리지 않게(기기 iOS).
+ */
+export const ENTER_SETTLE_MS = 800;
+/** 우리 점프가 끝에 못 미쳐 멈출 때 다시 점프하는 횟수의 상한(되풀이 없음). */
+export const JUMP_RETRIES = 2;
 
 export type ScrollPosition = { readonly scrollTop?: number; readonly scrollHeight?: number };
 

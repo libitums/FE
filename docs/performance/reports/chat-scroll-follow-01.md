@@ -9,7 +9,7 @@
 - 기기: iOS 시뮬레이터 · Android AVD에서 눈으로 확인(docs/e2e/messenger-chat-ui.md MC-E14) — 계측 없음
 - OS: 해당 없음(계측 없음)
 - Lynx SDK: 4.0.1
-- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 5,763,486 bytes, 천장 5,850,000 안
+- 빌드: 로컬 `pnpm build`(.env.local 없음) — main.lynx.bundle 5,763,906 bytes(기기 보정 포함), 천장 5,850,000 안
 - 실행 회차: 01
 
 ## 시나리오
