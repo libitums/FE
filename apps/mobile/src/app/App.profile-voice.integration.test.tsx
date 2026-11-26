@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import * as audio from "../lib/audio";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
@@ -127,9 +127,7 @@ test("PV-I3. 스토리 보기 아바타로 연 이미 친구 시트 — 목록 �
   });
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  await act(async () => {
-    for (let i = 0; i < 8; i += 1) await Promise.resolve();
-  });
+  await screen.findByTestId(storyIds.friend("owner"));
   tapId(storyIds.friend("owner"));
   tapId(storyIds.profile);
   tapId(ids.sheetVoice);

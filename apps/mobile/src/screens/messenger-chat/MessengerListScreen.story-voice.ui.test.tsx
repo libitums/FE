@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import * as audio from "../../lib/audio";
 import { clearBackHandlers, fixtureRoom, makeSource, seedOf, tapId } from "./chat-ui.test-support";
@@ -85,9 +85,7 @@ async function mountViewerSheet() {
       />
     </ChatEventsContext.Provider>,
   );
-  await act(async () => {
-    await Promise.resolve();
-  });
+  await screen.findByTestId(ids.friend("duksu"));
   tapId(ids.friend("duksu"));
   tapId(ids.profile);
 }
