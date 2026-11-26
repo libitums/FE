@@ -19,8 +19,8 @@ export type SuggestedFriendsUi = {
   readonly rowCount: number;
   /** 추천 대상 전체(줄 최대 수로 자르지 않음) — 스토리 줄(ADR-0178 D3)이 안 만난 친구 · 그 밖의 추천을 고릅니다. 포트가 없으면 빈 목록. */
   readonly all: readonly SuggestedFriend[];
-  /** 그 추천 친구의 프로필 시트를 엽니다(스토리 줄의 추천 아바타 · 잠긴 안 만난 친구). */
-  readonly openFriend: (friend: SuggestedFriend, from: SuggestedFrom) => void;
+  /** 그 추천 친구의 프로필 시트를 엽니다(스토리 줄의 추천 아바타 · 잠긴 안 만난 친구). 시트에서 추가되면 `onAdded`(스토리 보기). */
+  readonly openFriend: (friend: SuggestedFriend, from: SuggestedFrom, onAdded?: () => void) => void;
   /**
    * 안 만난 친구 스토리의 「Add friend and reply」(ADR-0178 D4) — 추가 가능이면 시트 없이 추가 길(성인 확인 포함)을 타고 성공하면 `onAdded`,
    * 잠김이면 프로필 시트를 엽니다.

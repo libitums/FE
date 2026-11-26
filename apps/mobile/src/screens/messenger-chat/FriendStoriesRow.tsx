@@ -58,7 +58,8 @@ export function FriendStoriesRow({
       <StoryFace
         key={entry.story.id}
         testId={ids.unmet(counterpart.id)}
-        ring={entry.seen ? "seen" : "unmet"}
+        ring={entry.seen ? "seen" : "unseen"}
+        unmet
         name={entry.friend.character.name}
         avatarUrl={counterpart.avatarUrl}
         caption={copy.newBadge}

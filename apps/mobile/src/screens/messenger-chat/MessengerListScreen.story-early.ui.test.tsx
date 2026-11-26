@@ -13,8 +13,9 @@ import { suggestedFriendsTestIds as suggestedIds } from "./suggested-friends.con
 import { catalogOf, friend } from "./suggested-friends.test-support";
 
 // `ui` 계층(SE-UI1 · SE-UI2, 2026-11-25 보고): 안 만난 친구 스토리의 위 아바타(프로필) → 시트 「Chat now · 100」 → 열림이면
-// 「Add friend and reply」와 같은 끝(ADR-0178 D4 · ADR-0162 D5) — 시트 · 보기가 닫히고 그 방이 인용 띠와 함께 열린다.
-// 보기가 연 때의 추천(locked)을 들고 있어도, 이미 친구가 된 인물이면 다시 시트(Chat now · 100)를 열지 않고 방으로 간다.
+// 「Add friend and reply」와 같은 끝(ADR-0178 D4 · ADR-0162 D5) — ~~시트 · 보기가 닫히고 그 방이 인용 띠와 함께 열린다~~ → 시트만 닫히고 보기에 남아
+// 소개 카드 자리가 답장 칸이 된다(D5 개정 ⟨보기에서 추가⟩, 2026-11-26). 보기가 연 때의 추천(locked)을 들고 있어도, 이미 친구가 된 인물이면
+// 다시 시트(Chat now · 100)를 열지 않고 같은 끝(답장 칸)이다.
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -81,7 +82,7 @@ async function mount(result: () => Promise<EarlyAccessResult>) {
   return { source, early, onOpenRoom, events };
 }
 
-test("SE-UI1. 보기 위 아바타(잠긴 안 만난 친구) → Chat now · 100 → 열림: 시트 · 보기가 닫히고 그 방이 인용 띠(넘김)와 함께 열린다", async () => {
+test("SE-UI1. 보기 위 아바타(잠긴 안 만난 친구) → Chat now · 100 → 열림: 시트만 닫히고 보기에 남아 답장 칸, 방으로 가지 않음", async () => {
   const { early, onOpenRoom, events } = await mount(async () => ({ kind: "unlocked" }));
   tapId(ids.unmet("mina"));
   tapId(ids.profile);
@@ -90,18 +91,21 @@ test("SE-UI1. 보기 위 아바타(잠긴 안 만난 친구) → Chat now · 100
   await flush();
   expect(early).toHaveBeenCalledTimes(1);
   expect(screen.queryByTestId(suggestedIds.sheet)).toBeNull();
-  expect(screen.queryByTestId(ids.viewer)).toBeNull();
-  expect(onOpenRoom).toHaveBeenCalledWith("mina");
-  expect(takeStoryReplyHandoff("mina")).toMatchObject({ roomId: "mina", text: null });
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.queryByTestId(ids.meetCard)).toBeNull();
+  expect(screen.getByTestId(ids.replyInput)).not.toBeNull();
+  expect(onOpenRoom).not.toHaveBeenCalled();
+  expect(takeStoryReplyHandoff("mina")).toBeNull();
   expect(events("suggested_friend_added")).toEqual([
     expect.objectContaining({ characterId: "mina", from: "story_viewer", via: "early" }),
   ]);
-  // 목록의 스토리 줄에서 미나는 이제 친구 — 안 만난 칸이 아니다.
+  // 보기를 닫으면 목록의 스토리 줄에서 미나는 이제 친구 — 안 만난 칸이 아니다.
+  tapId(ids.close);
   expect(screen.queryByTestId(ids.unmet("mina"))).toBeNull();
   expect(screen.getByTestId(ids.friend("mina"))).not.toBeNull();
 });
 
-test("SE-UI2. 보기를 연 뒤 다른 길로 이미 친구가 됐으면 아바타는 시트 없이 방으로 — 값을 다시 묻지 않는다", async () => {
+test("SE-UI2. 보기를 연 뒤 다른 길로 이미 친구가 됐으면 아바타는 시트 없이 답장 칸으로 — 값을 다시 묻지 않는다", async () => {
   const { source, early, onOpenRoom } = await mount(async () => ({ kind: "unlocked" }));
   tapId(ids.unmet("mina"));
   await act(async () => {
@@ -112,7 +116,8 @@ test("SE-UI2. 보기를 연 뒤 다른 길로 이미 친구가 됐으면 아바�
   await flush();
   expect(screen.queryByTestId(suggestedIds.sheet)).toBeNull();
   expect(early).not.toHaveBeenCalled();
-  expect(screen.queryByTestId(ids.viewer)).toBeNull();
-  expect(onOpenRoom).toHaveBeenCalledWith("mina");
-  expect(takeStoryReplyHandoff("mina")).toMatchObject({ roomId: "mina" });
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.getByTestId(ids.replyInput)).not.toBeNull();
+  expect(onOpenRoom).not.toHaveBeenCalled();
+  expect(takeStoryReplyHandoff("mina")).toBeNull();
 });

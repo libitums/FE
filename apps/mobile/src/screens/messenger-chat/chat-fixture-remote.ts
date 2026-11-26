@@ -243,7 +243,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       changed(room);
       return;
     }
-    startTurn(room, localId, trimmed);
+    greeting.after(room, () => live(roomId) === room && startTurn(room, localId, trimmed));
   };
 
   /** 열린 방을 조용히 다시 읽습니다 — 답을 기다리는 중이면 읽지 않습니다. */

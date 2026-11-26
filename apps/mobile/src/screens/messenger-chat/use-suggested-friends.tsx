@@ -239,7 +239,7 @@ export function useSuggestedFriends({
   return {
     rowCount: row.length,
     all,
-    openFriend: (friend, from) => openSheet(modelOfFriend(friend), from),
+    openFriend: (friend, from, after) => openSheet(modelOfFriend(friend), from, after),
     meet,
     openDirectory: () => {
       setFilter(ALL);

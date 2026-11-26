@@ -178,7 +178,10 @@ test("MH3. 올리기가 멈추는 곳 — 문의 결과는 그대로 · 같은 �
   expect((await blocked.call(post({ ko: "[block] 나쁜 말" }))).body).toEqual({
     result: "text_blocked",
   });
-  expect(blocked.storage).toEqual([]);
+  // 사진은 글 검수와 겹쳐 내려받지만(ADR-0191 D11 개정 ⟨겹쳐 읽기⟩) 막힌 글이면 아무것도 쓰지 않는다.
+  expect(blocked.storage.filter((call) => !call.startsWith("GET "))).toEqual([]);
+  expect(blocked.args("companion_save_my_photo_story")).toBeUndefined();
+  expect(blocked.args("companion_reject_my_photo")).toBeUndefined();
   const missing = setup({ photo: null });
   expect((await missing.call(post())).body).toEqual({ result: "no_photo" });
   expect(missing.args("companion_save_my_photo_story")).toBeUndefined();
