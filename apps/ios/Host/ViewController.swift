@@ -110,6 +110,7 @@ final class ViewController: UIViewController {
     observeContentSizeCategory()
     observeOpenedPushNotification()
     observeReceivedPushNotification()
+    observeAppBackground()
     observeOpenedDeeplink()
     observeReduceMotion()
     startContentSyncSignal()
@@ -298,6 +299,20 @@ final class ViewController: UIViewController {
       name: PushNotificationHub.receivedNotification,
       object: nil
     )
+  }
+
+  /// 앱이 뒤로 가면 JS에 알린다 — 내 스토리 보기의 다시 읽기가 멈춘다(ADR-0194 개정 ⟨살아 있는 보기⟩). 앞으로 오는 것은 `contentSyncOpportunity`.
+  private func observeAppBackground() {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(appDidEnterBackground),
+      name: UIScene.didEnterBackgroundNotification,
+      object: nil
+    )
+  }
+
+  @objc private func appDidEnterBackground() {
+    lynxView?.sendGlobalEvent("appDidEnterBackground", withParams: [])
   }
 
   @objc private func pushNotificationReceived(_ notification: Notification) {

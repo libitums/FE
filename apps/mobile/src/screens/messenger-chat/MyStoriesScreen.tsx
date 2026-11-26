@@ -23,6 +23,7 @@ import {
 import { ArchiveTile } from "./MyStoryArchiveTile";
 import { MyStoryDeleteDialog } from "./MyStoryDialogs";
 import { MyStoryFullOpen } from "./MyStoryFullOpen";
+import { useMyStoryLive } from "./use-my-story-live";
 import { useChatSnapshot } from "./use-chat-source";
 
 import "./chat-settings.css";
@@ -74,6 +75,12 @@ export function MyStoriesScreen({
       live = false;
     };
   }, []);
+  useMyStoryLive({
+    port,
+    open: opened !== null,
+    rooms,
+    setState,
+  });
   useScreenBack(() => {
     "background only";
     if (confirm !== null) setConfirm(null);
