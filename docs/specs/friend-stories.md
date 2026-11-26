@@ -114,7 +114,6 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI42 · UI43 큐브 손가락 자리(`StoryViewer.cube.ui.test.tsx`): 카드 · 단어 알약 · 칩 위에서 시작한 가로 끌기도 돌아 넘김, 알약 짧은 탭은 저장, 답장을 쓰는 중엔 돌지 않음.
 - FS-UI44 ~ UI46 탭 자리(`StoryViewer.taps.ui.test.tsx`, D4 개정 ⟨탭 자리⟩): 아래 묶음 · 머리 줄 빈 자리도 넘김, 경계는 가운데, 누를 수 있는 요소는 제 동작만.
 - FS-UI47 키보드 탭(`StoryViewer.taps.ui.test.tsx`, D5 개정 ⟨키보드 탭⟩): blur가 탭보다 먼저 와도 키보드만 내리고 같은 장 · 그다음 탭은 넘김(왼쪽 · 오른쪽), 탭이 먼저 와도 같고
-- FS-UI49 보기에서 추가(`MessengerListScreen.story-add.ui.test.tsx`, D5 개정 ⟨보기에서 추가⟩): Add friend and reply → 방을 열지 않고 보기에 남아 답장 칸(무료 안내 · 칩), NEW FRIEND 없음, 진행 이어 감, 닫으면 목록에 그 방 · 보낸 답장이 마지막 말. SS-I13(`chat-fixture-remote.unlock-send.integration.test.ts`): 해금 선톡을 청하는 중에 보낸 글은 그 답 뒤에 턴.
   뒤따른 blur는 다음 탭을 삼키지 않음, 쓰던 글 남음, 창(500 ms)이 지난 탭은 넘김.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
 - FS-UI14 목록이 서 있는 동안 5분마다 다시 읽어 새 스토리가 줄에 섬, 목록을 내리면 타이머 멈춤(가짜 타이머).
@@ -122,6 +121,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI16 보기가 열려 있으면 다시 읽은 목록을 보류(줄 그대로), 닫은 뒤 반영.
 - FS-UI17 다시 읽기 실패(null · 던짐)면 있던 줄을 지킴.
 - FS-UI18 `useMessengerRefresh`: `contentSyncOpportunity`에 스토리 목록에도 다시 읽기를 알림.
+- FS-UI49 보기에서 추가(`MessengerListScreen.story-add.ui.test.tsx`, D5 개정 ⟨보기에서 추가⟩): Add friend and reply → 방을 열지 않고 보기에 남아 답장 칸(무료 안내 · 칩), NEW FRIEND 없음, 진행 이어 감, 닫으면 목록에 그 방 · 보낸 답장이 마지막 말.
 
 ### 2.3 integration (앱)
 
@@ -129,7 +129,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI10 (D4 개정) 한 인물의 스토리 둘 → 진행 막대 「Story 1 of 2」 → 다 보면 닫힘 · 둘 다 본 것.
 - FSI11 보기 위 아바타 → 프로필 시트(보기 covered) → Start chatting → 보기 닫힘 · 그 방. 안 만난 친구 아바타 → 추천 시트, 보기는 남음.
 - FSI2 (D5 개정) 답장 칸에 쓰고 보내기 → 보기에 남은 채 인용과 함께 보냄 · 칸이 빔.
-- FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
+- FSI3 안 만난 친구 스토리 → Add friend and reply → ~~방이 열리고(추가 길) 인용 띠~~ 보기에 남아 답장 칸 → 답장 → 닫으면 목록에 그 방 · 마지막 말(D5 개정 ⟨보기에서 추가⟩). SEI1 먼저 만나기 열림도 같은 끝.
+- SS-I13(`chat-fixture-remote.unlock-send.integration.test.ts`): 해금 선톡을 청하는 중에 보낸 글은 그 답 뒤에 턴.
 - FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
   · Android `PushTargetJsonTest`(불리언 `story` 옮김).
