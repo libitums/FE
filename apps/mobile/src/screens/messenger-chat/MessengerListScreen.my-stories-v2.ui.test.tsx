@@ -13,7 +13,7 @@ import { ChatEventsContext } from "./chat-events";
 import type { ChatFixtureSeed } from "./chat-fixture.contract";
 import { createCoinWallet } from "./coin-wallet";
 import type { SuggestedFriendsPort } from "./friend-catalog.contract";
-import type { FriendStoriesPort } from "./friend-stories.contract";
+import { friendStoriesTestIds as fsIds, type FriendStoriesPort } from "./friend-stories.contract";
 import { myStoriesTestIds as ids, type MyStoryWindow } from "./my-stories.contract";
 import {
   fakeMyStories,
@@ -121,7 +121,9 @@ test("MS-UI22. 반응 목록(시안 16) — 「N friends replied」 · Seen by �
   });
   const { onOpenRoom, events } = await mount(fakeMyStories({ stories: [story] }));
   tapId(ids.mine);
-  const list = screen.getByTestId(ids.reactions);
+  // 목록의 내 스토리는 전체 화면 보기로 엽니다(ADR-0194 개정 ⟨보기⟩) — 반응 목록은 「Seen by」 → 답 목록 시트.
+  tapId(ids.barSeen);
+  const list = screen.getByTestId(ids.repliesSheet);
   expect(list.textContent).toContain("2 friends replied");
   expect(list.textContent).not.toContain("Answer");
   // 방이 없는 인물(nobody)은 얼굴을 그리지 않지만 수는 서버 값 그대로
@@ -135,7 +137,7 @@ test("MS-UI22. 반응 목록(시안 16) — 「N friends replied」 · Seen by �
   );
   tapId(ids.openChat("r2"));
   expect(onOpenRoom).toHaveBeenCalledWith("haejun");
-  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(screen.queryByTestId(fsIds.viewer)).toBeNull();
   expect(events().filter((e) => e.name === "my_story_chat_opened")).toEqual([
     expect.objectContaining({ characterId: "haejun", message: false }),
   ]);
@@ -149,7 +151,12 @@ test("MS-UI23. 막 올린 뒤(시안 17) — No replies yet · 한 시간 안내
   tapId(ids.choice("w1"));
   tapId(ids.share);
   await flush();
-  expect(screen.getByTestId(ids.reactions).textContent).toContain("No replies yet");
+  expect(screen.getByTestId(ids.barWaiting).textContent).toBe(
+    "Friends usually reply within an hour.",
+  );
+  // 목록의 내 스토리는 전체 화면 보기로 엽니다(ADR-0194 개정 ⟨보기⟩) — 반응 목록은 「Seen by」 → 답 목록 시트.
+  tapId(ids.barSeen);
+  expect(screen.getByTestId(ids.repliesSheet).textContent).toContain("No replies yet");
   expect(screen.getByTestId(ids.waiting).textContent).toContain(
     "Friends usually reply within an hour.",
   );
@@ -163,10 +170,12 @@ test("MS-UI23. 막 올린 뒤(시안 17) — No replies yet · 한 시간 안내
 test("MS-UI24. 친구 0명(시안 17 아래) — 「Add a friend to get replies」 · Find friends → 친구 찾기", async () => {
   await mount(fakeMyStories({ stories: [myStory("ms-1")] }), noChats());
   tapId(ids.mine);
+  // 목록의 내 스토리는 전체 화면 보기로 엽니다(ADR-0194 개정 ⟨보기⟩) — 반응 목록은 「Seen by」 → 답 목록 시트.
+  tapId(ids.barSeen);
   expect(screen.getByTestId(ids.noFriends).textContent).toContain("Add a friend to get replies");
   tapId(ids.findFriends);
   await flush();
-  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(screen.queryByTestId(fsIds.viewer)).toBeNull();
   expect(screen.getByTestId(friendDirectoryTestIds.screen)).not.toBeNull();
 });
 

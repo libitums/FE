@@ -4,6 +4,7 @@
 - ⟨2026-11-25⟩ 번호를 0179에서 0194로 바꿨다(0179는 스냅샷 v2m). 서버 · 계약은 서버 PR(`hyesungKomet/stories-server`)로 먼저 들어가고, 앱 화면은 PR #565에 남아 메신저 담당이 이어 간다.
 - **일부 대체됨** ⟨2026-11-24⟩: D4(반응을 스토리에만 둠 · 인물 최대 셋 · 8분 ~ 7시간 · 단어 필수 · 알림 없음 · Answer 인용 띠) · D5의 상한 값(사람 3 · 전체 500)과 하루 올리기 규칙 · D6의 「지우면 반응도 지움」은 [ADR-0191](0191-my-stories-reactions-as-chat.md)이 대체한다. D1 ~ D3 · D7과 D5의 장부 · 스위치 · 검사 · 번역 모델은 그대로다.
 - 날짜: 2026-11-23
+- ⟨2026-11-26 개정 ⟨보기⟩⟩ 내 스토리 보기를 친구 스토리와 같은 전체 화면 보기로 옮겼다 — 답장 칸 대신 아래 바 · 새 답 줄 · 답 목록 시트, 옛 흰 페이지 보기는 지움(아래 「개정 ⟨보기⟩」).
 - 관련: [ADR-0178](0178-friend-stories.md)(친구 스토리 — 이 ADR은 그 위에 쌓는다) · [ADR-0169](0169-more-menu-letters-wordbook.md)(단어장) ·
   [ADR-0091](0091-vietnamese-localization.md)(UI 언어 카탈로그) · [ADR-0155](0155-chat-pricing-follows-server.md)(메시지 요금) ·
   [ADR-0029](0029-product-analytics-posthog.md)(이벤트 이름) · [ADR-0149](0149-bundle-size-ceiling-and-report.md)(번들 천장)
@@ -274,3 +275,38 @@
 - 퀴즈 표시는 덕수쌤으로 거르지 않는다 — 서버가 퀴즈 각도를 덕수쌤에게만 주므로 무료 신호(`quiz.freeAnswer`)가 있는 메시지면 그린다.
 - 위기 신호(`crisis`)는 `my_story_post_failed { reason: "crisis" }`로 남긴다(이벤트 이유 값 하나 추가).
 - 글 스토리 보기의 글 상자는 `roman`(앱이 만든 것)을 작은 줄로, `meaning`은 서버가 채웠을 때만 그린다.
+
+## 개정 ⟨보기⟩ — 내 스토리를 친구 스토리와 같은 전체 화면 보기로 ⟨2026-11-26⟩
+
+- **사용자 결정(2026-11-26)**: 「내 스토리도 남의 스토리처럼 뜨는데 하단 답장 인풋 대신 다른 거 있으면 좋겠고, input 상단에 답장 온 거 있으면 간단하게 뜨면
+  좋을 것 같은데」 → 시안 34 ~ 36번(Z1MyStory · Z2MyStorySheet · Z3MyStoryWaiting)을 보고 「하단에 두고 계속 보이게 두자, + 있으면 좋을 것 같아」.
+  같은 날 이어서: 설정 › My stories도 같은 보기로 옮기고 옛 흰 페이지 보기를 지움. 번들 천장은 6,170,000 B 그대로 둔다(사용자 결정 2026-11-26 —
+  CI 실측 6,163.5 kB로 천장 안이라 올릴 필요 없음, [ADR-0149](0149-bundle-size-ceiling-and-report.md)).
+- **보기**: 목록의 「Your story」 · 막 올린 것, 설정 › My stories의 칸 모두 `StoryViewer`(친구 스토리와 같은 화면, [ADR-0178](0178-friend-stories.md) D4)로
+  연다. 진행 막대 · 좌우 탭 · 6초 넘김 · 가로 넘김 · 멈춤 단추는 친구 스토리와 같다. 단어 · 카드는 한 줄 카드, 글 · 사진은 화면 가득(얹은 것은 편집 때
+  비율 자리 그대로 — 편집도 화면 가득). 머리 줄 이름은 「Your story」(낭독도 그대로)이고 아바타는 프로필 단추가 아니다. ⋯ 메뉴(Delete story)는 남긴다.
+- **아래 바(답장 칸 대신)**: 왼쪽 본 친구 얼굴 최대 3(방이 있는 인물만) + 「Seen by N」(수는 서버 그대로, 0이면 「No views yet」), 그 아래 「Swipe up for
+  replies」. 오른쪽 새 스토리 「+」(지금 만들기 흐름 — 안내 · 시작 시트 · 창 시트) · 지우기(지금과 같은 확인 상자).
+- **새 답 줄**: 바 바로 위 최근 답 최대 2줄(얼굴 · 이름 · 한국어 한 줄, 최신이 아래), **계속 보인다**(흐려지지 않음). 누르면 그 친구 방(「Open chat」과 같은 길,
+  `my_story_chat_opened`). 답이 없으면 그 자리에 「Friends usually reply within an hour.」, 친구가 0명이면 「Add a friend to get replies」(친구 찾기가
+  있으면 누르는 단추), 지난 스토리(보관함)면 「Friends saw this for 24 hours. Only you see it now.」.
+- **답 목록 시트**: 위로 밀거나 「Seen by」를 누르면 연다 — 설정 보기에 있던 목록(Seen by · 반응 줄 · Open chat · 「Replies are saved in each friend's chat.」)을
+  `MyStoryReplyList`로 떼어 그대로 쓴다. 시트 · ⋯ 메뉴가 열린 동안 진행이 멈춘다. 시스템 뒤로는 시트만 닫는다.
+- **설정 › My stories**: 칸을 누르면 그 스토리 한 장만 같은 보기로 연다(지난 것도). 「+」은 없고 지우기 · 답 줄 · 시트 · Seen by는 그대로다.
+- **이벤트**: 새 이벤트 없음 — `my_story_viewed`(열 때 한 번) · `my_story_chat_opened` · `my_story_deleted`(`from` viewer · archive) ·
+  `my_story_create_opened`를 그대로 쓴다(AN1 · AB3 개수 그대로).
+- **지운 것**: `MyStoryViewer` · `MyStoryLayer` · `MyStoryOpen`(지우기 확인은 `use-my-story-delete.tsx`로), 그것만 쓰던 문구(`viewer.kindLabel` · `cardTag` ·
+  `textLabel` · 사진 `kindLabel`, 여덟 언어) · CSS · test-id(`viewer` · `viewerClose` · `card` · `reactions`).
+- **새 문구**(여덟 언어 실제 번역): `viewer.swipeUp` · `noViews` · `showReplies`(「Seen by」 단추 낭독 뒷말).
+- **접근성**: 바의 단추 · 답 줄 · Seen by 자리는 모두 낭독 이름이 있는 단추이고 44 이상(바 단추 48). 답 줄 낭독 = 「<이름>: <한국어>. <뜻>, Open chat with <이름>」.
+  모션 줄이기면 친구 스토리와 같이 저절로 넘어가지 않는다. 바 · 답 줄 · 단추만 누름 영역이고 탭 넘김 자리(`.story-viewer-taps`)는 건드리지 않았다.
+
+### 스스로 정한 기본값(사용자가 바꿀 수 있음)
+
+- 목록에서 열면 살아 있는 내 스토리를 오래된 것부터 장으로 놓고 연 스토리(「Your story」 = 가장 최근)에서 시작한다. 장 목록은 열 때 한 번 정하고, 보는 중에
+  지우면 보기가 닫힌다.
+- 설정에서 열면 그 스토리 한 장만(살아 있어도 다른 내 스토리를 잇지 않는다).
+- 위로 밀기는 아래 바 · 답 줄 묶음에서만 받는다(사진 전체가 아님) — 위로 48 이상이고 세로가 가로보다 길 때.
+- 「Swipe up for replies」는 본 사람이나 답이 있을 때만. 「Seen by」 단추는 본 사람이 없어도 시트를 연다.
+- 「+」의 낭독 이름은 기존 「New story」. 내 스토리 장의 아바타는 사진 없이 이름 첫 글자, 내부 인물 id는 `"me"`.
+- 설정 보기의 한 줄 카드는 로마자를 늘 보인다(설정 화면은 로마자 설정 포트를 받지 않음 — 옛 보기와 같음).

@@ -18,7 +18,6 @@ export const storyPhotoEn: MyStoryPhotoCopy = {
   reviewFailed: "Couldn't send that. Try again.",
   checkingTitle: "Checking your photo",
   checkingBody: "Only you can see it until the check is done.",
-  kindLabel: "Photo story",
 };
 
 export const storyPhotoEs: MyStoryPhotoCopy = {
@@ -37,7 +36,6 @@ export const storyPhotoEs: MyStoryPhotoCopy = {
   reviewFailed: "No se pudo enviar. Inténtalo de nuevo.",
   checkingTitle: "Revisando tu foto",
   checkingBody: "Solo tú puedes verla hasta que termine la revisión.",
-  kindLabel: "Historia con foto",
 };
 
 export const storyPhotoId: MyStoryPhotoCopy = {
@@ -56,7 +54,6 @@ export const storyPhotoId: MyStoryPhotoCopy = {
   reviewFailed: "Gagal mengirim. Coba lagi.",
   checkingTitle: "Memeriksa fotomu",
   checkingBody: "Hanya kamu yang bisa melihatnya sampai pemeriksaan selesai.",
-  kindLabel: "Cerita foto",
 };
 
 export const storyPhotoJa: MyStoryPhotoCopy = {
@@ -75,5 +72,4 @@ export const storyPhotoJa: MyStoryPhotoCopy = {
   reviewFailed: "送信できませんでした。もう一度お試しください。",
   checkingTitle: "写真を確認中",
   checkingBody: "確認が終わるまで、あなただけに表示されます。",
-  kindLabel: "写真ストーリー",
 };

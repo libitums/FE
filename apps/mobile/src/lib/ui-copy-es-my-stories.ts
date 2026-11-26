@@ -67,9 +67,6 @@ export const myStoriesEs: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Tu historia",
-    kindLabel: (kind) => (kind === "word" ? "Tarjeta de palabra" : "Tarjeta de lección"),
-    textLabel: "Historia de texto",
-    cardTag: (kind) => (kind === "word" ? "MI PALABRA DEL DÍA" : "TARJETA DE LECCIÓN"),
     close: "Cerrar",
     options: "Opciones de la historia",
     delete: "Borrar historia",
@@ -91,6 +88,9 @@ export const myStoriesEs: MyStoriesCopy = {
     findFriends: "Buscar amigos",
     hidden: "Tus amigos la vieron durante 24 horas. Ahora solo la ves tú.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Desliza hacia arriba para ver las respuestas",
+    noViews: "Aún nadie lo ha visto",
+    showReplies: "Ver respuestas",
   },
   window: {
     title: (slot) =>

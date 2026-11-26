@@ -18,7 +18,6 @@ export const storyPhotoMy: MyStoryPhotoCopy = {
   reviewFailed: "မပို့နိုင်ပါ။ ထပ်ကြိုးစားပါ။",
   checkingTitle: "သင့်ဓာတ်ပုံကို စစ်ဆေးနေသည်",
   checkingBody: "စစ်ဆေးမှု ပြီးသည်အထိ သင်သာ မြင်ရပါမည်။",
-  kindLabel: "ဓာတ်ပုံ စတိုရီ",
 };
 
 export const storyPhotoTh: MyStoryPhotoCopy = {
@@ -36,7 +35,6 @@ export const storyPhotoTh: MyStoryPhotoCopy = {
   reviewFailed: "ส่งไม่สำเร็จ ลองอีกครั้ง",
   checkingTitle: "กำลังตรวจรูปของคุณ",
   checkingBody: "จนกว่าจะตรวจเสร็จ จะมีแค่คุณที่เห็น",
-  kindLabel: "สตอรี่รูปภาพ",
 };
 
 export const storyPhotoVi: MyStoryPhotoCopy = {
@@ -54,7 +52,6 @@ export const storyPhotoVi: MyStoryPhotoCopy = {
   reviewFailed: "Không gửi được. Hãy thử lại.",
   checkingTitle: "Đang kiểm tra ảnh của bạn",
   checkingBody: "Chỉ bạn nhìn thấy cho đến khi kiểm tra xong.",
-  kindLabel: "Tin ảnh",
 };
 
 export const storyPhotoZhTw: MyStoryPhotoCopy = {
@@ -72,5 +69,4 @@ export const storyPhotoZhTw: MyStoryPhotoCopy = {
   reviewFailed: "無法送出，請再試一次。",
   checkingTitle: "正在檢查你的照片",
   checkingBody: "檢查完成前只有你看得到。",
-  kindLabel: "照片限時動態",
 };

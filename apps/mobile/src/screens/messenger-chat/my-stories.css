@@ -1,68 +1,10 @@
-/* 내 스토리(ADR-0194, 시안 8 · 9 · 10 · 11 · 12 · 15번) — 만들기 · 보기 층, 안내 걸음, 설정 › My stories. 토큰은 CSS 커스텀 프로퍼티로만
-   소비합니다(ADR-0014 D1). 층은 목록 위 floating이고 확인 상자(z-dialog)가 그 위에 섭니다. 보관함 화면은 셸 안 보통 화면이라 z-index가 없습니다.
-   화면 지역 상수(토큰 없음): 고른 줄 테두리 1.5 → 2 · 체크 원 26 · 카드 기울기 없음(사진이 없어 단색 카드). */
-
-.my-story-layer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: var(--libitum-elevation-z-floating);
-  display: flex;
-  flex-direction: column;
-  background-color: var(--libitum-color-background-primary);
-}
-
-.my-story-head {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-12);
-  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x);
-}
-
-.my-story-title {
-  flex: 1;
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-heading-m-font-family);
-  font-weight: var(--libitum-typography-heading-m-font-weight);
-  font-size: var(--libitum-typography-heading-m-font-size);
-  line-height: var(--libitum-typography-heading-m-line-height);
-}
-
-.my-story-icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--libitum-spacing-48);
-  height: var(--libitum-spacing-48);
-  border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-gray-100);
-}
+/* 내 스토리(ADR-0194, 시안 8 · 9 · 10 · 11 · 12 · 15번) — 만들기 층, 안내 걸음, 설정 › My stories. 보기는 친구 스토리와 같은 전체 화면
+   보기(`my-story-viewer.css`, ADR-0194 개정 ⟨보기⟩). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 확인 상자(z-dialog)가 층 위에
+   섭니다. 보관함 화면은 셸 안 보통 화면이라 z-index가 없습니다. 화면 지역 상수(토큰 없음): 고른 줄 테두리 1.5 → 2 · 체크 원 26. */
 
 .my-story-icon {
   width: var(--libitum-spacing-24);
   height: var(--libitum-spacing-24);
-}
-
-.my-story-scroll {
-  flex: 1;
-}
-
-.my-story-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-spacing-12);
-  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x) var(--libitum-spacing-24);
-}
-
-.my-story-footer {
-  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x) 0;
-  border-top-width: 1px;
-  border-top-style: solid;
-  border-top-color: var(--libitum-color-gray-200);
-  background-color: var(--libitum-color-background-primary);
 }
 
 .my-story-footer-inner {
@@ -95,7 +37,6 @@
 }
 
 .my-story-section-meta,
-.my-story-meta,
 .my-story-note,
 .my-story-empty {
   color: var(--libitum-color-fg-neutral-muted);
@@ -185,75 +126,6 @@
   font-style: italic;
 }
 
-/* 내 스토리 카드(시안 12번) — 사진 대신 brand 면 위 흰 글. 흰 글 대비는 brand-strong 면(4.5:1 이상). */
-.my-story-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--libitum-spacing-4);
-  padding: var(--libitum-spacing-24) var(--libitum-spacing-20);
-  border-radius: var(--libitum-radius-xl);
-  background-color: var(--libitum-color-brand-strong);
-}
-
-.my-story-card-tag {
-  color: var(--libitum-color-white);
-  font-family: var(--libitum-typography-label-s-font-family);
-  font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-label-s-font-size);
-  line-height: var(--libitum-typography-label-s-line-height);
-  letter-spacing: 1px;
-}
-
-.my-story-card-ko {
-  color: var(--libitum-color-white);
-  font-family: var(--libitum-typography-display-font-family);
-  font-weight: var(--libitum-typography-display-font-weight);
-  font-size: var(--libitum-typography-display-font-size);
-  line-height: var(--libitum-typography-display-line-height);
-  text-align: center;
-}
-
-.my-story-card-roman,
-.my-story-card-meaning,
-.my-story-card-example-meaning {
-  color: var(--libitum-color-white);
-  font-family: var(--libitum-typography-body-m-font-family);
-  font-size: var(--libitum-typography-body-m-font-size);
-  line-height: var(--libitum-typography-body-m-line-height);
-  text-align: center;
-}
-
-.my-story-card-roman {
-  font-style: italic;
-}
-
-.my-story-card-example {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin-top: var(--libitum-spacing-12);
-  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
-  border-radius: var(--libitum-radius-lg);
-  background-color: var(--libitum-color-white);
-}
-
-.my-story-card-example-ko {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-label-l-font-size);
-  line-height: var(--libitum-typography-label-l-line-height);
-  text-align: center;
-}
-
-.my-story-card-example .my-story-card-example-meaning {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-size: var(--libitum-typography-body-s-font-size);
-  line-height: var(--libitum-typography-body-s-line-height);
-}
-
 .my-story-menu-item {
   display: flex;
   flex-direction: row;
@@ -338,14 +210,6 @@
 .my-story-open-chat-icon {
   width: var(--libitum-spacing-16);
   height: var(--libitum-spacing-16);
-}
-
-.my-story-reactions-head {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--libitum-spacing-8);
 }
 
 /* Seen by — 겹친 작은 얼굴 + 수. */

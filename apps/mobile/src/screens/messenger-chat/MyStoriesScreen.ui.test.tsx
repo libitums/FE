@@ -10,6 +10,7 @@ import {
   tapId,
 } from "./chat-ui.test-support";
 import { ChatEventsContext } from "./chat-events";
+import { friendStoriesTestIds as fsIds } from "./friend-stories.contract";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
 import { fakeMyStories, MS_HOUR, MS_NOW, myStory } from "./my-stories.test-support";
 import { MyStoriesScreen } from "./MyStoriesScreen";
@@ -134,8 +135,14 @@ test("MS-UI11. 모두 지우기 → 확인 → 빈 안내, 못 지우면 확인 
 test("MS-UI12. 칸 → 내 스토리 보기 → Open chat → 그 방(인용 넘김 없음), 뒤로 = onBack", async () => {
   const { onOpenRoom, onBack } = await mount(fakeMyStories({ stories: stories() }));
   tapId(ids.tile("new"));
-  expect(screen.getByTestId(ids.cardKo).textContent).toBe("산책");
-  tapId(ids.openChat("r1"));
+  // 설정에서도 전체 화면 보기(ADR-0194 개정 ⟨보기⟩) — 그 스토리 한 장, 「+」 없음, 새 답 줄을 누르면 그 방.
+  expect(screen.getByTestId(fsIds.line).textContent).toBe("산책");
+  expect(screen.getByTestId(fsIds.progress).getAttribute("accessibility-label")).toBe(
+    "Story 1 of 1",
+  );
+  expect(screen.queryByTestId(ids.barAdd)).toBeNull();
+  expect(screen.getByTestId(ids.barDelete)).not.toBeNull();
+  tapId(ids.replyLine("r1"));
   expect(onOpenRoom).toHaveBeenCalledWith("mina");
   expect(takeStoryReplyHandoff("mina")).toBeNull();
   tapId(ids.archiveBack);
@@ -155,8 +162,12 @@ test("MS-UI14. 지우기 확인을 두 번 눌러도 지우기는 한 번(리뷰
 test("MS-UI15. 24시간 지난 스토리는 반응이 없어도 「기다림」 문구 없이 「친구에게 24시간」만(리뷰 m6)", async () => {
   await mount(fakeMyStories({ stories: stories() }));
   tapId(ids.tile("old"));
+  // 지난 스토리도 같은 전체 화면 보기 — 줄 자리에 「친구에게 24시간」, 시트에도 기다림 문구 없음.
+  expect(screen.getByTestId(fsIds.viewer)).not.toBeNull();
+  expect(screen.queryByTestId(ids.barWaiting)).toBeNull();
+  expect(screen.getByTestId(ids.barHidden).textContent).toContain("Friends saw this for 24 hours");
+  tapId(ids.barSeen);
   expect(screen.queryByTestId(ids.waiting)).toBeNull();
-  expect(screen.getByTestId(ids.viewer).textContent).toContain("Friends saw this for 24 hours");
 });
 
 test("MS-UI17. 읽는 동안에는 빈 보관함 안내를 세우지 않는다(봇 리뷰)", async () => {

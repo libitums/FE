@@ -136,6 +136,8 @@ test("MSI1. 「Your story」 → 반응 → Open chat: 그 인물 방이 열리�
   expect(present(fsIds.row)).toBe(true);
   expect(present(ids.create)).toBe(true);
   tapId(ids.mine);
+  // 내 스토리는 전체 화면 보기(ADR-0194 개정 ⟨보기⟩) — 반응 목록은 「Seen by」 → 답 목록 시트.
+  tapId(ids.barSeen);
   expect(screen.getByTestId(ids.reaction("r1")).textContent).toContain("야근 끝나면 라면 먹어!");
   expect(seen.has("r1")).toBe(true);
   tapId(ids.openChat("r1"));

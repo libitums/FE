@@ -54,9 +54,6 @@ export const myStoriesId: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Ceritamu",
-    kindLabel: (kind) => (kind === "word" ? "Kartu kata" : "Kartu pelajaran"),
-    textLabel: "Cerita teks",
-    cardTag: (kind) => (kind === "word" ? "KOSAKATAKU HARI INI" : "KARTU PELAJARAN"),
     close: "Tutup",
     options: "Pilihan cerita",
     delete: "Hapus cerita",
@@ -74,6 +71,9 @@ export const myStoriesId: MyStoriesCopy = {
     findFriends: "Cari teman",
     hidden: "Teman melihat ini selama 24 jam. Sekarang hanya kamu yang melihatnya.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Geser ke atas untuk melihat balasan",
+    noViews: "Belum ada yang melihat",
+    showReplies: "Lihat balasan",
   },
   window: {
     title: (slot) =>

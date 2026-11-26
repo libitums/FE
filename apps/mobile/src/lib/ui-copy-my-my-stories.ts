@@ -53,9 +53,6 @@ export const myStoriesMy: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "သင့်စတိုရီ",
-    kindLabel: (kind) => (kind === "word" ? "စကားလုံးကတ်" : "သင်ခန်းစာကတ်"),
-    textLabel: "စာသား စတိုရီ",
-    cardTag: (kind) => (kind === "word" ? "ဒီနေ့ ကျွန်ုပ်၏ စကားလုံး" : "သင်ခန်းစာကတ်"),
     close: "ပိတ်ရန်",
     options: "စတိုရီ ရွေးစရာများ",
     delete: "စတိုရီ ဖျက်ရန်",
@@ -72,6 +69,9 @@ export const myStoriesMy: MyStoriesCopy = {
     findFriends: "သူငယ်ချင်း ရှာရန်",
     hidden: "သူငယ်ချင်းများ 24 နာရီ မြင်ခဲ့ရသည်။ ယခု သင်တစ်ဦးတည်းသာ မြင်ရသည်။",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `။ ${meaning}` : ""}`,
+    swipeUp: "ပြန်စာများကြည့်ရန် အပေါ်သို့ ပွတ်ဆွဲပါ",
+    noViews: "ကြည့်သူ မရှိသေးပါ",
+    showReplies: "ပြန်စာများ ကြည့်ရန်",
   },
   window: {
     title: (slot) =>
