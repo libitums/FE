@@ -19,8 +19,6 @@ export const messengerChatStoriesTh: FriendStoriesCopy = {
   unmetLabel: (name) => `สตอรี่ของ ${name}, เพื่อนใหม่`,
   findFriends: "หาเพื่อน",
   findFriendsLabel: "หาเพื่อน",
-  listPreview: (line) => `สตอรี่ใหม่ · ${line}`,
-  listRowLabel: (name, line) => `${name}, สตอรี่ใหม่: ${line} เปิดสตอรี่`,
   viewer: {
     label: (name) => `สตอรี่ของ ${name}`,
     progress: (index, count) => `สตอรี่ที่ ${index} จาก ${count}`,

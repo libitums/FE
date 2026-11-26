@@ -34,7 +34,6 @@ export type ViewerOpen =
   | { readonly from: "friend"; readonly characterId: string }
   | { readonly from: "unmet"; readonly characterId: string }
   | { readonly from: "watch_all" }
-  | { readonly from: "list"; readonly characterId: string }
   | { readonly from: "push"; readonly characterId: string };
 
 const MINUTE_MS = 60_000;
@@ -103,12 +102,6 @@ export function storyAgeOf(postedAt: number, now: number): StoryAge {
   return { unit: "h", value: Math.floor(ago / HOUR_MS) };
 }
 
-/** 채팅 목록 줄의 「New story」 — 그 인물의 안 본 친구 스토리, 없으면 null. */
-export function listStoryOf(row: StoryRow, characterId: string): FriendStory | null {
-  const entry = row.friends.find((each) => each.story.characterId === characterId);
-  return entry === undefined || entry.seen ? null : entry.story;
-}
-
 /** 보기에서 지금 장이 속한 인물 묶음 — 같은 인물이 이어진 칸들(위 진행 막대는 이 묶음만, D4 개정). */
 export type ViewerGroup = { readonly start: number; readonly count: number; readonly at: number };
 
@@ -137,6 +130,10 @@ export function viewerJump(
   }
   return group.start === 0 ? 0 : viewerGroupOf(items, group.start - 1).start;
 }
+
+/** 누른 자리 → 넘김(ADR-0178 D4 개정 ⟨탭 자리⟩) — 화면 가운데가 경계, 왼쪽 절반은 이전 · 오른쪽 절반은 다음. 자리를 모르면 다음. */
+export const storyTapOf = (x: unknown, width: number): "prev" | "next" =>
+  typeof x === "number" && x * 2 < width ? "prev" : "next";
 
 /** 다음 · 저절로 넘김은 한 칸(마지막이면 닫힘), 이전은 한 칸(처음이면 그대로). */
 export function viewerStep(state: ViewerState, action: ViewerAction): ViewerState | "close" {
@@ -181,7 +178,7 @@ function firstUnseen(items: readonly StoryViewerItem[], from: number, seen: Read
 
 /**
  * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 줄 순서(`storyOrderOf`)로 이어 붙입니다(D4 개정). 줄의 친구는 친구 묶음 전체 중 그 인물부터,
- * 이어 보기는 첫 인물부터, 안 만난 친구 · 목록 줄 · 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
+ * 이어 보기는 첫 인물부터, 안 만난 친구 · 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
  */
 export function viewerItemsOf(
   row: StoryRow,

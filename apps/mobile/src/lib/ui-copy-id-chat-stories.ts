@@ -18,8 +18,6 @@ export const messengerChatStoriesId: FriendStoriesCopy = {
   unmetLabel: (name) => `Cerita ${name}, teman baru`,
   findFriends: "Cari teman",
   findFriendsLabel: "Cari teman",
-  listPreview: (line) => `Cerita baru · ${line}`,
-  listRowLabel: (name, line) => `${name}, cerita baru: ${line}. Membuka cerita`,
   viewer: {
     label: (name) => `Cerita ${name}`,
     progress: (index, count) => `Cerita ${index} dari ${count}`,

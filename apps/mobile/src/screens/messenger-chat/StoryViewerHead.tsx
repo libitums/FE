@@ -47,9 +47,10 @@ export function StoryViewerHead({
 }): ReactNode {
   // 내 스토리 장은 이름이 곧 제목(「Your story」)이고 아바타는 프로필 단추가 아닙니다.
   const own = item.mine !== undefined;
+  // 머리 줄의 탭은 넘김으로 올라가지 않습니다(catchtap) — 내 장은 아무것도 열지 않습니다.
   const openProfile = () => {
     "background only";
-    onProfile();
+    if (!own) onProfile();
   };
   return (
     <view className="story-viewer-head">
@@ -85,7 +86,7 @@ export function StoryViewerHead({
             own ? item.name : copy.viewer.label(item.name),
             groupLabel,
           ])}
-          bindtap={own ? undefined : openProfile}
+          catchtap={openProfile}
         >
           {item.name}
         </text>
@@ -98,7 +99,7 @@ export function StoryViewerHead({
           accessibility-enable-tap={!own}
           flatten={false}
           hit-slop={SLOP}
-          bindtap={own ? undefined : openProfile}
+          catchtap={openProfile}
         >
           <Avatar
             imageSource={item.avatarUrl ?? undefined}

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 
-import { advance, clearBackHandlers, systemBack, tapId } from "./chat-ui.test-support";
+import { advance, clearBackHandlers, systemBack, tapEl, tapId } from "./chat-ui.test-support";
 import {
   friendStoriesTestIds as ids,
   type StoryViewerItem,
@@ -168,4 +168,32 @@ test("MV-UI12. 친구 스토리 장에는 아래 바가 없다(mine을 받아도
   expect(screen.queryByTestId(myIds.bar)).toBeNull();
   expect(screen.getByTestId(ids.replyInput)).not.toBeNull();
   expect(screen.queryByTestId(myIds.viewerMenu)).toBeNull();
+});
+
+test("MV-UI13. 바 · 답 줄 · 단추 · ⋯ 메뉴의 탭은 넘기지 않는다(catchtap), 바의 빈 자리 · 안내 줄은 넘긴다(ADR-0178 D4 개정 ⟨탭 자리⟩)", () => {
+  const { props, mine } = mount([word, text]);
+  const label = () => screen.getByTestId(ids.progress).getAttribute("accessibility-label");
+  expect(label()).toBe("Story 1 of 2");
+  tapId(myIds.replyLine("r1"));
+  expect(mine.onOpenChat).toHaveBeenCalledTimes(1);
+  tapId(myIds.barAdd);
+  expect(mine.onCreate).toHaveBeenCalledTimes(1);
+  tapId(myIds.barDelete);
+  expect(mine.onDelete).toHaveBeenCalledWith(word);
+  tapId(myIds.viewerMenu);
+  tapId(myIds.viewerDelete);
+  expect(mine.onDelete).toHaveBeenCalledTimes(2);
+  tapId(ids.profile);
+  expect(label()).toBe("Story 1 of 2");
+  expect(shownIds(props)).toEqual(["w"]);
+  // 「Seen by」는 시트만 열고 넘기지 않습니다.
+  tapId(myIds.barSeen);
+  expect(screen.getByTestId(myIds.repliesSheet)).not.toBeNull();
+  expect(label()).toBe("Story 1 of 2");
+  expect(systemBack()).toBe(true);
+  // 누름 영역이 아닌 바 묶음(빈 자리)은 면으로 올라가 넘깁니다.
+  tapEl(screen.getByTestId(myIds.bar), { detail: { x: 300 } });
+  expect(label()).toBe("Story 2 of 2");
+  tapEl(screen.getByTestId(myIds.barWaiting), { detail: { x: 40 } });
+  expect(label()).toBe("Story 1 of 2");
 });

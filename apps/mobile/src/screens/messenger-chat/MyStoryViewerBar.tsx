@@ -25,7 +25,10 @@ import "./my-story-viewer.css";
 
 type Touch = { readonly detail: { readonly x: number; readonly y: number } };
 
-/** 낭독 이름 · 눌림 · 소리를 갖춘 단추(44 이상) — 바의 둥근 단추 · 새 답 줄 · Seen by 자리가 함께 씁니다. */
+/**
+ * 낭독 이름 · 눌림 · 소리를 갖춘 단추(44 이상) — 바의 둥근 단추 · 새 답 줄 · Seen by 자리 · ⋯ 메뉴 줄이 함께 씁니다. 탭은 여기서 멈춰(`catchtap`)
+ * 면의 넘김(ADR-0178 D4 개정 ⟨탭 자리⟩)으로 올라가지 않습니다 — 바의 빈 자리 · 안내 줄은 그대로 넘깁니다.
+ */
 function Tap({
   testId,
   className,
@@ -48,7 +51,7 @@ function Tap({
       accessibility-traits="button"
       accessibility-enable-tap={true}
       flatten={false}
-      bindtap={() => {
+      catchtap={() => {
         "background only";
         playSound("button");
         onTap();

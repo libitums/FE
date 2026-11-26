@@ -15,6 +15,7 @@ import {
 } from "./friend-stories.contract";
 import { phoneKeyboardHeightOf } from "./keyboard-height";
 import { canSendStoryReply } from "./story-inline-reply";
+import { noTap } from "./StoryViewerParts";
 
 import "./story-reply-input.css";
 
@@ -70,7 +71,7 @@ export function StoryReplyInput({
           {error === "coins" ? copy.viewer.coinsShort : copy.viewer.sendFailed}
         </text>
       )}
-      <view className="story-reply" data-testid={ids.reply}>
+      <view className="story-reply" data-testid={ids.reply} catchtap={noTap}>
         <input
           id={STORY_REPLY_INPUT_ID}
           className="story-reply-input"

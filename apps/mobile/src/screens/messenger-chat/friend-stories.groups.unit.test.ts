@@ -68,9 +68,9 @@ describe("FS-U22 보기의 장 목록 — 인물 묶음을 이어 붙이고, 그
     expect(viewerItemsOf(seenAll, { from: "watch_all" }, url, all)?.start).toBe(0);
   });
 
-  test("목록 줄 · 알림 · 안 만난 친구는 그 인물 묶음 하나", () => {
+  test("알림 · 안 만난 친구는 그 인물 묶음 하나", () => {
     expect(
-      viewerItemsOf(row, { from: "list", characterId: "a" }, url)?.items.map((i) => i.story.id),
+      viewerItemsOf(row, { from: "push", characterId: "a" }, url)?.items.map((i) => i.story.id),
     ).toEqual(["a1", "a2", "a3"]);
     const unmet = viewerItemsOf(row, { from: "unmet", characterId: "g" }, url);
     expect(unmet?.items.map((i) => i.story.id)).toEqual(["g1", "g2"]);

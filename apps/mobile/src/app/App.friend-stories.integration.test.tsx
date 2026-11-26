@@ -130,7 +130,7 @@ test("FSI1. 목록 → 친구 스토리 → 칩: 보기에 남은 채 그 방에
 test("FSI2. 답장 칸에 쓰고 보내기 → 보기를 떠나지 않고 인용과 함께 보냄 · 칸이 비고, 목록 줄은 본 것", async () => {
   serverRemote(live);
   await openMessenger();
-  expect(screen.getByTestId(list.rowPreview("owner")).textContent).toContain("New story");
+  expect(screen.getByTestId(list.rowPreview("owner")).textContent).not.toContain("New story");
   tapId(ids.friend("owner"));
   act(() => {
     nativeInput("focus", "", ids.replyInput);

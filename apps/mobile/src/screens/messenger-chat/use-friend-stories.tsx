@@ -9,13 +9,7 @@ import { useChatEvents } from "./chat-events";
 import type { ChatRoomSummary, ChatSource } from "./chat-source.contract";
 import type { CoinWallet } from "./coin-wallet";
 import { emptyKeyboardHeightStore } from "./keyboard-ports";
-import {
-  listStoryOf,
-  storiesAfterLoad,
-  storyRowOf,
-  viewerItemsOf,
-  type ViewerOpen,
-} from "./friend-stories";
+import { storiesAfterLoad, storyRowOf, viewerItemsOf, type ViewerOpen } from "./friend-stories";
 import type {
   FriendStoriesPort,
   FriendStory,
@@ -50,16 +44,12 @@ export type FriendStoriesUi = {
   /** 보기 층 — 스크롤 밖에 둡니다. */
   readonly layer: ReactNode;
   readonly layerOpen: boolean;
-  /** 채팅 목록 줄의 「New story」 — 그 인물의 안 본 친구 스토리 한 줄, 없으면 null(D3). */
-  readonly listStory: (characterId: string) => FriendStory | null;
-  /** 채팅 목록 줄에서 스토리를 엽니다. */
-  readonly openFromList: (characterId: string) => void;
 };
 
 type Viewer = {
   readonly items: readonly StoryViewerItem[];
   readonly start: number;
-  readonly from: "row" | "list" | "watch_all" | "push";
+  readonly from: "row" | "watch_all" | "push";
 };
 
 const fromOf = (open: ViewerOpen): Viewer["from"] =>
@@ -292,9 +282,5 @@ export function useFriendStories({
         </>
       ),
     layerOpen: viewer !== null || mine.layerOpen,
-    listStory: (characterId) => (port === undefined ? null : listStoryOf(row, characterId)),
-    openFromList: (characterId) => {
-      open({ from: "list", characterId });
-    },
   };
 }
