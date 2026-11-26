@@ -2,7 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
 
-import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { missionTestIds as ids } from "./mission-test-ids";
 import type { MissionHintResponse } from "./roleplay-mission.contract";
 
@@ -50,7 +50,8 @@ export type MissionHintCardProps = {
   readonly hint: MissionHintResponse;
   /** 예문 듣기 — 재생(합성 포함) 중이면 표시가 바뀝니다. */
   readonly listening: boolean;
-  readonly onListen: () => void;
+  /** 예문 듣기 — 힌트 번호(`hintNo`)가 없으면(서버가 예문을 저장하지 못함) `null`이고 단추가 없습니다. */
+  readonly onListen: (() => void) | null;
   readonly onUse: () => void;
   readonly onClose: () => void;
 };
@@ -63,7 +64,7 @@ export function MissionHintCard({
   onUse,
   onClose,
 }: MissionHintCardProps): ReactNode {
-  const mission = useUiCopy().roleplayMission;
+  const mission = useMissionCopy();
   return (
     <view className="mission-hint" data-testid={ids.hintCard}>
       <view
@@ -76,17 +77,19 @@ export function MissionHintCard({
         <text className="mission-hint-sub">{hint.meaning}</text>
         <text className="mission-hint-sub">{mission.hintPenalty}</text>
       </view>
-      <view className="mission-hint-ko-row">
-        <text
-          className="mission-composer-link"
-          data-testid={ids.hintListen}
-          data-play={listening ? "true" : "false"}
-          accessibility-traits="button"
-          bindtap={onListen}
-        >
-          {mission.extra.voice.hintListen}
-        </text>
-      </view>
+      {onListen === null ? null : (
+        <view className="mission-hint-ko-row">
+          <text
+            className="mission-composer-link"
+            data-testid={ids.hintListen}
+            data-play={listening ? "true" : "false"}
+            accessibility-traits="button"
+            bindtap={onListen}
+          >
+            {mission.extra.voice.hintListen}
+          </text>
+        </view>
+      )}
       <CardActions
         primary={{ testId: ids.hintUse, label: mission.hintUse, onTap: onUse }}
         secondary={{ testId: ids.hintClose, label: mission.hintClose, onTap: onClose }}
@@ -110,7 +113,7 @@ export function MissionSuccessCard({
   onKeepGoing,
   onFinish,
 }: MissionSuccessCardProps): ReactNode {
-  const success = useUiCopy().roleplayMission.extra.success;
+  const success = useMissionCopy().extra.success;
   return (
     <view className="mission-hint" data-testid={ids.successCard}>
       <view accessibility-element={true} accessibility-label={`${success.title} ${success.body}`}>

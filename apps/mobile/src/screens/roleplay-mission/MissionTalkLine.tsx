@@ -9,6 +9,7 @@ import {
   ChatTextBubble,
 } from "../../components/chat/ChatMessageRow";
 import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { UnsentMessage } from "../messenger-chat/ChatDelivery";
 import { CorrectionCard } from "../messenger-chat/CorrectionCard";
 import { missionTestIds as ids } from "./mission-test-ids";
@@ -41,6 +42,7 @@ export function MissionTalkLine({
   onSend,
 }: MissionTalkLineProps): ReactNode {
   const copy = useUiCopy();
+  const missionCopy = useMissionCopy();
   if (line.kind === "them") {
     const messageId = line.messageId;
     const playable = messageId !== null && !isAction(line.ko);
@@ -61,7 +63,7 @@ export function MissionTalkLine({
               data-play={state}
               accessibility-element={true}
               accessibility-traits="button"
-              accessibility-label={copy.roleplayMission.extra.voice.replay}
+              accessibility-label={missionCopy.extra.voice.replay}
               bindtap={() => onReplay(messageId)}
             >
               <svg

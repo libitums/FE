@@ -54,7 +54,7 @@ import { learnerProfileVi } from "./ui-copy-vi-profile";
 import { ticketsVi } from "./ui-copy-vi-tickets";
 import { plansCopy } from "./ui-copy-plans";
 import { roleplayStoryVi } from "./ui-copy-vi-roleplay-story";
-import { roleplayMissionVi } from "./ui-copy-roleplay-mission-id-vi";
+import { roleplayMissionListCopy } from "./ui-copy-roleplay-mission-list";
 import {
   commonVi,
   journeyMapVi,
@@ -119,7 +119,7 @@ export const uiCopyVi: UiCopy = {
   tickets: ticketsVi,
   plans: plansCopy.vi,
   roleplayStory: roleplayStoryVi,
-  roleplayMission: roleplayMissionVi,
+  roleplayMission: roleplayMissionListCopy.vi,
   appUpdate: appUpdateVi,
   storyMessenger: storyMessengerVi,
   messengerChat: messengerChatVi,

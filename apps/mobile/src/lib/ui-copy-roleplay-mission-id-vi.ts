@@ -1,13 +1,12 @@
 // 롤플레이 미션 문구의 번역 초안(인도네시아어 · 베트남어) — 원어민 검수 필요. 모양과 영어 정본은 `ui-copy-roleplay-mission.ts`입니다.
 
+import { roleplayMissionListCopy } from "./ui-copy-roleplay-mission-list";
 import { roleplayMissionEn, type RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
 import { missionExtraId, missionExtraVi } from "./ui-copy-roleplay-mission-extra-more";
 
 export const roleplayMissionId: RoleplayMissionCopy = {
   ...roleplayMissionEn,
-  form: "Misi",
-  goalCount: (count) => `${String(count)} tujuan`,
-  best: (score) => `Terbaik ${String(score)}`,
+  ...roleplayMissionListCopy.id,
   withCounterpart: (label) => `dengan ${label}`,
   turnLimit: (count) => `${String(count)} giliran`,
   previewBody: (label) =>
@@ -82,9 +81,7 @@ export const roleplayMissionId: RoleplayMissionCopy = {
 
 export const roleplayMissionVi: RoleplayMissionCopy = {
   ...roleplayMissionEn,
-  form: "Nhiệm vụ",
-  goalCount: (count) => `${String(count)} mục tiêu`,
-  best: (score) => `Cao nhất ${String(score)}`,
+  ...roleplayMissionListCopy.vi,
   withCounterpart: (label) => `với ${label}`,
   turnLimit: (count) => `${String(count)} lượt`,
   previewBody: (label) =>

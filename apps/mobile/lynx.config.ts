@@ -28,8 +28,22 @@ function uiLynxSourceAliases(): Record<string, string> {
 // `@rsbuild/plugin-type-check`을 넣지 않는 것이 결정의 일부다 (ADR-0006 D1).
 // build가 타입 검사를 겸하면 실패 원인이 타입인지 번들링인지 읽히지 않는다.
 // 타입 검사는 `pnpm typecheck`(tsc --noEmit)이 단독으로 맡는다.
+// 롤플레이 미션 스위치(`src/screens/roleplay-mission/roleplay-mission-ready.ts`)를 빌드 시점에 읽습니다 — 정본은 그 파일 하나.
+// 미션 코드는 dev 빌드이거나 스위치가 켜졌을 때만 번들에 싣습니다(`__ROLEPLAY_MISSION_IN_BUNDLE__`, ADR-0177 · 번들 천장 ADR-0149).
+// 모듈 사이의 상수는 번들러가 접지 못해(실측: 상수 export로는 미션 코드가 그대로 남음) `defineDCE`로 글자를 바꿔 넣습니다.
+function roleplayMissionReady(): boolean {
+  const source = readFileSync(
+    path.join(import.meta.dirname, "src/screens/roleplay-mission/roleplay-mission-ready.ts"),
+    "utf8",
+  );
+  const match = /export const ROLEPLAY_MISSION_READY = (true|false);/.exec(source);
+  if (match === null) throw new Error("ROLEPLAY_MISSION_READY를 읽지 못했습니다");
+  return match[1] === "true";
+}
+
 export default defineConfig(({ command }): Config => {
   const dev = command === "dev";
+  const missionInBundle = dev || roleplayMissionReady();
   return {
     source: {
       // 진입점은 src/app/ 이 소유한다 (ADR-0003 D5).
@@ -64,7 +78,10 @@ export default defineConfig(({ command }): Config => {
       // `extractStr`는 켜지 않습니다(ADR-0169 D8 개정). 설치된 ReactLynx에서 이 옵션은 `__EXTRACT_STR__`만
       // 정의하고, 런타임 main-thread `processData`가 읽는 `__EXTRACT_STR_IDENT_FLAG__`는 어떤 플러그인도
       // 정의하지 않아 실행마다 ReferenceError가 났습니다. 문자열을 실제로 뽑는 단계도 오픈소스 빌드에는 없습니다.
-      pluginReactLynx({ globalPropsMode: "event" }),
+      pluginReactLynx({
+        globalPropsMode: "event",
+        defineDCE: { define: { __ROLEPLAY_MISSION_IN_BUNDLE__: JSON.stringify(missionInBundle) } },
+      }),
     ],
     tools: {
       // `extractStr`가 번들을 약 103 kB 줄이던 몫은 이 한 가지였습니다: `.json`을 `JSON.parse('…')` 문자열이
@@ -85,6 +102,8 @@ export default defineConfig(({ command }): Config => {
             { test: /render-dev-probe\.tsx$/, sideEffects: false },
             // 롤플레이 미션의 가짜 출처 · 가짜 기기 · fixture도 같은 길로 release에서 뺍니다(`roleplay-mission-dev-fakes.ts`).
             { test: /roleplay-mission-dev-fakes\.ts$/, sideEffects: false },
+            // 스위치가 꺼진 release에서 미션 화면 · 문구 · CSS 전체를 뺍니다(`roleplay-mission-entry.ts`, ADR-0177).
+            { test: /roleplay-mission-entry\.ts$/, sideEffects: false },
             // 디자인 토큰 JS는 묶음마다 최상위 `deepFreeze(...)`를 불러, 앱이 쓰는 color · motion · opacity
             // 말고도 typography · font · elevation 등 열두 묶음이 두 스레드에 다 실립니다. 최상위 호출만
             // 순수로 표시해 쓰이지 않는 묶음을 버립니다 — release 번들 약 −14 kB.

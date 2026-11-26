@@ -10,6 +10,7 @@ import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import { missionPriceLine } from "./mission-model";
@@ -33,7 +34,7 @@ export function MissionPreviewScreen({
   onExit,
 }: MissionPreviewScreenProps): ReactNode {
   const copy = useUiCopy();
-  const mission = copy.roleplayMission;
+  const mission = useMissionCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   useScreenBack(onExit);
   const { item, price } = card;

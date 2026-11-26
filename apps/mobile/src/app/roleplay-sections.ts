@@ -10,7 +10,7 @@ import type { RoleplaySection } from "../screens/roleplay-list/roleplay-list.con
 import { missionReportBadgeOf } from "../screens/roleplay-mission/mission-report-ready";
 import type { MissionList } from "../screens/roleplay-mission/roleplay-mission.contract";
 import type { EpisodeContent } from "./episode-content";
-import { useRoleplayMissions } from "./roleplay-mission-wiring";
+import { useRoleplayMissions } from "./roleplay-mission-entry";
 import { catalogRoleplaySectionsOf, firstCoverImageOf } from "./roleplay-story-model";
 
 export type RoleplaySectionsInput = {
@@ -70,6 +70,7 @@ export function withMissionItems(
 
 /** 앱 세션이 부르는 입구 — 미션 목록을 구독해 구획에 싣습니다. 스위치가 꺼져 있으면 `roleplaySectionsOf`와 같습니다. */
 export function useRoleplaySections(input: RoleplaySectionsInput): readonly RoleplaySection[] {
-  const missions = useRoleplayMissions();
+  // 빌드 상수라 훅을 부르는 차례는 실행 중에 바뀌지 않습니다(ME-S2).
+  const missions = __ROLEPLAY_MISSION_IN_BUNDLE__ ? useRoleplayMissions() : null;
   return roleplaySectionsOf({ ...input, missions });
 }

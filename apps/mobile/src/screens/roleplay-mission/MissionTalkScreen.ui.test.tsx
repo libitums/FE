@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render } from "@lynx-js/react/testing-library";
 
+import { fakeHeard } from "./mission-fake-rules";
 import { MissionTalkScreen } from "./MissionTalkScreen";
 import {
   A1,
@@ -141,7 +142,7 @@ test("MT-UI5 보내지 못한 글은 Not sent와 다시 보내기 — 누르면 
 
 test("MT-UI6 마이크 — 눌러 녹음 · 눌러 끝, 서버가 받아 적어 확신이 높으면 바로 voice로 보낸다", async () => {
   const voice = voicePorts({
-    source: { heard: [{ kind: "heard", text: "카드로 할게요", autoSend: true, reason: "ok" }] },
+    source: { heard: [fakeHeard("카드로 할게요", true, "ok")] },
   });
   const { onSend } = mount(talking, voice);
   fireEvent.tap(id("roleplay-mission-mic"), {});

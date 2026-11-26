@@ -6,7 +6,7 @@ import mic from "@libitums/icons/lynx/mic";
 import stop from "@libitums/icons/lynx/stop";
 import { color } from "@libitums/design-tokens";
 
-import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { phoneKeyboardHeightOf } from "../messenger-chat/keyboard-height";
 import { missionTestIds as ids } from "./mission-test-ids";
 
@@ -83,7 +83,7 @@ export function MissionComposer({
   onMic,
   onHint,
 }: MissionComposerProps): ReactNode {
-  const copy = useUiCopy().roleplayMission;
+  const copy = useMissionCopy();
   const [text, setText] = useState("");
   // 밖에서 글을 넣으면(힌트) 입력을 default-value로 다시 마운트합니다(메신저 입력 칸과 같은 방법).
   const [epoch, setEpoch] = useState(0);

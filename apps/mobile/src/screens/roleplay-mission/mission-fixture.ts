@@ -114,7 +114,7 @@ export const missionReportFixture: MissionReport = {
   headline: "You ordered and paid — mission complete!",
   goals: [
     { ...cafeGoals[0], done: true, evidence: "아이스 아메리카노 한 잔 주세요.", tip: null },
-    { ...cafeGoals[1], done: true, evidence: "카드로 할게요.", tip: null },
+    { ...cafeGoals[1], done: true, evidence: "카드를 할게요.", tip: null },
     { ...cafeGoals[2], done: true, evidence: "가지고 가요.", tip: null },
     {
       ...cafeGoals[3],
@@ -139,6 +139,12 @@ export const missionReportFixture: MissionReport = {
   ],
   corrections: [
     {
+      original: "카드를 할게요",
+      corrected: "카드로 할게요",
+      kind: "correction",
+      items: [{ original: "카드를", corrected: "카드로", reason: "Use 로 to say how you pay." }],
+    },
+    {
       original: "가지고 가요",
       corrected: "포장이요",
       kind: "better",
@@ -153,8 +159,8 @@ export const missionReportFixture: MissionReport = {
   ],
   focus: [
     {
-      examples: [{ original: "가지고 가요", corrected: "포장이요" }],
-      reason: "At a café, say 포장이요 for take-out.",
+      examples: [{ original: "카드를 할게요", corrected: "카드로 할게요" }],
+      reason: "Use 로 after 카드 to say how you pay.",
     },
   ],
   strengths: [

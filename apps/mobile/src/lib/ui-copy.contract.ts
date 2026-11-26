@@ -17,7 +17,7 @@ import type { LearnerProfileCopy } from "../components/learner-profile.contract"
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 import type { PlansCopy } from "./ui-copy-plans";
 import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story.contract";
-import type { RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
+import type { RoleplayMissionListCopy } from "./ui-copy-roleplay-mission-list";
 import type { StoryCallCopy } from "../screens/story-call/story-call.contract";
 import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract";
 import type { MessengerChatCopy } from "../screens/messenger-chat/messenger-chat.contract";
@@ -124,7 +124,8 @@ export type UiCopy = {
   readonly plans: PlansCopy;
   readonly roleplayStory: RoleplayStoryCopy;
   /** 롤플레이 미션(ADR-0160) — 스위치 뒤. */
-  readonly roleplayMission: RoleplayMissionCopy;
+  /** 목록 카드의 미션 낱말만 — 미션 화면 문구는 `useMissionCopy`(가지치기 대상, ADR-0177). */
+  readonly roleplayMission: RoleplayMissionListCopy;
   readonly appUpdate: AppUpdateCopy;
   readonly storyMessenger: StoryMessengerCopy;
   readonly messengerChat: MessengerChatCopy;

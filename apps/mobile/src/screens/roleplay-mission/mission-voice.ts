@@ -1,6 +1,8 @@
 // 미션 음성의 순수 규칙입니다(파이프라인 문서 §6.1 · §6.5) — 녹음 · 받아 적기 · 재생 상태와, 받아 적은 글을 바로 보낼지의 판단.
 // UI를 import하지 않습니다. 변화가 없으면 같은 참조를 돌려줍니다.
 
+import { missionSttFailure } from "@libitums/companion-contract";
+
 import type {
   MissionTranscript,
   MissionVoiceAction,
@@ -79,14 +81,10 @@ export type TranscriptDecision =
 
 export function transcriptDecision(transcript: MissionTranscript): TranscriptDecision {
   if (transcript.kind === "failed") {
+    const failure = missionSttFailure(transcript.error);
     return {
       kind: "notice",
-      notice:
-        transcript.code === "busy"
-          ? "busy"
-          : transcript.code === "empty"
-            ? "notHeard"
-            : "serverDown",
+      notice: failure === "busy" ? "busy" : failure === "empty" ? "notHeard" : "serverDown",
     };
   }
   const text = transcript.text.trim();

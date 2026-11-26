@@ -2,7 +2,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
 
-import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { missionTestIds as ids } from "./mission-test-ids";
 import {
@@ -54,7 +54,7 @@ function Section({ title, children }: { readonly title: string; readonly childre
 }
 
 function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
-  const copy = useUiCopy().roleplayMission.report;
+  const copy = useMissionCopy().report;
   const doneCount = report.goals.filter((goal) => goal.done).length;
   const usedCount = report.expressions.filter((entry) => entry.used).length;
   const corrections = otherCorrections(report);
@@ -183,7 +183,7 @@ export function MissionReportScreen({
   onPlayAgain,
   onExit,
 }: MissionReportScreenProps): ReactNode {
-  const copy = useUiCopy().roleplayMission;
+  const copy = useMissionCopy();
   useScreenBack(onExit);
   return (
     <view

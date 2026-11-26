@@ -1,6 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { missionTestIds as ids } from "./mission-test-ids";
 import type { MissionReport } from "./roleplay-mission.contract";
 
@@ -52,7 +52,7 @@ export function ReportHeadline({ report }: Report): ReactNode {
 
 /** 못 이룬 목표마다 「You could have said」 — 목표 글 · 한국어 예문 · 뜻. */
 export function ReportTips({ report }: Report): ReactNode {
-  const copy = useUiCopy().roleplayMission.extra.report;
+  const copy = useMissionCopy().extra.report;
   const tips = report.goals.flatMap((goal) =>
     !goal.done && goal.tip !== undefined && goal.tip !== null ? [{ goal, tip: goal.tip }] : [],
   );
@@ -78,7 +78,7 @@ export function ReportTips({ report }: Report): ReactNode {
 
 /** 「How your score adds up」 — 과업 · 정확도 · 목표 표현(가중치를 곱한 값)과 힌트 감점(있을 때만). 앱에서도 보입니다(사용자 결정). */
 export function ReportScoreParts({ report }: Report): ReactNode {
-  const copy = useUiCopy().roleplayMission.extra.report;
+  const copy = useMissionCopy().extra.report;
   const parts = report.scoreParts;
   if (parts === undefined) return null;
   const rows = [
@@ -109,7 +109,7 @@ export function ReportScoreParts({ report }: Report): ReactNode {
 
 /** 「What went well」 — 학습자 발화 인용과 한 줄. */
 export function ReportStrengths({ report }: Report): ReactNode {
-  const copy = useUiCopy().roleplayMission.extra.report;
+  const copy = useMissionCopy().extra.report;
   const items = report.strengths ?? [];
   if (items.length === 0) return null;
   return (
@@ -132,7 +132,7 @@ export function ReportStrengths({ report }: Report): ReactNode {
 
 /** 「Key corrections」 — 같은 유형끼리 묶은 원문 → 고친 문장과 한 줄 까닭. */
 export function ReportFocus({ report }: Report): ReactNode {
-  const copy = useUiCopy().roleplayMission.extra.report;
+  const copy = useMissionCopy().extra.report;
   const focus = report.focus ?? [];
   if (focus.length === 0) return null;
   return (
@@ -157,7 +157,7 @@ export function ReportFocus({ report }: Report): ReactNode {
 
 /** 「Sounds more natural」 — 더 나은 표현(`kind: better`). 틀린 것이 아니라 제안이라 원문을 지우지 않고 흐리게 둡니다. */
 export function ReportBetter({ report }: Report): ReactNode {
-  const copy = useUiCopy().roleplayMission.extra.report;
+  const copy = useMissionCopy().extra.report;
   const items = report.corrections.filter((entry) => entry.kind === "better");
   if (items.length === 0) return null;
   return (
@@ -184,7 +184,7 @@ export function otherCorrections(report: MissionReport): MissionReport["correcti
 
 /** 「Next challenge」 한 줄. */
 export function ReportNextStep({ report }: Report): ReactNode {
-  const copy = useUiCopy().roleplayMission.extra.report;
+  const copy = useMissionCopy().extra.report;
   return report.nextStep === undefined || report.nextStep === "" ? null : (
     <view className="mission-report-section" data-testid={ids.reportNextStep}>
       <Heading text={copy.nextStep} />

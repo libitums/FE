@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { uiCopyEn } from "../lib/ui-copy-en";
+import { roleplayMissionEn } from "../lib/ui-copy-roleplay-mission";
 import {
   roleplayItemAccessibilityLabel,
   roleplayItemSubtitle,
@@ -105,7 +106,7 @@ describe("미션 목록 항목", () => {
   });
 
   test("MR-U5 값 줄 — 무료가 남았으면 무료, 아니면 엽전 정액 · 잔액(지갑이 없으면 정액만)", () => {
-    const copy = uiCopyEn.roleplayMission;
+    const copy = roleplayMissionEn;
     expect(missionPriceLine({ freeLeft: 1, cost: 5, balance: 42 }, copy)).toBe(
       "Free today · 1 left",
     );

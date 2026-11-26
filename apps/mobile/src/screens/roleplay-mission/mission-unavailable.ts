@@ -15,7 +15,7 @@ export const unavailableMissionSource: MissionSource = {
   },
   hint: () => Promise.resolve({ kind: "unavailable" }),
   finish: (conversationId) => Promise.resolve({ status: "abandoned", conversationId }),
-  transcribe: () => Promise.resolve({ kind: "failed", code: "server" }),
+  transcribe: () => Promise.resolve({ kind: "failed", error: "voice_not_configured" }),
   speak: () => Promise.resolve({ kind: "failed" }),
 };
 

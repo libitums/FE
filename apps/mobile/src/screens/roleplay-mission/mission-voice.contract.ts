@@ -1,6 +1,13 @@
-// 롤플레이 미션의 음성(파이프라인 문서 §6 · §10.2 ⑤, 2026-11-23 결정 — 서버 받아 적기 · 서버 합성)의 타입 전용 계약입니다.
+// 롤플레이 미션의 음성(파이프라인 문서 §6 · §10.2 ⑤ — 서버 받아 적기 · 서버 합성, 계약 `mission-voice.ts`)의 타입 전용 계약입니다.
 // 둘로 나눕니다: 기기 쪽(녹음 · 재생 — 호스트 네이티브 모듈이 채울 자리, `MissionAudioDevice`)과 서버 쪽(받아 적기 · 합성 —
 // `MissionSource.transcribe` · `speak`). 지금은 가짜만 있습니다(`mission-fake-voice.ts`). 구현 · JSX를 두지 않습니다.
+
+import type {
+  MissionAutoSendReason,
+  MissionSttResponse,
+  MissionTtsRequest,
+  MissionTtsResponse,
+} from "@libitums/companion-contract";
 
 /** 녹음 하나 — 호스트가 남긴 16kHz mono 16-bit PCM WAV 파일(0.4 ~ 30초)의 자리와 길이. */
 export type MissionAudioClip = {
@@ -36,39 +43,28 @@ export type MissionAudioDevice = {
   readonly stopPlayback: () => void;
 };
 
+/** 받아 적기 뒤 바로 보낼지의 서버 판단 — 계약 그대로(`ok`만 바로, 나머지는 입력 칸에서 확인). */
+export type { MissionAutoSendReason };
+
 /**
- * 받아 적기 뒤 바로 보낼지의 서버 판단(대시보드 `autosend_decision`과 같은 까닭 이름) — `ok`만 바로 보내고, 나머지는 입력 칸에 넣어
- * 학습자가 확인합니다. `no_confidence`는 서버 설정을 따르므로 `autoSend`를 함께 봅니다.
+ * `mission-stt`(계약 `mission-voice.ts`)의 결과 — 200이면 계약 응답 그대로, 아니면 서버 오류 본문의 `error`(예: `speech_empty` ·
+ * `speech_busy` · `voice_limit` · `speech_unavailable`). 화면은 계약의 `missionSttFailure`로 세 갈래 안내를 고릅니다. 턴은 세지 않습니다.
  */
-export type MissionAutoSendReason =
-  | "ok"
-  | "low_confidence"
-  | "no_confidence"
-  | "too_short"
-  | "not_korean"
-  | "empty";
-
-/** `mission-stt`(제안 엔드포인트)의 결과. 실패는 화면 안내로만 가고 턴은 세지 않습니다. */
 export type MissionTranscript =
-  | {
-      readonly kind: "heard";
-      readonly text: string;
-      readonly autoSend: boolean;
-      readonly reason: MissionAutoSendReason;
-    }
-  | { readonly kind: "failed"; readonly code: "empty" | "busy" | "server" };
+  | ({ readonly kind: "heard" } & MissionSttResponse)
+  | { readonly kind: "failed"; readonly error: string };
 
 /**
- * `mission-tts`(제안 엔드포인트)의 요청 — 상대역 답(또는 진입 대사)은 메시지 id로(서버가 그 답의 말 조각만, 읽기 정규화 후 합성),
- * 힌트 예문은 글 그대로.
+ * `mission-tts`(계약)의 요청 중 출처가 받는 몫 — `contract_version` · `conversation_id`는 출처가 붙입니다. 상대역 메시지(진입 대사 포함)는
+ * 메시지 id, 힌트 예문은 그 판의 힌트 번호(`mission-hint` 응답의 `hintNo`) — 서버는 앱이 보낸 글을 합성하지 않습니다.
  */
 export type MissionSpeakRequest =
-  | { readonly kind: "message"; readonly messageId: string }
-  | { readonly kind: "text"; readonly text: string };
+  | Pick<Extract<MissionTtsRequest, { kind: "message" }>, "kind" | "message_id">
+  | Pick<Extract<MissionTtsRequest, { kind: "hint" }>, "kind" | "hint_no">;
 
-/** 합성 결과 — 서명된 오디오 주소, 또는 실패(조용히 — 글자는 그대로, 대화는 이어짐). */
+/** 합성 결과 — 200이면 계약 응답(서명된 mp3 주소 · 만료), 어느 오류든 실패(조용히 — 글자는 그대로, 대화는 이어짐). */
 export type MissionSpeech =
-  | { readonly kind: "audio"; readonly url: string }
+  | ({ readonly kind: "audio" } & MissionTtsResponse)
   | { readonly kind: "failed" };
 
 // ------------------------------------------------------------------ 음성의 화면 상태

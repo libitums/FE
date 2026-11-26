@@ -1,13 +1,12 @@
 // 롤플레이 미션 문구의 번역 초안(스페인어 · 일본어) — 원어민 검수 필요. 모양과 영어 정본은 `ui-copy-roleplay-mission.ts`입니다.
 
+import { roleplayMissionListCopy } from "./ui-copy-roleplay-mission-list";
 import { roleplayMissionEn, type RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
 import { missionExtraEs, missionExtraJa } from "./ui-copy-roleplay-mission-extra";
 
 export const roleplayMissionEs: RoleplayMissionCopy = {
   ...roleplayMissionEn,
-  form: "Misión",
-  goalCount: (count) => (count === 1 ? "1 objetivo" : `${String(count)} objetivos`),
-  best: (score) => `Récord ${String(score)}`,
+  ...roleplayMissionListCopy.es,
   withCounterpart: (label) => `con ${label}`,
   turnLimit: (count) => (count === 1 ? "1 turno" : `${String(count)} turnos`),
   previewBody: (label) =>
@@ -82,9 +81,7 @@ export const roleplayMissionEs: RoleplayMissionCopy = {
 
 export const roleplayMissionJa: RoleplayMissionCopy = {
   ...roleplayMissionEn,
-  form: "ミッション",
-  goalCount: (count) => `目標 ${String(count)}つ`,
-  best: (score) => `最高 ${String(score)}`,
+  ...roleplayMissionListCopy.ja,
   withCounterpart: (label) => `相手: ${label}`,
   turnLimit: (count) => `${String(count)}ターン`,
   previewBody: (label) =>

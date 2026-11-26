@@ -8,6 +8,7 @@ import { ChatIncomingRow, ChatTextBubble } from "../../components/chat/ChatMessa
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import type { RoleplayMissionCopy } from "../../lib/ui-copy-roleplay-mission";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { canAskHint, canFinishMission, canSendMission } from "./mission-session";
@@ -57,7 +58,7 @@ export function MissionTalkScreen({
   voice: ports,
 }: MissionTalkScreenProps): ReactNode {
   const copy = useUiCopy();
-  const mission = copy.roleplayMission;
+  const mission = useMissionCopy();
   const [confirming, setConfirming] = useState(false);
   const [prefill, setPrefill] = useState({ text: "", key: 0 });
   // 받아 적은 글을 입력 칸에 넣었으면 학습자가 (고쳐서) 보낸 글도 음성 턴입니다.
@@ -96,7 +97,7 @@ export function MissionTalkScreen({
   const lastMessageId = lastThem?.kind === "them" ? lastThem.messageId : null;
   useEffect(() => {
     if (lastMessageId !== null && autoPlay)
-      voice.autoPlay(lastMessageId, { kind: "message", messageId: lastMessageId });
+      voice.autoPlay(lastMessageId, { kind: "message", message_id: lastMessageId });
   }, [lastMessageId]);
 
   const avatar = { name: state.counterpartLabel || card.item.counterpartLabel, imageUrl: null };
@@ -154,7 +155,9 @@ export function MissionTalkScreen({
               line={line}
               avatar={avatar}
               playback={voice.state.playback}
-              onReplay={(messageId) => voice.play(messageId, { kind: "message", messageId })}
+              onReplay={(messageId) =>
+                voice.play(messageId, { kind: "message", message_id: messageId })
+              }
               onSend={onSend}
             />
           ))}
@@ -189,9 +192,14 @@ export function MissionTalkScreen({
           <MissionHintCard
             hint={state.hint}
             listening={voice.state.playback.key === "hint"}
-            onListen={() => {
-              if (state.hint !== null) voice.play("hint", { kind: "text", text: state.hint.ko });
-            }}
+            onListen={
+              state.hint.hintNo === undefined
+                ? null
+                : () => {
+                    const hintNo = state.hint?.hintNo;
+                    if (hintNo !== undefined) voice.play("hint", { kind: "hint", hint_no: hintNo });
+                  }
+            }
             onUse={() => {
               if (state.hint !== null)
                 setPrefill((value) => ({ text: state.hint?.ko ?? "", key: value.key + 1 }));

@@ -4,6 +4,8 @@ import {
   missionHintResponseSchema,
   missionListSchema,
   missionStartResponseSchema,
+  missionSttResponseSchema,
+  missionTtsResponseSchema,
   turnEventSchema,
   type TurnEvent,
 } from "@libitums/companion-contract";
@@ -178,20 +180,30 @@ describe("가짜 출처의 한 판", () => {
     expect((await source.list()).pendingReports).toBeUndefined();
   });
 
-  test("MF-U5e 받아 적기는 대본의 말을 차례로, 합성은 메시지 id · 글로 주소를 낸다", async () => {
+  test("MF-U5e 받아 적기는 대본의 말을 계약 모양으로 차례로, 합성은 메시지 id · 힌트 번호로 주소를 낸다", async () => {
     const { source, id } = await startedPlay();
     const clip = { uri: "fake://clip.wav", seconds: 1.2 };
-    expect(await source.transcribe(id, clip)).toMatchObject({ autoSend: true, reason: "ok" });
+    const first = await source.transcribe(id, clip);
+    expect(first).toMatchObject({ autoSend: true, reason: "ok" });
+    if (first.kind === "heard") {
+      const { kind: _kind, ...body } = first;
+      expect(missionSttResponseSchema.safeParse(body).success).toBe(true);
+    }
     expect(await source.transcribe(id, clip)).toMatchObject({
       autoSend: false,
       reason: "low_confidence",
     });
-    expect(await source.speak(id, { kind: "message", messageId: "m1" })).toEqual({
-      kind: "audio",
-      url: "fake://tts/m1",
+    const spoken = await source.speak(id, { kind: "message", message_id: "m1" });
+    expect(spoken).toMatchObject({ kind: "audio", url: "fake://tts/m1", mime: "audio/mpeg" });
+    if (spoken.kind === "audio") {
+      const { kind: _kind, ...body } = spoken;
+      expect(missionTtsResponseSchema.safeParse(body).success).toBe(true);
+    }
+    expect(await source.speak(id, { kind: "hint", hint_no: 2 })).toMatchObject({
+      url: "fake://tts/hint-2",
     });
     const silent = createFakeMissionSource({ schedule: now, ttsFails: true });
-    expect(await silent.speak(id, { kind: "text", text: "네" })).toEqual({ kind: "failed" });
+    expect(await silent.speak(id, { kind: "hint", hint_no: 1 })).toEqual({ kind: "failed" });
   });
 
   test("MF-U6 턴 상한에 닿으면 `turn_limit`로 끝나고 리포트는 실패다", async () => {
@@ -214,7 +226,10 @@ describe("가짜 출처의 한 판", () => {
     const { source, id } = await startedPlay();
     await turnEvents(source, id, "아메리카노 주세요");
     const first = await source.hint(id);
-    expect(first).toMatchObject({ kind: "hint", value: { goalId: "pay", hintsLeft: 2 } });
+    expect(first).toMatchObject({
+      kind: "hint",
+      value: { goalId: "pay", hintsLeft: 2, hintNo: 1 },
+    });
     if (first.kind === "hint")
       expect(missionHintResponseSchema.safeParse(first.value).success).toBe(true);
     await source.hint(id);

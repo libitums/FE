@@ -5,7 +5,7 @@ import { missionReportBadgeText } from "./mission-report-ready";
 import type { MissionReportBadgeState } from "./mission-report-ready";
 import { missionTestIds as ids } from "./mission-test-ids";
 
-import "./roleplay-mission-voice.css";
+import "./roleplay-mission-badge.css";
 
 export type MissionReportReadyBadgeProps = {
   readonly missionId: string;

@@ -1,13 +1,12 @@
 // 롤플레이 미션 문구의 번역 초안(태국어 · 미얀마어, ADR-0158 개정 — 화면 문구를 번들에 싣는다) — 원어민 검수 필요.
 // 모양과 영어 정본은 `ui-copy-roleplay-mission.ts`입니다. 엽전은 「Yeopjeon」(ADR-0116).
 
+import { roleplayMissionListCopy } from "./ui-copy-roleplay-mission-list";
 import { missionExtraMy, missionExtraTh } from "./ui-copy-roleplay-mission-extra-more";
 import type { RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
 
 export const roleplayMissionTh: RoleplayMissionCopy = {
-  form: "ภารกิจ",
-  goalCount: (count) => `${String(count)} เป้าหมาย`,
-  best: (score) => `สถิติ ${String(score)}`,
+  ...roleplayMissionListCopy.th,
   withCounterpart: (label) => `กับ${label}`,
   turnLimit: (count) => `${String(count)} ตา`,
   previewBody: (label) => `คุยกับ${label}ด้วยคำพูดของคุณเอง และทำเป้าหมายให้สำเร็จก่อนตาจะหมด`,
@@ -80,9 +79,7 @@ export const roleplayMissionTh: RoleplayMissionCopy = {
 };
 
 export const roleplayMissionMy: RoleplayMissionCopy = {
-  form: "မစ်ရှင်",
-  goalCount: (count) => `ပန်းတိုင် ${String(count)} ခု`,
-  best: (score) => `အကောင်းဆုံး ${String(score)}`,
+  ...roleplayMissionListCopy.my,
   withCounterpart: (label) => `${label} နှင့်`,
   turnLimit: (count) => `${String(count)} ကြိမ်`,
   previewBody: (label) => `${label} နှင့် ကိုယ့်စကားဖြင့် ပြောပြီး အလှည့်မကုန်မီ ပန်းတိုင်များကို ပြီးအောင် လုပ်ပါ။`,

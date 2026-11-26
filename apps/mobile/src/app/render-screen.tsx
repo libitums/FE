@@ -33,7 +33,7 @@ import {
 import { canBrowseChats } from "../screens/messenger-chat/messenger-access";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
-import { renderRoleplayMission } from "./render-roleplay-mission";
+import { renderRoleplayMission } from "./roleplay-mission-entry";
 import { renderPlans } from "./render-plans";
 import { renderMoreScreen } from "./render-more";
 import type { ScreenWiring } from "./screen-wiring";
@@ -200,8 +200,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-story":
     case "roleplay-story-complete":
       return renderRoleplayStory(screen, wiring);
+    // 스위치가 꺼진 release에서는 미션 코드가 번들에 없습니다 — 입구(`roleplay-mission-entry.ts`)를 이 삼항으로만 부릅니다(ME-S2).
     case "roleplay-mission":
-      return renderRoleplayMission(screen, wiring);
+      return __ROLEPLAY_MISSION_IN_BUNDLE__ ? renderRoleplayMission(screen, wiring) : null;
     // 비회원이 설정 › 「로그인」으로 여는 로그인 화면입니다(ADR-0111).
     case "guest-login":
       return renderGuestLoginScreen(wiring);

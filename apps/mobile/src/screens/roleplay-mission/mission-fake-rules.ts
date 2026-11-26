@@ -2,7 +2,7 @@
 // 서버(상태 줄 · 채점 모델 · Scribe)의 흉내일 뿐 앱의 판정이 아닙니다 — 서버 구현이 붙으면 이 파일은 개발 미리보기 · 테스트에서만 돕니다.
 
 import { missionHintExamples, missionReportFixture, missionStartFixture } from "./mission-fixture";
-import type { MissionTranscript } from "./mission-voice.contract";
+import type { MissionAutoSendReason, MissionTranscript } from "./mission-voice.contract";
 import type { MissionEndReason, MissionReport } from "./roleplay-mission.contract";
 
 type FakeLine = { readonly ko: string; readonly en: string };
@@ -67,11 +67,31 @@ export const FAKE_CAFE_SCRIPT = {
   orderRetry: { ko: "아이스 아메리카노 한 잔 주세요.", meaning: "One iced americano, please." },
   /** 마이크를 누를 때마다 차례로 받아 적는 말(서버 판단 흉내) — 둘째는 확신도가 낮아 입력 칸에서 확인합니다. */
   heard: [
-    { kind: "heard", text: "아이스 아메리카노 한 잔 주세요.", autoSend: true, reason: "ok" },
-    { kind: "heard", text: "가지고 가요.", autoSend: false, reason: "low_confidence" },
-    { kind: "heard", text: "카드로 할게요.", autoSend: true, reason: "ok" },
-  ] as readonly MissionTranscript[],
+    { text: "아이스 아메리카노 한 잔 주세요.", autoSend: true, reason: "ok" },
+    { text: "가지고 가요.", autoSend: false, reason: "low_confidence" },
+    { text: "카드로 할게요.", autoSend: true, reason: "ok" },
+  ] as readonly { text: string; autoSend: boolean; reason: MissionAutoSendReason }[],
 } as const;
+
+/** 계약 모양(`MissionSttResponse`)의 가짜 받아 적기 — 낱말 · 판단 재료는 그럴듯한 고정값입니다. */
+export function fakeHeard(
+  text: string,
+  autoSend: boolean,
+  reason: MissionAutoSendReason,
+): MissionTranscript {
+  const chars = text.replace(/[\s.,!?]/g, "").length;
+  return {
+    kind: "heard",
+    text,
+    autoSend,
+    reason,
+    words: text
+      .split(" ")
+      .map((word) => ({ text: word, start: null, end: null, confidence: null })),
+    features: { confMin: null, confMean: null, chars, hangulRatio: null, seconds: 1.6 },
+    latencyMs: 0,
+  };
+}
 
 export function goalsReachedBy(text: string): readonly string[] {
   return missionStartFixture.goals

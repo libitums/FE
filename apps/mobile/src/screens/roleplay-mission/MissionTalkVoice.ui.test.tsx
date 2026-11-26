@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, within } from "@lynx-js/react/testing-library";
 
+import { fakeHeard } from "./mission-fake-rules";
 import { MissionTalkScreen } from "./MissionTalkScreen";
 import { MISSION_FIXTURE_IDS } from "./mission-fixture";
 import {
@@ -59,7 +60,7 @@ async function speakOnce(): Promise<void> {
 test("MV-UI1 확신이 낮으면 받아 적은 글을 입력 칸에 넣고 확인을 부탁한다 — 보내면 voice", async () => {
   const voice = voicePorts({
     source: {
-      heard: [{ kind: "heard", text: "가지고 가요.", autoSend: false, reason: "low_confidence" }],
+      heard: [fakeHeard("가지고 가요.", false, "low_confidence")],
     },
   });
   const { onSend } = mount(talking, voice);
@@ -76,7 +77,7 @@ test("MV-UI1 확신이 낮으면 받아 적은 글을 입력 칸에 넣고 확�
 test("MV-UI2 한국어로 들리지 않으면 다른 안내 — 다시 말하기는 녹음을 다시 연다", async () => {
   const voice = voicePorts({
     source: {
-      heard: [{ kind: "heard", text: "I will pay by card", autoSend: false, reason: "not_korean" }],
+      heard: [fakeHeard("I will pay by card", false, "not_korean")],
     },
   });
   mount(talking, voice);
@@ -94,11 +95,11 @@ test("MV-UI3 실패 안내 — 0.4초 미만 · 빈 결과 · 서버 몰림 · �
   const cases = [
     { voice: voicePorts({ device: { seconds: 0.2 } }), note: "Hold on a bit longer" },
     {
-      voice: voicePorts({ source: { heard: [{ kind: "failed", code: "empty" }] } }),
+      voice: voicePorts({ source: { heard: [{ kind: "failed", error: "speech_empty" }] } }),
       note: "We couldn't hear you. Try again or type.",
     },
     {
-      voice: voicePorts({ source: { heard: [{ kind: "failed", code: "busy" }] } }),
+      voice: voicePorts({ source: { heard: [{ kind: "failed", error: "speech_busy" }] } }),
       note: "Too many requests right now.",
     },
   ];
@@ -120,7 +121,7 @@ test("MV-UI3 실패 안내 — 0.4초 미만 · 빈 결과 · 서버 몰림 · �
 
 test("MV-UI4 30초 상한에 닿으면 저절로 받아 적고 상한 안내가 남는다", async () => {
   const voice = voicePorts({
-    source: { heard: [{ kind: "heard", text: "네", autoSend: false, reason: "too_short" }] },
+    source: { heard: [fakeHeard("네", false, "too_short")] },
   });
   mount(talking, voice);
   fireEvent.tap(id("roleplay-mission-mic"), {});
@@ -129,7 +130,9 @@ test("MV-UI4 30초 상한에 닿으면 저절로 받아 적고 상한 안내가 
   await settle();
   expect(id("roleplay-mission-heard-check")).toHaveTextContent("Did I hear that right?");
   cleanup();
-  const failing = voicePorts({ source: { heard: [{ kind: "failed", code: "server" }] } });
+  const failing = voicePorts({
+    source: { heard: [{ kind: "failed", error: "speech_unavailable" }] },
+  });
   mount(talking, failing);
   fireEvent.tap(id("roleplay-mission-mic"), {});
   await settle();
@@ -182,7 +185,7 @@ test("MV-UI6 상대역 답은 한 번만 자동 재생하고, 합성이 실패�
   expect(id("roleplay-mission-log")).toHaveTextContent("네, 아메리카노요.");
 });
 
-test("MV-UI7 힌트 예문 듣기 — 예문 글을 합성해 재생한다", async () => {
+test("MV-UI7 힌트 예문 듣기 — 힌트 번호로 합성해 재생한다, 번호가 없으면 듣기 단추가 없다", async () => {
   const voice = voicePorts();
   mount(
     sessionAfter([
@@ -196,6 +199,7 @@ test("MV-UI7 힌트 예문 듣기 — 예문 글을 합성해 재생한다", asy
           roman: "kadeuro halgeyo.",
           meaning: "I'll pay by card.",
           hintsLeft: 2,
+          hintNo: 1,
         },
       },
     ]),
@@ -205,9 +209,22 @@ test("MV-UI7 힌트 예문 듣기 — 예문 글을 합성해 재생한다", asy
   fireEvent.tap(id("roleplay-mission-hint-listen"), {});
   await settle();
   expect(id("roleplay-mission-hint-listen")).toHaveTextContent("Listen");
-  expect(voice.device.played.at(-1)).toBe(`fake://tts/${encodeURIComponent("카드로 할게요.")}`);
+  expect(voice.device.played.at(-1)).toBe("fake://tts/hint-1");
   expect(id("roleplay-mission-hint-listen")).toHaveAttribute("data-play", "true");
   tapButton("roleplay-mission-hint-close");
+  cleanup();
+  mount(
+    sessionAfter([
+      ...startedActions,
+      { type: "hint-requested" },
+      {
+        type: "hint-received",
+        value: { goalId: "pay", ko: "카드로 할게요.", roman: "", meaning: "", hintsLeft: 2 },
+      },
+    ]),
+  );
+  expect(id("roleplay-mission-hint-card")).toBeInTheDocument();
+  expect(maybe("roleplay-mission-hint-listen")).not.toBeInTheDocument();
 });
 
 test("MV-UI8 그만두기 확인을 띄우면 녹음을 버린다(보내지 않음)", async () => {

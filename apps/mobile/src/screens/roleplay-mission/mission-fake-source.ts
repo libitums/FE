@@ -3,11 +3,11 @@
 // 판은 끝내기 · 그만두기 모두 채점하고(ADR-0177), 채점 대기 판(`pendingReports`)도 하나 만들 수 있습니다. 받아 적기 · 합성은 대본의
 // 말을 차례로 돌려줍니다. 테스트는 가지를 고릅니다 — 시작 거절 · 채점 실패(한 번 / 늘) · 턴 오류 · 받아 적기 · 합성 실패.
 
-import { buildFakeReport, FAKE_CAFE_SCRIPT } from "./mission-fake-rules";
+import { buildFakeReport, FAKE_CAFE_SCRIPT, fakeHeard } from "./mission-fake-rules";
 import { fakeTurn, requiredDoneOf } from "./mission-fake-turn";
 import type { FakePlay, FakeTurnEvent } from "./mission-fake-turn";
 import { missionHintExamples, missionListFixture, missionStartFixture } from "./mission-fixture";
-import type { MissionTranscript } from "./mission-voice.contract";
+import type { MissionSpeech, MissionTranscript } from "./mission-voice.contract";
 import type {
   MissionFinishResponse,
   MissionList,
@@ -189,7 +189,7 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
         play.hintsUsed += 1;
         return {
           kind: "hint",
-          value: { goalId: goal.id, ...example, hintsLeft: play.hintsLeft },
+          value: { goalId: goal.id, ...example, hintsLeft: play.hintsLeft, hintNo: play.hintsUsed },
         };
       }),
     finish: (conversationId, abandon) =>
@@ -215,18 +215,23 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
       ),
     transcribe: () =>
       later((): MissionTranscript => {
-        const script = options.heard ?? FAKE_CAFE_SCRIPT.heard;
+        const script =
+          options.heard ??
+          FAKE_CAFE_SCRIPT.heard.map((line) => fakeHeard(line.text, line.autoSend, line.reason));
         const next = script[heardIndex % Math.max(1, script.length)];
         heardIndex += 1;
-        return next ?? { kind: "failed", code: "empty" };
+        return next ?? { kind: "failed", error: "speech_empty" };
       }),
     speak: (_conversationId, request) =>
-      later(() =>
+      later((): MissionSpeech =>
         options.ttsFails === true
-          ? { kind: "failed" as const }
+          ? { kind: "failed" }
           : {
-              kind: "audio" as const,
-              url: `fake://tts/${request.kind === "message" ? request.messageId : encodeURIComponent(request.text)}`,
+              kind: "audio",
+              url: `fake://tts/${request.kind === "message" ? request.message_id : `hint-${String(request.hint_no)}`}`,
+              expiresAt: "2099-01-01T00:00:00+09:00",
+              cached: false,
+              mime: "audio/mpeg",
             },
       ),
   };

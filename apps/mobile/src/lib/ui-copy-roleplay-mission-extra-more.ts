@@ -30,7 +30,6 @@ export const missionExtraId: MissionExtraCopy = {
     hintListen: "Dengarkan",
     autoPlay: "Putar otomatis",
   },
-  reportReady: { ready: "Laporan siap", grading: "Menilai…" },
   report: {
     scoreParts: "Rincian skormu",
     partTask: "Tujuan",
@@ -73,7 +72,6 @@ export const missionExtraVi: MissionExtraCopy = {
     hintListen: "Nghe",
     autoPlay: "Tự động phát",
   },
-  reportReady: { ready: "Báo cáo đã sẵn sàng", grading: "Đang chấm…" },
   report: {
     scoreParts: "Điểm của bạn được tính thế nào",
     partTask: "Mục tiêu",
@@ -116,7 +114,6 @@ export const missionExtraTh: MissionExtraCopy = {
     hintListen: "ฟัง",
     autoPlay: "เล่นอัตโนมัติ",
   },
-  reportReady: { ready: "รายงานพร้อมแล้ว", grading: "กำลังให้คะแนน…" },
   report: {
     scoreParts: "คะแนนของคุณมาจากไหน",
     partTask: "เป้าหมาย",
@@ -159,7 +156,6 @@ export const missionExtraMy: MissionExtraCopy = {
     hintListen: "နားထောင်ရန်",
     autoPlay: "အလိုအလျောက်ဖွင့်",
   },
-  reportReady: { ready: "အစီရင်ခံစာ အသင့်", grading: "အမှတ်ပေးနေသည်…" },
   report: {
     scoreParts: "သင့်အမှတ် ပေါင်းပုံ",
     partTask: "ပန်းတိုင်",

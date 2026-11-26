@@ -9,6 +9,7 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import { missionTestIds as ids } from "./mission-test-ids";
 import type { MissionGoalState } from "./roleplay-mission.contract";
@@ -45,7 +46,7 @@ export function MissionTopBar({
   onQuit,
 }: MissionTopBarProps): ReactNode {
   const ui = useUiCopy();
-  const copy = ui.roleplayMission;
+  const copy = useMissionCopy();
   const autoPlayState = autoPlay ? ui.settings.optionState.on : ui.settings.optionState.off;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
   return (

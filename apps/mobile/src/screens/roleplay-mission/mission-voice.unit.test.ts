@@ -6,6 +6,7 @@ import {
   recordClock,
   transcriptDecision,
 } from "./mission-voice";
+import { fakeHeard } from "./mission-fake-rules";
 import type { MissionVoiceAction, MissionVoiceState } from "./mission-voice.contract";
 
 // `unit` 계층(MVO-U1 ~): 미션 음성의 순수 규칙 — 받아 적은 글을 바로 보낼지(서버 `autoSend`), 녹음 · 재생 상태, 시간 표시.
@@ -17,37 +18,41 @@ const run = (
 
 describe("받아 적은 글의 판단", () => {
   test("MVO-U1 서버가 ok면 바로 보내고, 확신도 낮음 · 짧음 · 확신도 없음은 입력 칸에서 확인", () => {
-    expect(
-      transcriptDecision({ kind: "heard", text: " 카드로 할게요 ", autoSend: true, reason: "ok" }),
-    ).toEqual({ kind: "send", text: "카드로 할게요" });
+    expect(transcriptDecision(fakeHeard(" 카드로 할게요 ", true, "ok"))).toEqual({
+      kind: "send",
+      text: "카드로 할게요",
+    });
     for (const reason of ["low_confidence", "too_short", "no_confidence"] as const)
-      expect(transcriptDecision({ kind: "heard", text: "네", autoSend: false, reason })).toEqual({
+      expect(transcriptDecision(fakeHeard("네", false, reason))).toEqual({
         kind: "confirm",
         text: "네",
         check: "heard",
       });
-    expect(
-      transcriptDecision({ kind: "heard", text: "네", autoSend: true, reason: "no_confidence" }),
-    ).toEqual({ kind: "send", text: "네" });
+    expect(transcriptDecision(fakeHeard("네", true, "no_confidence"))).toEqual({
+      kind: "send",
+      text: "네",
+    });
   });
 
   test("MVO-U2 한국어가 아니면 다른 안내, 빈 결과 · 실패는 안내만", () => {
-    expect(
-      transcriptDecision({ kind: "heard", text: "card", autoSend: false, reason: "not_korean" }),
-    ).toEqual({ kind: "confirm", text: "card", check: "notKorean" });
-    expect(transcriptDecision({ kind: "heard", text: " ", autoSend: true, reason: "ok" })).toEqual({
+    expect(transcriptDecision(fakeHeard("card", false, "not_korean"))).toEqual({
+      kind: "confirm",
+      text: "card",
+      check: "notKorean",
+    });
+    expect(transcriptDecision(fakeHeard(" ", true, "ok"))).toEqual({
       kind: "notice",
       notice: "notHeard",
     });
-    expect(transcriptDecision({ kind: "failed", code: "busy" })).toEqual({
+    expect(transcriptDecision({ kind: "failed", error: "speech_busy" })).toEqual({
       kind: "notice",
       notice: "busy",
     });
-    expect(transcriptDecision({ kind: "failed", code: "server" })).toEqual({
+    expect(transcriptDecision({ kind: "failed", error: "speech_unavailable" })).toEqual({
       kind: "notice",
       notice: "serverDown",
     });
-    expect(transcriptDecision({ kind: "failed", code: "empty" })).toEqual({
+    expect(transcriptDecision({ kind: "failed", error: "speech_empty" })).toEqual({
       kind: "notice",
       notice: "notHeard",
     });

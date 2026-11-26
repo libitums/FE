@@ -2,6 +2,10 @@
 // 이 파일은 모양과 영어 정본이고 번역 초안은 `-es-ja` · `-id-vi` 파일입니다 — 원어민 검수 필요. 엽전은 「Yeopjeon」(ADR-0116 — 화면 문구에 한글을 쓰지 않음).
 // 미션은 스위치(`ROLEPLAY_MISSION_READY`) 뒤라 지금 사용자에게 보이지 않습니다.
 
+import {
+  roleplayMissionListCopy,
+  type RoleplayMissionListCopy,
+} from "./ui-copy-roleplay-mission-list";
 import { n } from "./ui-copy-en-plural";
 import { missionExtraEn, type MissionExtraCopy } from "./ui-copy-roleplay-mission-extra";
 
@@ -15,11 +19,8 @@ export type MissionStartErrorKey =
   | "temporarily_blocked"
   | "network";
 
-export type RoleplayMissionCopy = {
-  /** 목록 카드의 형태 낱말. */
-  readonly form: string;
-  readonly goalCount: (count: number) => string;
-  readonly best: (score: number) => string;
+/** 미션 화면 문구 전체 — 목록 카드 몫(`RoleplayMissionListCopy`, 늘 번들에 듦) + 미션 화면 몫(가지치기 대상). */
+export type RoleplayMissionCopy = RoleplayMissionListCopy & {
   readonly withCounterpart: (label: string) => string;
   readonly turnLimit: (count: number) => string;
   readonly previewBody: (label: string) => string;
@@ -83,9 +84,7 @@ export type RoleplayMissionCopy = {
 };
 
 export const roleplayMissionEn: RoleplayMissionCopy = {
-  form: "Mission",
-  goalCount: (count) => n(count, "goal", "goals"),
-  best: (score) => `Best ${String(score)}`,
+  ...roleplayMissionListCopy.en,
   withCounterpart: (label) => `with ${label}`,
   turnLimit: (count) => n(count, "turn", "turns"),
   previewBody: (label) =>

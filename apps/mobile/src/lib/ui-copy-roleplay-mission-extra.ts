@@ -29,8 +29,6 @@ export type MissionExtraCopy = {
     /** 위 띠의 자동 재생 토글 — 낭독은 「Auto-play, On / Off」(켬 · 끔 낱말은 설정 화면의 것). */
     readonly autoPlay: string;
   };
-  /** 목록 카드의 채점 대기 판 표시(`pendingReports`) — 리포트 준비됨 · 채점 중. */
-  readonly reportReady: { readonly ready: string; readonly grading: string };
   readonly report: {
     readonly scoreParts: string;
     readonly partTask: string;
@@ -73,7 +71,6 @@ export const missionExtraEn: MissionExtraCopy = {
     hintListen: "Listen",
     autoPlay: "Auto-play",
   },
-  reportReady: { ready: "Report ready", grading: "Scoring…" },
   report: {
     scoreParts: "How your score adds up",
     partTask: "Goals",
@@ -116,7 +113,6 @@ export const missionExtraEs: MissionExtraCopy = {
     hintListen: "Escuchar",
     autoPlay: "Reproducción automática",
   },
-  reportReady: { ready: "Informe listo", grading: "Puntuando…" },
   report: {
     scoreParts: "Cómo se suma tu puntuación",
     partTask: "Objetivos",
@@ -159,7 +155,6 @@ export const missionExtraJa: MissionExtraCopy = {
     hintListen: "聞く",
     autoPlay: "自動再生",
   },
-  reportReady: { ready: "レポート準備完了", grading: "採点中…" },
   report: {
     scoreParts: "スコアの内訳",
     partTask: "目標",
