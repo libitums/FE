@@ -15,6 +15,7 @@ export const chatReplyToastEventExamples = [
     characterId: "mina",
     kind: "reply",
     more: "1",
+    stack: "2",
     deferred: "false",
     screen: "journey-map",
   },

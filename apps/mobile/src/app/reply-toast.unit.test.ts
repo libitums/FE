@@ -152,67 +152,88 @@ const arrive = (id: string, now = 0, place: ReplyToastPlace = show): ReplyToastA
   now,
 });
 
-describe("replyToastReducer (RT-U3 ~ U6)", () => {
-  test("RT-U3. show면 카드가 서고, 같은 인물이 또 오면 내용만 바꿔 낀다(「+N」 그대로 · 새 key)", () => {
-    const first = run([arrive("mina")]);
-    expect(first.card).toMatchObject({
-      characterId: "mina",
-      roomId: "room-mina",
-      kind: "reply",
-      more: 0,
-      deferred: false,
-    });
-    const again = run([arrive("mina", 1000)], first);
-    expect(again.card).toMatchObject({ characterId: "mina", more: 0 });
-    expect(again.card?.key).not.toBe(first.card?.key);
-    expect(again.shownAt).toEqual([0]);
+const ids = (state: ReplyToastState) => state.cards.map((card) => card.characterId);
+const keyOf = (state: ReplyToastState, id: string) =>
+  state.cards.find((card) => card.characterId === id)?.key ?? -1;
+const defer = { kind: "defer" } as const;
+
+describe("replyToastReducer — 쌓기 (RT-U3 ~ U6, ADR-0200 개정 1)", () => {
+  test("RT-U3. 인물마다 카드 하나 — 새 인물은 맨 위에 쌓이고, 같은 인물은 그 카드만 갈아 끼워 맨 위로(새 key)", () => {
+    const two = run([arrive("mina"), arrive("doyun", 500)]);
+    expect(ids(two)).toEqual(["doyun", "mina"]);
+    expect(two.cards[1]).toMatchObject({ roomId: "room-mina", kind: "reply", deferred: false });
+    const again = run([arrive("mina", 1000)], two);
+    expect(ids(again)).toEqual(["mina", "doyun"]);
+    expect(keyOf(again, "mina")).not.toBe(keyOf(two, "mina"));
+    expect(keyOf(again, "doyun")).toBe(keyOf(two, "doyun"));
+    expect(again.shownAt).toEqual([0, 500]);
+    expect(again.more).toBe(0);
   });
 
-  test("RT-U3b. 다른 인물이 오면 최신으로 바꾸고 「+1」, 닫으면 카드가 사라진다", () => {
-    const state = run([arrive("mina"), arrive("doyun", 500)]);
-    expect(state.card).toMatchObject({ characterId: "doyun", more: 1 });
-    expect(run([{ type: "dismiss" }], state).card).toBeNull();
-  });
-
-  test("RT-U4. 1분에 새 카드는 세 번까지 — 넷째는 띄우지 않고, 1분이 지나면 다시 띄운다", () => {
-    const three = run([
+  test("RT-U3b. 최대 3장 — 넷째 인물이 오면 맨 아래가 빠져 「+1」로 합쳐진다(새 카드는 맨 위)", () => {
+    const state = run([
       arrive("a", 0),
-      { type: "dismiss" },
-      arrive("b", 10_000),
-      { type: "dismiss" },
-      arrive("c", 20_000),
-      { type: "dismiss" },
+      arrive("b", 1),
+      arrive("c", 2),
+      { type: "dismiss", key: 1 },
+      arrive("d", 70_000),
     ]);
-    expect(run([arrive("d", 30_000)], three).card).toBeNull();
-    expect(run([arrive("d", 60_001)], three).card).toMatchObject({ characterId: "d" });
+    expect(ids(state)).toEqual(["d", "c", "b"]);
+    expect(run([arrive("e", 70_001)], state)).toMatchObject({ more: 1 });
+    expect(ids(run([arrive("e", 70_001)], state))).toEqual(["e", "d", "c"]);
+  });
+
+  test("RT-U3c. 닫기는 그 카드만 — 맨 아래 카드가 닫히면 「+N」도 사라지고, clear는 모두 닫는다", () => {
+    const full = run([arrive("a", 0), arrive("b", 1), arrive("c", 2), arrive("d", 61_000)]);
+    expect(ids(full)).toEqual(["d", "c", "b"]);
+    expect(full.more).toBe(1);
+    const middle = run([{ type: "dismiss", key: keyOf(full, "c") }], full);
+    expect(ids(middle)).toEqual(["d", "b"]);
+    expect(middle.more).toBe(1);
+    const bottom = run([{ type: "dismiss", key: keyOf(full, "b") }], full);
+    expect(bottom.more).toBe(0);
+    expect(run([{ type: "clear" }], full)).toMatchObject({ cards: [], more: 0 });
+  });
+
+  test("RT-U4. 1분에 새 카드는 세 장까지 — 넷째 인물은 새 카드 대신 맨 아래 「+N」, 떠 있는 카드가 없으면 버림, 1분 뒤 다시 섬", () => {
+    const three = run([arrive("a", 0), arrive("b", 10_000), arrive("c", 20_000)]);
+    const over = run([arrive("d", 30_000)], three);
+    expect(ids(over)).toEqual(["c", "b", "a"]);
+    expect(over.more).toBe(1);
+    const gone = run(
+      three.cards.map((card) => ({ type: "dismiss", key: card.key }) as const),
+      three,
+    );
+    expect(run([arrive("d", 30_000)], gone).cards).toEqual([]);
+    expect(ids(run([arrive("d", 60_001)], gone))).toEqual(["d"]);
   });
 
   test("RT-U5. list · room(그 인물) · off에서는 띄우지 않고, 다른 인물의 방이면 띄운다", () => {
-    expect(run([arrive("mina", 0, { kind: "list" })]).card).toBeNull();
-    expect(run([arrive("mina", 0, { kind: "off" })]).card).toBeNull();
-    expect(run([arrive("mina", 0, { kind: "room", roomId: "room-mina" })]).card).toBeNull();
-    expect(run([arrive("mina", 0, { kind: "room", roomId: "room-doyun" })]).card).toMatchObject({
-      characterId: "mina",
-    });
+    expect(run([arrive("mina", 0, { kind: "list" })]).cards).toEqual([]);
+    expect(run([arrive("mina", 0, { kind: "off" })]).cards).toEqual([]);
+    expect(run([arrive("mina", 0, { kind: "room", roomId: "room-mina" })]).cards).toEqual([]);
+    expect(ids(run([arrive("mina", 0, { kind: "room", roomId: "room-doyun" })]))).toEqual(["mina"]);
   });
 
-  test("RT-U6a. 레슨 중(defer)에는 모아 두었다가, 레슨 밖으로 나오면 최신 하나 + 「+N」으로 한 번에 띄운다", () => {
-    const defer = { kind: "defer" } as const;
+  test("RT-U6a. 레슨 중(defer)에 모아 둔 것은 나오면 인물별 카드로 한꺼번에 — 최신이 맨 위, 넷째부터 「+N」", () => {
     const held = run([
-      arrive("mina", 0, defer),
-      arrive("doyun", 1, defer),
-      arrive("doyun", 2, defer),
+      arrive("a", 0, defer),
+      arrive("b", 1, defer),
+      arrive("b", 2, defer),
+      arrive("c", 3, defer),
+      arrive("d", 4, defer),
     ]);
-    expect(held.card).toBeNull();
-    expect(held.deferred).toHaveLength(3);
+    expect(held.cards).toEqual([]);
+    expect(held.deferred).toHaveLength(5);
     const out = run([{ type: "place", place: show, now: 5000 }], held);
-    expect(out.card).toMatchObject({ characterId: "doyun", more: 1, deferred: true });
+    expect(ids(out)).toEqual(["d", "c", "b"]);
+    expect(out.more).toBe(1);
+    expect(out.cards.every((card) => card.deferred)).toBe(true);
     expect(out.deferred).toEqual([]);
-    expect(out.shownAt).toEqual([5000]);
+    expect(out.shownAt).toEqual([5000, 5000, 5000]);
   });
 
   test("RT-U6b. 미룬 사이 목록으로 가면 다 버리고, 그 방으로 가면 그 인물 것만 버리고 나머지를 띄운다", () => {
-    const defer = { kind: "defer" } as const;
     const held = run([arrive("mina", 0, defer), arrive("doyun", 1, defer)]);
     expect(run([{ type: "place", place: { kind: "list" }, now: 2 }], held).deferred).toEqual([]);
     const inRoom = run(
@@ -220,17 +241,17 @@ describe("replyToastReducer (RT-U3 ~ U6)", () => {
       held,
     );
     expect(inRoom.deferred).toEqual([]);
-    expect(inRoom.card).toMatchObject({ characterId: "mina", more: 0 });
+    expect(ids(inRoom)).toEqual(["mina"]);
   });
 
-  test("RT-U6c. 떠 있는 카드는 목록 · 그 방으로 가면 사라지고, 레슨으로 들어가도 남지 않는다", () => {
-    const state = run([arrive("mina")]);
-    expect(run([{ type: "place", place: { kind: "list" }, now: 1 }], state).card).toBeNull();
+  test("RT-U6c. 목록 · 레슨으로 가면 모두 사라지고, 그 인물의 방으로 가면 그 카드만 사라진다", () => {
+    const state = run([arrive("mina"), arrive("doyun", 1)]);
+    expect(run([{ type: "place", place: { kind: "list" }, now: 2 }], state).cards).toEqual([]);
+    expect(run([{ type: "place", place: defer, now: 2 }], state).cards).toEqual([]);
     expect(
-      run([{ type: "place", place: { kind: "room", roomId: "room-mina" }, now: 1 }], state).card,
-    ).toBeNull();
-    expect(run([{ type: "place", place: { kind: "defer" }, now: 1 }], state).card).toBeNull();
-    expect(run([{ type: "place", place: show, now: 1 }], state)).toBe(state);
+      ids(run([{ type: "place", place: { kind: "room", roomId: "room-mina" }, now: 2 }], state)),
+    ).toEqual(["doyun"]);
+    expect(run([{ type: "place", place: show, now: 2 }], state)).toBe(state);
   });
 });
 

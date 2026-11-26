@@ -197,7 +197,9 @@ function registryFill({ componentSources, cssSources }) {
       fillComponents[carrier.file] =
         carrier.className === undefined
           ? carrierComponent(name, name)
-          : journeyMapScreen({ scrimAttr: "data-statusbar={lightStatusBarIcons}" });
+          : carrier.className === "first-unit-map-scrim"
+            ? journeyMapScreen({ scrimAttr: "data-statusbar={lightStatusBarIcons}" })
+            : carrierComponent(name, carrier.className);
     }
   }
   return { componentSources: fillComponents, cssSources: fillCss };
@@ -547,6 +549,9 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /JourneyStatModal/);
   assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /light-icons/);
   assert.match(layerText("screens/messenger-chat/chat-album.css"), /AlbumPhotoViewer/);
+  // 내 스토리 사진 위 편집(2026-11-26 화면 끝까지) — 사진일 때만 그리는 그늘이 밝은 아이콘 표지를 단다.
+  assert.match(layerText("screens/messenger-chat/my-stories.css"), /light-icons/);
+  assert.match(layerText("screens/messenger-chat/my-stories.css"), /my-story-editor-shade/);
   assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /CoinShopScreen/);
   const guide = layerText("components/first-unit-guide.css");
   assert.match(guide, /light-icons/);

@@ -37,8 +37,12 @@ public final class DuruFirebaseMessagingService extends FirebaseMessagingService
   }
 
   @Override public void onMessageReceived(RemoteMessage message) {
+    String target = message.getData().get("target");
+    // 앱이 앞에 있고 인물의 채팅 메시지면 알림 대신 앱 안 토스트로(ADR-0200 개정).
+    String characterId = ForegroundPush.chatCharacterId(target);
+    if (characterId != null && ForegroundPush.PROCESS.deliver(characterId)) return;
     postForegroundNotification(this, message.getData().get("title"),
-        message.getData().get("body"), message.getData().get("target"));
+        message.getData().get("body"), target);
   }
 
   /** Returns false when Android will not display a notification. Also used by instrumentation. */
