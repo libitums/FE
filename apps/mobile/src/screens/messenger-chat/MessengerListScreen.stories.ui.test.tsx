@@ -325,3 +325,24 @@ test("FS-UI33. 안 만난 친구의 아바타 → 추천 친구 프로필 시트
   ]);
   expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
 });
+
+test("FS-UI48. 안 만난 친구의 아래 소개 카드 → 같은 추천 친구 프로필 시트(Start chatting 그대로) · 진행 멈춤 · 닫으면 이어 감", async () => {
+  const { events } = await mount(live);
+  tapId(ids.unmet("daeun"));
+  tapId(ids.meetCard);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("다은");
+  expect(screen.getByTestId(suggestedIds.sheetStart)).not.toBeNull();
+  expect(screen.queryByTestId(suggestedIds.sheetClose)).toBeNull();
+  expect(events().filter((e) => e.name === "suggested_friend_opened")).toEqual([
+    expect.objectContaining({ characterId: "daeun", from: "story_viewer" }),
+  ]);
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+  advance(20_000);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.getByTestId(ids.name).textContent).toContain("다은");
+  // Not now → 시트만 닫히고 진행이 이어 간다(이 줄의 마지막 장이라 다 차면 보기가 닫힘).
+  tapId(suggestedIds.sheetLater);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  advance(7_000);
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+});
