@@ -125,7 +125,9 @@ export function MyStoryEditor({
       ? copy.hintMove
       : photo !== null
         ? all.photo.hint
-        : copy.hintOne;
+        : caps.text
+          ? copy.hintOneText
+          : copy.hintOne;
   const update = (next: EditorSticker) =>
     setStickers((now) => now.map((each) => (each.id === next.id ? next : each)));
 

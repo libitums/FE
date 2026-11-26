@@ -126,6 +126,7 @@ export const myStoriesTh: MyStoriesCopy = {
     share: "แชร์ให้เพื่อน",
     posting: "กำลังแชร์…",
     hintOne: "เพิ่มคำหนึ่งคำเพื่อแชร์",
+    hintOneText: "เพิ่มคำศัพท์หรือเขียนสักประโยคเพื่อแชร์",
     hintMove: "ลากเพื่อย้าย ใช้สองนิ้วเพื่อปรับขนาด",
     stickerLabel: (ko, meaning) => `${ko} ${meaning}`,
     remove: (ko) => `ลบ ${ko}`,

@@ -110,6 +110,8 @@ export type MyStoriesCopy = {
     readonly posting: string;
     /** 지금 서버(단어 · 카드만) — 스티커 하나로 올림. */
     readonly hintOne: string;
+    /** 글 서버(Aa 보임) — 단어를 얹거나 한 줄을 써서 올림(사진 안내 `photo.hint`와 짝). */
+    readonly hintOneText: string;
     readonly hintMove: string;
     readonly stickerLabel: (ko: string, meaning: string) => string;
     readonly remove: (ko: string) => string;
