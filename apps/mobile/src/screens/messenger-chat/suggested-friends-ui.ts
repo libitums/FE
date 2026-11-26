@@ -2,7 +2,8 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
-import type { FriendProfile } from "./friend-catalog.contract";
+import type { ChoiceRomanization } from "../../lib/session-options";
+import type { FriendProfile, SuggestedFriendsPort } from "./friend-catalog.contract";
 import type { DirectoryRow } from "./friend-directory";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
 import type { SuggestedFriend } from "./suggested-friends";
@@ -31,6 +32,8 @@ export type SuggestedFriendsUi = {
   readonly layers: ReactNode;
   /** 시트나 친구 찾기가 떠 있는가 — 목록 화면이 다른 겹침과 합쳐 한 번만 바깥에 알립니다. */
   readonly layerOpen: boolean;
+  /** 그 시트가 받을 견본 주소 · 로마자(ADR-0198) — 이 상태 밖에서 같은 시트를 세우는 자리(스토리 보기)도 이 값을 넘깁니다. */
+  readonly sheetView: (model: SuggestedFriendSheetModel) => SheetView;
 };
 
 export const modelOfFriend = (friend: SuggestedFriend): SuggestedFriendSheetModel => ({
@@ -75,3 +78,21 @@ export const modelOfMetFriend = (
   status: "added",
   offer: null,
 });
+
+/** 프로필 시트가 결선에서 받는 값 — 목소리 견본 주소 · 로마자 스위치(ADR-0198). 시트를 세우는 자리마다 같게 넘깁니다. */
+export type SheetView = {
+  readonly voiceSampleUrl: string | null;
+  readonly romanization: ChoiceRomanization;
+};
+
+/** 견본이 없거나 포트가 못 풀면 주소 null, 포트가 없거나 스위치가 꺼졌으면 hidden. */
+export const sheetViewOf = (
+  model: SuggestedFriendSheetModel,
+  port: SuggestedFriendsPort | undefined,
+): SheetView => {
+  const path = model.character.voiceSamplePath ?? null;
+  return {
+    voiceSampleUrl: path === null ? null : (port?.voiceSampleUrl?.(path) ?? null),
+    romanization: port?.romanization?.() === true ? "shown" : "hidden",
+  };
+};
