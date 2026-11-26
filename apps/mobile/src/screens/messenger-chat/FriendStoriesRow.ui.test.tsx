@@ -94,20 +94,23 @@ test("FS-UI1. 안 본 것은 경과 시간 · 본 것은 Seen · 안 만난 친�
   }
 });
 
-test("FS-UI48. 고리 — 안 본 것 brand 실선 · 본 것 회색 점선(친구 · 안 만난 친구 모두) · 안 본 안 만난 친구 brand 점선, 낭독은 그대로(ADR-0178 D3 개정 ⟨점선⟩)", () => {
-  mount(["s-b", "s-g"]);
+test("FS-UI48. 고리 네 칸 — 점선은 안 만난 친구만 · 회색은 본 것만, 낭독은 그대로(ADR-0178 D3 개정 ⟨점선⟩ · 사용자 정정 2026-11-26)", () => {
   const ringOf = (id: string) =>
     screen.getByTestId(id).querySelector("view")?.getAttribute("class");
+  // 만난 친구: 안 본 것 brand 실선 · 본 것 회색 실선. 안 만난 친구: 안 본 것 brand 점선.
+  mount(["s-b"]);
   expect(ringOf(ids.friend("a"))).toBe("story-ring story-ring-unseen");
   expect(ringOf(ids.friend("b"))).toBe("story-ring story-ring-seen");
+  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-unseen story-ring-unmet");
+  expect(screen.getByTestId(ids.unmet("g")).getAttribute("data-state")).toBe("unmet");
+  cleanup();
+  // 안 만난 친구의 본 것: 회색 점선.
+  mount(["s-b", "s-g"]);
   const g = screen.getByTestId(ids.unmet("g"));
   expect(g.getAttribute("data-state")).toBe("seen");
-  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-seen");
+  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-seen story-ring-unmet");
   expect(g.textContent).toContain("New");
   expect(g.getAttribute("accessibility-label")).toBe("다은's story, new friend");
-  cleanup();
-  mount();
-  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-unmet");
 });
 
 test("FS-UI2. 탭은 저마다의 콜백으로", () => {
