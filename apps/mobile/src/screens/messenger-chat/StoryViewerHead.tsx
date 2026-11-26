@@ -79,7 +79,7 @@ export function StoryViewerHead({
             copy.viewer.label(item.name),
             groupLabel,
           ])}
-          bindtap={openProfile}
+          catchtap={openProfile}
         >
           {item.name}
         </text>
@@ -92,7 +92,7 @@ export function StoryViewerHead({
           accessibility-enable-tap={true}
           flatten={false}
           hit-slop={SLOP}
-          bindtap={openProfile}
+          catchtap={openProfile}
         >
           <Avatar
             imageSource={item.avatarUrl ?? undefined}

@@ -7,7 +7,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { announce } from "../../lib/accessibility";
 import { restoreAccessibilityFocus } from "./chat-input-focus";
-import { spokenOf, viewerGroupOf } from "./friend-stories";
+import { spokenOf, storyTapOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { sideFace, StoryFaceBackdrop, StoryFaceShell, StoryLineCard } from "./StoryCubeFace";
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
@@ -30,7 +30,8 @@ const REPLY_GAP = 12;
 /**
  * 스토리 보기(ADR-0178 D4, 시안 2 · 4번) — 목록 위 전체 화면 층. 칸 이동은 `viewerStep`, 경과는 `storyAgeOf`가 정하고 여기서는 그리기 ·
  * 6초 넘김 · 멈춤만 합니다. 내 친구 스토리는 답장 칩 · 답장 칸, 안 만난 친구는 소개 카드 · 추가 단추(추가 가능만), 위 아바타는 프로필 시트입니다. 뒤로 = 닫기.
- * 이전(왼쪽 1/3) · 다음(나머지) 탭 자리는 화면 전체이고, 위 · 가운데 · 아래 조작은 문서 순서가 뒤라 그 위에 섭니다.
+ * 탭은 면 전체가 받습니다(D4 개정 ⟨탭 자리⟩) — 누를 수 있는 요소(catchtap)를 뺀 어디든 화면 가운데를 경계로 왼쪽 절반 이전 · 오른쪽 절반 다음.
+ * 낭독용 이전 · 다음 자리(반반)는 맨 아래 층에 남습니다.
  */
 export function StoryViewer({
   items,
@@ -69,7 +70,7 @@ export function StoryViewer({
     onKeyboardHeight,
   });
   // 인물 넘김 큐브(D4 개정 ⟨큐브⟩) — 옆 인물 면 · 쉬는 자리, 손가락은 메인 스레드가 따라갑니다. 답장을 쓰는 중엔 끌지 않습니다.
-  const { cube, sides, rest } = useViewerCube(items, nav, reducedMotion, reply.typing);
+  const { cube, sides, rest, width } = useViewerCube(items, nav, reducedMotion, reply.typing);
   // 입력 중이면 뒤로 = 키보드 먼저 내림(D5 개정).
   useLayerBack(() => {
     if (!reply.dismissKeyboard()) onClose("back");
@@ -105,11 +106,16 @@ export function StoryViewer({
 
   if (item === undefined) return null;
   const { story, unmet } = item;
-  const tap = (action: "next" | "prev") => () => {
+  const tap = (action: "next" | "prev") => {
     "background only";
     // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음). 방금 가로로 넘긴 손가락의 탭도 넘기지 않습니다.
     if (nav.consumeSwipe() || reply.dismissKeyboard()) return;
     step(action);
+  };
+  // 면 어디서 누르든(카드 · 빈 자리 · 그림) 올라온 탭 — 누른 x로 이전 · 다음.
+  const tapFace = (event?: { detail?: { x?: unknown } }) => {
+    "background only";
+    tap(storyTapOf(event?.detail?.x, width));
   };
 
   const side = (role: "prev" | "next"): ReactNode =>
@@ -141,6 +147,7 @@ export function StoryViewer({
         style={rest.current}
         faceRef={cube.currentRef}
         cube={cube}
+        onTap={tapFace}
       >
         <StoryFaceBackdrop item={item} insetTop={insets.top} marked={true} />
 
@@ -229,7 +236,10 @@ export function StoryViewer({
               accessibility-traits="button"
               accessibility-enable-tap={true}
               flatten={false}
-              bindtap={tap(action)}
+              catchtap={() => {
+                "background only";
+                tap(action);
+              }}
             />
           ))}
         </view>

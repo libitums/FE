@@ -24,6 +24,8 @@ export function useViewerCube(
   readonly cube: StoryCube;
   readonly sides: ReturnType<typeof cubeNeighborsOf>;
   readonly rest: ReturnType<typeof cubeFaceStylesOf>;
+  /** 창 폭(pt) — 탭 자리의 가운데 경계(`storyTapOf`). */
+  readonly width: number;
 } {
   const measured = screenWidthFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo);
   const width = measured > 0 ? measured : FALLBACK_WIDTH;
@@ -42,5 +44,5 @@ export function useViewerCube(
     onSwipe: nav.swipe,
     onTurnEnd: nav.endTurn,
   });
-  return { cube, sides, rest };
+  return { cube, sides, rest, width };
 }
