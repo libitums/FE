@@ -16,8 +16,8 @@
 
 ## 이 변경이 무엇을 건드렸나
 
-- `apps/android/app/build.gradle`의 `versionCode` · `versionName`.
-- `apps/ios/Host.xcodeproj/project.pbxproj`의 `MARKETING_VERSION` · `CURRENT_PROJECT_VERSION`(Debug · Release 두 곳).
+- `apps/android/app/build.gradle`의 `versionCode`(버전 이름은 그대로).
+- `apps/ios/Host.xcodeproj/project.pbxproj`의 `CURRENT_PROJECT_VERSION`(Debug · Release 두 곳, `MARKETING_VERSION`은 그대로).
 - 번들(`main.lynx.bundle`) · 네이티브 코드는 바뀌지 않았습니다.
 
 ## 분석 결과
