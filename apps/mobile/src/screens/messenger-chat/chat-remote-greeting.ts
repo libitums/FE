@@ -78,7 +78,7 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
     after: (room: RoomState, run: () => void): void => {
       const pending = inFlight.get(room);
       if (pending === undefined) run();
-      else void pending.then(run);
+      else void pending.then(run, run); // 실패해도 글은 보냅니다(리뷰)
     },
   };
 }

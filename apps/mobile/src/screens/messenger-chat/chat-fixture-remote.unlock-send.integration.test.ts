@@ -43,3 +43,19 @@ test("SS-I13 해금 선톡을 청하는 중에 보낸 글은 그 답이 온 뒤�
   source.sendText("duksu", "안녕");
   expect(openTurn).toHaveBeenCalledTimes(2);
 });
+
+test("SS-I13 해금 선톡을 못 받아도(실패 · 던짐) 기다리던 글은 턴을 연다", async () => {
+  const openTurn = vi.fn<ChatRemote["openTurn"]>(() => ({ cancel: () => undefined }));
+  const remote: ChatRemote = {
+    loadHistory: async () => ({ messages: [], corrections: {}, ideas: null }),
+    greet: async () => {
+      throw new Error("network");
+    },
+    openTurn,
+  };
+  const source = createFixtureChatSource({ imageUrlOf: () => null, seed: companionSeed(), remote });
+  source.unlockCharacter("mina");
+  source.sendText("mina", "맛있겠다!");
+  await flush();
+  expect(openTurn).toHaveBeenCalledTimes(1);
+});
