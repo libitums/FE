@@ -456,6 +456,8 @@ public final class MainActivity extends Activity {
     if (audioPlayback != null) audioPlayback.interrupt();
     if (soundEffects != null) soundEffects.stopAll();
     if (speechRecognition != null) speechRecognition.interrupt();
+    // 앱이 뒤로 감 — 내 스토리 보기의 다시 읽기가 멈춘다(ADR-0194 개정 ⟨살아 있는 보기⟩). 앞으로 오는 것은 contentSyncOpportunity.
+    if (lynxView != null) lynxView.sendGlobalEvent("appDidEnterBackground", new JavaOnlyArray());
     super.onStop();
   }
 }

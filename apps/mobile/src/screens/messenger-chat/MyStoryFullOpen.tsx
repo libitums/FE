@@ -7,6 +7,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import { hasFriendsOf } from "./my-stories";
 import type { MyStory, MyStoryReaction } from "./my-stories.contract";
+import { withLatestMine } from "./my-story-live";
 import { myViewerItemsOf } from "./my-story-viewer";
 import { faceFrom, useMyStoryDelete } from "./use-my-story-delete";
 import { StoryViewer } from "./StoryViewer";
@@ -58,7 +59,8 @@ export function MyStoryFullOpen({
   return (
     <>
       <StoryViewer
-        items={opened.items}
+        // 장 순서는 열 때 그대로, Seen by · 답은 다시 읽은 지금 것(개정 ⟨살아 있는 보기⟩).
+        items={withLatestMine(opened.items, stories)}
         start={opened.start}
         now={now}
         reducedMotion={reducedMotion}
