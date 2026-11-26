@@ -84,8 +84,10 @@ export function MyStoryEditorFooter({
   readonly onShare: (share: EditorShare) => void;
 }): ReactNode {
   const copy = useUiCopy().messengerChat.myStories;
-  const { busy, error, crisis, rejected } = sharing;
-  const line = error ?? (busy && photo ? copy.photo.uploading : hint);
+  const { busy, checking, error, crisis, rejected } = sharing;
+  // 사진은 올라간 뒤 서버 확인이 더 오래 걸립니다(ADR-0199 개정) — 단계마다 안내를 바꿉니다.
+  const stage = checking ? `${copy.photo.checkingTitle}…` : copy.photo.uploading;
+  const line = error ?? (busy && photo ? stage : hint);
   const off = share === null || rejected !== null;
   return (
     <view

@@ -25,6 +25,7 @@ function mount() {
       choices={() => ({ words: [wordChoice("w1", "김치찌개", "kimchi stew")] })}
       sharing={{
         busy: false,
+        checking: false,
         error: null,
         crisis: null,
         rejected: null,

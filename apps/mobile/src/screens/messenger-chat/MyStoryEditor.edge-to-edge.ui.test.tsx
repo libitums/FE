@@ -34,6 +34,7 @@ function mount(photo: boolean) {
       photo={photo && PICKED.status === "picked" ? PICKED.photo : null}
       sharing={{
         busy: false,
+        checking: false,
         error: null,
         crisis: null,
         rejected: null,

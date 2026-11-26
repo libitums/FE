@@ -39,8 +39,8 @@ export type MyStoryRejection = { readonly id: string; readonly category: string 
 /** 사진 포트(목록 화면이 씀) — 호스트 모듈이 없으면 포트 자체가 없습니다. 어떤 호출도 던지지 않습니다. */
 export type MyStoryPhotoPort = {
   readonly pick: (source: StoryPhotoSource) => Promise<PhotoPickResult>;
-  /** 업로드 → 게시. 업로드가 실패하면 `upload_failed`. */
-  readonly post: (draft: MyPhotoStoryDraft) => Promise<MyStoryPostResult>;
+  /** 업로드 → 게시. 업로드가 실패하면 `upload_failed`. `onUploaded`는 사진이 올라간 뒤 게시(서버 확인) 전에 한 번. */
+  readonly post: (draft: MyPhotoStoryDraft, onUploaded?: () => void) => Promise<MyStoryPostResult>;
   /** 내 사진의 서명 주소(한 시간) — 못 만들면 null. */
   readonly url: (imagePath: string) => Promise<string | null>;
   readonly requestReview: (rejectionId: string) => Promise<boolean>;
@@ -50,7 +50,7 @@ export type MyStoryPhotoPort = {
 
 /** 서버 원격의 사진 부분(`CompanionMyStoriesRemote.photo`) — 업로드는 결선이 넘긴 호스트 업로드로 합니다. */
 export type CompanionMyStoryPhotoRemote = {
-  readonly post: (draft: MyPhotoStoryDraft) => Promise<MyStoryPostResult>;
+  readonly post: (draft: MyPhotoStoryDraft, onUploaded?: () => void) => Promise<MyStoryPostResult>;
   readonly sign: (imagePath: string) => Promise<string | null>;
   readonly requestReview: (rejectionId: string) => Promise<boolean>;
 };

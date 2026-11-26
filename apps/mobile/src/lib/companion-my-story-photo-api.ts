@@ -64,9 +64,10 @@ export function myStoryPhotoRemote(deps: MyStoryPhotoRemoteDeps): CompanionMySto
   }
 
   return {
-    post: async (draft) => {
+    post: async (draft, onUploaded) => {
       const imagePath = await upload(draft.photo.path);
       if (imagePath === null) return { result: "upload_failed" };
+      onUploaded?.();
       const roman = romanizeKorean(draft.ko).trim();
       return myStoryPostFrom(
         await deps.call(MY_STORY_FUNCTION, {

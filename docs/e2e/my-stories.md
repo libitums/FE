@@ -29,7 +29,7 @@ Edge Function `chat-send` · `companion-story-reactions`, pg_cron이 적용되�
 | MSP-E1 | 「+」(kinds에 photo) | 시트에 Camera · Recent photos · Background. kinds에 photo가 없거나 옛 호스트면 Background만 |
 | MSP-E2 | Recent photos | 시스템 사진 고르기(권한 묻지 않음). 고르면 그 사진이 바탕인 편집(색 고르기 없음 · Aa · Words), 닫으면 시트에 그대로 |
 | MSP-E3 | Camera(iOS 시뮬레이터 · 카메라 없는 에뮬레이터) | 「The camera isn't available on this device.」. 실제 기기 iOS는 권한 대화상자(번역된 문구), 거부 뒤 다시 누르면 「Camera access is off …」 |
-| MSP-E4 | 사진 위 아무것도 없이 → 단어 · Aa → Share | 처음 「Add a word or write a line to share your photo.」 · Share 꺼짐. 얹으면 켜지고 Share 동안 「Uploading your photo…」 → 보기에 사진 + 얹은 것 · 「Photo story」 |
+| MSP-E4 | 사진 위 아무것도 없이 → 단어 · Aa → Share | 처음 「Add a word or write a line to share your photo.」 · Share 꺼짐. 얹으면 켜지고 Share 동안 「Uploading your photo…」 → 사진이 올라가면 「Checking your photo…」(서버 확인, 운영 5 ~ 9초) → 보기에 사진 + 얹은 것 · 「Photo story」 |
 | MSP-E5 | (탐침) 게시 응답 `checking` | 보기 사진 위 「Checking your photo」 띠 |
 | MSP-E6 | (탐침) 게시 응답 `rejected` | 편집 아래 「This photo can't be shared」 판 · Share 꺼짐 · Ask for a review → 「Thanks — we'll take another look.」 |
 
