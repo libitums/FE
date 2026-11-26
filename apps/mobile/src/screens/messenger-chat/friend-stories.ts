@@ -67,19 +67,15 @@ const newestOf = (list: readonly FriendStory[]): FriendStory | undefined => list
 /** 스토리 줄(ADR-0178 D3) — 친구 · 안 만난 친구(각 `byLatestStory` 순, 한 줄 순서는 `storyOrderOf`, 칸은 그 인물의 가장 새 스토리) · 그 밖의 추천. */
 export function storyRowOf(input: StoryRowInput): StoryRow {
   const groups = byCharacter(input.stories, input.now);
+  // 본 것 = 그 인물의 스토리를 다 봤을 때(고리가 회색 점선이 되는 때, D3 개정 ⟨점선⟩) — 친구 · 안 만난 친구 같음.
+  const allSeen = (stories: readonly FriendStory[]) =>
+    stories.every((each) => input.seen.has(each.id));
   const friends: FriendStoryEntry[] = [];
   for (const room of input.rooms) {
     if (room.access.kind !== "open") continue;
     const stories = groups.get(room.counterpart.id) ?? [];
     const story = newestOf(stories);
-    // 본 것 = 그 인물의 스토리를 다 봤을 때(고리가 회색이 되는 때).
-    if (story !== undefined)
-      friends.push({
-        story,
-        stories,
-        room,
-        seen: stories.every((each) => input.seen.has(each.id)),
-      });
+    if (story !== undefined) friends.push({ story, stories, room, seen: allSeen(stories) });
   }
   friends.sort(byLatestStory);
   const unmet: UnmetStoryEntry[] = [];
@@ -88,7 +84,7 @@ export function storyRowOf(input: StoryRowInput): StoryRow {
     const stories = groups.get(friend.character.id) ?? [];
     const story = newestOf(stories);
     if (story === undefined) others.push(friend);
-    else unmet.push({ story, stories, friend });
+    else unmet.push({ story, stories, friend, seen: allSeen(stories) });
   }
   unmet.sort(byLatestStory);
   return { friends, unmet, others };

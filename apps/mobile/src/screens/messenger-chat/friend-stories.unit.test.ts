@@ -109,6 +109,19 @@ describe("FS-U2 스토리 줄", () => {
   });
 });
 
+describe("FS-U35 안 만난 친구의 본 것(ADR-0178 D3 개정 ⟨점선⟩)", () => {
+  test("그 인물의 살아 있는 스토리를 다 봤을 때만 본 것", () => {
+    const two = [
+      story("g", { id: "s-g1", postedAt: NOW - 2 * HOUR_MS }),
+      story("g", { id: "s-g2", postedAt: NOW - HOUR_MS }),
+    ];
+    const half = storyRowOf(input({ stories: two, seen: new Set(["s-g1"]) }));
+    expect(half.unmet.map((e) => [e.story.characterId, e.seen])).toEqual([["g", false]]);
+    const all = storyRowOf(input({ stories: two, seen: new Set(["s-g1", "s-g2"]) }));
+    expect(all.unmet.map((e) => [e.story.characterId, e.seen])).toEqual([["g", true]]);
+  });
+});
+
 describe("FS-U3 한 인물에 둘이면 줄 칸은 최신 것(묶음은 FS-U21)", () => {
   test("올린 시각이 늦은 것이 줄 칸, 둘 다 묶음에", () => {
     const row = storyRowOf(
