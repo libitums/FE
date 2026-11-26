@@ -112,9 +112,9 @@ describe("SA5 이름 · 나라(와일드카드)", () => {
   const PLACES = ["Mary Jane", "미국"];
 
   test("와일드카드 낱말은 빼고 본다 — 다른 나라 · 다르게 적은 이름도 맞다", () => {
-    expect(judgeSpokenAnswer([ORIGIN], "저는 캐나다에서 왔어요 여기서 며칠 묵어요", PLACES).grade).toBe(
-      "perfect",
-    );
+    expect(
+      judgeSpokenAnswer([ORIGIN], "저는 캐나다에서 왔어요 여기서 며칠 묵어요", PLACES).grade,
+    ).toBe("perfect");
     expect(judgeSpokenAnswer(["Emma로 예약했어요."], "엠마로 예약해써요", ["Emma"]).grade).toBe(
       "perfect",
     );
@@ -130,7 +130,9 @@ describe("SA5 이름 · 나라(와일드카드)", () => {
   });
 
   test("마디 순서가 바뀌어도 맞다(체험판 규칙과 같다) — 등급은 close", () => {
-    expect(judgeSpokenAnswer([ORIGIN], "여기서 며칠 묵어요 저는 왔어요", PLACES).grade).toBe("close");
+    expect(judgeSpokenAnswer([ORIGIN], "여기서 며칠 묵어요 저는 왔어요", PLACES).grade).toBe(
+      "close",
+    );
   });
 
   test("정답이 이름뿐이면 무언가 말해야 맞다", () => {

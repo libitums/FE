@@ -34,6 +34,8 @@ export function judgeSpokenAnswer(
   heard: string,
   wildcards: readonly string[] = [],
 ): SpokenAnswerJudgement {
+  // 앱에서는 말하기 결과가 온 뒤(배경 스레드)에만 부릅니다 — 발음형 · 편집 거리 코드를 메인 스레드 번들에서 뺍니다(ADR-0149).
+  "background only";
   let best: { grade: SpokenGrade; expected: string; similarity: number } | null = null;
   for (const sentence of accepted) {
     const score = spokenSimilarity(sentence, heard, wildcards);
@@ -72,5 +74,6 @@ export function judgeRoleplayReply(
   heard: string,
   wildcards: readonly string[],
 ): AnswerResult {
+  "background only";
   return judgeSpokenAnswer(accepted, heard, wildcards).result;
 }

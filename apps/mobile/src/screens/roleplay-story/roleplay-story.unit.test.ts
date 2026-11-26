@@ -46,9 +46,7 @@ test("[RS3] 이름과 나라가 함께 든 문장 — 나머지 조각을 빠짐
   expect(judgeRoleplayReply(accepted, "저는 미국에서 왔어요 여기서 며칠 묵어요", wildcards)).toBe(
     "correct",
   );
-  expect(judgeRoleplayReply(accepted, "여기서 며칠 묵어요 저는 왔어요", wildcards)).toBe(
-    "correct",
-  );
+  expect(judgeRoleplayReply(accepted, "여기서 며칠 묵어요 저는 왔어요", wildcards)).toBe("correct");
   expect(judgeRoleplayReply(accepted, "저는 미국에서 여기서 며칠 묵어요", wildcards)).toBe(
     "incorrect",
   );

@@ -133,7 +133,10 @@ function assimilatePair(left: Hangul, right: Hangul): void {
 }
 
 /** 발음형 단위열과, 그 안에서 낱말이 시작하는 자리(단위 번호, 오름차순)입니다. */
-export type SpokenTrack = { readonly units: readonly string[]; readonly wordStarts: readonly number[] };
+export type SpokenTrack = {
+  readonly units: readonly string[];
+  readonly wordStarts: readonly number[];
+};
 
 /** 군말을 떼고 띄어쓰기 · 부호를 무시한 발음형 단위열과 낱말 경계. 연음은 낱말 경계 너머로도 일어납니다. */
 export function spokenTrackOf(text: string): SpokenTrack {

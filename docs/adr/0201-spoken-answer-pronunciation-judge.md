@@ -147,6 +147,10 @@
 
 - 서버 · 마이그레이션 · Edge Function: **없음**.
 - 앱: 다음 앱 번들(OTA/스토어)에 실린다 — 판정이 바뀌는 것뿐이라 호스트 변경 없음.
+- 앱 번들(ADR-0149): 판정 함수(`judgeSpokenAnswer` · `judgeRoleplayReply`)는 말하기 결과가 온 뒤 배경 스레드에서만 부르므로 `"background only"`로
+  메인 스레드에서 뺐다. 로컬 실측 6,172,851 → 6,176,477 B(+3.6 kB, 떼기 전 +9.5 kB) — 천장 6,170,000은 그대로(CI 실측이 로컬보다 약 9 kB 작다).
+  보고서 `docs/performance/reports/spoken-answer-judge-01.md`. D6 화면 작업에서 이 함수를 **렌더 중 메인 스레드에서** 부르면 `undefined`가
+  돌아온다 — 결과 상태(heard) 뒤에만 부를 것.
 - 랜딩 체험판: 랜딩 배포에 실린다.
 
 ## 검증
