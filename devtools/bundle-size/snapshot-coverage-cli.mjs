@@ -23,6 +23,8 @@ try {
     env: { ...process.env, DEBUG: "rspeedy" },
   });
 } catch (error) {
+  // 명령을 띄우지도 못하면(ENOENT 등) 출력이 없으니 오류 자체를 남깁니다.
+  if (error.stdout === undefined && error.stderr === undefined) console.error(error);
   process.stderr.write(String(error.stdout ?? ""));
   process.stderr.write(String(error.stderr ?? ""));
   process.exit(1);
