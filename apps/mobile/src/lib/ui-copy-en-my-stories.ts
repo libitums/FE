@@ -190,5 +190,8 @@ export const myStoriesEn: MyStoriesCopy = {
     reacted: "Replied to your story",
     deleted: "Deleted story",
     deletedLabel: "Reply to a deleted story",
+    openStory: "Open story",
+    ended: "Ended",
+    endedTitle: "This story has ended",
   },
 };

@@ -181,5 +181,8 @@ export const myStoriesZhTw: MyStoriesCopy = {
     reacted: "回覆了你的限時動態",
     deleted: "已刪除的限時動態",
     deletedLabel: "回覆已刪除的限時動態",
+    openStory: "打開限時動態",
+    ended: "已結束",
+    endedTitle: "這則限時動態已結束",
   },
 };

@@ -185,6 +185,11 @@ export type MyStoriesCopy = {
     readonly reacted: string;
     readonly deleted: string;
     readonly deletedLabel: string;
+    /** 판 낭독의 끝 — 누르면 그 스토리를 엶(ADR-0194 · ADR-0178 D5 개정 ⟨판⟩). 캡션이 누구의 스토리인지 말합니다. */
+    readonly openStory: string;
+    /** 24시간 지난 친구 스토리 판의 표 · 누르면 서는 안내 시트 제목(시안 40a · 40번, 지난 스토리 보기 단추는 아직 없음). OK · 닫기는 `window`. */
+    readonly ended: string;
+    readonly endedTitle: string;
   };
 };
 

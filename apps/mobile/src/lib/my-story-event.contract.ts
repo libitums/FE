@@ -46,7 +46,7 @@ export type MyStoryEvent =
       readonly name: "my_story_viewed";
       readonly reactions: string;
       readonly unseen: string;
-      readonly from: "row" | "archive" | "posted";
+      readonly from: "row" | "archive" | "posted" | "chat";
     })
   | (Common & {
       readonly name: "my_story_chat_opened";

@@ -184,5 +184,8 @@ export const myStoriesMy: MyStoriesCopy = {
     reacted: "သင့်စတိုရီကို ပြန်စာပို့ထားသည်",
     deleted: "ဖျက်ထားသော စတိုရီ",
     deletedLabel: "ဖျက်ထားသော စတိုရီသို့ ပြန်စာ",
+    openStory: "စတိုရီကို ဖွင့်ရန်",
+    ended: "ပြီးဆုံးပြီ",
+    endedTitle: "ဤစတိုရီ ပြီးဆုံးသွားပါပြီ",
   },
 };
