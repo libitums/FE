@@ -113,9 +113,9 @@ export function StoryViewer({
     step(action);
   };
   // 면 어디서 누르든(카드 · 빈 자리 · 그림) 올라온 탭 — 누른 x로 이전 · 다음.
-  const tapFace = (event: { detail?: { x?: unknown } }) => {
+  const tapFace = (event?: { detail?: { x?: unknown } }) => {
     "background only";
-    tap(storyTapOf(event.detail?.x, width));
+    tap(storyTapOf(event?.detail?.x, width));
   };
 
   const side = (role: "prev" | "next"): ReactNode =>
