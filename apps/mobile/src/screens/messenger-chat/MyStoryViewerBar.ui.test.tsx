@@ -48,7 +48,7 @@ const replied = (): MyStory =>
   });
 
 function mountBottom(story: MyStory, over: Partial<MyStoryViewerMine> = {}) {
-  const props = { story, mine: mine(over), onReplies: vi.fn() };
+  const props = { story, now: MS_NOW, mine: mine(over), onReplies: vi.fn() };
   render(<MyStoryViewerBottom {...props} />);
   return props;
 }
@@ -88,6 +88,20 @@ test("MV-UI2. 「+」은 만들기, 지우기는 그 스토리 — 둘 다 낭�
   expect(props.mine.onCreate).toHaveBeenCalledTimes(1);
   tapId(ids.barDelete);
   expect(props.mine.onDelete).toHaveBeenCalledWith(story);
+});
+
+test("MV-UI2. 「+」이 없으면(설정 › My stories) 새 스토리 단추를 세우지 않는다, 지우기는 그대로", () => {
+  mountBottom(replied(), { onCreate: undefined });
+  expect(screen.queryByTestId(ids.barAdd)).toBeNull();
+  expect(screen.getByTestId(ids.barDelete)).not.toBeNull();
+});
+
+test("MV-UI3. 지난 스토리는 줄 자리에 「친구에게 24시간」", () => {
+  mountBottom(myStory("old", { postedAt: MS_NOW - 30 * 3_600_000 }));
+  expect(screen.getByTestId(ids.barHidden).textContent).toBe(
+    "Friends saw this for 24 hours. Only you see it now.",
+  );
+  expect(screen.queryByTestId(ids.barWaiting)).toBeNull();
 });
 
 test("MV-UI3. 답이 0개면 줄 자리에 한 시간 안내, 본 사람이 없으면 「No views yet」 · 밀기 안내 없음", () => {

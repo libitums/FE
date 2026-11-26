@@ -65,9 +65,6 @@ export const myStoriesTh: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "สตอรี่ของคุณ",
-    kindLabel: (kind) => (kind === "word" ? "การ์ดคำศัพท์" : "การ์ดบทเรียน"),
-    textLabel: "สตอรี่ข้อความ",
-    cardTag: (kind) => (kind === "word" ? "คำศัพท์ของฉันวันนี้" : "การ์ดบทเรียน"),
     close: "ปิด",
     options: "ตัวเลือกสตอรี่",
     delete: "ลบสตอรี่",

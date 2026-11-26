@@ -33,7 +33,7 @@ function itemOf(story: MyStory, name: string): StoryViewerItem {
   };
 }
 
-/** 살아 있는 내 스토리를 오래된 것부터 보기 장으로 — 시작은 연 스토리. 연 스토리가 없거나 이미 지났으면 null. */
+/** 살아 있는 내 스토리를 오래된 것부터 보기 장으로 — 시작은 연 스토리. 연 스토리는 지났어도(보관함) 넣고, 없으면 null. */
 export function myViewerItemsOf(
   stories: readonly MyStory[],
   openedId: string,
@@ -41,17 +41,18 @@ export function myViewerItemsOf(
   name: string,
 ): { readonly items: readonly StoryViewerItem[]; readonly start: number } | null {
   const live = stories
-    .filter((story) => story.expiresAt > now)
+    .filter((story) => story.id === openedId || story.expiresAt > now)
     .sort((a, b) => a.postedAt - b.postedAt);
   const start = live.findIndex((story) => story.id === openedId);
   return start < 0 ? null : { items: live.map((story) => itemOf(story, name)), start };
 }
 
-/** 아래 바 자리 — Seen by 수(서버 그대로) · 얼굴(방 있는 인물 최대 3), 새 답 줄(최신이 아래 최대 2) 또는 안내. */
+/** 아래 바 자리 — Seen by 수(서버 그대로) · 얼굴(방 있는 인물 최대 3), 새 답 줄(최신이 아래 최대 2) 또는 안내(지난 것은 「친구에게 24시간」). */
 export function myStoryBarOf(
   story: MyStory,
   face: (characterId: string) => ReactionFace | null,
   hasFriends: boolean,
+  now?: number,
 ): MyStoryBarView {
   const faces = story.seenBy
     .map((seen) => face(seen.characterId))
@@ -74,9 +75,11 @@ export function myStoryBarOf(
     note:
       lines.length > 0
         ? { kind: "lines", lines }
-        : hasFriends
-          ? { kind: "waiting" }
-          : { kind: "noFriends" },
+        : now !== undefined && story.expiresAt <= now
+          ? { kind: "hidden" }
+          : hasFriends
+            ? { kind: "waiting" }
+            : { kind: "noFriends" },
   };
 }
 

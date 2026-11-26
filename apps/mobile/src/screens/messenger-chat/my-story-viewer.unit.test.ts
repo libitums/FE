@@ -34,11 +34,14 @@ test("MV-U1. 보기 장 — 살아 있는 내 스토리만 오래된 것부터, 
   expect(first?.story.replies).toEqual([]);
 });
 
-test("MV-U2. 연 스토리가 목록에 없거나 이미 지났으면 null, 연 스토리가 지났어도 살아 있는 것만 보지 않는다", () => {
+test("MV-U2. 연 스토리가 목록에 없으면 null, 지난 스토리(보관함)는 그 장만 연다 — 다른 지난 것은 끼지 않는다", () => {
   const live = myStory("live");
   expect(myViewerItemsOf([live], "nope", MS_NOW, "Your story")).toBeNull();
   const gone = myStory("gone", { postedAt: MS_NOW - 30 * MS_HOUR });
-  expect(myViewerItemsOf([live, gone], "gone", MS_NOW, "Your story")).toBeNull();
+  const older = myStory("older", { postedAt: MS_NOW - 40 * MS_HOUR });
+  const result = myViewerItemsOf([live, gone, older], "gone", MS_NOW, "Your story");
+  expect(result?.items.map((item) => item.story.id)).toEqual(["gone", "live"]);
+  expect(result?.start).toBe(0);
 });
 
 test("MV-U3. 바 — 답이 있으면 방이 있는 인물의 최근 2줄(최신이 아래), Seen by 수는 서버 그대로 · 얼굴은 방 있는 인물 최대 3", () => {
@@ -74,6 +77,17 @@ test("MV-U4. 바 — 답이 없으면 한 시간 안내, 친구가 0명이면 �
   expect(myStoryBarOf(ghost, face, true).note).toEqual({ kind: "waiting" });
   const withLine = myStory("l", { reactions: [reaction("r", "mina")] });
   expect(myStoryBarOf(withLine, face, false).note.kind).toBe("lines");
+});
+
+test("MV-U7. 지난 스토리(보관함) — 답이 없으면 기다림 · 친구 안내 대신 「친구에게 24시간」, 답이 있으면 줄 그대로", () => {
+  const gone = myStory("g", { postedAt: MS_NOW - 30 * MS_HOUR });
+  expect(myStoryBarOf(gone, face, true, MS_NOW).note).toEqual({ kind: "hidden" });
+  expect(myStoryBarOf(gone, face, false, MS_NOW).note).toEqual({ kind: "hidden" });
+  const replied = myStory("r", {
+    postedAt: MS_NOW - 30 * MS_HOUR,
+    reactions: [reaction("x", "mina")],
+  });
+  expect(myStoryBarOf(replied, face, true, MS_NOW).note.kind).toBe("lines");
 });
 
 test("MV-U5. 위로 밀기 — 위로 48 이상이고 세로가 가로보다 길 때만", () => {

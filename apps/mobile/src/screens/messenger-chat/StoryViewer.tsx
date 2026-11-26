@@ -240,7 +240,7 @@ export function StoryViewer({
             }}
           >
             {my !== null ? (
-              <MyStoryViewerBottom {...my} onReplies={() => setSheet(true)} />
+              <MyStoryViewerBottom {...my} now={now} onReplies={() => setSheet(true)} />
             ) : unmet === null ? (
               <StoryReplyArea item={item} copy={copy} reply={reply} />
             ) : (

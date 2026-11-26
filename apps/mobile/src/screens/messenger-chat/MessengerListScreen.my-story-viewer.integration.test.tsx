@@ -124,7 +124,6 @@ test("MV-I1. 「Your story」 → 전체 화면 보기(막대 = 살아 있는 �
   const { events } = await mount(fakeMyStories({ stories: [older, replied()] }));
   tapId(ids.mine);
   expect(screen.getByTestId(fsIds.viewer)).not.toBeNull();
-  expect(screen.queryByTestId(ids.viewer)).toBeNull();
   expect(screen.getByTestId(fsIds.progress).getAttribute("accessibility-label")).toBe(
     "Story 2 of 2",
   );

@@ -54,9 +54,6 @@ export const myStoriesId: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Ceritamu",
-    kindLabel: (kind) => (kind === "word" ? "Kartu kata" : "Kartu pelajaran"),
-    textLabel: "Cerita teks",
-    cardTag: (kind) => (kind === "word" ? "KOSAKATAKU HARI INI" : "KARTU PELAJARAN"),
     close: "Tutup",
     options: "Pilihan cerita",
     delete: "Hapus cerita",

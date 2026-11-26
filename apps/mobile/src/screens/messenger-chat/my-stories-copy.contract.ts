@@ -44,10 +44,6 @@ export type MyStoriesCopy = {
   };
   readonly viewer: {
     readonly yourStory: string;
-    readonly kindLabel: (kind: MyStoryKind) => string;
-    readonly cardTag: (kind: MyStoryKind) => string;
-    /** 글 스토리(서버 반영 예상)의 종류 이름 — 「Text story」. */
-    readonly textLabel: string;
     readonly close: string;
     readonly options: string;
     readonly delete: string;
@@ -212,6 +208,4 @@ export type MyStoryPhotoCopy = {
   /** 보기 — 다시 보는 중(나에게만). */
   readonly checkingTitle: string;
   readonly checkingBody: string;
-  /** 보기 메타 줄의 종류 이름. */
-  readonly kindLabel: string;
 };

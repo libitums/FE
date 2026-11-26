@@ -19,8 +19,8 @@ export type MyStoryViewerMine = {
   readonly hasFriends: boolean;
   /** 새 답 줄 · 시트의 「Open chat」 — 그 인물 방(ADR-0191 D2). */
   readonly onOpenChat: (reaction: MyStoryReaction) => void;
-  /** 「+」 — 지금 만들기 흐름(안내 · 시작 시트 · 창 시트). */
-  readonly onCreate: () => void;
+  /** 「+」 — 지금 만들기 흐름(안내 · 시작 시트 · 창 시트). 없으면(설정 › My stories) 단추가 없습니다. */
+  readonly onCreate?: () => void;
   /** 지우기 단추 · ⋯ 메뉴의 Delete story — 그 장의 스토리. */
   readonly onDelete: (story: MyStory) => void;
   /** 친구 0명 안내의 Find friends — 없으면 안내만. */
@@ -44,5 +44,7 @@ export type MyStoryBarView = {
   readonly note:
     | { readonly kind: "lines"; readonly lines: readonly MyStoryReplyLine[] }
     | { readonly kind: "waiting" }
+    /** 지난 스토리(보관함) — 「Friends saw this for 24 hours. Only you see it now.」 */
+    | { readonly kind: "hidden" }
     | { readonly kind: "noFriends" };
 };

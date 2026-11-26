@@ -62,21 +62,23 @@ function Tap({
 
 /**
  * 아래 바 + 새 답 줄(시안 34 · 36번) — 줄은 최근 답 최대 2(최신이 아래, 계속 보임), 누르면 그 친구 방. 답이 없으면 한 시간 안내, 친구가
- * 없으면 친구 추가 안내. 바 왼쪽 「Seen by」(얼굴 3 + 수, 위로 밀기 안내)는 답 목록, 오른쪽은 새 스토리 · 지우기. 위로 밀어도 답 목록.
+ * 없으면 친구 추가 안내, 지난 스토리(보관함)면 「친구에게 24시간」. 바 왼쪽 「Seen by」(얼굴 3 + 수, 위로 밀기 안내)는 답 목록, 오른쪽은 새 스토리 · 지우기. 위로 밀어도 답 목록.
  */
 export function MyStoryViewerBottom({
   story,
+  now,
   mine,
   onReplies,
 }: {
   readonly story: MyStory;
+  readonly now: number;
   readonly mine: MyStoryViewerMine;
   readonly onReplies: () => void;
 }): ReactNode {
   const all = useUiCopy().messengerChat;
   const copy = all.myStories.viewer;
   const sep = all.stories.listSeparator;
-  const bar = myStoryBarOf(story, mine.face, mine.hasFriends);
+  const bar = myStoryBarOf(story, mine.face, mine.hasFriends, now);
   const start = useRef<{ x: number; y: number } | null>(null);
   const { note } = bar;
   const seenText = bar.seen > 0 ? copy.seenBy(bar.seen) : copy.noViews;
@@ -133,11 +135,21 @@ export function MyStoryViewerBottom({
       ) : (
         <view
           className="my-story-line"
-          data-testid={note.kind === "noFriends" ? ids.barNoFriends : ids.barWaiting}
+          data-testid={
+            note.kind === "noFriends"
+              ? ids.barNoFriends
+              : note.kind === "hidden"
+                ? ids.barHidden
+                : ids.barWaiting
+          }
           flatten={false}
         >
           <text className="my-story-line-text">
-            {note.kind === "noFriends" ? copy.noFriendsTitle : copy.waiting}
+            {note.kind === "noFriends"
+              ? copy.noFriendsTitle
+              : note.kind === "hidden"
+                ? copy.hidden
+                : copy.waiting}
           </text>
         </view>
       )}
@@ -174,14 +186,16 @@ export function MyStoryViewerBottom({
             ) : null}
           </view>
         </Tap>
-        <Tap
-          testId={ids.barAdd}
-          className="my-story-bar-button"
-          label={all.myStories.start.title}
-          onTap={mine.onCreate}
-        >
-          <svg className="my-story-bar-icon" content={plus} current-color={color.white} />
-        </Tap>
+        {mine.onCreate === undefined ? null : (
+          <Tap
+            testId={ids.barAdd}
+            className="my-story-bar-button"
+            label={all.myStories.start.title}
+            onTap={mine.onCreate}
+          >
+            <svg className="my-story-bar-icon" content={plus} current-color={color.white} />
+          </Tap>
+        )}
         <Tap
           testId={ids.barDelete}
           className="my-story-bar-button"

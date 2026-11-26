@@ -67,9 +67,6 @@ export const myStoriesEs: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Tu historia",
-    kindLabel: (kind) => (kind === "word" ? "Tarjeta de palabra" : "Tarjeta de lección"),
-    textLabel: "Historia de texto",
-    cardTag: (kind) => (kind === "word" ? "MI PALABRA DEL DÍA" : "TARJETA DE LECCIÓN"),
     close: "Cerrar",
     options: "Opciones de la historia",
     delete: "Borrar historia",

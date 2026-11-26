@@ -227,7 +227,7 @@ test("MS-UI6. 내 스토리 지우기 — 메뉴 → 확인 → 지움 · 닫힘
   tapButtonIn("ui-lynx-dialog-action-delete");
   await flush();
   expect(fake.remove).toHaveBeenCalledWith("ms-1");
-  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(screen.queryByTestId(fsIds.viewer)).toBeNull();
   expect(screen.queryByTestId(ids.mine)).toBeNull();
   expect(events()).toContainEqual(
     expect.objectContaining({ name: "my_story_deleted", scope: "one", from: "viewer" }),

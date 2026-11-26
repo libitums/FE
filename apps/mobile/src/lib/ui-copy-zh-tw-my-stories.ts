@@ -50,9 +50,6 @@ export const myStoriesZhTw: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "你的限時動態",
-    kindLabel: (kind) => (kind === "word" ? "單字卡" : "課程卡"),
-    textLabel: "文字限時動態",
-    cardTag: (kind) => (kind === "word" ? "我的今日單字" : "課程卡"),
     close: "關閉",
     options: "限時動態選項",
     delete: "刪除限時動態",

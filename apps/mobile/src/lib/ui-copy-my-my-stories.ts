@@ -53,9 +53,6 @@ export const myStoriesMy: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "သင့်စတိုရီ",
-    kindLabel: (kind) => (kind === "word" ? "စကားလုံးကတ်" : "သင်ခန်းစာကတ်"),
-    textLabel: "စာသား စတိုရီ",
-    cardTag: (kind) => (kind === "word" ? "ဒီနေ့ ကျွန်ုပ်၏ စကားလုံး" : "သင်ခန်းစာကတ်"),
     close: "ပိတ်ရန်",
     options: "စတိုရီ ရွေးစရာများ",
     delete: "စတိုရီ ဖျက်ရန်",

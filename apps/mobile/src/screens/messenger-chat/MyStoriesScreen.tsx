@@ -22,7 +22,7 @@ import {
 } from "./my-stories.contract";
 import { ArchiveTile } from "./MyStoryArchiveTile";
 import { MyStoryDeleteDialog } from "./MyStoryDialogs";
-import { MyStoryOpen } from "./MyStoryOpen";
+import { MyStoryFullOpen } from "./MyStoryFullOpen";
 import { useChatSnapshot } from "./use-chat-source";
 
 import "./chat-settings.css";
@@ -45,7 +45,7 @@ type Confirm = {
 
 /**
  * 설정 › My stories(ADR-0194, 시안 10번) — 보관 스위치 · 최신 먼저 칸(단어 · 날짜 · 반응 수 · LIVE) · 칸마다 지우기 · 모두 지우기. 칸을 누르면
- * 내 스토리 보기(답하기 · 지우기). 사진이 없어 칸은 단어 카드입니다. 시스템 뒤로 = 위 층을 닫거나 설정으로.
+ * 친구 스토리와 같은 전체 화면 보기(답 줄 · 답 목록 · 지우기). 사진이 없어 칸은 단어 카드입니다. 시스템 뒤로 = 위 층을 닫거나 설정으로.
  */
 export function MyStoriesScreen({
   port,
@@ -234,10 +234,14 @@ export function MyStoriesScreen({
         </scroll-view>
       </view>
       {openStory === null ? null : (
-        <MyStoryOpen
-          story={openStory}
+        // 설정에서도 같은 전체 화면 보기 — 그 스토리 한 장(지난 것도), 「+」 없음(ADR-0194 개정 ⟨보기⟩).
+        <MyStoryFullOpen
+          stories={[openStory]}
+          openedId={openStory.id}
           now={now}
           rooms={rooms}
+          romanization={true}
+          onShown={() => undefined}
           remove={(id) => port.remove(id)}
           {...(port.photo === undefined ? {} : { photoUrl: port.photo.url })}
           onOpenChat={(reaction) => {

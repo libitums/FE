@@ -53,9 +53,6 @@ export const myStoriesEn: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Your story",
-    kindLabel: (kind) => (kind === "word" ? "Word card" : "Lesson card"),
-    textLabel: "Text story",
-    cardTag: (kind) => (kind === "word" ? "MY WORD OF THE DAY" : "LESSON CARD"),
     close: "Close",
     options: "Story options",
     delete: "Delete story",

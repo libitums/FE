@@ -53,9 +53,6 @@ export const myStoriesVi: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Tin của bạn",
-    kindLabel: (kind) => (kind === "word" ? "Thẻ từ" : "Thẻ bài học"),
-    textLabel: "Tin chữ",
-    cardTag: (kind) => (kind === "word" ? "TỪ CỦA TÔI HÔM NAY" : "THẺ BÀI HỌC"),
     close: "Đóng",
     options: "Tùy chọn tin",
     delete: "Xóa tin",
