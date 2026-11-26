@@ -168,10 +168,10 @@ describe("FS-U7 본 것 표시", () => {
 describe("FS-U10 보기의 장 목록", () => {
   const row = storyRowOf(input({ seen: new Set(["s-a"]) }));
 
-  test("줄의 친구를 누르면 친구 스토리 전체 중 그 칸부터", () => {
-    // 같은 시각 — 인물 id 순 a · b · c(본 a도 제자리, D3 개정)
+  test("줄의 친구를 누르면 줄 전체(안 만난 친구 포함) 중 그 칸부터", () => {
+    // 같은 시각 — 인물 id 순 a · b · c · g(본 a도 제자리, D3 개정 · ⟨잠긴 인물⟩)
     const opened = viewerItemsOf(row, { from: "friend", characterId: "c" }, url);
-    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["a", "b", "c"]);
+    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["a", "b", "c", "g"]);
     expect(opened?.start).toBe(2);
     expect(opened?.items[1]).toMatchObject({
       name: "b",
@@ -181,7 +181,7 @@ describe("FS-U10 보기의 장 목록", () => {
     });
   });
 
-  test("이어 보기 · 친구 열기의 다음 인물은 줄 순서(storyOrderOf)와 같다 — 안 만난 친구는 빠진다", () => {
+  test("이어 보기는 줄 순서에서 친구만, 친구 열기는 줄 순서 그대로(storyOrderOf) — 안 만난 친구도 든다", () => {
     const timed = storyRowOf(
       input({
         stories: [
@@ -200,15 +200,17 @@ describe("FS-U10 보기의 장 목록", () => {
     const all = viewerItemsOf(timed, { from: "watch_all" }, url);
     expect(all?.items.map((i) => i.story.characterId)).toEqual(rowOrder);
     const fromC = viewerItemsOf(timed, { from: "friend", characterId: "c" }, url);
-    expect(fromC?.items.map((i) => i.story.characterId)).toEqual(rowOrder);
-    expect(fromC?.start).toBe(1);
+    const fullOrder = storyOrderOf(timed).map((each) => each.entry.story.characterId);
+    expect(fullOrder).toEqual(["g", "b", "c", "a"]);
+    expect(fromC?.items.map((i) => i.story.characterId)).toEqual(fullOrder);
+    expect(fromC?.start).toBe(2);
   });
 
-  test("안 만난 친구는 그 한 장, 추천 친구를 싣는다", () => {
+  test("안 만난 친구 칸도 줄 전체 중 그 칸부터, 그 장은 추천 친구를 싣는다", () => {
     const opened = viewerItemsOf(row, { from: "unmet", characterId: "g" }, url);
-    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["g"]);
-    expect(opened?.items[0]?.unmet?.character.id).toBe("g");
-    expect(opened?.start).toBe(0);
+    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["a", "b", "c", "g"]);
+    expect(opened?.items[3]?.unmet?.character.id).toBe("g");
+    expect(opened?.start).toBe(3);
   });
 
   test("이어 보기는 친구 스토리를 처음부터, 친구 스토리가 없으면 null", () => {
