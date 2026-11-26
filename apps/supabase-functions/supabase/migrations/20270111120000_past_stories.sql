@@ -104,10 +104,11 @@ returns jsonb language plpgsql stable as $$
 declare
   v_enabled boolean := companion.past_stories_on(p_user_id);
   v_friend boolean := v_enabled and companion.past_story_friend(p_user_id, p_character_id, p_now);
-  v_open companion.past_story_opens := case when v_friend then companion.past_story_open_of(p_user_id, p_character_id, p_now) end;
+  v_open companion.past_story_opens;
   v_previews jsonb := '[]'::jsonb;
 begin
   if v_friend then
+    v_open := companion.past_story_open_of(p_user_id, p_character_id, p_now);
     select coalesce(jsonb_agg(jsonb_build_object(
       'id', s.id,
       'imagePath', p.image_path,
