@@ -151,15 +151,24 @@ test("FSI2. 답장 칸에 쓰고 보내기 → 보기를 떠나지 않고 인용
   expect(seen.has("st-owner")).toBe(true);
 });
 
-test("FSI3. 안 만난 친구 스토리 → Add friend and reply: 방이 열리고(추가 길) 인용 띠", async () => {
+test("FSI3. 안 만난 친구 스토리 → Add friend and reply: 보기에 남아 답장 칸(D5 개정 ⟨보기에서 추가⟩) → 답장 → 닫으면 목록에 그 방 · 마지막 말", async () => {
   serverRemote(live);
   await openMessenger();
   tapId(ids.unmet("daeun"));
   expect(screen.getByTestId(ids.viewer).textContent).toContain("NEW FRIEND");
   tapId(ids.meet);
   await settle();
-  expect(present(chat.screen)).toBe(true);
-  expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to 송다은's story");
+  expect(present(chat.screen)).toBe(false);
+  expect(present(ids.viewer)).toBe(true);
+  expect(present(ids.meetCard)).toBe(false);
+  expect(present(ids.replyInput)).toBe(true);
+  const text = screen.getByTestId(ids.chip(0)).textContent ?? "";
+  tapId(ids.chip(0));
+  await settle();
+  tapId(ids.close);
+  await settle();
+  expect(present(list.row("daeun"))).toBe(true);
+  expect(screen.getByTestId(list.rowPreview("daeun")).textContent).toContain(text);
 });
 
 test("FSI7. 목록을 연 뒤 올라온 스토리 — 다른 탭에 갔다 채팅 탭으로 돌아오면 다시 읽어 줄에 선다(ADR-0178 「다시 읽기」)", async () => {
