@@ -1,6 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { useUiCopy } from "../../lib/ui-copy";
+import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { missionReportBadgeText } from "./mission-report-ready";
 import type { MissionReportBadgeState } from "./mission-report-ready";
 import { missionTestIds as ids } from "./mission-test-ids";
@@ -20,7 +20,7 @@ export function MissionReportReadyBadge({
   missionId,
   state,
 }: MissionReportReadyBadgeProps): ReactNode {
-  const copy = useUiCopy().roleplayMission;
+  const copy = useMissionCopy();
   return (
     <view
       className={`mission-report-badge${state === "ready" ? " mission-report-badge-ready" : ""}`}

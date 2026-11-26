@@ -34,7 +34,7 @@ export function roleplaySectionsOf(input: RoleplaySectionsInput): readonly Rolep
     input.episodeLabel,
   );
   const missions = input.missions ?? null;
-  return missions === null
+  return !__ROLEPLAY_MISSION_IN_BUNDLE__ || missions === null
     ? sections
     : withMissionItems(sections, missions, input.catalog.episodeContent);
 }

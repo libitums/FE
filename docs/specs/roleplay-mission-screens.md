@@ -141,3 +141,11 @@ PRD §9 M10이 FE에 맡긴 것. 스위치 뒤 초안이라 **결선하지 않�
 | ui | `MissionTalkVoice.ui.test.tsx` | 확인 · 한국어 아님 · 실패 안내 넷 · 30초 상한 · 자동 재생 · 다시 듣기 · 끊고 말하기 · 합성 실패 · 힌트 듣기 · 그만두기 때 녹음 버림 |
 | ui | `MissionTalkScreen.ui.test.tsx` · `MissionReportScreen.ui.test.tsx`(더함) | 성공 카드 · Finish 글 단추 · 성공 뒤 대화상자 · 끝 줄 · 교정 카드 둘 · 리포트 새 구역 · 옛 결과 행 |
 | integration | `App.roleplay-mission.integration.test.tsx`(더함) | 성공 카드 → 끝내기 → 리포트, 성공 뒤 그만두기, 채점 대기 판, 음성 한 턴 |
+
+## 11. v3 — 서버 2e2b24e7 반영 · release 가지치기(ADR-0193)
+
+- **음성 계약**: 받아 적기 · 합성 타입은 계약 `mission-voice.ts` 그대로(`MissionSttResponse` · `MissionTtsRequest` · `MissionTtsResponse`). 받아 적기 실패는 서버 오류 코드를 계약의 `missionSttFailure`로 empty · busy · server(빈 결과 422 `speech_empty`, `voice_limit`은 busy). 합성 요청은 `{kind: "message", message_id}` · `{kind: "hint", hint_no}` — 힌트 듣기는 `mission-hint` 응답의 `hintNo`로, 없으면 듣기 단추가 없다.
+- **리포트 `focus`**는 서버가 고치기만 담는다 — 앱은 그대로 그린다(fixture도 계약과 같게).
+- **번들**: 스위치가 꺼진 release에서는 미션 코드가 번들에 없다 — `__ROLEPLAY_MISSION_IN_BUNDLE__`(`lynx.config.ts` `defineDCE`, dev이거나 스위치가 켜졌을 때 true)와 입구 둘(`app/roleplay-mission-entry.ts` · `roleplay-mission-list-entry.ts`, 부수 효과 없음 표시). 미션 문구는 문구표(`UiCopy`)에 두지 않고 `useMissionCopy()`(`lib/ui-copy-roleplay-mission-tables.ts`)로 고른다 — 목록 카드 낱말까지. 늘 번들에 드는 파일이 미션 모듈을 직접 import하면 가지치기가 깨진다(`roleplay-mission-entry.unit.test.ts` ME-S1). [성능 기록 04](../performance/reports/roleplay-mission-draft-04.md).
+- **대만 중국어(zh-TW)** 미션 문구 초안을 더했다(원어민 검수 필요).
+

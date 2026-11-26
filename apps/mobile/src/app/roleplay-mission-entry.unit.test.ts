@@ -27,12 +27,12 @@ const code = (file: string): string =>
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
 
-// 미션 쪽 파일 — 늘 번들에 드는 파일이 값으로 import해도 되는 것은 목록 카드 몫뿐입니다.
+// 미션 쪽 파일 — 늘 번들에 드는 파일이 값으로 import해도 되는 것은 입구 둘 · 스위치 · 대기 판 규칙(순수 함수 하나)뿐입니다.
 const MISSION_SIDE =
   /^(screens\/roleplay-mission\/|lib\/ui-copy-roleplay-mission(?!-list)|app\/(RoleplayMissionFlow|render-roleplay-mission|roleplay-mission-))/;
 const LIST_SAFE = new Set([
   "screens/roleplay-mission/mission-report-ready",
-  "screens/roleplay-mission/MissionReportReadyBadge",
+  "screens/roleplay-mission/roleplay-mission-list-entry",
   "screens/roleplay-mission/roleplay-mission-ready",
   "app/roleplay-mission-entry",
 ]);
@@ -71,6 +71,23 @@ describe("ME 스위치가 꺼진 release에서 미션 코드는 입구 하나로
     expect(code(join(appDir, "roleplay-sections.ts"))).toContain(
       "__ROLEPLAY_MISSION_IN_BUNDLE__ ? useRoleplayMissions() : null",
     );
+  });
+
+  test("ME-S2b. 목록 쪽 입구를 부르는 곳은 목록 화면 둘이고 빌드 상수로만 부른다", () => {
+    const callers = productFiles(srcDir)
+      .filter((file) =>
+        valueImports(file).includes("screens/roleplay-mission/roleplay-mission-list-entry"),
+      )
+      .map(rel)
+      .sort();
+    expect(callers).toEqual([
+      "screens/roleplay-list/RoleplayCard.tsx",
+      "screens/roleplay-list/roleplay-list.ts",
+    ]);
+    for (const file of callers) {
+      const source = code(join(srcDir, file));
+      expect(source.match(/__ROLEPLAY_MISSION_IN_BUNDLE__/g)?.length ?? 0, file).toBeGreaterThan(0);
+    }
   });
 
   test("ME-S3. lynx.config.ts는 스위치 파일을 읽어 빌드 상수를 정한다(dev이거나 스위치가 켜졌을 때)", () => {

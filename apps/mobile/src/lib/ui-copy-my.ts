@@ -55,7 +55,6 @@ import { learnerProfileMy } from "./ui-copy-my-profile";
 import { ticketsMy } from "./ui-copy-my-tickets";
 import { plansMy } from "./ui-copy-my-plans";
 import { roleplayStoryMy } from "./ui-copy-my-roleplay-story";
-import { roleplayMissionListCopy } from "./ui-copy-roleplay-mission-list";
 import {
   commonMy,
   journeyMapMy,
@@ -120,7 +119,6 @@ export const uiCopyMy: UiCopy = {
   tickets: ticketsMy,
   plans: plansMy,
   roleplayStory: roleplayStoryMy,
-  roleplayMission: roleplayMissionListCopy.my,
   appUpdate: appUpdateMy,
   storyMessenger: storyMessengerMy,
   messengerChat: messengerChatMy,
