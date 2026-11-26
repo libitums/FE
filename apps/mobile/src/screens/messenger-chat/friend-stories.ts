@@ -135,6 +135,17 @@ export function viewerJump(
 export const storyTapOf = (x: unknown, width: number): "prev" | "next" =>
   typeof x === "number" && x * 2 < width ? "prev" : "next";
 
+/** 키보드가 내려간 뒤 이 시간 안에 온 탭은 그 키보드를 내린 탭으로 봅니다(ADR-0178 D5 개정 ⟨키보드 탭⟩). */
+export const KEYBOARD_TAP_GRACE_MS = 500;
+
+/** 이 탭이 키보드만 내리는가(넘기지 않음) — 입력 중이거나, 방금(`KEYBOARD_TAP_GRACE_MS` 안) 키보드가 내려갔을 때. */
+export const tapDismissesKeyboard = (
+  typing: boolean,
+  closedAt: number | null,
+  now: number,
+): boolean =>
+  typing || (closedAt !== null && now >= closedAt && now - closedAt < KEYBOARD_TAP_GRACE_MS);
+
 /** 다음 · 저절로 넘김은 한 칸(마지막이면 닫힘), 이전은 한 칸(처음이면 그대로). */
 export function viewerStep(state: ViewerState, action: ViewerAction): ViewerState | "close" {
   if (action === "prev") return { ...state, index: Math.max(0, state.index - 1) };

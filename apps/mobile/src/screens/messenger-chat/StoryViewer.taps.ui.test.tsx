@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
 
-import { clearBackHandlers, tapEl } from "./chat-ui.test-support";
+import { advance, clearBackHandlers, nativeInput, tapEl } from "./chat-ui.test-support";
 import {
   friendStoriesTestIds as ids,
   type StoryViewerItem,
@@ -10,7 +10,8 @@ import {
 import { STORY_NOW, story } from "./friend-stories.test-support";
 import { StoryViewer } from "./StoryViewer";
 
-// `ui` 계층(FS-UI44 ~ UI46): 탭 자리(ADR-0178 D4 개정 ⟨탭 자리⟩) — 누를 수 있는 요소를 뺀 화면 어디를 눌러도 넘기고, 경계는 화면 가운데.
+// `ui` 계층(FS-UI44 ~ UI47): 탭 자리(ADR-0178 D4 개정 ⟨탭 자리⟩) — 누를 수 있는 요소를 뺀 화면 어디를 눌러도 넘기고, 경계는 화면 가운데.
+// FS-UI47: 답장 키보드가 열린 채 누른 탭(D5 개정 ⟨키보드 탭⟩) — blur가 탭보다 먼저 와도 키보드만 내린다.
 // 시험 환경은 창 폭을 몰라 큐브와 같은 기본 폭 390을 씁니다 — 가운데 = 195.
 
 beforeEach(() => {
@@ -105,4 +106,51 @@ test("FS-UI46. 누를 수 있는 요소(칩 · 단어 알약 · 답장 칸 · �
   tapAt(ids.pause, 350);
   expect(screen.getByTestId(ids.pause).getAttribute("accessibility-label")).toBe("Play");
   expect(progress()).toBe("Story 2 of 3");
+});
+
+const field = (kind: "focus" | "blur" | "input", value = "") =>
+  act(() => {
+    nativeInput(kind, value, ids.replyInput);
+  });
+
+test("FS-UI47. 키보드가 열린 채 빈 자리를 누르면 — blur가 탭보다 먼저 와도 키보드만 내리고 같은 장, 그다음 탭은 넘김", () => {
+  mount();
+  field("focus");
+  field("blur");
+  tapAt(ids.line, 300);
+  expect(progress()).toBe("Story 2 of 3");
+  tapAt(ids.line, 300);
+  expect(progress()).toBe("Story 3 of 3");
+  // 왼쪽 절반도 같습니다.
+  field("focus");
+  field("blur");
+  tapAt(ids.replyBottom, 100);
+  expect(progress()).toBe("Story 3 of 3");
+  tapAt(ids.replyBottom, 100);
+  expect(progress()).toBe("Story 2 of 3");
+});
+
+test("FS-UI47. 탭이 blur보다 먼저 와도 키보드만 내리고, 뒤따른 blur는 다음 탭을 삼키지 않는다", () => {
+  mount();
+  field("focus");
+  tapAt(ids.line, 300);
+  field("blur");
+  expect(progress()).toBe("Story 2 of 3");
+  tapAt(ids.line, 300);
+  expect(progress()).toBe("Story 3 of 3");
+});
+
+test("FS-UI47. 쓰던 답장 글은 키보드가 내려가도 남고, 창이 지난 뒤의 탭은 평소대로 넘긴다", () => {
+  mount();
+  field("focus");
+  field("input", "안녕");
+  field("blur");
+  tapAt(ids.line, 300);
+  expect(progress()).toBe("Story 2 of 3");
+  expect(screen.getByTestId(ids.replySend).getAttribute("accessibility-traits")).toBe("button");
+  field("focus");
+  field("blur");
+  advance(600);
+  tapAt(ids.line, 300);
+  expect(progress()).toBe("Story 3 of 3");
 });
