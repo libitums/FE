@@ -354,6 +354,18 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
   낭독 순서 = 닫기 · 멈춤 → 이름 → 프로필 → … .
 - 이벤트: `friend_story_closed.reason`에 `profile`(프로필 시트의 Start chatting으로 닫힘)을 더했다. 이미 친구의 시트는 `suggested_friend_opened`를 내지 않는다(추천이 아님).
 
+### 개정 ⟨소개 카드⟩ — 안 만난 친구의 아래 소개 카드도 같은 시트 ⟨2026-11-26⟩
+
+사용자 요청(2026-11-26, 「잠긴 캐릭터 스토리에서 하단 캐릭터 정보 UI 눌러도 캐릭터 프로필 바텀시트 똑같이 올라오게」).
+
+- 안 만난 친구(잠김 · 추가 가능) 장의 **아래 소개 카드**(`story-meet-card` — 얼굴 · 이름 · 소개)를 누르면 위 아바타와 **같은 길**(`onProfile(그 장)` → `use-story-profile` → 추천 친구 시트
+  `SuggestedFriendSheet`, Hear voice · 로마자 그대로)이 선다. 시트의 아래 단추(Start chatting · Chat now · 먼저 만나기)도 그대로다.
+- 카드는 `catchtap`이라 그 탭은 면의 넘김(⟨탭 자리⟩)으로 올라가지 않는다. 「Add friend and reply」는 카드 밖 형제라 제 동작(추가 + 답장) 그대로다.
+- 시트가 떠 있는 동안 진행은 멈추고(`covered`), 닫으면 이어 간다 — 아바타 길과 같다.
+- 접근성: 낭독의 시트 단추는 위 아바타 「<이름>'s profile」 하나로 둔다. 카드는 같은 이름 단추를 하나 더 세우지 않고(중복 낭독) 손가락 길만 더한다. 카드 글은 지금처럼 읽힌다.
+- 이벤트: 아바타와 같다(`suggested_friend_opened` from `story_viewer`). 이름 수(AN1 · AB3)는 바뀌지 않는다.
+- 확인: ui FS-UI48(`StoryViewer.ui.test.tsx` — 잠김 · 추가 가능 둘 다 onProfile · 넘기지 않음 · Add friend 그대로, `MessengerListScreen.stories.ui.test.tsx` — 시트 · Start chatting · 멈춤 · Not now 뒤 이어 감), e2e FS-E17b(기기).
+
 ## 개정 ⟨대화방⟩ — 대화방 안 아바타 → 같은 프로필 시트, 행동 단추 없음 ⟨2026-11-26⟩
 
 사용자 요청(「대화 안에서 프로필 아바타 클릭할 때도 프로필 바텀시트 떠야 해. 채팅하기 버튼은 숨겨도 될 것 같아」, 추가로 「대화방에서 열 때만 숨기고

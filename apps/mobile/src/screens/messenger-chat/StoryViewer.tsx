@@ -247,7 +247,13 @@ export function StoryViewer({
             ) : unmet === null ? (
               <StoryReplyArea item={item} copy={copy} reply={reply} />
             ) : (
-              <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
+              <StoryMeet
+                item={item}
+                friend={unmet}
+                copy={copy}
+                onMeet={() => onMeet(item)}
+                onProfile={() => onProfile(item)}
+              />
             )}
           </view>
         </view>
