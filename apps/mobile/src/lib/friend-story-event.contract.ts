@@ -25,7 +25,7 @@ export type FriendStoryEvent =
       readonly name: "friend_story_viewed";
       readonly characterId: string;
       readonly met: boolean;
-      readonly from: "row" | "list" | "watch_all" | "push";
+      readonly from: "row" | "watch_all" | "push";
       readonly index: string;
       readonly total: string;
     })

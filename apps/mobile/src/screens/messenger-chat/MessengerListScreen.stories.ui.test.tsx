@@ -25,7 +25,7 @@ import { suggestedFriendsTestIds as suggestedIds } from "./suggested-friends.con
 import { catalogOf, friend, general } from "./suggested-friends.test-support";
 
 // `ui` 계층(FS-UI7): 목록 화면 + 가짜 출처 + 가짜 스토리 포트(ADR-0178 D2 · D3 · D5) — 스토리가 없으면 추천 줄 그대로, 있으면 스토리 줄,
-// 친구 스토리 → 보기 → 칩 · 답장 칸이 넘김을 남기고 방을 엶, 목록 줄 「New story」, 본 것 표시, 이벤트, 알림으로 연 스토리.
+// 친구 스토리 → 보기 → 칩 · 답장 칸이 넘김을 남기고 방을 엶, 목록 줄은 스토리가 있어도 평소 미리보기(D3 개정), 본 것 표시, 이벤트, 알림으로 연 스토리.
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -148,15 +148,17 @@ test("FS-UI7. 친구 스토리 → 보기(본 것 표시 · viewed) → 칩 → 
   expect(onOpenRoom).toHaveBeenCalledWith("mina");
 });
 
-test("FS-UI7. 목록 줄의 New story → 보기, 본 뒤 줄은 보통 미리보기", async () => {
-  await mount(live);
-  expect(screen.getByTestId(list.rowPreview("mina")).textContent).toBe(
-    "New story · 야근 끝! 편의점 라면이 최고야",
+test("FS-UI7. 안 본 스토리가 있어도 목록 줄은 평소 미리보기 · 누르면 그 방(D3 개정)", async () => {
+  const { onOpenRoom } = await mount(live);
+  const preview = screen.getByTestId(list.rowPreview("mina"));
+  expect(preview.textContent).toBe("안녕!");
+  expect(preview.getAttribute("data-tone")).not.toBe("story");
+  expect(screen.getByTestId(list.row("mina")).getAttribute("accessibility-label")).not.toContain(
+    "story",
   );
   tapId(list.row("mina"));
-  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
-  tapId(ids.close);
-  expect(screen.getByTestId(list.rowPreview("mina")).textContent).toBe("안녕!");
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+  expect(onOpenRoom).toHaveBeenCalledWith("mina");
 });
 
 test("FS-UI7. 알림으로 연 인물의 스토리가 서면 그 보기를 연다(from push)", async () => {

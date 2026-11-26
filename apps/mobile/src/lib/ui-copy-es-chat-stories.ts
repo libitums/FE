@@ -18,8 +18,6 @@ export const messengerChatStoriesEs: FriendStoriesCopy = {
   unmetLabel: (name) => `Historia de ${name}, nueva amistad`,
   findFriends: "Buscar", // 줄 칸(76px)에 맞게 짧게 — 낭독은 findFriendsLabel(친구 찾기 제목 그대로)
   findFriendsLabel: "Buscar amigos",
-  listPreview: (line) => `Nueva historia · ${line}`,
-  listRowLabel: (name, line) => `${name}, nueva historia: ${line}. Abre la historia`,
   viewer: {
     label: (name) => `Historia de ${name}`,
     progress: (index, count) => `Historia ${index} de ${count}`,

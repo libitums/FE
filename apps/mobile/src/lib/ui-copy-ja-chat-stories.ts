@@ -18,8 +18,6 @@ export const messengerChatStoriesJa: FriendStoriesCopy = {
   unmetLabel: (name) => `${name}のストーリー、新しい友だち`,
   findFriends: "友だちを探す",
   findFriendsLabel: "友だちを探す",
-  listPreview: (line) => `新しいストーリー · ${line}`,
-  listRowLabel: (name, line) => `${name}、新しいストーリー：${line}。ストーリーを開きます`,
   viewer: {
     label: (name) => `${name}のストーリー`,
     progress: (index, count) => `ストーリー ${count}件中${index}件目`,

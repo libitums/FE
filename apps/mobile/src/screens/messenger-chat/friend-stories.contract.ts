@@ -166,8 +166,6 @@ export type FriendStoriesCopy = {
   readonly unmetLabel: (name: string) => string;
   readonly findFriends: string;
   readonly findFriendsLabel: string;
-  readonly listPreview: (line: string) => string;
-  readonly listRowLabel: (name: string, line: string) => string;
   readonly viewer: {
     readonly label: (name: string) => string;
     readonly progress: (index: number, count: number) => string;
