@@ -102,8 +102,9 @@ test("MS-EE3. 사진 바탕 — 사진이 캔버스가 아니라 편집 층 전�
   const photo = screen.getByTestId(ids.editorPhoto);
   expect(layoutParentOf(photo) === editor).toBe(true);
   expect(screen.getByTestId(ids.stickers).contains(photo)).toBe(false);
-  expect(editor.getAttribute("data-statusbar")).toBe(lightStatusBarIcons);
+  // 표지는 사진일 때만 그리는 그늘이 답니다(등록부 `my-stories.css` carrier — 조건식 값은 금지).
   const shade = screen.getByTestId(ids.editorShade);
+  expect(shade.getAttribute("data-statusbar")).toBe(lightStatusBarIcons);
   expect(shade.getAttribute("style")).toMatch(new RegExp(`height:\\s*${TOP + 120}px`));
   expect(ruleOf(".my-story-editor-shade")).toMatch(/linear-gradient/);
   // 사진 위 도구 이름은 흰 글자(그림자) — 어두운 글자는 어두운 사진에서 사라집니다.

@@ -137,7 +137,6 @@ export function MyStoryEditor({
         event-through={false}
         accessibility-elements-hidden={sheet || writing}
         style={{ paddingTop: `${insets.top}px` }}
-        data-statusbar={photo === null ? undefined : lightStatusBarIcons}
       >
         {/* 화면 끝까지(2026-11-26) — 사진은 캔버스가 아니라 층 전체(상태 표시줄 아래까지), 위는 보기 머리처럼 어둡게 흐립니다. */}
         {photo === null ? null : (
@@ -154,6 +153,7 @@ export function MyStoryEditor({
               className="my-story-editor-shade"
               data-testid={ids.editorShade}
               style={{ height: `${insets.top + SHADE_BELOW_INSET}px` }}
+              data-statusbar={lightStatusBarIcons}
               accessibility-elements-hidden={true}
             />
           </>
