@@ -99,6 +99,11 @@ export type SuggestedFriendSheetProps = {
   readonly voiceSampleUrl?: string | null;
   /** 로마자 스위치(ADR-0188) — 견본 대본 아래 줄을 고릅니다. 생략하면 hidden(뜻 한 줄). */
   readonly romanization?: ChoiceRomanization;
+  /**
+   * 아래 단추 줄(ADR-0178 개정 ⟨대화방⟩) — `offer`(기본)는 Start chatting · Chat now + Not now, `close`는 대화방에서 연 시트라 행동
+   * 단추 없이 Close 하나. 막 탭 · 끌어내림 · 뒤로가기는 어느 쪽이든 `onClose`입니다.
+   */
+  readonly actions?: "offer" | "close";
   readonly onStart: () => void;
   readonly onEarly: () => void;
   readonly onClose: () => void;
@@ -156,6 +161,7 @@ export const suggestedFriendsTestIds = {
   sheetEarly: sf("sheet-early"),
   sheetLimited: sf("sheet-limited"),
   sheetLater: sf("sheet-later"),
+  sheetClose: sf("sheet-close"),
   toast: sf("toast"),
   adultAck: sf("adult-ack"),
   adultAckConfirm: sf("adult-ack-confirm"),

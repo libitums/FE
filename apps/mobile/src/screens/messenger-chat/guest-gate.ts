@@ -8,7 +8,7 @@ import type { UiCopy } from "../../lib/ui-copy.contract";
 export type GuestGateTrigger = "send" | "media" | "menu" | "coins" | "add_friend" | "tickets";
 
 /**
- * 비회원이 이 동작을 하면 권유를 띄울지 — 띄우면 그 자리, 아니면 null. 보기 패널 열기는 send. 겹침 가운데 더보기 펼침 · 사진 크게 보기만 그대로 열고,
+ * 비회원이 이 동작을 하면 권유를 띄울지 — 띄우면 그 자리, 아니면 null. 보기 패널 열기는 send. 겹침 가운데 더보기 펼침 · 사진 크게 보기 · 상대 프로필만 그대로 열고,
  * 사진 · 음성 요청은 media, 엽전 상점은 coins, 그 밖(사이드바 · 다시 만들기 · 신고 · 평가 · 피드백 방식 등)은 menu입니다.
  */
 export function guestGateOf(action: ChatRoomAction): GuestGateTrigger | null {
@@ -17,6 +17,7 @@ export function guestGateOf(action: ChatRoomAction): GuestGateTrigger | null {
   switch (action.overlay.kind) {
     case "more-menu":
     case "photo":
+    case "profile": // 상대 프로필 보기(ADR-0178 개정 ⟨대화방⟩) — 계정 동작이 아님
       return null;
     case "ask-media":
       return "media";
