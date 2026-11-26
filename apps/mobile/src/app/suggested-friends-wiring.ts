@@ -9,6 +9,7 @@ import {
   deviceAdultAckAskedStore,
   type AdultAckAskedStore,
 } from "../screens/messenger-chat/adult-ack-store";
+import type { ChatProfilePort } from "../screens/messenger-chat/chat-profile";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import { ageBandOf } from "../screens/messenger-chat/companion-friends";
 import { COMPANION_CATALOG } from "../screens/messenger-chat/companion-roster";
@@ -188,4 +189,17 @@ export function guestSuggestedFriendsPort(args?: SuggestedFriendsViewArgs): Sugg
     offers: null,
   };
   return guestPort;
+}
+
+let chatProfile: ChatProfilePort | null = null;
+
+/** 대화방 안 상대 프로필 시트(ADR-0178 개정 ⟨대화방⟩) — 같은 앱 인물 표 · 견본 주소 · 로마자 스위치, 서버 RPC 0. */
+export function chatProfilePort(args: SuggestedFriendsViewArgs): ChatProfilePort {
+  view = args;
+  chatProfile ??= {
+    ...viewPort,
+    profileOf: (id) =>
+      (catalogOverride ?? COMPANION_CATALOG).characters.find((one) => one.id === id) ?? null,
+  };
+  return chatProfile;
 }

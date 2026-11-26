@@ -2,7 +2,16 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
-export type ChatAvatar = { readonly name: string; readonly imageUrl: string | null };
+export type ChatAvatar = {
+  readonly name: string;
+  readonly imageUrl: string | null;
+  /** 있으면 아바타가 프로필 단추입니다(버튼 역할 · 낭독 이름 · 손가락 자리 44). */
+  readonly profile?: {
+    readonly label: string;
+    readonly testId: string;
+    readonly onTap: () => void;
+  };
+};
 
 export type ChatHeaderProps = {
   readonly title: string;
@@ -12,6 +21,8 @@ export type ChatHeaderProps = {
   readonly end: ReactNode | null;
   /** 제목 아래 한 줄 자리입니다. 없으면 DOM이 바뀌지 않습니다(messenger-chat-1-5 spec §3.2). */
   readonly subtitle?: ReactNode;
+  /** 제목을 손가락으로 누르면(예: 대화방 상대 프로필). 낭독 역할은 그대로 제목입니다. */
+  readonly onTitleTap?: () => void;
 };
 export type ChatHeaderSideProps = {
   readonly testId?: string;
