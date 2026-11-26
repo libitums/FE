@@ -1,5 +1,6 @@
 // 영어 문구표입니다. 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 
+import { micPermissionEn } from "./ui-copy-mic-permission";
 import { moreCopy } from "./ui-copy-more";
 import { authFailureEn } from "./auth-failure";
 import { rankingCopy } from "./ui-copy-ranking";
@@ -82,6 +83,7 @@ export const uiCopyEn: UiCopy = {
   sentenceOrder: sentenceOrderEn,
   assembledHint: assembledHintEn,
   speaking: speakingEn,
+  micPermission: micPermissionEn,
   learningItemGuide: learningItemGuideEn,
   assessment: assessmentEn,
   lessonComplete: lessonCompleteEn,

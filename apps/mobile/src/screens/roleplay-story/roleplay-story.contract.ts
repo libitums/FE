@@ -2,6 +2,7 @@
 // 턴 모양은 최종 테스트의 것을 그대로 받습니다 — 같은 콘텐츠(`RP` 스텝)를 같은 계획 함수로 만듭니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
 import type { SpeechMissReason, SpeechUnavailableReason } from "../../lib/speech-attempt";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { CatalogRoleplayTurns } from "../catalog-final/catalog-final.contract";
@@ -79,6 +80,8 @@ export type RoleplayTalkScreenProps = {
   /** 마지막 턴 뒤 — 한 번만 부릅니다. */
   readonly onFinish: (results: readonly AnswerResult[], skippedCount: number) => void;
   readonly onExit: () => void;
+  /** 마이크 권한 안내의 맥락(ADR-0206) — 롤플레이는 레슨 밖이라 열쇠가 없습니다. 없으면 이벤트도 없습니다. */
+  readonly mic?: MicPermissionContext;
 };
 
 /** 에피소드 롤플레이의 분석 이벤트입니다 — 열림과 끝까지 마침. 대사 · 들은 문장은 싣지 않습니다(ADR-0029 D14). */

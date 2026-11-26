@@ -4,7 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
 import { SpeechWaves } from "../../components/SpeechWaves";
-import { useSpeechAttempt } from "../../components/use-speech-attempt";
+import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { stopAudio } from "../../lib/audio";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
@@ -29,12 +29,10 @@ import {
   speakWordResultAnnouncement,
   speakWordRevealText,
   speakWordSessionReducer,
-  speakWordSessionResults,
-  speakWordSkippedCount,
-  speakWordSkippedIndexes,
 } from "./speak-word";
 import type { SpeakWordActivityProps } from "./speak-word.contract";
 import { SpeakWordPicture } from "./SpeakWordPicture";
+import { SpeakWordHearIt, useSpeakWordMic } from "./SpeakWordMic";
 import { SpeakWordSecondary } from "./SpeakWordSecondary";
 import { revealSpeakWordHint, speakWordHintId } from "./speak-word-hint-scroll";
 import * as Hint from "./speak-word-hint";
@@ -52,12 +50,11 @@ export function SpeakWordActivity({
   lesson,
   lessonAudio,
   onItemAnswered,
+  mic,
 }: SpeakWordActivityProps): ReactNode {
   const copy = useUiCopy();
   const density = useLearningDensity();
   const [state, dispatch] = useReducer(speakWordSessionReducer, initialSpeakWordSessionState);
-  const finished = useRef(false);
-  const attempt = useSpeechAttempt((outcome) => dispatch({ type: "outcome", outcome }));
 
   const complete = isSpeakWordSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
@@ -76,6 +73,17 @@ export function SpeakWordActivity({
   const hint = question == null ? null : speakWordHintOf(phase, copy);
   const dictationOff = phase.kind === "unavailable" && phase.reason === "dictation-off";
   const answerHint = Hint.useSpeakWordHint(question, state.questionIndex);
+  // 말하기 결선 · 마이크 권한 시트 · 결과 올리기(한 번만)는 `useSpeakWordMic`이 집니다(ADR-0206).
+  const { attempt, finish, ...speech } = useSpeakWordMic({
+    mic,
+    questions,
+    state,
+    dispatch,
+    density,
+    onItemAnswered,
+    onFinish,
+    hint: answerHint,
+  });
   const report = (outcome: Parameters<typeof speechItemReportOf>[1]): void =>
     onItemAnswered?.({
       ...speechItemReportOf(state.questionIndex, outcome, density, phase),
@@ -106,16 +114,6 @@ export function SpeakWordActivity({
     announceCompletion(speakWordCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
-  // 결과는 한 번만 올라갑니다 — 부모가 화면을 걷기 전의 두 번째 탭을 막습니다.
-  const finish = (heard: readonly (string | null)[]): void => {
-    if (finished.current) return;
-    finished.current = true;
-    onFinish(
-      speakWordSessionResults(questions, heard),
-      speakWordSkippedCount(heard),
-      speakWordSkippedIndexes(heard),
-    );
-  };
   const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
 
   const run = (control: SpeechControl): void => {
@@ -176,12 +174,8 @@ export function SpeakWordActivity({
   };
   const handleWaves = (): void => {
     "background only";
-    // 못 알아들은 뒤에는 마이크도 같은 문항을 다시 듣습니다(주 버튼 Try again과 같은 동작).
-    if (
-      primary === "speak" ||
-      primary === "stop" ||
-      (primary === "retry" && phase.kind === "missed")
-    ) {
+    // 못 알아들음 · 인식 실패 뒤에는 마이크도 같은 문항을 다시 듣습니다(주 버튼 Try again과 같은 동작, ADR-0206 D5).
+    if (primary === "speak" || primary === "stop" || primary === "retry") {
       playSound("button");
       run(primary);
     }
@@ -249,6 +243,7 @@ export function SpeakWordActivity({
                   </text>
                 )}
               </view>
+              <SpeakWordHearIt shown={speech.hearIt} hint={answerHint} />
               {action === undefined ? secondaryNode : null}
             </>
           )
@@ -295,6 +290,7 @@ export function SpeakWordActivity({
         }
       />
       <Hint.SpeakWordHintSheet hint={answerHint} />
+      <MicPermissionSheet mic={speech.permission} />
     </>
   );
 }

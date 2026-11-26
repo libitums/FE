@@ -42,7 +42,9 @@ export function roleplayTalkReducer(
             phase: "listening",
             unavailableReason: null,
             missedReason: null,
-            retrying: state.phase === "missed",
+            retrying:
+              state.phase === "missed" ||
+              (state.phase === "unavailable" && state.unavailableReason === "failed"),
           }
         : state;
     case "heard":
