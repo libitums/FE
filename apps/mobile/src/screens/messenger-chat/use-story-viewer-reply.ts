@@ -15,6 +15,7 @@ import type {
   StoryViewerItem,
 } from "./friend-stories.contract";
 import { LIST_NOTICE_MS } from "./messenger-list-notice";
+import { tapDismissesKeyboard } from "./friend-stories";
 import { canSendStoryReply } from "./story-inline-reply";
 import { STORY_REPLY_INPUT_ID } from "./StoryReplyInput";
 
@@ -40,8 +41,10 @@ export type StoryViewerReply = {
   readonly setTyping: (focused: boolean) => void;
   readonly edit: () => void;
   readonly measure: (height: number) => void;
-  /** 입력 중이면 키보드를 내리고 true — 뒤로 · 밖 누름이 먼저 이것을 부릅니다. */
+  /** 입력 중이면 키보드를 내리고 true — 뒤로가 먼저 이것을 부릅니다. */
   readonly dismissKeyboard: () => boolean;
+  /** 밖 누름용 — 입력 중이거나 방금 키보드가 내려갔으면(blur가 탭보다 먼저 옴) true, 그 탭은 넘기지 않습니다(D5 개정 ⟨키보드 탭⟩). */
+  readonly dismissForTap: () => boolean;
 };
 
 export function useStoryViewerReply({
@@ -71,6 +74,7 @@ export function useStoryViewerReply({
   const [usedFree, setUsedFree] = useState<ReadonlySet<string>>(new Set());
   const [measured, setMeasured] = useState(0);
   const typingRef = useRef(false);
+  const closedAt = useRef<number | null>(null);
   const live = useRef(true);
   useEffect(
     () => () => {
@@ -82,16 +86,25 @@ export function useStoryViewerReply({
   // 핸들러 · 효과에서만 부릅니다 — 메인 스레드 번들에서 빠집니다(ADR-0149).
   const setTyping = (focused: boolean) => {
     "background only";
+    // 입력 칸이 스스로 초점을 잃은 시각 — 밖을 누른 손가락의 blur가 탭보다 먼저 오므로 그 탭을 알아봅니다(D5 개정 ⟨키보드 탭⟩).
+    closedAt.current = !focused && typingRef.current ? Date.now() : null;
     typingRef.current = focused;
     setTypingState(focused);
   };
-  const dismissKeyboard = (): boolean => {
+  // `recent`면 방금 내려간 키보드도 셉니다(탭만 — 뒤로 · 시트는 지금 입력 중일 때만).
+  const lowerKeyboard = (recent: boolean): boolean => {
     "background only";
-    if (!typingRef.current) return false;
+    const closed = recent ? closedAt.current : null;
+    if (!tapDismissesKeyboard(typingRef.current, closed, Date.now())) return false;
+    // 기록은 한 번만 씁니다. 여기서 내리면 칸을 먼저 비켜 뒤따른 blur가 다시 기록하지 않게 합니다.
+    closedAt.current = null;
+    if (!typingRef.current) return true;
+    typingRef.current = false;
     blurInputById(STORY_REPLY_INPUT_ID);
-    setTyping(false);
+    setTypingState(false);
     return true;
   };
+  const dismissKeyboard = () => lowerKeyboard(false);
 
   // 장이 바뀌면 실패 안내를 걷습니다(칸은 장마다 새로 섭니다). 「Sent」 알림은 장 · 인물이 바뀌어도 남습니다(사용자 결정 2026-11-26).
   useEffect(() => {
@@ -163,5 +176,6 @@ export function useStoryViewerReply({
       onKeyboardHeight?.(height);
     },
     dismissKeyboard,
+    dismissForTap: () => lowerKeyboard(true),
   };
 }

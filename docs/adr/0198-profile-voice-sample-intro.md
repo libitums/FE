@@ -127,6 +127,17 @@ ja는 가타카나. 인물 칸 `LocalizedLine`(main은 th · my · zh-TW 칸이 
   내지 않음). PostHog만. ADR-0029에 적었다.
 - 문구(여덟 언어): `Hear voice` · `Pause` · `Resume` · 낭독 이름(`Hear <이름>'s voice` 등 자리마다) · `Voice sample unavailable`. 원어민 검수 전.
 
+## 고침 기록 ⟨2026-11-26, `fix/profile-voice-play`⟩
+
+결정을 바꾸지 않는다. 사용자 보고(아이폰 실기기, main 1f906a40): 「Hear voice」를 누르면 소리 없이 「Voice sample unavailable」.
+
+- **원인** — 같은 시트를 세우는 자리가 둘인데 한 자리만 주소를 넘겼다. 목록 · 친구 찾기에서 연 시트(`use-suggested-friends`)는 견본 주소 ·
+  로마자를 넘기고, **스토리 보기 아바타로 연 이미 친구 시트(`use-story-profile`, ADR-0178)**는 둘 다 빠져 기본값(null · hidden)이었다. 인물에
+  견본 경로가 있으니 단추는 서고, 누르면 주소가 null이라 못 읽음 줄이 섰다. 이야기 인물 다섯(이미 만난 친구라 스토리 보기로 시트를 연다)이 이
+  길을 탄다. 주소 규칙(선두 `content/` 떼기) · 버킷 파일(아홉 모두 200 · `audio/mpeg`) · 재생 모듈 · 오디오 세션(`.playback`)은 원인이 아니다.
+- **고침** — 시트가 받을 값을 순수 함수 하나(`sheetViewOf(model, port)` — `suggested-friends-ui.ts`)로 모으고 추천 친구 상태가
+  `sheetView(model)`로 내놓는다. 두 자리 모두 이것을 펼쳐 넘긴다 — 스토리 보기 시트의 대본 줄도 이제 로마자 스위치를 따른다.
+
 ## 버린 대안
 
 - **단추 아래 대본 말풍선을 따로**: 시제품 첫 판. 첫 말과 인사가 겹치고(서연 「안녕하세요, 차서연이에요…」가 두 번), 긴 대본이면 시트의 40%를 차지해

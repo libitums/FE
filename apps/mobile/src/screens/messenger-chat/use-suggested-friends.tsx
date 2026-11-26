@@ -29,7 +29,7 @@ import { SuggestedFriendsRow } from "./SuggestedFriendsRow";
 import { SuggestedFriendToast } from "./SuggestedFriendToast";
 import type { SuggestedFriendToastValue } from "./SuggestedFriendToast";
 import { useAdultAck } from "./use-adult-ack";
-import { modelOfFriend, modelOfRow } from "./suggested-friends-ui";
+import { modelOfFriend, modelOfRow, sheetViewOf } from "./suggested-friends-ui";
 import type { SuggestedFriendsUi, SuggestedFrom } from "./suggested-friends-ui";
 
 export type { SuggestedFriendsUi } from "./suggested-friends-ui";
@@ -43,15 +43,6 @@ type OpenSheet = {
 };
 
 const ALL: DirectoryFilter = { kind: "all" };
-
-/** 시트 인물의 목소리 견본 재생 주소(ADR-0198) — 견본이 없거나 포트가 못 풀면 null. */
-const voiceUrlOf = (
-  model: SuggestedFriendSheetModel,
-  port: SuggestedFriendsPort | undefined,
-): string | null => {
-  const path = model.character.voiceSamplePath ?? null;
-  return path === null ? null : (port?.voiceSampleUrl?.(path) ?? null);
-};
 
 export function useSuggestedFriends({
   port,
@@ -284,8 +275,7 @@ export function useSuggestedFriends({
           <SuggestedFriendSheet
             model={sheet.model}
             now={now}
-            voiceSampleUrl={voiceUrlOf(sheet.model, port)}
-            romanization={port?.romanization?.() === true ? "shown" : "hidden"}
+            {...sheetViewOf(sheet.model, port)}
             onStart={handleStart}
             onEarly={handleEarly}
             onClose={() => setSheet(null)}
@@ -296,5 +286,6 @@ export function useSuggestedFriends({
       </>
     ),
     layerOpen,
+    sheetView: (model) => sheetViewOf(model, port),
   };
 }
