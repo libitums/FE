@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { useContext } from "@lynx-js/react";
 import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import { createFixtureChatSource } from "./chat-fixture-source";
@@ -9,6 +10,7 @@ import type { ChatMessage } from "./chat-source.contract";
 import { chatStoryThumbTestIds as thumbIds } from "./chat-story-thumb.contract";
 import { clearBackHandlers, systemBack, tapButtonIn, tapId } from "./chat-ui.test-support";
 import { ChatStoryHost } from "./ChatStoryHost";
+import { ChatStoryHostContext } from "./chat-story-host-context";
 import { tapEl } from "./lynx-tap.test-support";
 import { createCoinWallet } from "./coin-wallet";
 import { companionSeed } from "./companion-roster";
@@ -206,4 +208,38 @@ test("CT-I5 스토리 포트가 없으면(손님) 목록을 받지 않고 판은
   expect(cards()[0]?.getAttribute("accessibility-traits")).toBeNull();
   tapId(fs.quote);
   expect(screen.queryByTestId(fs.viewer)).toBeNull();
+});
+
+function NeedProbe(): null {
+  const host = useContext(ChatStoryHostContext);
+  needRef.current = host?.need ?? null;
+  return null;
+}
+const needRef: { current: ((kind: "mine" | "friend") => void) | null } = { current: null };
+
+test("CT-I6 목록을 못 받으면(null) 다음 요청이 다시 받고, 받은 뒤에는 다시 받지 않음", async () => {
+  const load = vi.fn<FriendStoriesPort["load"]>().mockResolvedValueOnce(null);
+  load.mockResolvedValue([]);
+  const port: FriendStoriesPort = {
+    load,
+    imageUrl: () => null,
+    seen: { seenIds: () => new Set(), markSeen: vi.fn() },
+  };
+  const source = createFixtureChatSource({ imageUrlOf: () => null, timers: fakeTimers() });
+  render(
+    <ChatStoryHost
+      port={port}
+      source={source}
+      wallet={createCoinWallet({ earned: 0 })}
+      roomId="mina"
+      onOpenRoom={vi.fn()}
+    >
+      <NeedProbe />
+    </ChatStoryHost>,
+  );
+  for (let i = 0; i < 3; i += 1) {
+    act(() => needRef.current?.("friend"));
+    await flush();
+  }
+  expect(load).toHaveBeenCalledTimes(2);
 });

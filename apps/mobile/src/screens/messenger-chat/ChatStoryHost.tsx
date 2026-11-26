@@ -67,16 +67,21 @@ export function ChatStoryHost({
     "background only";
     if (port === undefined || asked.current.has(kind)) return;
     asked.current.add(kind);
+    // 못 받았으면(null · 던짐) 다음에 서는 판이 다시 요청할 수 있게 표시를 지웁니다.
+    const got = <T,>(value: T | null) => {
+      if (value === null) asked.current.delete(kind);
+      return value;
+    };
     if (kind === "mine")
       void port.mine
         ?.load()
         .catch(() => null)
-        .then((state) => setMine(state?.stories ?? null));
+        .then((state) => setMine(got(state)?.stories ?? null));
     else
       void port
         .load()
         .catch(() => null)
-        .then(setFriends);
+        .then((list) => setFriends(got(list)));
   };
 
   const open = (quote: ChatStoryQuote) => {
