@@ -2,10 +2,15 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import * as audio from "../lib/audio";
+import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import { COMPANION_CATALOG } from "../screens/messenger-chat/companion-roster";
+import { friendStoriesTestIds as storyIds } from "../screens/messenger-chat/friend-stories.contract";
+import { story } from "../screens/messenger-chat/friend-stories.test-support";
+import { friend } from "../screens/messenger-chat/suggested-friends.test-support";
 import { suggestedFriendsTestIds as ids } from "../screens/messenger-chat/suggested-friends.contract";
 import { App } from "./App";
-import { setFriendCatalogForTests } from "./suggested-friends-wiring";
+import { setFriendStoriesStoresForTests } from "./friend-stories-wiring";
+import { setEarlyAccessRemote, setFriendCatalogForTests } from "./suggested-friends-wiring";
 import {
   openTab,
   present,
@@ -57,6 +62,8 @@ beforeEach(async () => {
 });
 afterEach(() => {
   setFriendCatalogForTests(null);
+  setEarlyAccessRemote(null);
+  setFriendStoriesStoresForTests(null);
   cleanup();
   vi.unstubAllEnvs();
   (lynx as unknown as { __globalProps: unknown }).__globalProps = undefined;
@@ -86,4 +93,46 @@ test("PV-I2. 잠긴 이야기 인물(미나) — 단추 · 대본 없음", async
   expect(present(ids.sheet)).toBe(true);
   expect(present(ids.sheetVoice)).toBe(false);
   expect(present(ids.sheetOpening)).toBe(false);
+});
+
+test("PV-I3. 스토리 보기 아바타로 연 이미 친구 시트 — 목록 시트와 같은 버킷 주소로 틀고 못 읽음 줄이 없다(2026-11-26 보고)", async () => {
+  const now = Date.now();
+  setFriendCatalogForTests({
+    characters: [
+      ...COMPANION_CATALOG.characters,
+      friend("owner", {
+        name: "사장님",
+        voiceSamplePath: "content/audio/companion/owner-intro.mp3",
+        voiceSampleScript: { ko: "사장님이에요!", roman: "sajangnimieyo!", en: "I'm the owner!" },
+      }),
+    ],
+    categories: [],
+  });
+  setEarlyAccessRemote(
+    () =>
+      ({
+        earlyAccess: { offers: async () => [], unlock: async () => null },
+        friends: { visible: async () => [], ackAdult: async () => true },
+        stories: {
+          list: async () => [
+            story("owner", { postedAt: now - 3_600_000, expiresAt: now + 3_600_000 }),
+          ],
+        },
+      }) as unknown as ChatRemote,
+  );
+  setFriendStoriesStoresForTests({
+    seen: { seenIds: () => new Set(), markSeen: () => undefined },
+    saveWord: () => undefined,
+    isWordSaved: () => false,
+  });
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
+  openTab("messenger");
+  await screen.findByTestId(storyIds.friend("owner"));
+  tapId(storyIds.friend("owner"));
+  tapId(storyIds.profile);
+  tapId(ids.sheetVoice);
+  expect(vi.mocked(audio.playAudio).mock.calls[0]?.[0]).toMatch(
+    /^https:\/\/test\.supabase\.co\/.+\/audio\/companion\/owner-intro\.mp3$/,
+  );
+  expect(present(ids.sheetVoiceUnavailable)).toBe(false);
 });
