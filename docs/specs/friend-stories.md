@@ -13,7 +13,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   - `storyRowOf({ stories, rooms, suggested, seen, now })` → `StoryRow` — 친구(열린 방의 인물) · 안 만난 친구(추천 대상)를 각각 `byLatestStory` 순으로, 그 밖 추천.
     한 인물에 스토리가 둘 이상이면 가장 새 것 하나. 본 것은 `seen` 표시만(순서에 안 씀, D3 개정 ⟨2026-11-25⟩).
   - `story-order.ts` `storyOrderOf(row)` → 친구 · 안 만난 친구를 한 줄로 합친 칸 순서(최신 `postedAt` 내림차순, 같으면 인물 id 오름차순).
-    줄과 `viewerItemsOf`(이어 보기 · 친구 열기의 다음 인물)가 함께 쓴다. `byLatestStory`는 그 비교.
+    줄과 `viewerItemsOf`(이어 보기 · 줄 칸에서 연 보기의 다음 인물)가 함께 쓴다. `byLatestStory`는 그 비교.
   - `storyAgeOf(postedAt, now)` → `StoryAge`.
   - `viewerItemsOf(row, from, …)` — 줄 · 이어 보기 · 알림에서 연 보기의 장 목록과 시작 칸.
   - ~~`listStoryOf(row, characterId)` — 채팅 목록 줄의 「New story」~~ 없앰(ADR-0178 D3 개정 2, 2026-11-26).
@@ -71,7 +71,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U7 `seenRecordsWith`: 만료 지난 표시를 지우고 새 표시를 더함, 같은 id 덮어씀.
 - FS-U8 `friendStoriesFrom`: 정상 · 칸 빠짐 버림 · 몸 틀림 null · 시각 문자열 → ms · 칩 3개 넘으면 앞 3개.
 - FS-U9 콘텐츠 정합: 27줄 · id 유일 · 그림 경로가 에피소드 JSON에 있음 · 단어 ref가 그 에피소드 단어에 있음 · 뜻 일곱 언어.
-- FS-U10 `viewerItemsOf`: 줄 친구 → 그 칸부터 친구 스토리 끝까지, 안 만난 친구 → 한 장, 이어 보기 → 처음부터, 알림 → 그 인물 한 장(없으면 null).
+- FS-U10 `viewerItemsOf`: 줄 칸(친구 · 안 만난 친구) → 줄 전체(D3 개정 ⟨잠긴 인물⟩) 중 그 칸부터, 이어 보기 → 친구만 처음부터, 알림 → 그 인물 한 장(없으면 null).
   친구 장 순서는 `storyOrderOf`의 친구 칸 순서와 같다(D3 개정).
 - FS-U11 분석 이름 수(넷 추가) · Airbridge로 보내지 않음.
 - FS-U12 본 것 저장(기기): 계정마다 열쇠, 망가진 값은 빈 표시.
@@ -88,6 +88,9 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U25 `modelOfMetFriend`(`suggested-friends-ui.unit.test.ts`): 카탈로그 인물 → 소개 · 태그 · 첫 말 + 방 이름 · 얼굴, 없으면 이름 · 얼굴만, 상태 `added` · 제안 없음.
 - FS-U26 ~ U32 인물 넘김 큐브(D4 개정 ⟨큐브⟩, `story-cube.unit.test.ts`): 손가락 방향(8px · 가로 우세) · 넘김 방향, 돈 몫(폭 비례 · 옆 인물 없으면 1/4), 두 면의 변환(축 · 각도 · 맞닿은 모서리 · 그늘),
   놓았을 때(48px · 반 · 0.5px/ms 같은 방향), 남은 몫의 시간, 옆 인물 면의 장(전환 중엔 방금 장), 쉬는 자리 = 다 돈 끝 값.
+- FS-U33 `storyTapOf`(`story-tap.unit.test.ts`, D4 개정 ⟨탭 자리⟩): 화면 가운데 경계 — 왼쪽 절반 이전 · 가운데부터 다음 · 자리를 모르면 다음.
+- FS-U34 `tapDismissesKeyboard`(`story-keyboard-tap.unit.test.ts`, D5 개정 ⟨키보드 탭⟩): 입력 중이면 참, 내려간 지 `KEYBOARD_TAP_GRACE_MS`(500) 안이면 참, 창이 지났거나 기록이 없거나 시계가 거꾸로면 거짓.
+- FS-U35 `viewerItemsOf`(`story-row-viewer.unit.test.ts`, D3 개정 ⟨잠긴 인물⟩): 친구 칸 · 안 만난 칸 모두 줄 순서 전체 · 그 칸부터, 다음 인물이 안 만난 인물이면 그 장으로(탭 · 6초 · 가로), 안 만난 인물이 마지막이면 닫힘, Watch all은 친구만.
 
 ### 2.2 ui (앱)
 
@@ -110,12 +113,17 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   반 넘게 → 넘어가 들어온 면 제자리 · 나간 면 이전 자리, 덜 밀고 천천히 → 되돌아옴 · 그 손가락의 탭 무시, 빠르게 → 넘어감, 옆 인물 없음 → 조금만 돌고 되돌아옴 · 마지막이면 닫힘,
   탭으로 인물이 바뀌면 한 번 돎(접혀 나가는 면 = 방금 장), 모션 줄이기면 돌지 않고 바로.
 - FS-UI42 · UI43 큐브 손가락 자리(`StoryViewer.cube.ui.test.tsx`): 카드 · 단어 알약 · 칩 위에서 시작한 가로 끌기도 돌아 넘김, 알약 짧은 탭은 저장, 답장을 쓰는 중엔 돌지 않음.
+- FS-UI44 ~ UI46 탭 자리(`StoryViewer.taps.ui.test.tsx`, D4 개정 ⟨탭 자리⟩): 아래 묶음 · 머리 줄 빈 자리도 넘김, 경계는 가운데, 누를 수 있는 요소는 제 동작만.
+- FS-UI47 키보드 탭(`StoryViewer.taps.ui.test.tsx`, D5 개정 ⟨키보드 탭⟩): blur가 탭보다 먼저 와도 키보드만 내리고 같은 장 · 그다음 탭은 넘김(왼쪽 · 오른쪽), 탭이 먼저 와도 같고
+  뒤따른 blur는 다음 탭을 삼키지 않음, 쓰던 글 남음, 창(500 ms)이 지난 탭은 넘김.
+- FS-UI48 소개 카드(`StoryViewer.ui.test.tsx` · `MessengerListScreen.stories.ui.test.tsx`, 개정 ⟨소개 카드⟩): 안 만난 친구(잠김 · 추가 가능)의 아래 소개 카드를 누르면 아바타와 같은 onProfile → 추천 친구 시트, 넘기지 않음 · 멈춤 · Not now 뒤 이어 감, Add friend 그대로.
 - FS-UI8 내 말풍선 인용 카드: 캡션 · 그림 · 한 줄 · 경과. 대화방 인용 띠: 이름 · ×로 뗌 · 보낸 뒤 사라짐.
 - FS-UI14 목록이 서 있는 동안 5분마다 다시 읽어 새 스토리가 줄에 섬, 목록을 내리면 타이머 멈춤(가짜 타이머).
 - FS-UI15 포트의 다시 읽기 신호에 다시 읽음, 목록을 내리면 리스너를 뗌.
 - FS-UI16 보기가 열려 있으면 다시 읽은 목록을 보류(줄 그대로), 닫은 뒤 반영.
 - FS-UI17 다시 읽기 실패(null · 던짐)면 있던 줄을 지킴.
 - FS-UI18 `useMessengerRefresh`: `contentSyncOpportunity`에 스토리 목록에도 다시 읽기를 알림.
+- FS-UI49 보기에서 추가(`MessengerListScreen.story-add.ui.test.tsx`, D5 개정 ⟨보기에서 추가⟩): Add friend and reply → 방을 열지 않고 보기에 남아 답장 칸(무료 안내 · 칩), NEW FRIEND 없음, 진행 이어 감, 닫으면 목록에 그 방 · 보낸 답장이 마지막 말.
 
 ### 2.3 integration (앱)
 
@@ -123,7 +131,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI10 (D4 개정) 한 인물의 스토리 둘 → 진행 막대 「Story 1 of 2」 → 다 보면 닫힘 · 둘 다 본 것.
 - FSI11 보기 위 아바타 → 프로필 시트(보기 covered) → Start chatting → 보기 닫힘 · 그 방. 안 만난 친구 아바타 → 추천 시트, 보기는 남음.
 - FSI2 (D5 개정) 답장 칸에 쓰고 보내기 → 보기에 남은 채 인용과 함께 보냄 · 칸이 빔.
-- FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
+- FSI3 안 만난 친구 스토리 → Add friend and reply → ~~방이 열리고(추가 길) 인용 띠~~ 보기에 남아 답장 칸 → 답장 → 닫으면 목록에 그 방 · 마지막 말(D5 개정 ⟨보기에서 추가⟩). SEI1 먼저 만나기 열림도 같은 끝.
+- SS-I13(`chat-fixture-remote.unlock-send.integration.test.ts`): 해금 선톡을 청하는 중에 보낸 글은 그 답 뒤에 턴.
 - FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
   · Android `PushTargetJsonTest`(불리언 `story` 옮김).

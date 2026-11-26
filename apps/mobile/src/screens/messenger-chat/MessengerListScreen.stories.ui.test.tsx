@@ -131,8 +131,9 @@ test("FS-UI7. 친구 스토리 → 보기(본 것 표시 · viewed) → 칩 → 
       characterId: "mina",
       met: true,
       from: "row",
-      index: "1",
-      total: "1",
+      // 줄 순서 daeun(안 만난, 더 새것) · mina — 줄 칸에서 연 보기는 줄 전체(D3 개정 ⟨잠긴 인물⟩).
+      index: "2",
+      total: "2",
     }),
   ]);
   // 칩은 그 자리에서 보냅니다(D5 개정) — 넘김을 남기지 않고, Open chat을 눌러야 방이 열립니다.
@@ -239,12 +240,14 @@ test("FS-UI7. 스토리 줄의 추천 아바타 → 프로필 시트(from story)
   expect(screen.getByTestId("friend-directory-screen")).not.toBeNull();
 });
 
-test("FS-UI7. 안 만난 친구 스토리 → Add friend and reply → 추가 · 인용 띠 넘김 · 방 열기", async () => {
+test("FS-UI7. 안 만난 친구 스토리 → Add friend and reply → 추가 · 보기에 남아 답장 칸(방으로 가지 않음, D5 개정 ⟨보기에서 추가⟩ — FS-UI49)", async () => {
   const { onOpenRoom, events } = await mount(live);
   tapId(ids.unmet("daeun"));
   tapId(ids.meet);
-  expect(onOpenRoom).toHaveBeenCalledWith("daeun");
-  expect(takeStoryReplyHandoff("daeun")).toMatchObject({ roomId: "daeun", text: null });
+  expect(onOpenRoom).not.toHaveBeenCalled();
+  expect(takeStoryReplyHandoff("daeun")).toBeNull();
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.queryByTestId(ids.meetCard)).toBeNull();
   expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([
     expect.objectContaining({ characterId: "daeun", from: "story_viewer", via: "free" }),
   ]);
@@ -276,6 +279,27 @@ test("FS-UI11. 스토리 줄이 추천 줄을 대신하면 suggested_friend_view
   const { events } = await mount(live);
   expect(events().filter((e) => e.name === "friend_story_row_viewed")).toHaveLength(1);
   expect(events().filter((e) => e.name === "suggested_friend_viewed")).toEqual([]);
+});
+
+test("FS-UI48. 안 만난 친구의 아래 소개 카드 → 같은 추천 친구 프로필 시트(Start chatting 그대로) · 진행 멈춤 · 닫으면 이어 감", async () => {
+  const { events } = await mount(live);
+  tapId(ids.unmet("daeun"));
+  tapId(ids.meetCard);
+  expect(screen.getByTestId(suggestedIds.sheetName).textContent).toBe("다은");
+  expect(screen.getByTestId(suggestedIds.sheetStart)).not.toBeNull();
+  expect(screen.queryByTestId(suggestedIds.sheetClose)).toBeNull();
+  expect(events().filter((e) => e.name === "suggested_friend_opened")).toEqual([
+    expect.objectContaining({ characterId: "daeun", from: "story_viewer" }),
+  ]);
+  expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+  advance(20_000);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.getByTestId(ids.name).textContent).toContain("다은");
+  // Not now → 시트만 닫히고 진행이 이어 간다(다 차면 다음 장 또는 닫힘 — 다은 장을 떠난다).
+  tapId(suggestedIds.sheetLater);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  advance(7_000);
+  expect(screen.queryByTestId(ids.name)?.textContent ?? "").not.toContain("다은");
 });
 
 test("FS-UI33. 친구 스토리의 아바타 → 프로필 시트(소개 · Start chatting) · 보기는 덮여 멈춤, Not now → 이어 감", async () => {
@@ -324,4 +348,24 @@ test("FS-UI33. 안 만난 친구의 아바타 → 추천 친구 프로필 시트
     expect.objectContaining({ characterId: "daeun", from: "story_viewer" }),
   ]);
   expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+});
+
+test("FS-UI7. (D3 개정 ⟨잠긴 인물⟩) 안 만난 인물 칸에서 연 보기 — 소개 카드 장에서 탭하면 줄의 다음 인물, 그 마지막 장 뒤 닫힘", async () => {
+  await mount(live);
+  tapId(ids.unmet("daeun"));
+  expect(screen.getByTestId(ids.meetCard)).not.toBeNull();
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.queryByTestId(ids.meetCard)).toBeNull();
+  expect(screen.getByTestId(ids.chip(0))).not.toBeNull();
+  tapId(ids.next);
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+});
+
+test("FS-UI7. (D3 개정 ⟨잠긴 인물⟩) 친구 칸에서 연 보기 — 이전 인물이 안 만난 인물이면 그 소개 카드 장으로", async () => {
+  await mount(live);
+  tapId(ids.friend("mina"));
+  tapId(ids.previous);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.getByTestId(ids.meetCard)).not.toBeNull();
 });

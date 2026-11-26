@@ -74,5 +74,11 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
      * 겹쳐 청해, 모델 인사가 정해진 말보다 먼저 저장될 수 있습니다.
      */
     settled: (room: RoomState): Promise<void> => inFlight.get(room) ?? Promise.resolve(),
+    /** 청하는 해금 선톡이 있으면 끝난 뒤, 없으면 바로 — 그 사이 보낸 글(스토리 보기에서 추가 뒤 답장)이 서버에서 인사를 건너뛰게 하지 않습니다. */
+    after: (room: RoomState, run: () => void): void => {
+      const pending = inFlight.get(room);
+      if (pending === undefined) run();
+      else void pending.then(run, run); // 실패해도 글은 보냅니다(리뷰)
+    },
   };
 }

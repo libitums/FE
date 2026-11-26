@@ -17,6 +17,7 @@ import type {
 } from "./my-stories.contract";
 import { editorCapsOf, photoEditorCaps } from "./my-story-editor";
 import type { PickedPhoto, StoryPhotoSource } from "./my-story-photo.contract";
+import { useMyStoryLive } from "./use-my-story-live";
 import { useStoryShare } from "./use-story-share";
 import { MyStoryEditor } from "./MyStoryEditor";
 import { MyStoryStartSheet } from "./MyStoryStartSheet";
@@ -176,6 +177,13 @@ export function useMyStories({
   // 사진 길은 서버가 받고(`kinds`에 photo — 성인 · 스위치) 호스트 모듈이 있을 때만.
   const photoReady = port?.photo !== undefined && (state?.kinds ?? []).includes("photo");
   const viewing = view?.kind === "viewer" ? storyOf(view.storyId) : null;
+  // 보기를 연 동안 · 앱이 앞으로 오면 Seen by · 답을 다시 읽어 얹습니다(개정 ⟨살아 있는 보기⟩).
+  useMyStoryLive({
+    port,
+    open: viewing !== null,
+    rooms,
+    setState,
+  });
 
   const layer =
     port === undefined || view === null ? null : view.kind === "guide" ? (

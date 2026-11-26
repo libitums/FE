@@ -44,7 +44,7 @@ function hostModule() {
 }
 
 function serverRemote() {
-  const post = vi.fn(async (draft: MyPhotoStoryDraft) => ({
+  const post = vi.fn(async (draft: MyPhotoStoryDraft, _onUploaded?: () => void) => ({
     result: "ok" as const,
     story: myStory("photo-1", {
       kind: "photo",
@@ -140,6 +140,8 @@ test("MSP-I1. 「+」 → 사진 → 호스트 고르기 → 사진 위 Aa → S
       overlays: [expect.objectContaining({ kind: "text", ko: "서울 도착!" })],
       tzOffsetMin: -new Date().getTimezoneOffset() || 0,
     }),
+    // 올린 뒤 확인 단계 알림이 결선을 지나 원격까지 간다(ADR-0199 개정 — 「Checking your photo…」).
+    expect.any(Function),
   );
   await settle();
   expect(remote.sign).toHaveBeenCalledWith(PHOTO_PATH);

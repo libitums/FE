@@ -96,6 +96,23 @@ describe("MSP-S2 업로드 실패", () => {
   });
 });
 
+describe("MSP-S5 올린 뒤 확인 단계 알림", () => {
+  test("업로드가 끝나면 게시 요청 전에 onUploaded를 한 번 부르고, 업로드가 실패하면 부르지 않는다", async () => {
+    const order: string[] = [];
+    const { all, call } = deps();
+    call.mockImplementationOnce(async () => {
+      order.push("post");
+      return null;
+    });
+    await myStoryPhotoRemote(all).post(draft, () => order.push("uploaded"));
+    expect(order).toEqual(["uploaded", "post"]);
+    const failing = deps({ upload: vi.fn(async () => "failed" as const) });
+    const onUploaded = vi.fn();
+    await myStoryPhotoRemote(failing.all).post(draft, onUploaded);
+    expect(onUploaded).not.toHaveBeenCalled();
+  });
+});
+
 describe("MSP-S3 서명 주소", () => {
   test("sign 경로로 한 시간 주소를 만들고 storage 기준 전체 주소로, 못 만들면 null", async () => {
     const { all, call } = deps();

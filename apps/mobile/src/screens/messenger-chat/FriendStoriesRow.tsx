@@ -12,6 +12,7 @@ import {
   type FriendStoryEntry,
   type UnmetStoryEntry,
 } from "./friend-stories.contract";
+import { myStoriesTestIds } from "./my-stories.contract";
 import { MyStoryRowFaces } from "./MyStoryRowFaces";
 import { StoryFace } from "./StoryFace";
 import { SuggestedAvatar } from "./SuggestedFriendsRow";
@@ -57,7 +58,8 @@ export function FriendStoriesRow({
       <StoryFace
         key={entry.story.id}
         testId={ids.unmet(counterpart.id)}
-        ring="unmet"
+        ring={entry.seen ? "seen" : "unseen"}
+        unmet
         name={entry.friend.character.name}
         avatarUrl={counterpart.avatarUrl}
         caption={copy.newBadge}
@@ -113,6 +115,13 @@ export function FriendStoriesRow({
       >
         <view className="suggested-row-track">
           {mine === null ? null : <MyStoryRowFaces slot={mine} />}
+          {mine !== null && order.length + row.others.length > 0 ? (
+            <view
+              className="story-mine-divider"
+              data-testid={myStoriesTestIds.rowDivider}
+              accessibility-element={false}
+            />
+          ) : null}
           {order.map((each) =>
             each.kind === "friend" ? friendFace(each.entry) : unmetFace(each.entry),
           )}

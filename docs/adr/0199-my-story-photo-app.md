@@ -82,3 +82,22 @@
 - 호스트: `apps/ios/HostTests/StoryPhotoModuleTests.swift`(SP1 ~ SP13) · `apps/android/app/src/test/java/com/libitum/host/StoryPhotoSizeTest.java` ·
   `StoryPhotoPathsTest.java`.
 - 기기: [e2e](../e2e/my-stories.md) MSP-E1 ~ E6.
+
+## 개정 ⟨올리기 단계⟩ — 올라간 뒤에는 「Checking your photo…」, 줄이기 값은 그대로 ⟨2026-11-26⟩
+
+사용자 보고(아이폰 실기기 1.4.0 (30) Release): 「서버에 이미지 보낼 때도 다운스케일해서 보내야 할 것 같은데, 오래 걸리네」. 단계별로 쟀다
+([성능 보고서](../performance/reports/my-story-photo-upload-speed-iphone-17-pro-simulator-01.md)).
+
+- **잰 것**: 기기 줄이기 0.05 ~ 0.25 s(시뮬레이터, 12MP HEIC · JPEG · 세로 · 스크린샷), 업로드 0.23 ~ 0.50 MB · 원점 0.25 ~ 0.42 s(운영 로그),
+  게시 요청 6.9 ~ 9.5 s(운영 셋 — 문 · 글 검수 약 1.8 s + 사진 내려받기 약 0.5 s + 사진 읽기 · 저장 약 5 s). Share 뒤 대기의 약 90%가 서버 확인이다.
+  셋 다 요청 안에서 live — 「확인 중」으로 넘어간 것은 없다.
+- **D2 값은 바꾸지 않는다(긴 변 1600 · JPEG 0.8, iOS · Android 같음)**: 1280 · 0.75로 내리면 업로드가 0.2 ~ 0.5 s 준다(전체 대기의 5% 안팎). 대신
+  9:16 전체 화면에서 가로 사진의 키움 배율이 3x 기기 기준 약 2.2배 → 2.7배로 커진다. 서버 사진 읽기의 이미지 입력도 API가 큰 사진을 먼저 줄여
+  1600과 1280이 거의 같다(약 1,600 토큰, 추정 — 보고서). 줄이기는 이미 ImageIO 썸네일 디코드 · `inSampleSize` · 메인 스레드 밖이다.
+- **D3 개정 — 단계 안내**: 사진 원격 `post(draft, onUploaded?)`가 업로드가 끝나고 게시를 부르기 전에 `onUploaded`를 한 번 부른다(업로드 실패면 부르지
+  않음). 결선(`my-stories-wiring`)이 그대로 넘기고, 올리기 상태(`useStoryShare`)가 `checking`을 세워 편집 아래 줄이 「Uploading your photo…」 →
+  「Checking your photo…」로 바뀐다. 새 문구 키는 만들지 않고 보기의 `checkingTitle`(8개 언어)에 「…」를 붙인다.
+- **서버는 바꾸지 않는다(사용자 결정 몫)** — 제안: 글 검수를 사진 읽기와 나란히, 사진 읽기 제한을 줄여 넘으면 `checking`으로 먼저 보이기.
+  사진을 고르자마자 미리 올리기는 공유하지 않은 사진이 서버에 남아 하지 않았다.
+- 번들 +237 B(로컬 `.env.local` 없음 6,187,376 → 6,187,613 B). 확인: MSP-S5(원격 — 알림 순서 · 실패 때 없음) · MSP-UI3(안내 전환) · MSP-I1(결선이
+  알림을 넘김) · e2e MSP-E4 기대 문구.

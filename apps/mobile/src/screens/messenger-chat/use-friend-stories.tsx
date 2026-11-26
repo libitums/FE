@@ -17,11 +17,7 @@ import type {
   StoryViewerItem,
 } from "./friend-stories.contract";
 import { FriendStoriesRow } from "./FriendStoriesRow";
-import {
-  putStoryQuoteHandoff,
-  subscribePendingStoryOpen,
-  takePendingStoryOpen,
-} from "./story-reply-handoff";
+import { subscribePendingStoryOpen, takePendingStoryOpen } from "./story-reply-handoff";
 import { StoryViewer } from "./StoryViewer";
 import { usePhoneKeyboardHeight } from "./use-phone-keyboard-height";
 import { useStoryInlineReply } from "./use-story-inline-reply";
@@ -189,16 +185,6 @@ export function useFriendStories({
     });
   }
 
-  // 안 만난 친구 추가 뒤 — 방을 열고 입력 줄 위 인용 띠(D5).
-  const handOff = (item: StoryViewerItem) => {
-    // 방금 추가한 방은 이 렌더의 방 목록에서 아직 잠겨 있을 수 있어 열림을 보지 않습니다.
-    const roomId =
-      rooms.find((room) => room.counterpart.id === item.story.characterId)?.roomId ?? null;
-    if (roomId === null) return;
-    putStoryQuoteHandoff(item, roomId);
-    onOpenRoom(roomId);
-  };
-
   // 「Sent」 알림의 Open chat — 보기를 닫고 그 방으로(보낸 글은 이미 방에 있습니다).
   function handleOpenChat(item: StoryViewerItem) {
     "background only";
@@ -207,7 +193,8 @@ export function useFriendStories({
     if (roomId !== null) onOpenRoom(roomId);
   }
 
-  // 위 아바타 → 프로필 시트. 이미 친구의 「Start chatting」 = 보기를 닫고 그 방(추가 없음). 안 만난 친구가 친구가 되면 보기를 닫고 인용 띠(#608).
+  // 위 아바타 → 프로필 시트. 이미 친구의 「Start chatting」 = 보기를 닫고 그 방(추가 없음).
+  // 안 만난 친구가 친구가 되면 보기에 남아 그 인물의 장들이 친구 장(답장 칸)이 됩니다 — 방은 추가가 이미 목록에 세웠습니다(D5 개정 ⟨보기에서 추가⟩).
   const profile = useStoryProfile({
     suggested,
     profileOf,
@@ -217,10 +204,16 @@ export function useFriendStories({
       close("profile");
       if (roomId !== null) onOpenRoom(roomId);
     },
-    onMet: (item) => {
-      close("replied");
-      handOff(item);
-    },
+    onMet: ({ story }) =>
+      setViewer(
+        (open) =>
+          open && {
+            ...open,
+            items: open.items.map((each) =>
+              each.story.characterId === story.characterId ? { ...each, unmet: null } : each,
+            ),
+          },
+      ),
   });
 
   return {

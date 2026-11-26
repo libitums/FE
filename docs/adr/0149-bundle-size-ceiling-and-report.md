@@ -9,6 +9,7 @@
 - ⟨2026-11-25 개정 4⟩ **사용자 결정으로 앱 천장 6,035,000 → 6,100,000 B**(내 스토리 사진 + 서버 #598 대응, 아래 「개정 4」).
 - ⟨2026-11-25 개정 5⟩ **사용자 결정으로 앱 천장 6,100,000 → 6,140,000 B**(스토리 보기 답장 · 인물 묶음 · 아바타 프로필 · 편집 끝단, 줄인 뒤 모자라는 만큼만, 아래 「개정 5」).
 - ⟨2026-11-26 개정 6⟩ **사용자 결정으로 앱 천장 6,140,000 → 6,170,000 B**(답장 도착 토스트 #616 · 큐브 넘김 #615 · 편집 끝단 #613, 아래 「개정 6」).
+- ⟨2026-11-26 줄인 기록 1⟩ **천장은 그대로, 앱 번들 −442 kB** — 메인 스레드는 첫 화면(스플래시)만 그린다(아래 「줄인 기록 1」).
 - 다루는 축: `pnpm size:check`의 뜻, `devtools/bundle-size/budget.json`의 상한을 정하는 법, PR에 크기를 보이는 법.
 
 ## 맥락
@@ -167,3 +168,45 @@
 - 값 = 약 6,162,000 + 5,000 = 6,167,000 → 5,000 단위 올림 6,170,000. 그림 · ui-lynx 천장은 그대로다.
 - 로컬 빌드와 CI 빌드는 같은 커밋에서 약 9 kB 차이가 난다(#616: 로컬 6,142,363 B · CI 6,133.3 kB). 천장 판정은 CI 값이다.
 - 바꾼 자리: `devtools/bundle-size/budget.json` · 이 ADR · `docs/performance/reports/chat-reply-toast-01.md`.
+
+## 개정 ⟨2026-11-26⟩ 7 — 앱 번들 천장 올림(사용자 결정, 대화방 스토리 인용 판)
+
+- **사용자 결정(2026-11-26)**: 대화방 스토리 인용을 올린 그대로 9:16 판으로 그리고 누르면 그 스토리를 여는 변경([ADR-0178](0178-friend-stories.md) D5 개정 ⟨판⟩ ·
+  [ADR-0194](0194-my-stories.md) 개정 ⟨판⟩)을 설계 그대로 넣는 값으로 천장을 **6,180,000 B**로 올린다. 값은 사용자가 정했다. D2(천장은 실측에 맞춰 올리지 않는다)는
+  그대로이고, 다음에 올리려면 다시 사용자 결정이 필요하다.
+- **먼저 줄인 것**: 새 문구를 셋(`openStory` · `ended` · `endedTitle`)으로 줄이고 OK · 닫기는 기존 문구를 씀(−1.6 kB), CSS를 합치고 기존 채움 클래스를 씀(−1.8 kB),
+  보기 층(친구 스토리 보기 · 내 스토리 보기 · 안내 시트)을 `__BACKGROUND__`로 막아 메인 스레드에서 뺌(−2.2 kB). 판 컴포넌트 전체를 막는 것은 그리기 틀이 메인 스레드에
+  남아 오히려 +1 kB라 쓰지 않았다.
+
+| 대상 | 변경 전(`1f906a40`, 로컬) | 변경 뒤(로컬) | 증가 | CI 추정 | 앞 천장 | 새 천장 |
+|---|--:|--:|--:|--:|--:|--:|
+| `apps/mobile/dist/main.lynx.bundle` | 6,172,851 | 6,183,420 | +10.6 kB | ≈ 6,174.5 kB | 6,170,000 | **6,180,000** |
+
+- 로컬 빌드는 같은 커밋의 CI보다 약 9 kB 크다(`1f906a40`: 로컬 6,172,851 B · CI 6,163.6 kB). 천장 판정은 CI 값이다.
+- 바꾼 자리: `devtools/bundle-size/budget.json` · 이 ADR · `docs/performance/reports/chat-story-thumb-01.md`.
+
+## 줄인 기록 1 ⟨2026-11-26⟩ — 메인 스레드는 첫 화면(스플래시)만 그린다
+
+- **사용자 결정(2026-11-26, 「번들 줄이기 먼저 진행」)**: 천장 6,180,000 B 아래 여유를 만든다. **천장은 그대로 둔다**(D2).
+- **무엇을 줄였나**: 메인 스레드 번들에 실려 있던 스플래시 밖 화면의 컴포넌트 코드. `render-app-content.tsx`가 메인 스레드에서는
+  `screen.name === "splash"`일 때만 스플래시를 그리고 나머지는 `null`을 돌려준다(`__BACKGROUND__` 분기, 함수 안). 메인 스레드가 컴포넌트를
+  렌더하는 길은 첫 렌더 · 첫 동기화 전 `updatePage` · template reload 셋이고 모두 처음 상태(`initialAppStart` = 스플래시)에서 시작한다
+  ([ADR-0031](0031-ui-language-catalog.md) D8). 그 뒤 화면은 background가 그려 패치로 보내므로 **그려지는 것은 같다.**
+- **지킨 것 — 그리기 틀(snapshot) 등록**: 패치는 틀을 id로만 가리켜, 메인 스레드에서 틀 등록이 빠지면 그 화면을 여는 순간
+  「Snapshot not found」로 멈춘다. 앱 소스 모듈은 최상위 등록이 부수 효과라 남지만, ui-lynx는 `sideEffects`에 CSS만 적어 쓰이지 않게 된
+  컴포넌트(설정 칸 `SettingsCell`, 틀 8개)가 통째로 빠졌다. `lynx.config.ts`에 **메인 스레드 쪽에서만** ui-lynx `dist`의 JS를 부수 효과 있음으로 두는
+  규칙을 더했다(background에 걸면 쓰지 않는 컴포넌트까지 실림).
+- **막는 장치**: `pnpm size:snapshots`(`devtools/bundle-size/snapshot-coverage*.mjs`)가 앱을 `DEBUG=rspeedy`로 한 번 더 지어 background가 쓰는 틀 ·
+  worklet id가 메인 스레드에 모두 등록돼 있는지 본다 — `verify`와 CI `Build and bundle size` 잡에서 돈다. 규칙을 빼면 이 검사가 틀 8개를 짚고 실패한다
+  (확인함). 최종 설정의 규칙은 `lynx-build-config.integration.test.ts` [FS-I1], 분기는 `render-app-content.main-thread.unit.test.tsx` FS1 ~ FS3이 지킨다.
+
+| 대상 | 변경 전(origin/main `f8b4f242`, 로컬) | 변경 뒤(로컬) | 증감 |
+|---|--:|--:|--:|
+| `apps/mobile/dist/main.lynx.bundle` | 6,188,570 | 5,746,503 | **−442,067** |
+| 중간 산출물 `main-thread.js`(DEBUG 빌드) | 1,631,327 | 1,222,503 | −408,824 |
+| 중간 산출물 `background.js` · `main.css` | 3,428,162 · 622,519 | 같음 | 0 |
+
+- 실측은 D3과 같이 `.env.local` 없는 설정이다. **CI 값(PR #642)**: main `f2bffc5e` 6,179.3 kB → 5,747.5 kB(−431.7 kB), 천장까지 432.5 kB. 그림 · ui-lynx 천장은 그대로다.
+- 층별 분석 · 남은 레버(제안만)는 `docs/performance/reports/bundle-reduce-01.md`.
+- 바꾼 자리: `apps/mobile/src/app/render-app-content.tsx` · `apps/mobile/lynx.config.ts` · `devtools/bundle-size/snapshot-coverage*.mjs` ·
+  `package.json`(`size:snapshots`, `verify`) · `.github/workflows/verify.yml` · 이 ADR · 위 보고서.

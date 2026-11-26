@@ -67,19 +67,15 @@ const newestOf = (list: readonly FriendStory[]): FriendStory | undefined => list
 /** 스토리 줄(ADR-0178 D3) — 친구 · 안 만난 친구(각 `byLatestStory` 순, 한 줄 순서는 `storyOrderOf`, 칸은 그 인물의 가장 새 스토리) · 그 밖의 추천. */
 export function storyRowOf(input: StoryRowInput): StoryRow {
   const groups = byCharacter(input.stories, input.now);
+  // 본 것 = 그 인물의 스토리를 다 봤을 때(고리가 회색 점선이 되는 때, D3 개정 ⟨점선⟩) — 친구 · 안 만난 친구 같음.
+  const allSeen = (stories: readonly FriendStory[]) =>
+    stories.every((each) => input.seen.has(each.id));
   const friends: FriendStoryEntry[] = [];
   for (const room of input.rooms) {
     if (room.access.kind !== "open") continue;
     const stories = groups.get(room.counterpart.id) ?? [];
     const story = newestOf(stories);
-    // 본 것 = 그 인물의 스토리를 다 봤을 때(고리가 회색이 되는 때).
-    if (story !== undefined)
-      friends.push({
-        story,
-        stories,
-        room,
-        seen: stories.every((each) => input.seen.has(each.id)),
-      });
+    if (story !== undefined) friends.push({ story, stories, room, seen: allSeen(stories) });
   }
   friends.sort(byLatestStory);
   const unmet: UnmetStoryEntry[] = [];
@@ -88,7 +84,7 @@ export function storyRowOf(input: StoryRowInput): StoryRow {
     const stories = groups.get(friend.character.id) ?? [];
     const story = newestOf(stories);
     if (story === undefined) others.push(friend);
-    else unmet.push({ story, stories, friend });
+    else unmet.push({ story, stories, friend, seen: allSeen(stories) });
   }
   unmet.sort(byLatestStory);
   return { friends, unmet, others };
@@ -135,6 +131,17 @@ export function viewerJump(
 export const storyTapOf = (x: unknown, width: number): "prev" | "next" =>
   typeof x === "number" && x * 2 < width ? "prev" : "next";
 
+/** 키보드가 내려간 뒤 이 시간 안에 온 탭은 그 키보드를 내린 탭으로 봅니다(ADR-0178 D5 개정 ⟨키보드 탭⟩). */
+export const KEYBOARD_TAP_GRACE_MS = 500;
+
+/** 이 탭이 키보드만 내리는가(넘기지 않음) — 입력 중이거나, 방금(`KEYBOARD_TAP_GRACE_MS` 안) 키보드가 내려갔을 때. */
+export const tapDismissesKeyboard = (
+  typing: boolean,
+  closedAt: number | null,
+  now: number,
+): boolean =>
+  typing || (closedAt !== null && now >= closedAt && now - closedAt < KEYBOARD_TAP_GRACE_MS);
+
 /** 다음 · 저절로 넘김은 한 칸(마지막이면 닫힘), 이전은 한 칸(처음이면 그대로). */
 export function viewerStep(state: ViewerState, action: ViewerAction): ViewerState | "close" {
   if (action === "prev") return { ...state, index: Math.max(0, state.index - 1) };
@@ -177,8 +184,8 @@ function firstUnseen(items: readonly StoryViewerItem[], from: number, seen: Read
 }
 
 /**
- * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 줄 순서(`storyOrderOf`)로 이어 붙입니다(D4 개정). 줄의 친구는 친구 묶음 전체 중 그 인물부터,
- * 이어 보기는 첫 인물부터, 안 만난 친구 · 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
+ * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 줄 순서(`storyOrderOf`)로 이어 붙입니다(D4 개정). 줄의 칸(친구 · 안 만난 친구)은 줄 전체 중
+ * 그 인물부터(D3 개정 ⟨잠긴 인물⟩), 이어 보기는 친구만 첫 인물부터, 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
  */
 export function viewerItemsOf(
   row: StoryRow,
@@ -186,25 +193,20 @@ export function viewerItemsOf(
   imageUrl: (path: string) => string | null,
   seen: ReadonlySet<string> = new Set(),
 ): { readonly items: readonly StoryViewerItem[]; readonly start: number } | null {
-  const friends: StoryViewerItem[] = [];
+  const all: StoryViewerItem[] = [];
   for (const each of storyOrderOf(row)) {
-    if (each.kind === "friend")
-      friends.push(...itemsOf(each.entry.stories, each.entry.room, null, imageUrl));
+    const { stories } = each.entry;
+    if (each.kind === "friend") all.push(...itemsOf(stories, each.entry.room, null, imageUrl));
+    else all.push(...itemsOf(stories, each.entry.friend.room, each.entry.friend, imageUrl));
   }
   const one = (items: readonly StoryViewerItem[]) =>
     items.length === 0 ? null : { items, start: firstUnseen(items, 0, seen) };
-  if (open.from === "watch_all") return one(friends);
-  if (open.from === "friend") {
-    const at = friends.findIndex((item) => item.story.characterId === open.characterId);
-    return at < 0 ? null : { items: friends, start: firstUnseen(friends, at, seen) };
+  if (open.from === "watch_all") return one(all.filter((item) => item.unmet === null));
+  if (open.from !== "push") {
+    const at = all.findIndex((item) => item.story.characterId === open.characterId);
+    return at < 0 ? null : { items: all, start: firstUnseen(all, at, seen) };
   }
-  const friend = row.friends.find((entry) => entry.story.characterId === open.characterId);
-  if (friend !== undefined && open.from !== "unmet")
-    return one(itemsOf(friend.stories, friend.room, null, imageUrl));
-  const unmet = row.unmet.find((entry) => entry.story.characterId === open.characterId);
-  return unmet === undefined
-    ? null
-    : one(itemsOf(unmet.stories, unmet.friend.room, unmet.friend, imageUrl));
+  return one(all.filter((item) => item.story.characterId === open.characterId));
 }
 
 /** 그 내 글이 답장한 스토리 id(ADR-0178 D5) — 서버 턴 요청의 `storyId`. 인용이 없으면 undefined. */

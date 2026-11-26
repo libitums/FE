@@ -1,0 +1,60 @@
+/* 대화방 스토리 인용 판(ADR-0178 D5 개정 ⟨판⟩ · ADR-0194 개정 ⟨판⟩, 시안 37 ~ 39 · 40a) — 9:16 작은 판. 지운 판은 회색 바탕 가운데 글. */
+.chat-story-thumb {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.chat-story-thumb-in {
+  width: 118px;
+  height: 210px;
+}
+
+.chat-story-thumb-out {
+  width: 96px;
+  height: 171px;
+}
+
+/* 보기와 같은 카드를 기준 바탕(390 × 694)에 그리고 판 크기로 줄입니다(`canvasStyle`). */
+.chat-story-thumb-canvas {
+  position: absolute;
+  width: 390px;
+  height: 694px;
+}
+
+.chat-story-thumb-canvas .my-story-text-card {
+  height: 100%;
+  border-radius: 0;
+}
+
+.chat-story-thumb-note {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+/* 24시간 지난 친구 스토리(시안 40a) — 어두운 막 + 왼쪽 아래 「Ended」 표. */
+.chat-story-thumb-ended {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--libitum-spacing-6);
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.chat-story-thumb-ended .chat-story-thumb-note {
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-fg-neutral);
+  color: var(--libitum-color-white);
+}

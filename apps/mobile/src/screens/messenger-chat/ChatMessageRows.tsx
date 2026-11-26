@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { openExternalLink } from "../../lib/external-link";
+import { useUiCopy } from "../../lib/ui-copy";
 
 import {
   ChatIncomingRow,
@@ -25,6 +26,7 @@ import type { ChatEntrance } from "./chat-entrance";
 import { notesOf } from "./chat-source.contract";
 import type { ChatMessage, ChatThread } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
+import { chatProfileTestIds as profileIds } from "./chat-profile";
 import {
   bubbleToolRowOf,
   myBubbleViewOf,
@@ -44,6 +46,8 @@ export type ChatMessageRowProps = {
   readonly feedback: ChatRowFeedback;
   /** 다 만든 사진을 누르면 사진 보기를 엽니다(사진 줄 id). 없으면 사진은 누를 수 없습니다. */
   readonly onOpenPhoto?: (messageId: string) => void;
+  /** 상대 아바타를 누르면 프로필 시트를 엽니다(ADR-0178 개정 ⟨대화방⟩). 없으면 아바타는 그림뿐입니다. */
+  readonly onOpenProfile?: () => void;
 };
 
 /** 다시 보내기 · 👍 👎 자리와 동작입니다(ADR-0129). 자리는 방에 하나씩 — 마지막 내 글 · 가장 최근 캐릭터 글. */
@@ -84,9 +88,17 @@ function RowBody({
   onToggleTool,
   feedback,
   onOpenPhoto,
+  onOpenProfile,
 }: Omit<ChatMessageRowProps, "entrance">): ReactNode {
   const { counterpart } = thread;
-  const avatar = { name: counterpart.name, imageUrl: counterpart.avatarUrl };
+  const profileLabel = useUiCopy().messengerChat.stories.viewer.profile(counterpart.name);
+  const avatar = {
+    name: counterpart.name,
+    imageUrl: counterpart.avatarUrl,
+    ...(onOpenProfile === undefined
+      ? {}
+      : { profile: { label: profileLabel, testId: profileIds.avatar, onTap: onOpenProfile } }),
+  };
   switch (message.kind) {
     case "text":
       if (message.from === "me") {

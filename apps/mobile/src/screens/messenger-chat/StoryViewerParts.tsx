@@ -227,21 +227,31 @@ export function StoryReplyBar({
   );
 }
 
-/** 안 만난 친구의 아래 — 소개 카드 · 「Add friend and reply」(추가 가능일 때만). */
+/** 안 만난 친구의 아래 — 소개 카드(누르면 위 아바타와 같은 프로필 시트) · 「Add friend and reply」(추가 가능일 때만). */
 export function StoryMeet({
   item,
   friend,
   copy,
   onMeet,
+  onProfile,
 }: {
   readonly item: StoryViewerItem;
   readonly friend: SuggestedFriend;
   readonly copy: FriendStoriesCopy;
   readonly onMeet: () => void;
+  readonly onProfile: () => void;
 }): ReactNode {
   return (
     <>
-      <view className="story-meet-card" data-testid={ids.meetCard}>
+      {/* 낭독의 시트 단추는 위 아바타 하나(같은 이름 단추를 둘 세우지 않음) — 카드는 손가락 길만 더합니다(D4 개정 ⟨소개 카드⟩). */}
+      <view
+        className="story-meet-card"
+        data-testid={ids.meetCard}
+        catchtap={() => {
+          "background only";
+          onProfile();
+        }}
+      >
         <Avatar
           imageSource={item.avatarUrl ?? undefined}
           name={item.name}

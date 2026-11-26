@@ -17,6 +17,7 @@ Edge Function `chat-send` · `companion-story-reactions`, pg_cron이 적용되�
 | MS-E7 | ⋯ → Delete story → Delete | 확인 문구 「Your card and the N replies on it will be removed. Messages in your chats stay …」. 보기가 닫히고 「Your story」가 사라짐. 그 방의 반응 메시지는 남고 카드가 「Deleted story」 |
 | MS-E9 | (서버가 `meta.quiz.freeAnswer`를 싣은 뒤) 덕수쌤 퀴즈 반응 → 답 — 각도만 quiz면 퀴즈 표시 없이 보통 엽전 관문 | 입력 칸 위 「Quiz answer is free」 · 엽전 없이 보냄 · 내 답 아래 「Free · quiz answer」, 맞히면 「Correct! …」(음성 선물 없음), 틀리면 힌트 뒤 「Free · last try」 |
 | MS-E8 | 설정 › My stories | 보관 스위치 · 「N stories」 · 칸(LIVE · 날짜 · 반응 수) · 칸마다 지우기 · 「Delete all stories」(확인 상자). 스위치를 끄면 24시간 지난 칸이 사라짐. VoiceOver · TalkBack으로 칸 · 지우기 · 스위치가 이름과 함께 읽힘 |
+| MS-E10 | (ADR-0194 개정 ⟨판⟩) 반응 메시지가 있는 방 | 반응 위 「Replied to your story」 아래 118 × 210 판에 올린 그대로(사진 · 바탕색 · 글 · 단어). 누르면 그 스토리 한 장 전체 화면 보기(지난 것도), 닫으면 방. 보기에서 지우면 판이 회색 「Deleted story」(누름 없음). VoiceOver · TalkBack: 「Replied to your story: <한 줄>, Story · <경과>, Open story, 버튼」 |
 
 ### 사진(ADR-0199)
 
@@ -28,7 +29,7 @@ Edge Function `chat-send` · `companion-story-reactions`, pg_cron이 적용되�
 | MSP-E1 | 「+」(kinds에 photo) | 시트에 Camera · Recent photos · Background. kinds에 photo가 없거나 옛 호스트면 Background만 |
 | MSP-E2 | Recent photos | 시스템 사진 고르기(권한 묻지 않음). 고르면 그 사진이 바탕인 편집(색 고르기 없음 · Aa · Words), 닫으면 시트에 그대로 |
 | MSP-E3 | Camera(iOS 시뮬레이터 · 카메라 없는 에뮬레이터) | 「The camera isn't available on this device.」. 실제 기기 iOS는 권한 대화상자(번역된 문구), 거부 뒤 다시 누르면 「Camera access is off …」 |
-| MSP-E4 | 사진 위 아무것도 없이 → 단어 · Aa → Share | 처음 「Add a word or write a line to share your photo.」 · Share 꺼짐. 얹으면 켜지고 Share 동안 「Uploading your photo…」 → 보기에 사진 + 얹은 것 · 「Photo story」 |
+| MSP-E4 | 사진 위 아무것도 없이 → 단어 · Aa → Share | 처음 「Add a word or write a line to share your photo.」 · Share 꺼짐. 얹으면 켜지고 Share 동안 「Uploading your photo…」 → 사진이 올라가면 「Checking your photo…」(서버 확인, 운영 5 ~ 9초) → 보기에 사진 + 얹은 것 · 「Photo story」 |
 | MSP-E5 | (탐침) 게시 응답 `checking` | 보기 사진 위 「Checking your photo」 띠 |
 | MSP-E6 | (탐침) 게시 응답 `rejected` | 편집 아래 「This photo can't be shared」 판 · Share 꺼짐 · Ask for a review → 「Thanks — we'll take another look.」 |
 

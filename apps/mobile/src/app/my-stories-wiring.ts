@@ -60,21 +60,33 @@ const SIGNED_REUSE_MS = 45 * 60_000;
 /** 사진 포트(ADR-0199) — 호스트 고르기 · 지우기 + 서버 원격의 업로드 · 게시 · 서명 · 다시 확인 요청. */
 function photoPortOf(remote: () => ReturnType<typeof companionServerRemote>): MyStoryPhotoPort {
   const signed = new Map<string, { readonly url: string; readonly at: number }>();
+  // 기다리는 서명 — 대화방의 여러 판이 같은 사진을 동시에 그려도 요청은 하나(ADR-0194 개정 ⟨판⟩).
+  const waiting = new Map<string, Promise<string | null>>();
   const photo = () => remote()?.myStories?.photo ?? null;
+  const sign = async (imagePath: string, now: number): Promise<string | null> => {
+    try {
+      const url = (await photo()?.sign(imagePath)) ?? null;
+      if (url !== null) signed.set(imagePath, { url, at: now });
+      return url;
+    } finally {
+      waiting.delete(imagePath);
+    }
+  };
   return {
     pick: pickStoryPhoto,
     // 위기 연락처 지역 — 색 바탕과 같이 스토어 계정 나라를 알면 싣습니다(#598 `client_region`).
-    post: async (draft) =>
-      (await photo()?.post({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {
-        result: "failed",
-      },
+    post: async (draft, onUploaded) =>
+      (await photo()?.post(
+        { ...draft, region: regionOf(purchaseStore().storefront) },
+        onUploaded,
+      )) ?? { result: "failed" },
     url: async (imagePath) => {
       const now = Date.now();
       const kept = signed.get(imagePath);
       if (kept !== undefined && now - kept.at < SIGNED_REUSE_MS) return kept.url;
-      const url = (await photo()?.sign(imagePath)) ?? null;
-      if (url !== null) signed.set(imagePath, { url, at: now });
-      return url;
+      const pending = waiting.get(imagePath) ?? sign(imagePath, now);
+      waiting.set(imagePath, pending);
+      return pending;
     },
     requestReview: async (id) => (await photo()?.requestReview(id)) ?? false,
     discard: discardStoryPhoto,

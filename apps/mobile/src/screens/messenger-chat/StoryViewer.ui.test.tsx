@@ -279,6 +279,32 @@ test("FS-UI32. 안 만난 친구도 아바타가 프로필 버튼", () => {
   expect(props.onProfile).toHaveBeenCalledWith(props.items[0]);
 });
 
+test("FS-UI48. 안 만난 친구의 아래 소개 카드(얼굴 · 이름 · 소개)를 누르면 위 아바타와 같은 onProfile(그 장) — 넘기지 않음, Add friend는 그대로", () => {
+  for (const status of ["locked", "addable"] as const) {
+    const unmet = {
+      character: general("g", { name: "다은" }),
+      room: room("g", false),
+      status,
+      offer: null,
+    };
+    const props = mount({
+      items: [
+        { ...friendItem("g", "다은"), unmet },
+        friendItem("b", "보라", { postedAt: STORY_NOW - HOUR_MS }),
+      ],
+    });
+    tapId(ids.meetCard);
+    expect(props.onProfile).toHaveBeenCalledWith(props.items[0]);
+    expect(screen.getByTestId(ids.name).textContent).toBe("다은");
+    if (status === "addable") {
+      tapId(ids.meet);
+      expect(props.onMeet).toHaveBeenCalledWith(props.items[0]);
+      expect(props.onProfile).toHaveBeenCalledTimes(1);
+    }
+    cleanup();
+  }
+});
+
 test("FS-UI6. 닫기 · 시스템 뒤로 = onClose", () => {
   const props = mount();
   tapId(ids.close);

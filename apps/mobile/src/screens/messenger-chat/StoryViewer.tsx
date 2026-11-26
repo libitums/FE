@@ -117,8 +117,8 @@ export function StoryViewer({
   const full = my?.story.kind === "text" || my?.story.kind === "photo";
   const tap = (action: "next" | "prev") => {
     "background only";
-    // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음). 방금 가로로 넘긴 손가락의 탭도 넘기지 않습니다.
-    if (nav.consumeSwipe() || reply.dismissKeyboard()) return;
+    // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음 — blur가 먼저 와도). 방금 가로로 넘긴 손가락의 탭도 넘기지 않습니다.
+    if (nav.consumeSwipe() || reply.dismissForTap()) return;
     step(action);
   };
   // 면 어디서 누르든(카드 · 빈 자리 · 그림) 올라온 탭 — 누른 x로 이전 · 다음.
@@ -247,7 +247,13 @@ export function StoryViewer({
             ) : unmet === null ? (
               <StoryReplyArea item={item} copy={copy} reply={reply} />
             ) : (
-              <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
+              <StoryMeet
+                item={item}
+                friend={unmet}
+                copy={copy}
+                onMeet={() => onMeet(item)}
+                onProfile={() => onProfile(item)}
+              />
             )}
           </view>
         </view>
