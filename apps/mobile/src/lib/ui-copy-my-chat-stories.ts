@@ -19,8 +19,6 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
   unmetLabel: (name) => `${name}၏ စတိုရီ၊ သူငယ်ချင်းသစ်`,
   findFriends: "ရှာရန်", // 줄 칸(76px)에 맞게 짧게 — 낭독은 findFriendsLabel
   findFriendsLabel: "သူငယ်ချင်း ရှာရန်",
-  listPreview: (line) => `စတိုရီအသစ် · ${line}`,
-  listRowLabel: (name, line) => `${name}၊ စတိုရီအသစ်: ${line}။ စတိုရီ ဖွင့်မည်`,
   viewer: {
     label: (name) => `${name}၏ စတိုရီ`,
     progress: (index, count) => `စတိုရီ ${count} ခုထဲက ${index}`,

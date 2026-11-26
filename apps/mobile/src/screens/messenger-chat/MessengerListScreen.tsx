@@ -177,14 +177,7 @@ export function MessengerListScreen({
               {/* 안내 중에는 추천 줄을 빼 원본 첫 줄이 떠 있는 덕수쌤 줄 자리에 섭니다. */}
               {isSuggestedRowShown(guideShown) ? (friendStories.row ?? suggested.row) : null}
               {ordered.map((room) => (
-                <ChatListRow
-                  key={room.roomId}
-                  room={room}
-                  now={now}
-                  onOpen={onOpenRoom}
-                  story={friendStories.listStory(room.counterpart.id)}
-                  onOpenStory={() => friendStories.openFromList(room.counterpart.id)}
-                />
+                <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
               ))}
             </view>
           </scroll-view>

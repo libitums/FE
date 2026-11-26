@@ -15,8 +15,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   - `story-order.ts` `storyOrderOf(row)` → 친구 · 안 만난 친구를 한 줄로 합친 칸 순서(최신 `postedAt` 내림차순, 같으면 인물 id 오름차순).
     줄과 `viewerItemsOf`(이어 보기 · 친구 열기의 다음 인물)가 함께 쓴다. `byLatestStory`는 그 비교.
   - `storyAgeOf(postedAt, now)` → `StoryAge`.
-  - `viewerItemsOf(row, from, …)` — 줄 · 목록 · 이어 보기 · 알림에서 연 보기의 장 목록과 시작 칸.
-  - `listStoryOf(row, characterId)` — 채팅 목록 줄의 「New story」(안 본 친구 스토리, 없으면 null).
+  - `viewerItemsOf(row, from, …)` — 줄 · 이어 보기 · 알림에서 연 보기의 장 목록과 시작 칸.
+  - ~~`listStoryOf(row, characterId)` — 채팅 목록 줄의 「New story」~~ 없앰(ADR-0178 D3 개정 2, 2026-11-26).
   - `viewerStep(state, action)` — 보기의 칸 이동(next · prev · tick → 끝이면 close).
   - `seenRecordsWith(records, id, expiresAt, now)` — 본 것 표시(만료 지난 것 지움).
 - 응답 풀기: `friend-stories-parse.ts` `friendStoriesFrom(body)` — 모양이 틀린 줄은 버리고, 몸이 틀리면 null.
@@ -56,7 +56,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 | 계층 | 적용 | 무엇 |
 | --- | --- | --- |
 | unit | 적용 | 순수 판정 · 응답 풀기 · 본 것 저장 · 보기 칸 이동 · 콘텐츠 정합(그림 경로 · 단어 ref가 에피소드에 있는가) · 이벤트 이름 수 · 문구 일곱 언어 |
-| ui | 적용 | 스토리 줄 · 보기(내 친구 · 안 만난 친구) · 인용 카드 · 인용 띠 · 목록 줄 「New story」 · 목록 화면이 스토리 유무로 줄을 바꿈 |
+| ui | 적용 | 스토리 줄 · 보기(내 친구 · 안 만난 친구) · 인용 카드 · 인용 띠 · 목록 화면이 스토리 유무로 줄을 바꿈 |
 | integration | 적용 | 앱: 목록 → 보기 → 칩 → 대화방에 인용 + 서버 요청 `story_id`, 답장 칸 → 인용 띠 → 보냄, 안 만난 친구 추가 → 답장, 알림 목적지 `story: true`. 서버: SQL 통합 · chat-send · companion-stories 단위/통합 |
 | e2e | 문서 절차 | `docs/e2e/friend-stories.md` — 기기에서 사람이 본다(러너 없음, ADR-0013). 시뮬레이터 · `assembleBundled` 확인은 가짜 출처 탐침 |
 
@@ -66,7 +66,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U2 `storyRowOf`: 열린 방 인물 → friends(본 것과 상관없이 최근 순); 추천 대상 → unmet(최근 순), 스토리 없는 추천 → others; 방이 없는 인물 · 숨긴 인물은 없음.
 - FS-U3 한 인물에 둘이면 최신 하나.
 - FS-U4 `storyAgeOf`: 59초 now · 1분 · 59분 · 1시간 · 23시간.
-- FS-U5 `listStoryOf`: 안 본 친구 스토리만, 본 것 · 안 만난 친구는 null.
+- ~~FS-U5 `listStoryOf`~~ 없앰(D3 개정 2 — 목록 줄에 스토리를 띄우지 않음).
 - FS-U6 `viewerStep`: next 끝 → close, prev 처음 → 그대로, tick = next.
 - FS-U7 `seenRecordsWith`: 만료 지난 표시를 지우고 새 표시를 더함, 같은 id 덮어씀.
 - FS-U8 `friendStoriesFrom`: 정상 · 칸 빠짐 버림 · 몸 틀림 null · 시각 문자열 → ms · 칩 3개 넘으면 앞 3개.
@@ -98,7 +98,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI4 보기 이동: 다음 · 이전 탭, 6초 뒤 다음(가짜 타이머), 멈춤이면 넘어가지 않음, 모션 줄이기면 넘어가지 않음, 마지막 다음 → 닫힘, 칸마다 onShown.
 - FS-UI5 보기(안 만난 친구): 칩 · 답장 칸 없음, NEW FRIEND · 소개 카드 · addable이면 「Add friend and reply」, locked면 「See how to meet」.
 - FS-UI6 시스템 뒤로 = 닫기. covered면 낭독에서 가림.
-- FS-UI7 목록 화면: 스토리 포트가 없거나 비면 「Meet new friends」 줄 그대로, 스토리가 있으면 스토리 줄. 목록 줄 「New story · …」 탭 → 보기.
+- FS-UI7 목록 화면: 스토리 포트가 없거나 비면 「Meet new friends」 줄 그대로, 스토리가 있으면 스토리 줄. 안 본 스토리가 있어도 목록 줄은 평소 미리보기 · 누르면 그 방(D3 개정 2, 2026-11-26).
 - FS-UI19 ~ UI24 보기 답장 칸(`StoryViewer.reply.ui.test.tsx`): 진짜 입력 · 자리표시 · 빈 글이면 보내기 꺼짐, 초점 = 멈춤 + 키보드 높이 위(+8) · 잰 높이 올림, 보내기(단추 · return) →
   onReply(글, typed) · 보내는 중 꺼짐 · 보내면 칸 비움 + Sent · Open chat · 알림 동안 이어 감(장 · 인물을 넘겨도 알림 남음, Open chat = 보낸 인물 — 2026-11-26) · 보내는 중 멈춤 · 무료 안내 걷힘, 칩 = 그 자리 보냄, 실패 = 글 남김 + 안내(coins), 뒤로 = 키보드 먼저 · 입력 중 탭 = 넘기지 않음.
 - FS-UI25 ~ UI27 목록 + 보기 답장(`MessengerListScreen.story-reply.ui.test.tsx`): 첫 답장 무료(storyFree · 체험 그대로 · replied where viewer) → 둘째는 체험 한 통, 엽전 부족 → 보내지 않고 상점 · 안내, 무제한 → 관문 없음.
@@ -148,7 +148,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 | 경과 · Seen | 11px #555D6D | `fg-neutral-muted` · caption |
 | New | 11px bold #B94208 | `fg-brand` |
 | ~~구분 선~~ | 없앰(D3 개정 ⟨2026-11-25⟩) | — |
-| 목록 미리보기 New story | 14px 600 #B94208 | `fg-brand` |
+| ~~목록 미리보기 New story~~ | 없앰(D3 개정 2 ⟨2026-11-26⟩) | — |
 | 보기 바탕 | #1A1C20 | `gray-950` |
 | 위 · 아래 그늘 | 검정 55% → 0 · 0 → 70% | `black` + 그레이디언트(화면 지역 상수) |
 | 진행 막대 | 3px · 흰 95% / 38% | `white` · 불투명도 지역 상수 |

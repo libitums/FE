@@ -19,8 +19,6 @@ export const messengerChatStoriesZhTw: FriendStoriesCopy = {
   unmetLabel: (name) => `${name} 的限時動態，新朋友`,
   findFriends: "找朋友",
   findFriendsLabel: "找朋友",
-  listPreview: (line) => `新的限時動態 · ${line}`,
-  listRowLabel: (name, line) => `${name}，新的限時動態：${line}。開啟限時動態`,
   viewer: {
     label: (name) => `${name} 的限時動態`,
     progress: (index, count) => `第${index}則，共${count}則`,

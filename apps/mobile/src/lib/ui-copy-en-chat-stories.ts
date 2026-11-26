@@ -17,8 +17,6 @@ export const messengerChatStoriesEn: FriendStoriesCopy = {
   unmetLabel: (name) => `${name}'s story, new friend`,
   findFriends: "Find friends",
   findFriendsLabel: "Find friends",
-  listPreview: (line) => `New story · ${line}`,
-  listRowLabel: (name, line) => `${name}, new story: ${line}. Opens the story`,
   viewer: {
     label: (name) => `${name}'s story`,
     progress: (index, count) => `Story ${index} of ${count}`,

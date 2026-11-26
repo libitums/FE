@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 
 import {
-  listStoryOf,
   liveStoriesOf,
   seenRecordsWith,
   storyAgeOf,
@@ -138,16 +137,6 @@ describe("FS-U4 경과 시간", () => {
   });
 });
 
-describe("FS-U5 채팅 목록 줄의 New story", () => {
-  test("안 본 친구 스토리만, 본 것 · 안 만난 친구는 null", () => {
-    const row = storyRowOf(input({ seen: new Set(["s-b"]) }));
-    expect(listStoryOf(row, "a")?.id).toBe("s-a");
-    expect(listStoryOf(row, "b")).toBeNull();
-    expect(listStoryOf(row, "g")).toBeNull();
-    expect(listStoryOf(row, "nobody")).toBeNull();
-  });
-});
-
 describe("FS-U6 보기 칸 이동", () => {
   test("다음 · 저절로 넘김은 한 칸, 마지막이면 닫힘", () => {
     expect(viewerStep({ index: 0, count: 2 }, "next")).toEqual({ index: 1, count: 2 });
@@ -228,9 +217,9 @@ describe("FS-U10 보기의 장 목록", () => {
     expect(viewerItemsOf(empty, { from: "watch_all" }, url)).toBeNull();
   });
 
-  test("목록 줄 · 알림은 그 인물 한 장(안 만난 친구도), 없으면 null", () => {
+  test("알림은 그 인물 한 장(친구 · 안 만난 친구 모두), 없으면 null", () => {
     expect(
-      viewerItemsOf(row, { from: "list", characterId: "b" }, url)?.items.map((i) => i.story.id),
+      viewerItemsOf(row, { from: "push", characterId: "b" }, url)?.items.map((i) => i.story.id),
     ).toEqual(["s-b"]);
     expect(
       viewerItemsOf(row, { from: "push", characterId: "g" }, url)?.items.map((i) => i.story.id),

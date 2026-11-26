@@ -18,8 +18,6 @@ export const messengerChatStoriesVi: FriendStoriesCopy = {
   unmetLabel: (name) => `Tin của ${name}, bạn mới`,
   findFriends: "Tìm bạn",
   findFriendsLabel: "Tìm bạn",
-  listPreview: (line) => `Vừa đăng tin · ${line}`,
-  listRowLabel: (name, line) => `${name}, vừa đăng tin: ${line}. Mở tin`,
   viewer: {
     label: (name) => `Tin của ${name}`,
     progress: (index, count) => `Tin ${index} trên ${count}`,
