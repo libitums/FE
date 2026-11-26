@@ -7,7 +7,6 @@ import { useUiCopy } from "../../lib/ui-copy";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import { hasFriendsOf } from "./my-stories";
 import type { MyStory, MyStoryReaction } from "./my-stories.contract";
-import { withLatestMine } from "./my-story-live";
 import { myViewerItemsOf } from "./my-story-viewer";
 import { faceFrom, useMyStoryDelete } from "./use-my-story-delete";
 import { StoryViewer } from "./StoryViewer";
@@ -53,14 +52,15 @@ export function MyStoryFullOpen({
 }): ReactNode {
   const name = useUiCopy().messengerChat.myStories.viewer.yourStory;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const [opened] = useState(() => myViewerItemsOf(stories, openedId, now, name));
+  // 장 목록은 연 때의 시각으로 — 다시 읽은 Seen by · 답(개정 ⟨살아 있는 보기⟩)은 같은 장에 바로 서고, 보는 중에 지나도 장이 빠지지 않습니다.
+  const [at] = useState(now);
+  const opened = myViewerItemsOf(stories, openedId, at, name);
   const removal = useMyStoryDelete({ rooms, remove, onDeleted });
   if (opened === null) return null;
   return (
     <>
       <StoryViewer
-        // 장 순서는 열 때 그대로, Seen by · 답은 다시 읽은 지금 것(개정 ⟨살아 있는 보기⟩).
-        items={withLatestMine(opened.items, stories)}
+        items={opened.items}
         start={opened.start}
         now={now}
         reducedMotion={reducedMotion}

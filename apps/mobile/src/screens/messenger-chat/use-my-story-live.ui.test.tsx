@@ -191,5 +191,5 @@ test("LV-UI8. 보기가 닫혀 있을 때 앞으로 와서 읽은 것은 통째�
   expect(got.mock.calls[0]?.[0](null)).toBe(loaded);
   view.rerender(<Probe open rooms={[]} />);
   await advance(1);
-  expect(got.mock.calls[1]?.[0](before)).toBe(before);
+  expect(got.mock.calls[1]?.[0](before)?.stories.map((story) => story.id)).toEqual(["a"]);
 });
