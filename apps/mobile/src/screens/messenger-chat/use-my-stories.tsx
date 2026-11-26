@@ -7,13 +7,12 @@ import type { ReactNode } from "@lynx-js/react";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useChatEvents } from "./chat-events";
 import type { ChatRoomSummary } from "./chat-source.contract";
-import { mineRingOf, nextOpenOf, unseenReactionIdsOf } from "./my-stories";
+import { mineRingOf, nextOpenOf, openReactionChat, unseenReactionIdsOf } from "./my-stories";
 import type {
   MineRowSlot,
   MyStoriesPort,
   MyStoriesState,
   MyStory,
-  MyStoryReaction,
   MyStoryWindow,
 } from "./my-stories.contract";
 import { editorCapsOf, photoEditorCaps } from "./my-story-editor";
@@ -22,7 +21,7 @@ import { useStoryShare } from "./use-story-share";
 import { MyStoryEditor } from "./MyStoryEditor";
 import { MyStoryStartSheet } from "./MyStoryStartSheet";
 import { MyStoryGuide } from "./MyStoryDialogs";
-import { MyStoryOpen } from "./MyStoryOpen";
+import { MyStoryFullOpen } from "./MyStoryFullOpen";
 import { MyStoryWindowSheet } from "./MyStoryWindowSheet";
 
 type View =
@@ -41,21 +40,6 @@ export type MyStoriesUi = {
   readonly loading: boolean;
 };
 
-/**
- * 반응의 「Open chat」 — 그 인물의 방을 엽니다(ADR-0191 D2 — 반응은 그 방의 메시지라 인용 띠를 넘기지 않습니다). 방이 없으면 false.
- * 방은 늘 끝으로 따라가고 반응은 최근 메시지라, `messageId`로 스크롤하지 않습니다(스스로 정한 것 — 보고).
- */
-export function openReactionChat(
-  rooms: readonly ChatRoomSummary[],
-  reaction: MyStoryReaction,
-  onOpenRoom: (roomId: string) => void,
-): boolean {
-  const roomId = rooms.find((room) => room.counterpart.id === reaction.characterId)?.roomId;
-  if (roomId === undefined) return false;
-  onOpenRoom(roomId);
-  return true;
-}
-
 /** 다음 창의 기기 현지 시각 — 창 문구(「6 PM」)로. */
 function useClock() {
   const window = useUiCopy().messengerChat.myStories.window;
@@ -70,12 +54,15 @@ export function useMyStories({
   rooms,
   onOpenRoom,
   onFindFriends,
+  romanization = true,
 }: {
   readonly port: MyStoriesPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
   readonly onOpenRoom: (roomId: string) => void;
   /** 친구 0명 안내의 Find friends(시안 17번). */
   readonly onFindFriends?: () => void;
+  /** 로마자를 보이는가(전체 화면 보기의 한 줄 카드). */
+  readonly romanization?: boolean;
 }): MyStoriesUi {
   const { emit } = useChatEvents();
   const copy = useUiCopy().messengerChat.myStories;
@@ -106,15 +93,21 @@ export function useMyStories({
   const ring = port === undefined ? null : mineRingOf(state, port.seenReactions(), now);
   const storyOf = (id: string) => state?.stories.find((story) => story.id === id) ?? null;
 
-  const openStory = (story: MyStory, from: "row" | "posted") => {
+  /** 그 스토리의 반응을 본 것으로 — 「Your story」 고리가 회색이 됩니다. 본 반응 수를 돌려줍니다. */
+  const markSeen = (story: MyStory) => {
     const unseen = port === undefined ? [] : unseenReactionIdsOf(story, port.seenReactions());
     port?.markReactionsSeen(unseen, story.expiresAt);
     setSeenVersion((version) => version + 1);
+    return unseen.length;
+  };
+
+  const openStory = (story: MyStory, from: "row" | "posted") => {
+    const unseen = markSeen(story);
     emit({
       name: "my_story_viewed",
       surface: "chat",
       reactions: String(story.reactions.length),
-      unseen: String(unseen.length),
+      unseen: String(unseen),
       from,
     });
     setView({ kind: "viewer", storyId: story.id });
@@ -236,12 +229,16 @@ export function useMyStories({
         onClose={close}
       />
     ) : viewing === null ? null : (
-      <MyStoryOpen
-        story={viewing}
+      <MyStoryFullOpen
+        stories={state?.stories ?? [viewing]}
+        openedId={viewing.id}
         now={now}
         rooms={rooms}
+        romanization={romanization}
         {...(port.photo === undefined ? {} : { photoUrl: port.photo.url })}
         remove={(id) => port.remove(id)}
+        onShown={markSeen}
+        onCreate={handleCreate}
         onOpenChat={(reaction) => {
           if (!openReactionChat(rooms, reaction, onOpenRoom)) return;
           emit({

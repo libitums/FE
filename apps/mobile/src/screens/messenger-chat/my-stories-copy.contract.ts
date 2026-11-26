@@ -44,10 +44,6 @@ export type MyStoriesCopy = {
   };
   readonly viewer: {
     readonly yourStory: string;
-    readonly kindLabel: (kind: MyStoryKind) => string;
-    readonly cardTag: (kind: MyStoryKind) => string;
-    /** 글 스토리(서버 반영 예상)의 종류 이름 — 「Text story」. */
-    readonly textLabel: string;
     readonly close: string;
     readonly options: string;
     readonly delete: string;
@@ -69,6 +65,10 @@ export type MyStoriesCopy = {
     readonly findFriends: string;
     readonly hidden: string;
     readonly reactionLabel: (name: string, text: string, meaning: string | null) => string;
+    /** 전체 화면 보기 아래 바(ADR-0194 개정 ⟨보기⟩, 시안 34 · 36번) — 위로 밀기 안내 · 본 사람 없음 · 「Seen by」 단추의 낭독 뒷말. */
+    readonly swipeUp: string;
+    readonly noViews: string;
+    readonly showReplies: string;
   };
   /** 올리기 창 시트(시안 18번, ADR-0191 D8). */
   readonly window: {
@@ -208,6 +208,4 @@ export type MyStoryPhotoCopy = {
   /** 보기 — 다시 보는 중(나에게만). */
   readonly checkingTitle: string;
   readonly checkingBody: string;
-  /** 보기 메타 줄의 종류 이름. */
-  readonly kindLabel: string;
 };

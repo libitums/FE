@@ -53,9 +53,6 @@ export const myStoriesVi: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Tin của bạn",
-    kindLabel: (kind) => (kind === "word" ? "Thẻ từ" : "Thẻ bài học"),
-    textLabel: "Tin chữ",
-    cardTag: (kind) => (kind === "word" ? "TỪ CỦA TÔI HÔM NAY" : "THẺ BÀI HỌC"),
     close: "Đóng",
     options: "Tùy chọn tin",
     delete: "Xóa tin",
@@ -73,6 +70,9 @@ export const myStoriesVi: MyStoriesCopy = {
     findFriends: "Tìm bạn",
     hidden: "Bạn bè đã xem tin này trong 24 giờ. Giờ chỉ mình bạn thấy.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Vuốt lên để xem phản hồi",
+    noViews: "Chưa có ai xem",
+    showReplies: "Xem phản hồi",
   },
   window: {
     title: (slot) =>

@@ -7,6 +7,7 @@ import type {
   MyStory,
   MyStoryChoice,
   MyStoryDraft,
+  MyStoryReaction,
   MyStoryWindow,
   WindowSheetView,
 } from "./my-stories.contract";
@@ -142,4 +143,19 @@ export function windowSheetOf(
  */
 export function hasFriendsOf(rooms: readonly ChatRoomSummary[]): boolean {
   return rooms.some((room) => room.access.kind === "open" && room.lastMessage !== null);
+}
+
+/**
+ * 반응의 「Open chat」 — 그 인물의 방을 엽니다(ADR-0191 D2 — 반응은 그 방의 메시지라 인용 띠를 넘기지 않습니다). 방이 없으면 false.
+ * 방은 늘 끝으로 따라가고 반응은 최근 메시지라, `messageId`로 스크롤하지 않습니다(스스로 정한 것 — 보고).
+ */
+export function openReactionChat(
+  rooms: readonly ChatRoomSummary[],
+  reaction: MyStoryReaction,
+  onOpenRoom: (roomId: string) => void,
+): boolean {
+  const roomId = rooms.find((room) => room.counterpart.id === reaction.characterId)?.roomId;
+  if (roomId === undefined) return false;
+  onOpenRoom(roomId);
+  return true;
 }

@@ -53,9 +53,6 @@ export const myStoriesEn: MyStoriesCopy = {
   },
   viewer: {
     yourStory: "Your story",
-    kindLabel: (kind) => (kind === "word" ? "Word card" : "Lesson card"),
-    textLabel: "Text story",
-    cardTag: (kind) => (kind === "word" ? "MY WORD OF THE DAY" : "LESSON CARD"),
     close: "Close",
     options: "Story options",
     delete: "Delete story",
@@ -77,6 +74,9 @@ export const myStoriesEn: MyStoriesCopy = {
     findFriends: "Find friends",
     hidden: "Friends saw this for 24 hours. Only you see it now.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Swipe up for replies",
+    noViews: "No views yet",
+    showReplies: "Show replies",
   },
   window: {
     title: (slot) => `You shared this ${PART[slot]}'s story`,

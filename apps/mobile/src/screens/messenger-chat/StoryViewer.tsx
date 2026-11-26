@@ -10,6 +10,8 @@ import { restoreAccessibilityFocus } from "./chat-input-focus";
 import { spokenOf, storyTapOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { sideFace, StoryFaceBackdrop, StoryFaceShell, StoryLineCard } from "./StoryCubeFace";
+import { MyStoryFace } from "./MyStoryFace";
+import { MyStoryMenu, MyStoryRepliesSheet, MyStoryViewerBottom } from "./MyStoryViewerBar";
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
 import { StoryViewerHead } from "./StoryViewerHead";
 import { StoryReplyArea, StoryViewerSent } from "./StoryReplyArea";
@@ -51,6 +53,7 @@ export function StoryViewer({
   onClose,
   onSkip,
   covered = false,
+  mine,
 }: StoryViewerProps): ReactNode {
   const copy = useUiCopy().messengerChat.stories;
   const insets = safeAreaInsetsFrom(useGlobalProps());
@@ -61,6 +64,9 @@ export function StoryViewer({
   const groupLabel = copy.viewer.progress(group.at + 1, group.count);
   const [paused, setPaused] = useState(false);
   const [replyHeight, setReplyHeight] = useState(0);
+  // 내 스토리 장(ADR-0194 개정 ⟨보기⟩) — 답 목록 시트 · ⋯ 메뉴가 열린 동안 멈춥니다.
+  const [sheet, setSheet] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const reply = useStoryViewerReply({
     index,
     copy,
@@ -81,7 +87,7 @@ export function StoryViewer({
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
   // 답장을 쓰는 중 · 보내는 중에도, 가로로 끄는 동안에도 멈춥니다(D5 · D4 개정). 보낸 뒤 「Sent」 알림 동안은 이어 갑니다(사용자 결정 2026-11-26).
   const held = useStoryToastLink(true); // 답장 도착 토스트가 머리 위에 떠 있는 동안 진행만 멈춤(ADR-0200)
-  const stopped = paused || covered || held || reply.holding || nav.dragging;
+  const stopped = paused || covered || held || reply.holding || nav.dragging || sheet || menuOpen;
   const running = !stopped && !reducedMotion && item !== undefined;
   useAdvanceTimer(index, running, () => step("tick"));
 
@@ -97,7 +103,8 @@ export function StoryViewer({
   useEffect(() => {
     const current = items[index];
     if (current === undefined) return undefined;
-    const line = spokenOf(copy.listSeparator, [copy.viewer.label(current.name), groupLabel]);
+    const title = current.mine === undefined ? copy.viewer.label(current.name) : current.name;
+    const line = spokenOf(copy.listSeparator, [title, groupLabel]);
     if (opened.current) announce(line);
     opened.current = true;
     const handle = setTimeout(() => restoreAccessibilityFocus(ids.name), NEXT_FRAME_MS);
@@ -106,6 +113,8 @@ export function StoryViewer({
 
   if (item === undefined) return null;
   const { story, unmet } = item;
+  const my = mine === undefined || item.mine === undefined ? null : { mine, story: item.mine };
+  const full = my?.story.kind === "text" || my?.story.kind === "photo";
   const tap = (action: "next" | "prev") => {
     "background only";
     // 입력 중 밖을 누르면 키보드만 내립니다(넘기지 않음 — blur가 먼저 와도). 방금 가로로 넘긴 손가락의 탭도 넘기지 않습니다.
@@ -138,7 +147,7 @@ export function StoryViewer({
       data-motion={reducedMotion ? "reduced" : "standard"}
       data-turn={nav.turn?.direction ?? "none"}
       event-through={false}
-      accessibility-elements-hidden={covered}
+      accessibility-elements-hidden={covered || sheet}
     >
       {side("prev")}
       <StoryFaceShell
@@ -149,7 +158,11 @@ export function StoryViewer({
         cube={cube}
         onTap={tapFace}
       >
-        <StoryFaceBackdrop item={item} insetTop={insets.top} marked={true} />
+        {full && my !== null ? (
+          <MyStoryFace story={my.story} insetTop={insets.top} photoUrl={my.mine.photoUrl} />
+        ) : (
+          <StoryFaceBackdrop item={item} insetTop={insets.top} marked={true} />
+        )}
 
         {/* 낭독 순서 = 문서 순서: 닫기 · 멈춤 → 이름 → 프로필(아바타) → 진행 → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(접근성 M1). 그리기는 층(z-index)으로 탭 자리가 아래. */}
         <view
@@ -169,6 +182,7 @@ export function StoryViewer({
             onPause={() => setPaused((value) => !value)}
             onClose={() => onClose("closed")}
             onProfile={() => onProfile(item)}
+            {...(my === null ? {} : { menu: <MyStoryMenu onTap={() => setMenuOpen((o) => !o)} /> })}
           />
           <StoryProgress
             items={items.slice(group.start, group.start + group.count)}
@@ -177,6 +191,15 @@ export function StoryViewer({
             stopped={stopped}
             label={groupLabel}
           />
+          {my !== null && menuOpen ? (
+            <MyStoryMenu
+              story={my.story}
+              onTap={() => {
+                setMenuOpen(false);
+                my.mine.onDelete(my.story);
+              }}
+            />
+          ) : null}
         </view>
 
         <view
@@ -196,8 +219,10 @@ export function StoryViewer({
                 accessibility-label={copy.viewer.photoLabel(item.name)}
               />
             )}
-            <StoryLineCard item={item} romanization={romanization} copy={copy} marked={true} />
-            {unmet === null ? (
+            {full ? null : (
+              <StoryLineCard item={item} romanization={romanization} copy={copy} marked={true} />
+            )}
+            {unmet === null && my === null ? (
               // 장마다 새로 — 저장 표시(`saved`)가 다음 장으로 넘어가지 않게.
               <WordPill
                 key={item.story.id}
@@ -217,7 +242,9 @@ export function StoryViewer({
               if (typeof height === "number") setReplyHeight(height);
             }}
           >
-            {unmet === null ? (
+            {my !== null ? (
+              <MyStoryViewerBottom {...my} now={now} onReplies={() => setSheet(true)} />
+            ) : unmet === null ? (
               <StoryReplyArea item={item} copy={copy} reply={reply} />
             ) : (
               <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
@@ -245,6 +272,9 @@ export function StoryViewer({
         </view>
       </StoryFaceShell>
       {side("next")}
+      {sheet && my !== null ? (
+        <MyStoryRepliesSheet {...my} now={now} onClose={() => setSheet(false)} />
+      ) : null}
       {/* 보낸 뒤 알림은 인물마다 새로 서는 면 밖, 보기 단위 층 — 장 · 인물 · 큐브 넘김에도 다시 그려지지 않습니다(사용자 결정 2026-11-26). */}
       <StoryViewerSent
         copy={copy}
