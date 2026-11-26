@@ -8,11 +8,12 @@ import "./friend-stories.css";
 
 // 스토리 줄의 동그라미 하나(ADR-0178 D3 · ADR-0194) — 고리 · 얼굴 · 이름 · 둘째 줄. 낭독은 칸 하나(이름 · 경과 · 상태)로 읽습니다.
 
-export type Ring = "unseen" | "seen" | "unmet";
+export type Ring = "unseen" | "seen";
 
 export function StoryFace({
   testId,
   ring,
+  unmet,
   name,
   avatarUrl,
   caption,
@@ -23,6 +24,8 @@ export function StoryFace({
 }: {
   readonly testId: string;
   readonly ring: Ring;
+  /** 안 만난 친구(채팅 목록에 방 없음) — 고리가 점선(ADR-0178 D3 개정 ⟨점선⟩ · 사용자 정정 2026-11-26). */
+  readonly unmet?: boolean;
   readonly name: string;
   readonly avatarUrl: string | null;
   readonly caption: string;
@@ -49,7 +52,7 @@ export function StoryFace({
       flatten={false}
       bindtap={handleTap}
     >
-      <view className={`story-ring story-ring-${ring}`}>
+      <view className={`story-ring story-ring-${ring}${unmet ? " story-ring-unmet" : ""}`}>
         <Avatar
           imageSource={avatarUrl ?? undefined}
           name={avatarName ?? name}
