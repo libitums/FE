@@ -87,12 +87,14 @@ test("SMR-U2. 켬이면 답장 보기에 로마자 줄(기울임 자리)과 영�
 });
 
 test.each([["hidden" as const], [undefined]])(
-  "SMR-U3. 끔(%s)이면 이 변경 전 모양 — 말풍선은 뜻 한 줄, 답장 보기에 로마자가 없다",
+  "SMR-U3. 끔(%s)이면 말풍선은 구분선 아래 뜻 한 줄(로마자 없음, ADR-0188 개정 D8), 답장 보기에 로마자가 없다",
   (romanization) => {
     mount(romanization);
     const incoming = bubbleIn(ids.incoming);
     expect(incoming.queryByTestId("ui-lynx-chat-bubble-annotation-romanization")).toBeNull();
-    expect(incoming.getByTestId("ui-lynx-chat-bubble-translation").textContent).toBe("Found it?");
+    expect(incoming.getByTestId("ui-lynx-chat-bubble-annotation-meaning").textContent).toBe(
+      "Found it?",
+    );
     expect(screen.getByTestId(ids.option(0)).textContent).not.toContain("aniyo");
   },
 );

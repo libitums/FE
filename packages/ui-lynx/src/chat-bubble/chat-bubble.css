@@ -100,7 +100,8 @@
   color: var(--libitum-color-gray-200);
 }
 
-/* FE 추가: 본문 아래 로마자 · 구분선 · 뜻 묶음. 로마자는 기울임, 뜻은 똑바로 굵게 두어 모양으로 가릅니다. */
+/* FE 추가: 본문 아래 로마자 · 구분선 · 뜻 묶음(ADR-0188 개정 D8). [한국어 / 로마자]가 한 덩어리, 구분선 아래는 뜻만입니다.
+   로마자는 기울임 · 주황 글자(fg.brand — gray.100 면 위 5.1:1), 뜻은 똑바로 굵게 두어 모양으로 가릅니다. 로마자가 없으면 구분선 · 뜻만. */
 .ui-lynx-chat-bubble-annotation-romanization {
   white-space: normal;
   font-style: italic;
@@ -109,14 +110,14 @@
   font-weight: var(--libitum-font-weight-medium);
   line-height: var(--libitum-typography-body-m-line-height);
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
-  color: var(--libitum-color-fg-neutral-muted);
+  color: var(--libitum-color-fg-brand);
 }
 
 .ui-lynx-chat-bubble-annotation-divider {
   align-self: stretch;
   height: var(--libitum-stroke-width-thin);
   margin: var(--libitum-spacing-6) var(--libitum-spacing-0);
-  background-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-gray-500);
 }
 
 .ui-lynx-chat-bubble-annotation-meaning {

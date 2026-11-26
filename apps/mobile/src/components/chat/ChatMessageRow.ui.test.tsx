@@ -60,7 +60,7 @@ test("MC-UI3. 내 줄은 chat-row-outgoing 클래스이고 아바타 없이 chil
   expect(within(row).getByTestId("child-a")).toBeTruthy();
 });
 
-test("MC-UI3. 텍스트 말풍선은 크기 m · 학습 언어 ko이고 번역 줄을 그대로 그린다", () => {
+test("MC-UI3. 텍스트 말풍선은 크기 m · 학습 언어 ko이고 번역은 구분선 아래 뜻 줄로 그린다", () => {
   render(
     <ChatTextBubble direction="incoming" speaker="미나" message="안녕하세요" translation="Hello" />,
   );
@@ -71,7 +71,8 @@ test("MC-UI3. 텍스트 말풍선은 크기 m · 학습 언어 ko이고 번역 �
   expect(bubble.getAttribute("data-lang")).toBe("ko");
   expect(bubble.getAttribute("data-direction")).toBe("incoming");
   expect(screen.getByTestId("ui-lynx-chat-bubble-message").textContent).toBe("안녕하세요");
-  expect(screen.getByTestId("ui-lynx-chat-bubble-translation").textContent).toBe("Hello");
+  expect(screen.getByTestId("ui-lynx-chat-bubble-annotation-meaning").textContent).toBe("Hello");
+  expect(screen.queryByTestId("ui-lynx-chat-bubble-translation")).toBeNull();
 });
 
 test("MC-UI3. translation이 null이면 번역 줄이 없다", () => {
@@ -79,6 +80,7 @@ test("MC-UI3. translation이 null이면 번역 줄이 없다", () => {
 
   expect(screen.getByTestId("ui-lynx-chat-bubble").getAttribute("data-direction")).toBe("outgoing");
   expect(screen.queryByTestId("ui-lynx-chat-bubble-translation")).toBeNull();
+  expect(screen.queryByTestId("ui-lynx-chat-bubble-annotation-meaning")).toBeNull();
 });
 
 test("MC-UI3. ChatPhoto는 비율마다 클래스가 다르고 src를 싣는다", () => {
