@@ -44,6 +44,9 @@ function roleplayMissionReady(): boolean {
 export default defineConfig(({ command }): Config => {
   const dev = command === "dev";
   const missionInBundle = dev || roleplayMissionReady();
+  const missionDefineDCE = {
+    define: { __ROLEPLAY_MISSION_IN_BUNDLE__: JSON.stringify(missionInBundle) },
+  };
   return {
     source: {
       // 진입점은 src/app/ 이 소유한다 (ADR-0003 D5).
@@ -78,10 +81,7 @@ export default defineConfig(({ command }): Config => {
       // `extractStr`는 켜지 않습니다(ADR-0169 D8 개정). 설치된 ReactLynx에서 이 옵션은 `__EXTRACT_STR__`만
       // 정의하고, 런타임 main-thread `processData`가 읽는 `__EXTRACT_STR_IDENT_FLAG__`는 어떤 플러그인도
       // 정의하지 않아 실행마다 ReferenceError가 났습니다. 문자열을 실제로 뽑는 단계도 오픈소스 빌드에는 없습니다.
-      pluginReactLynx({
-        globalPropsMode: "event",
-        defineDCE: { define: { __ROLEPLAY_MISSION_IN_BUNDLE__: JSON.stringify(missionInBundle) } },
-      }),
+      pluginReactLynx({ globalPropsMode: "event", defineDCE: missionDefineDCE }),
     ],
     tools: {
       // `extractStr`가 번들을 약 103 kB 줄이던 몫은 이 한 가지였습니다: `.json`을 `JSON.parse('…')` 문자열이
