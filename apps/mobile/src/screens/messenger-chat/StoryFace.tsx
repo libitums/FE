@@ -13,7 +13,7 @@ export type Ring = "unseen" | "seen";
 export function StoryFace({
   testId,
   ring,
-  unmet = false,
+  unmet,
   name,
   avatarUrl,
   caption,
@@ -44,7 +44,7 @@ export function StoryFace({
     <view
       className="story-item"
       data-testid={testId}
-      data-state={unmet && ring === "unseen" ? "unmet" : ring}
+      data-state={ring}
       accessibility-element={true}
       accessibility-label={label}
       accessibility-traits="button"

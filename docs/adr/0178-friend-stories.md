@@ -108,7 +108,7 @@
 
 - 「만났는가」 = `storyRowOf`의 판정 그대로다. 친구 = 대화 스냅숏에서 방이 열림(`access.kind === "open"`, 추천 친구의 `added`) · 안 만난 친구 = 추천 친구(`suggestedFriendsOf`, 방이 열리지 않은 `addable` · `locked`).
   이야기를 끝내 추가할 수 있게 됐지만(`addable`) 아직 추가하지 않은 인물은 채팅 목록에 없으므로 안 만난 친구 — 점선이다.
-- 「다 봄」 = 그 인물의 살아 있는 스토리를 모두 봄(`storyRowOf`, 기기 저장 본 것). 안 만난 친구 칸도 `UnmetStoryEntry.seen`을 받고, 다 봤으면 칸 상태(`data-state`)가 `seen`이다(안 봤으면 `unmet`).
+- 「다 봄」 = 그 인물의 살아 있는 스토리를 모두 봄(`storyRowOf`, 기기 저장 본 것). 안 만난 친구 칸도 `UnmetStoryEntry.seen`을 받고, 칸 상태(`data-state`)는 친구와 같이 `unseen` · `seen` 둘뿐이다(정정 전 안 본 안 만난 친구의 `unmet`은 없앴다 — 안 만난 친구인지는 칸 id `friend-stories-unmet-*`와 고리 클래스로 가른다).
   안 만난 친구는 친구가 되기 전까지 「New」 · 낭독 「<이름>'s story, new friend」 그대로다.
 - 구현: `.story-ring-seen`은 색만(회색), 점선은 `.story-ring-unmet`만 정한다. 안 만난 친구 칸은 `story-ring-<unseen|seen> story-ring-unmet` 두 클래스를 함께 단다(`StoryFace`의 `unmet`).
   내 스토리는 `unmet`을 달지 않으므로 실선이고, 첫 판의 내 스토리 예외 규칙(`.my-story-faces .story-ring-seen`)은 지웠다.

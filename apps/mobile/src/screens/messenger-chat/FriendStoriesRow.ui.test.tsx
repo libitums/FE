@@ -83,7 +83,7 @@ test("FS-UI1. 안 본 것은 경과 시간 · 본 것은 Seen · 안 만난 친�
   expect(b.textContent).toContain("Seen");
   expect(b.getAttribute("accessibility-label")).toBe("해준's story, 5h, seen");
   const g = screen.getByTestId(ids.unmet("g"));
-  expect(g.getAttribute("data-state")).toBe("unmet");
+  expect(g.getAttribute("data-state")).toBe("unseen");
   expect(g.textContent).toContain("New");
   expect(g.getAttribute("accessibility-label")).toBe("다은's story, new friend");
   for (const id of [ids.friend("a"), ids.unmet("g"), ids.findFriends, ids.watchAll]) {
@@ -102,7 +102,7 @@ test("FS-UI48. 고리 네 칸 — 점선은 안 만난 친구만 · 회색은 �
   expect(ringOf(ids.friend("a"))).toBe("story-ring story-ring-unseen");
   expect(ringOf(ids.friend("b"))).toBe("story-ring story-ring-seen");
   expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-unseen story-ring-unmet");
-  expect(screen.getByTestId(ids.unmet("g")).getAttribute("data-state")).toBe("unmet");
+  expect(screen.getByTestId(ids.unmet("g")).getAttribute("data-state")).toBe("unseen");
   cleanup();
   // 안 만난 친구의 본 것: 회색 점선.
   mount(["s-b", "s-g"]);
