@@ -4,6 +4,9 @@
 //    위기 신호(글이든 사진 읽기든)는 올리지 않고 `crisis` + 그 지역의 상담 연락처(색 바탕과 같다).
 // 3. 사진 읽기(검수 · 장면 설명, 기본 8초). 거절이면 사진을 격리 버킷으로 옮기고 거절을 적는다 — 창은 쓰지 않는다.
 //    제때 끝나지 않거나 실패하면 `checking`으로 올린다(나에게만 보임) — 매분 도는 뒷정리(`companion-story-upkeep.ts`)가 다시 본다.
+// 2와 3은 문을 지난 뒤 **겹쳐 돈다**(ADR-0191 D11 개정 ⟨겹쳐 읽기⟩ — 운영에서 글 검수 1.3 ~ 1.6초를 아낌). 판정 순서는 그대로다:
+// 글(실패 · 막힘 · 위기)이 먼저, 그다음 사진 없음 · 내려받기 실패 · 거절 · 게시. 글이 막히거나 실패하면 사진 읽기를 멈추고 그 결과는 버린다.
+// 쓰기(격리 · 거절 · 저장)는 둘 다 끝난 뒤 하나의 길에서만 한다.
 
 import type { CompanionLlm } from "./chat-send.contract.ts";
 import type { MyStoryRequest } from "./companion-contract/index.ts";
@@ -43,14 +46,19 @@ export async function readStoryPhoto(
     readonly photo: StoryPhoto;
     readonly line: string;
     readonly overlays: readonly string[];
+    /** 바깥에서 멈춤(글이 막힘) — 시간 초과와 같이 null. */
+    readonly stop?: AbortSignal;
   },
 ): Promise<StoryRead | null> {
   const timeoutMs = deps.readTimeoutMs ?? STORY_READ_TIMEOUT_MS;
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), timeoutMs);
+  const { stop, ...read } = input;
+  if (stop?.aborted === true) abort.abort();
+  stop?.addEventListener("abort", () => abort.abort(), { once: true });
   try {
     return await Promise.race([
-      deps.reader({ ...input, signal: abort.signal }),
+      deps.reader({ ...read, signal: abort.signal }),
       new Promise<null>((resolve) =>
         abort.signal.addEventListener("abort", () => resolve(null), { once: true }),
       ),
@@ -60,6 +68,18 @@ export async function readStoryPhoto(
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** 약속을 던지지 않는 결과로 — 기다리기 전에 실패해도 처리되지 않은 거절로 남지 않는다. */
+function settled<T>(
+  promise: Promise<T>,
+): Promise<
+  { readonly ok: true; readonly value: T } | { readonly ok: false; readonly error: unknown }
+> {
+  return promise.then(
+    (value) => ({ ok: true as const, value }),
+    (error: unknown) => ({ ok: false as const, error }),
+  );
 }
 
 /** `<내 id>/<파일 이름>` 꼴인가 — 서버 저장 판정(`companion_save_my_photo_story`)과 같은 규칙. */
@@ -95,25 +115,39 @@ export async function postPhotoStory(
     result: "crisis",
     resources: crisisResourcesFor(body.client_region ?? null).resources,
   });
+  // 사진 쪽(내려받기 → 읽기)을 먼저 띄우고 글 검수를 기다린다. 사진 쪽의 실패는 글 판정 뒤에야 드러낸다(차례로 돌 때와 같은 결과).
+  const stop = new AbortController();
+  const photoSide = settled(
+    (async () => {
+      const photo = await downloadStoryPhoto(deps.fetch, env, body.image_path, STORAGE_TIMEOUT_MS);
+      if (photo === null || stop.signal.aborted) return { photo, read: null };
+      const read = await readStoryPhoto(deps, {
+        photo,
+        line: body.ko,
+        overlays: overlayWords(body.overlays),
+        stop: stop.signal,
+      });
+      return { photo, read };
+    })(),
+  );
   const checkText = storyCheckText(body.ko, body.overlays ?? []);
   if (checkText !== "") {
-    const text = await checkStoryText(
-      llm,
-      checkText,
-      "adult",
-      AbortSignal.timeout(STORAGE_TIMEOUT_MS),
-    );
+    let text: Awaited<ReturnType<typeof checkStoryText>>;
+    try {
+      text = await checkStoryText(llm, checkText, "adult", AbortSignal.timeout(STORAGE_TIMEOUT_MS));
+    } catch (error) {
+      stop.abort();
+      throw error;
+    }
+    if (text === "block" || text === "crisis") stop.abort();
     if (text === "block") return { result: "text_blocked" };
     if (text === "crisis") return crisis();
   }
 
-  const photo = await downloadStoryPhoto(deps.fetch, env, body.image_path, STORAGE_TIMEOUT_MS);
+  const side = await photoSide;
+  if (!side.ok) throw side.error;
+  const { photo, read } = side.value;
   if (photo === null) return { result: "no_photo" };
-  const read = await readStoryPhoto(deps, {
-    photo,
-    line: body.ko,
-    overlays: overlayWords(body.overlays),
-  });
   if (read?.verdict === "reject") {
     const path = await quarantineStoryPhoto(
       deps.fetch,
