@@ -32,7 +32,8 @@ export function remotePull(deps: RemotePullDeps): (roomId: string) => void {
   const { remote, live, changed, isOpen, busy } = deps;
   const attempt = (roomId: string, room: RoomState, retry: boolean) => {
     void (async () => {
-      const history = await remote.loadHistory(room.seed.counterpart.id);
+      // 포트가 던져도(네트워크 오류) 못 읽은 것과 같이 다룹니다 — 다시 시도로 가고, 던짐이 밖으로 새지 않게.
+      const history = await remote.loadHistory(room.seed.counterpart.id).catch(() => null);
       if (live(roomId) !== room || busy(room)) return;
       if (history === null) {
         if (retry) deps.schedule(room, PULL_RETRY_MS, () => attempt(roomId, room, false));
