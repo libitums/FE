@@ -145,6 +145,7 @@ export function useFriendStories({
     rooms,
     onOpenRoom,
     onFindFriends: suggested.openDirectory,
+    romanization: port?.romanization?.() ?? true,
   });
   const imageUrl = (path: string) => port?.imageUrl(path) ?? null;
 

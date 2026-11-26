@@ -74,6 +74,9 @@ export const myStoriesId: MyStoriesCopy = {
     findFriends: "Cari teman",
     hidden: "Teman melihat ini selama 24 jam. Sekarang hanya kamu yang melihatnya.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Geser ke atas untuk melihat balasan",
+    noViews: "Belum ada yang melihat",
+    showReplies: "Lihat balasan",
   },
   window: {
     title: (slot) =>

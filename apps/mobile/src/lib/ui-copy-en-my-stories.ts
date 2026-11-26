@@ -77,6 +77,9 @@ export const myStoriesEn: MyStoriesCopy = {
     findFriends: "Find friends",
     hidden: "Friends saw this for 24 hours. Only you see it now.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Swipe up for replies",
+    noViews: "No views yet",
+    showReplies: "Show replies",
   },
   window: {
     title: (slot) => `You shared this ${PART[slot]}'s story`,

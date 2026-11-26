@@ -69,6 +69,10 @@ export type MyStoriesCopy = {
     readonly findFriends: string;
     readonly hidden: string;
     readonly reactionLabel: (name: string, text: string, meaning: string | null) => string;
+    /** 전체 화면 보기 아래 바(ADR-0194 개정 ⟨보기⟩, 시안 34 · 36번) — 위로 밀기 안내 · 본 사람 없음 · 「Seen by」 단추의 낭독 뒷말. */
+    readonly swipeUp: string;
+    readonly noViews: string;
+    readonly showReplies: string;
   };
   /** 올리기 창 시트(시안 18번, ADR-0191 D8). */
   readonly window: {

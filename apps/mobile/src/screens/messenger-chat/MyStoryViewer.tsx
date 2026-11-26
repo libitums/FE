@@ -1,10 +1,8 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-import clock from "@libitums/icons/lynx/clock";
 import menu from "@libitums/icons/lynx/menu";
 import trash from "@libitums/icons/lynx/trash";
 import { color } from "@libitums/design-tokens";
-import { Button } from "@libitums/ui-lynx/button";
 
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -17,7 +15,8 @@ import {
 } from "./my-stories.contract";
 import { MyStoryIconButton, MyStoryLayer } from "./MyStoryLayer";
 import { MyPhotoStoryCard } from "./MyPhotoStoryCard";
-import { MyTextStoryCard, ReactionRow, SeenBy } from "./MyStoryReactions";
+import { MyTextStoryCard, SeenBy } from "./MyStoryReactions";
+import { MyStoryReplyList } from "./MyStoryReplyList";
 
 export type MyStoryViewerProps = {
   readonly story: MyStory;
@@ -138,70 +137,14 @@ export function MyStoryViewer({
           </text>
           <SeenBy story={story} face={face} />
         </view>
-        {rows.length > 0 ? (
-          <>
-            {rows.map(({ reaction, who }) => (
-              <ReactionRow
-                key={reaction.id}
-                reaction={reaction}
-                face={who}
-                age={ageOf(reaction.at)}
-                onOpenChat={() => onOpenChat(reaction)}
-              />
-            ))}
-            <text className="my-story-note center" data-testid={ids.savedNote}>
-              {copy.saved}
-            </text>
-          </>
-        ) : live ? (
-          <>
-            <view
-              className="my-story-waiting"
-              data-testid={ids.waiting}
-              flatten={false}
-              accessibility-element={true}
-              accessibility-label={`${copy.waiting} ${copy.waitingBody}`}
-            >
-              <view className="my-story-waiting-icon" accessibility-elements-hidden={true}>
-                <svg className="my-story-icon" content={clock} current-color={color.fg.brand} />
-              </view>
-              <view className="my-story-waiting-body" accessibility-elements-hidden={true}>
-                <text className="my-story-waiting-title">{copy.waiting}</text>
-                <text className="my-story-note">{copy.waitingBody}</text>
-              </view>
-            </view>
-            {hasFriends ? null : (
-              <view className="my-story-no-friends" data-testid={ids.noFriends}>
-                <view
-                  className="my-story-waiting-body"
-                  flatten={false}
-                  accessibility-element={true}
-                  accessibility-label={`${copy.noFriendsTitle}. ${copy.noFriendsBody}`}
-                >
-                  <text className="my-story-waiting-title" accessibility-elements-hidden={true}>
-                    {copy.noFriendsTitle}
-                  </text>
-                  <text className="my-story-note" accessibility-elements-hidden={true}>
-                    {copy.noFriendsBody}
-                  </text>
-                </view>
-                {onFindFriends === undefined ? null : (
-                  <view data-testid={ids.findFriends}>
-                    <Button
-                      label={copy.findFriends}
-                      variant="brand"
-                      size="s"
-                      bindtap={() => {
-                        "background only";
-                        onFindFriends();
-                      }}
-                    />
-                  </view>
-                )}
-              </view>
-            )}
-          </>
-        ) : null}
+        <MyStoryReplyList
+          story={story}
+          now={now}
+          face={face}
+          hasFriends={hasFriends}
+          {...(onFindFriends === undefined ? {} : { onFindFriends })}
+          onOpenChat={onOpenChat}
+        />
       </view>
     </MyStoryLayer>
   );

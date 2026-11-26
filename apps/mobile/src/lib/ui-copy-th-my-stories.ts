@@ -84,6 +84,9 @@ export const myStoriesTh: MyStoriesCopy = {
     findFriends: "หาเพื่อน",
     hidden: "เพื่อนเห็นสตอรี่นี้ได้ 24 ชั่วโมง ตอนนี้มีแค่คุณที่เห็น",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? ` ${meaning}` : ""}`,
+    swipeUp: "ปัดขึ้นเพื่อดูคำตอบ",
+    noViews: "ยังไม่มีใครดู",
+    showReplies: "ดูคำตอบ",
   },
   window: {
     title: (slot) =>

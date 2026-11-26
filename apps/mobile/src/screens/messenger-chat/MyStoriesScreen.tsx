@@ -13,7 +13,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { useChatEvents } from "./chat-events";
 import type { ChatSource } from "./chat-source.contract";
-import { archiveOf, dayOf, unseenReactionIdsOf } from "./my-stories";
+import { archiveOf, dayOf, openReactionChat, unseenReactionIdsOf } from "./my-stories";
 import {
   myStoriesTestIds as ids,
   type MyStoriesPort,
@@ -24,7 +24,6 @@ import { ArchiveTile } from "./MyStoryArchiveTile";
 import { MyStoryDeleteDialog } from "./MyStoryDialogs";
 import { MyStoryOpen } from "./MyStoryOpen";
 import { useChatSnapshot } from "./use-chat-source";
-import { openReactionChat } from "./use-my-stories";
 
 import "./chat-settings.css";
 import "./my-stories.css";

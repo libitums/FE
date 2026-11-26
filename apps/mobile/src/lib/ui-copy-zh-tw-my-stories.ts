@@ -69,6 +69,9 @@ export const myStoriesZhTw: MyStoriesCopy = {
     findFriends: "找朋友",
     hidden: "朋友在24小時內看得到這則。現在只有你看得到。",
     reactionLabel: (name, text, meaning) => `${name}：${text}${meaning ? `。${meaning}` : ""}`,
+    swipeUp: "向上滑動查看回覆",
+    noViews: "還沒有人看過",
+    showReplies: "查看回覆",
   },
   window: {
     title: (slot) =>

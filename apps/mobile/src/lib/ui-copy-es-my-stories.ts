@@ -91,6 +91,9 @@ export const myStoriesEs: MyStoriesCopy = {
     findFriends: "Buscar amigos",
     hidden: "Tus amigos la vieron durante 24 horas. Ahora solo la ves tú.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Desliza hacia arriba para ver las respuestas",
+    noViews: "Aún nadie lo ha visto",
+    showReplies: "Ver respuestas",
   },
   window: {
     title: (slot) =>

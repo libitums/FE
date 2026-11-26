@@ -144,8 +144,9 @@ test("MS-UI3. 안내 → 시작 → 편집 → 단어 스티커 → 올림 → �
     expect.objectContaining({ kind: "word", ko: "산책", lang: "en", clientId: "cid-1" }),
   );
   expect(screen.queryByTestId(ids.editor)).toBeNull();
-  expect(screen.getByTestId(ids.cardKo).textContent).toBe("산책");
-  expect(screen.getByTestId(ids.waiting)).not.toBeNull();
+  // 막 올린 것은 전체 화면 보기(ADR-0194 개정 ⟨보기⟩) — 한 줄 카드 · 바 위 한 시간 안내.
+  expect(screen.getByTestId(fsIds.line).textContent).toBe("산책");
+  expect(screen.getByTestId(ids.barWaiting)).not.toBeNull();
   expect(screen.getByTestId(ids.mine)).not.toBeNull();
   expect(events().map((e) => e.name)).toEqual(
     expect.arrayContaining(["my_story_posted", "my_story_viewed"]),
@@ -192,6 +193,8 @@ test("MS-UI5. 「Your story」 — 안 본 반응이면 고리 unseen, 열면 �
   const { onOpenRoom, events } = await mount(fakeMyStories({ stories: [story] }));
   expect(screen.getByTestId(ids.mine).getAttribute("data-state")).toBe("unseen");
   tapId(ids.mine);
+  // 목록의 내 스토리는 전체 화면 보기로 엽니다(ADR-0194 개정 ⟨보기⟩) — 반응 목록은 「Seen by」 → 답 목록 시트.
+  tapId(ids.barSeen);
   expect(screen.getByTestId(ids.reaction("r1")).textContent).toContain("야근 끝나면 라면 먹어!");
   expect(screen.getByTestId(ids.reaction("r1")).textContent).toContain("미나");
   tapId(ids.openChat("r1"));

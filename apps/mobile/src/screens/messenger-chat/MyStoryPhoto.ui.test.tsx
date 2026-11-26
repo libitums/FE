@@ -5,7 +5,7 @@ import { clearBackHandlers, fixtureRoom, makeSource, seedOf, tapId } from "./cha
 import { ChatEventsContext } from "./chat-events";
 import { createCoinWallet } from "./coin-wallet";
 import type { SuggestedFriendsPort } from "./friend-catalog.contract";
-import type { FriendStoriesPort } from "./friend-stories.contract";
+import { friendStoriesTestIds as fsIds, type FriendStoriesPort } from "./friend-stories.contract";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
 import { fakeMyStories, MS_NOW, PICKED, wordChoice } from "./my-stories.test-support";
 import { MessengerListScreen } from "./MessengerListScreen";
@@ -185,7 +185,8 @@ test("MSP-UI3. 사진 위 편집 — 한 줄이 없으면 Share 꺼짐 · 안내
   );
   release();
   await flush();
-  expect(screen.getByTestId(ids.viewer).textContent).toContain("Photo story");
+  // 막 올린 사진은 전체 화면 보기(ADR-0194 개정 ⟨보기⟩) — 사진 · 얹은 것을 화면 가득.
+  expect(screen.getByTestId(fsIds.viewer)).not.toBeNull();
   const card = screen.getByTestId(ids.photoCard);
   expect(card.textContent).toContain("찌개");
   await flush(); // 서명 주소는 보기가 선 뒤에 옵니다

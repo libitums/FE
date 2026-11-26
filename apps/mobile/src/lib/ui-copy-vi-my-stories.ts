@@ -73,6 +73,9 @@ export const myStoriesVi: MyStoriesCopy = {
     findFriends: "Tìm bạn",
     hidden: "Bạn bè đã xem tin này trong 24 giờ. Giờ chỉ mình bạn thấy.",
     reactionLabel: (name, text, meaning) => `${name}: ${text}${meaning ? `. ${meaning}` : ""}`,
+    swipeUp: "Vuốt lên để xem phản hồi",
+    noViews: "Chưa có ai xem",
+    showReplies: "Xem phản hồi",
   },
   window: {
     title: (slot) =>

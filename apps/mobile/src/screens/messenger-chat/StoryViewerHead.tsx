@@ -32,6 +32,7 @@ export function StoryViewerHead({
   onPause,
   onClose,
   onProfile,
+  menu,
 }: {
   readonly item: StoryViewerItem;
   readonly now: number;
@@ -41,7 +42,11 @@ export function StoryViewerHead({
   readonly onPause: () => void;
   readonly onClose: () => void;
   readonly onProfile: () => void;
+  /** 내 스토리 장의 ⋯ 단추(ADR-0194 개정 ⟨보기⟩) — 멈춤 다음. */
+  readonly menu?: ReactNode;
 }): ReactNode {
+  // 내 스토리 장은 이름이 곧 제목(「Your story」)이고 아바타는 프로필 단추가 아닙니다.
+  const own = item.mine !== undefined;
   const openProfile = () => {
     "background only";
     onProfile();
@@ -55,6 +60,7 @@ export function StoryViewerHead({
         label={paused ? copy.viewer.play : copy.viewer.pause}
         onTap={onPause}
       />
+      {menu ?? null}
       <view className="story-viewer-spacer" />
       {item.unmet === null ? (
         <text
@@ -76,23 +82,23 @@ export function StoryViewerHead({
           data-testid={ids.name}
           accessibility-element={true}
           accessibility-label={spokenOf(copy.listSeparator, [
-            copy.viewer.label(item.name),
+            own ? item.name : copy.viewer.label(item.name),
             groupLabel,
           ])}
-          bindtap={openProfile}
+          bindtap={own ? undefined : openProfile}
         >
           {item.name}
         </text>
         <view
           className="story-viewer-avatar"
           data-testid={ids.profile}
-          accessibility-element={true}
-          accessibility-label={copy.viewer.profile(item.name)}
-          accessibility-traits="button"
-          accessibility-enable-tap={true}
+          accessibility-element={!own}
+          accessibility-label={own ? undefined : copy.viewer.profile(item.name)}
+          accessibility-traits={own ? undefined : "button"}
+          accessibility-enable-tap={!own}
           flatten={false}
           hit-slop={SLOP}
-          bindtap={openProfile}
+          bindtap={own ? undefined : openProfile}
         >
           <Avatar
             imageSource={item.avatarUrl ?? undefined}

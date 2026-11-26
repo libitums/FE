@@ -72,6 +72,9 @@ export const myStoriesJa: MyStoriesCopy = {
     findFriends: "友だちを探す",
     hidden: "友だちが見られたのは24時間だけ。今はあなただけが見られます。",
     reactionLabel: (name, text, meaning) => `${name}：${text}${meaning ? `。${meaning}` : ""}`,
+    swipeUp: "上にスワイプして返信を見る",
+    noViews: "まだ誰も見ていません",
+    showReplies: "返信を見る",
   },
   window: {
     title: (slot) =>

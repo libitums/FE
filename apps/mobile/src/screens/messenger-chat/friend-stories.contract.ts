@@ -2,11 +2,12 @@
 
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { LocalizedLine } from "./friend-catalog.contract";
-import type { MineRowSlot, MyStoriesPort } from "./my-stories.contract";
+import type { MineRowSlot, MyStoriesPort, MyStory } from "./my-stories.contract";
 import type { SuggestedFriend } from "./suggested-friends";
 import type { ChatTier } from "./free-turns";
 import type { TrialStore } from "./trial-store";
 import type { KeyboardHeightStore } from "./keyboard-ports";
+import type { MyStoryViewerMine } from "./my-story-viewer.contract";
 
 /** 스토리의 한국어 한 줄 — 한 줄은 번역하지 않고 뜻만 언어별로 둡니다(en 필수). */
 export type FriendStoryLine = {
@@ -108,7 +109,6 @@ export type StoryRow = {
   readonly unmet: readonly UnmetStoryEntry[];
   readonly others: readonly SuggestedFriend[];
 };
-
 /** 경과 시간 — 1분 미만 now, 1시간 미만 분, 그 밖 시간(내림). */
 export type StoryAge =
   | { readonly unit: "now" }
@@ -116,7 +116,6 @@ export type StoryAge =
   | { readonly unit: "h"; readonly value: number };
 
 export type StoryCloseReason = "completed" | "closed" | "back";
-
 /** 보기 화면의 한 장 — 이름 · 얼굴은 대화 스냅숏의 방, 안 만난 친구는 추천 친구(소개 · 상태)를 함께 받습니다. */
 export type StoryViewerItem = {
   readonly story: FriendStory;
@@ -125,6 +124,8 @@ export type StoryViewerItem = {
   readonly imageUrl: string | null;
   /** 안 만난 친구면 추천 친구(상태 · 소개), 내 친구면 null. */
   readonly unmet: SuggestedFriend | null;
+  /** 내 스토리 장(ADR-0194 개정 ⟨보기⟩)이면 그 스토리 — 답장 칸 대신 아래 바. */
+  readonly mine?: MyStory;
 };
 
 /** 대화방의 스토리 인용(ADR-0178 D5) — 내 말풍선 위 카드. 서버 기록(`message_json.story`)에서도 다시 섭니다. */
@@ -249,8 +250,8 @@ export type StoryViewerProps = {
   readonly onSkip?: () => void;
   /** 위에 시트가 떠 있는가 — 그동안 낭독에서 가리고 멈춥니다. */
   readonly covered?: boolean;
+  readonly mine?: MyStoryViewerMine; // 내 스토리 장의 아래 바 · 시트(ADR-0194 개정 ⟨보기⟩) — 없으면 친구 스토리만.
 };
-
 const fs = (suffix: string): string => `friend-stories-${suffix}`;
 const sv = (suffix: string): string => `story-viewer-${suffix}`;
 
@@ -295,6 +296,5 @@ export const friendStoriesTestIds = {
   quoteBar: "chat-story-quote-bar",
   quoteBarRemove: "chat-story-quote-bar-remove",
 } as const;
-
 /** 목록 화면이 받는 스토리 포트입니다(없으면 스토리 없음 — 손님 · 테스트 · 옛 결선). */
 export type FriendStoriesProps = { readonly stories?: FriendStoriesPort };
