@@ -21,11 +21,17 @@
   border-color: var(--libitum-color-brand-primary);
 }
 
+/* 다 본 스토리(친구 · 안 만난 친구) — 회색 점선(D3 개정 ⟨점선⟩). 내 스토리는 회색 실선 그대로. */
 .story-ring-seen {
+  border-style: dashed;
   border-color: var(--libitum-color-gray-500);
 }
 
-/* 안 만난 친구 — 점선 brand(시안). */
+.my-story-faces .story-ring-seen {
+  border-style: solid;
+}
+
+/* 안 본 안 만난 친구 — 점선 brand(시안). */
 .story-ring-unmet {
   border-style: dashed;
 }

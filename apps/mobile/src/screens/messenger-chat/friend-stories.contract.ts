@@ -101,6 +101,8 @@ export type UnmetStoryEntry = {
   readonly story: FriendStory;
   readonly stories: readonly FriendStory[];
   readonly friend: SuggestedFriend;
+  /** 그 인물의 살아 있는 스토리를 다 봤는가 — 고리가 회색 점선이 되는 때(D3 개정 ⟨점선⟩). */
+  readonly seen: boolean;
 };
 
 /** 스토리 줄(ADR-0178 D3 · 개정 ⟨2026-11-25⟩): 스토리 있는 인물(친구 · 안 만난 친구, `storyOrderOf` 순) → 그 밖의 추천 친구 → Find friends. */

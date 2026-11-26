@@ -94,6 +94,22 @@ test("FS-UI1. 안 본 것은 경과 시간 · 본 것은 Seen · 안 만난 친�
   }
 });
 
+test("FS-UI48. 고리 — 안 본 것 brand 실선 · 본 것 회색 점선(친구 · 안 만난 친구 모두) · 안 본 안 만난 친구 brand 점선, 낭독은 그대로(ADR-0178 D3 개정 ⟨점선⟩)", () => {
+  mount(["s-b", "s-g"]);
+  const ringOf = (id: string) =>
+    screen.getByTestId(id).querySelector("view")?.getAttribute("class");
+  expect(ringOf(ids.friend("a"))).toBe("story-ring story-ring-unseen");
+  expect(ringOf(ids.friend("b"))).toBe("story-ring story-ring-seen");
+  const g = screen.getByTestId(ids.unmet("g"));
+  expect(g.getAttribute("data-state")).toBe("seen");
+  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-seen");
+  expect(g.textContent).toContain("New");
+  expect(g.getAttribute("accessibility-label")).toBe("다은's story, new friend");
+  cleanup();
+  mount();
+  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-unmet");
+});
+
 test("FS-UI2. 탭은 저마다의 콜백으로", () => {
   const h = mount();
   fireEvent.tap(screen.getByTestId(ids.friend("b")));
