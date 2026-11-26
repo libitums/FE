@@ -746,7 +746,7 @@
 /* 사진 위 도구 이름 — 어두운 글자는 어두운 사진에서 사라져 흰 글자 + 그림자. */
 .my-story-photo-bg .my-story-tool-text {
   color: var(--libitum-color-white);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
 }
 
 .my-story-editor-footer {
