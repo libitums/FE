@@ -61,3 +61,9 @@
 - **그대로인 것**: 목록의 첫 입장 카드(「Chat with 덕수쌤」)의 Skip은 그대로다 — 이 결정은 방 코치마크에 대한 것이다.
 - **이벤트**: 방 안내의 `messenger_guide_finished`는 이제 `outcome: "done"`만 난다(`skipped`는 목록 카드에서만).
 - **테스트**: `MessengerGuide.ui.test.tsx` MG-UI3 · UI5, `MessengerGuide.sample.ui.test.tsx` MG-UI12, `chat-events.ui.test.tsx`.
+
+## 개정 ⟨2026-11-24⟩ — 교정 안내 단계를 키보드 두 갈래 단계로 [사용자]
+
+- **사용자 결정 2026-11-24** 「이 흐름과 화면 그대로 진행」 — 방 코치마크의 ① 보내기 · 교정(입력 칸 고리) 단계를 지우고, 맨 앞에 키보드
+  두 갈래 단계(Phone keyboard 먼저 → Hangul keys)를 둔다. 순서 keyboard → ideas → (제안 시) sample → voice. 안내를 이미 본 사람도 키보드
+  단계만 한 번. 결정 · 겹침 · 기록 키 · 이벤트는 [ADR-0190](0190-chat-keyboard-two-way-guide.md).

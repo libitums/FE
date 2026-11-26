@@ -57,3 +57,21 @@ test("MC-UI5. 탭하면 onPick이 정확히 한 번 불린다", () => {
 
   expect(onPick).toHaveBeenCalledTimes(1);
 });
+
+test("RO-U1(ADR-0188). 로마자를 주면 첫 줄 아래 로마자 줄이 서고 낭독은 첫 줄, 접두 로마자, 아래 줄 순서다", () => {
+  render(
+    <ChatReplyOption
+      primary="좋아요"
+      romanization={{ text: "joayo", spoken: "Pronunciation: joayo" }}
+      lines={["Sounds good"]}
+      state="idle"
+      testId="opt"
+      onPick={() => undefined}
+    />,
+  );
+  const option = screen.getByTestId("opt");
+  expect(option.querySelector(".chat-reply-option-romanization")?.textContent).toBe("joayo");
+  expect(option.getAttribute("accessibility-label")).toBe(
+    "좋아요, Pronunciation: joayo, Sounds good",
+  );
+});

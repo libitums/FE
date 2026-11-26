@@ -6,13 +6,20 @@ import type { LearningDensity } from "./learning-density";
 import type {
   SpeechAttemptPhase,
   SpeechDiagnostic,
+  SpeechMissReason,
   SpeechUnavailableReason,
 } from "./speech-attempt";
 
 export type ItemAnswerOutcome = AnswerResult | "skipped";
 
-/** 건너뛴 까닭 — 직접 누른 Skip(`user`) 또는 말하기를 쓸 수 없던 까닭입니다. */
-export type ItemSkipReason = "user" | `unavailable:${SpeechUnavailableReason}`;
+/**
+ * 건너뛴 까닭 — 직접 누른 Skip(`user`) · 말하기를 쓸 수 없던 까닭(`unavailable:<reason>`) ·
+ * 못 알아들은 뒤 다시 말하지 않고 넘긴 까닭(`missed:<reason>`, ADR-0181)입니다.
+ */
+export type ItemSkipReason =
+  | "user"
+  | `unavailable:${SpeechUnavailableReason}`
+  | `missed:${SpeechMissReason}`;
 
 export type ItemAnswerReport = {
   readonly questionIndex: number;
@@ -66,16 +73,20 @@ export function selectedTilesText(
   return placed.length === 0 ? undefined : placed.join(joiner);
 }
 
-/** 말하기 건너뜀의 까닭입니다 — 쓸 수 없는 국면이면 `unavailable:<reason>`, 아니면 `user`. */
+/**
+ * 말하기 건너뜀의 까닭입니다 — 쓸 수 없는 국면이면 `unavailable:<reason>`, 못 알아들은 국면이면
+ * `missed:<reason>`, 아니면 `user`.
+ */
 export function speechSkipReasonOf(phase: SpeechAttemptPhase): ItemSkipReason {
-  return phase.kind === "unavailable" ? `unavailable:${phase.reason}` : "user";
+  if (phase.kind === "unavailable") return `unavailable:${phase.reason}`;
+  return phase.kind === "missed" ? `missed:${phase.reason}` : "user";
 }
 
 /** 국면이 인식 진단을 들고 있을 때만 `speech` 키를 싣습니다. */
 export function speechDiagnosticField(phase: SpeechAttemptPhase): {
   readonly speech?: SpeechDiagnostic;
 } {
-  if (phase.kind !== "heard" && phase.kind !== "unavailable") return {};
+  if (phase.kind === "ready" || phase.kind === "listening") return {};
   return phase.diagnostic === undefined ? {} : { speech: phase.diagnostic };
 }
 

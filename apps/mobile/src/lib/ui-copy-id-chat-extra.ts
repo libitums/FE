@@ -4,11 +4,15 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaId } from "./ui-copy-id-chat-media";
 import { messengerChatAlbumId } from "./ui-copy-id-chat-album";
 import { messengerChatSuggestedId } from "./ui-copy-id-chat-suggested";
+import { messengerChatStoriesId } from "./ui-copy-id-chat-stories";
+import { myStoriesId } from "./ui-copy-id-my-stories";
 
 export const messengerChatExtraId: MessengerChatExtraCopy = {
   media: messengerChatMediaId,
   album: messengerChatAlbumId,
   suggested: messengerChatSuggestedId,
+  stories: messengerChatStoriesId,
+  myStories: myStoriesId,
   access: {
     signInTitle: "Kirim pesan ke orang yang kamu temui",
     signInBody:
@@ -21,6 +25,35 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     promptKeepBody: "Buat akun gratis untuk menyimpan Yeopjeon dan tiketmu.",
   },
   pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Mengirim foto"
+          : `Mengirim foto · ${count} baru`
+        : latest === "voice"
+          ? count === 1
+            ? "Mengirim pesan suara"
+            : `Mengirim pesan suara · ${count} baru`
+          : count === 1
+            ? "Pesan baru"
+            : `${count} pesan baru`,
+    jump: "Lompat ke pesan baru",
+    latest: "Gulir ke pesan terbaru",
+  },
+  replyToast: {
+    dismiss: "Tutup",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Pesan baru dari ${name}: ${preview}` + (more > 0 ? `. ${more} lainnya` : ""),
+  },
+  pushAsk: {
+    title: (name) => `Mau dapat notifikasi saat ${name} mengirim pesan?`,
+    body: "Kadang aku yang mengirim pesan duluan — sekitar sekali sehari, di malam hari.",
+    turnOn: "Aktifkan",
+    notNow: "Nanti saja",
+    on: (name) => `Notifikasi aktif — ${name} akan mengabarimu.`,
+  },
   chatSettings: {
     entryTitle: "Obrolan",
     entryDescription: "Ide balasan, pesan dari karakter, ingatan",
@@ -135,13 +168,23 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     cardBody: "Di sini kamu mengobrol dengan teman Korea. Mulai denganku — aku bantu.",
     cardButton: (name) => `Ngobrol dengan ${name}`,
     steps: {
-      chat: "Tulis dalam bahasa Korea lalu kirim. Aku akan membalas, dan pensil di bawah pesanmu menunjukkan cara mengatakannya dengan lebih baik.",
       ideas: "Bingung mau bilang apa? Ketuk lampu di samping kotak pesan untuk ide balasan.",
       media: "Kamu juga bisa minta foto atau pesan suara lewat tombol di atas keyboard.",
       sample:
         "Mau lihat aku lagi apa? Ketuk Snapshot dan aku kirim foto. Yang pertama gratis dariku.",
       voice:
         "Mau dengar suaraku? Ketuk Suara kilat dan aku bacakan pesan itu. Yang pertama juga gratis dariku.",
+    },
+    keyboard: {
+      phone: {
+        title:
+          "Ngobrol pakai bahasamu sendiri — aku tunjukkan cara mengatakannya dalam bahasa Korea.",
+        body: "Selanjutnya, coba ketik bahasa Korea sendiri.",
+      },
+      hangul: {
+        title: "Atau ketik bahasa Korea langsung di sini dengan Tombol Hangul.",
+        body: "Tidak perlu keyboard Korea. Ganti kapan saja lewat tombol di bawah kotak pesan.",
+      },
     },
     next: "Berikutnya",
     done: "Mengerti",

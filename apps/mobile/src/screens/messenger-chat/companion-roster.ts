@@ -3,6 +3,7 @@
 
 import type { ChatFixtureRoom, ChatFixtureSeed } from "./chat-source.contract";
 import { COMPANION_FRIENDS } from "./companion-friends-roster";
+import { voiceSampleOf } from "./companion-voice-samples";
 import type { FriendCatalog, FriendProfile } from "./friend-catalog.contract";
 
 /**
@@ -38,6 +39,7 @@ const storyProfile = (mbti: string, intro: FriendProfile["intro"]) =>
 export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   {
     id: "duksu",
+    ...voiceSampleOf("duksu"),
     name: "덕수쌤",
     avatarPath: profile("ducksoo-casual"),
     unlockEpisodeId: null,
@@ -52,10 +54,12 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Thầy dạy tiếng Hàn của bạn",
       th: "ครูสอนภาษาเกาหลีของคุณ",
       my: "သင့်ရဲ့ ကိုရီးယားစာ ဆရာ",
+      "zh-TW": "你的韓語老師",
     }),
   },
   {
     id: "yoonkyung",
+    ...voiceSampleOf("yoonkyung"),
     name: "정윤경",
     avatarPath: profile("yoonkyung-casual"),
     unlockEpisodeId: "u01-water",
@@ -69,6 +73,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Bạn đến nơi an toàn chứ? Tôi là Jung Yoonkyung ở nhà nghỉ Ikseon.",
       th: "เดินทางมาถึงเรียบร้อยไหม? นี่ Jung Yoonkyung จากเกสต์เฮาส์ Ikseon",
       my: "ချောချောမောမော ရောက်ရဲ့လား။ Ikseon တည်းခိုခန်းက Jung Yoonkyung ပါ။",
+      "zh-TW": "平安抵達了嗎？我是益善民宿的 Jung Yoonkyung。",
     },
     firstLine: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
     ...storyProfile("ISFJ", {
@@ -79,10 +84,12 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Chủ nhà nghỉ Ikseon",
       th: "เจ้าของเกสต์เฮาส์ Ikseon",
       my: "Ikseon တည်းခိုခန်း ပိုင်ရှင်",
+      "zh-TW": "益善民宿老闆",
     }),
   },
   {
     id: "mina",
+    ...voiceSampleOf("mina"),
     name: "미나",
     avatarPath: profile("mina-casual"),
     unlockEpisodeId: "u03-mina",
@@ -96,6 +103,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Chào bạn! Mình là Mina, bạn cùng phòng.",
       th: "สวัสดี! เรา Mina รูมเมตของคุณเอง",
       my: "မင်္ဂလာပါ။ အခန်းဖော် Mina ပါ။",
+      "zh-TW": "嗨！我是你的室友 Mina。",
     },
     firstLine: "안녕하세요! 같은 방 미나예요.",
     ...storyProfile("ESFJ", {
@@ -106,10 +114,12 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Bạn cùng phòng ở nhà nghỉ",
       th: "รูมเมตที่เกสต์เฮาส์",
       my: "တည်းခိုခန်းက အခန်းဖော်",
+      "zh-TW": "民宿的室友",
     }),
   },
   {
     id: "doyun",
+    ...voiceSampleOf("doyun"),
     name: "한도윤",
     avatarPath: profile("doyun-casual"),
     unlockEpisodeId: "u12-cafe-missed",
@@ -123,6 +133,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Chào bạn! Mình là Doyun ở quán cà phê Kkeullim.",
       th: "สวัสดี! เรา Doyun จากคาเฟ่ Kkeullim",
       my: "မင်္ဂလာပါ။ Kkeullim ကော်ဖီဆိုင်က Doyun ပါ။",
+      "zh-TW": "嗨！我是 Kkeullim 咖啡廳的 Doyun。",
     },
     firstLine: "안녕하세요! 카페 끌림 도윤이에요.",
     ...storyProfile("ENFP", {
@@ -133,10 +144,12 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Gặp ở quán cà phê Kkeullim",
       th: "เจอกันที่คาเฟ่ Kkeullim",
       my: "Kkeullim ကော်ဖီဆိုင်မှာ တွေ့ခဲ့",
+      "zh-TW": "在 Kkeullim 咖啡廳認識",
     }),
   },
   {
     id: "jaemin",
+    ...voiceSampleOf("jaemin"),
     name: "서재민",
     avatarPath: profile("jaemin-casual"),
     unlockEpisodeId: "u17-samgyeopsal",
@@ -150,6 +163,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Tôi là Seo Jaemin.",
       th: "นี่ Seo Jaemin",
       my: "Seo Jaemin ပါ။",
+      "zh-TW": "我是 Seo Jaemin。",
     },
     firstLine: "서재민이에요.",
     ...storyProfile("INTJ", {
@@ -160,6 +174,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       vi: "Gặp ở con hẻm gần nhà nghỉ",
       th: "เจอกันที่ซอยข้างเกสต์เฮาส์",
       my: "တည်းခိုခန်းနားက လမ်းကြားမှာ တွေ့ခဲ့",
+      "zh-TW": "在民宿旁的巷子認識",
     }),
   },
 ];

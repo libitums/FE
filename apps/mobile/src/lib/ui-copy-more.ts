@@ -1,10 +1,11 @@
 // 더보기 메뉴 · Letters · 합치기 퀴즈 · My words · Letters 추천 문구(ADR-0169)입니다 — 언어마다 한 덩어리를 한 파일에 두고 각 언어 표가
 // 자기 몫을 꽂습니다(`ui-copy-streak-reward.ts`와 같은 방식). 일본어 · 베트남어는 `ui-copy-more-asia.ts`, 태국어 · 미얀마어는
-// `ui-copy-more-th-my.ts`가 집니다(표에 `more`가 빠지면 `UiCopy` 타입이 멈춥니다).
+// `ui-copy-more-th-my.ts`, 대만 중국어는 `ui-copy-more-zh-tw.ts`가 집니다(표에 `more`가 빠지면 `UiCopy` 타입이 멈춥니다).
 
 import { n } from "./ui-copy-en-plural";
-import { moreCopyJa, moreCopyVi } from "./ui-copy-more-asia";
-import { moreCopyMy, moreCopyTh } from "./ui-copy-more-th-my";
+import { moreCopyJa as ja, moreCopyVi as vi } from "./ui-copy-more-asia";
+import { moreCopyMy as my, moreCopyTh as th } from "./ui-copy-more-th-my";
+import { moreCopyZhTw as zhTw } from "./ui-copy-more-zh-tw";
 import type { MoreCopy } from "./ui-copy-more.contract";
 
 export type { MoreCopy };
@@ -290,6 +291,6 @@ const id: MoreCopy = {
   },
 };
 
-type MoreLanguage = "en" | "es" | "id" | "ja" | "vi" | "th" | "my";
-const table = { en, es, id, ja: moreCopyJa, vi: moreCopyVi, th: moreCopyTh, my: moreCopyMy };
+type MoreLanguage = "en" | "es" | "id" | "ja" | "vi" | "th" | "my" | "zh-TW";
+const table = { en, es, id, ja, vi, th, my, "zh-TW": zhTw };
 export const moreCopy: Readonly<Record<MoreLanguage, MoreCopy>> = table;

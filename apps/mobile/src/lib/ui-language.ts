@@ -56,9 +56,22 @@ export function changeUiLanguage(
 }
 
 // 기기 태그의 주 하위 태그(`ja-JP` → `ja`, `_` 구분 허용)가 고를 수 있는 언어일 때만 받습니다.
+// 중국어는 번체만 받습니다(ADR-0185): 스크립트 `Hant`이거나 지역이 TW · HK · MO면 `zh-TW`. 간체(`Hans` · CN · SG)와 지역 없는 `zh`는
+// 고를 수 있는 언어가 아니라 null(영어)입니다 — 간체 사용자에게 번체를 내밀지 않습니다.
+const TRADITIONAL_CHINESE_SUBTAGS: ReadonlySet<string> = new Set(["hant", "tw", "hk", "mo"]);
+
+// 안드로이드 자바 Locale 표기(`zh_HK_#Hans`)는 스크립트 앞에 `#`가 붙어 떼고 봅니다.
+function chineseLanguageOf(rawSubtags: readonly string[]): UiLanguage | null {
+  const subtags = rawSubtags.map((subtag) => (subtag.startsWith("#") ? subtag.slice(1) : subtag));
+  if (subtags.includes("hans")) return null;
+  return subtags.some((subtag) => TRADITIONAL_CHINESE_SUBTAGS.has(subtag)) ? "zh-TW" : null;
+}
+
 export const uiLanguageFromDeviceTag: UiLanguageFromDeviceTag = (deviceLanguageTag) => {
   if (deviceLanguageTag === null) return null;
-  const raw = (deviceLanguageTag.trim().split(/[-_]/)[0] ?? "").toLowerCase();
+  const subtags = deviceLanguageTag.trim().toLowerCase().split(/[-_]/);
+  const raw = subtags[0] ?? "";
+  if (raw === "zh") return chineseLanguageOf(subtags.slice(1));
   // 옛 Android(자바 Locale)는 인도네시아어를 `in`으로 냅니다(ADR-0093).
   const primary = raw === "in" ? "id" : raw;
   const language = entryLanguages.find((candidate) => candidate === primary);

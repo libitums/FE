@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-stt` — 자기의 열린 미션 판에서 녹음 하나를 받아 적는다(파이프라인 문서 §6, ADR-0178).
+// `POST /functions/v1/mission-stt` — 자기의 열린 미션 판에서 녹음 하나를 받아 적는다(파이프라인 문서 §6, ADR-0193).
 //
 // 흐름: 인증 → multipart(`contract_version` · `conversation_id` · `audio`) → 크기 · WAV 형식 · 길이 검사 → 키 확인 →
 //   `companion_mission_voice_begin`(소유 · 열린 판 · 판당 · 하루 상한 · 기록 줄) → ElevenLabs Scribe(연결 실패 · 5xx만 한 번 다시) →

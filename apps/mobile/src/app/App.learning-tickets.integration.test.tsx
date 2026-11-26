@@ -66,6 +66,8 @@ const env = {
   /** 엽전으로 1장 사기(RPC `companion_buy_ticket`)의 답 · 받은 요청 본문입니다. */
   buy: async (): Promise<Reply> => ok({ result: "bought", price: 20, wallet: { balance: 80 } }),
   buys: [] as Record<string, unknown>[],
+  /** 갱신 응답의 `user.created_at`(ISO) — 없으면 싣지 않습니다(첫날 무제한 티켓, ADR-0186 개정 1). */
+  createdAt: undefined as string | undefined,
 };
 
 async function flush(): Promise<void> {
@@ -74,8 +76,13 @@ async function flush(): Promise<void> {
   });
 }
 
-async function boot(load: () => Promise<Reply>, seed: Record<string, string> = {}): Promise<void> {
+async function boot(
+  load: () => Promise<Reply>,
+  seed: Record<string, string> = {},
+  createdAt?: string,
+): Promise<void> {
   env.store = new Map(Object.entries(seed));
+  env.createdAt = createdAt;
   env.store.set(
     authSessionStorageKey,
     serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
@@ -106,7 +113,8 @@ async function boot(load: () => Promise<Reply>, seed: Record<string, string> = {
             refresh_token: "refreshed",
             expires_in: 3600,
             token_type: "bearer",
-            user: { id: user },
+            user:
+              env.createdAt === undefined ? { id: user } : { id: user, created_at: env.createdAt },
           }),
       };
     }
@@ -404,4 +412,54 @@ test("[IT14] 사는 중에 또 눌러도 서버에는 한 번만 보낸다", asy
   answer(ok({ result: "bought", price: 20, wallet: { balance: 80 } }));
   await flush();
   expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("1 ticket added.");
+});
+
+// 첫날 무제한 티켓 — 회원만(ADR-0186 개정 1). 기준은 계정 생성 시각 — 부팅 갱신 응답의 `user.created_at`. 무대의 지금은
+// 2027-01-15 09:00이고, 저장소에는 세션(생성 시각 없음)과 안내 표시뿐이다 — 지웠다 깔고 로그인한 기기와 같다.
+const createdHoursAgo = (hours: number): string =>
+  new Date(new Date(2027, 0, 15, 9).getTime() - hours * ticketRefillMs).toISOString();
+
+test("[IT15] 계정을 만든 지 24시간 안이면 0장이어도 새 레슨이 열린다 — 저장소가 비어도(재설치) 생성 시각 기준, 칩은 남은 시간 판", async () => {
+  await boot(async () => ok(drainedProgressOf([])), {}, createdHoursAgo(1));
+  tap(catalogNodeTestId(u01, "S1"));
+  expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+  expect(screen.queryByTestId("out-of-tickets")).not.toBeInTheDocument();
+  expect(env.events.filter((e) => e.name === "tickets_ran_out")).toHaveLength(0);
+  tap("learning-run-header-exit");
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  await flush();
+  tap("top-bar-tickets");
+  expect(screen.getByTestId("unlimited-ticket-modal-days-left")).toHaveTextContent("23 hours left");
+});
+
+test("[IT16] 계정을 만든 지 24시간이 지났으면 지금 규칙 그대로 — 0장이면 대화상자", async () => {
+  await boot(async () => ok(drainedProgressOf([])), {}, createdHoursAgo(25));
+  expect(chip()).toHaveTextContent("0");
+  expect(startStep("S1")).toBe(false);
+  expect(screen.getByTestId("out-of-tickets")).toBeInTheDocument();
+});
+
+test("[IT17] 앱을 켜 둔 채 24시간이 끝나면 칩이 숫자로 돌아오고 레슨이 다시 티켓을 쓴다", async () => {
+  await boot(async () => ok(progressOf([])), {}, createdHoursAgo(23.5));
+  tap(catalogNodeTestId(u01, "S1"));
+  expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(ticketRefillMs);
+  });
+  expect(chip()).toHaveTextContent("3");
+  expect(screen.getByTestId("step-sheet-ticket-cost")).toBeInTheDocument();
+});
+
+test("[IT18] 옛 기기 기록(첫날 시작 시각 키)이 남아 있어도 읽지 않는다 — 생성 시각을 모르는 회원은 지금 규칙", async () => {
+  await boot(async () => ok(drainedProgressOf([])), {
+    "libitum.welcome-pass.started-at": String(new Date(2027, 0, 15, 8).getTime()),
+  });
+  expect(chip()).toHaveTextContent("0");
+  expect(startStep("S1")).toBe(false);
+  expect(screen.getByTestId("out-of-tickets")).toBeInTheDocument();
 });

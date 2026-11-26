@@ -1,6 +1,7 @@
 // 스냅샷 · 음성 백그라운드 작업이 같이 쓰는 것: 의존성 · 닫기(`companion_media_finish`) · 엔진 오류 재시도.
 
 import type { SnapshotPrompt, SnapshotVerdict, Aspect } from "./companion-snapshot-prompts.ts";
+import type { StoredPlan, V2Verdict } from "./companion-snapshot-v2.ts";
 import { type Budget, createBudget, jobBudgetMs } from "./companion-media-budget.ts";
 import { EngineError, type Fetch } from "./companion-media-engines.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
@@ -33,8 +34,8 @@ export type Result = {
   mime?: string;
   bytes?: number;
   aspect?: Aspect | null;
-  prompt?: SnapshotPrompt | null;
-  verdict?: SnapshotVerdict | null;
+  prompt?: SnapshotPrompt | StoredPlan | null;
+  verdict?: SnapshotVerdict | V2Verdict | null;
   meta?: Record<string, unknown>;
   failure?: string;
   error?: string;

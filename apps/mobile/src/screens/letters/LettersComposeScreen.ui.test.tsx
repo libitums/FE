@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import type { AutoPlayAudio } from "../../lib/question-audio";
 import { uiCopyEn } from "../../lib/ui-copy-en";
-import { COMPOSE_ECHO_DELAY_MS } from "./compose-quiz";
+import { COMPOSE_ECHO_DELAY_MS, composeClipOf } from "./compose-quiz";
 import { LettersComposeScreen } from "./LettersComposeScreen";
 import { lettersTestIds as ids } from "./letters.contract";
 
@@ -18,6 +18,8 @@ type MountOptions = {
   readonly autoPlay?: AutoPlayAudio;
   /** 소리 파일이 없는 음절(버킷에 올리기 전)을 흉내 냅니다 — 주어지면 모든 음절이 소리 없음입니다. */
   readonly silent?: boolean;
+  /** 이 음절만 소리 파일이 없습니다(일부만 올라간 상태). */
+  readonly missing?: readonly string[];
 };
 
 function mount(options: MountOptions = {}) {
@@ -29,7 +31,8 @@ function mount(options: MountOptions = {}) {
     <LettersComposeScreen
       romanization="shown"
       sound={{
-        sourceOf: (s) => (options.silent === true ? null : `src:${s}`),
+        sourceOf: (s) =>
+          options.silent === true || options.missing?.includes(s) === true ? null : `src:${s}`,
         letterSourceOf: () => null,
         play,
       }}
@@ -298,4 +301,105 @@ test("CS18. 틈 안에 결선이 포트를 새로 만들어 다시 그려도 틈
   });
   expect(first).not.toHaveBeenCalled();
   expect(second).toHaveBeenCalledExactlyOnceWith("src:가");
+});
+
+// ---------------------------------------------------------------- 소리 없는 ▶(2026-11-24 — 눌러도 아무 소리 없던 것)
+
+const speaker = () => screen.getByTestId(ids.composePlay);
+const silentLabel = `${uiCopyEn.more.compose.play}, ${uiCopyEn.more.letters.soundUnavailable}`;
+
+test("CS19. 만들 글자의 소리 파일이 없으면 ▶는 회색 · 누를 수 없음 · 「sound not available yet」", () => {
+  const { play } = mount({ silent: true });
+  expect(speaker()).toHaveAttribute("accessibility-traits", "disabled");
+  expect(speaker()).toHaveAttribute("accessibility-enable-tap", "false");
+  expect(speaker()).toHaveAttribute("accessibility-label", silentLabel);
+  expect(speaker()).toHaveClass("letters-compose-play-silent");
+  fireEvent.tap(speaker(), {});
+  expect(play).not.toHaveBeenCalled();
+});
+
+test("CS20. 소리 파일이 있으면 ▶는 그대로 누르는 단추 · 이름은 「Play」", () => {
+  mount();
+  expect(speaker()).toHaveAttribute("accessibility-traits", "button");
+  expect(speaker()).toHaveAttribute("accessibility-enable-tap", "true");
+  expect(speaker()).toHaveAttribute("accessibility-label", uiCopyEn.more.compose.play);
+  expect(speaker()).toHaveClass("letters-compose-play");
+});
+
+test("CS21. ▶는 라운드마다 그 라운드 글자로 정한다 — 가는 없고 너는 있으면 1번 회색 · 2번 단추", () => {
+  const { play } = mount({ missing: ["가"] });
+  expect(speaker()).toHaveAttribute("accessibility-traits", "disabled");
+  pick("ㄱ");
+  pick("ㅏ");
+  fireEvent.tap(action(), {});
+  expect(screen.getByTestId(ids.compose).textContent).toContain("Make “neo”");
+  expect(speaker()).toHaveAttribute("accessibility-traits", "button");
+  fireEvent.tap(speaker(), {});
+  expect(play).toHaveBeenCalledExactlyOnceWith("src:너");
+});
+
+test("CS22. 나중에 소리 파일이 올라오면(포트가 주소를 돌려주면) 코드 변경 없이 ▶가 다시 단추가 된다", () => {
+  const play = vi.fn<(source: string) => void>();
+  const ui = (uploaded: boolean) => (
+    <LettersComposeScreen
+      romanization="shown"
+      sound={{
+        sourceOf: (s) => (uploaded ? `src:${s}` : null),
+        letterSourceOf: () => null,
+        play,
+      }}
+      onExit={() => {}}
+    />
+  );
+  const { rerender } = render(ui(false));
+  expect(speaker()).toHaveAttribute("accessibility-traits", "disabled");
+  rerender(ui(true));
+  expect(speaker()).toHaveAttribute("accessibility-traits", "button");
+  fireEvent.tap(speaker(), {});
+  expect(play).toHaveBeenCalledExactlyOnceWith("src:가");
+});
+
+// ---------------------------------------------------------------- 앱 내장 음절 녹음(2026-11-24 — 가 · 너 · 도를 앱에 실음)
+
+function mountBundled() {
+  const play = vi.fn<(source: string) => void>();
+  render(
+    <LettersComposeScreen
+      romanization="shown"
+      sound={{ sourceOf: composeClipOf, letterSourceOf: () => null, play }}
+      onExit={() => {}}
+    />,
+  );
+  return play;
+}
+
+test("CS23. 앱 내장 음절 녹음이면 세 라운드 모두 ▶가 단추이고 그 라운드 녹음(hangul-s-ga · neo · do)을 낸다", () => {
+  const play = mountBundled();
+  for (const [consonant, vowel, clip] of [
+    ["ㄱ", "ㅏ", "hangul-s-ga"],
+    ["ㄴ", "ㅓ", "hangul-s-neo"],
+    ["ㄷ", "ㅗ", "hangul-s-do"],
+  ] as const) {
+    expect(speaker(), clip).toHaveAttribute("accessibility-traits", "button");
+    expect(speaker(), clip).toHaveAttribute("accessibility-enable-tap", "true");
+    expect(speaker(), clip).toHaveAttribute("accessibility-label", uiCopyEn.more.compose.play);
+    play.mockClear();
+    fireEvent.tap(speaker(), {});
+    expect(play).toHaveBeenCalledExactlyOnceWith(clip);
+    pick(consonant);
+    pick(vowel);
+    fireEvent.tap(action(), {});
+  }
+});
+
+test("CS24. 앱 내장 음절 녹음이면 맞힌 뒤 효과음 틈 뒤에 그 녹음이 한 번 난다", () => {
+  vi.useFakeTimers();
+  const play = mountBundled();
+  pick("ㄱ");
+  pick("ㅏ");
+  expect(play).not.toHaveBeenCalled();
+  act(() => {
+    vi.advanceTimersByTime(COMPOSE_ECHO_DELAY_MS * 3);
+  });
+  expect(play).toHaveBeenCalledExactlyOnceWith("hangul-s-ga");
 });

@@ -25,10 +25,50 @@ const indicatorContents = {
 export function VisualNovelDialog(props: VisualNovelDialogProps) {
   const contract = getVisualNovelDialogContract(props, useMotion());
   const tappable = props.bindtap !== undefined;
+  const headerSwitch = contract.headerSwitch;
+  // 스위치가 있으면 대사 낭독을 루트가 아니라 따로 선 요소가 집니다 — iOS에서 접근성 요소 안의 자손은 닿지 않아, 루트가
+  // 요소이면 스위치에 닿을 수 없습니다. 이때 화면에 선 글은 각각 가려 두 번 읽지 않게 합니다(ADR-0188 개정 D7).
+  const split = headerSwitch !== undefined;
+  const hideText = split ? true : undefined;
   const handleTap = () => {
     "background only";
     props.bindtap?.();
   };
+  const handleSwitch = () => {
+    "background only";
+    if (headerSwitch !== undefined) props.headerSwitch?.onChange(!headerSwitch.checked);
+  };
+
+  const switchControl =
+    headerSwitch === undefined ? null : (
+      <view
+        className={`ui-lynx-visual-novel-dialog-switch${headerSwitch.checked ? " ui-lynx-visual-novel-dialog-switch-on" : ""}`}
+        data-testid="ui-lynx-visual-novel-dialog-switch"
+        data-checked={String(headerSwitch.checked)}
+        accessibility-element={true}
+        accessibility-label={headerSwitch.accessibilityLabel}
+        accessibility-traits="button"
+        accessibility-role-description="switch"
+        accessibility-enable-tap={true}
+        flatten={false}
+        // 대사 상자의 탭(`bindtap`)으로 번지지 않게 직접 받아 끊습니다.
+        catchtap={handleSwitch}
+      >
+        <text
+          className="ui-lynx-visual-novel-dialog-switch-label"
+          data-testid="ui-lynx-visual-novel-dialog-switch-label"
+          text-maxline="1"
+        >
+          {headerSwitch.label}
+        </text>
+        <view
+          className={`ui-lynx-visual-novel-dialog-switch-track${headerSwitch.checked ? " ui-lynx-visual-novel-dialog-switch-track-on" : ""}`}
+          data-testid="ui-lynx-visual-novel-dialog-switch-track"
+        >
+          <view className="ui-lynx-visual-novel-dialog-switch-knob" />
+        </view>
+      </view>
+    );
 
   return (
     <view
@@ -42,11 +82,11 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
       data-status={contract.status}
       data-surface={contract.surface}
       data-variant={contract.variant}
-      accessibility-element={true}
-      accessibility-label={contract.accessibilityLabel}
-      accessibility-traits="text"
+      accessibility-element={!split}
+      accessibility-label={split ? undefined : contract.accessibilityLabel}
+      accessibility-traits={split ? undefined : "text"}
       // 누를 곳이 없으면 탭을 흘려보내고, `bindtap`이 있으면 직접 받아 전파를 끊습니다.
-      event-through={!tappable}
+      event-through={!tappable && !split}
       catchtap={tappable ? handleTap : undefined}
       focusable={false}
     >
@@ -55,7 +95,20 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
         data-testid="ui-lynx-visual-novel-dialog-surface"
         accessibility-elements-hidden={true}
       />
-      <view className="ui-lynx-visual-novel-dialog-content" accessibility-elements-hidden={true}>
+      {split ? (
+        // 대사 낭독 요소 — 상자 전체를 덮지만 글 층 아래라 탭은 글 층이 받습니다.
+        <view
+          className="ui-lynx-visual-novel-dialog-reading"
+          data-testid="ui-lynx-visual-novel-dialog-reading"
+          accessibility-element={true}
+          accessibility-label={contract.accessibilityLabel}
+          accessibility-traits="text"
+        />
+      ) : null}
+      <view
+        className="ui-lynx-visual-novel-dialog-content"
+        accessibility-elements-hidden={split ? undefined : true}
+      >
         {contract.speakerName ? (
           <view
             className="ui-lynx-visual-novel-dialog-speaker-row"
@@ -65,6 +118,7 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
               <view
                 className="ui-lynx-visual-novel-dialog-avatar"
                 data-testid="ui-lynx-visual-novel-dialog-avatar"
+                accessibility-elements-hidden={hideText}
               >
                 {props.avatar}
               </view>
@@ -72,15 +126,26 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
             <text
               className="ui-lynx-visual-novel-dialog-speaker"
               data-testid="ui-lynx-visual-novel-dialog-speaker"
+              accessibility-elements-hidden={hideText}
             >
               {contract.speakerName}
             </text>
+            {switchControl}
+          </view>
+        ) : switchControl ? (
+          // 화자가 없는 상자(내레이션)도 스위치는 같은 자리(맨 위 줄 오른쪽)에 섭니다.
+          <view
+            className="ui-lynx-visual-novel-dialog-header-row"
+            data-testid="ui-lynx-visual-novel-dialog-header-row"
+          >
+            {switchControl}
           </view>
         ) : null}
         {contract.aside ? (
           <view
             className="ui-lynx-visual-novel-dialog-aside"
             data-testid="ui-lynx-visual-novel-dialog-aside"
+            accessibility-elements-hidden={hideText}
           >
             <text className="ui-lynx-visual-novel-dialog-aside-text">{contract.aside}</text>
             {contract.asideTranslation ? (
@@ -90,7 +155,10 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
             ) : null}
           </view>
         ) : null}
-        <view className="ui-lynx-visual-novel-dialog-line-row">
+        <view
+          className="ui-lynx-visual-novel-dialog-line-row"
+          accessibility-elements-hidden={hideText}
+        >
           <view className="ui-lynx-visual-novel-dialog-line-slot">
             <text
               className="ui-lynx-visual-novel-dialog-line"
@@ -120,13 +188,28 @@ export function VisualNovelDialog(props: VisualNovelDialogProps) {
             </view>
           ) : null}
         </view>
+        {/* 로마자는 대사 바로 아래 · 구분선 위입니다 — 읽는 법은 한국어에 붙고 구분선 아래는 뜻만입니다(ADR-0188 개정 D7). */}
+        {contract.romanization ? (
+          <text
+            className="ui-lynx-visual-novel-dialog-romanization"
+            data-testid="ui-lynx-visual-novel-dialog-romanization"
+            accessibility-elements-hidden={hideText}
+            style={{ visibility: contract.showRomanization ? "visible" : "hidden" }}
+          >
+            {contract.romanization}
+          </text>
+        ) : null}
         {contract.translation ? (
           <view
             className="ui-lynx-visual-novel-dialog-translation-block"
             data-testid="ui-lynx-visual-novel-dialog-translation-block"
+            accessibility-elements-hidden={hideText}
             style={{ visibility: contract.showTranslation ? "visible" : "hidden" }}
           >
-            <view className="ui-lynx-visual-novel-dialog-divider" />
+            <view
+              className="ui-lynx-visual-novel-dialog-divider"
+              data-testid="ui-lynx-visual-novel-dialog-divider"
+            />
             <text
               className="ui-lynx-visual-novel-dialog-translation"
               data-testid="ui-lynx-visual-novel-dialog-translation"

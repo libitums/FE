@@ -1,4 +1,4 @@
-// 미션 턴의 연출 지시(ADR-0178 D11) — 상대역이 평가 항목(목표)을 꺼낼 기회를 만들도록, 코드가 「다음 비트」를 정해 턴마다 동적
+// 미션 턴의 연출 지시(ADR-0193 D11) — 상대역이 평가 항목(목표)을 꺼낼 기회를 만들도록, 코드가 「다음 비트」를 정해 턴마다 동적
 // 프롬프트에 한 줄로 넣습니다. 순수 함수입니다. 판 상태는 이번 학습자 메시지 앞의 것이라, 지시는 「이번 말이 이미 이뤘으면 다음으로」를 품습니다.
 //
 // 규칙(위에서 먼저 맞는 것):
@@ -136,7 +136,7 @@ export function missionDirection(input: MissionDirectionInput): MissionDirection
 }
 
 /**
- * 이번 학습자 말 **뒤**의 판 상태로 정한 「이 답이 꺼내야 할 목표」(ADR-0178 D15) — stuck · hurry · advance 비트의 목표(상대역이 꺼낼 것,
+ * 이번 학습자 말 **뒤**의 판 상태로 정한 「이 답이 꺼내야 할 목표」(ADR-0193 D15) — stuck · hurry · advance 비트의 목표(상대역이 꺼낼 것,
  * 필수 먼저). room이거나 다 끝났으면 null. 답의 상태 줄 `opens`와 비교해 어긋나면 `firmDirection`으로 한 번 다시 만든다.
  */
 export function expectedOpen(

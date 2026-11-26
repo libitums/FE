@@ -54,4 +54,25 @@ final class PushNotificationModuleTests: XCTestCase {
       ["getStatus", "register", "takeOpened", "openSettings"]
     )
   }
+
+  // 앞에서 받은 푸시 — 인물 방 목적지(선톡 · 스토리 반응)만 JS로 넘기고, 친구 스토리 · 캠페인 · 목적지 없음은 배너(ADR-0200 개정).
+  func testPN6ForegroundChatPushCarriesCharacterOnly() {
+    XCTAssertEqual(
+      ForegroundPush.chatCharacterId(["kind": "companion-chat", "characterId": "mina", "variant": "a"]),
+      "mina"
+    )
+    XCTAssertNil(ForegroundPush.chatCharacterId(["kind": "companion-chat", "characterId": "mina", "story": true]))
+    XCTAssertEqual(
+      ForegroundPush.chatCharacterId(["kind": "companion-chat", "characterId": "mina", "story": false]),
+      "mina"
+    )
+    XCTAssertNil(ForegroundPush.chatCharacterId(["kind": "journey-map", "campaignId": "c1"]))
+    XCTAssertNil(ForegroundPush.chatCharacterId(["kind": "companion-chat"]))
+    XCTAssertNil(ForegroundPush.chatCharacterId(["kind": "companion-chat", "characterId": ""]))
+    XCTAssertNil(ForegroundPush.chatCharacterId(["kind": "companion-chat", "characterId": 7]))
+    XCTAssertNil(
+      ForegroundPush.chatCharacterId(["kind": "companion-chat", "characterId": String(repeating: "a", count: 65)]))
+    XCTAssertNil(ForegroundPush.chatCharacterId(nil))
+    XCTAssertNil(ForegroundPush.chatCharacterId("companion-chat"))
+  }
 }

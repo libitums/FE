@@ -24,6 +24,7 @@ describe("getVisualNovelDialogContract", () => {
       line: "오늘 하늘이 참 예쁘다.",
       reveal: "instant",
       showContinueIndicator: true,
+      showRomanization: false,
       showTranslation: false,
       speakerName: "아리아",
       status: "ready",
@@ -229,6 +230,12 @@ describe("visual-novel-dialog.css", () => {
     );
   });
 
+  test("VND-S6. 로마자 스위치가 있으면 꺼도 대사 칸 최소 높이를 풀어 한 줄 대사 아래 빈 틈이 없다", () => {
+    expect(styles).toMatch(
+      /\.ui-lynx-visual-novel-dialog-with-switch \.ui-lynx-visual-novel-dialog-line\s*\{[^}]*min-height: var\(--libitum-spacing-0\)/s,
+    );
+  });
+
   test("Translucent surface는 opacity.surface token과 0.9 호환 fallback을 사용한다", () => {
     expect(styles).toContain("opacity: var(--libitum-opacity-surface, 0.9)");
   });
@@ -291,5 +298,119 @@ describe("getVisualNovelDialogContract: 컨텍스트 motion", () => {
     const contract = getVisualNovelDialogContract(revealing);
     expect(contract.reveal).toBe("typewriter");
     expect(contract.status).toBe("revealing");
+  });
+});
+
+describe("getVisualNovelDialogContract — romanization", () => {
+  test("VND-R1. 로마자는 trim해 싣고, 대사 뒤 · 번역 앞에서 읽는다", () => {
+    const contract = getVisualNovelDialogContract({
+      line: "어서 오세요.",
+      speakerName: "점원",
+      romanization: " eoseo oseyo. ",
+      translation: "Welcome.",
+    });
+    expect(contract.romanization).toBe("eoseo oseyo.");
+    expect(contract.accessibilityLabel).toBe("점원: 어서 오세요., eoseo oseyo. Welcome.");
+    expect(contract.showTranslation).toBe(true);
+  });
+
+  test("VND-R2. 번역 없이 로마자만 있어도 묶음이 서고, 대사가 다 드러난 뒤에만 보인다", () => {
+    const ready = getVisualNovelDialogContract({
+      line: "네?",
+      variant: "narration",
+      romanization: "ne?",
+    });
+    expect(ready.romanization).toBe("ne?");
+    expect(ready.translation).toBeUndefined();
+    // 2026-11-24 개정(ADR-0188 개정 D7): 로마자는 대사 바로 아래 제 줄이라 번역 묶음(구분선 · 번역)과 따로 보입니다.
+    expect(ready.showRomanization).toBe(true);
+    expect(ready.showTranslation).toBe(false);
+    expect(ready.accessibilityLabel).toBe("네?, ne?");
+    const revealing = getVisualNovelDialogContract({
+      line: "네?",
+      variant: "narration",
+      romanization: "ne?",
+      reveal: "typewriter",
+      status: "revealing",
+    });
+    expect(revealing.showTranslation).toBe(false);
+    expect(revealing.showRomanization).toBe(false);
+  });
+
+  test("VND-R3. 빈 로마자는 없음이다 — 키가 없고 낭독도 그대로다", () => {
+    const contract = getVisualNovelDialogContract({
+      line: "안녕",
+      speakerName: "이유나",
+      romanization: "  ",
+    });
+    expect("romanization" in contract).toBe(false);
+    expect(contract.accessibilityLabel).toBe("이유나: 안녕");
+    expect(contract.showTranslation).toBe(false);
+    expect(contract.showRomanization).toBe(false);
+  });
+});
+
+// FE 확장 `headerSwitch`(2026-11-24, 앱 ADR-0188 개정 D7): 이름 줄 오른쪽(화자가 없으면 같은 자리)에 서는 스위치 하나.
+describe("getVisualNovelDialogContract — headerSwitch", () => {
+  const base = { line: "어서 오세요.", speakerName: "점원" } as const;
+
+  test("VND-S1. 스위치는 글자 · 켬 여부를 싣고, 낭독 이름은 「글자, 상태」다", () => {
+    const on = getVisualNovelDialogContract({
+      ...base,
+      headerSwitch: {
+        label: " Romanization ",
+        checked: true,
+        stateLabel: "On",
+        onChange: () => {},
+      },
+    });
+    expect(on.headerSwitch).toEqual({
+      label: "Romanization",
+      checked: true,
+      accessibilityLabel: "Romanization, On",
+    });
+    const off = getVisualNovelDialogContract({
+      ...base,
+      headerSwitch: { label: "Phiên âm", checked: false, stateLabel: "Tắt", onChange: () => {} },
+    });
+    expect(off.headerSwitch).toEqual({
+      label: "Phiên âm",
+      checked: false,
+      accessibilityLabel: "Phiên âm, Tắt",
+    });
+  });
+
+  test("VND-S2. 스위치가 없으면 키가 없다(이 확장 전 계약 그대로)", () => {
+    expect("headerSwitch" in getVisualNovelDialogContract(base)).toBe(false);
+  });
+
+  test("VND-S3. 글자나 상태가 비면 던진다 — 이름 없는 스위치를 만들지 않는다", () => {
+    expect(() =>
+      getVisualNovelDialogContract({
+        ...base,
+        headerSwitch: { label: " ", checked: true, stateLabel: "On", onChange: () => {} },
+      }),
+    ).toThrow("headerSwitch label");
+    expect(() =>
+      getVisualNovelDialogContract({
+        ...base,
+        headerSwitch: { label: "Romanization", checked: true, stateLabel: "", onChange: () => {} },
+      }),
+    ).toThrow("headerSwitch stateLabel");
+  });
+
+  test("VND-S4. 내레이션(화자 없음)에도 스위치를 둘 수 있다", () => {
+    const contract = getVisualNovelDialogContract({
+      variant: "narration",
+      line: "비가 내린다.",
+      headerSwitch: { label: "Romanization", checked: true, stateLabel: "On", onChange: () => {} },
+    });
+    expect(contract.headerSwitch?.label).toBe("Romanization");
+  });
+
+  test("VND-S5. 번역만 있으면 로마자는 안 보이고 번역 묶음만 보인다", () => {
+    const contract = getVisualNovelDialogContract({ ...base, translation: "Welcome." });
+    expect(contract.showTranslation).toBe(true);
+    expect(contract.showRomanization).toBe(false);
   });
 });

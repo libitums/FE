@@ -1,6 +1,7 @@
 // 엽전 · 메신저 · 영역 이벤트를 보내는 자리입니다(ADR-0029 「D3 목적 구분」). 보내는 쪽은 날 수를 빼고 넘기고, 여기서 붙입니다.
-// 첫 경험 마일스톤(`first_lesson_completed` · `first_chat_message_sent`)은 PostHog sink를 감싸 기기당 한 번 더 냅니다 —
-// 시험 계정 거름(ADR-0085)이 바깥이라 시험 계정의 행동은 마일스톤을 쓰지 않습니다.
+// 첫 경험 마일스톤(`first_lesson_completed` · `first_chat_message_sent`)은 분석 sink를 감싸 기기당 한 번 더 냅니다 —
+// 시험 계정 거름(ADR-0085)이 바깥이라 시험 계정의 행동은 마일스톤을 쓰지 않습니다. 감싸는 자리는 진입점 조립(`productEventSinks`)이고
+// Airbridge 합성의 바깥이라 마일스톤이 PostHog · Airbridge 둘 다에 갑니다(ADR-0063 적용 기록 2026-11-24).
 
 import type { AnalyticsEvent, AnalyticsEventSinks } from "./analytics.contract";
 import type { CompanionEvent, CompanionEventInput } from "./companion-event.contract";

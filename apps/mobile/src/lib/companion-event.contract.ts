@@ -1,7 +1,9 @@
-// 엽전 출시 · 메신저 · 새 친구 · 영역 사용의 제품 사용 이벤트입니다(ADR-0029 「D3 목적 구분」). 타입만 둡니다.
-// 모든 이벤트가 공통 속성 둘을 싣습니다 — 일어난 영역(`surface`)과 기기 첫 실행일부터 지난 날 수(`daysSinceFirstOpen`).
-// 수는 10진 문자열입니다(이벤트 속성은 계약상 문자열 · 불리언뿐 — `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
+// 엽전 출시 · 메신저 · 새 친구 · 영역 사용의 제품 사용 이벤트(ADR-0029 「D3 목적 구분」, 타입만) — 공통 속성은 영역(`surface`) · 첫 실행일부터 지난 날 수
+// (`daysSinceFirstOpen`, 10진 문자열 — 속성은 문자열 · 불리언뿐, `analytics.contract.ts` ②). 메시지 본문 · 개인정보는 싣지 않습니다.
 
+import type { ChatRoomEvent } from "./chat-push-ask-event.contract";
+import type { FriendStoryEvent } from "./friend-story-event.contract";
+import type { MyStoryEvent } from "./my-story-event.contract";
 import type { MoreEvent } from "./more-event.contract";
 
 /** 이벤트가 일어난 영역입니다 — 여정(학습) 탭 쪽이면 `learning`, 메신저 탭 쪽이면 `chat`. */
@@ -32,9 +34,18 @@ export type LaunchEvent =
 export type MessengerGuideEvent =
   | (Common & {
       readonly name: "messenger_guide_finished";
-      /** `snapshot` — 안내를 이미 본 사람에게 예시 스냅샷 단계만 뜬 것(ADR-0146 추가). */
-      readonly part: "list" | "room" | "snapshot";
+      /** `snapshot` — 안내를 이미 본 사람에게 예시 스냅샷 단계만 뜬 것(ADR-0146 추가). `keyboard` — 키보드 단계가 든 것(ADR-0190). */
+      readonly part: "list" | "room" | "snapshot" | "keyboard";
       readonly outcome: "done" | "skipped";
+    })
+  /**
+   * 방 안내의 키보드 단계(ADR-0190) — 화면이 섬(shown) · Next(next) · 학습자가 토글을 직접 바꿈(switched, stage = 바꾼 뒤 화면) ·
+   * 휴대폰 키보드 화면에서 키보드가 내려가 Hangul keys로 넘어감(hidden, stage = phone — Android 뒤로가기 등, 2026-11-24).
+   */
+  | (Common & {
+      readonly name: "messenger_guide_keyboard";
+      readonly stage: "phone" | "hangul";
+      readonly action: "shown" | "next" | "switched" | "hidden";
     })
   | (Common & {
       readonly name: "messenger_tab_opened";
@@ -67,20 +78,20 @@ export type SuggestedFriendEvent =
       readonly name: "suggested_friend_opened";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
     })
   | (Common & {
       readonly name: "suggested_friend_added";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
       readonly via: "free" | "early";
     })
   | (Common & {
       readonly name: "early_access_tapped";
       readonly characterId: string;
       readonly price: string;
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "story_row" | "story_viewer";
     })
   /** 먼저 만나기 RPC가 끝났습니다(ADR-0162 D5) — 누른 뒤 한 번. unlocked = 이미 산 인물(already) 포함, failed = 제안 없음 · 오류. */
   | (Common & {
@@ -96,6 +107,9 @@ export type ChatCoinEvent =
       readonly characterId: string;
       readonly paid: boolean;
       readonly cost: string;
+      /** 스토리 첫 답장 무료로 보냄(ADR-0178 D6) — 앱 힌트이고 정본은 서버 `companion.story_replies.free`. */
+      readonly storyFree?: true;
+      readonly fromSuggestion: boolean; // 답할 문장 추천(보기)을 눌러 보냄(ADR-0195) — 칩을 고쳐 보내는 길은 없습니다.
     })
   | (Common & {
       readonly name: "chat_media_requested";
@@ -131,12 +145,14 @@ export type StreakRewardEvent = Common & {
 
 /**
  * 가입 보상(ADR-0174). `signup_reward_card_shown`: 손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번. `signup_reward_card_tapped`: 카드를
- * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수).
+ * 눌러 로그인 화면으로 갈 때마다. `signup_reward_shown`: 서버가 지급한 뒤 보상 모달이 설 때 한 번(받은 수) — `unlimited`는 그 창에 첫날 무제한 줄(ADR-0186 개정 3)이 섰는지(shown · none).
+ * 같은 틀의 Chat Plus 첫 구독 보너스(ADR-0196 D5) `subscription_bonus_shown`: 서버가 알린 보너스 모달이 설 때 한 번(받은 수 · 요금제).
  */
 export type SignupRewardEvent =
   | (Common & { readonly name: "signup_reward_card_shown" })
   | (Common & { readonly name: "signup_reward_card_tapped" })
-  | (Common & { readonly name: "signup_reward_shown"; readonly amount: string });
+  | (Common & { name: "signup_reward_shown"; amount: string; unlimited: "shown" | "none" })
+  | (Common & { name: "subscription_bonus_shown"; plan: "chat_plus"; amount: string });
 
 /**
  * 푸시 캠페인 보상(ADR-0175). `push_reward_claimed`: 알림을 눌러 들어와 서버가 지급했을 때 한 번 — `amount`는 엽전 수 또는 무제한 티켓
@@ -272,9 +288,11 @@ export type CompanionEvent =
   | MessengerGuideEvent
   | CompanionUnlockEvent
   | SuggestedFriendEvent
+  | FriendStoryEvent
+  | MyStoryEvent
+  | ChatRoomEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
-
 type WithoutDays<T> = T extends unknown ? Omit<T, "daysSinceFirstOpen"> : never;
 /** 보내는 자리가 채우는 모양 — 날 수는 보낼 때 붙습니다(`emitCompanionEvent`). */
 export type CompanionEventInput = WithoutDays<CompanionEvent>;

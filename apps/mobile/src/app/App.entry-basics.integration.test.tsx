@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-
 import { manifestTextOf } from "../lib/audio-manifest.test-support";
 import { AUDIO_MANIFEST_PATH } from "../lib/audio-manifest";
 import { contentPathOf } from "./test-helpers/content-requests";
+import { COMPOSE_ECHO_DELAY_MS } from "../lib/letters/compose-quiz";
 import { LETTER_SOUND_SYLLABLES, letterAudioIdOf } from "../lib/letters/jamo";
 import { lettersStorageKey } from "../lib/letters-recommend";
 import { systemBackEventName } from "../lib/system-back";
@@ -345,6 +346,29 @@ describe("글자 소리", () => {
     expect(screen.getByTestId("entry-basics-lead").textContent).toContain("Tap a letter");
     fireEvent.tap(screen.getByTestId("entry-basics-letter-0"), {});
     expect(play.mock.calls.map((call) => call[0])).toEqual(["hangul-c-g-sound"]);
+  });
+
+  test("EBI22. 음성 정보 파일이 없어도 합치기의 ▶는 단추로 앱 내장 음절 녹음을 내고, 맞힌 뒤 한 번 더 낸다(2026-11-24)", async () => {
+    const play = vi.fn<(source: string, done: (result: unknown) => void) => void>();
+    await reachEntry();
+    vi.stubGlobal("NativeModules", {
+      ...(NativeModules as Record<string, unknown>),
+      AudioPlaybackModule: { play, stop: vi.fn<() => void>() },
+    });
+    startBasics();
+    tapButtonIn("entry-basics-next");
+
+    const speaker = screen.getByTestId("compose-play");
+    expect(speaker).toHaveAttribute("accessibility-traits", "button");
+    fireEvent.tap(speaker, {});
+    expect(play.mock.calls.map((call) => call[0])).toEqual(["hangul-s-ga"]);
+    vi.useFakeTimers();
+    for (const letter of ["ㄱ", "ㅏ"])
+      fireEvent.tap(screen.getByTestId(`compose-tile-${tiles.indexOf(letter)}`), {});
+    act(() => {
+      vi.advanceTimersByTime(COMPOSE_ECHO_DELAY_MS * 3);
+    });
+    expect(play.mock.calls.map((call) => call[0])).toEqual(["hangul-s-ga", "hangul-s-ga"]);
   });
 });
 

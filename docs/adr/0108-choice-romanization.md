@@ -130,3 +130,9 @@
 - 매핑은 그대로 채운 줄과 범위(`romanizationEmphasis`)를 싣고, 화면이 답 전에 `clozeRomanizationMasked`로 범위를 되돌린다 — 정답이 여러 로마자 토큰이어도 범위 하나가 빈칸 하나다. 낭독도 빈칸을 「blank」로 읽는다(정답 없음).
 - CLOZE_CHOICE는 콘텐츠 줄의 `___`를 채우지 않아 처음부터 빈칸이다(내장 46 · 수준 5 137개 모두 `___` 있음, 2026-11-20 점검).
 - 테스트: RS5 · CZ1 · CZ2(unit), UBL3 · UBL4 · WC2(ui), AI4(integration).
+
+### ⟨2026-11-24⟩ 적용 기록 — 스위치가 레슨 문장 · 이야기 대화까지 맡는다([ADR-0188](0188-dialogue-romanization.md))
+
+- 「다루지 않는 것 — 제시문 · 카드 · 대화 버블의 로마자」를 ADR-0188이 부분 대체한다. 같은 세션 옵션(`show-choice-romanization`)이 레슨 단어 선택
+  제시문 · 문화 확인 장면 말풍선 · 이야기 컷 · 막간 메신저 · 전화의 로마자 줄을 켜고 끈다. 키 · 저장 키 · 기본 켬 · 이벤트는 그대로다.
+- D3의 토글 제목 · 설명이 넓어졌다 — `Romanization` / `Show how Korean is read, in small text, in answers, lessons and stories.`(여덟 언어).

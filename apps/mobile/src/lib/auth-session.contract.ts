@@ -35,14 +35,19 @@ export type PhoneNumber = {
 // ------------------------------------------------------------------ 세션
 
 /**
- * 검증 · 갱신이 성공하면 저장하는 세션입니다. 저장소에는 이 셋만 들어갑니다 — 사용자
- * 객체 같은 서버 응답의 나머지는 버립니다(ADR-0007 D1).
+ * 검증 · 갱신이 성공하면 저장하는 세션입니다. 저장소에는 토큰 둘 · 만료 시각과, 있으면 계정 생성 시각만 들어갑니다 —
+ * 사용자 객체 같은 서버 응답의 나머지는 버립니다(ADR-0007 D1 · ADR-0186 개정 1).
  */
 export type AuthSession = {
   readonly accessToken: string;
   readonly refreshToken: string;
   /** 액세스 토큰이 만료되는 시각(epoch 밀리초)입니다. 응답의 `expires_in`으로 계산합니다. */
   readonly expiresAt: number;
+  /**
+   * 계정을 만든 시각(epoch 밀리초) — 응답 `user.created_at`. 첫날 무제한 티켓(ADR-0186 개정 1)의 기준입니다. 응답에 없거나
+   * 읽지 못하면 칸이 없습니다(옛 저장 세션도 다음 갱신 응답에서 채워집니다).
+   */
+  readonly accountCreatedAt?: number;
 };
 
 /**

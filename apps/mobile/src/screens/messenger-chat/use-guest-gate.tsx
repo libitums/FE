@@ -22,7 +22,10 @@ export type GuestGate = {
   /** 방의 dispatch를 감쌉니다 — 계정 동작(`guestGateOf`)이면 키보드를 내리고 대화상자로 바꿉니다. */
   readonly guard: (dispatch: (action: ChatRoomAction) => void) => (action: ChatRoomAction) => void;
   /** 보내기 관문을 감쌉니다 — 비회원이면 `onBlocked`(키보드 내리기) 뒤 대화상자(send)를 띄우고 거절합니다. */
-  readonly authorize: (inner: () => boolean, onBlocked: () => void) => () => boolean;
+  readonly authorize: (
+    inner: (fromSuggestion?: boolean) => boolean,
+    onBlocked: () => void,
+  ) => (fromSuggestion?: boolean) => boolean;
   readonly layer: ReactNode;
 };
 
@@ -65,8 +68,8 @@ export function useGuestGate(
       dispatch({ type: "close-keyboard" });
       prompt(gated);
     },
-    authorize: (inner, onBlocked) => () => {
-      if (!active) return inner();
+    authorize: (inner, onBlocked) => (fromSuggestion) => {
+      if (!active) return inner(fromSuggestion);
       onBlocked();
       return !prompt("send");
     },

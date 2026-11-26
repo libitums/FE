@@ -5,6 +5,7 @@
 //   → (검사 노드를 켰거나 성인이 아닐 때) 검사 노드(Haiku 비전) → Storage에 올리고 complete. 차단 · 검사 탈락은 blocked, 오류는 failed — 둘 다 예약 해제.
 //   검사에 떨어진 그림은 올리지 않는다. 검사 노드는 성인에게만 기본으로 끈다(`env.snapshotCheck`, ADR-0152) — 미성년자 · 나이 모름은
 //   늘 돈다. 끄면 안전은 프롬프트 노드의 판단과 이미지 엔진 자체의 거절이 맡고, 동일성 · 깨진 글자 · 학습자 얼굴은 보지 않는다(`meta.check = "skipped"`).
+// 그릴 것을 정하는 앞 단계(v1 프롬프트 노드 · v2m 장면 설계, ADR-0179)는 `companion-media-snapshot-plan.ts`.
 // 음성은 `companion-media-voice.ts`, 같이 쓰는 닫기 · 재시도는 `companion-media-job.ts`. 엔진 스위치(complexity · 중간 그림 · 기준 그림)는 env.
 //
 // 시간 예산(`companion-media-budget.ts`): 단계마다 남은 예산에서 뒤 단계 몫을 남긴 만큼만 기다리고, 모자라면 시도하지 않고 그 단계 실패로 닫는다.
@@ -13,36 +14,28 @@
 //
 // 던지지 않는다. 예상 못 한 오류도 failed로 닫는다. 닫기(RPC)마저 실패하면 행은 pending으로 남고 시간 초과 정리가 예약을 푼다.
 
-import type { Segment } from "./chat-send.contract.ts";
-import type { SnapshotSelf } from "./companion-contract/index.ts";
-import {
-  claudeTool,
-  downloadRef,
-  EngineError,
-  type Image,
-  imageBlock,
-  uploadMedia,
-} from "./companion-media-engines.ts";
+import { claudeTool, EngineError, type Image, uploadMedia } from "./companion-media-engines.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
 import { openaiImageEdit } from "./companion-media-openai.ts";
 import { snapshotPreview } from "./companion-media-preview.ts";
 import { SNAPSHOT_PHASES } from "./companion-media-budget.ts";
 import {
   type Aspect,
-  CHECK_TOOL,
-  checkSystem,
-  type ContextLine,
-  imagePrompt,
-  PROMPT_TOOL,
-  promptContent,
   promptHash,
-  promptSystem,
   SIZES,
   type SnapshotPrompt,
-  snapshotPromptFrom,
   type SnapshotVerdict,
   verdictFrom,
 } from "./companion-snapshot-prompts.ts";
+import { type StoredPlan, type V2Verdict, v2VerdictFrom } from "./companion-snapshot-v2.ts";
+import {
+  checkRequest,
+  planV1,
+  planV2,
+  prepareV2,
+  recordOutfitCandidate,
+  type SnapshotJob,
+} from "./companion-media-snapshot-plan.ts";
 import {
   budgetExhausted,
   budgetFor,
@@ -54,22 +47,7 @@ import {
   withRetry,
 } from "./companion-media-job.ts";
 
-export type SnapshotJob = {
-  readonly mediaId: string;
-  readonly userId: string;
-  readonly characterId: string;
-  readonly characterName: string;
-  readonly look: string;
-  readonly ageBand: "adult" | "minor" | "unknown";
-  readonly snapshotSelf: SnapshotSelf;
-  readonly segments: readonly Segment[];
-  readonly context: readonly ContextLine[];
-  readonly refs: readonly string[];
-  readonly engine: string;
-  readonly quality: string;
-  /** 설정 `snapshot_aspect`: 3:2 · 1:1 고정, auto면 프롬프트 노드가 고른다. */
-  readonly aspect: Aspect | "auto";
-};
+export type { SnapshotJob } from "./companion-media-snapshot-plan.ts";
 
 export async function runSnapshot(
   deps: MediaRunDeps,
@@ -123,47 +101,23 @@ export async function runSnapshot(
     if (env.anthropicKey === null || env.openaiKey === null) {
       return await done("failed", { failure: "engine_failed", error: "keys missing" });
     }
-    // 기준 이미지 읽기와 프롬프트 노드는 서로 기다릴 것이 없어 동시에 돌립니다(프롬프트 노드는 그림이 아니라 대화 글만 봅니다).
-    // 제한 시간은 둘 다 시작 전에 정합니다 — 프롬프트 노드 몫은 기준 이미지 단계가 끝난 뒤가 아니라 지금 남은 예산에서 나옵니다.
-    const refsTimeout = phase("refs", deps.storageTimeoutMs);
-    const promptTimeout = phase("prompt", deps.textTimeoutMs);
-    // `sheet`면 표정 시트를 빼고 시트 한 장만(입력 토큰 — 사진 원가의 약 2/3 — 를 줄인다).
-    const refNames =
-      env.snapshotRefs === "sheet"
-        ? job.refs.filter((name) => !name.endsWith("-expressions.png")).slice(0, 1)
-        : job.refs.slice(0, 4);
-    const [loaded, noded] = await Promise.allSettled([
-      timed("refs", () =>
-        Promise.all(refNames.map((name) => downloadRef(deps.fetch, env, name, refsTimeout))),
-      ),
-      timed("prompt", () =>
-        claudeTool(
-          deps.fetch,
-          env.anthropicKey!,
-          env.snapshotModel,
-          {
-            system: promptSystem(job.ageBand),
-            tool: PROMPT_TOOL,
-            content: promptContent(job),
-            maxTokens: 1024,
-          },
-          promptTimeout,
-        ),
-      ),
-    ]);
-    if (noded.status === "fulfilled") usage["prompt"] = noded.value.usage;
-    if (loaded.status === "rejected")
-      return await done("failed", { failure: "refs_missing", error: short(loaded.reason) });
-    const refs: Image[] = loaded.value;
-
-    if (noded.status === "rejected")
-      return await done("failed", { failure: "prompt_failed", error: short(noded.reason) });
-    const prompt: SnapshotPrompt | null = snapshotPromptFrom(noded.value.input);
-    if (prompt === null)
-      return await done("failed", { failure: "prompt_failed", error: "bad prompt shape" });
-    const aspect: Aspect = job.aspect === "auto" ? prompt.aspect : job.aspect;
+    // v2m(ADR-0179): 스위치가 켜졌고(시험 계정만이면 시험 계정이고) 그 인물의 묶음이 있으면 장면 설계로. 아니면 아래 v1 그대로.
+    const v2 =
+      env.snapshotPipeline === "v1" ? null : await prepareV2(deps, env, job, phase, timed, meta);
+    let refs: Image[];
+    let prompt: SnapshotPrompt | StoredPlan;
+    let aspect: Aspect;
+    let text: string;
+    if (v2 !== null) {
+      const drawn = await planV2(deps, env, job, v2, phase, timed, usage);
+      if ("failure" in drawn) return await done("failed", drawn);
+      ({ refs, prompt, aspect, text } = drawn);
+    } else {
+      const drawn = await planV1(deps, env, job, phase, timed, usage);
+      if ("failure" in drawn) return await done("failed", drawn);
+      ({ refs, prompt, aspect, text } = drawn);
+    }
     const size = SIZES[aspect];
-    const text = imagePrompt(prompt, job.snapshotSelf);
     meta["size"] = size;
     meta["promptHash"] = await promptHash(text);
     if (prompt.safety === "block") {
@@ -177,7 +131,7 @@ export async function runSnapshot(
 
     // 2. 이미지 엔진 — 한 번. 엔진 오류만, 예산이 남으면 한 번 다시. 중간 그림은 미리보기로 올린다(덤 — 실패해도 계속).
     let png: Uint8Array;
-    preview.start();
+    preview.start(aspect);
     const imageTimeouts: number[] = [];
     timeouts["image"] = imageTimeouts;
     try {
@@ -227,7 +181,7 @@ export async function runSnapshot(
     }
 
     // 3. 검사 노드 — 켰을 때 또는 미성년자 · 나이 모름이면 늘, 기준 이미지 첫 장과 나란히.
-    let verdict: SnapshotVerdict | null = null;
+    let verdict: SnapshotVerdict | V2Verdict | null = null;
     if (!env.snapshotCheck && job.ageBand === "adult") {
       meta["check"] = "skipped";
     } else {
@@ -238,21 +192,12 @@ export async function runSnapshot(
             deps.fetch,
             env.anthropicKey!,
             env.snapshotModel,
-            {
-              system: checkSystem(job.ageBand),
-              tool: CHECK_TOOL,
-              content: [
-                imageBlock(refs[0]!),
-                imageBlock({ bytes: png, mime: "image/png" }),
-                { type: "text", text: "Image 1: reference. Image 2: snapshot. Give the verdict." },
-              ],
-              maxTokens: 600,
-            },
+            checkRequest(job, v2, refs[0]!, png, prompt),
             timeout,
           ),
         );
         usage["check"] = call.usage;
-        verdict = verdictFrom(call.input);
+        verdict = v2 === null ? verdictFrom(call.input) : v2VerdictFrom(call.input);
       } catch (error) {
         return await done("failed", {
           failure: "check_error",
@@ -286,6 +231,7 @@ export async function runSnapshot(
         error: short(error),
       });
     }
+    if (v2 !== null) await recordOutfitCandidate(deps, env, job, prompt as StoredPlan);
     return await done("complete", {
       path,
       mime: "image/png",

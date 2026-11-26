@@ -229,6 +229,7 @@ describe("기록 · 인사", () => {
       messages: [],
       corrections: {},
       ideas: null,
+      ideasOrigin: null,
     });
   });
 

@@ -1,4 +1,4 @@
-// 미션 LLM 계층(ADR-0178) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고, 가짜 계층에는 미션 답(상태 줄)을
+// 미션 LLM 계층(ADR-0193) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고, 가짜 계층에는 미션 답(상태 줄)을
 // 더합니다. 기존 메서드는 그대로 넘깁니다 — 컴패니언 턴은 이 계층을 써도 같은 호출이 됩니다(가짜 답은 미션 시스템 프롬프트일 때만 갈린다).
 // 모델(`missionModelsFrom` — 컴패니언 설정을 물려받지 않음): 답 `COMPANION_MISSION_MODEL`(기본 Haiku) · 채점 `COMPANION_MISSION_GRADER_MODEL`(기본 Sonnet),
 // 교정 `COMPANION_MISSION_FEEDBACK_MODEL` · 힌트 `COMPANION_MISSION_HINT_MODEL` · 판정 `COMPANION_MISSION_JUDGE_MODEL`(기본 Haiku, 답도 Haiku).

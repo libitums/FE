@@ -165,6 +165,24 @@ export async function downloadRef(
   return { bytes: new Uint8Array(await response.arrayBuffer()), mime, name };
 }
 
+/** 기준 그림 버킷의 JSON 한 개(`companion-refs/<name>`, 스냅샷 v2m 묶음의 manifest.json). 없으면(404 · 400) null, 그 밖의 실패는 던진다. */
+export async function downloadRefJson(
+  fetchImpl: Fetch,
+  env: MediaEnv,
+  name: string,
+  timeoutMs: number,
+): Promise<unknown | null> {
+  const response = await fetchImpl(objectUrl(env, REFS_BUCKET, name), {
+    method: "GET",
+    headers: serviceKeyHeaders(env.supabaseServiceRoleKey),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+  // Storage는 없는 객체에 400(「Object not found」) 또는 404를 준다.
+  if (response.status === 404 || response.status === 400) return null;
+  if (response.status !== 200) throw new Error(`reference ${name}: ${response.status}`);
+  return await response.json();
+}
+
 /** 결과 파일 올리기(`companion-media/<path>`). 같은 경로면 덮어쓴다(재시도 안전). */
 export async function uploadMedia(
   fetchImpl: Fetch,

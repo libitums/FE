@@ -1,8 +1,14 @@
 // 전화 막간 화면의 계약입니다(ADR-0088 D6) — 표시 모델 · props · 문구 · 테스트 id.
 
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { ChoiceRomanization } from "../../lib/session-options";
 
-export type StoryCallText = { readonly ko: string; readonly en: string };
+export type StoryCallText = {
+  readonly ko: string;
+  /** 콘텐츠 로마자(채움 끝) — 없거나 비면 화면이 변환한 읽기로 채웁니다(ADR-0188). */
+  readonly roman?: string;
+  readonly en: string;
+};
 
 export type StoryCallLineView = {
   /** 상대 · 나 · 배경 소리(안내 방송 등). */
@@ -32,6 +38,8 @@ export type StoryCallScreenProps = {
   /** 끊김 화면의 「Finish story」 — 한 번만 부릅니다. */
   readonly onComplete: () => void;
   readonly onExit: () => void;
+  /** 로마자 스위치(ADR-0188) — 없으면 `"hidden"`(이 변경 전 모양). 앱은 세션 옵션에서 넘깁니다. */
+  readonly romanization?: ChoiceRomanization;
 };
 
 export type StoryCallCopy = {

@@ -240,9 +240,12 @@ export function hourWithin(hour, window) {
   return from < to ? hour >= from && hour < to : hour >= from || hour < to;
 }
 
-export const LANGUAGES = ["en", "vi", "id", "ms", "es", "ja"];
+export const LANGUAGES = ["en", "vi", "id", "ms", "es", "ja", "zh-TW"];
 
 const SPANISH = new Set("AR BO CL CO CR CU DO EC ES GT HN MX NI PA PE PR PY SV UY VE".split(" "));
+
+/** 번체 중국어 나라 — 대만 · 홍콩 · 마카오(ADR-0185). 간체(중국 · 싱가포르)는 영어입니다. */
+const TRADITIONAL_CHINESE = new Set(["TW", "HK", "MO"]);
 
 /** 나라 → 문구 언어입니다. 서버는 앱 UI 언어를 모릅니다 — 나머지는 영어입니다. */
 export function languageFor(countryCode) {
@@ -251,6 +254,7 @@ export function languageFor(countryCode) {
   if (code === "ID") return "id";
   if (code === "MY") return "ms";
   if (code === "JP") return "ja";
+  if (TRADITIONAL_CHINESE.has(code)) return "zh-TW";
   if (SPANISH.has(code)) return "es";
   return "en";
 }
@@ -311,8 +315,8 @@ export function renderCopy(template, vars) {
   const name = cleanName(vars.name);
   if (name === "") {
     text = text
-      .replace(/\{name\}(さん)?\s*[,、]\s*/gu, "")
-      .replace(/\s*[,、]?\s*\{name\}(さん)?/gu, "");
+      .replace(/\{name\}(さん)?\s*[,、，]\s*/gu, "")
+      .replace(/\s*[,、，]?\s*\{name\}(さん)?/gu, "");
     text = text.charAt(0).toUpperCase() + text.slice(1);
   } else {
     text = text.replaceAll("{name}", name);

@@ -181,6 +181,20 @@ final class AudioPlaybackModuleTests: XCTestCase {
     withExtendedLifetime(module) {}
   }
 
+  // AI9b: JS 「천천히」 값(0.7, ADR-0082 ⟨2026-11-24⟩)은 1.0보다 1.25배 이상 오래 걸린다. 고정분(파일 열기 · done)이
+  // 들어 있어 기대값 1.43보다 작게 나온다. 0.85(1.16배)가 「느려지지 않는다」로 들린 보고의 회귀 가드.
+  func testAI9bJsSlowRateIsClearlyLonger() {
+    let module = AudioPlaybackModule()
+    _ = elapsedPlaying(module, rate: nil)  // 첫 재생(파일 처음 열기)은 버린다.
+    let normal = elapsedPlaying(module, rate: nil)
+    let slow = elapsedPlaying(module, rate: 0.7)
+
+    XCTAssertGreaterThanOrEqual(slow, normal * 1.25, "normal=\(normal) slow=\(slow)")
+    NSLog("AI9b normal=%.3f slow=%.3f ratio=%.3f", normal, slow, slow / normal)
+    RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+    withExtendedLifetime(module) {}
+  }
+
   // AI10: 0.85 재생 중 stop은 done을 부르지 않고, 닿지 않는 https의 0.85는 done을 정확히 한 번 부른다.
   func testAI10StopDuringSlowPlaybackSilencesDone() {
     let module = AudioPlaybackModule()

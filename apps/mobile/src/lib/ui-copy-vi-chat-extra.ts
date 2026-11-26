@@ -4,11 +4,15 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 import { messengerChatAlbumVi } from "./ui-copy-vi-chat-album";
 import { messengerChatSuggestedVi } from "./ui-copy-vi-chat-suggested";
+import { messengerChatStoriesVi } from "./ui-copy-vi-chat-stories";
+import { myStoriesVi } from "./ui-copy-vi-my-stories";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
   media: messengerChatMediaVi,
   album: messengerChatAlbumVi,
   suggested: messengerChatSuggestedVi,
+  stories: messengerChatStoriesVi,
+  myStories: myStoriesVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:
@@ -21,6 +25,35 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     promptKeepBody: "Tạo tài khoản miễn phí để giữ Yeopjeon và vé của bạn.",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Đã gửi một ảnh"
+          : `Đã gửi một ảnh · ${count} tin mới`
+        : latest === "voice"
+          ? count === 1
+            ? "Đã gửi tin nhắn thoại"
+            : `Đã gửi tin nhắn thoại · ${count} tin mới`
+          : count === 1
+            ? "Tin nhắn mới"
+            : `${count} tin nhắn mới`,
+    jump: "Đi tới tin nhắn mới",
+    latest: "Cuộn xuống tin mới nhất",
+  },
+  replyToast: {
+    dismiss: "Đóng",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Tin nhắn mới từ ${name}: ${preview}` + (more > 0 ? `. Còn ${more} tin khác` : ""),
+  },
+  pushAsk: {
+    title: (name) => `Nhận thông báo khi ${name} nhắn cho bạn?`,
+    body: "Thỉnh thoảng mình sẽ nhắn trước — khoảng một lần mỗi ngày, vào buổi tối.",
+    turnOn: "Bật",
+    notNow: "Để sau",
+    on: (name) => `Đã bật thông báo — ${name} nhắn là bạn sẽ biết ngay.`,
+  },
   chatSettings: {
     entryTitle: "Trò chuyện",
     entryDescription: "Gợi ý trả lời, tin nhắn từ nhân vật, ghi nhớ",
@@ -135,7 +168,6 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     cardBody: "Ở đây bạn nhắn tin với bạn bè Hàn Quốc. Hãy bắt đầu với mình — mình sẽ giúp bạn.",
     cardButton: (name) => `Trò chuyện với ${name}`,
     steps: {
-      chat: "Viết bằng tiếng Hàn rồi gửi. Mình sẽ trả lời, và cây bút dưới tin nhắn của bạn cho thấy cách nói hay hơn.",
       ideas: "Không biết nói gì? Chạm vào bóng đèn cạnh ô nhập để xem gợi ý trả lời.",
       media:
         "Bạn cũng có thể nhờ mình gửi ảnh hoặc tin nhắn thoại bằng các nút phía trên bàn phím.",
@@ -143,6 +175,16 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
         "Muốn xem mình đang làm gì không? Chạm Snapshot, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
       voice:
         "Muốn nghe giọng mình không? Chạm Giọng nói nhanh, mình sẽ đọc tin nhắn đó. Lần đầu mình cũng tặng.",
+    },
+    keyboard: {
+      phone: {
+        title: "Cứ nhắn bằng tiếng của bạn — mình sẽ chỉ bạn cách nói câu đó bằng tiếng Hàn.",
+        body: "Tiếp theo, thử tự gõ tiếng Hàn nhé.",
+      },
+      hangul: {
+        title: "Hoặc gõ tiếng Hàn ngay tại đây bằng Phím Hangul.",
+        body: "Không cần bàn phím tiếng Hàn. Đổi lúc nào cũng được bằng nút gạt bên dưới ô nhập.",
+      },
     },
     next: "Tiếp",
     done: "Đã hiểu",

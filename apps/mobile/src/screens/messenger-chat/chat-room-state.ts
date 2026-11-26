@@ -40,6 +40,8 @@ export type ChatOverlay =
   | { readonly kind: "photo"; readonly messageId: string }
   | { readonly kind: "photo-redraw"; readonly messageId: string }
   | { readonly kind: "feedback-mode"; readonly selected: ChatFeedbackMode }
+  /** 상대 아바타 · 머리 이름으로 연 인물 프로필 시트(ADR-0178 개정 ⟨대화방⟩) — 이미 대화 중이라 행동 단추가 없습니다. */
+  | { readonly kind: "profile" }
   | {
       readonly kind: "birth-year";
       readonly selected: number | null;
@@ -94,6 +96,8 @@ export const openPhotoAction = (messageId: string): ChatRoomAction => ({
   type: "open-overlay",
   overlay: { kind: "photo", messageId },
 });
+/** 상대 아바타 · 머리 이름을 눌러 프로필 시트를 엽니다. */
+export const OPEN_PROFILE: ChatRoomAction = { type: "open-overlay", overlay: { kind: "profile" } };
 const SIDEBAR: ChatOverlay = { kind: "sidebar" };
 
 export function initialChatRoomState(plan: KeyboardPlan): ChatRoomState {
@@ -203,8 +207,8 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
     case "sent":
       return sent(state);
     case "open-overlay":
-      // 사진 보기는 방 전체를 덮어 보기 판 · 키보드 자리를 접고 엽니다(휴대폰 키보드는 dispatch가 먼저 내립니다).
-      return action.overlay.kind === "photo"
+      // 사진 보기 · 프로필 시트는 방을 덮어 보기 판 · 키보드 자리를 접고 엽니다(휴대폰 키보드는 dispatch가 먼저 내립니다).
+      return action.overlay.kind === "photo" || action.overlay.kind === "profile"
         ? {
             ...state,
             slot: { kind: "closed" },

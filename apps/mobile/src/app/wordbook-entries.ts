@@ -71,6 +71,20 @@ export function wordbookEntriesOf(
   return entries;
 }
 
+/** 카탈로그(UI 언어)에서 그 에피소드 · 단어를 찾습니다(친구 스토리 단어, ADR-0178 D4). 준비 안 됨 · 없음은 null. */
+export function catalogWordOf(
+  catalog: readonly CatalogEntry[],
+  episodeId: string,
+  ref: string,
+): { readonly ko: string; readonly roman: string; readonly meaning: string } | null {
+  const entry = catalog.find(
+    (candidate): candidate is ReadyEntry =>
+      candidate.status === "ready" && candidate.id === episodeId,
+  );
+  const word = entry?.episode.words.find((candidate) => candidate.id === ref);
+  return word === undefined ? null : { ko: word.ko, roman: word.roman, meaning: word.glossEn };
+}
+
 /** 오답 보기 재료 — 카탈로그 모든 단어의 뜻(중복 없음, UI 언어). */
 export function meaningPoolOf(catalog: readonly CatalogEntry[]): readonly string[] {
   const pool: string[] = [];

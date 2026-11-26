@@ -189,11 +189,76 @@
   line-height: var(--libitum-typography-heading-l-line-height);
 }
 
+/* ---- C. 선물 두 줄(ADR-0186 개정 3, 시안 GiftA) — 첫날 무제한이 적용될 때 무대 · 금액 줄 대신. 줄 면 · 테두리 · 제목색은 카드 · 금액 줄과 같은
+   황동 값, 그림 칸 56은 시안 실측. 줄은 카드처럼 아래에서 올라오며 차례로(d1 × 6 · × 10) 나타납니다. ---- */
+.signup-gifts {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+.signup-gift {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 14px;
+  padding: var(--libitum-spacing-12) 14px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #f3ddb3;
+  border-radius: var(--libitum-radius-lg);
+  background-color: #fff4e0;
+  animation: signup-card-in var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+}
+.signup-gift-unlimited {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 10);
+}
+.signup-gift-art {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+/* 무한 기호 칸 — 브랜드 주황 면에 흰 선(무제한 칩 · 모달과 같은 기호). */
+.signup-gift-infinity-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-primary);
+}
+.signup-gift-infinity {
+  width: 36px;
+  height: 18px;
+}
+.signup-gift-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+}
+.signup-gift-title {
+  white-space: normal;
+  color: #9a5e12;
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+.signup-gift-line {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
 /* ---- 움직임 줄이기 ---- */
 .signup-still,
 .signup-still .signup-card-pouch,
 .signup-still .signup-reward-glow,
-.signup-still .signup-reward-pouch {
+.signup-still .signup-reward-pouch,
+.signup-still .signup-gift {
   animation: none;
 }
 

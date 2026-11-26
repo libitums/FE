@@ -389,7 +389,7 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   따라 읽기 · 문장 순서 다섯 화면이 문항 음성의 재생 상태를 쓴다 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md) D6). 옛 경로는 재수출 한 줄로 남았다. 근거는 한글 자판과
   같다 — 경로를 읽는 테스트가 없다. 다섯 화면이 쓰는 **훅 · 부품**(`use-listen-audio` · `SlowPlaybackToggle` · `ListenPlaybackControls` ·
   `ItemListenControls`)은 화면 폴더 사이 값 import가 막혀 있어 처음부터 `components/`에 두었고(화면 둘 이상 — 아래 「컴포넌트」), 옛 화면 훅
-  `screens/listening/use-listening-playback.ts`는 지웠다. 순수 어휘 `lib/listen-pace.ts`(속도 · 0.85 한 자리) · `lib/question-audio.ts`(문항
+  `screens/listening/use-listening-playback.ts`는 지웠다. 순수 어휘 `lib/listen-pace.ts`(속도 — 「천천히」 0.7 · 대화 음성 0.85 한 자리) · `lib/question-audio.ts`(문항
   음성 두 갈래)는 새로 `lib/`에 섰다. 위 예외 표는 바뀌지 않았다.
   ⟨2026-11-22⟩ **합치기 퀴즈도 올라왔다** — `screens/letters/compose-quiz.ts`의 본문이 `lib/letters/compose-quiz.ts`로, 그 훅 · 부품이
   `components/`(`useComposeQuiz` · `ComposeQuizParts`)로 옮겨졌다(Letters › Practice · 입장 전 기초가 쓴다 — [ADR-0176](../adr/0176-entry-basics-choice.md) D3).

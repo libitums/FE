@@ -4,11 +4,15 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaEs } from "./ui-copy-es-chat-media";
 import { messengerChatAlbumEs } from "./ui-copy-es-chat-album";
 import { messengerChatSuggestedEs } from "./ui-copy-es-chat-suggested";
+import { messengerChatStoriesEs } from "./ui-copy-es-chat-stories";
+import { myStoriesEs } from "./ui-copy-es-my-stories";
 
 export const messengerChatExtraEs: MessengerChatExtraCopy = {
   media: messengerChatMediaEs,
   album: messengerChatAlbumEs,
   suggested: messengerChatSuggestedEs,
+  stories: messengerChatStoriesEs,
+  myStories: myStoriesEs,
   access: {
     signInTitle: "Escríbeles a las personas de tus historias",
     signInBody:
@@ -21,6 +25,35 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Envió una foto"
+          : `Envió una foto · ${count} nuevos`
+        : latest === "voice"
+          ? count === 1
+            ? "Envió un mensaje de voz"
+            : `Envió un mensaje de voz · ${count} nuevos`
+          : count === 1
+            ? "Mensaje nuevo"
+            : `${count} mensajes nuevos`,
+    jump: "Ir a los mensajes nuevos",
+    latest: "Ir al último mensaje",
+  },
+  replyToast: {
+    dismiss: "Cerrar",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Nuevo mensaje de ${name}: ${preview}` + (more > 0 ? `. ${more} más` : ""),
+  },
+  pushAsk: {
+    title: (name) => `¿Quieres un aviso cuando ${name} te escriba?`,
+    body: "A veces te escribo yo primero: más o menos una vez al día, por la noche.",
+    turnOn: "Activar",
+    notNow: "Ahora no",
+    on: (name) => `Notificaciones activadas: ${name} te avisará.`,
+  },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Ideas de respuesta, mensajes de personajes, recuerdos",
@@ -142,7 +175,6 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     cardBody: "Aquí chateas con amigos coreanos. Empieza conmigo: te ayudo.",
     cardButton: (name) => `Chatear con ${name}`,
     steps: {
-      chat: "Escribe en coreano y envíalo. Te responderé, y el lápiz bajo tu mensaje te muestra una forma mejor de decirlo.",
       ideas:
         "¿No sabes qué decir? Toca la bombilla junto al cuadro de mensaje para ver ideas de respuesta.",
       media:
@@ -151,6 +183,16 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
         "¿Quieres ver qué estoy haciendo? Toca Snapshot y te envío una foto. La primera va por mi cuenta.",
       voice:
         "¿Quieres oírlo con mi voz? Toca Nota de voz y te leo ese mensaje. El primero también va por mi cuenta.",
+    },
+    keyboard: {
+      phone: {
+        title: "Chatea en tu idioma: yo te muestro cómo decirlo en coreano.",
+        body: "Después, prueba a escribir en coreano tú mismo.",
+      },
+      hangul: {
+        title: "O escribe en coreano aquí mismo con las teclas hangul.",
+        body: "No necesitas un teclado coreano. Cambia cuando quieras con el selector bajo el cuadro de mensaje.",
+      },
     },
     next: "Siguiente",
     done: "Entendido",

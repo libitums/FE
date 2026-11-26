@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-hint` — 아직 못 이룬 목표 하나의 예시 문장 하나(ADR-0178, PRD §3.5).
+// `POST /functions/v1/mission-hint` — 아직 못 이룬 목표 하나의 예시 문장 하나(ADR-0193, PRD §3.5).
 //
 // 흐름: 인증 → 본문(`missionHintRequestSchema`) → `companion_mission_take_hint`(상한 확인 · 힌트 수 +1 · 목표 고르기) →
 //   힌트 프롬프트(`hintSystem` · `hintUser`) → `normalizeHint` → 계약의 응답.

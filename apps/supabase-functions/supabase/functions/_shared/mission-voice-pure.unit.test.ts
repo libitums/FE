@@ -99,7 +99,7 @@ describe("환경(missionVoiceEnvFrom)", () => {
       sttModel: defaultMissionVoice.sttModel,
       ttsModel: "eleven_v4_turbo",
       defaultVoice: "l6fNdLYgoqjfTIPUeFc9",
-      zeroRetention: true,
+      zeroRetention: false,
       autosend: AUTOSEND_DEFAULTS,
     });
     const tuned = from({
@@ -108,12 +108,12 @@ describe("환경(missionVoiceEnvFrom)", () => {
       COMPANION_MISSION_AUTOSEND_CONF_MEAN: "2",
       COMPANION_MISSION_AUTOSEND_WITHOUT_CONFIDENCE: "on",
       COMPANION_MISSION_TTS_VOICE: "../bad",
-      COMPANION_MISSION_STT_ZERO_RETENTION: "off",
+      COMPANION_MISSION_STT_ZERO_RETENTION: "on",
     })!;
     expect(tuned.elevenKey).toBe("k");
     expect(tuned.autosend).toMatchObject({ confMin: 0.8, confMean: 0.93, withoutConfidence: true });
     expect(tuned.defaultVoice).toBe("l6fNdLYgoqjfTIPUeFc9");
-    expect(tuned.zeroRetention).toBe(false);
+    expect(tuned.zeroRetention).toBe(true);
     expect(from({ SUPABASE_URL: "http://evil" })).toBeNull();
   });
 });

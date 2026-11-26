@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 카메라 앱에 넘기는 출력 자리만 공유한다(ADR-0199). 줄인 사진(cache/story-photos/*.jpg)은 공유하지 않는다. -->
+<paths>
+  <cache-path name="story_photo_capture" path="story-photos/capture/" />
+</paths>

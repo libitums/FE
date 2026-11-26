@@ -26,3 +26,9 @@ test("AS3. 일본어면 app-lang-ja를 더한다 — 한자를 일본어 자형 
   expect(appShellClassName(true, "ja")).toBe("app app-splash app-lang-ja");
   expect(appShellClassName(false, "es")).toBe("app");
 });
+
+test("AS5. 대만 중국어면 app-lang-zh-tw를 더한다 — 번체 한자를 일본 자형 Duru Sans보다 대만 시스템 글꼴로 먼저 찾는다(ADR-0185)", () => {
+  expect(appShellClassName(false, "zh-TW")).toBe("app app-lang-zh-tw");
+  expect(appShellClassName(true, "zh-TW")).toBe("app app-splash app-lang-zh-tw");
+  expect(appShellClassName(false, "ja")).toBe("app app-lang-ja");
+});

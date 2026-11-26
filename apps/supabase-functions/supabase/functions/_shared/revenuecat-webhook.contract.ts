@@ -35,6 +35,11 @@ export type StoreEvent = {
   readonly eventAt: string | null;
   readonly transferredFrom: readonly string[];
   readonly transferredTo: readonly string[];
+  /**
+   * RevenueCat `period_type`(TRIAL · INTRO · NORMAL · PROMOTIONAL · PREPAID) 그대로, 없으면 null. Chat Plus 첫 구독 보너스가 체험과 유료 기간을
+   * 가릅니다(ADR-0196 D2) — 판정은 DB가 합니다.
+   */
+  readonly periodType: string | null;
 };
 
 export type RevenuecatEventFrom = (body: unknown) => StoreEvent | null;

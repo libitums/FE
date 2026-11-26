@@ -5,11 +5,15 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaTh } from "./ui-copy-th-chat-media";
 import { messengerChatAlbumTh } from "./ui-copy-th-chat-album";
 import { messengerChatSuggestedTh } from "./ui-copy-th-chat-suggested";
+import { messengerChatStoriesTh } from "./ui-copy-th-chat-stories";
+import { myStoriesTh } from "./ui-copy-th-my-stories";
 
 export const messengerChatExtraTh: MessengerChatExtraCopy = {
   media: messengerChatMediaTh,
   album: messengerChatAlbumTh,
   suggested: messengerChatSuggestedTh,
+  stories: messengerChatStoriesTh,
+  myStories: myStoriesTh,
   access: {
     signInTitle: "แชทกับคนที่คุณได้พบ",
     signInBody: "สร้างบัญชีฟรีเพื่อแชทภาษาเกาหลีกับตัวละครในเรื่องราวของคุณ ความคืบหน้าของคุณจะยังอยู่ครบ",
@@ -20,6 +24,35 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     promptLater: "ไว้ทีหลัง",
   },
   pushNotice: { chatUnavailable: "ตอนนี้แชทนี้ใช้งานไม่ได้" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "ส่งรูปภาพมา"
+          : `ส่งรูปภาพมา · ใหม่ ${count} ข้อความ`
+        : latest === "voice"
+          ? count === 1
+            ? "ส่งข้อความเสียงมา"
+            : `ส่งข้อความเสียงมา · ใหม่ ${count} ข้อความ`
+          : count === 1
+            ? "ข้อความใหม่"
+            : `ข้อความใหม่ ${count} ข้อความ`,
+    jump: "ไปที่ข้อความใหม่",
+    latest: "เลื่อนไปข้อความล่าสุด",
+  },
+  replyToast: {
+    dismiss: "ปิด",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `ข้อความใหม่จาก ${name}: ${preview}` + (more > 0 ? ` และอีก ${more} รายการ` : ""),
+  },
+  pushAsk: {
+    title: (name) => `รับการแจ้งเตือนเมื่อ ${name} ส่งข้อความมาไหม?`,
+    body: "บางครั้งเราจะทักไปก่อน — ประมาณวันละครั้ง ช่วงเย็น",
+    turnOn: "เปิด",
+    notNow: "ไว้ทีหลัง",
+    on: (name) => `เปิดการแจ้งเตือนแล้ว — ${name} ทักมาเมื่อไหร่จะแจ้งให้รู้`,
+  },
   chatSettings: {
     entryTitle: "แชท",
     entryDescription: "คำตอบแนะนำ ข้อความจากตัวละคร ความทรงจำ",
@@ -132,11 +165,20 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     cardBody: "ที่นี่คุณจะได้แชทกับเพื่อนชาวเกาหลี เริ่มกับเราก่อนได้เลย — เราจะช่วยเอง",
     cardButton: (name) => `แชทกับ ${name}`,
     steps: {
-      chat: "เขียนเป็นภาษาเกาหลีแล้วส่ง เราจะตอบกลับ และปากกาใต้ข้อความของคุณจะบอกวิธีพูดที่ดีกว่า",
       ideas: "ไม่รู้จะพูดอะไร แตะหลอดไฟข้างช่องพิมพ์เพื่อดูคำตอบแนะนำ",
       media: "คุณยังขอให้เราส่งรูปภาพหรือข้อความเสียงได้ด้วยปุ่มเหนือแป้นพิมพ์",
       sample: "อยากเห็นไหมว่าตอนนี้ฉันทำอะไรอยู่ แตะ Snapshot แล้วฉันจะส่งรูปให้ รูปแรกให้ฟรี",
       voice: "อยากฟังเสียงฉันไหม แตะ เสียงสั้น แล้วฉันจะอ่านข้อความนั้นให้ฟัง ครั้งแรกให้ฟรีเหมือนกัน",
+    },
+    keyboard: {
+      phone: {
+        title: "แชตเป็นภาษาของคุณได้เลย เราจะบอกว่าพูดเป็นภาษาเกาหลีว่าอย่างไร",
+        body: "ต่อไป ลองพิมพ์ภาษาเกาหลีด้วยตัวเองดู",
+      },
+      hangul: {
+        title: "หรือพิมพ์ภาษาเกาหลีตรงนี้ด้วยแป้นฮันกึล",
+        body: "ไม่ต้องมีแป้นพิมพ์เกาหลี สลับได้ทุกเมื่อด้วยปุ่มสลับใต้ช่องพิมพ์",
+      },
     },
     next: "ถัดไป",
     done: "เข้าใจแล้ว",

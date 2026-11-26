@@ -56,6 +56,7 @@ describe("기록 · 인사", () => {
       messages: [],
       corrections: {},
       ideas: null,
+      ideasOrigin: null,
     });
     expect(requests[0]?.url).toBe(
       "https://example.supabase.co/rest/v1/rpc/companion_list_messages",

@@ -55,7 +55,8 @@
 }
 
 /* 들은 칸은 색만이 아니라 굵기로도 갈립니다(WCAG 1.4.1). */
-.entry-basics-cell-heard {
+/* 소리가 나는 동안만입니다(2026-11-23) — 끝나면 처음 테두리로 돌아갑니다. */
+.entry-basics-cell-playing {
   border-width: var(--libitum-stroke-width-strong);
   border-color: var(--libitum-color-brand-strong);
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 대만 중국어(번체) 기기의 알림 채널 이름 · 설명(ADR-0185). values-b+zh+Hant와 같은 문구. 번역 초안 — 원어민 검수 필요. -->
+<resources>
+  <string name="notification_channel_name">Duru 通知</string>
+  <string name="notification_channel_description">學習通知與公告</string>
+</resources>

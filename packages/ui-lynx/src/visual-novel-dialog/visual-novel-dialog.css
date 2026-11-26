@@ -143,6 +143,91 @@
   height: var(--libitum-icon-size-xs);
 }
 
+/* 이름 줄 오른쪽 스위치(FE 확장, 2026-11-24 앱 ADR-0188 개정 D7). 스위치 줄이 누르는 자리(44)만큼 높아지므로 위 여백을
+   20 → 12로 줄여 상자 높이가 크게 늘지 않게 합니다. */
+.ui-lynx-visual-novel-dialog-with-switch {
+  padding-top: var(--libitum-spacing-12);
+}
+
+/* 화자가 없는 상자(내레이션)의 스위치 줄 — 이름 줄과 같은 자리 · 간격입니다. */
+.ui-lynx-visual-novel-dialog-header-row {
+  width: 100%;
+  margin-bottom: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* 누르는 자리는 높이 44 이상입니다. 이름은 줄을 바꿔 들어가고(자르지 않음), 스위치는 줄지 않되 글자는 상자 폭의 60 %를 넘으면
+   한 줄 말줄임입니다 — 긴 번역 언어 · 큰 글자에서 이름과 겹치지 않게 하는 규칙입니다. */
+.ui-lynx-visual-novel-dialog-switch {
+  min-height: 44px;
+  max-width: 60%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-8);
+}
+
+.ui-lynx-visual-novel-dialog-switch-label {
+  min-width: var(--libitum-spacing-0);
+  flex-shrink: 1;
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+  text-overflow: ellipsis;
+}
+
+.ui-lynx-visual-novel-dialog-switch-on .ui-lynx-visual-novel-dialog-switch-label {
+  color: var(--libitum-color-gray-600);
+}
+
+/* 트랙 40 × 24 · 손잡이 16. 켬 = 주황 트랙 · 흰 손잡이, 끔 = 회색 트랙(gray-800) · 옅은 손잡이(gray-600). */
+.ui-lynx-visual-novel-dialog-switch-track {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-24);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-800);
+  transition: background-color var(--libitum-motion-duration-color)
+    var(--libitum-motion-easing-easing);
+}
+
+.ui-lynx-visual-novel-dialog-switch-track-on {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-visual-novel-dialog-switch-knob {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-600);
+}
+
+.ui-lynx-visual-novel-dialog-switch-track-on .ui-lynx-visual-novel-dialog-switch-knob {
+  background-color: var(--libitum-color-white);
+  transform: translateX(16px);
+}
+
+/* 대사 낭독 요소(스위치가 있을 때) — 상자 전체를 덮는 빈 요소이고 글 층 아래에 깔립니다. */
+.ui-lynx-visual-novel-dialog-reading {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+}
+
 /* 번역 — 대사 아래 구분선 뒤에 흐린 한 줄로 섭니다(FE 확장, 2026-09-28 디자인 반영). */
 .ui-lynx-visual-novel-dialog-translation-block {
   width: 100%;
@@ -168,6 +253,27 @@
   line-height: var(--libitum-typography-dialogue-body-line-height);
   letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
   white-space: normal;
+}
+
+/* 로마자(읽는 법) — 대사 바로 아래(간격 4) 기울임 · medium 한 줄입니다(FE 확장, 2026-11-24 · 개정 D7). 색은 따뜻한 살구색
+   brand.reward-disabled-text(#D89A70) — 어두운 면(gray-950) 위 대비 7.1:1입니다. 새 토큰 없이 같은 값대의 기존 토큰을 씁니다. */
+.ui-lynx-visual-novel-dialog-romanization {
+  margin-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-brand-reward-disabled-text);
+  font-style: italic;
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  font-weight: var(--libitum-font-weight-medium);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+  white-space: normal;
+}
+
+/* 로마자 줄이 있거나 로마자 스위치가 있으면 대사 칸의 최소 높이(48)를 풉니다 — 로마자가 대사에 바로 붙고(시안 — 간격 작게),
+   스위치로 끈 때도 한 줄 대사와 구분선 사이에 빈 틈이 남지 않습니다. */
+.ui-lynx-visual-novel-dialog-with-romanization .ui-lynx-visual-novel-dialog-line,
+.ui-lynx-visual-novel-dialog-with-switch .ui-lynx-visual-novel-dialog-line {
+  min-height: var(--libitum-spacing-0);
 }
 
 .ui-lynx-visual-novel-dialog-narration .ui-lynx-visual-novel-dialog-line {

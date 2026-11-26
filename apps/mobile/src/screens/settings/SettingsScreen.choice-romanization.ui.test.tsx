@@ -6,7 +6,7 @@ import type { SessionOptions } from "../../lib/session-options";
 import type { AccountDeletionResult } from "../../lib/account.contract";
 import { SettingsScreen } from "./SettingsScreen";
 
-// `ui` 계층: 설정의 「Romanization on choices」 토글 줄 — 맨 위 Learning 묶음에 서고, 탭하면 바뀐 뒤 값을 알립니다.
+// `ui` 계층: 설정의 「Romanization」 토글 줄 — 맨 위 Learning 묶음에 서고, 탭하면 바뀐 뒤 값을 알립니다.
 
 const itemId = "ui-lynx-settings-group-item-show-choice-romanization";
 const vibrationItemId = "ui-lynx-settings-group-item-vibration";
@@ -52,15 +52,15 @@ test("SU16. 첫 묶음이 Learning이고 그 안에 로마자 · 진동 토글 �
   // ⟨ADR-0126⟩ 대화 설정 「Chats」 줄이 학습 묶음 끝에 선다.
   expect(items).toEqual([itemId, vibrationItemId, "ui-lynx-settings-group-item-chats"]);
 
-  expect(screen.getByText("Romanization on choices")).toBeInTheDocument();
+  expect(screen.getByText("Romanization")).toBeInTheDocument();
   expect(
-    screen.getByText("Show how each Korean answer is read, in small text above it."),
+    screen.getByText("Show how Korean is read, in small text, in answers, lessons and stories."),
   ).toBeInTheDocument();
   expect(cell()).toHaveAttribute("data-trailing", "toggle");
   expect(cell()).toHaveAttribute("data-checked", "true");
   expect(cell()).toHaveAttribute(
     "accessibility-label",
-    "Romanization on choices, Show how each Korean answer is read, in small text above it., on",
+    "Romanization, Show how Korean is read, in small text, in answers, lessons and stories., on",
   );
 });
 

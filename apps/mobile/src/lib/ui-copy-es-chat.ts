@@ -54,7 +54,7 @@ export const messengerChatEs: MessengerChatCopy = {
     crisisArrived: "Recursos de apoyo",
   },
   composer: {
-    placeholder: "Mensaje",
+    placeholder: "Coreano o español",
     send: "Enviar",
     ideas: "Ideas de respuesta",
     ideasOpen: "Ideas de respuesta, abierto",

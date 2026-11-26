@@ -40,8 +40,8 @@ export type MissionVoiceEnv = {
   readonly ttsModel: string;
   readonly defaultVoice: string;
   /**
-   * Scribe 요청에 `enable_logging=false`(ElevenLabs 무보존 모드)를 싣는가. 기본 켬 — 합의 조건(음성을 남기지 않음)을 벤더 쪽에도 건다.
-   * ElevenLabs 문서상 엔터프라이즈 계정 전용이라, 계정이 받지 않으면 `off`로 끈다(진짜 호출로 확인 전).
+   * Scribe 요청에 `enable_logging=false`(ElevenLabs 무보존 모드)를 싣는가. 기본 끔(2026-11-26 사용자 결정 — 벤더 보존은 개인정보 처리방침에
+   * 적힌 범위에서 허용). ElevenLabs 문서상 엔터프라이즈 계정 전용이라 그런 계정일 때 `on`으로 켠다. 우리 서버는 어느 쪽이든 녹음을 저장하지 않는다.
    */
   readonly zeroRetention: boolean;
   readonly autosend: AutoSendSettings;
@@ -80,7 +80,7 @@ export function missionVoiceEnvFrom(
     sttModel: value(missionSttModelEnv) ?? defaultMissionVoice.sttModel,
     ttsModel: value(missionTtsModelEnv) ?? defaultMissionVoice.ttsModel,
     defaultVoice: voice !== null && voiceShape.test(voice) ? voice : defaultMissionVoice.voice,
-    zeroRetention: value(missionZeroRetentionEnv)?.toLowerCase() !== "off",
+    zeroRetention: value(missionZeroRetentionEnv)?.toLowerCase() === "on",
     autosend: {
       confMin: ratio(missionAutosendEnv.confMin, AUTOSEND_DEFAULTS.confMin, 1),
       confMean: ratio(missionAutosendEnv.confMean, AUTOSEND_DEFAULTS.confMean, 1),

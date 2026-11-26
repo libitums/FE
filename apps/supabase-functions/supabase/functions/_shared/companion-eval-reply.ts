@@ -20,6 +20,11 @@ import {
   offerDirective,
 } from "./companion-learning.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
+import {
+  reactionDirective,
+  reactionUserText,
+  type ReactionStory,
+} from "./companion-reaction-prompt.ts";
 import { offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import { storyCardFor } from "./companion-story.ts";
 import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
@@ -31,6 +36,8 @@ export type ReplyEvalCase = {
   readonly romanceTier?: "open" | "standard";
   readonly l1?: string | null;
   readonly speechLevel?: SpeechLevel | null;
+  /** 친밀도 숫자(ADR-0180). 생략하면 구간 줄 없음. */
+  readonly intimacy?: number;
   readonly characterId?: string;
   readonly character?: { readonly name: string; readonly role?: string | null } | null;
   readonly history?: readonly FeedbackHistoryEntry[];
@@ -45,6 +52,11 @@ export type ReplyEvalCase = {
     readonly gloss?: string | null;
     readonly kind?: string;
     readonly mode: string;
+  };
+  /** 내 스토리 반응(ADR-0191 D5) — 있으면 운영의 반응 지시 · 앱 안내 글로 답을 만든다(`text`는 쓰지 않는다). */
+  readonly storyReaction?: Omit<ReactionStory, "roman" | "exampleKo"> & {
+    readonly roman?: string;
+    readonly exampleKo?: string | null;
   };
 };
 
@@ -89,7 +101,8 @@ export async function evalReply(input: {
         mode: item.target.mode as "expose" | "elicit",
       }
     : null;
-  const speechLevel = item.speechLevel ?? "polite";
+  // 운영 턴처럼 페르소나의 말투 상한(`maxSpeechLevel`)을 넘지 않는다 — 존댓말 고정 인물(윤경 · 덕수쌤)에 casual 케이스를 넣어도 polite로 돈다.
+  const speechLevel = capSpeechLevel(item.speechLevel ?? "polite", persona.maxSpeechLevel);
   const ageBand = item.ageBand ?? "adult";
   const line = romanceLine(ageBand, item.romanceTier, persona, speechLevel);
   const expressions = (item.expressions ?? []).map((entry, index) => ({
@@ -107,6 +120,14 @@ export async function evalReply(input: {
       roman: null,
       gloss: target.gloss,
     });
+  const reaction: ReactionStory | null = item.storyReaction
+    ? {
+        ...item.storyReaction,
+        roman: item.storyReaction.roman ?? "",
+        exampleKo: item.storyReaction.exampleKo ?? null,
+      }
+    : null;
+  const userText = reaction === null ? item.text : reactionUserText(reaction);
   const story =
     item.characterId === undefined || item.episodes === undefined
       ? null
@@ -116,12 +137,13 @@ export async function evalReply(input: {
     speechLevel,
     ageBand,
     romanceTier: item.romanceTier ?? "standard",
+    ...(item.intimacy === undefined ? {} : { intimacy: item.intimacy }),
     l1: item.l1 ?? null,
     expressions,
     summary: item.summary ?? null,
     feedbackMode: "separate",
     memories: item.memories ?? [],
-    directive: null,
+    directive: reaction === null ? null : reactionDirective(reaction),
     story,
   });
   const offer: LearningOffer | null = target
@@ -146,7 +168,7 @@ export async function evalReply(input: {
   for await (const chunk of llm.reply({
     system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     history,
-    userText: item.text,
+    userText,
     directive: offer === null ? null : offerDirective(offer),
     signal,
   })) {
@@ -177,7 +199,11 @@ export async function evalReply(input: {
             ? null
             : { surface: target.surface, mode: target.mode as "expose" | "elicit" },
         history: item.history ?? [],
-        userText: item.text,
+        // 사진 반응은 인물이 받은 장면 설명을 채점자에게도 준다 — 없으면 설명에 있는 것을 「지어냈다」고 본다(평가 2026-11-24).
+        userText:
+          reaction?.kind === "photo" && reaction.scene
+            ? `${userText}\n(인물이 받은 사진 설명: ${reaction.scene})`
+            : userText,
         reply: segments,
         signal,
       });
@@ -194,4 +220,12 @@ export async function evalReply(input: {
     judge: judgement,
     judgeError,
   };
+}
+
+const speechOrder: readonly SpeechLevel[] = ["polite", "casual", "slang"];
+
+/** 말투 단계를 상한까지로 자른다. 상한이 없으면(추천 친구 · 이름만 준 케이스) 그대로. */
+export function capSpeechLevel(level: SpeechLevel, max: SpeechLevel | undefined): SpeechLevel {
+  if (max === undefined) return level;
+  return speechOrder.indexOf(level) > speechOrder.indexOf(max) ? max : level;
 }

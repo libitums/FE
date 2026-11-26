@@ -52,6 +52,8 @@ export type SettingsScreenProps = {
   readonly account: SettingsAccountState;
   /** 「Chats」 줄 — 대화 설정 화면을 엽니다(ADR-0126). 분석 이벤트가 없어 내비 대상 목록과 따로 둡니다. 메신저를 쓸 수 없는 계정(ADR-0128)이면 null — 줄이 없습니다. */
   readonly onOpenChatSettings: (() => void) | null;
+  /** 「My stories」 줄(ADR-0194) — 없거나 null이면 줄이 없습니다. */
+  readonly onOpenMyStories?: (() => void) | null;
   /** 「Plans」 줄 — 요금제 비교 화면을 엽니다(ADR-0144). 기능 플래그가 꺼졌거나 비회원이면 없음(undefined · null) — 줄이 없습니다. */
   readonly onOpenPlans?: (() => void) | null;
   /** 「Hide me from ranking」 토글 줄(ADR-0170) — 서버 값이 없거나 비회원이면 없음(undefined · null). */
@@ -73,10 +75,14 @@ export type FeedbackSubmittedEvent = {
   readonly rating: string;
   readonly hasMessage: boolean;
 };
+/** 설정 밖에서 세션 옵션을 바꾼 자리입니다 — 지금은 대사 상자 안 로마자 스위치 하나(ADR-0188 개정 D7). */
+export type SessionOptionChangeSource = "dialog";
 export type SessionOptionChangedEvent = {
   readonly name: "session_option_changed";
   readonly option: SessionOptionKey;
   readonly value: boolean;
+  /** 없으면 설정에서 바꾼 것입니다. */
+  readonly source?: SessionOptionChangeSource;
 };
 
 export type SettingsEvent =

@@ -1,2 +1,7 @@
 /* 추적 허용 안내(ATT), vi. ADR-0091 D6(2026-11-19 개정). */
 "NSUserTrackingUsageDescription" = "Cho phép theo dõi để chúng tôi biết quảng cáo nào đã giúp bạn tìm thấy Duru. Chúng tôi không bao giờ bán dữ liệu của bạn.";
+/* 마이크 · 음성 인식 권한 안내(ADR-0185 언어 검증 — 빌드 설정 값은 한국어라 이 언어 기기에도 한국어가 떴다). 번역 초안 — 원어민 검수 필요. */
+"NSMicrophoneUsageDescription" = "Duru ghi âm câu bạn đọc khi luyện nói để kiểm tra phát âm. Chỉ ghi âm trong bước luyện nói và dừng ngay khi bạn dừng.";
+"NSSpeechRecognitionUsageDescription" = "Duru chuyển bản ghi âm luyện nói thành chữ tiếng Hàn để kiểm tra có khớp với câu cần đọc không. Giọng nói của bạn không được dùng vào việc khác.";
+/* 카메라 권한 안내 — 내 스토리 사진 찍기(ADR-0199). 번역 초안 — 원어민 검수 필요. */
+"NSCameraUsageDescription" = "Duru chỉ dùng camera khi bạn chụp ảnh cho câu chuyện của mình. Không có gì được tải lên cho đến khi bạn nhấn Share.";

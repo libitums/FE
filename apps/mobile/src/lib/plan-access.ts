@@ -67,6 +67,26 @@ export function subscriptionUnlimitedPass(
   };
 }
 
+/** 구독 상태 — 첫날 무제한(ADR-0186 개정 2)이 읽습니다. unknown은 권한을 읽을 수 있는데 아직(또는 실패로) 못 읽었을 때. */
+export type SubscriptionState = "none" | "active" | "unknown";
+
+/**
+ * 활성 구독이 하나라도 있나(요금제 종류 무관) — 서버가 만료를 거른 권한 줄이 있거나 등급 · 티켓 무제한이 서 있으면 active.
+ * 결제를 열 수 없는 빌드(`readable` 거짓)는 권한을 읽지 않으므로 none입니다(구독을 알 길도 살 길도 없음, 지금과 같음). 순수.
+ */
+export function subscriptionStateOf(
+  readable: boolean,
+  entitlements: PlanEntitlements | null,
+): SubscriptionState {
+  if (!readable) return "none";
+  if (entitlements === null) return "unknown";
+  const active =
+    entitlements.entitlements.length > 0 ||
+    entitlements.tier !== "free" ||
+    entitlements.unlimitedTickets;
+  return active ? "active" : "none";
+}
+
 /** 만료 경계 뒤 여유 — 서버가 `now()`로 권한을 거르므로 경계를 조금 넘겨 읽습니다(기기 · 서버 시각 차). */
 export const BOUNDARY_MARGIN_MS = 2000;
 /** setTimeout의 가장 긴 지연(2^31 - 1) — 넘기면 곧바로 불립니다. */

@@ -5,6 +5,10 @@ import type { ChatMediaCopy } from "./chat-media.contract";
 import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
 import type { SuggestedFriendsCopy } from "./suggested-friends.contract";
+import type { FriendStoriesCopy } from "./friend-stories.contract";
+import type { MyStoriesCopy } from "./my-stories-copy.contract";
+import type { NewMessagePillCopy } from "./new-message-pill.contract";
+import type { ReplyToastCopy } from "./reply-toast-copy.contract";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
 export type ChatProactivePref = "off" | "daily1" | "daily2";
 /** 교정 방식입니다 — 카드만 · 답 안에서 자연스럽게 · 먼저 짚고. 카드는 셋 모두 옵니다. */
@@ -43,6 +47,7 @@ export type ChatMemoryList = {
 };
 
 import type { MessengerListNoticeCopy } from "./messenger-list-notice";
+import type { ChatPushAskCopy } from "./chat-push-ask.contract";
 
 /** 메신저 문구 표에 덧붙는 칸입니다 — 대화 설정(ADR-0126) · 선톡 푸시 안내(ADR-0127). */
 export type MessengerChatExtraCopy = {
@@ -52,9 +57,19 @@ export type MessengerChatExtraCopy = {
   readonly album: ChatAlbumCopy;
   /** 추천 친구 줄 · 프로필 시트 · 친구 찾기(ADR-0162). */
   readonly suggested: SuggestedFriendsCopy;
+  /** 친구 스토리 줄 · 보기 · 대화 인용(ADR-0178). */
+  readonly stories: FriendStoriesCopy;
+  /** 내 스토리(ADR-0194). */
+  readonly myStories: MyStoriesCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
+  /** 첫 답장 뒤 알림 권한 카드(ADR-0197). */
+  readonly pushAsk: ChatPushAskCopy;
   readonly access: MessengerAccessCopy;
+  /** 위로 올려 읽는 중 「새 메시지 ↓」 알약 · 맨 아래로 단추. */
+  readonly newMessages: NewMessagePillCopy;
+  /** 채팅 목록 · 그 방 밖에서 답이 오면 위에 잠깐 서는 카드(ADR-0200). */
+  readonly replyToast: ReplyToastCopy;
   /** 교정 카드 · 다시 보내기 · 답 평가(ADR-0129). */
   readonly feedback: FeedbackCopy;
   /** 덕수쌤 첫 입장 안내 — 목록 카드 · 방 코치마크(2026-11-13). */
@@ -114,13 +129,17 @@ export type MessengerGuideCopy = {
   readonly cardBody: string;
   readonly cardButton: (name: string) => string;
   readonly steps: {
-    readonly chat: string;
     readonly ideas: string;
     readonly media: string;
     /** 예시 스냅샷 단계(ADR-0146 추가) — 사진 단추를 누르면 첫 한 장은 무료. */
     readonly sample: string;
     /** 예시 음성 단계 — 음성 단추를 누르면 첫 인사를 읽은 음성을 무료로 한 번. */
     readonly voice: string;
+  };
+  /** 키보드 두 갈래 단계(ADR-0190) — 휴대폰 키보드 화면 · Hangul keys 화면마다 큰 줄(title)과 작은 줄(body). */
+  readonly keyboard: {
+    readonly phone: { readonly title: string; readonly body: string };
+    readonly hangul: { readonly title: string; readonly body: string };
   };
   readonly next: string;
   readonly done: string;

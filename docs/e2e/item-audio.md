@@ -1,4 +1,4 @@
-# 학습 문항 음성 · 「천천히」(0.85) 재생
+# 학습 문항 음성 · 「천천히」(0.7) 재생 ⟨2026-11-24 — 0.85에서 0.7로, [ADR-0082](../adr/0082-item-audio-and-slow-playback.md) 「정정 ⟨2026-11-24⟩」⟩
 
 카탈로그 레슨의 학습 문항이 **문항 음성을 실제로 들려주는지**, 듣기 문항의 `Slow`가 **길이만 늘리고 음높이를 지키는지**, 레슨 안에서 유지되고 나가면 꺼지는지, 소리와 스크린리더 낭독이 어떻게 겹치는지를 기기에서 확인하는 **수동 절차**다.
 결정은 [ADR-0082](../adr/0082-item-audio-and-slow-playback.md), 컷 · 최종 테스트의 음성은 [에피소드 음성 e2e](episode-audio.md), Android 호스트 계측은 [Android 오디오 재생 검증](android-audio-playback.md)이 진다.
@@ -7,10 +7,10 @@
 
 | 이미 지는 층 | 무엇을 |
 |---|---|
-| unit | 속도 어휘(`lib/listen-pace.ts` — 0.85 한 자리 · 토글 · 이름), 재생 접점(1.0 = `play` 인자 둘 · 0.85 = `playAtRate` · 옛 호스트 = `play` · 세대 · 한 번 규칙), 12유형 문항 → 음성 매핑 · 자리표시자 · `LISTEN_BUILD` 조립, 레슨 수명 · 리셋, 이벤트 `episode_listen_item_answered` |
-| ui | `Slow` 토글(이름 `Slow, on/off` · 숨김 규칙 · 동작 줄이기), 듣기 3열 · 간이 줄(재생 중 `Stop`), 듣기 훅(문항 키 자동 재생 · 다시 듣기 · 켤 때 0.85로 처음부터 · 끌 때 무동작 · 빠른 연타), 일곱 화면의 재생 시점, 듣기 대본 판정 뒤 공개 · 판정 때 대본 낭독 |
-| integration | 앱을 띄워 내장 u01 · u00 레슨에서 재생 모듈 대역에 `playAtRate(…, 0.85, …)`가 닿는 것, 다음 활동까지 유지 · 나가면 1.0, 소리 없는 듣기는 건너뛰지 않고 대본이 보이는 소리 없는 제시(`LISTEN_BUILD`만 건너뜀 — ADR-0082 v4 정정), 컷 · 최종은 `playAtRate` 0회 |
-| 호스트 | iOS HostTests `AudioPlaybackModuleTests` AI6 ~ AI10(정규화 · 소스 무관 적용 · 메서드 다섯 · 0.85가 더 길고 `done` 한 번 · 0.85 중 `stop` · 닿지 않는 원격), Android JVM `AudioPlaybackRateTest` · 계측 AP-S1 ~ AP-S6 |
+| unit | 속도 어휘(`lib/listen-pace.ts` — 0.7 한 자리 · 토글 · 이름), 재생 접점(1.0 = `play` 인자 둘 · 0.7 = `playAtRate` · 옛 호스트 = `play` · 세대 · 한 번 규칙), 12유형 문항 → 음성 매핑 · 자리표시자 · `LISTEN_BUILD` 조립, 레슨 수명 · 리셋, 이벤트 `episode_listen_item_answered` |
+| ui | `Slow` 토글(이름 `Slow, on/off` · 숨김 규칙 · 동작 줄이기), 듣기 3열 · 간이 줄(재생 중 `Stop`), 듣기 훅(문항 키 자동 재생 · 다시 듣기 · 켤 때 0.7로 처음부터 · 끌 때 무동작 · 빠른 연타), 일곱 화면의 재생 시점, 듣기 대본 판정 뒤 공개 · 판정 때 대본 낭독 |
+| integration | 앱을 띄워 내장 u01 · u00 레슨에서 재생 모듈 대역에 `playAtRate(…, 0.7, …)`가 닿는 것, 다음 활동까지 유지 · 나가면 1.0, 소리 없는 듣기는 건너뛰지 않고 대본이 보이는 소리 없는 제시(`LISTEN_BUILD`만 건너뜀 — ADR-0082 v4 정정), 컷 · 최종은 `playAtRate` 0회 |
+| 호스트 | iOS HostTests `AudioPlaybackModuleTests` AI6 ~ AI10(정규화 · 소스 무관 적용 · 메서드 다섯 · 0.85가 더 길고 `done` 한 번 · 0.85 중 `stop` · 닿지 않는 원격) · AI9b(「천천히」 0.7이 1.25배 이상), Android JVM `AudioPlaybackRateTest` · 계측 AP-S1 ~ AP-S6 · AP-S1b(0.7이 1.2배 이상) |
 
 **이 문서만 보는 것**: 실제로 **들리는** 길이 비 · 음높이, 받아 둔 파일 · 일시정지 재개에서 속도가 유지되는지(학습 문항은 받아 둔 파일만 소리다 — ADR-0082 v4), 레슨을 오가는 동안의 상태, 다른 앱 음악 덕킹, VoiceOver · TalkBack이 무엇을 읽고 소리와 어떻게 겹치는지.
 Maestro 흐름은 두지 않는다 — 소리 · 음높이를 판정할 수 없다.
@@ -23,11 +23,11 @@ Maestro 흐름은 두지 않는다 — 소리 · 음높이를 판정할 수 없�
 - 학습 문항의 소리는 **기기에 받아 둔 음성 파일만**이다(ADR-0082 v4 — 원격 주소로 재생하지 않는다). 받아 둔 파일이 없으면 듣기는 대본이 보이는 소리 없는 제시로, `LISTEN_BUILD`는 건너뛰어 선다(EU8b).
   앱이 첫 온라인 실행에서 음성을 **받으려면** `apps/mobile/.env.local`에 Supabase 값이 있어야 한다 — 새 작업 트리에는 이 파일이 없으니 메인 체크아웃에서 복사한다. 값은 기록에 적지 않는다. 음성 파일을 받아 둔 자리에 직접 두는 회차(2026-10-22)는 받기를 거치지 않는다.
 - 콘텐츠: 내장 u01 · u00. 음성은 첫 온라인 실행에서 받는다(받아 둔 파일 — `<data>/Library/Application Support/content-files/audio/…`).
-- 녹화: iOS `xcrun simctl io booted recordVideo <파일>.mov`, Android `adb shell screenrecord`. 길이 비는 녹화 파형 · 타임스탬프로 잰다(같은 음성 id를 1.0 · 0.85로 한 번씩).
+- 녹화: iOS `xcrun simctl io booted recordVideo <파일>.mov`, Android `adb shell screenrecord`. 길이 비는 녹화 파형 · 타임스탬프로 잰다(같은 음성 id를 1.0 · 0.7로 한 번씩).
 
 ### 호스트 로그를 어디서 보나
 
-- **Android**: `adb logcat -s AudioPlayback` — 재생 실패는 `W`로 남는다(`Rejected audio source …` · `Audio playback error …` · `Cannot open audio source` · **`Cannot set playback speed`**). 마지막 줄이 보이면 0.85 요청이 1.0으로 났다는 뜻이다(ADR-0082 D3).
+- **Android**: `adb logcat -s AudioPlayback` — 재생 실패는 `W`로 남는다(`Rejected audio source …` · `Audio playback error …` · `Cannot open audio source` · **`Cannot set playback speed`**). 마지막 줄이 보이면 0.7 요청이 1.0으로 났다는 뜻이다(ADR-0082 D3).
   원격이 닿지 않으면 MediaPlayer가 연결을 약 30초 다시 시도한 뒤 `done`이 온다 — 그동안 화면은 멈추지 않는다.
 - **iOS**: `xcrun simctl spawn booted log stream --predicate 'process == "Host"'`(실기는 Console.app에서 기기 · 프로세스 `Host`). 재생 모듈은 오디오 세션 실패만 `NSLog`로 남긴다(`Playback audio session … failed`) — 속도 설정 실패 로그는 없다.
 - 요청이 나갔는지(원격)는 Supabase 대시보드 로그(`edge_logs`)의 `content/audio/` 경로로 본다([에피소드 음성 e2e](episode-audio.md) 「전제」). **요청이 나간 것은 들린 것이 아니다.**
@@ -38,10 +38,10 @@ Maestro 흐름은 두지 않는다 — 소리 · 음높이를 판정할 수 없�
 
 | id | 조건 · 단계 | 관찰(통과 조건) |
 |---|---|---|
-| EU1 | iOS. u01 레슨의 듣기 문항(`LISTEN_SELECT`) → 자동 재생(1.0)을 끝까지 → `Slow`(`listening-prompt-slow`) → 다시 듣기(`listening-prompt-replay`). 비행기 모드(받아 둔 파일)로 같은 순서를 반복 | 0.85 길이 ≈ 1.18배(녹화), **음높이가 같다**(귀 — 목소리가 낮아지지 않는다). 받아 둔 `file://`(학습 문항은 원격으로 재생하지 않는다 — v4). `Slow`를 켜는 순간 0.85로 처음부터 다시 난다 |
-| EU2 | Android 에뮬레이터. EU1과 같음 + 0.85 재생 중 일시정지 → 재개 | EU1과 같은 결과. 재개 뒤에도 0.85, 일시정지 중 저절로 재생되지 않는다. logcat에 `Cannot set playback speed`가 없다 |
-| EU3 | 두 기기. `Slow` 켬 → 다음 듣기 문항 · 다음 활동(받아쓰기 · 대답 고르기) → 나가기 → 같은 레슨 다시 → 레슨 끝 → 컷 · 최종 테스트 | 레슨 안에서는 켜진 채 다음 문항 자동 재생도 0.85, 나갔다 들어오면 `Slow, off`, 컷 · 최종은 1.0 |
-| EU4 | VoiceOver · TalkBack 켬 + 다른 앱 음악 재생 → 토글에 초점 → 두 번 탭 → 0.85 재생 | 0.85 동안 음악이 줄고 끝나면 돌아온다(1.0과 같음). TalkBack 낭독 때 멈춤 · 이음이 1.0과 같다 |
+| EU1 | iOS. u01 레슨의 듣기 문항(`LISTEN_SELECT`) → 자동 재생(1.0)을 끝까지 → `Slow`(`listening-prompt-slow`) → 다시 듣기(`listening-prompt-replay`). 비행기 모드(받아 둔 파일)로 같은 순서를 반복 | 0.7 길이 ≈ 1.43배(호출 → `done` 전체로는 고정분 때문에 약 1.39배)(녹화), **음높이가 같다**(귀 — 목소리가 낮아지지 않는다). 받아 둔 `file://`(학습 문항은 원격으로 재생하지 않는다 — v4). `Slow`를 켜는 순간 0.7로 처음부터 다시 난다 |
+| EU2 | Android 에뮬레이터. EU1과 같음 + 0.7 재생 중 일시정지 → 재개 | EU1과 같은 결과. 재개 뒤에도 0.7, 일시정지 중 저절로 재생되지 않는다. logcat에 `Cannot set playback speed`가 없다 |
+| EU3 | 두 기기. `Slow` 켬 → 다음 듣기 문항 · 다음 활동(받아쓰기 · 대답 고르기) → 나가기 → 같은 레슨 다시 → 레슨 끝 → 컷 · 최종 테스트 | 레슨 안에서는 켜진 채 다음 문항 자동 재생도 0.7, 나갔다 들어오면 `Slow, off`, 컷 · 최종은 1.0 |
+| EU4 | VoiceOver · TalkBack 켬 + 다른 앱 음악 재생 → 토글에 초점 → 두 번 탭 → 0.7 재생 | 0.7 동안 음악이 줄고 끝나면 돌아온다(1.0과 같음). TalkBack 낭독 때 멈춤 · 이음이 1.0과 같다 |
 | EU5 | 두 기기. `WORD_ORDER` · `SPEAK_WORD` 판정 | 정답 효과음과 정답 음성(1.0 한 번)의 겹침이 학습을 막지 않는지(귀) — 막는다면 ADR-0082 재검토 조건 3 |
 | EU6 | iOS 시뮬레이터. 성능 측정 3회(레슨 시작 → 첫 문항 첫 그리기 · 문항 첫 그리기 → 재생 호출 · `Slow` 탭 → `playAtRate` 호출) | 성능 보고서에 중앙값 · 예산 대비 — 이 문서는 절차만 진다 |
 | EU7 | 옛 호스트(main 빌드 호스트 + 이 번들, 가능하면) | 듣기 문항에 `Slow`가 없다 · 소리 1.0 · Lynx 오류 없음 |
@@ -59,10 +59,18 @@ Maestro 흐름은 두지 않는다 — 소리 · 음높이를 판정할 수 없�
 | BA2 | VO · TalkBack. 대본 표시 꺼짐(초기값)으로 듣기 문항에서 보기를 고름 | 판정 순간 「Correct.(또는 Incorrect.) <한국어 대본>. <로마자>」가 **한 번** 들린다. 설정에서 「대본 표시」를 켜면 지금 공지 그대로(대본 낭독 없음) |
 | BA4 | VO 오디오 덕킹 켬 / 끔 · TalkBack. 문장 순서 · 낱말 말하기 각 1문항 판정 | `기록: <들린 그대로>` — 판정 낭독이 정답 음성을 줄이거나(VO 덕킹) 섞이거나 · 정답 음성이 조각나는가(TalkBack — 일시 포커스 손실 = 멈춤) |
 | BA5 | VO. 따라 읽기 녹음 중 간이 줄 다시 듣기를 누름 | `기록: <들린 그대로>` — 인식 결과 낭독과 문장 음성이 겹치는가, 두 번 탭 직전 VO의 「Play again」이 녹음에 들어가는가 |
-| BA6 | VO · TalkBack. `Slow` 두 번 탭(켜기 · 끄기) | 두 번 탭 뒤 새 상태 `Slow, on` / `Slow, off`가 다시 읽히는가(켤 때는 0.85 재생과 겹친다). 안 읽히면 ADR-0082 재검토 조건 6 |
+| BA6 | VO · TalkBack. `Slow` 두 번 탭(켜기 · 끄기) | 두 번 탭 뒤 새 상태 `Slow, on` / `Slow, off`가 다시 읽히는가(켤 때는 0.7 재생과 겹친다). 안 읽히면 ADR-0082 재검토 조건 6 |
 | BA7 | 큰 글자(접근성 크기 최대) · 보통 글자(`large`) | 듣기 3열 · 간이 줄의 `Slow`가 켜짐 · 꺼짐 모두 「✓ Slow」 한 줄이고 카드 안에 있다. 보통 글자에서는 `Slow`를 켜도 재생 원이 가운데 그대로다. 접근성 큰 글자에서 켜면 재생 원이 가운데에서 밀리는 것은 받아들인 대가다(ADR-0082 「대가」 9 — 375pt · AX5에서 약 37pt) |
 
 ## 결과
+
+### 2026-11-24 · 0.7 회차 — 호스트까지(레슨 회차 미실행)
+
+- 계기: 운영 의견 「The read the Korean slow feature doesn't make the Korean slower.」(2026-11-22, iOS 1.2.0 (26)). 원인은 호스트가 아니라 배율 값이었다 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md) 「정정 ⟨2026-11-24⟩」.
+- 호스트 밖 재현(macOS AVFoundation, iOS 호스트와 같은 `defaultRate` · `.timeDomain`, 볼륨 0): 번들 `greeting-1`(2.306초) 1.0 = 2.59초 · 0.85 = 3.01초(1.16배) · 0.7 = 3.59초(1.39배). **흉내다 — 시뮬레이터 · 기기가 아니다.**
+- 호스트 회차(iPhone 17 시뮬레이터 · Pixel 8 에뮬레이터 `-no-audio`): iOS HostTests `AudioPlaybackModuleTests` 12/12(AI9b 1.0 = 2,629 ms · 0.7 = 3,599 ms · 1.369배), Android 계측 `AudioPlaybackModuleTest` 23/23(AP-S1b 2,458 ms · 3,228 ms · 1.313배). Android `assembleBundled` 설치 → 첫 화면, JS 오류 없음.
+- EU1 · EU2 · EU3를 실제 레슨에서 0.7로: **미실행** — 레슨은 로그인이 있어야 들어가고 계정 만들기는 이 작업의 승인 밖이다. 음질(0.7에서 끊김 · 떨림이 없는가)은 사람이 들어야 한다.
+- 아래 2026-10-22 회차의 수치는 0.85 때 것이다.
 
 ### 2026-10-22 · iOS 시뮬레이터 iPhone 13 mini(iOS 26.5) · commit `49dc553e`
 

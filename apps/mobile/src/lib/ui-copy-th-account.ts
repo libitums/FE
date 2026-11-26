@@ -58,11 +58,11 @@ export const settingsTh: SettingsCopy = {
   sessionOption: {
     "auto-play-audio": "เล่นเสียงอัตโนมัติ",
     "show-transcript": "แสดงคำบรรยาย",
-    "show-choice-romanization": "คำอ่านในตัวเลือก",
+    "show-choice-romanization": "คำอ่าน",
     vibration: "การสั่น",
   },
   sessionOptionDescription: {
-    "show-choice-romanization": "แสดงคำอ่านของคำตอบภาษาเกาหลีแต่ละข้อเป็นตัวเล็กด้านบน",
+    "show-choice-romanization": "แสดงคำอ่านภาษาเกาหลีเป็นตัวเล็กในคำตอบ บทเรียน และเรื่องราว",
     vibration: "สั่นเมื่อตอบถูกหรือผิด และเมื่อพิมพ์บนแป้นพิมพ์",
   },
   optionState: { on: "เปิด", off: "ปิด" },

@@ -78,6 +78,9 @@ type Options = {
   random?: () => number;
   learning?: unknown;
   chatWords?: unknown;
+  claim?: unknown;
+  claimStatus?: number;
+  quiz?: unknown;
 };
 
 function setup(options: Options = {}) {
@@ -113,6 +116,17 @@ function setup(options: Options = {}) {
     companion_mark_memories: null,
     companion_save_summary: null,
     companion_save_suggestions: true,
+    companion_claim_quiz_answer: options.quiz ?? { result: "none" },
+    companion_quiz_answered: { result: "hint", attempt: 1 },
+    companion_claim_story_reply: options.claim ?? {
+      result: "free",
+      story: {
+        line: "야근 끝! 편의점 라면이 최고야",
+        wordKo: null,
+        imagePath: "content/images/u01-water/cult-u01-1plus1.webp",
+        postedAt: "2026-11-09T07:00:00.000Z",
+      },
+    },
   };
   const outbound = async (request: OutboundRequest) => {
     // 서버 키 확인: 런타임 키와 다른 레거시 키를 Auth 관리 API가 받아 준다.
@@ -130,6 +144,8 @@ function setup(options: Options = {}) {
     }
     const fn = request.url.split("/rpc/")[1]!;
     rpcs.push({ fn, args: JSON.parse(request.body ?? "{}") as Record<string, unknown> });
+    if (fn === "companion_claim_story_reply" && options.claimStatus !== undefined)
+      return { status: options.claimStatus, text: async () => "" };
     if (fn === "companion_save_suggestions" && options.saveStatus !== undefined)
       return { status: options.saveStatus, text: async () => "" };
     const body = responses[fn] ?? null;
@@ -270,7 +286,12 @@ describe("스트림 전 판정", () => {
     );
     await response.text();
     await settle();
-    expect(rpcs[0]).toMatchObject({
+    // 덕수쌤 방은 관문 전에 퀴즈의 답인지 먼저 본다(ADR-0191 D14) — 그다음이 관문이다.
+    expect(rpcs.slice(0, 2).map((rpc) => rpc.fn)).toEqual([
+      "companion_claim_quiz_answer",
+      "companion_turn_gate",
+    ]);
+    expect(rpcs[1]).toMatchObject({
       fn: "companion_turn_gate",
       args: { p_user_id: playground, p_region: "US" },
     });
@@ -2012,5 +2033,180 @@ describe("완화 수위(ADR-0164)", () => {
       speechLevel: "slang",
     });
     expect(minor.moderations[0]!.romanceLine).toBe("none");
+  });
+});
+
+describe("덕수쌤 퀴즈의 답(ADR-0191 D14)", () => {
+  const watch = () => {
+    const fake = fakeCompanionLlm();
+    const directives: (string | null)[] = [];
+    const llm: CompanionLlm = {
+      ...fake,
+      reply(request) {
+        directives.push(request.directive ?? null);
+        return fake.reply(request);
+      },
+    };
+    return { llm, directives };
+  };
+  const quiz = (attempt: number) => ({
+    result: "quiz",
+    quizId: "q1",
+    attempt,
+    word: "도착하다",
+    meaning: "to arrive",
+  });
+
+  test("CQ1. 퀴즈의 답이면 관문 전에 무료 예약을 받고, 맞히면 「맞아요, ○○!」 지시 · 턴이 끝난 뒤 맞힘으로 적는다", async () => {
+    const watched = watch();
+    const { handler, rpcs, settle } = setup({ llm: watched.llm, quiz: quiz(1) });
+    const list = await events(await handler(post(body({ text: "서울에 도착했어요!" }))));
+    await settle();
+    expect(names(list)).toContain("done");
+    const order = rpcs.map((rpc) => rpc.fn);
+    expect(order.indexOf("companion_claim_quiz_answer")).toBeLessThan(
+      order.indexOf("companion_turn_gate"),
+    );
+    expect(rpcs.find((rpc) => rpc.fn === "companion_claim_quiz_answer")?.args).toEqual({
+      p_user_id: userId,
+      p_character_id: "duksu",
+      p_client_message_id: "6f1c3a2e-8d4b-4c1a-9f2e-1a2b3c4d5e6f",
+      p_now: "2026-11-09T09:00:00.000Z",
+    });
+    expect(watched.directives[0]).toContain('"맞아요, 도착하다!"');
+    expect(rpcs.find((rpc) => rpc.fn === "companion_quiz_answered")?.args).toEqual({
+      p_user_id: userId,
+      p_client_message_id: "6f1c3a2e-8d4b-4c1a-9f2e-1a2b3c4d5e6f",
+      p_result: "correct",
+      p_now: "2026-11-09T09:00:00.000Z",
+    });
+  });
+
+  test("CQ2. 첫 오답은 힌트(단어는 쓰지 말라) · 두 번째 오답은 정답 공개, 둘 다 틀림으로 적는다", async () => {
+    const first = watch();
+    const one = setup({ llm: first.llm, quiz: quiz(1) });
+    await (await one.handler(post(body({ text: "모르겠어요" })))).text();
+    await one.settle();
+    expect(first.directives[0]).toContain("hint");
+    expect(first.directives[0]).toContain('"도"');
+    expect(first.directives[0]).toContain('do not write "도착하다" itself');
+    // 퀴즈와 상관없는 말이면 그 말에 답하고 퀴즈를 놓아준다 — 모델이 @state의 quiz로 알린다.
+    expect(first.directives[0]).toContain("if it is about something else or they want to move on");
+    expect(first.directives[0]).toContain('"quiz": "correct"');
+    // 모델이 판정을 주지 않으면 틀림으로 적는다.
+    expect(one.rpcs.find((rpc) => rpc.fn === "companion_quiz_answered")?.args).toMatchObject({
+      p_result: "wrong",
+    });
+
+    const second = watch();
+    const two = setup({ llm: second.llm, quiz: quiz(2) });
+    await (await two.handler(post(body({ text: "출발?" })))).text();
+    await two.settle();
+    expect(second.directives[0]).toContain("정답은 도착하다예요!");
+    expect(second.directives[0]).toContain("the quiz is over");
+  });
+
+  test("CQ3. 퀴즈가 아니면 지시 없음 · 다른 인물 · 스토리 답장 · 고쳐 보내기는 판정을 부르지 않는다 · 실패한 턴은 적지 않는다", async () => {
+    const plain = watch();
+    const none = setup({ llm: plain.llm });
+    await (await none.handler(post())).text();
+    await none.settle();
+    expect(plain.directives[0]).toBeNull();
+    expect(none.rpcs.map((rpc) => rpc.fn)).not.toContain("companion_quiz_answered");
+
+    for (const extra of [
+      { character_id: "mina" },
+      { story_id: "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f" },
+      { replaces_message_id: "7a1c3a2e-8d4b-4c1a-9f2e-1a2b3c4d5e6f" },
+    ]) {
+      const t = setup({ quiz: quiz(1) });
+      await (await t.handler(post(body(extra)))).text();
+      await t.settle();
+      expect(t.rpcs.map((rpc) => rpc.fn)).not.toContain("companion_claim_quiz_answer");
+    }
+
+    const failed = setup({ quiz: quiz(1), llm: null });
+    expect((await failed.handler(post(body({ text: "도착" })))).status).toBe(500);
+    expect(failed.rpcs.map((rpc) => rpc.fn)).not.toContain("companion_quiz_answered");
+  });
+});
+
+describe("친구 스토리 답장(ADR-0178 D5 · D6)", () => {
+  const storyId = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
+  const watch = () => {
+    const fake = fakeCompanionLlm();
+    const directives: (string | null)[] = [];
+    const llm: CompanionLlm = {
+      ...fake,
+      reply(request) {
+        directives.push(request.directive ?? null);
+        return fake.reply(request);
+      },
+    };
+    return { llm, directives };
+  };
+  const streamOutcome = (logs: ChatSendLogEntry[]) =>
+    logs.find((entry) => entry.event === "chat_send" && entry.status === "stream")?.outcome;
+
+  test("CSS1. story_id가 있으면 관문 전에 무료 판정을 부르고, 답 요청 지시에 그 스토리 한 줄을 싣는다", async () => {
+    const watched = watch();
+    const { handler, rpcs, logs, settle } = setup({ llm: watched.llm });
+    const list = await events(
+      await handler(post(body({ story_id: storyId, character_id: "mina", text: "맛있겠다!" }))),
+    );
+    await settle();
+    expect(names(list)).toContain("done");
+    const order = rpcs.map((rpc) => rpc.fn);
+    expect(order.indexOf("companion_claim_story_reply")).toBeLessThan(
+      order.indexOf("companion_turn_gate"),
+    );
+    expect(rpcs.find((rpc) => rpc.fn === "companion_claim_story_reply")?.args).toEqual({
+      p_user_id: userId,
+      p_story_id: storyId,
+      p_character_id: "mina",
+      p_client_message_id: "6f1c3a2e-8d4b-4c1a-9f2e-1a2b3c4d5e6f",
+      p_now: "2026-11-09T09:00:00.000Z",
+    });
+    expect(watched.directives[0]).toContain('"야근 끝! 편의점 라면이 최고야"');
+    expect(watched.directives[0]).toContain("story");
+    expect(streamOutcome(logs)).toContain("story=free");
+  });
+
+  test("CSS2. used · expired도 인용 지시는 싣고, story_id가 없으면 판정을 부르지 않는다", async () => {
+    const used = watch();
+    const first = setup({
+      llm: used.llm,
+      claim: {
+        result: "used",
+        story: { line: "북촌에서 산책 중이에요", imagePath: "x", postedAt: "p" },
+      },
+    });
+    await (await first.handler(post(body({ story_id: storyId })))).text();
+    await first.settle();
+    expect(used.directives[0]).toContain('"북촌에서 산책 중이에요"');
+    expect(streamOutcome(first.logs)).toContain("story=used");
+
+    const plain = watch();
+    const second = setup({ llm: plain.llm });
+    await (await second.handler(post())).text();
+    await second.settle();
+    expect(second.rpcs.map((rpc) => rpc.fn)).not.toContain("companion_claim_story_reply");
+    expect(plain.directives[0]).toBeNull();
+  });
+
+  test("CSS3. 판정이 실패 · off · 없는 스토리면 보통 턴으로 이어 간다 — 지시 없음", async () => {
+    for (const options of [
+      { claimStatus: 500 },
+      { claim: { result: "off", story: null } },
+      { claim: { result: "not_found", story: null } },
+    ]) {
+      const watched = watch();
+      const { handler, logs, settle } = setup({ llm: watched.llm, ...options });
+      const list = await events(await handler(post(body({ story_id: storyId }))));
+      await settle();
+      expect(names(list)).toContain("done");
+      expect(watched.directives[0]).toBeNull();
+      expect(streamOutcome(logs)).toMatch(/story=(claim_failed|off|not_found)/);
+    }
   });
 });

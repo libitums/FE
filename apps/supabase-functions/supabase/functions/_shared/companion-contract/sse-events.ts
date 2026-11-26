@@ -148,7 +148,7 @@ export const doneDataSchema = z.object({
 });
 
 /**
- * 미션 턴(ADR-0178)의 목표 진척입니다 — 미션 턴에만, `state` 자리(답 · 번역 · 교정 뒤, `done` 바로 앞)에 한 번 옵니다. 미션 턴에는
+ * 미션 턴(ADR-0193)의 목표 진척입니다 — 미션 턴에만, `state` 자리(답 · 번역 · 교정 뒤, `done` 바로 앞)에 한 번 옵니다. 미션 턴에는
  * `state` · `suggestions`가 오지 않습니다. 목표는 한 번 달성하면 되돌아가지 않습니다.
  * - `goals`: 미션 정의의 순서대로 목표마다 달성 여부.
  * - `turnsLeft`: 남은 학습자 턴. `ended`: 이 턴으로 판이 닫혔으면 그 까닭(`goals` 모든 목표 · `turn_limit` 턴 상한), 아니면 null —

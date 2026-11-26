@@ -170,6 +170,35 @@ ui-lynx dist는 예산 559.0 kB 중 557.8 kB를 쓰고 있어 이 변경도 ui-l
 1.5단계에서 공용 `components/chat/ChatLog.tsx`의 끝 따라가기를 다시 썼고, 같은 부품을 쓰는 **학습 메신저(`StoryMessengerScreen`)에도 적용된다**.
 
 - 이전: 스크롤 칸의 `getScrollInfo`를 읽어 끝 근처인지 판정했다(기기에서 `scrollRange`의 의미가 달라 F2가 났다).
-- 지금: `bindlayoutchange`로 뷰포트 높이를 쥐고, `bindscroll` · `bindscrollend`의 `scrollTop` · `scrollHeight`로 끝 근처(40 px)를 판정한다. 우리가 끝으로 내리는 동안(`following`)은 중간 위치를 「떠났다」로 읽지 않는다. 위치 값이 없으면(판정 불가) 위로 끄는 방향(`deltaY < 0`)만 「떠났다」로 본다.
+- 지금: `bindlayoutchange`로 뷰포트 높이를 쥐고, `bindscroll` · `bindscrollend`의 `scrollTop` · `scrollHeight`로 끝 근처(48 px — `NEAR_END_PX`, 2026-11-25 문서를 코드 값에 맞춤)를 판정한다. 우리가 끝으로 내리는 동안(`following`)은 중간 위치를 「떠났다」로 읽지 않는다. 위치 값이 없으면(판정 불가) 위로 끄는 방향(`deltaY < 0`)만 「떠났다」로 본다.
 - 새 선택 prop `jumpKey`: 값이 바뀌면 읽던 자리와 상관없이 끝으로 내린다. 메신저 자유 대화가 내가 보낸 글에 쓴다(기기 F2). 학습 메신저는 `jumpKey` 없이 쓰므로 그 경로는 그대로다.
 - 학습 메신저의 달라진 점은 끝 근처 판정 경로뿐이다: 새 말이 올 때 끝 근처면 따라 내려가고 위로 올려 읽는 중이면 가만히 둔다는 동작은 같되, 판정에 쓰는 값이 바뀌었다. 자동 테스트는 jsdom 값만 본다 — 학습 메신저 막간의 전후 비교는 기기 확인(MC2-E10 첫 줄)이 진다.
+
+## 개정 — 끝 맞춤 보정 (2026-11-25, `fix/chat-scroll-follow`)
+
+공용 `ChatLog`의 끝 맞춤을 다시 손봤다. 순수 규칙은 `components/chat/chat-log-follow.ts`, 메신저 방의 `jumpKey`는 `screens/messenger-chat/chat-jump-key.ts`.
+
+- **뷰포트가 줄면 다시 맞춤(A · B).** `layoutchange`에서 높이가 줄었고 끝 근처였으면 바로(점프) 끝으로. 단어 띠 · 무료 소진 판 · LastFreeStrip · 스토리 인용 띠 · 여러 줄 입력 · 키보드가 로그를 줄여도 마지막 말이 잘리지 않는다. `followKey` 16 ms 타이머는 보조로만 남는다(끝 근처일 때만).
+- **첫 진입은 점프(D).** 방에 들어와 처음 끝을 맞추는 동안(새 선택 prop `loading` — 서버 기록을 읽는 중 — 과 읽은 뒤 첫 맞춤 포함, 학습자가 스크롤하기 전)은 기록 전체를 훑어 내리지 않고 점프. 그 뒤 새 말부터 부드럽게.
+- **묶음(E).** 우리 부드러운 스크롤이 진행 중이면(700 ms 안, scrollend 전) 새 끝 맞춤을 다시 시작하지 않고 묶어 두었다가 scrollend에 한 번 더 — 이때는 점프라 되풀이가 없다. 끝까지 남은 거리가 160 px 이하면 처음부터 점프. 우리 스크롤이 끝 아닌 곳에서 멈춰도 「떠났다」로 읽지 않고 다시 끝으로.
+- **`jumpKey`(F · G).** 메신저 방은 「내 글 수 · 매체 요청 정체 수 · 마지막 내 글」을 넘긴다. 사진 · 음성 요청(대기 줄)도 끝으로 내리고, 줄 id만 바뀌는 교체(보낸 글 localId → 서버 id, 매체 `~req` → `~<media id>`, 대기 → 완료 · 고지)는 계기가 아니다. 고친 문장 다시 보내기(ADR-0129)는 글이 바뀌어 계기로 남는다. 매체 「다시 만들기」(ADR-0150)는 옛 결과 자리를 대신하므로 계기가 아니다.
+- **펼침은 따라가지 않음(H).** 새 선택 prop `holdKey`(메신저 방은 말풍선 도구 상태)의 참조가 바뀐 직후(700 ms 안)의 첫 내용 변화는 따라가지 않고, 끝 근처인지만 위치로 다시 안다 — 뜻 · 교정을 펼친 말풍선이 밀려 올라가지 않는다.
+- **기기에서 찾은 둘(같은 PR).** ① Android(R6 API 30): 단어 띠 · 키보드로 뷰포트가 잇달아 줄면 둘째 점프가 아직 바뀌기 전의 스크롤 범위에 막히고, 첫 점프가 낸 scroll · scrollend가 새 뷰포트로는 끝에서 멀어 보여 따라가기를 껐다(마지막 말이 키보드 뒤). → 점프 뒤 300 ms(`JUMP_SETTLE_MS`)의 먼 위치는 우리 점프의 것으로 읽고, 멈춘 자리가 끝이 아니면 다시 점프(최대 2번), 뷰포트가 준 뒤 120 ms(`REALIGN_RECHECK_MS`)에 끝 근처면 한 번 더 점프. ② iOS(SE 3): 기록 도착 직후 jumpKey 타이머의 끝 맞춤이 내용 배치보다 먼저 돌아 첫 진입을 끝내 버려, 곧 온 기록 배치를 부드럽게 훑었다. → 첫 진입을 「첫 끝 맞춤까지」가 아니라 「기록을 읽는 동안 + 다 읽은(방이 선) 뒤 800 ms(`ENTER_SETTLE_MS`), 학습자가 스크롤하기 전」으로.
+- 움직임 줄이기는 그대로 늘 점프. 학습 메신저(`StoryMessengerScreen`)는 `jumpKey` · `loading` · `holdKey` 없이 쓰므로 바뀐 점은 첫 진입 점프 · 뷰포트 축소 보정 · 묶음이다.
+- 버린 대안: 출처(`ChatSource`)를 감싸 보낸 동작을 세는 카운터 — 보내기 경로(입력 · 보기 · 스토리 답장 · 안내 예시 · 다시 보내기 · 매체)가 많아 감쌀 곳이 넓고 순수 함수로 시험하기 어렵다. 시간만으로 첫 진입을 끝내는 규칙 — 느린 망에서 기록이 늦게 오면 다시 훑어 내린다.
+- 대가: 같은 대상 · 같은 종류의 매체를 고지 뒤 다시 요청하면 계기가 되지 않는다(정체 수가 같음). 펼친 직후 700 ms 안에 답이 도착하면 그 한 번은 따라가지 않는다.
+- 테스트: `chat-log-follow.unit` · `chat-jump-key.unit` · `ChatLog.realign.ui` · `ChatLog.follow.ui`(F2 두 건을 묶음 · 첫 진입 점프에 맞춤) · `ChatLog.motion.ui`(첫 맞춤은 점프) · `MessengerChatScreen.scroll.ui` · `chat-jump-key.integration`. 기하(B · E)는 기기 — `docs/e2e/messenger-chat-ui.md` MC-E14.
+
+## 적용 기록 — 「새 메시지 ↓」 알약 (2026-11-25, `feat/chat-new-message-pill`)
+
+사용자 결정(2026-11-25 「진행」, 시안 artifact RWxYCQsM3kFvVbj3DoJYcH A · B · C). 끝 맞춤 보정(위 개정) 위에 쌓는다.
+
+- **알약.** 끝에서 떨어져 읽는 중(`nearEnd` false)에 상대 줄(말 · 지문 · 사진 · 음성)이 오면 대화 영역 아래 가운데(입력 독 바로 위)에 알약 — 보낸 사람 얼굴 · 문구 · ↓. 끌어내리지 않는다(지금 그대로). 문구: 1개 「New message」, N개 「N new messages」, 마지막 새 줄이 사진 · 음성이면 「Sent a photo」 · 「Sent a photo · N new」(음성도 같은 꼴). 8개 언어.
+- **세는 것.** 끝을 떠나는 순간 로그의 상대 줄 id를 찍어 두고 그 뒤 온 상대 줄만 센다(`new-message-pill.ts`). 내 글 · 만드는 중 대기 줄 · 공지 · 위기 카드 · 매체 회색 줄은 세지 않는다. 스트리밍으로 자라는 말풍선은 한 번.
+- **누름.** 알약 · ↓ 단추를 누르면 `jumpKey`에 누른 수를 붙여 끝으로(부드럽게, 움직임 줄이기면 점프 — `ChatLog` 규칙 그대로). 끝에 닿거나(`scrolltolower` · 위치) 내가 보내면(늘 끝으로) 사라진다.
+- **↓ 단추.** 새 것 없이 끝까지 남은 거리가 뷰포트보다 크면(한 화면 넘게 위) 오른쪽 아래 작은 ↓ 단추(「Scroll to latest」).
+- **로그 자리 알림.** `ChatLog`의 새 선택 prop `onPositionChange({ nearEnd, far })` — 바뀔 때만 부른다. 학습 메신저는 쓰지 않는다.
+- **접근성.** 알약(「Jump to new messages」) · ↓ 단추(「Scroll to latest」)는 단추로 읽힌다. 얼굴 · 아이콘은 숨긴다. 도착 낭독(`useAnnounceArrivals`)은 그대로라 알약이 따로 낭독하지 않는다.
+- **이벤트.** `chat_new_messages_jumped { characterId, count, media }` — 알약 누름마다 한 번, PostHog만(ADR-0029).
+- 버린 대안: 알약 문구를 낭독으로도 알림 — 도착 낭독과 겹친다. 로그 안 줄(「여기부터 새 메시지」 구분선) — 시안 범위 밖.
+- 테스트: `new-message-pill.unit` · `ui-copy-chat-pill.unit` · `chat-log-follow.unit`(farFromEnd) · `ChatLog.position.ui` · `MessengerChatScreen.pill.ui`. 기기 — `docs/e2e/messenger-chat-ui.md` MC-E15.

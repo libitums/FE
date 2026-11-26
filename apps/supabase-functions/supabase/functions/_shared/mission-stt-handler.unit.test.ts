@@ -46,7 +46,7 @@ describe("mission-stt", () => {
       p_target: null,
     });
     const sent = fake.vendor[0]!;
-    expect(sent.url).toBe("https://api.elevenlabs.io/v1/speech-to-text?enable_logging=false");
+    expect(sent.url).toBe("https://api.elevenlabs.io/v1/speech-to-text");
     const form = sent.body as FormData;
     expect(
       Object.fromEntries([...form.entries()].filter(([, v]) => typeof v === "string")),
@@ -64,14 +64,16 @@ describe("mission-stt", () => {
     expect(JSON.stringify(fake.rpc) + JSON.stringify(fake.logs)).not.toContain("카드로");
   });
 
-  test("VS2. 확신도가 낮으면 입력 칸에서 확인(low_confidence) · 무보존 끄기(env off)는 쿼리를 싣지 않음", async () => {
+  test("VS2. 확신도가 낮으면 입력 칸에서 확인(low_confidence) · 무보존 켜기(env on)면 enable_logging=false를 싣는다", async () => {
     const fake = fakeVoice({
-      env: voiceEnv({ COMPANION_MISSION_STT_ZERO_RETENTION: "off" }),
+      env: voiceEnv({ COMPANION_MISSION_STT_ZERO_RETENTION: "on" }),
       scribe: [scribeOk("아이스 라떼 주세요", [-0.02, -0.5, -0.01])],
     });
     const { body } = await run(fake);
     expect(body).toMatchObject({ autoSend: false, reason: "low_confidence" });
-    expect(fake.vendor[0]!.url).toBe("https://api.elevenlabs.io/v1/speech-to-text");
+    expect(fake.vendor[0]!.url).toBe(
+      "https://api.elevenlabs.io/v1/speech-to-text?enable_logging=false",
+    );
   });
 
   test("VS3. 인증 없음 → 401, 벤더 · RPC를 부르지 않음", async () => {

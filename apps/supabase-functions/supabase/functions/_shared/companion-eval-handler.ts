@@ -32,6 +32,7 @@ import { bodySchema, type EvalCase, type EvalKind, evalModels } from "./companio
 
 export { evalModels };
 import { bearerTokenFrom } from "./supabase-auth.ts";
+import { mapLimited } from "./map-limited.ts";
 
 const defaultConcurrency = 4;
 
@@ -200,24 +201,6 @@ function runCase(
       signal,
     }),
   );
-}
-
-/** 순서를 지키며 동시에 `limit`개까지 돌립니다. */
-async function mapLimited<T, R>(
-  items: readonly T[],
-  limit: number,
-  run: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-  const worker = async () => {
-    while (next < items.length) {
-      const index = next++;
-      results[index] = await run(items[index]!);
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
-  return results;
 }
 
 export function createCompanionEvalHandler(

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { COMPANION_CATALOG, COMPANION_CHARACTERS, companionSeed } from "./companion-roster";
 import {
+  currentFriendOf,
   friendStatusOf,
   localizedLine,
   offerBadgeOf,
@@ -141,7 +142,7 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
     expect(friendStatusOf(friend("l"), room("l", false))).toBe("locked");
   });
 
-  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 일곱 언어(th · my 2026-11-20)", () => {
+  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 여덟 언어(th · my 2026-11-20 · zh-TW 2026-11-24)", () => {
     expect(COMPANION_CATALOG.characters.map((c) => [c.id, c.kind])).toEqual([
       ["duksu", "story"],
       ["yoonkyung", "story"],
@@ -164,6 +165,7 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
         "my",
         "th",
         "vi",
+        "zh-TW",
       ]);
     }
   });
@@ -220,5 +222,43 @@ test("CS-U1 서버 씨앗은 일반 인물을 잠긴 방(unlockEpisode 0)으로 
   expect(seed.rooms.find((r) => r.roomId === "mina")?.access).toEqual({
     kind: "locked",
     unlockEpisode: 3,
+  });
+});
+
+describe("SF-U8 지금 판정으로 다시 묻기(구매 뒤 낡은 추천, 2026-11-25)", () => {
+  const catalog = catalogOf([friend("a"), friend("b")]);
+  const before = suggestedFriendsOf({
+    catalog,
+    rooms: [room("a", false), room("b", false)],
+    earlyAccess: false,
+    now: NOW,
+  });
+
+  test("아직 추천이면 지금의 추천(지금 상태)을 돌려준다", () => {
+    expect(currentFriendOf(before, "b")).toMatchObject({
+      character: { id: "b" },
+      status: "locked",
+    });
+  });
+
+  test("방이 열려 추천에서 빠졌으면 null — 이미 친구", () => {
+    const after = suggestedFriendsOf({
+      catalog,
+      rooms: [room("a", true), room("b", false)],
+      earlyAccess: false,
+      now: NOW,
+    });
+    expect(currentFriendOf(after, "a")).toBeNull();
+  });
+
+  test("구독으로 addable이 됐으면 연 때의 locked가 아니라 지금의 addable", () => {
+    const now = suggestedFriendsOf({
+      catalog,
+      rooms: [room("a", false)],
+      earlyAccess: false,
+      now: NOW,
+      allStory: true,
+    });
+    expect(currentFriendOf(now, "a")?.status).toBe("addable");
   });
 });

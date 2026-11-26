@@ -7,6 +7,8 @@ export type ChatReplyIdea = {
   readonly roman: string;
   readonly en: string;
 };
+/** 추천 답변이 붙은 캐릭터 답장의 출처(서버 `messages.origin`, ADR-0195). */
+export type ChatIdeasOrigin = "greeting" | "turn" | "proactive";
 export type ChatMediaKind = "photo" | "voice";
 export type ChatCounterpart = {
   readonly id: string;
@@ -23,6 +25,13 @@ export type ChatMessage =
       readonly kind: "text";
       readonly from: "me" | "them";
       readonly text: ChatText;
+      /**
+       * 스토리 인용 — 내 글이면 친구 스토리에 단 답장(ADR-0178 D5), 상대 글이면 내 스토리에 단 반응(origin `story_reaction`,
+       * ADR-0191 D2 — 그 메시지의 첫 말풍선에만).
+       */
+      readonly story?: ChatStoryQuote;
+      /** 덕수쌤 스토리 퀴즈 표시(서버 반영 예상 — `my-stories.contract.ts` `ChatQuizMark`). 없으면 퀴즈 표시 없음. */
+      readonly quiz?: ChatQuizMark;
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
   | (ChatMessageBase & ChatPendingStart & ChatPendingStage & { readonly kind: "photo-pending" })
@@ -127,6 +136,8 @@ export type ChatThread = {
   /** 보낸 글의 답을 기다리는 중(입력 중 점 전 포함) — 다시 보내기 판정(ADR-0129). */
   readonly awaitingReply: boolean;
   readonly ideas: readonly ChatReplyIdea[];
+  /** 그 추천이 붙은 캐릭터 답장의 출처(서버 `origin`, ADR-0195) — 가짜 출처 · 모르면 없음. 이벤트에만 씁니다. */
+  readonly ideasOrigin?: ChatIdeasOrigin;
   readonly settings: ChatRoomSettings;
   readonly storyPoints: readonly ChatStoryPoint[];
   /** 내 텍스트 글 id만 키. 없는 키 = NO_NOTES. */
@@ -157,6 +168,8 @@ import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contrac
 import type { ChatMediaNoticeLine, ChatPendingStage, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
 import type { SampleSnapshotMethods } from "./chat-remote-sample";
+import type { ChatStoryQuote } from "./friend-stories.contract"; // 친구 스토리 인용(ADR-0178)
+import type { ChatQuizMark } from "./my-stories.contract"; // 스토리 퀴즈(서버 반영 예상)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -194,6 +207,9 @@ export function notesOf(thread: ChatThread, messageId: string): ChatMyNotes {
   return thread.notes[messageId] ?? NO_NOTES;
 }
 
+/** 보내기 선택 칸 — 친구 스토리 인용(ADR-0178). */
+export type ChatSendOptions = { readonly story?: ChatStoryQuote };
+
 export type ChatReportReasonId = "rude" | "sexual" | "hateful" | "wrong-korean" | "other";
 
 export type ChatSource = {
@@ -206,7 +222,8 @@ export type ChatSource = {
   readonly openRoom: (roomId: string) => void;
   /** 방을 나갑니다(리뷰 #1). 이후 온 답은 다시 안 읽음으로 쌓입니다. 열려 있지 않은 방이면 무동작. */
   readonly closeRoom: (roomId: string) => void;
-  readonly sendText: (roomId: string, text: string) => void;
+  /** `options.story` = 친구 스토리 답장(ADR-0178 D5) — 내 글에 인용이 붙고, 서버 방은 `story_id`를 실어 보냅니다. */
+  readonly sendText: (roomId: string, text: string, options?: ChatSendOptions) => void;
   /** 잔액은 줄지 않습니다(결제 없음). */
   readonly requestMedia: (roomId: string, media: ChatMediaKind) => void;
   /** 예시 스냅샷(ADR-0146 추가) — 안내에서 무료로 한 장. 서버 모드가 아니면 없습니다(안내의 예시 단계가 서지 않음). */

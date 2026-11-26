@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { openExternalLink } from "../../lib/external-link";
+import { useUiCopy } from "../../lib/ui-copy";
 
 import {
   ChatIncomingRow,
@@ -17,12 +18,15 @@ import { ChatActionRow } from "./ChatActionRow";
 import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
+import { StoryQuoteCard } from "./StoryQuote";
+import { StoryQuizCorrect, StoryQuizNote } from "./StoryQuizNotes";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
 import { ChatMediaNoticeRow } from "./ChatMediaNotice";
 import type { ChatEntrance } from "./chat-entrance";
 import { notesOf } from "./chat-source.contract";
 import type { ChatMessage, ChatThread } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
+import { chatProfileTestIds as profileIds } from "./chat-profile";
 import {
   bubbleToolRowOf,
   myBubbleViewOf,
@@ -42,6 +46,8 @@ export type ChatMessageRowProps = {
   readonly feedback: ChatRowFeedback;
   /** 다 만든 사진을 누르면 사진 보기를 엽니다(사진 줄 id). 없으면 사진은 누를 수 없습니다. */
   readonly onOpenPhoto?: (messageId: string) => void;
+  /** 상대 아바타를 누르면 프로필 시트를 엽니다(ADR-0178 개정 ⟨대화방⟩). 없으면 아바타는 그림뿐입니다. */
+  readonly onOpenProfile?: () => void;
 };
 
 /** 다시 보내기 · 👍 👎 자리와 동작입니다(ADR-0129). 자리는 방에 하나씩 — 마지막 내 글 · 가장 최근 캐릭터 글. */
@@ -82,9 +88,17 @@ function RowBody({
   onToggleTool,
   feedback,
   onOpenPhoto,
+  onOpenProfile,
 }: Omit<ChatMessageRowProps, "entrance">): ReactNode {
   const { counterpart } = thread;
-  const avatar = { name: counterpart.name, imageUrl: counterpart.avatarUrl };
+  const profileLabel = useUiCopy().messengerChat.stories.viewer.profile(counterpart.name);
+  const avatar = {
+    name: counterpart.name,
+    imageUrl: counterpart.avatarUrl,
+    ...(onOpenProfile === undefined
+      ? {}
+      : { profile: { label: profileLabel, testId: profileIds.avatar, onTap: onOpenProfile } }),
+  };
   switch (message.kind) {
     case "text":
       if (message.from === "me") {
@@ -100,27 +114,62 @@ function RowBody({
           );
         const notes = notesOf(thread, message.id);
         const open = openTools[message.id];
-        return (
+        const bubble = (
+          <MyMessageRow
+            messageId={message.id}
+            ko={message.text.ko}
+            speaker={learnerName}
+            view={myBubbleViewOf(open, notes)}
+            tools={bubbleToolRowOf(open, notes, thread.server === null ? "shown" : "hidden")}
+            motion={motion}
+            onToggle={(tool) => onToggleTool(message.id, tool)}
+            onResend={
+              feedback.resendableId === message.id ? () => feedback.onResend(message.id) : null
+            }
+            chatWords={notes.chatWords ?? null}
+          />
+        );
+        // 스토리 답장(ADR-0178 D5)이면 말풍선 위에 인용 카드 — 줄은 가로라 둘을 세로 묶음에 담습니다. 덕수쌤 퀴즈의 무료 답이면 말풍선 아래
+        // 「Free · quiz answer」, 맞혔으면 그 아래 가운데 줄(시안 22 · 23, 서버 반영 예상).
+        const answer = message.quiz?.kind === "answer" ? message.quiz : null;
+        const row = (
           <ChatOutgoingRow testId={ids.outgoing}>
-            <MyMessageRow
-              messageId={message.id}
-              ko={message.text.ko}
-              speaker={learnerName}
-              view={myBubbleViewOf(open, notes)}
-              tools={bubbleToolRowOf(open, notes, thread.server === null ? "shown" : "hidden")}
-              motion={motion}
-              onToggle={(tool) => onToggleTool(message.id, tool)}
-              onResend={
-                feedback.resendableId === message.id ? () => feedback.onResend(message.id) : null
-              }
-              chatWords={notes.chatWords ?? null}
-            />
+            {message.story === undefined && answer === null ? (
+              bubble
+            ) : (
+              <view className="story-reply-stack">
+                {message.story === undefined ? null : (
+                  <StoryQuoteCard quote={message.story} name={counterpart.name} now={Date.now()} />
+                )}
+                {bubble}
+                {answer === null ? null : (
+                  <StoryQuizNote messageId={message.id} attempt={answer.attempt} />
+                )}
+              </view>
+            )}
           </ChatOutgoingRow>
+        );
+        return answer?.result === "correct" ? (
+          <>
+            {row}
+            <StoryQuizCorrect messageId={message.id} name={counterpart.name} />
+          </>
+        ) : (
+          row
         );
       }
       const rating = thread.ratings[message.id];
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
+          {/* 내 스토리에 단 반응(ADR-0191 D2, 시안 20번) — 첫 말풍선 위 인용 카드. */}
+          {message.story === undefined ? null : (
+            <StoryQuoteCard
+              quote={message.story}
+              name={counterpart.name}
+              now={Date.now()}
+              from="them"
+            />
+          )}
           <ChatTextBubble
             direction="incoming"
             speaker={counterpart.name}

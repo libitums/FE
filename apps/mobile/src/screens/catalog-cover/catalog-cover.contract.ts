@@ -3,8 +3,7 @@
 import type { AudioTiming } from "../../lib/audio-manifest";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { SafeAreaInsets } from "../../lib/safe-area";
-
-export type CatalogCutScript = "en" | "roman";
+import type { ChoiceRomanization } from "../../lib/session-options";
 
 export type CatalogCutSpeaker =
   | { readonly kind: "self" }
@@ -65,6 +64,15 @@ export type CatalogCoverScreenProps = {
   readonly onComplete: () => void;
   /** 머리 나가기 · 시스템 뒤로. */
   readonly onExit: () => void;
+  /** 대사 위 스피커로 그 컷의 소리를 다시 낸 뒤 한 번 부릅니다(측정, ADR-0189). 회색(소리 없음)은 부르지 않습니다. */
+  readonly onReplay?: (cutIndex: number) => void;
+  /** 로마자 스위치(ADR-0188) — 없으면 `"hidden"`. 앱은 세션 옵션에서 넘깁니다. */
+  readonly romanization?: ChoiceRomanization;
+  /**
+   * 대사 상자 안 로마자 스위치를 눌렀을 때 바뀐 뒤 값으로 부릅니다(ADR-0188 개정 D7). 값의 주인은 앱(세션 옵션)이라 화면은
+   * 상태를 들지 않습니다. 없으면 스위치를 그리지 않습니다.
+   */
+  readonly onRomanizationChange?: (next: ChoiceRomanization) => void;
 };
 
 /** 배너의 종류 — 표지 컷 뒤(`start`) · 통과 뒤 컷 뒤(`clear`). */
@@ -84,8 +92,6 @@ export type EpisodeBannerScreenProps = {
 };
 
 export type CatalogCoverCopy = {
-  /** 지금 보이는 것이 key일 때 누르면 일어날 일 */
-  readonly toggleScript: Readonly<Record<CatalogCutScript, string>>;
   /** 진행 버튼 낭독(마지막 전) */
   readonly nextCut: (ordinal: number, total: number) => string;
   /** 진행 버튼 낭독(마지막) */
@@ -115,6 +121,7 @@ export type CatalogCoverTestId =
   | "catalog-cover-screen-line"
   | "catalog-cover-screen-aside"
   | "catalog-cover-screen-next"
+  | "catalog-cover-screen-replay"
   | "episode-banner-screen"
   | "episode-banner-screen-safe"
   | "episode-banner-screen-text";
