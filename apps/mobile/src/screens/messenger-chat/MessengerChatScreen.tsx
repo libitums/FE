@@ -17,6 +17,7 @@ import { CHAT_COIN_PRICES } from "./chat-coins";
 import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
+import { ChatProfileSheet } from "./ChatProfileSheet";
 import { useAutoIdeas } from "./use-auto-ideas";
 import { guideTargetClass } from "./MessengerGuide";
 import { RoomCoach, RoomKeyboardGuide } from "./ChatRoomGuide";
@@ -32,7 +33,7 @@ import { LastFreeStrip } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 import { TRIAL_TOTAL } from "./free-turns";
-import { openPhotoAction } from "./chat-room-state";
+import { OPEN_PROFILE, openPhotoAction } from "./chat-room-state";
 import { chatKeyboardSlotHeight } from "./keyboard-height";
 import {
   messengerChatTestIds as ids,
@@ -182,6 +183,7 @@ export function MessengerChatScreen({
             used={turn.panelOpen}
             onBack={exit}
             onMenu={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
+            onProfile={() => dispatch(OPEN_PROFILE)}
           />
           {strip === null || chatWords === null ? null : (
             <ChatWordsStrip words={strip.words} rank={strip.rank} onOpen={chatWords.onOpen} />
@@ -214,6 +216,7 @@ export function MessengerChatScreen({
                 onToggleTool={tools.toggle}
                 feedback={feedback}
                 onOpenPhoto={(id) => dispatch(openPhotoAction(id))}
+                onOpenProfile={() => dispatch(OPEN_PROFILE)}
               />
             ))}
             <ChatPushAskSlot thread={thread} busy={busy} />
@@ -282,17 +285,15 @@ export function MessengerChatScreen({
         slotOpen={state.slot.kind !== "closed" && !turn.panelOpen}
       />
       <ChatRoomOverlays
-        state={state}
-        dispatch={dispatch}
-        thread={thread}
-        source={source}
-        learnerName={learnerName}
-        wallet={wallet}
-        coinBalance={coinBalance}
-        birthYear={birthYear}
-        preferences={preferences}
-        {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
+        {...{ state, dispatch, thread, source, learnerName, wallet, coinBalance, birthYear }}
+        {...{ preferences, onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
+      {state.overlay.kind === "profile" ? (
+        <ChatProfileSheet
+          counterpart={thread.counterpart}
+          onClose={() => dispatch({ type: "close-overlay" })}
+        />
+      ) : null}
       {guest.layer}
     </view>
   );

@@ -40,7 +40,8 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       return "send";
     case "photo":
     case "photo-redraw":
-      // 같은 test-id의 사진이 여럿이라 누른 그 사진을 가리킬 수 없습니다 — 초점은 플랫폼에 맡깁니다.
+    case "profile":
+      // 같은 test-id의 사진 · 아바타가 여럿이라 누른 그 사진을 가리킬 수 없습니다 — 초점은 플랫폼에 맡깁니다.
       return null;
     case "coin-shop":
       if (closing.from === "photo") return null;

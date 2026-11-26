@@ -3,6 +3,7 @@
 
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
 import { ChatEventsContext } from "./chat-events";
+import { ChatProfileContext, type ChatProfilePort } from "./chat-profile";
 import type { GuideStore } from "./messenger-guide";
 import { vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -96,6 +97,8 @@ export type MountChatOptions = {
   readonly eventSink?: EpisodeIntroEventSink;
   /** 비회원 방(ADR-0166) — 주면 보내기 같은 계정 동작이 로그인 권유가 됩니다. */
   readonly onSignInRequired?: () => void;
+  /** 대화방 안 프로필 시트의 카탈로그 포트(ADR-0178 개정 ⟨대화방⟩) — 주면 결선처럼 `ChatProfileContext`로 감쌉니다. */
+  readonly profile?: ChatProfilePort;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -125,7 +128,13 @@ export function mountChat(options: MountChatOptions = {}) {
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
     onSignInRequired: options.onSignInRequired ?? null,
   };
-  const room = <MessengerChatScreen {...screenProps} />;
+  const screenEl = <MessengerChatScreen {...screenProps} />;
+  const room =
+    options.profile === undefined ? (
+      screenEl
+    ) : (
+      <ChatProfileContext.Provider value={options.profile}>{screenEl}</ChatProfileContext.Provider>
+    );
   const view = render(
     options.eventSink === undefined ? (
       room

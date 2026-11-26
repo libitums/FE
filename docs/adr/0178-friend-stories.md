@@ -312,6 +312,28 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
   낭독 순서 = 닫기 · 멈춤 → 이름 → 프로필 → … .
 - 이벤트: `friend_story_closed.reason`에 `profile`(프로필 시트의 Start chatting으로 닫힘)을 더했다. 이미 친구의 시트는 `suggested_friend_opened`를 내지 않는다(추천이 아님).
 
+## 개정 ⟨대화방⟩ — 대화방 안 아바타 → 같은 프로필 시트, 행동 단추 없음 ⟨2026-11-26⟩
+
+사용자 요청(「대화 안에서 프로필 아바타 클릭할 때도 프로필 바텀시트 떠야 해. 채팅하기 버튼은 숨겨도 될 것 같아」, 추가로 「대화방에서 열 때만 숨기고
+다른 진입은 지금처럼」).
+
+- 대화방에서 **상대 말 줄의 아바타 · 머리의 상대 이름**을 누르면 위 ⟨보기 위 아바타⟩와 같은 시트(`SuggestedFriendSheet`, `modelOfMetFriend` — 이미 친구 ·
+  제안 없음)가 선다. 카탈로그(앱 인물 표)에 없는 인물이면 이름 · 얼굴만. 결선은 `ChatProfileContext`(`chatProfilePort` — 앱 인물 표 · 목소리 견본 주소 ·
+  로마자 스위치, 서버 RPC 0)로 내리고, 견본 주소 · 로마자는 다른 자리와 같은 `sheetViewOf`(ADR-0198, #627)로 시트에 넘긴다.
+- 이미 그 인물과 대화 중이라 시트에 `actions="close"`를 준다 — Start chatting · Chat now(잠김 제안)를 두지 않고, 「Not now」 자리의 닫기 단추를
+  「Close」로 둔다(「Not now」는 추가를 미루는 말이라서, 문구는 스토리 보기의 `viewer.close` 8개 언어를 다시 씀). 막 탭 · 끌어내림 · 뒤로도 닫기.
+  **다른 진입(스토리 보기 · 추천 줄 · 친구 찾기)은 기본 `offer` 그대로** Start chatting · Chat now · Not now가 선다.
+- 열고 닫는 상태는 방의 겹침 `{ kind: "profile" }`(`chat-room-state`)이다. 열 때 사진 보기처럼 키보드 자리 · 깔개를 접고 휴대폰 입력 칸을 먼저 blur한다
+  (`useChatRoom` dispatch). 닫힌 다음 프레임에 숨은 입력 칸을 다시 blur하는 기존 길(Android 초점 이동)을 그대로 탄다. 닫힌 뒤 초점은 플랫폼에 맡긴다
+  (같은 test-id 아바타가 여럿). 시트는 방 화면이 그린다(「…」 메뉴처럼 `ChatRoomOverlays`는 아무것도 그리지 않음).
+- 비회원(ADR-0166): 프로필 보기는 계정 동작이 아니라 로그인 권유 없이 연다(`guestGateOf` → null).
+- 접근성: 아바타가 버튼 「<이름>'s profile」(스토리 보기와 같은 `viewer.profile`, 새 문구 없음) · flatten false · 보이는 32 + hit-slop 6 = 44.
+  머리 이름은 낭독 역할(header)을 그대로 두고 손가락 탭만 같은 시트를 연다. 시트가 떠 있는 동안 방은 낭독에서 숨는다(기존 `overlayOpen`).
+- 이벤트: 없음 — 스토리 보기의 이미 친구 시트처럼 `suggested_friend_opened`를 내지 않는다(추천이 아님). AN1 · AB3 수 그대로.
+- 확인: unit CP-U1 ~ U7(`chat-profile.unit.test.ts`) · SW-U8(`suggested-friends-wiring.unit.test.ts`), ui CP-UI1 ~ UI3(`SuggestedFriendSheet.actions.ui.test.tsx` —
+  대화방 close · 그 밖 offer 두 쪽) · CP-UI4 · UI5(`ChatMessageRow.profile.ui.test.tsx`), integration CP-I1 ~ I7
+  (`MessengerChatScreen.profile.integration.test.tsx` · `.profile-voice.integration.test.tsx`), e2e FS-E18(기기).
+
 ## D4 개정 ⟨내 스토리⟩ — 같은 보기에 내 스토리 장 ⟨2026-11-26⟩
 
 - `StoryViewer`가 내 스토리 장(`StoryViewerItem.mine`)도 그린다([ADR-0194](0194-my-stories.md) 개정 ⟨보기⟩). `mine` props가 있고 장이 내 스토리면 답장 칩 ·

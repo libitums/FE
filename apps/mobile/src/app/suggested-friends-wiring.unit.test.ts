@@ -6,6 +6,7 @@ import type { VisibleFriend } from "../screens/messenger-chat/friend-catalog.con
 import { setPlanAccess } from "../lib/plan-access";
 import { setMessengerMediaHooks } from "./messenger-chat-wiring";
 import {
+  chatProfilePort,
   guestSuggestedFriendsPort,
   setEarlyAccessRemote,
   suggestedFriendsPort,
@@ -120,4 +121,18 @@ test("SW-U7 모든 인물 — 회원 포트는 지금 요금제를 부를 때마
   setPlanAccess({ tier: "chat_plus", unlimitedTickets: false, entitlements: [] });
   expect(port.allStory?.()).toBe(true);
   expect(guestSuggestedFriendsPort().allStory).toBeUndefined();
+});
+
+test("SW-U8 대화방 프로필 포트(ADR-0178 개정 ⟨대화방⟩) — 앱 인물 표에서 상대를 찾고, 견본 주소 · 로마자는 렌더마다 받은 값을 쓴다", () => {
+  const port = chatProfilePort({
+    contentUrlOf: (path) => `https://cdn/${path}`,
+    romanization: () => true,
+  });
+  expect(port.profileOf("duksu")?.id).toBe("duksu");
+  expect(port.profileOf("nobody")).toBeNull();
+  expect(port.voiceSampleUrl?.("v/a.mp3")).toBe("https://cdn/v/a.mp3");
+  expect(port.romanization?.()).toBe(true);
+  // 렌더마다 같은 객체 — 문맥 값이 바뀌어 시트가 다시 그려지지 않게.
+  expect(chatProfilePort({ contentUrlOf: () => null, romanization: () => false })).toBe(port);
+  expect(port.romanization?.()).toBe(false);
 });

@@ -12,16 +12,41 @@ import type {
 
 import "./chat.css";
 
-// 상대 줄 — 왼쪽 위 아바타 + 쌓음(사진 · 말풍선).
+/** 보이는 32 → 손가락 자리 44, 사방(줄 사이 간격 8 안). */
+const AVATAR_SLOP = "6px";
+
+// 상대 줄 — 왼쪽 위 아바타 + 쌓음(사진 · 말풍선). `avatar.profile`이 있으면 아바타가 프로필 단추입니다(ADR-0178 개정 ⟨대화방⟩).
 export function ChatIncomingRow({ avatar, testId, children }: ChatIncomingRowProps): ReactNode {
+  const face = (
+    <Avatar
+      name={avatar.name}
+      imageSource={avatar.imageUrl ?? undefined}
+      size="sm"
+      accessibility="hidden"
+    />
+  );
+  const { profile } = avatar;
   return (
     <view className="chat-row" data-testid={testId}>
-      <Avatar
-        name={avatar.name}
-        imageSource={avatar.imageUrl ?? undefined}
-        size="sm"
-        accessibility="hidden"
-      />
+      {profile === undefined ? (
+        face
+      ) : (
+        <view
+          data-testid={profile.testId}
+          flatten={false}
+          accessibility-element={true}
+          accessibility-traits="button"
+          accessibility-label={profile.label}
+          accessibility-enable-tap={true}
+          hit-slop={AVATAR_SLOP}
+          catchtap={() => {
+            "background only";
+            profile.onTap();
+          }}
+        >
+          {face}
+        </view>
+      )}
       <view className="chat-stack">{children}</view>
     </view>
   );
