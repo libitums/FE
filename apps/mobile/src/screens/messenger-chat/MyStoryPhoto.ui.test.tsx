@@ -146,7 +146,7 @@ test("MSP-UI2. 고르기 결과 — 카메라 거부는 시트에 안내, 취소
   ]);
 });
 
-test("MSP-UI3. 사진 위 편집 — 한 줄이 없으면 Share 꺼짐 · 안내, 단어를 얹으면 업로드 → 게시(사진 · 한 줄 · 얹은 것), 올리는 동안 안내, 보기는 서명 주소 사진 · Photo story", async () => {
+test("MSP-UI3. 사진 위 편집 — 한 줄이 없으면 Share 꺼짐 · 안내, 단어를 얹으면 업로드 → 게시(사진 · 한 줄 · 얹은 것), 올리는 동안 안내 → 올린 뒤 확인 중 안내, 보기는 서명 주소 사진 · Photo story", async () => {
   const fake = fakeMyStories({ guideSeen: true, words, kinds: [...photoKinds], photo: {} });
   let release: () => void = () => undefined;
   const { events } = await openPhotoEditor(fake);
@@ -163,15 +163,21 @@ test("MSP-UI3. 사진 위 편집 — 한 줄이 없으면 Share 꺼짐 · 안내
   expect(screen.getByTestId(ids.sticker("s1"))).not.toBeNull();
   expect(screen.getByTestId(ids.sticker("s2"))).not.toBeNull();
   const original = fake.photo?.post.getMockImplementation();
+  let uploaded: () => void = () => undefined;
   fake.photo?.post.mockImplementationOnce(
-    (draft) =>
+    (draft, onUploaded) =>
       new Promise((resolve) => {
+        uploaded = () => onUploaded?.();
         release = () => void original?.(draft).then(resolve);
       }),
   );
   tapId(ids.share);
   await flush();
   expect(screen.getByTestId(ids.editorHint).textContent).toBe("Uploading your photo…");
+  // 사진이 올라가면 서버 확인(검수 · 장면 읽기, 운영 5 ~ 9초) 동안은 확인 중 안내로 바뀝니다.
+  uploaded();
+  await flush();
+  expect(screen.getByTestId(ids.editorHint).textContent).toBe("Checking your photo…");
   expect(fake.photo?.post).toHaveBeenCalledWith(
     expect.objectContaining({
       photo: PICKED.status === "picked" ? PICKED.photo : null,
@@ -182,6 +188,7 @@ test("MSP-UI3. 사진 위 편집 — 한 줄이 없으면 Share 꺼짐 · 안내
       ],
       region: null,
     }),
+    expect.any(Function),
   );
   release();
   await flush();
