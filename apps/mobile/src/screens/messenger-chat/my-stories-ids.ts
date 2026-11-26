@@ -7,6 +7,8 @@ const ms = (suffix: string): string => `my-stories-${suffix}`;
 export const myStoriesTestIds = {
   create: ms("create"),
   mine: ms("mine"),
+  /** 스토리 줄의 내 스토리 | 다른 인물 사이 세로 선(ADR-0178 D3 개정 ⟨내 스토리 구분 선⟩) — 꾸밈이라 낭독하지 않습니다. */
+  rowDivider: ms("row-divider"),
   guide: ms("guide"),
   guideStart: ms("guide-start"),
   guideLater: ms("guide-later"),
