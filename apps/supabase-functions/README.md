@@ -1115,3 +1115,14 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 평가 세트 `story-reaction-roles`(8) 추가. 테스트: `migrations/my-story-compose.integration.test.ts`(MC6) · `_shared/companion-reaction-prompt.unit.test.ts`(RP2 · RP3).
 
 **적용 순서** — `20270109120000` 뒤에 `20270110120000_my_story_reaction_roles.sql`. 함수 `companion-story-reactions companion-eval`.
+
+## 친구 스토리 — 지난 스토리 열기 (20270111120000, ADR-0202)
+
+- 24시간 안 스토리는 그대로 무료. 지난 스토리 = 그 인물의 최근 7일 안 스토리 중 만료된 것. 친구(말한 적 있는 · 켜진 · 숨기지 않은 인물) 하나 단위로
+  `settings.past_story_price`(기본 10)엽전에 7일 동안 연다. Chat Plus · Premium(`has_all_characters`)은 무료(값 0 기록).
+- 스위치 `settings.past_stories`(off 기본 · testers · on) — 친구 스토리 스위치도 켜져 있어야 한다.
+- 앱 RPC: `companion_past_stories_status(character)` · `companion_open_past_stories(character, request_id)` · `companion_list_past_stories(character)`.
+  응답 모양은 `docs/specs/past-stories.md`. 차감은 티켓 사기와 같은 길(원장 `spend` · `past_stories` · ref = 요청 id, 같은 id는 같은 결과).
+- 표 `companion.past_story_opens`(RLS 본인 읽기, 쓰기는 함수만). 테스트: `migrations/past-stories.integration.test.ts`(PX1 ~ PX14).
+
+**적용 순서** — `20270110120000` 뒤에 `20270111120000_past_stories.sql`. Edge Function 배포 없음. 켜기: `update companion.settings set past_stories = 'testers';`.
