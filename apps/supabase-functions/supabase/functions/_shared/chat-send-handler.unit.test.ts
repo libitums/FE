@@ -1828,6 +1828,11 @@ describe("출력 차단 되살리기(ADR-0151)", () => {
         { layer: "output_sync", category: "safe", action: "allow" },
       ],
     });
+    // 걸린 초안을 남긴다(ADR-0203 D4) — 오탐인지 나중에 가려 본다.
+    const recovered = (
+      finishArgs() as { p_assistant: { meta: { guardrailRecovered: { draft: string } } } }
+    ).p_assistant.meta.guardrailRecovered;
+    expect(recovered.draft).toContain("[unsafe]");
   });
 
   test("GR3. 다시 만든 답도 걸리면 지금처럼 guardrail_blocked · blocked — 조각 · 교정 없음", async () => {
