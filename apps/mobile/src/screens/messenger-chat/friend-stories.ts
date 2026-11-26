@@ -138,6 +138,10 @@ export function viewerJump(
   return group.start === 0 ? 0 : viewerGroupOf(items, group.start - 1).start;
 }
 
+/** 누른 자리 → 넘김(ADR-0178 D4 개정 ⟨탭 자리⟩) — 화면 가운데가 경계, 왼쪽 절반은 이전 · 오른쪽 절반은 다음. 자리를 모르면 다음. */
+export const storyTapOf = (x: unknown, width: number): "prev" | "next" =>
+  typeof x === "number" && x * 2 < width ? "prev" : "next";
+
 /** 다음 · 저절로 넘김은 한 칸(마지막이면 닫힘), 이전은 한 칸(처음이면 그대로). */
 export function viewerStep(state: ViewerState, action: ViewerAction): ViewerState | "close" {
   if (action === "prev") return { ...state, index: Math.max(0, state.index - 1) };

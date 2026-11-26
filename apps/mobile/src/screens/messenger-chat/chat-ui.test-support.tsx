@@ -10,6 +10,9 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { backHandlers } from "../../lib/back-handler";
 import { zeroKeyboardDockEdges, type KeyboardDockEdges } from "../../lib/keyboard-dock";
 import { createFixtureChatSource } from "./chat-fixture-source";
+import { tapEl } from "./lynx-tap.test-support";
+
+export { tapEl };
 import type { ChatFixtureRoom, ChatFixtureSeed, ChatSource } from "./chat-source.contract";
 import { createCoinWallet, type SyncedCoinWallet } from "./coin-wallet";
 import type { ChatTier } from "./free-turns";
@@ -158,12 +161,12 @@ export const tapId = (testId: string): void => {
   const inner = el.querySelector(
     '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
   );
-  fireEvent.tap(inner ?? el, {});
+  tapEl(inner ?? el);
 };
 
 /** ui-lynx 버튼은 감싸개가 test-id를 갖고 탭은 안쪽 `ui-lynx-button`이 받습니다. */
 export const tapButtonIn = (wrapperTestId: string): void => {
-  fireEvent.tap(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"), {});
+  tapEl(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"));
 };
 
 /** 요소 안 가장 가까운 ui-lynx 단추(없으면 요소 자신)를 누릅니다. 같은 test-id가 여러 줄에 있을 때 `within(줄)`과 함께 씁니다. */
@@ -172,7 +175,7 @@ export const tapWithin = (scope: HTMLElement, testId: string): void => {
   const inner = el.querySelector(
     '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
   );
-  fireEvent.tap(inner ?? el, {});
+  tapEl(inner ?? el);
 };
 
 export const tapKeys = (...keys: string[]): void => {

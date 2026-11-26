@@ -24,6 +24,11 @@ export const STORY_SHOW_MS = 6_000;
 
 const SLOP = { top: "8px", bottom: "8px", left: "8px", right: "8px" } as const;
 
+/** 탭을 여기서 멈춥니다(`catchtap`) — 누를 수 있는 묶음의 탭이 면의 넘김(D4 개정 ⟨탭 자리⟩)으로 올라가지 않게. */
+export const noTap = (): void => {
+  "background only";
+};
+
 /** 저절로 넘김 타이머 — 멈추면 남은 시간을 기억했다가 이어 갑니다. 장이 바뀌면 처음부터. */
 export function useAdvanceTimer(index: number, running: boolean, onDone: () => void): void {
   const left = useRef(STORY_SHOW_MS);
@@ -111,7 +116,7 @@ export function IconButton({
       accessibility-traits="button"
       accessibility-enable-tap={true}
       flatten={false}
-      bindtap={() => {
+      catchtap={() => {
         "background only";
         onTap();
       }}
@@ -158,7 +163,7 @@ export function WordPill({
       accessibility-traits={saved ? undefined : "button"}
       accessibility-enable-tap={!saved}
       flatten={false}
-      bindtap={saved ? undefined : handleTap}
+      catchtap={saved ? undefined : handleTap}
     >
       {saved ? null : (
         <svg className="story-word-icon" content={plus} current-color={color.white} />
@@ -207,7 +212,7 @@ export function StoryReplyBar({
                 accessibility-traits="button"
                 accessibility-enable-tap={true}
                 flatten={false}
-                bindtap={() => {
+                catchtap={() => {
                   "background only";
                   onChip(text);
                 }}
@@ -254,7 +259,7 @@ export function StoryMeet({
       </view>
       {/* 잠긴 친구는 단추가 없습니다 — 만나는 길(프로필 시트)은 위 아바타가 엽니다(옛 「See how to meet」을 옮김). */}
       {friend.status === "addable" ? (
-        <view data-testid={ids.meet}>
+        <view data-testid={ids.meet} catchtap={noTap}>
           <Button
             label={copy.viewer.addAndReply}
             variant="brand"
