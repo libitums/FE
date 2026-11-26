@@ -68,6 +68,8 @@ export function useStoryProfile({
         <SuggestedFriendSheet
           model={sheet}
           now={now}
+          // 목록 시트와 같은 견본 주소 · 로마자(ADR-0198) — 빠지면 Hear voice가 늘 못 읽음이었습니다(2026-11-26 보고).
+          {...suggested.sheetView(sheet)}
           onStart={() => {
             setSheet(null);
             onChat(sheet.character.id);
