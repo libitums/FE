@@ -83,6 +83,16 @@ export default defineConfig(({ command }): Config => {
           // 없음으로 표시해 import를 통째로 버리게 합니다 — release 번들 약 −40 kB(ADR-0171).
           rules: [
             { test: /render-dev-probe\.tsx$/, sideEffects: false },
+            // 메인 스레드는 첫 화면(스플래시)만 그려(`render-app-content.tsx`) 다른 화면만 쓰는 ui-lynx 컴포넌트의 import가
+            // 쓰이지 않게 됩니다. ui-lynx의 `sideEffects`는 CSS만 적어, 그대로 두면 그 모듈이 통째로 빠지면서 모듈 최상위의
+            // 그리기 틀(snapshot) 등록도 사라지고, background가 그 화면을 열 때 메인 스레드가 「Snapshot not found」로
+            // 멈춥니다. 메인 스레드 쪽에서만 부수 효과 있음으로 둡니다 — background에 걸면 쓰지 않는 컴포넌트까지 실립니다.
+            // 확인: `pnpm size:snapshots`(ADR-0149 「줄인 기록」 1).
+            {
+              test: /[\\/]ui-lynx[\\/]dist[\\/].*\.jsx?$/,
+              issuerLayer: "react:main-thread",
+              sideEffects: true,
+            },
             // 디자인 토큰 JS는 묶음마다 최상위 `deepFreeze(...)`를 불러, 앱이 쓰는 color · motion · opacity
             // 말고도 typography · font · elevation 등 열두 묶음이 두 스레드에 다 실립니다. 최상위 호출만
             // 순수로 표시해 쓰이지 않는 묶음을 버립니다 — release 번들 약 −14 kB.
