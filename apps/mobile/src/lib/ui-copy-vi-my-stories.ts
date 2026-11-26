@@ -185,5 +185,8 @@ export const myStoriesVi: MyStoriesCopy = {
     reacted: "Đã trả lời tin của bạn",
     deleted: "Tin đã xóa",
     deletedLabel: "Trả lời một tin đã xóa",
+    openStory: "Mở tin",
+    ended: "Đã hết",
+    endedTitle: "Tin này đã hết hạn",
   },
 };

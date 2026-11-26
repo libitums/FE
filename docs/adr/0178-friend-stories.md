@@ -138,7 +138,7 @@
 - `friend_story_row_viewed { count, unseen }` — **줄 단위.** 스토리 줄이 실제로 그려졌을 때 목록 마운트당 한 번. 판정은 목록 화면 한 곳
   (`use-row-impressions.ts`): 첫 입장 안내로 줄 자리가 숨으면 내지 않고, 스토리 첫 읽기가 끝나기 전에는 추천 줄 노출(`suggested_friend_viewed`)도
   세지 않는다(곧 스토리 줄로 바뀔 수 있어서). 스토리 줄이 추천 줄을 대신하면 `suggested_friend_viewed`는 나지 않는다.
-- `friend_story_viewed { characterId, met: boolean, from: row | watch_all | push, index, total }` ⟨2026-11-26 D3 개정 2 — `list` 없앰⟩ — **장 단위.** 보기에서 한 장이 설 때마다
+- `friend_story_viewed { characterId, met: boolean, from: row | watch_all | push | chat, index, total }` ⟨2026-11-26 D3 개정 2 — `list` 없앰 · D5 개정 ⟨판⟩ — `chat` 더함⟩ — **장 단위.** 보기에서 한 장이 설 때마다
   (`index` = 몇째 장, 1부터 · `total` = 그 보기의 장 수, 10진 문자열).
 - `friend_story_closed { shown, total, skipped, reason: completed | closed | back | replied }` — 보기가 닫힐 때 한 번. `shown` = 선 장 수,
   `skipped` = 다음 장으로 넘긴 탭 수(마지막 장에서 끝내는 탭은 세지 않음), `reason` = 끝까지 넘김 · 닫기 단추 · 시스템 뒤로 · 칩/답장 칸/Add friend and reply로 대화방.
@@ -300,6 +300,33 @@
 - 진행 막대 · 탭 · 6초 넘김 · 가로 넘김 · 큐브 · 탭 자리 코드는 바꾸지 않았다. 내 스토리 장의 인물 id는 `"me"`라 한 묶음으로 센다.
 - 탭 자리(D4 개정 ⟨탭 자리⟩, #623)와 맞춤: 바의 단추 · 새 답 줄 · 「Seen by」 자리 · ⋯ 메뉴 줄은 `catchtap`이라 넘기지 않고, 바의 빈 자리 · 안내 줄 ·
   화면 가득 글 · 사진은 면으로 올라가 넘긴다. 내 장의 이름 · 아바타도 `catchtap`(아무것도 열지 않음)이다.
+
+## D5 개정 ⟨판⟩ — 대화방 인용을 올린 그대로 9:16 작은 판으로, 누르면 그 스토리 ⟨2026-11-26⟩
+
+사용자 보고(2026-11-26 「캐릭터가 나에게 문자 줄 때 Replied to your story에 이미지 없이 거기에 넣은 text만 떠 있어」 · 앞서 요청 「올린 이미지 그대로 메시지에 넣고,
+누르면 그 스토리로 가면 좋겠는데」) → 시안 37 · 38 · 39 · 40a(Q1ReplyThumb · Q2ReplyThumbText · Q3ReplyThumbGone · P0ChatExpired).
+
+- **판**: 가로 카드(작은 그림 + 한 줄 + Story · 경과)를 **세로 9:16 판**으로 바꾼다 — 인물의 반응 위(「Replied to your story」) 118 × 210, 내 답 위(「You replied to
+  …'s story」) 96 × 171. 캡션은 기존 문구 그대로다. 한 줄 · 경과는 판에 그리지 않고 낭독에만 남는다.
+  - **내 스토리**([ADR-0194](0194-my-stories.md) 개정 ⟨판⟩): 전체 화면 보기와 **같은 카드**(`MyPhotoStoryCard` · `MyTextStoryCard`)를 기준 바탕 390 × 694에 그리고
+    가운데 기준 `scale`로 줄인다 — 사진 · 바탕색 · 얹은 글 상자 · 단어 스티커가 비율 자리 그대로. 새 그리기 코드는 판 틀 · 크기뿐이다.
+  - **친구 스토리**: 그 스토리 그림(`imagePath`, 콘텐츠 버킷)을 판 가득.
+  - **24시간 지난 친구 스토리**(시안 40a): 판은 그대로 보이고 어두운 막(35%) + 왼쪽 아래 「Ended」 표(시계). 누르면 작은 안내 시트 「This story has ended」 ·
+    OK만 — 시안 40번의 「See past stories」 단추는 **넣지 않았다**(유료 지난 스토리 미결정).
+  - **지운 스토리**(시안 39): 회색 판 · × · 「Deleted story」, 누름 없음.
+- **누르면**(결선 `ChatStoryHost` — 대화방 화면 · 행 코드는 바꾸지 않고 `render-messenger-chat`이 방을 감쌈, 층은 화면 고정이라 방 뒤 형제):
+  - 친구 스토리 24시간 안 → 스토리 보기(`StoryViewer`, 그 인물의 살아 있는 스토리 · 그 장부터). 답장 · 단어 저장은 목록의 보기와 같고, 엽전이 모자라면 보기를 닫아 방으로
+    돌아간다(방의 입력 줄이 상점을 엶 — 스스로 정한 것). 「Sent · Open chat」은 같은 방이면 보기만 닫고, 다른 인물이면 그 방으로.
+  - 친구 스토리가 지남(인용의 올린 시각 + 24시간, 받은 목록에 있으면 그 만료, 목록을 받았는데 없으면 지남) → 안내 시트.
+  - 내 스토리 → [ADR-0194](0194-my-stories.md) 개정 ⟨판⟩.
+- **목록 받기**: 판이 처음 설 때 그 종류의 목록을 방마다 **한 번** 받는다(친구 스토리 `companion_friend_stories` · 내 스토리 `companion_my_stories`). 인용이 없는 방 ·
+  손님 · 접근 불가는 서버 요청 0이고 판은 인용만으로 그리며 누를 수 없다. 친구 목록을 아직 못 받았고 24시간 안이면 누름은 아무것도 열지 않는다.
+- **접근성**: 판(캡션 포함)이 하나의 낭독 요소 — 「캡션: 한 줄, Story · 경과, Open story」(캡션이 누구의 스토리인지 말함, 지난 것은 「…, Ended」), 누를 수 있으면 버튼(118 · 96 폭, 44 이상).
+  지운 판은 「Reply to a deleted story」이고 버튼이 아니다. 새 문구 `myStories.quote.openStory` · `ended` · `endedTitle`(8개 언어), OK · 닫기는 기존 `window.ok` · `window.close`.
+- **이벤트**: 새 이벤트 없음 — `friend_story_viewed.from`에 `chat`을 더하고(장 단위 그대로, `met` true) 판에서 연 보기도 닫힐 때 `friend_story_closed`를 낸다
+  (AN1 · AB3 개수 그대로).
+- 확인: unit CT-U1 ~ U8(`chat-story-thumb.unit.test.ts`), ui CT-UI1 ~ UI8(`StoryQuote.thumb.ui.test.tsx`) · FS-UI8 갱신, integration CT-I1 ~ I5
+  (`ChatStoryHost.integration.test.tsx`), e2e FS-E12(기기).
 
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 

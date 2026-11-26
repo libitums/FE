@@ -208,5 +208,8 @@ export const myStoriesEs: MyStoriesCopy = {
     reacted: "Respondió a tu historia",
     deleted: "Historia borrada",
     deletedLabel: "Respuesta a una historia borrada",
+    openStory: "Abrir historia",
+    ended: "Terminó",
+    endedTitle: "Esta historia ya terminó",
   },
 };

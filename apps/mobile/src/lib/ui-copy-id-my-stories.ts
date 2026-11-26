@@ -187,5 +187,8 @@ export const myStoriesId: MyStoriesCopy = {
     reacted: "Membalas ceritamu",
     deleted: "Cerita dihapus",
     deletedLabel: "Balasan untuk cerita yang dihapus",
+    openStory: "Buka cerita",
+    ended: "Berakhir",
+    endedTitle: "Cerita ini sudah berakhir",
   },
 };

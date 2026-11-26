@@ -196,5 +196,8 @@ export const myStoriesTh: MyStoriesCopy = {
     reacted: "ตอบสตอรี่ของคุณ",
     deleted: "สตอรี่ที่ลบแล้ว",
     deletedLabel: "คำตอบถึงสตอรี่ที่ลบแล้ว",
+    openStory: "เปิดสตอรี่",
+    ended: "จบแล้ว",
+    endedTitle: "สตอรี่นี้จบแล้ว",
   },
 };

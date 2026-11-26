@@ -189,5 +189,8 @@ export const myStoriesJa: MyStoriesCopy = {
     reacted: "あなたのストーリーに返信しました",
     deleted: "削除されたストーリー",
     deletedLabel: "削除されたストーリーへの返信",
+    openStory: "ストーリーを開く",
+    ended: "終了",
+    endedTitle: "このストーリーは終了しました",
   },
 };
