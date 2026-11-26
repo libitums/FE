@@ -49,7 +49,7 @@ test("GG-U5 대화상자 문구는 누른 자리에 맞춘다 — 제목은 누�
   expect(of("coins")).toEqual({ title: "Get Yeopjeon", body: keepBody });
   expect(of("menu")).toEqual({ title: "Chat settings", body: chatBody });
   expect(of("add_friend")).toEqual({ title: "Start chatting", body: chatBody });
-  expect(of("tickets")).toEqual({ title: "Get more tickets", body: keepBody });
+  expect(of("tickets")).toEqual({ title: "Get 1 ticket", body: keepBody });
 });
 
 test("GG-U6 방 입장 생년 시트는 회원 · 아직 묻지 않음일 때만 — 비회원은 묻지 않는다", () => {

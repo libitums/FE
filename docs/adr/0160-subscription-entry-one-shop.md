@@ -149,3 +149,8 @@
   - 결선: `use-shop` · `shop-layer` · `session-providers` · `usePlans`
   - 문구: `ui-copy-shop.ts` · `ui-copy-shop-asia.ts`
   - 기기 확인은 [e2e](../e2e/subscription-entry.md)(미실행).
+- ⟨2026-11-25⟩ Chat Plus 첫 구독 보너스([ADR-0196](0196-chat-plus-first-bonus.md)) — 상점 · Plans 화면은 바꾸지 않았다. 구매가 성공하면 지금처럼 권한을 다시 읽고(ADR-0163),
+  권한에 Chat Plus 줄이 서면 상점을 닫고 지도로 왔을 때 보너스 모달이 한 번 선다(지도 안내 줄 — 푸시 보상 다음 · 엽전 출시 앞). 구독 성공 알림(T6)은 그대로다.
+  - 결선: `app/use-subscription-bonus.tsx` · `app/subscription-bonus-record.ts` · `lib/subscription-bonus-api.ts` · `use-map-notices`
+  - 문구: `ui-copy-signup-reward.ts`(`subscriberTag` · `subscriberTitle` · `subscriberBody`, 여덟 언어)
+  - 기기 확인은 [e2e](../e2e/chat-plus-first-bonus.md)(서버 적용 뒤).

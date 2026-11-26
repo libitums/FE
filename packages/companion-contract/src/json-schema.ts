@@ -35,6 +35,13 @@ import {
   missionListSchema,
   missionResultsSchema,
 } from "./mission-report";
+import {
+  missionSttFieldsSchema,
+  missionSttResponseSchema,
+  missionTtsRequestSchema,
+  missionTtsResponseSchema,
+  missionVoiceErrorBodySchema,
+} from "./mission-voice";
 import { turnEventSchema } from "./sse-events";
 import { companionSuggestRequestSchema, companionSuggestResponseSchema } from "./suggest";
 
@@ -69,6 +76,11 @@ const schemas = {
   "mission-finish-response": missionFinishResponseSchema,
   "mission-list": missionListSchema,
   "mission-results": missionResultsSchema,
+  "mission-stt-fields": missionSttFieldsSchema,
+  "mission-stt-response": missionSttResponseSchema,
+  "mission-tts-request": missionTtsRequestSchema,
+  "mission-tts-response": missionTtsResponseSchema,
+  "mission-voice-error": missionVoiceErrorBodySchema,
 } as const;
 
 /** 산출 파일 이름(확장자 없음) → JSON Schema(draft 2020-12)입니다. 이름 순으로 돌려줍니다. */

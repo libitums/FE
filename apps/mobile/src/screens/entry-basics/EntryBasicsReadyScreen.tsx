@@ -19,7 +19,7 @@ import "./entry-basics-ready.css";
 // 준비 완료입니다(ADR-0176, 시안 Ready). 방금 만든 가 · 너 · 도가 「너 도 가」로 다시 서고(「가」가 위로 넘어감), 그 뒤 제목 · 뜻 ·
 // 비행기가 나타나며 문장을 한 번 낭독합니다. 단추는 처음부터 눌립니다. 동작 줄이기면 처음부터 끝 모습입니다.
 //
-// 셸이 여백을 잡지 않습니다 — 바탕이 그림 바탕색(#FEFEFE)으로 끝까지 가야 그림의 네모가 드러나지 않습니다.
+// 셸이 여백을 잡지 않습니다 — 화면 바탕(#FEFEFE)이 가장자리까지 갑니다.
 export function EntryBasicsReadyScreen({
   safeArea,
   planeUrl,

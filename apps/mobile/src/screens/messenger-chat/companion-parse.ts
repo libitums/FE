@@ -2,6 +2,7 @@
 // 계약 패키지(`@libitums/companion-contract`)의 zod 스키마는 앱 번들에 넣지 않습니다(번들 상한) — 같은 모양을 손으로 봅니다.
 
 import type { ChatCorrection, ChatCorrectionItem } from "./chat-feedback.contract";
+import { suggestionOriginOf } from "./chat-suggestion-events";
 import { historyChatWordsOf } from "./companion-chat-words";
 import type { RemoteGreeting, RemoteHistory, RemoteSendFailure } from "./chat-remote.contract";
 import type {
@@ -11,6 +12,8 @@ import type {
   ChatNoticeKind,
   ChatReplyIdea,
 } from "./chat-source.contract";
+import { myTextOf } from "./friend-stories-parse";
+import { reactionLinesOf, withQuizAnswer } from "./story-quiz-parse";
 
 export type RemoteSegment = {
   readonly kind: string;
@@ -172,14 +175,10 @@ export function bubblesOf(
   );
 }
 
-function messagesOf(raw: Json): {
-  messages: ChatMessage[];
-  corrections: Record<string, ChatCorrection>;
-  ideas: readonly ChatReplyIdea[] | null;
-} {
+function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
   const messages: ChatMessage[] = [];
   const corrections: Record<string, ChatCorrection> = {};
-  let ideas: readonly ChatReplyIdea[] | null = null;
+  let last: Json | null = null; // 마지막 캐릭터 메시지 — 추천 답변과 그 출처(ADR-0195)
   for (const item of [...(raw.messages as unknown[])].reverse()) {
     const record = recordOf(item);
     const id = stringOf(record?.id);
@@ -190,18 +189,19 @@ function messagesOf(raw: Json): {
       if (record.status === "failed") continue;
       const text = stringOf(record.text);
       if (text === null) continue;
-      messages.push({ id, at, kind: "text", from: "me", text: { ko: text, en: "" } });
+      messages.push(withQuizAnswer(myTextOf(id, at, text, record.story), record.meta)); // 스토리 답장 인용(ADR-0178 D5) · 퀴즈 답
       const card = correctionOf(record.feedback);
       if (card !== null) corrections[id] = card;
     } else if (record.role === "assistant") {
-      messages.push(...bubblesOf(id, at, segmentsOf(record.segments)));
-      ideas = ideasOf(record.suggestions);
+      messages.push(...reactionLinesOf(bubblesOf(id, at, segmentsOf(record.segments)), record)); // 반응 인용 · 퀴즈(ADR-0191)
+      last = record;
     } else if (record.role === "notice") {
       const notice = noticeKindOf(recordOf(record.notice)?.kind);
       if (notice !== null) messages.push({ id, at, kind: "notice", notice });
     }
   }
-  return { messages, corrections, ideas };
+  const ideasOrigin = suggestionOriginOf(last?.origin);
+  return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin };
 }
 
 /**

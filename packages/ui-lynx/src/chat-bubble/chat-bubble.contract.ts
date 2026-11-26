@@ -3,9 +3,12 @@ export type ChatBubbleSize = "s" | "m" | "l";
 export type ChatBubbleDelivery = "default" | "sending" | "sent" | "read" | "failed";
 export type ChatBubbleContentLanguage = "ui" | "learning";
 
-/** 말풍선 안 로마자 · 뜻 묶음입니다(FE 확장). `translation`과 함께 쓰지 않습니다. */
+/**
+ * 말풍선 안 로마자 · 구분선 · 뜻 묶음입니다(FE 확장). `translation`과 함께 쓰지 않습니다. 줄 순서는 한국어 → 로마자 → 구분선 → 뜻이고,
+ * 로마자가 없거나 비면 한국어 → 구분선 → 뜻입니다.
+ */
 export type ChatBubbleAnnotation = {
-  readonly romanization: string;
+  readonly romanization?: string;
   readonly meaning: string;
   /**
    * 낭독에서 로마자 자리에 읽을 말입니다(예: 앱 문구의 「Pronunciation: …」). 없으면 로마자 그대로 읽습니다. 화면에
@@ -22,7 +25,7 @@ type ChatBubbleBaseProps = {
   readonly languageTag?: string;
   /** 본문 아래 한 줄 더 싣는 번역. 비어 있으면 그리지 않습니다. */
   readonly translation?: string;
-  /** 본문 아래 로마자 · 구분선 · 뜻을 싣는 묶음입니다(`translation`과 배타). */
+  /** 본문 아래 (로마자) · 구분선 · 뜻을 싣는 묶음입니다(`translation`과 배타). */
   readonly annotation?: ChatBubbleAnnotation;
   /** 기본값은 instant입니다. 새로 도착한 메시지에만 typewriter를 지정합니다. */
   readonly reveal?: "instant" | "typewriter";
@@ -72,9 +75,8 @@ function annotationOf(props: ChatBubbleProps): ChatBubbleAnnotation | undefined 
   }
   const romanization = props.annotation.romanization?.trim();
   const meaning = props.annotation.meaning?.trim();
-  if (!romanization) throw new Error("annotation romanization must not be empty");
   if (!meaning) throw new Error("annotation meaning must not be empty");
-  return { romanization, meaning };
+  return romanization ? { romanization, meaning } : { meaning };
 }
 
 function requireVisibleText(value: string, name: "message" | "speaker"): string {
@@ -101,7 +103,7 @@ export function getChatBubbleContract(props: ChatBubbleProps): ChatBubbleContrac
   const annotation = annotationOf(props);
   const spokenRomanization = props.annotation?.spokenRomanization?.trim();
   const spokenTail = annotation
-    ? `, ${spokenRomanization || annotation.romanization}, ${annotation.meaning}`
+    ? `${annotation.romanization ? `, ${spokenRomanization || annotation.romanization}` : ""}, ${annotation.meaning}`
     : translation
       ? `, ${translation}`
       : "";

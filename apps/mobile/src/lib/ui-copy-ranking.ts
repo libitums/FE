@@ -4,9 +4,10 @@
 import type { RankingCopy } from "../screens/ranking/ranking.contract";
 import { n } from "./ui-copy-en-plural";
 import { rankingCopyMy, rankingCopyTh } from "./ui-copy-ranking-th-my";
+import { rankingCopyZhTw } from "./ui-copy-ranking-zh-tw";
 
 export const rankingCopy: Readonly<
-  Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my", RankingCopy>
+  Record<"en" | "es" | "id" | "ja" | "vi" | "th" | "my" | "zh-TW", RankingCopy>
 > = {
   en: {
     title: "Weekly ranking",
@@ -18,7 +19,8 @@ export const rankingCopy: Readonly<
       board === "lessons" ? (score === 1 ? "lesson" : "lessons") : score === 1 ? "word" : "words",
     zoneTop: (reward) =>
       reward === null ? "Top 3 this week" : `Top 3 get a bonus ${reward} Yeopjeon`,
-    zoneClimb: "Keep climbing",
+    zoneClimb: (more) =>
+      more === null ? "Keep climbing" : `Keep climbing · ${more} more to reach the top 3`,
     you: "You",
     morePass: (more, name) => `${more} more to pass ${name}`,
     first: "You're #1!",
@@ -65,7 +67,8 @@ export const rankingCopy: Readonly<
           : "palabras",
     zoneTop: (reward) =>
       reward === null ? "Top 3 de la semana" : `El top 3 gana ${reward} Yeopjeon extra`,
-    zoneClimb: "Sigue subiendo",
+    zoneClimb: (more) =>
+      more === null ? "Sigue subiendo" : `Sigue subiendo · ${more} más para entrar al top 3`,
     you: "Tú",
     morePass: (more, name) => `${more} más para pasar a ${name}`,
     first: "¡Eres el n.º 1!",
@@ -108,7 +111,8 @@ export const rankingCopy: Readonly<
     unit: (board) => (board === "lessons" ? "pelajaran" : "kata"),
     zoneTop: (reward) =>
       reward === null ? "3 teratas minggu ini" : `3 teratas dapat bonus ${reward} Yeopjeon`,
-    zoneClimb: "Terus naik",
+    zoneClimb: (more) =>
+      more === null ? "Terus naik" : `Terus naik · ${more} lagi untuk masuk 3 besar`,
     you: "Kamu",
     morePass: (more, name) => `${more} lagi untuk menyalip ${name}`,
     first: "Kamu peringkat 1!",
@@ -154,7 +158,8 @@ export const rankingCopy: Readonly<
     unit: (board) => (board === "lessons" ? "レッスン" : "語"),
     zoneTop: (reward) =>
       reward === null ? "今週のトップ3" : `トップ3は${reward} Yeopjeonのボーナス`,
-    zoneClimb: "まだまだ上を目指そう",
+    zoneClimb: (more) =>
+      more === null ? "まだまだ上を目指そう" : `まだまだ上を目指そう · あと${more}でトップ3`,
     you: "あなた",
     morePass: (more, name) => `あと${more}で${name}さんを抜けます`,
     first: "1位です！",
@@ -200,7 +205,8 @@ export const rankingCopy: Readonly<
     unit: (board) => (board === "lessons" ? "bài" : "từ"),
     zoneTop: (reward) =>
       reward === null ? "Top 3 tuần này" : `Top 3 được thưởng ${reward} Yeopjeon`,
-    zoneClimb: "Tiếp tục leo hạng",
+    zoneClimb: (more) =>
+      more === null ? "Tiếp tục leo hạng" : `Tiếp tục leo hạng · Thêm ${more} để vào top 3`,
     you: "Bạn",
     morePass: (more, name) => `Thêm ${more} để vượt ${name}`,
     first: "Bạn đứng hạng 1!",
@@ -236,4 +242,5 @@ export const rankingCopy: Readonly<
   },
   th: rankingCopyTh,
   my: rankingCopyMy,
+  "zh-TW": rankingCopyZhTw,
 };

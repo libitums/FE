@@ -59,11 +59,11 @@ export const settingsMy: SettingsCopy = {
   sessionOption: {
     "auto-play-audio": "အလိုအလျောက် ဖွင့်ရန်",
     "show-transcript": "စာတန်း ပြရန်",
-    "show-choice-romanization": "ရွေးစရာများတွင် အသံထွက်",
+    "show-choice-romanization": "အသံထွက်",
     vibration: "တုန်ခါမှု",
   },
   sessionOptionDescription: {
-    "show-choice-romanization": "ကိုရီးယား အဖြေတစ်ခုစီ၏ အသံထွက်ကို အပေါ်တွင် စာလုံးသေးဖြင့် ပြပါမယ်။",
+    "show-choice-romanization": "ကိုရီးယားစာ ဖတ်ပုံကို အဖြေ၊ သင်ခန်းစာနှင့် ဇာတ်လမ်းများတွင် စာလုံးသေးဖြင့် ပြပါမယ်။",
     vibration: "အဖြေ မှန်/မှား ချိန်နှင့် ကီးဘုတ် နှိပ်ချိန်တွင် တုန်ခါပါမယ်။",
   },
   optionState: { on: "ဖွင့်", off: "ပိတ်" },

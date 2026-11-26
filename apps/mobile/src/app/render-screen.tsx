@@ -26,7 +26,9 @@ import {
   renderChatSettings,
   renderMessengerChat,
   renderMessengerList,
+  renderMyStories,
   messengerAccessFor,
+  myStoriesKnownOn,
 } from "./render-messenger-chat";
 import { canBrowseChats } from "../screens/messenger-chat/messenger-access";
 import { NewFriendMapHost } from "./render-new-friend";
@@ -55,6 +57,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // W1: 남은 선톡 알림 · 시험 표시가 꺼진 뒤 열려 있던 화면).
     case "messenger-chat":
     case "chat-settings":
+    case "my-stories":
     case "chat-memories":
     case "chat-album": {
       // 비회원 미리보기(ADR-0166)는 방까지 — 대화 설정 · 기억 · 앨범은 회원만(방 메뉴가 권유로 막음).
@@ -64,6 +67,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       if (access !== "open" || screen.name === "messenger-chat")
         return renderMessengerList(wiring, null);
       if (screen.name === "chat-settings") return renderChatSettings(wiring);
+      if (screen.name === "my-stories") return renderMyStories(wiring);
       if (screen.name === "chat-album")
         return renderChatAlbum(screen.roomId, screen.characterName, wiring);
       return renderChatMemories(screen.characterId, screen.characterName, wiring);
@@ -100,6 +104,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onLayerChange={wiring.onScreenLayerChange}
           onOpenChatSettings={
             messengerAccessFor(wiring) === "open" ? wiring.messengerChat.onOpenChatSettings : null
+          }
+          // 내 스토리(ADR-0194) — 서버가 켜져 있다고 이번 실행에 읽은 회원만.
+          onOpenMyStories={
+            messengerAccessFor(wiring) === "open" && myStoriesKnownOn(wiring)
+              ? wiring.messengerChat.onOpenMyStories
+              : null
           }
           onOpenPlans={
             wiring.plans === undefined ? null : () => wiring.plans?.openPlans("settings", null)

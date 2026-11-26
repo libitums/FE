@@ -50,6 +50,9 @@
 		7C1D0A862E1000010086AA07 /* AppUpdateModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A862E1000010086AA08 /* AppUpdateModuleTests.swift */; };
 		7C1D0A862E1000010086AB03 /* NetworkStatusModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A862E1000010086AB04 /* NetworkStatusModuleTests.swift */; };
 		7C1D0A872E1000010087AB03 /* ChatStreamModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A872E1000010087AB04 /* ChatStreamModuleTests.swift */; };
+		7C1D0A892E1000010089AB01 /* StoryPhotoModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A892E1000010089AB02 /* StoryPhotoModule.swift */; };
+		7C1D0A892E1000010089AB05 /* StoryPhotoFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A892E1000010089AB06 /* StoryPhotoFiles.swift */; };
+		7C1D0A892E1000010089AB03 /* StoryPhotoModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A892E1000010089AB04 /* StoryPhotoModuleTests.swift */; };
 		7C1D0A882E1000010088AB03 /* ExternalLinkModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A882E1000010088AB04 /* ExternalLinkModuleTests.swift */; };
 		7C1D0A862E1000010086AA05 /* AppVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A862E1000010086AA06 /* AppVersionTests.swift */; };
 		4C1D0C5E0A1F2B3C4DAE0000 /* PushNotificationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */; };
@@ -93,6 +96,8 @@
 		1A10C0DE0000000000000006 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000007 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000008 /* th */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A10C0DE000000000000000A /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		1A10C0DE000000000000000B /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000009 /* my */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = my; path = my.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSyncSignalTests.swift; sourceTree = "<group>"; };
 		D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFileStoreTests.swift; sourceTree = "<group>"; };
@@ -130,6 +135,8 @@
 		7C1D0A862E1000010086AA04 /* AppUpdateModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateModule.swift; sourceTree = "<group>"; };
 		7C1D0A862E1000010086AB02 /* NetworkStatusModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkStatusModule.swift; sourceTree = "<group>"; };
 		7C1D0A872E1000010087AB02 /* ChatStreamModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamModule.swift; sourceTree = "<group>"; };
+		7C1D0A892E1000010089AB02 /* StoryPhotoModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryPhotoModule.swift; sourceTree = "<group>"; };
+		7C1D0A892E1000010089AB06 /* StoryPhotoFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryPhotoFiles.swift; sourceTree = "<group>"; };
 		7C1D0A882E1000010088AB02 /* ExternalLinkModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalLinkModule.swift; sourceTree = "<group>"; };
 		7C1D0A862E1000010086AA02 /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 		2B94A3E32D6614980060892E /* ReducedMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReducedMotion.swift; sourceTree = "<group>"; };
@@ -143,6 +150,7 @@
 		7C1D0A862E1000010086AA08 /* AppUpdateModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateModuleTests.swift; sourceTree = "<group>"; };
 		7C1D0A862E1000010086AB04 /* NetworkStatusModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkStatusModuleTests.swift; sourceTree = "<group>"; };
 		7C1D0A872E1000010087AB04 /* ChatStreamModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamModuleTests.swift; sourceTree = "<group>"; };
+		7C1D0A892E1000010089AB04 /* StoryPhotoModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryPhotoModuleTests.swift; sourceTree = "<group>"; };
 		7C1D0A882E1000010088AB04 /* ExternalLinkModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalLinkModuleTests.swift; sourceTree = "<group>"; };
 		7C1D0A862E1000010086AA06 /* AppVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionTests.swift; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4D9E0000 /* PushNotificationModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationModule.swift; sourceTree = "<group>"; };
@@ -273,6 +281,8 @@
 				7C1D0A862E1000010086AB02 /* NetworkStatusModule.swift */,
 				7C1D0A872E1000010087AB02 /* ChatStreamModule.swift */,
 				7C1D0A882E1000010088AB02 /* ExternalLinkModule.swift */,
+				7C1D0A892E1000010089AB02 /* StoryPhotoModule.swift */,
+				7C1D0A892E1000010089AB06 /* StoryPhotoFiles.swift */,
 				9E5C0A1A2F0000010000A002 /* PurchasesModule.swift */,
 				9E5C0A1A2F0000010000B002 /* PurchasesAttribution.swift */,
 				7C1D0A862E1000010086AA02 /* AppVersion.swift */,
@@ -296,6 +306,7 @@
 				7C1D0A862E1000010086AB04 /* NetworkStatusModuleTests.swift */,
 				7C1D0A872E1000010087AB04 /* ChatStreamModuleTests.swift */,
 				7C1D0A882E1000010088AB04 /* ExternalLinkModuleTests.swift */,
+				7C1D0A892E1000010089AB04 /* StoryPhotoModuleTests.swift */,
 				7C1D0A862E1000010086AA06 /* AppVersionTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0001 /* AirbridgeEventsTests.swift */,
@@ -401,6 +412,8 @@
 				vi,
 				th,
 				my,
+				"zh-Hant",
+				ko,
 			);
 			mainGroup = 2B94A3BC2D6613730060892C;
 			productRefGroup = 2B94A3C62D6613730060892C /* Products */;
@@ -560,6 +573,8 @@
 				7C1D0A862E1000010086AB01 /* NetworkStatusModule.swift in Sources */,
 				7C1D0A872E1000010087AB01 /* ChatStreamModule.swift in Sources */,
 				7C1D0A882E1000010088AB01 /* ExternalLinkModule.swift in Sources */,
+				7C1D0A892E1000010089AB01 /* StoryPhotoModule.swift in Sources */,
+				7C1D0A892E1000010089AB05 /* StoryPhotoFiles.swift in Sources */,
 				9E5C0A1A2F0000010000A001 /* PurchasesModule.swift in Sources */,
 				9E5C0A1A2F0000010000B001 /* PurchasesAttribution.swift in Sources */,
 				7C1D0A862E1000010086AA01 /* AppVersion.swift in Sources */,
@@ -580,6 +595,7 @@
 				7C1D0A862E1000010086AB03 /* NetworkStatusModuleTests.swift in Sources */,
 				7C1D0A872E1000010087AB03 /* ChatStreamModuleTests.swift in Sources */,
 				7C1D0A882E1000010088AB03 /* ExternalLinkModuleTests.swift in Sources */,
+				7C1D0A892E1000010089AB03 /* StoryPhotoModuleTests.swift in Sources */,
 				7C1D0A862E1000010086AA05 /* AppVersionTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0001 /* AirbridgeEventsTests.swift in Sources */,
@@ -619,6 +635,8 @@
 				1A10C0DE0000000000000006 /* ja */,
 				1A10C0DE0000000000000007 /* vi */,
 				1A10C0DE0000000000000008 /* th */,
+				1A10C0DE000000000000000A /* zh-Hant */,
+				1A10C0DE000000000000000B /* ko */,
 				1A10C0DE0000000000000009 /* my */,
 			);
 			name = InfoPlist.strings;
@@ -772,11 +790,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Host/Host.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = 7SJJT6G6JK;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Host/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "내 스토리에 올릴 사진을 찍을 때만 카메라를 씁니다. Share를 누르기 전에는 아무것도 올리지 않습니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "말하기 연습에서 읽은 문장을 녹음해 어떻게 발음했는지 확인합니다. 말하기 단계에서만 녹음하고, 멈추면 바로 끝납니다.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "녹음한 말하기 연습 음성을 한국어 문장으로 바꿔 읽어야 할 문장과 맞는지 확인합니다. 이 확인 외에는 음성을 쓰지 않습니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -788,7 +807,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.libitum.host;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -824,11 +843,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Host/Host.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 30;
 				DEVELOPMENT_TEAM = 7SJJT6G6JK;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Host/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "내 스토리에 올릴 사진을 찍을 때만 카메라를 씁니다. Share를 누르기 전에는 아무것도 올리지 않습니다.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "말하기 연습에서 읽은 문장을 녹음해 어떻게 발음했는지 확인합니다. 말하기 단계에서만 녹음하고, 멈추면 바로 끝납니다.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "녹음한 말하기 연습 음성을 한국어 문장으로 바꿔 읽어야 할 문장과 맞는지 확인합니다. 이 확인 외에는 음성을 쓰지 않습니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -840,7 +860,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.libitum.host;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

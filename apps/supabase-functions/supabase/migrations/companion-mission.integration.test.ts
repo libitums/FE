@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 롤플레이 미션 DB(20261226, PRD docs/specs/ai-companion-mission.md · ADR-0177): 판 시작 · 턴 · 힌트 · 닫기 · 결과 저장 · 채점 실패 ·
+// 롤플레이 미션 DB(20270112, PRD docs/specs/ai-companion-mission.md · ADR-0193): 판 시작 · 턴 · 힌트 · 닫기 · 결과 저장 · 채점 실패 ·
 // 방치 정리, 하루 무료 횟수 → 엽전 정액, 열림 · 계정 단위 판정, 남의 판 거절, 계정 삭제, 권한, 그리고 컴패니언 대화와의 격리.
 // 모든 테스트 끝에 「지갑 버킷 잔액의 합 = 원장 delta의 합」을 사용자마다 단언한다.
 const learner = "00000000-0000-4000-8000-0000000000d1";

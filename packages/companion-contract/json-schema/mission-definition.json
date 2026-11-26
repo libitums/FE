@@ -115,6 +115,10 @@
           "minLength": 1,
           "maxLength": 200
         },
+        "voice": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]{8,64}$"
+        },
         "base": {
           "type": "object",
           "properties": {

@@ -57,6 +57,9 @@ export const speakingEs: SpeakingCopy = {
   tapToContinue: "Toca la pantalla para continuar",
   recognitionUnavailable:
     "El reconocimiento de voz no está disponible ahora. Toca Omitir para continuar.",
+  notCaught: "No te escuché bien. Toca el micrófono e inténtalo de nuevo.",
+  networkRetry:
+    "No se pudo conectar con el reconocimiento de voz. Revisa tu conexión e inténtalo de nuevo.",
 };
 
 export const assessmentEs: AssessmentCopy = {

@@ -2,6 +2,9 @@
 
 import type {
   CatalogStartSource,
+  ChoiceChipSoundPlayedEvent,
+  ReplayStoryStage,
+  SentenceAudioReplayedEvent,
   CatalogUnitRole,
   EpisodeFinalPassedEvent,
   EpisodeItemAnsweredEvent,
@@ -12,6 +15,7 @@ import type {
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import { scoredItemTypeOf, type ItemAnswerReport } from "../lib/item-answer";
 import type { ListenItemReport } from "../lib/question-audio";
+import type { LessonSoundUse } from "../lib/sentence-replay";
 import type { AnswerResult } from "../lib/answer-result";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
 import type { CatalogItemRef } from "./catalog-lesson-types";
@@ -129,5 +133,32 @@ export function itemAnsweredEventOf(
       ? { skipReason: report.skipReason }
       : {}),
     ...(report.hintUsed === undefined ? {} : { hintUsed: report.hintUsed }),
+    ...(report.speech === undefined
+      ? {}
+      : {
+          speechErrorCode: String(report.speech.errorCode),
+          speechFallback: report.speech.fallback,
+          speechKoreanPack: report.speech.koreanPack,
+        }),
   };
+}
+
+/** 이야기 컷에서 대사를 다시 들은 이벤트입니다(ADR-0189). */
+export function storySentenceReplayedEventOf(
+  episodeId: string,
+  stage: ReplayStoryStage,
+): SentenceAudioReplayedEvent {
+  return { name: "sentence_audio_replayed", episodeId, surface: "story_cut", stage };
+}
+
+/** 레슨이 알린 소리 사용을 이벤트로 바꿉니다(ADR-0189) — 다시 듣기 또는 칩 소리. */
+export function lessonSoundUsedEventOf(
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+  use: LessonSoundUse,
+): SentenceAudioReplayedEvent | ChoiceChipSoundPlayedEvent {
+  if (use.kind === "chip-sound") {
+    return { name: "choice_chip_sound_played", episodeId, unitKey, surface: use.surface };
+  }
+  return { name: "sentence_audio_replayed", episodeId, surface: "lesson_answer", unitKey };
 }

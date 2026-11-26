@@ -1,6 +1,6 @@
 {
   "bundleVersion": 1,
-  "generatedAt": "2026-11-23T03:44:27.332Z",
+  "generatedAt": "2026-11-23T07:27:23.645Z",
   "source": {
     "repo": "libitums/FE",
     "commit": "working-tree"
@@ -1078,7 +1078,7 @@
     {
       "id": "u01-water",
       "episodeId": "u01-water",
-      "version": 3,
+      "version": 4,
       "title": {
         "en": "Pay at the convenience store",
         "ko": "편의점에서 계산하기"
@@ -1097,7 +1097,8 @@
         ],
         "farewells": ["안녕히 가세요", "또 오세요", "좋은 하루 보내세요"],
         "learnerRegister": "polite",
-        "learnerRegisterNote": "점원과 처음 보는 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다."
+        "learnerRegisterNote": "점원과 처음 보는 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다.",
+        "voice": "l6fNdLYgoqjfTIPUeFc9"
       },
       "opening": {
         "ko": "봉투 드릴까요?",
@@ -1160,7 +1161,7 @@
     {
       "id": "u06-cafe",
       "episodeId": "u06-cafe",
-      "version": 3,
+      "version": 4,
       "title": {
         "en": "Order a coffee",
         "ko": "커피 주문하기"
@@ -1176,6 +1177,7 @@
         "farewells": ["안녕히 가세요", "또 오세요", "좋은 하루 보내세요", "맛있게 드세요"],
         "learnerRegister": "polite",
         "learnerRegisterNote": "직원과 손님 사이 — 학습자는 존댓말(-요 · -습니다)로 말해야 한다.",
+        "voice": "rCm09Tf1yMYbOyCRLDyB",
         "base": {
           "name": "한도윤",
           "age": "22세",

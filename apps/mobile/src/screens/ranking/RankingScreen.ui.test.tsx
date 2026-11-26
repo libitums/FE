@@ -1,5 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import type { RankingBoard, RankingBoardKind } from "../../lib/ranking.contract";
 import { rankingTestIds as ids } from "./ranking.contract";
@@ -93,10 +95,11 @@ test("RK-UI4. 1 ~ 3위만 메달, 4위부터 숫자", () => {
   expect(screen.queryByTestId(ids.medal(4))).toBeNull();
 });
 
-test("RK-UI5. 구역 줄: 보상이 꺼지면 「Top 3 this week」, 켜지면 액수, 4위 앞 「Keep climbing」", () => {
+test("RK-UI5. 구역 줄: 보상이 꺼지면 「Top 3 this week」, 켜지면 액수, 4위 앞 「Keep climbing」 + 3위까지 남은 점수(D13)", () => {
   mount({ kind: "ready", board });
   expect(text(ids.zoneTop)).toBe("Top 3 this week");
-  expect(text(ids.zoneClimb)).toBe("Keep climbing");
+  // 3위 9점 · 나 7점 → 넘으려면 3점(같은 점수는 먼저 닿은 사람이 위).
+  expect(text(ids.zoneClimb)).toBe("Keep climbing · 3 more to reach the top 3");
   cleanup();
   mount({ kind: "ready", board: { ...board, reward: 30 } });
   expect(text(ids.zoneTop)).toBe("Top 3 get a bonus 30 Yeopjeon");
@@ -225,4 +228,183 @@ test("RK-UI13. 바로 위 사람과의 차이는 고정 내 줄에서 강조 글
   const gapText = screen.getByTestId(ids.meGap);
   expect(gapText).toHaveTextContent("3 more to pass P11");
   expect(gapText.getAttribute("class")).toBe("ranking-sub ranking-sub-gap");
+});
+
+// ---- 모션(ADR-0170 D12, 시안 「랭킹 모션」 2026-11-22) ----
+
+const classOf = (testId: string) => screen.getByTestId(testId).getAttribute("class") ?? "";
+const itemClassOf = (rank: number) =>
+  screen.getByTestId(ids.row(rank)).parentElement?.getAttribute("class") ?? "";
+
+function mountMotion(seenScore: number | null, reduced = false, onScoreCounted?: () => void) {
+  const node = (
+    <RankingScreen
+      view={{ kind: "ready", board }}
+      board="lessons"
+      nowMs={NOW}
+      seenScore={seenScore}
+      {...(onScoreCounted === undefined ? {} : { onScoreCounted })}
+      onSelectBoard={vi.fn<(board: RankingBoardKind) => void>()}
+      onRetry={vi.fn<() => void>()}
+      onSignIn={vi.fn<() => void>()}
+      onShowMe={vi.fn<() => void>()}
+    />
+  );
+  render(reduced ? <MotionProvider motion="reduced">{node}</MotionProvider> : node);
+}
+
+test("RK-UI20. 줄은 차례로 올라오고(칸 번호 0부터 · 7에서 멈춤), 메달은 튀어나오고, 내 줄은 한 번 강조된다", () => {
+  mountMotion(null);
+  expect(itemClassOf(1)).toContain("ranking-in ranking-in-0");
+  expect(itemClassOf(2)).toContain("ranking-in-1");
+  expect(itemClassOf(5)).toContain("ranking-in-4");
+  expect(classOf(ids.medal(1))).toContain("ranking-medal-in ranking-medal-in-1");
+  expect(classOf(ids.medal(3))).toContain("ranking-medal-in-3");
+  // 목록의 내 줄과 고정된 내 줄 모두.
+  expect(classOf(ids.row(5))).toContain("ranking-row-pulse");
+  expect(classOf(ids.me)).toContain("ranking-row-pulse");
+  expect(screen.getAllByTestId(ids.ring)).toHaveLength(2);
+});
+
+test("RK-UI21. 움직임 줄이기면 모션 클래스 · 강조 고리가 서지 않는다", () => {
+  mountMotion(4, true);
+  expect(itemClassOf(1)).not.toContain("ranking-in");
+  expect(classOf(ids.medal(1))).not.toContain("ranking-medal-in");
+  expect(classOf(ids.me)).not.toContain("ranking-row-pulse");
+  expect(screen.queryByTestId(ids.ring)).toBeNull();
+  expect(text(ids.meScore)).toBe("7");
+});
+
+test("RK-UI22. 지난번에 본 점수보다 올랐으면 그 점수에서 지금 점수까지 센다 — 줄이 다 뜬 뒤에", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(4);
+    expect(text(ids.meScore)).toBe("4");
+    act(() => {
+      vi.advanceTimersByTime(600);
+    });
+    expect(text(ids.meScore)).toBe("4");
+    // 칸마다 다시 그린 뒤 다음 타이머가 걸리므로 잘게 나눠 돌립니다.
+    for (let tick = 0; tick < 20; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.meScore)).toBe("7");
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI23. 본 적이 없거나 오르지 않았으면 세지 않는다", () => {
+  mountMotion(null);
+  expect(text(ids.meScore)).toBe("7");
+  cleanup();
+  mountMotion(9);
+  expect(text(ids.meScore)).toBe("7");
+});
+
+test("RK-UI24. 세는 동안 보이는 단위는 보이는 숫자를 따르고, 낭독 줄은 줄곧 지금 점수 · 그 단위다(리뷰 #549 · #550)", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(1);
+    expect(text(ids.meScore)).toBe("1");
+    expect(text(ids.me)).toMatch(/1lesson$/);
+    expect(screen.getByTestId(ids.me).getAttribute("accessibility-label")).toContain("7 lessons");
+    for (let tick = 0; tick < 20; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.me)).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI25. 지금 점수를 다 보여 준 때 한 번 알린다 — 세는 도중에 화면을 떠나면 알리지 않는다(다음에 다시 센다)", () => {
+  vi.useFakeTimers();
+  try {
+    const counted = vi.fn<() => void>();
+    mountMotion(4, false, counted);
+    // 세기 시작(700ms) 직후 — 아직 끝나지 않았다.
+    for (let tick = 0; tick < 8; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(counted).not.toHaveBeenCalled();
+    cleanup();
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(counted).not.toHaveBeenCalled();
+
+    mountMotion(4, false, counted);
+    for (let tick = 0; tick < 25; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.meScore)).toBe("7");
+    expect(counted).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI26. 셀 것이 없으면(본 적 없음 · 오르지 않음 · 움직임 줄이기) 곧바로 지금 점수를 보여 주고 한 번 알린다", () => {
+  for (const [seenScore, reduced] of [
+    [null, false],
+    [7, false],
+    [4, true],
+  ] as const) {
+    const counted = vi.fn<() => void>();
+    mountMotion(seenScore, reduced, counted);
+    expect(text(ids.meScore)).toBe("7");
+    expect(counted).toHaveBeenCalledTimes(1);
+    cleanup();
+  }
+});
+
+test("RK-UI27. 목록의 내 줄도 세는 동안 고정된 내 줄과 같은 숫자 · 단위다 — 낭독 줄은 지금 점수, 다 세면 목록 줄의 제 점수", () => {
+  vi.useFakeTimers();
+  try {
+    mountMotion(1);
+    expect(text(ids.row(5))).toMatch(/1lesson$/);
+    expect(screen.getByTestId(ids.row(5)).getAttribute("accessibility-label")).toContain(
+      "7 lessons",
+    );
+    for (let tick = 0; tick < 25; tick += 1) {
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+    }
+    expect(text(ids.row(5))).toMatch(/7lessons$/);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("RK-UI30. 머리의 남은 날 줄은 읽기 전부터 서 있다 — 불러오는 중 · 오류에서도 같은 자리라 읽은 뒤 아래가 밀리지 않는다", () => {
+  mount({ kind: "loading" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  expect(screen.queryByTestId(ids.group)).toBeNull();
+  cleanup();
+  mount({ kind: "error" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  cleanup();
+  mount({ kind: "offline" });
+  expect(text(ids.ends)).toBe("Ends in 3 days");
+  cleanup();
+  // 서버 값이 오면 그 값 — 기기에서 센 값(11-23)과 다른 주.
+  mount({ kind: "not-joined", endsAt: "2026-11-30T00:00:00Z" });
+  expect(text(ids.ends)).toBe("Ends in 10 days");
+  cleanup();
+  // 비회원 · 숨김은 순위에 들지 않으므로 지금처럼 없다.
+  mount({ kind: "guest" });
+  expect(screen.queryByTestId(ids.ends)).toBeNull();
+  cleanup();
+  mount({ kind: "hidden" });
+  expect(screen.queryByTestId(ids.ends)).toBeNull();
 });

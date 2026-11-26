@@ -48,3 +48,17 @@ test("CD-U3. 태국어 · 미얀마어 상점 — 보유 1,240 · 팩 1,200(쉼�
     cleanup();
   }
 });
+
+test("CD-U4. 대만 중국어 상점 — 보유 1,240 · 팩 1,200(쉼표 묶음), 팩 카드 글은 영어가 아니고 한자다(ADR-0185)", () => {
+  inLanguage("en", <CoinShopScreen coinBalance={1240} onClose={vi.fn()} />);
+  const englishPacks = screen
+    .getAllByTestId(/^coin-shop-pack-/)
+    .map((node) => node.textContent ?? "");
+  cleanup();
+  inLanguage("zh-TW", <CoinShopScreen coinBalance={1240} onClose={vi.fn()} />);
+  expect(screen.getByTestId("coin-shop-screen-balance").textContent ?? "").toContain("1,240");
+  const packs = screen.getAllByTestId(/^coin-shop-pack-/).map((node) => node.textContent ?? "");
+  expect(packs.join("|")).toContain("1,200");
+  expect(packs).not.toEqual(englishPacks);
+  expect(packs.join("|")).toMatch(/[\u4e00-\u9fff]/u);
+});

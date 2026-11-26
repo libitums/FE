@@ -8,6 +8,7 @@ import { rankingCopy } from "./ui-copy-ranking";
 import { signupRewardCopy } from "./ui-copy-signup-reward";
 import {
   audioUnavailableMy,
+  sentenceReplayMy,
   catalogCoverMy,
   catalogFinalMy,
   catalogStoryFinalMy,
@@ -111,6 +112,7 @@ export const uiCopyMy: UiCopy = {
   catalogFinal: catalogFinalMy,
   catalogStoryFinal: catalogStoryFinalMy,
   audioUnavailable: audioUnavailableMy,
+  sentenceReplay: sentenceReplayMy,
   learnerProfile: learnerProfileMy,
   progressLoad: progressLoadMy,
   splash: splashMy,

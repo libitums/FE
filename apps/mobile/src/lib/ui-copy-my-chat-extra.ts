@@ -5,11 +5,15 @@ import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-sett
 import { messengerChatMediaMy } from "./ui-copy-my-chat-media";
 import { messengerChatAlbumMy } from "./ui-copy-my-chat-album";
 import { messengerChatSuggestedMy } from "./ui-copy-my-chat-suggested";
+import { messengerChatStoriesMy } from "./ui-copy-my-chat-stories";
+import { myStoriesMy } from "./ui-copy-my-my-stories";
 
 export const messengerChatExtraMy: MessengerChatExtraCopy = {
   media: messengerChatMediaMy,
   album: messengerChatAlbumMy,
   suggested: messengerChatSuggestedMy,
+  stories: messengerChatStoriesMy,
+  myStories: myStoriesMy,
   access: {
     signInTitle: "တွေ့ခဲ့တဲ့ သူတွေနဲ့ စာပို့ပါ",
     signInBody: "သင့်ဇာတ်လမ်းထဲက လူတွေနဲ့ ကိုရီးယားလို စကားပြောရန် အခမဲ့ အကောင့်ဖွင့်ပါ။ သင့်တိုးတက်မှု မပျောက်ပါဘူး။",
@@ -20,6 +24,35 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     promptLater: "နောက်မှ",
   },
   pushNotice: { chatUnavailable: "ဒီချတ်ကို ယခု သုံး၍ မရပါ။" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "ဓာတ်ပုံ ပို့ထားသည်"
+          : `ဓာတ်ပုံ ပို့ထားသည် · အသစ် ${count} ခု`
+        : latest === "voice"
+          ? count === 1
+            ? "အသံမက်ဆေ့ချ် ပို့ထားသည်"
+            : `အသံမက်ဆေ့ချ် ပို့ထားသည် · အသစ် ${count} ခု`
+          : count === 1
+            ? "မက်ဆေ့ချ်အသစ်"
+            : `မက်ဆေ့ချ်အသစ် ${count} ခု`,
+    jump: "မက်ဆေ့ချ်အသစ်များသို့ သွားရန်",
+    latest: "နောက်ဆုံးမက်ဆေ့ချ်သို့ ဆင်းရန်",
+  },
+  replyToast: {
+    dismiss: "ပိတ်ရန်",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name} ထံမှ မက်ဆေ့ချ်အသစ်: ${preview}` + (more > 0 ? `။ နောက်ထပ် ${more} ခု` : ""),
+  },
+  pushAsk: {
+    title: (name) => `${name} စာပို့တဲ့အခါ အသိပေးချက် ရယူမလား?`,
+    body: "တစ်ခါတလေ ကျွန်ုပ်က အရင် စာပို့တတ်ပါတယ် — တစ်ရက် တစ်ကြိမ်လောက်၊ ညနေပိုင်းမှာပါ။",
+    turnOn: "ဖွင့်မယ်",
+    notNow: "နောက်မှ",
+    on: (name) => `အသိပေးချက် ဖွင့်ပြီးပါပြီ — ${name} စာပို့ရင် အသိပေးပါမယ်။`,
+  },
   chatSettings: {
     entryTitle: "ချတ်",
     entryDescription: "အဖြေ အကြံပြုချက်၊ ဇာတ်ကောင်ထံမှ စာ၊ မှတ်ဉာဏ်",
@@ -132,14 +165,27 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     cardBody: "ဒီမှာ ကိုရီးယား သူငယ်ချင်းတွေနဲ့ စာပို့နိုင်ပါတယ်။ ကျွန်ုပ်နဲ့ စလိုက်ပါ — ကူညီပေးပါမယ်။",
     cardButton: (name) => `${name} နဲ့ စကားပြောရန်`,
     steps: {
-      chat: "ကိုရီးယားလို ရေးပြီး ပို့ပါ။ ကျွန်ုပ် ပြန်ဖြေပါမယ်၊ သင့်မက်ဆေ့ချ်အောက်က ခဲတံက ပိုကောင်းတဲ့ ပြောပုံကို ပြပါတယ်။",
       ideas: "ဘာပြောရမလဲ မသိဘူးလား။ အဖြေ အကြံပြုချက် ကြည့်ရန် စာရိုက်အကွက်ဘေးက မီးသီးကို တို့ပါ။",
       media: "ကီးဘုတ်အပေါ်က ခလုတ်တွေနဲ့ ဓာတ်ပုံ သို့မဟုတ် အသံမက်ဆေ့ချ် တောင်းလို့လည်း ရပါတယ်။",
+      sample: "ကျွန်တော် အခု ဘာလုပ်နေလဲ ကြည့်ချင်လား။ Snapshot ကိုနှိပ်ရင် ဓာတ်ပုံတစ်ပုံ ပို့ပေးမယ်။ ပထမတစ်ပုံ အခမဲ့ပါ။",
+      voice: "ကျွန်တော့်အသံနဲ့ နားထောင်ချင်လား။ အသံ ကိုနှိပ်ရင် အဲဒီစာကို ဖတ်ပြမယ်။ ပထမတစ်ခါလည်း အခမဲ့ပါ။",
+    },
+    keyboard: {
+      phone: {
+        title: "ကိုယ့်ဘာသာစကားနဲ့ ချက်တင်လို့ရပါတယ် — ကိုရီးယားလို ဘယ်လိုပြောရမလဲ ကျွန်ုပ် ပြပေးပါမယ်။",
+        body: "နောက်တစ်ဆင့်မှာ ကိုရီးယားစာကို ကိုယ်တိုင် ရိုက်ကြည့်ပါ။",
+      },
+      hangul: {
+        title: "ဒါမှမဟုတ် ဟန်ဂူးလ် ကီးများနဲ့ ကိုရီးယားစာကို ဒီမှာတင် ရိုက်ပါ။",
+        body: "ကိုရီးယား ကီးဘုတ် မလိုပါဘူး။ စာရိုက်အကွက်အောက်က ခလုတ်နဲ့ အချိန်မရွေး ပြောင်းနိုင်ပါတယ်။",
+      },
     },
     next: "ရှေ့ဆက်ရန်",
     done: "နားလည်ပြီ",
     skip: "ကျော်ရန်",
     stepOf: (step, total) => `${step}/${total}`,
+    newTag: "အသစ်",
+    free: "အခမဲ့",
   },
   launch: {
     newTag: "အသစ်",

@@ -2,6 +2,7 @@
 
 import type {
   ChatFixtureRoom,
+  ChatIdeasOrigin,
   ChatInputBlock,
   ChatMessage,
   ChatMyNotes,
@@ -14,6 +15,7 @@ import type {
   ChatThread,
   ChatTimers,
 } from "./chat-source.contract";
+import { lastPreviewLine } from "./chat-list";
 
 export type RoomState = {
   readonly seed: ChatFixtureRoom;
@@ -31,6 +33,8 @@ export type RoomState = {
   /** 서버 모드(ADR-0137): 기록을 읽었는지 · 서버 추천 답변(있으면 씨앗 보기 대신). */
   remoteHistory: "idle" | "loading" | "loaded" | "failed";
   remoteIdeas: readonly ChatReplyIdea[] | null;
+  /** 서버 추천 답변이 붙은 답장의 출처(ADR-0195) — 모르면 null. */
+  remoteIdeasOrigin: ChatIdeasOrigin | null;
   origin: "local" | "server";
   /** 서버 모드 배달(ADR-0138): 서버가 받지 못한 내 글 id(보낸 순서) · 끊긴 답 채우기. */
   unsent: string[];
@@ -79,6 +83,7 @@ export function newRoomState(
     inputBlock,
     remoteHistory: "idle",
     remoteIdeas: null,
+    remoteIdeasOrigin: null,
     origin: "local",
     unsent: [],
     recovery: "none",
@@ -102,6 +107,16 @@ export function ideasOf(room: RoomState): readonly ChatReplyIdea[] {
   if (room.remoteIdeas !== null) return room.remoteIdeas;
   const sets = room.seed.ideaSets;
   return sets[room.ideaIndex % Math.max(sets.length, 1)] ?? [];
+}
+
+/** 서버 추천 답변과 그 출처를 함께 바꿉니다(ADR-0195) — 보기가 없으면 출처도 지웁니다. */
+export function setRemoteIdeas(
+  room: RoomState,
+  ideas: readonly ChatReplyIdea[] | null,
+  origin: ChatIdeasOrigin | null | undefined,
+): void {
+  room.remoteIdeas = ideas;
+  room.remoteIdeasOrigin = ideas === null || ideas.length === 0 ? null : (origin ?? null);
 }
 
 export function advanceIdeas(room: RoomState): void {
@@ -136,7 +151,8 @@ export function summaryOf(
   resolveUrl: (path: string | null) => string | null,
 ): ChatRoomSummary {
   if (room.summaryCache === null) {
-    const last = room.messages[room.messages.length - 1] ?? null;
+    // 미리보기 · 시각은 같은 줄에서 — 맨 끝의 사진 · 음성 안내 줄은 건너뜁니다(`lastPreviewLine`).
+    const last = lastPreviewLine(room.messages);
     room.summaryCache = {
       roomId: room.seed.roomId,
       counterpart: {
@@ -181,6 +197,9 @@ export function threadOf(
       // 끊긴 답을 채우는 동안도 답을 기다리는 중이다(보내기 막힘 · 판 자동 열림, ADR-0138).
       awaitingReply: room.pendingReplies > 0 || room.recovery === "fetching",
       ideas: replyIdeas ? ideasOf(room) : [],
+      ...(replyIdeas && room.remoteIdeasOrigin !== null
+        ? { ideasOrigin: room.remoteIdeasOrigin }
+        : {}),
       settings: room.settings,
       storyPoints: room.seed.storyPoints,
       notes: room.notes,

@@ -62,8 +62,8 @@ export type MessengerChatCopy = {
     readonly back: string;
     readonly settings: string;
     readonly typing: (name: string) => string;
-    readonly sendingPhoto: (name: string) => string;
-    readonly recordingVoice: (name: string) => string;
+    readonly photoPending: (name: string) => readonly [string, string, string, string];
+    readonly voicePending: (name: string) => readonly [string, string];
     readonly photoLabel: (name: string) => string;
     readonly voiceLabel: (name: string, duration: string, ko: string, en: string) => string;
     readonly play: string;
@@ -170,8 +170,7 @@ export type MessengerListScreenProps = {
   readonly onOpenRoom: (roomId: string) => void;
   readonly onGoToJourney: () => void;
   readonly onLayerChange: (open: boolean) => void;
-  /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
-  readonly guideStore?: GuideStore;
+  readonly guideStore?: GuideStore; // 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소.
 } & ChatListNoticeProps &
   MessengerAccessProps;
 
@@ -192,8 +191,7 @@ export type MessengerChatScreenProps = {
   readonly onOpenMemories: (characterId: string, name: string) => void;
   readonly onOpenAlbum?: (roomId: string, name: string) => void;
   readonly onOpenMyProfile?: () => void; // 사이드바 My profile → 설정 탭 User profile(ADR-0156)
-  /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
-  readonly guideStore?: GuideStore;
+  readonly guideStore?: GuideStore; // 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소.
 };
 
 // --- test-id (spec §9) ---
@@ -289,6 +287,8 @@ export const messengerChatTestIds = {
   guideCoach: room("guide-coach"),
   guideCoachNext: room("guide-coach-next"),
   guideCoachSkip: room("guide-coach-skip"),
+  guideTail: room("guide-tail"), // 키보드 단계 꼬리 — data-target = 가리키는 토글 칸(ADR-0190)
+  guideKeyboardSlot: room("guide-keyboard-slot"), // 키보드 자리 덮개 — 높이 = 자리, Hangul keys 화면만 어둡게
   // 배달 실패(ADR-0138)
   unsent: room("unsent"),
   unsentRetry: room("unsent-retry"),

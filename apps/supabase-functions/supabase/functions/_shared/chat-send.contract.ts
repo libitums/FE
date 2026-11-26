@@ -251,6 +251,7 @@ export type ChatSendLogEntry = {
     | "companion_proactive"
     | "companion_memory_flush"
     | "companion_eval"
+    | "companion_stories"
     | MissionLogEvent;
   readonly status: number | "stream";
   readonly outcome?: string;

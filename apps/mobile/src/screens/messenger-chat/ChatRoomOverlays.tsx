@@ -44,7 +44,7 @@ export type ChatRoomOverlaysProps = {
   readonly onOpenMyProfile?: () => void;
 };
 
-// `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이 그리므로 여기서는 아무것도 그리지 않습니다.
+// `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이, 프로필 시트는 방 화면이 그리므로 여기서는 아무것도 그리지 않습니다.
 // 시스템 뒤로가기는 여기도 겹침 화면들도 등록하지 않습니다 — `useChatRoom`이 단 하나의 주인입니다(리뷰 #8).
 export function ChatRoomOverlays({
   state,
@@ -69,6 +69,7 @@ export function ChatRoomOverlays({
   switch (overlay.kind) {
     case "none":
     case "more-menu":
+    case "profile":
       return null;
     case "report":
       return (

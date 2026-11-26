@@ -49,7 +49,8 @@ for hi in range(0x88, 0x99):  # JIS X 0208 1수준 한자(Shift_JIS 0x889F–0x9
             if 0x4E00 <= ord(ch) <= 0x9FFF: chars.add(ch)
         except UnicodeDecodeError: pass
 files = glob.glob(root + "/apps/mobile/content/**/*.json", recursive=True)
-files += glob.glob(root + "/apps/mobile/src/lib/ui-copy-*.ts")
+# 대만 중국어 표는 뺀다 — zh-TW는 번체 시스템 글꼴을 Duru Sans 앞에 두므로(ADR-0185 D4) 그 한자를 일본 자형 서브셋에 넣지 않는다.
+files += [p for p in glob.glob(root + "/apps/mobile/src/lib/ui-copy-*.ts") if "zh-tw" not in p]
 for path in files:
     with open(path, encoding="utf-8") as source:
         text = source.read()

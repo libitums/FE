@@ -15,6 +15,8 @@ import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useCountUp } from "../../lib/use-count-up";
 import { useUiCopy } from "../../lib/ui-copy";
+import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
+import { useGuestGate } from "../messenger-chat/use-guest-gate";
 import { PlansPanel } from "../plans/PlansPanel";
 import { YourPlanChip } from "../plans/YourPlanChip";
 import { currentPlanOf } from "../plans/plan-change";
@@ -51,6 +53,11 @@ export type CoinShopScreenProps = {
   readonly focus?: PlanId | null;
   /** 대화 동작 — 메시지 전송에서 엽전이 모자라 열렸으면 send(요금제 줄이 Chat Plus). */
   readonly from?: ShopFrom;
+  /**
+   * 비회원이면 사기가 「결제 준비 중」 대신 「로그인 필요」 대화상자(trigger coins)로 갑니다(ADR-0166, 2026-11-24) — 로그인 흐름과 이벤트
+   * sink. 회원은 없음.
+   */
+  readonly signIn?: { readonly onSignIn: () => void; readonly sink: EpisodeIntroEventSink } | null;
 };
 
 export function CoinShopScreen({
@@ -62,6 +69,7 @@ export function CoinShopScreen({
   placement = "coin_shop",
   focus = null,
   from = null,
+  signIn = null,
 }: CoinShopScreenProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
@@ -78,6 +86,9 @@ export function CoinShopScreen({
   });
   // 결제 준비 중 안내입니다. 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
   const [noticeOpen, setNoticeOpen] = useState(false);
+  // 비회원은 결제를 열 수 없습니다(구매는 계정에 붙음) — 사기를 누르면 로그인 권유를 띄웁니다. 뒤로가기는 권유가 먼저 닫힙니다.
+  const gate = useGuestGate(signIn?.onSignIn ?? null, signIn?.sink);
+  const covered = noticeOpen || gate.open;
   const current = currentPlanOf(plans?.current ?? null);
   const promo = plans === undefined ? null : shopPromoOf(from, current, plans.catalog);
   const showPlans = plans !== undefined && tab === "plans";
@@ -137,9 +148,9 @@ export function CoinShopScreen({
         paddingRight: `${insets.right}px`,
       }}
     >
-      {/* 안내가 떠 있는 동안 뒤쪽을 낭독에서 가립니다(ADR-0016 D9). */}
-      <view className="coin-shop-screen-top" accessibility-elements-hidden={noticeOpen}>
-        <view data-testid="coin-shop-screen-close" accessibility-elements-hidden={noticeOpen}>
+      {/* 안내 · 로그인 권유가 떠 있는 동안 뒤쪽을 낭독에서 가립니다(ADR-0016 D9). */}
+      <view className="coin-shop-screen-top" accessibility-elements-hidden={covered}>
+        <view data-testid="coin-shop-screen-close" accessibility-elements-hidden={covered}>
           <RoundButton
             icon={cross}
             size="l"
@@ -186,7 +197,7 @@ export function CoinShopScreen({
         )}
       </view>
       {plans === undefined ? null : (
-        <view accessibility-elements-hidden={noticeOpen}>
+        <view accessibility-elements-hidden={covered}>
           <ShopTabs tab={tab} onChange={(next) => switchTo(next)} />
         </view>
       )}
@@ -210,8 +221,10 @@ export function CoinShopScreen({
         <CoinShopPanel
           surface={surface}
           bottomInset={insets.bottom}
-          obscured={noticeOpen}
-          onUnavailable={() => setNoticeOpen(true)}
+          obscured={covered}
+          onUnavailable={() => {
+            if (!gate.prompt("coins")) setNoticeOpen(true);
+          }}
           promo={promo}
           onPromo={() => switchTo("plans", promo?.plan ?? null)}
           wait={wait}
@@ -228,6 +241,7 @@ export function CoinShopScreen({
           />
         </view>
       ) : null}
+      {gate.layer}
     </view>
   );
 }

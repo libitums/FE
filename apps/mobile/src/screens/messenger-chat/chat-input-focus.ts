@@ -43,6 +43,12 @@ export function blurPhoneInput(): void {
   invokeOn(`#${PHONE_INPUT_ELEMENT_ID}`, "blur", undefined);
 }
 
+/** 그 element id의 입력 초점을 내립니다(스토리 보기 답장 칸 — 키보드가 내려갑니다). */
+export function blurInputById(elementId: string): void {
+  "background only";
+  invokeOn(`#${elementId}`, "blur", undefined);
+}
+
 /** 휴대폰 입력의 글을 비웁니다. 못 비우면 `onFail`이 불립니다(입력을 다시 마운트하는 길). */
 export function clearPhoneInput(onFail?: InvokeFailure): void {
   "background only";

@@ -1,5 +1,5 @@
 // 언어 선택 국기 SVG입니다(2026-09-21 디자인 반영, 디자이너 제공 원본 america ·
-// vietnam · spain · japan.svg). 인도네시아 국기는 같은 틀(40×28, 모서리 4)로 그렸습니다(ADR-0093). 태국 · 미얀마 국기도 같은 틀입니다(ADR-0158). `<svg content>`로 그립니다 — 장식이라 접근성
+// vietnam · spain · japan.svg). 인도네시아 국기는 같은 틀(40×28, 모서리 4)로 그렸습니다(ADR-0093). 태국 · 미얀마 국기도 같은 틀입니다(ADR-0158). 대만 중국어는 같은 틀의 글자 배지입니다(ADR-0185). `<svg content>`로 그립니다 — 장식이라 접근성
 // 이름에 들어가지 않습니다.
 
 import type { EntryLanguage } from "../../lib/entry-language";
@@ -12,4 +12,6 @@ export const languageFlags: Record<EntryLanguage, string> = {
   ja: `<svg width="40" height="28" viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg"> <rect width="40" height="28" rx="3" fill="white"/> <rect x="0.5" y="0.5" width="39" height="27" rx="2.5" stroke="#848184" stroke-opacity="0.1"/> <path d="M20 20.5333C23.6819 20.5333 26.6666 17.6083 26.6666 14C26.6666 10.3917 23.6819 7.46667 20 7.46667C16.3181 7.46667 13.3333 10.3917 13.3333 14C13.3333 17.6083 16.3181 20.5333 20 20.5333Z" fill="#BD0029"/> </svg>`,
   th: `<svg width="40" height="28" viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg"> <g clip-path="url(#clip0_th)"> <rect width="40" height="28" rx="3" fill="#F4F5F8"/> <rect width="40" height="4.667" fill="#A51931"/> <rect y="9.333" width="40" height="9.333" fill="#2D2A4A"/> <rect y="23.333" width="40" height="4.667" fill="#A51931"/> </g> <defs> <clipPath id="clip0_th"> <rect width="40" height="28" rx="3" fill="white"/> </clipPath> </defs> </svg>`,
   my: `<svg width="40" height="28" viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg"> <g clip-path="url(#clip0_my)"> <rect width="40" height="28" rx="3" fill="#34B233"/> <rect width="40" height="9.333" fill="#FECB00"/> <rect y="18.667" width="40" height="9.333" fill="#EA2839"/> <path d="M20 5.6L22.47 11.6H28.9L23.7 15.3L25.68 21.4L20 17.62L14.32 21.4L16.3 15.3L11.1 11.6H17.53L20 5.6Z" fill="white"/> </g> <defs> <clipPath id="clip0_my"> <rect width="40" height="28" rx="3" fill="white"/> </clipPath> </defs> </svg>`,
+  // 대만 중국어는 나라 국기 대신 글자 배지(「中」)입니다 — 언어 배지라 국기 논쟁을 피합니다(ADR-0185).
+  "zh-TW": `<svg width="40" height="28" viewBox="0 0 40 28" fill="none" xmlns="http://www.w3.org/2000/svg"> <rect width="40" height="28" rx="3" fill="#1F4E8C"/> <path fill-rule="evenodd" clip-rule="evenodd" d="M18.8 4.5H21.2V9H28V18.5H21.2V23.5H18.8V18.5H12V9H18.8V4.5ZM14.4 11.4V16.1H18.8V11.4H14.4ZM21.2 11.4V16.1H25.6V11.4H21.2Z" fill="white"/> </svg>`,
 };

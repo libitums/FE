@@ -8,6 +8,10 @@ export type SpeechHostResult = {
   readonly text: string;
   readonly errorDomain?: string;
   readonly errorCode?: number;
+  /** Android 호스트만 싣습니다 — 한국어 팩 상태 · 네트워크로 되돌아감 · 되돌아가게 한 오류 코드. */
+  readonly koreanPack?: string;
+  readonly fallback?: string;
+  readonly fallbackErrorCode?: number;
 };
 
 export type SpeechHostOptions = {
@@ -86,3 +90,31 @@ export const dictationOff: SpeechHostResult = {
 };
 
 export const audioFailed: SpeechHostResult = { status: "audio-failed", text: "" };
+
+/** Android 인식기가 말을 못 알아들었을 때(ERROR_NO_MATCH 7)의 결과입니다(ADR-0181). */
+export const androidNoMatch: SpeechHostResult = {
+  status: "recognition-failed",
+  text: "",
+  errorDomain: "android.speech.SpeechRecognizer",
+  errorCode: 7,
+  koreanPack: "available",
+  fallback: "none",
+};
+
+/** Android 인식기가 네트워크에 닿지 못했을 때(ERROR_NETWORK 2)의 결과입니다. */
+export const androidNetwork: SpeechHostResult = {
+  status: "recognition-failed",
+  text: "",
+  errorDomain: "android.speech.SpeechRecognizer",
+  errorCode: 2,
+  koreanPack: "available",
+  fallback: "none",
+};
+
+/** iOS 인식기가 말을 듣지 못했을 때(kAFAssistantErrorDomain 1110)의 결과입니다. */
+export const iosNoSpeech: SpeechHostResult = {
+  status: "recognition-failed",
+  text: "",
+  errorDomain: "kAFAssistantErrorDomain",
+  errorCode: 1110,
+};

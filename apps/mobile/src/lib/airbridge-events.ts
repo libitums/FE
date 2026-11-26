@@ -1,6 +1,7 @@
 // 제품 이벤트 → Airbridge 이벤트 매핑 · sink 합성 — 순수 · SDK import 0. 계약: docs/adr/0063-airbridge-events.md.
 import type { AnalyticsEvent, AnalyticsEventSinks } from "./analytics.contract";
 import type {
+  AirbridgeCheckoutProduct,
   AirbridgeEvent,
   AirbridgeEventFrom,
   AirbridgeEventTracker,
@@ -18,9 +19,45 @@ function mapEvent(event: AnalyticsEvent): AirbridgeEvent | null {
       };
     case "pack_purchased":
       return orderCompleted(event.product, event.price, event.currency, event.transactionId);
+    // ⟨2026-11-24⟩ 소재 테스트 깔때기 — 표준이 뜻에 맞지 않는 셋은 앱 이벤트 이름 그대로 커스텀으로.
+    case "tickets_ran_out":
+    case "first_chat_message_sent":
+      return { category: event.name, semanticAttributes: {} };
+    case "plans_viewed":
+      return {
+        category: "airbridge.ecommerce.productList.viewed",
+        semanticAttributes: { productListID: `plans_${event.view}`, label: event.placement },
+      };
+    case "plan_selected":
+      return {
+        category: "plan_selected",
+        semanticAttributes: { label: event.placement, action: `${event.plan}.${event.period}` },
+      };
+    case "purchase_intent":
+      return {
+        category: "airbridge.initiateCheckout",
+        semanticAttributes: {
+          label: event.placement,
+          action: event.kind,
+          type: event.preview ? "preview" : "checkout",
+          products: [checkoutProduct(event.product, event.price, event.currency)],
+        },
+      };
     default:
       return null;
   }
+}
+
+// 구매 단추의 상품 한 줄 — 가격은 수로 읽히고 통화가 있을 때만 싣습니다(보인 가격 · 임시 추천 가격 포함, 매출 아님).
+function checkoutProduct(
+  product: string,
+  price: string,
+  currency: string,
+): AirbridgeCheckoutProduct {
+  const value = Number(price);
+  const row = { productID: product, name: product, quantity: 1 };
+  if (price === "" || !Number.isFinite(value) || currency === "") return row;
+  return { ...row, price: value, currency: currency.toUpperCase() };
 }
 
 // 엽전 팩 결제 → Order Complete. 스토어 금액 · 통화를 모르면 보내지 않습니다(금액 없는 매출은 광고 최적화를 흐립니다).

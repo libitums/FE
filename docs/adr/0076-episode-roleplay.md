@@ -83,7 +83,7 @@
   - 권한은 있는데 인식기가 없으면 모달 「Speaking isn't available」 — `Start anyway`(줄마다 건너뛰며 장면을 본다) · `Not now`.
   - 접점이 없으면(개발 루프 · 옛 호스트) 조용히 시작한다.
 - **설정 열기는 말하기 모듈의 새 메서드 `openSettings`다**(호스트 변경 — iOS `UIApplication.openSettingsURLString`, Android `ACTION_APPLICATION_DETAILS_SETTINGS`). 알림 모듈의 `openSettings`는 Android에서 알림 설정을 열어 마이크 스위치에 닿지 않는다. 이 메서드가 없는 옛 호스트에서는 아무 일도 없다.
-- **듣지 못한 까닭마다 안내가 다르다** — 받아쓰기 꺼짐은 설정 경로(말하기 학습형과 같은 문구), 권한 · 인식기는 허용 안내, 그 한 번의 실패는 「I didn't catch that. Tap the mic and try again.」 — 셋 다 마이크로 다시 시도할 수 있다. 그전에는 셋 모두 같은 「Speaking isn't available right now」였다(실기에서 원인을 가를 수 없었다).
+- **듣지 못한 까닭마다 안내가 다르다** — 받아쓰기 꺼짐은 설정 경로(말하기 학습형과 같은 문구), 권한 · 인식기는 허용 안내, 그 한 번의 실패는 「I didn't catch that. Tap the mic and try again.」 — 셋 다 마이크로 다시 시도할 수 있다. 그전에는 셋 모두 같은 「Speaking isn't available right now」였다(실기에서 원인을 가를 수 없었다). ⟨2026-11-24 — [ADR-0181](0181-speech-no-match-retry.md)⟩ 못 알아들음(말 없음 · 알아듣지 못함 · 네트워크)은 국면 `missed`로 갈라 안내 + 마이크 아래 `Try again` 버튼이 서고, 남은 `failed`(마이크 입력 실패 등)는 불가 문구 「Speaking isn't available right now. You can skip this line.」로 바꿨다.
 - **녹음은 스스로 멈추지 않는다**(네이티브 모듈이 침묵을 재지 않는다) — 듣는 중 안내를 「Listening… Tap again when you're done.」으로 바꿨다.
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩

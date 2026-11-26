@@ -1,4 +1,4 @@
-// `POST /functions/v1/mission-hint` — 아직 못 이룬 목표 하나의 예시 문장 하나(ADR-0177, PRD §3.5).
+// `POST /functions/v1/mission-hint` — 아직 못 이룬 목표 하나의 예시 문장 하나(ADR-0193, PRD §3.5).
 //
 // 흐름: 인증 → 본문(`missionHintRequestSchema`) → `companion_mission_take_hint`(상한 확인 · 힌트 수 +1 · 목표 고르기) →
 //   힌트 프롬프트(`hintSystem` · `hintUser`) → `normalizeHint` → 계약의 응답.
@@ -107,12 +107,33 @@ export function createMissionHintHandler(
       );
     // 모델이 고른 목표(상대역의 마지막 질문) — 열린 목표가 아니면 SQL이 고른 기본 목표. SQL의 hintGoals 기록은 기본 목표 그대로다.
     const chosen = chosenHintGoal(mission, goalsDone, goal, hint.goalId);
+    // (음성) 예문을 남겨 `mission-tts`가 앱이 보낸 글이 아니라 이 글을 읽게 한다. 번호 = 이번까지 받은 힌트 수. 실패해도 힌트는 준다(번호 없이).
+    const hintNo = row.state.hintsUsed;
+    let saved = false;
+    try {
+      const result = await callRpc<{ result: string } | null>(
+        deps.outbound,
+        env,
+        "companion_mission_save_hint",
+        {
+          p_user_id: caller.userId,
+          p_conversation_id: checked.body.conversation_id,
+          p_hint_no: hintNo,
+          p_goal_id: chosen.id,
+          p_ko: hint.ko,
+        },
+      );
+      saved = result?.result === "ok";
+    } catch {
+      saved = false;
+    }
     const body: MissionHintResponse = {
       goalId: chosen.id,
       ko: hint.ko,
       roman: hint.roman,
       meaning: hint.meaning,
       hintsLeft: row.state.hintsLeft,
+      ...(saved ? { hintNo } : {}),
     };
     return respond(jsonResponse(body), `ok ${chosen.id}`);
   };

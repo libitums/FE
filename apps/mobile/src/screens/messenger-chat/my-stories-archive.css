@@ -1,0 +1,71 @@
+/* 설정 › My stories 칸(ADR-0194, 시안 10번) — 두 줄 격자, 칸은 brand 면 단어 카드(사진 없음). 셸 안 보통 화면이라 z-index를 쓰지 않습니다.
+   지우기 단추는 칸 안 오른쪽 위(문서 순서로 칸 본문 뒤). 화면 지역 상수: 칸 최소 높이 140. */
+
+.my-archive-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-12);
+}
+
+.my-archive-tile {
+  position: relative;
+  width: 47%;
+  min-height: 140px;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.my-archive-tile-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  min-height: 140px;
+  padding: var(--libitum-spacing-12);
+}
+
+.my-archive-live {
+  align-self: flex-start;
+  padding: 2px var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-sm);
+  background-color: var(--libitum-color-white);
+  color: var(--libitum-color-brand-strong);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.my-archive-ko {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.my-archive-meaning,
+.my-archive-meta {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-archive-delete {
+  position: absolute;
+  top: var(--libitum-spacing-4);
+  right: var(--libitum-spacing-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-archive-delete-all {
+  margin-top: var(--libitum-spacing-8);
+}

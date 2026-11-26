@@ -20,6 +20,11 @@ import {
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 import { earlyOffersFrom, earlyUnlockFrom } from "../screens/messenger-chat/early-access-parse";
+import { friendStoriesFrom } from "../screens/messenger-chat/friend-stories-parse";
+import { myStoriesRemote } from "./companion-my-stories-api";
+import { myStoryPhotoRemote } from "./companion-my-story-photo-api";
+import { uploadStoryPhoto } from "./story-photo";
+import type { StoryPhotoUpload } from "../screens/messenger-chat/my-story-photo.contract";
 import {
   adultAckFrom,
   visibleFriendsFrom,
@@ -49,6 +54,8 @@ export type CompanionRemoteDeps = {
   readonly now: () => number;
   /** 기기가 오프라인인지(ADR-0138) — 참이면 스트림을 열지 않고 network로 끝냅니다. 없으면 늘 연결된 것으로. */
   readonly isOffline?: () => boolean;
+  /** 내 스토리 사진의 호스트 업로드(ADR-0199) — 없으면 사진을 올리지 않습니다. */
+  readonly storyPhotoUpload?: StoryPhotoUpload;
 };
 
 const postJson =
@@ -90,6 +97,21 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
     friends: {
       visible: async () => visibleFriendsFrom(await call("/rest/v1/rpc/companion_friends", {})),
       ackAdult: async () => adultAckFrom(await call("/rest/v1/rpc/companion_ack_adult", {})),
+    },
+    // 친구 스토리(ADR-0178 D2) — 함수가 없는 서버(배포 전)는 404 → null(스토리 없음).
+    stories: {
+      list: async () => friendStoriesFrom(await call("/rest/v1/rpc/companion_friend_stories", {})),
+    },
+    // 내 스토리(ADR-0194) — 단어 · 카드 올리기 · 보관함 · 지우기.
+    myStories: {
+      ...myStoriesRemote(call),
+      // 사진(ADR-0199) — 호스트 업로드 → 게시 · 서명 주소 · 다시 확인 요청.
+      photo: myStoryPhotoRemote({
+        token: deps.token,
+        config: deps.config,
+        call,
+        upload: deps.storyPhotoUpload ?? null,
+      }),
     },
     clearChat: async (characterId) =>
       clearOutcomeFrom(
@@ -178,6 +200,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
                 client_message_id: request.clientMessageId,
                 text: request.text,
                 input_mode: "text",
+                ...(request.storyId === undefined ? {} : { story_id: request.storyId }),
               }),
             },
             {
@@ -211,5 +234,6 @@ export function companionRemote(): ChatRemote {
     stream: chatStreamClient,
     now: Date.now,
     isOffline: () => readNetworkProperties().network === "offline",
+    storyPhotoUpload: uploadStoryPhoto,
   });
 }

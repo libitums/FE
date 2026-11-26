@@ -333,7 +333,7 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
     expect(graded).toMatchObject({ status: "graded", report: { outcome: "success" } });
   });
 
-  test("MI8. 성공 확정 판 — 그만두기는 끝내기처럼 채점, 방치 · 새 판 시작은 채점 대기(pending)로 닫혔다가 다음 finish에서 채점(ADR-0177 D15)", async () => {
+  test("MI8. 성공 확정 판 — 그만두기는 끝내기처럼 채점, 방치 · 새 판 시작은 채점 대기(pending)로 닫혔다가 다음 finish에서 채점(ADR-0193 D15)", async () => {
     const start = async (id: string) =>
       missionStartResponseSchema.parse(
         await (

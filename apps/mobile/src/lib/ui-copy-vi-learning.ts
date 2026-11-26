@@ -52,6 +52,8 @@ export const speakingVi: SpeakingCopy = {
     "Siri hoặc Đọc chính tả đang tắt. Hãy bật trong Cài đặt > Cài đặt chung > Bàn phím > Bật Đọc chính tả, rồi thử lại.",
   tapToContinue: "Chạm vào màn hình để tiếp tục",
   recognitionUnavailable: "Hiện chưa thể nhận dạng giọng nói. Chạm Bỏ qua để tiếp tục.",
+  notCaught: "Mình chưa nghe rõ. Chạm vào micrô và thử lại.",
+  networkRetry: "Không kết nối được với nhận dạng giọng nói. Kiểm tra kết nối rồi thử lại.",
 };
 
 export const assessmentVi: AssessmentCopy = {

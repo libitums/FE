@@ -1,0 +1,54 @@
+/* 「새 메시지 ↓」 알약 · 맨 아래로 단추 — 대화 영역(.messenger-chat-main, position: relative)의 아래 끝(입력 독 바로 위)에 겹칩니다.
+   알약 줄은 알약 높이만큼만 덮어 로그 스크롤을 막지 않습니다. 색은 앱 토큰(시안의 색 · 크기는 그림). */
+.messenger-chat-newpill-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.messenger-chat-newpill {
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: var(--libitum-spacing-6);
+  padding-right: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.messenger-chat-newpill-label {
+  margin-left: var(--libitum-spacing-8);
+  margin-right: var(--libitum-spacing-8);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  color: var(--libitum-color-white);
+}
+
+.messenger-chat-newpill-media {
+  margin-left: var(--libitum-spacing-8);
+}
+
+.messenger-chat-latest {
+  position: absolute;
+  right: var(--libitum-spacing-16);
+  bottom: var(--libitum-spacing-12);
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}

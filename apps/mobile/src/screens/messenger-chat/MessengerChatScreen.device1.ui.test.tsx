@@ -127,7 +127,7 @@ test("D5. 출처가 던져도 보낸 뒤 입력 칸은 비워진다(비우기가
     // 던진 오류가 탭 도우미까지 올라와도 상관없습니다 — 아래가 확인할 것입니다.
   }
 
-  expect(textOf(ids.display)).toBe("Message");
+  expect(textOf(ids.display)).toBe("Korean or English");
   expect(classOf(ids.send)).toContain("messenger-chat-send-disabled");
 });
 
@@ -181,15 +181,15 @@ test("M2. 작은 단추는 hit-slop으로 터치 영역을 44 가까이 넓힌�
 
 // ---------------------------------------------------------------- M4
 
-test("M4. 학습 키보드 입력 칸의 낭독 이름은 늘 「Message」이고 글은 value로 읽힌다", () => {
+test("M4. 학습 키보드 입력 칸의 낭독 이름은 늘 입력 칸 안내 글(「Korean or English」, ADR-0190)이고 글은 value로 읽힌다", () => {
   mountChatOpen();
   const display = () => screen.getByTestId(ids.display);
-  expect(display().getAttribute("accessibility-label")).toBe("Message");
+  expect(display().getAttribute("accessibility-label")).toBe("Korean or English");
   expect(display().getAttribute("accessibility-value")).toBeNull();
 
   tapKeys(...KEYS_AN);
 
-  expect(display().getAttribute("accessibility-label")).toBe("Message");
+  expect(display().getAttribute("accessibility-label")).toBe("Korean or English");
   expect(display().getAttribute("accessibility-value")).toBe("안");
 });
 

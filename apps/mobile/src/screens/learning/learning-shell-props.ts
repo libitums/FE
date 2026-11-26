@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import type { LearningActivityForm } from "../../lib/learning-form";
+import type { SentenceReplay } from "../../lib/sentence-replay";
 import type { LearningRunProgress } from "./learning-shell.contract";
 
 /** 무대의 면 — `card`(ui-lynx Card가 그림) · `bare`(활동이 스스로 그림). */
@@ -26,6 +27,9 @@ export type LearningShellFeedback = {
    */
   readonly steady?: boolean;
 };
+
+/** 판정 줄 다시 듣기 — 단추 상태와, 다시 낸 뒤 한 번 부르는 측정 콜백입니다(ADR-0189). */
+export type VerdictReplay = { readonly replay: SentenceReplay; readonly onReplayed?: () => void };
 
 /** 껍데기가 받는 것입니다 — 각 줄의 뜻은 `LearningShell`의 머리 주석과 함께 읽습니다. */
 export type LearningShellProps = {
@@ -114,6 +118,11 @@ export type LearningShellProps = {
   actionButton?: ReactNode | ((press: () => void) => ReactNode);
   /** 주면 지시문 자리에 판정 배지가 겹쳐 섭니다. 지시문 글은 흐름에 남아 높이가 변하지 않습니다. */
   verdict?: AnswerResult;
+  /**
+   * 판정 배지 옆 다시 듣기 스피커입니다(ADR-0189) — 배지가 설 때만, 저절로 넘어가는 걸음(`advance`)이 없을 때만 그립니다
+   * (그동안은 화면 전체가 넘김 단추라 스피커가 닿지 않습니다).
+   */
+  verdictReplay?: VerdictReplay;
   /**
    * 배지를 세우지 않고 카드 안에서 판정을 그리는 활동(자판 · 짝 잇기)의 판정입니다. 껍데기는 그리지 않고, 틀린 문제
    * 다시 도전의 판(Fixed it! · Not quite)을 세우는 데만 씁니다.

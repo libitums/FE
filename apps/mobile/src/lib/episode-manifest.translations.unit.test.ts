@@ -77,3 +77,9 @@ test("MT5. 태국어 · 미얀마어 항목도 읽는다(ADR-0158)", () => {
     ),
   ).toEqual(["th", "my"]);
 });
+
+test("MT6. 대만 중국어(zh-TW) 항목도 읽는다(ADR-0185 개정)", () => {
+  expect(
+    Object.keys(entryOf(decodeManifest(wire({ "zh-TW": ref("zh-TW") })))?.translations ?? {}),
+  ).toEqual(["zh-TW"]);
+});

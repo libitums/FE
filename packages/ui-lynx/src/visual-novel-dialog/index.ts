@@ -6,6 +6,8 @@ export type {
   VisualNovelDialogContinueIndicator,
   VisualNovelDialogContract,
   VisualNovelDialogDirection,
+  VisualNovelDialogHeaderSwitch,
+  VisualNovelDialogHeaderSwitchContract,
   VisualNovelDialogNarrationProps,
   VisualNovelDialogProps,
   VisualNovelDialogReveal,

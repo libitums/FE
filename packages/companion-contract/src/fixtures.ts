@@ -14,6 +14,13 @@ export {
   missionResultsFixture,
   missionStartFixture,
 } from "./fixtures-mission";
+export {
+  missionSttFixtures,
+  missionTtsFixture,
+  missionTtsRequestFixtures,
+  missionVoiceErrorFixtures,
+  type MissionVoiceErrorFixture,
+} from "./fixtures-mission-voice";
 
 export type PreStreamErrorFixture = { status: number; body: PreStreamErrorBody };
 

@@ -4,11 +4,17 @@
 /* ---------------------------------------------------------------- E1 머리 모달 */
 
 /* 지표 모달의 큰 숫자 자리와 같은 높이에 섭니다. 알약이 더 붙어 위 여백을 지표 모달(128)보다 줄입니다. */
+/* 머리와 숫자 사이 96 — 공간이 모자라면(작은 화면 + 결과 안내) 16까지 줄어듭니다. 숫자 묶음은 줄지 않습니다. */
+.ticket-modal-top-gap {
+  flex: 0 1 auto;
+  height: var(--libitum-spacing-96);
+  min-height: var(--libitum-spacing-16);
+}
+
 .ticket-modal-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: var(--libitum-spacing-96);
   flex-shrink: 0;
 }
 
@@ -416,4 +422,32 @@
   font-size: 14px;
   font-weight: 600;
   line-height: 18px;
+}
+
+/* ---------------------------------------------------------------- 엽전으로 1장(사용자 결정 2026-11-23) */
+
+/* 버튼 글자 뒤의 값 — 엽전 그림(색이 그림에 들어 있음) + 숫자. 버튼 글자와 같은 흰 글자입니다. */
+.ticket-price {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.ticket-price-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ticket-price-label {
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+/* 서버 응답을 기다리는 동안 — 눌리지 않음을 흐림으로 보입니다(Lynx CSS는 속성 선택자를 받지 않아 클래스 변형). */
+.ticket-button-busy {
+  opacity: var(--libitum-opacity-disabled);
 }

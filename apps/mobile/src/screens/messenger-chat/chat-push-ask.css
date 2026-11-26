@@ -1,0 +1,97 @@
+/* 채팅 첫 답장 뒤 알림 권한 카드 · 켠 뒤 한 줄(ADR-0197 D3). 색은 토큰, 옅은 주황은 알파 토큰이 없어 brand-secondary(#ff8d28)를 rgba로 적습니다. */
+
+.chat-push-ask {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  margin: var(--libitum-spacing-6) var(--libitum-spacing-16) var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: rgba(255, 141, 40, 0.35);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s1);
+}
+
+.chat-push-ask-head {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  column-gap: var(--libitum-spacing-12);
+}
+
+.chat-push-ask-bell {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-md);
+  background-color: rgba(255, 141, 40, 0.12);
+}
+
+.chat-push-ask-bell-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.chat-push-ask-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.chat-push-ask-title {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-push-ask-body {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.chat-push-ask-actions {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.chat-push-ask-action {
+  flex: 1;
+}
+
+.chat-push-ask-on {
+  align-self: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+  margin: var(--libitum-spacing-6) var(--libitum-spacing-16) var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.chat-push-ask-on-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.chat-push-ask-on-text {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  line-height: var(--libitum-typography-caption-line-height);
+  color: var(--libitum-color-fg-neutral-subtle);
+}

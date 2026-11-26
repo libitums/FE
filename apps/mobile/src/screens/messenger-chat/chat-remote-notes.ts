@@ -1,7 +1,7 @@
 // 서버 모드 출처의 도우미입니다(ADR-0137) — 교정 노트 붙이기 · 멱등 id · 턴을 로그에 그리기.
 
 import type { ChatCorrection } from "./chat-feedback.contract";
-import type { RoomState } from "./chat-fixture-room";
+import { setRemoteIdeas, type RoomState } from "./chat-fixture-room";
 import type { ChatMessage, ChatMyNotes } from "./chat-source.contract";
 import { bubblesOf } from "./companion-parse";
 import { withChatWords } from "./companion-chat-words";
@@ -66,7 +66,7 @@ export function renderTurn(
     room.notes = withCorrection(room.notes, turn.correction.userMessageId, turn.correction.card);
   if (turn.chatWords !== null)
     room.notes = withChatWords(room.notes, turn.chatWords.userMessageId, turn.chatWords.result);
-  if (turn.ideas !== null) room.remoteIdeas = turn.ideas;
+  if (turn.ideas !== null) setRemoteIdeas(room, turn.ideas, "turn");
   if (turn.bubbles.length > 0) room.typing = false;
   return myId;
 }

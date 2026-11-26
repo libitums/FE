@@ -27,6 +27,7 @@ import { tileRomanizationsShown } from "../../components/assembled-hint/assemble
 import { SentenceOrderListenHeader } from "./SentenceOrderListenHeader";
 import { SentenceOrderListenReveal } from "./SentenceOrderListenReveal";
 import { useSentenceOrderAnnouncements } from "./use-sentence-order-announcements";
+import { useSentenceOrderNudge } from "./use-sentence-order-nudge";
 import { SentenceOrderTextHeader } from "./SentenceOrderTextHeader";
 import {
   canPlaceChip,
@@ -38,8 +39,9 @@ import {
   sentenceOrderSessionReducer,
   sentenceOrderSessionResults,
 } from "./sentence-order";
+import { sentenceOrderChipTaps } from "./sentence-order-chip-taps";
+import { lessonVerdictReplayOf } from "../learning/lesson-sound";
 import {
-  dialogueChipInteractionOf,
   sentenceOrderBottomActionOf,
   sentenceOrderLayoutOf,
   sentenceOrderPlacedResultsOf,
@@ -116,23 +118,17 @@ export function SentenceOrderActivity({
   );
 
   useSentenceOrderAnnouncements(result, state.questionIndex, state.phase, complete, copy);
+  const busy = guide.visible || hint.open || listen.playback === "playing";
+  const nudgedIndex = useSentenceOrderNudge(question, state, busy);
 
-  // 안내가 떠 있는 동안은 조각이 움직이지 않습니다 — 겹침 층에만 기대지 않습니다.
-  const toggle = (chipIndex: number) => {
-    if (guide.visible) return;
-    dispatch({ type: "toggleChip", chipIndex });
-  };
-  // 대화 조립 — 창고 조각은 화자가 맞는 칸에만 들어가고(잠긴 조각은 탭이 없지만 여기서도 막습니다), 놓은 말풍선은
-  // 그 뒤까지 함께 돌아갑니다.
-  const placeDialogueChip = (chipIndex: number) => {
-    if (guide.visible || question == null) return;
-    if (dialogueChipInteractionOf(question, state, chipIndex) === "locked") return;
-    dispatch({ type: "toggleChip", chipIndex });
-  };
-  const returnDialogueChip = (chipIndex: number) => {
-    if (guide.visible) return;
-    dispatch({ type: "returnChip", chipIndex });
-  };
+  // 조각 누름 — 안내 중에는 움직이지 않고, 놓을 때만 낱말 소리가 납니다(ADR-0189).
+  const { toggle, placeDialogueChip, returnDialogueChip } = sentenceOrderChipTaps({
+    guideVisible: guide.visible,
+    question,
+    state,
+    dispatch,
+    lesson: audioLesson,
+  });
 
   const layout = question == null ? "lines" : sentenceOrderLayoutOf(question);
   const interaction: SentenceOrderInteraction = state.phase === "checked" ? "locked" : "tappable";
@@ -233,6 +229,7 @@ export function SentenceOrderActivity({
         bankInteraction={bankInteraction}
         romanizations={romanizations}
         onHint={question.hint !== undefined && state.phase !== "checked" ? hint.openSheet : null}
+        nudgedIndex={nudgedIndex}
         onToggle={toggle}
         onPlaceDialogueChip={placeDialogueChip}
       />
@@ -254,6 +251,12 @@ export function SentenceOrderActivity({
         actionPlacement={layout === "lines" ? "in-flow" : "floating"}
         stage={question != null && layout === "lines" ? "bare" : "card"}
         verdict={result ?? undefined}
+        // 대화 조립은 정답이 여러 줄이라 다시 들을 한 문장이 없습니다(줄마다 칩 소리가 집니다, ADR-0189).
+        verdictReplay={
+          question?.dialogue === undefined
+            ? lessonVerdictReplayOf(question?.audio, state.phase === "checked", audioLesson)
+            : undefined
+        }
         workspace={bank}
         card={
           <view

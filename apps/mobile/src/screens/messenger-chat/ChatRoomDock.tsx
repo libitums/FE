@@ -16,6 +16,7 @@ import { KeyboardSlot, PhoneKeyboardSpacer } from "./KeyboardSlot";
 import { KeyboardToggleRow } from "./KeyboardToggleRow";
 import { ReplyIdeasPanel } from "./ReplyIdeasPanel";
 import { BlockedComposer } from "./SafetyParts";
+import { useSuggestionEvents } from "./use-suggestion-events";
 import type { PhoneKeyboardHeight } from "./use-phone-keyboard-height";
 
 import "./messenger-chat.css";
@@ -38,6 +39,10 @@ export type ChatRoomDockProps = {
   readonly birthYear: ChatBirthYear;
   /** 첫 입장 코치마크가 가리키는 부품(2026-11-13) — 바깥 상자 클래스로 고리를 겁니다. */
   readonly guideClass?: string;
+  /** 예시 스냅샷 단계(ADR-0146 추가) — 있으면 사진 알약이 「FREE」로 서고, 누르면 결제 확인 대신 이것을 부릅니다. */
+  readonly onTakeSample?: () => void;
+  /** 예시 음성 단계 — 있으면 음성 알약이 「FREE」로 서고, 누르면 결제 확인 대신 이것을 부릅니다. */
+  readonly onTakeVoiceSample?: () => void;
   /** 비회원(ADR-0166) — 보기가 없어도 전구를 켜 두고 누르면 관문(send 권유)으로 갑니다(2026-11-20). */
   readonly guest?: boolean;
 };
@@ -64,6 +69,8 @@ export function ChatRoomDock({
   aboveComposer,
   birthYear,
   guideClass = "",
+  onTakeSample,
+  onTakeVoiceSample,
   guest = false,
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
@@ -77,6 +84,7 @@ export function ChatRoomDock({
   const content = chatSlotContent(state);
   const menuOpen = state.overlay.kind === "more-menu";
   const ideasOpen = state.slot.kind === "ideas";
+  const suggestionTapped = useSuggestionEvents(thread, content === "ideas"); // 보임 · 누름 이벤트(ADR-0195)
   // 서버 방의 사진 · 음성 알약 상태(ADR-0146 「앱 연결」) — 대상 메시지 · 답 기다림 · 만드는 중 · 이미 있음.
   const mediaRoom = {
     messages: thread.messages,
@@ -124,11 +132,17 @@ export function ChatRoomDock({
             voiceAvailability={mediaAvailabilityOf(mediaRoom, "voice")}
             name={thread.counterpart.name}
             moreState={menuOpen ? "open" : "closed"}
-            onSnapshot={() =>
-              dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } })
+            photoFree={onTakeSample !== undefined}
+            onSnapshot={
+              onTakeSample ??
+              (() =>
+                dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } }))
             }
-            onSnapVoice={() =>
-              dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "voice" } })
+            voiceFree={onTakeVoiceSample !== undefined}
+            onSnapVoice={
+              onTakeVoiceSample ??
+              (() =>
+                dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "voice" } }))
             }
             onMore={() =>
               menuOpen
@@ -174,7 +188,9 @@ export function ChatRoomDock({
             ideas={thread.ideas}
             onSend={(index) => {
               const idea = thread.ideas[index];
-              if (idea !== undefined) onSend(idea.ko);
+              if (idea === undefined) return;
+              suggestionTapped(index);
+              onSend(idea.ko);
             }}
             onTypeMyself={() => dispatch({ type: "type-myself" })}
             bottomInset={edges.bottom}

@@ -13,7 +13,7 @@ export const rankingCopyTh: RankingCopy = {
   unit: (board) => (board === "lessons" ? "บทเรียน" : "คำ"),
   zoneTop: (reward) =>
     reward === null ? "3 อันดับแรกของสัปดาห์นี้" : `3 อันดับแรกได้โบนัส ${reward} Yeopjeon`,
-  zoneClimb: "ไต่อันดับต่อไป",
+  zoneClimb: (more) => (more === null ? "ไต่อันดับต่อไป" : `ไต่อันดับต่อไป · อีก ${more} จะติด 3 อันดับแรก`),
   you: "คุณ",
   morePass: (more, name) => `อีก ${more} จะแซง ${name}`,
   first: "คุณอยู่อันดับ 1!",
@@ -57,7 +57,7 @@ export const rankingCopyMy: RankingCopy = {
   unit: (board) => (board === "lessons" ? "သင်ခန်းစာ" : "စကားလုံး"),
   zoneTop: (reward) =>
     reward === null ? "ဒီအပတ် ထိပ်ဆုံး 3 ဦး" : `ထိပ်ဆုံး 3 ဦး ${reward} Yeopjeon ဆုကြေး ရမယ်`,
-  zoneClimb: "ဆက်တက်ပါ",
+  zoneClimb: (more) => (more === null ? "ဆက်တက်ပါ" : `ဆက်တက်ပါ · ထိပ်ဆုံး 3 ဝင်ဖို့ ${more} ထပ်လိုသေးတယ်`),
   you: "သင်",
   morePass: (more, name) => `${name} ကို ကျော်ဖို့ ${more} ထပ်လိုသေးတယ်`,
   first: "သင် နံပါတ် 1 ပါ!",

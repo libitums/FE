@@ -32,11 +32,13 @@
   line-height: var(--libitum-typography-heading-l-line-height);
 }
 
+/* 높이는 그룹 알약(28)에 맞춰 고정 — 알약이 읽은 뒤에 서도 줄 높이가 달라지지 않습니다(아래가 밀리지 않게). */
 .ranking-meta {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  min-height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
 }
 
 .ranking-group {
@@ -131,10 +133,12 @@
   padding-left: var(--libitum-layout-screen-padding-x);
 }
 
+/* overflow visible — 내 줄 강조(커짐 · 고리, `ranking-motion.css`)가 줄 상자 밖으로 조금 넘칩니다. 목록의 좌우 여백 안이라 스크롤 밖으로는 나가지 않습니다. */
 .ranking-item {
   display: flex;
   flex-direction: column;
   padding-bottom: var(--libitum-spacing-8);
+  overflow: visible;
 }
 
 /* 상위 3과 내 근처 사이 생략(ADR-0170 D11) — 세로 점 셋. 글자가 아니라 점이라 문구 · 낭독이 없습니다(순위 숫자가 건너뜀을 말함). 점은 fg-neutral-subtle — 바탕 대비 3.4(비텍스트 3 이상, 접근성 S1). */

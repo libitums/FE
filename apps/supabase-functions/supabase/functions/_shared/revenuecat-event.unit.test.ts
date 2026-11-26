@@ -72,6 +72,7 @@ test("SB-W2 필드 정규화 — ms → ISO, 환경, 사용자 후보 중복 없
     eventAt: "2026-11-14T00:00:05.000Z",
     transferredFrom: [],
     transferredTo: [],
+    periodType: null,
   });
 });
 
@@ -105,4 +106,23 @@ test("SB-W3 깨진 본문은 null", () => {
   expect(revenuecatEventFrom({ event: { type: "RENEWAL" } })).toBeNull();
   expect(revenuecatEventFrom({ event: { id: "x" } })).toBeNull();
   expect(revenuecatEventFrom({ event: { id: "", type: "RENEWAL" } })).toBeNull();
+});
+
+// Chat Plus 첫 구독 보너스(ADR-0196 D2) — 체험인지는 RevenueCat `period_type`으로만 안다. 값은 거르지 않고 그대로 싣는다(판정은 DB).
+describe("CB-W1 period_type → periodType", () => {
+  test.each([["TRIAL"], ["INTRO"], ["NORMAL"], ["PROMOTIONAL"], ["PREPAID"]] as const)(
+    "%s",
+    (periodType) => {
+      expect(
+        revenuecatEventFrom(body({ type: "INITIAL_PURCHASE", period_type: periodType }))
+          ?.periodType,
+      ).toBe(periodType);
+    },
+  );
+});
+
+test("CB-W2 period_type이 없거나 문자열이 아니면 periodType null", () => {
+  expect(revenuecatEventFrom(body({ type: "RENEWAL" }))?.periodType).toBeNull();
+  expect(revenuecatEventFrom(body({ type: "RENEWAL", period_type: "" }))?.periodType).toBeNull();
+  expect(revenuecatEventFrom(body({ type: "RENEWAL", period_type: 3 }))?.periodType).toBeNull();
 });

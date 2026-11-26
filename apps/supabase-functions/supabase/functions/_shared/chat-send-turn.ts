@@ -33,6 +33,7 @@ import {
   withLearnedUse,
 } from "./chat-send-learning.ts";
 import { withChatWords } from "./chat-send-chat-words.ts";
+import { withStoryDirective } from "./chat-send-story.ts";
 import { sendSuggestions, suggestionSettings, suggestionsMeta } from "./chat-send-suggest.ts";
 import { applyTranslation } from "./chat-send-translate.ts";
 import { outputChecker, recoverReply, startFollowUps } from "./chat-send-turn-recover.ts";
@@ -77,6 +78,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const promptInput: PromptInput = {
     persona,
     speechLevel: turn.speechLevel,
+    ...(typeof turn.intimacy === "number" ? { intimacy: turn.intimacy } : {}),
     ageBand,
     l1: gate.l1,
     expressions: context.learning.expressions,
@@ -110,7 +112,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const abort = new AbortController();
   const history = historyFrom(turn);
   const system = `${prompt.stable}${systemSplit}${prompt.dynamic}`;
-  let reply = startReply(context, history, system, abort, branch.directive);
+  const directive = withStoryDirective(context.story ?? null, branch.directive); // 친구 스토리 답장(ADR-0178 D5)
+  let reply = startReply(context, history, system, abort, directive);
   // 추천 답변 칩을 그대로 보냈으면 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장). 고쳐 보냈거나 직접 입력 · 지난 칩이면 보통처럼.
   // 주간 순위 단어(`chat-send-chat-words.ts`)는 입력 검사를 지난 메시지만 센다 — 같은 카드 · 같은 `correction`에 실린다.
   let inputPassed: (allowed: boolean) => void = () => {};
@@ -283,6 +286,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   return {
     outcome: "complete",
     suggestions: saved,
+    ...(result.state?.quiz === undefined ? {} : { quiz: result.state.quiz }),
     afterTurn: {
       userId: context.userId,
       characterId: body.character_id,

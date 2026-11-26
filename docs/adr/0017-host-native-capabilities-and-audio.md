@@ -464,6 +464,8 @@ Supabase OAuth)이고, iOS 호스트가 `WebAuthenticationModule`(`start` · `ra
   `playAtRate(source, rate, done)`가 학습 듣기 문항의 「천천히」(0.85배 · 음높이 유지)를 낸다. `play`는 바뀌지 않았고 옛 호스트는 메서드
   존재로 감지해 1.0 `play`로 간다(인자를 늘리면 옛 iOS 호스트가 메서드를 부르지 않는다). 값 0.85는 JS 한 자리이고 네이티브는 0.5 ~ 2.0 밖을
   1.0으로 정규화한다. **시크 · 볼륨 · 페이드 · 0.85 밖의 배속 선택은 그대로 하지 않는다.** 이 문단의 「메서드는 둘」(그 뒤 넷)은 이제 다섯이다
+  ⟨2026-11-24 — [ADR-0082](0082-item-audio-and-slow-playback.md) 「정정 ⟨2026-11-24⟩」⟩ 「천천히」의 값은 **0.7**이다(0.85는 들리지 않았다). 0.85는 대화 음성
+  메시지 배율로만 남는다([ADR-0146](0146-companion-snapshot-voice.md)). 호스트 · 메서드 · 정규화 범위는 그대로다.
 - **동시 재생** — 한 번에 하나다. 새 `play`가 이전 것을 대체한다
 - **재생 상태 조회 API** — 상태는 JS가 콜백으로 들고 있는다. 조회를 열면 진실이 둘이 되고,
   둘이 어긋나는 순간을 판정할 수단이 없다
@@ -738,3 +740,15 @@ LIB-253이 더한 셋째 항목은 **종료 발화 priority API**다. Android에
 - **진동은 이 ADR의 어느 목록에도 없던 축이다.** D1 「여전히 하지 않는 것」(푸시 · 딥링크 · 코드 서명 · 스토어 배포 · 커스텀 UI · 커스텀 네이티브 엘리먼트)에도, D3 재생 모듈의 「여기 없는 것은 하지 않는 것이다」(일시정지 · 시크 · 볼륨 · 페이드 …)에도 진동 · 햅틱은 적힌 적이 없다. 금지된 것이 열린 게 아니라 **적힌 적 없는 축을 ADR-0109가 처음 정한 것**이고, 그래서 이 ADR의 문면은 고치지 않는다.
 - 권한은 요구하지 않는다 — Android `View.performHapticFeedback`(1인자 오버로드 · 시스템 「터치 피드백」 설정 추종)과 iOS `UINotificationFeedbackGenerator`(「시스템 햅틱」 설정 추종)는 권한 · required-reason API가 아니다. `VIBRATE`는 더하지 않았다(ADR-0109 재검토 조건 (a) — 벨 반복 진동이 열릴 때 함께 본다).
 - 호스트 모듈 표(`docs/adr/README.md`)의 `SoundEffectsModule` 행은 같은 날 메서드 셋으로 고쳤다. Android · iOS 둘 다 같은 날 같은 변경에 들어가 이관 빚은 생기지 않았다.
+
+## 적용 기록 ⟨2026-11-19 — Android 말하기: 한국어 팩 없음 → 네트워크 인식기로 되돌아감⟩
+
+증상: 최근 14일 Android 낱말 말하기(SPEAK_WORD)의 86%가 건너뜀이었고(452 대 인식 72), 1.4.1의 `skipReason`은 `unavailable:failed` 31 · `user` 10 · `unavailable:blocked` 6이었다. 사용자는 대부분 인도 · 인도네시아 · 필리핀, 기기는 Android 13 이상이 다수다. 입장 조건(D1)은 바뀌지 않았다 — 새 모듈이 아니라 기존 `SpeechRecognitionModule`의 경로 · 메서드다.
+
+- **원인.** `start`의 기본 `requireOnDevice`는 켬이고(위 D3 · iOS와 같음), Android 호스트는 API 31 이상에서 `isOnDeviceRecognitionAvailable`이면 온디바이스 인식기를 세웠다. 그 값은 **온디바이스 서비스가 있다**는 뜻일 뿐 **ko-KR 모델이 깔렸다**는 뜻이 아니다. 모델이 없으면 `ERROR_LANGUAGE_UNAVAILABLE`(13)로 끝나 `recognition-failed` → `unavailable:failed`가 됐다. Android 37 Play 이미지 에뮬레이터에서 그대로 재현했다(`koreanPack: available`, 오류 13).
+- **결정 — 한 번 되돌아감.** 온디바이스 세션이 ko-KR을 못 하면 같은 세션 안에서 기본(네트워크) 인식기로 한 번 다시 시도한다. API 33 이상은 시작 전에 `checkRecognitionSupport`로 묻고(1초 상한, 앱이 떠 있는 동안 기억), 그 밖에는 실행 중 12 · 13(그리고 시작 1.5초 안 · 글자 없는 4 · 5 · 11)을 받으면 다시 시도한다. 판정은 순수 클래스 `SpeechRecognitionRoute` 하나다. 사용자가 `stop`을 눌렀으면 다시 시도하지 않는다. 콜백은 세션당 한 번 그대로이고, 갈린 인식기의 늦은 콜백은 버린다.
+- **네 축 공개 계약은 그대로다.** 되돌아간 세션은 `requiresOnDevice: false` · `onDevice: not-guaranteed`를 싣고, 왜 되돌아갔는지를 `fallback`(`none` · `pack-missing` · `on-device-error`) · `fallbackErrorCode`로 더 싣는다. 기본값 「온디바이스 요청」은 바꾸지 않았다 — 보장을 못 하는 기기에서 보장을 지어내지 않는 것이 이 계약의 요점이고, 바꾼 것은 「보장할 수 없으면 말하기를 못 하게 둔다」였다.
+- **⚠ D2 재검토 트리거 「한 모듈의 메서드가 다섯을 넘는 시점」이 발동했다.** `SpeechRecognitionModule`은 `getStatus` · `requestPermissions` · `start` · `stop` · `openSettings` 다섯에서 `getKoreanPack` · `downloadKoreanPack`을 더해 **일곱**이다(Android만 — iOS는 다섯 그대로이고 JS 접점이 메서드 존재로 갈라 `"unavailable"`을 돌려준다). 재검토의 잠정 결론은 **같은 모듈에 둔다**: 둘 다 같은 인식기 · 같은 로캘(ko-KR)의 온디바이스 모델을 다루고, 따로 떼면 인식기 수명과 기억한 팩 상태가 두 모듈에 갈라진다. 다만 「하위 시스템」 신호이므로 **사용자 확인 대기**로 남긴다 — 동의 화면 작업에서 메서드가 더 늘면 `SpeechModelModule`로 가르는 안을 다시 본다.
+- **JS 접점.** `lib/speech-korean-pack.ts` — 팩 상태 · 내려받기 결말 파서, 접점 `getSpeechKoreanPack` · `downloadSpeechKoreanPack` · `subscribeKoreanPackProgress`(전역 이벤트 `speechKoreanPackProgress`), 그리고 **내려받기를 권할지의 판정 `koreanPackOfferOf`(`available` → `offer`)** 하나. 동의 화면은 아직 없다(디자인 승인 대기) — 화면은 이 판정만 읽고 동의 뒤에만 내려받기를 부른다.
+- **측정.** `episode_item_answered`(SPEAK_WORD, 판정 · 건너뜀)에 `speechErrorCode`(10진 문자열) · `speechFallback` · `speechKoreanPack`. 인식기가 결과를 올리지 않은 건너뜀(말하기 전 Skip · 접점 없음 · 권한)에는 키가 없다. 표는 [ADR-0084](0084-lesson-item-redesign.md) `episode_item_answered` 속성 표.
+- 호스트 모듈 표(`docs/adr/README.md`)의 `SpeechRecognitionModule` 행과 [Android 검증](../e2e/android-speech-recognition.md)을 같은 날 고쳤다. 실기(한국어 오프라인 팩이 없는 Android 13+ 폰)의 전사 확인은 남아 있다.

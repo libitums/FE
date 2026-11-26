@@ -187,45 +187,53 @@ describe("뒤로가기 · 낭독(리뷰 W-3 · W-5)", () => {
     ).not.toBe("true");
   });
 
-  test("MG-UI5 방 코치마크 중 뒤로가기 = Skip(방을 나가지 않음)", async () => {
+  // 건너뛸 수 없다(사용자 결정 2026-11-23) — 뒤로가기는 안내를 닫지도 방을 나가지도 않는다.
+  test("MG-UI5 방 코치마크 중 뒤로가기는 아무것도 하지 않는다 — 안내가 그대로 서 있고 방을 나가지 않는다", async () => {
     const { store, seen } = memoryStore();
     const { onExit } = mountChat({ source: serverSource(), roomId: "duksu", guideStore: store });
     await flush();
-    systemBack();
-    expect(screen.queryByTestId(ids.guideCoach)).toBeNull();
+    expect(systemBack()).toBe(true);
+    expect(screen.getByTestId(ids.guideCoach).getAttribute("data-step")).toBe("keyboard");
     expect(onExit).not.toHaveBeenCalled();
-    expect(seen()).toContain("room");
+    expect(seen()).not.toContain("room");
   });
 });
 
 describe("덕수쌤 방 첫 입장", () => {
-  test("MG-UI3 첫 인사가 온 뒤 코치마크 — 입력 칸 → 전구, 단계에 맞춰 입력 줄 고리, Got it이면 다시 안 뜸", async () => {
+  // ADR-0190: 교정 안내(chat) 단계 대신 키보드 두 갈래 단계(휴대폰 키보드 → Hangul keys, 같은 번호)가 맨 앞.
+  test("MG-UI3 첫 인사가 온 뒤 코치마크 — 키보드(두 화면) → 전구, 단계에 맞춰 고리, Got it이면 다시 안 뜸", async () => {
     const { store, seen } = memoryStore();
     mountChat({ source: serverSource(), roomId: "duksu", guideStore: store });
     await flush();
     const coach = () => screen.getByTestId(ids.guideCoach);
-    expect(coach().getAttribute("data-step")).toBe("chat");
+    expect(coach().getAttribute("data-step")).toBe("keyboard");
     expect(coach().textContent).toContain("1 of 2");
-    expect(document.querySelector(".messenger-guide-target-chat")).not.toBeNull();
+    fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
+    expect(coach().getAttribute("data-step")).toBe("keyboard");
+    expect(coach().textContent).toContain("1 of 2");
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     expect(coach().getAttribute("data-step")).toBe("ideas");
     expect(document.querySelector(".messenger-guide-target-ideas")).not.toBeNull();
     expect(screen.getByTestId(ids.guideCoachNext).textContent).toBe("Got it");
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     expect(screen.queryByTestId(ids.guideCoach)).toBeNull();
-    expect(seen()).toEqual(["room", "list"]); // 방 코치마크를 끝내면 목록 안내도 본 것(리뷰 S-7)
+    expect(seen()).toEqual(["keyboard", "room", "list"]); // 방 코치마크를 끝내면 목록 안내도 본 것(리뷰 S-7)
   });
 
-  test("MG-UI3 아무 데나 탭 = 다음, Skip은 끝, 사진 · 음성 단계는 서버 연결 전 없음", async () => {
+  test("MG-UI3 아무 데나 탭 = 다음, 건너뛰기 단추는 없다 — 끝까지 눌러야 끝난다", async () => {
     const { store, seen } = memoryStore();
     mountChat({ source: serverSource(), roomId: "duksu", guideStore: store });
     await flush();
+    expect(screen.queryByTestId(ids.guideCoachSkip)).toBeNull();
+    fireEvent.tap(screen.getByTestId(ids.guideCoach), { eventType: "catchEvent" });
+    expect(screen.getByTestId(ids.guideCoach).getAttribute("data-stage")).toBe("hangul");
     fireEvent.tap(screen.getByTestId(ids.guideCoach), { eventType: "catchEvent" });
     expect(screen.getByTestId(ids.guideCoach).getAttribute("data-step")).toBe("ideas");
-    fireEvent.tap(screen.getByTestId(ids.guideCoachSkip), { eventType: "catchEvent" });
+    expect(screen.queryByTestId(ids.guideCoachSkip)).toBeNull();
+    expect(seen()).toEqual([]);
+    fireEvent.tap(screen.getByTestId(ids.guideCoach), { eventType: "catchEvent" });
     expect(screen.queryByTestId(ids.guideCoach)).toBeNull();
-    expect(seen()).toEqual(["room", "list"]); // 방 코치마크를 끝내면 목록 안내도 본 것(리뷰 S-7)
-    expect(document.querySelector(".messenger-guide-target-media")).toBeNull();
+    expect(seen()).toEqual(["keyboard", "room", "list"]); // 방 코치마크를 끝내면 목록 안내도 본 것(리뷰 S-7)
   });
 
   test("MG-UI3 첫 인사 전 · 이미 봄 · 덕수쌤 아닌 방 · 가짜 출처에서는 뜨지 않는다", async () => {
@@ -233,7 +241,11 @@ describe("덕수쌤 방 첫 입장", () => {
     await flush();
     expect(screen.queryByTestId(ids.guideCoach)).toBeNull();
     cleanup();
-    mountChat({ source: serverSource(), roomId: "duksu", guideStore: memoryStore(["room"]).store });
+    mountChat({
+      source: serverSource(),
+      roomId: "duksu",
+      guideStore: memoryStore(["room", "keyboard"]).store,
+    });
     await flush();
     expect(screen.queryByTestId(ids.guideCoach)).toBeNull();
     cleanup();
@@ -264,13 +276,13 @@ describe("덕수쌤 방 첫 입장", () => {
     });
     await flush();
     expect(shown(ids.birthYearSheet)).toBe(false);
-    expect(screen.getByTestId(ids.guideCoach).getAttribute("data-step")).toBe("chat");
+    expect(screen.getByTestId(ids.guideCoach).getAttribute("data-step")).toBe("keyboard");
   });
 
   test("MG-UI4 안내 단추 · 말풍선은 Android 낭독 속성을 갖는다", async () => {
     mountChat({ source: serverSource(), roomId: "duksu", guideStore: memoryStore().store });
     await flush();
-    for (const id of [ids.guideCoachNext, ids.guideCoachSkip]) {
+    for (const id of [ids.guideCoachNext]) {
       const el = screen.getByTestId(id);
       expect(el.getAttribute("accessibility-enable-tap")).toBe("true");
       expect(el.getAttribute("flatten")).toBe("false");

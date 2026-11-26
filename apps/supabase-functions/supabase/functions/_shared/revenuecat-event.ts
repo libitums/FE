@@ -66,5 +66,7 @@ export const revenuecatEventFrom: RevenuecatEventFrom = (body) => {
     eventAt: isoFromMs(event["event_timestamp_ms"]),
     transferredFrom: strings(event["transferred_from"]),
     transferredTo: strings(event["transferred_to"]),
+    // 체험 · 유료 기간을 가르는 값(ADR-0196 D2) — 거르지 않고 싣고, 판정은 DB가 합니다.
+    periodType: text(event["period_type"]),
   };
 };

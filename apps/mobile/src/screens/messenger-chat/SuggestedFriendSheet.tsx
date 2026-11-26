@@ -19,6 +19,8 @@ import type { SuggestedFriendsCopy, SuggestedFriendSheetProps } from "./suggeste
 import { suggestedFriendsTestIds as ids } from "./suggested-friends.contract";
 import { localizedLine, offerBadgeOf } from "./suggested-friends";
 import type { EarlyAccessOffer } from "./friend-catalog.contract";
+import { sheetLineOf } from "./profile-voice-sample";
+import { ProfileVoiceButton } from "./ProfileVoiceButton";
 import { useScrollBudget } from "./use-scroll-budget";
 
 import "../../components/chat/chat.css";
@@ -50,18 +52,27 @@ function limitedText(offer: EarlyAccessOffer, now: number, copy: SuggestedFriend
 
 /**
  * 추천 친구 프로필 시트(R2 · R4 · R6, ADR-0162). 추가 가능이면 소개 · 태그 · 첫 말 · Start chatting, 잠김이면 만날 회차 · 안내 줄과
- * (먼저 만나기 제안이 있을 때만) Chat now. 막 탭 · Not now · 끌어내림 · 시스템 뒤로가기는 모두 `onClose`입니다.
+ * (먼저 만나기 제안이 있을 때만) Chat now. 대화방에서 열면(`actions="close"`) 행동 단추 없이 Close 하나(ADR-0178 개정 ⟨대화방⟩).
+ * 막 탭 · Not now · Close · 끌어내림 · 시스템 뒤로가기는 모두 `onClose`입니다.
  */
 export function SuggestedFriendSheet({
   model,
   now,
+  voiceSampleUrl = null,
+  romanization = "hidden",
+  actions = "offer",
   onStart,
   onEarly,
   onClose,
 }: SuggestedFriendSheetProps): ReactNode {
-  const copy = useUiCopy().messengerChat.suggested;
+  const ui = useUiCopy();
+  const copy = ui.messengerChat.suggested;
   const { character, offer } = model;
   const locked = model.status === "locked";
+  // 첫 말 칸 — 견본 대본이 있으면 대본(로마자는 스위치), 없으면 첫 말(ADR-0198 D2). 잠기면 없음.
+  const line = locked
+    ? null
+    : sheetLineOf(character, copy.language, romanization, ui.readAloud.pronunciation);
   const still = useMotion() === "reduced";
   const dragStartY = useRef<number | null>(null);
   const globalProps = useGlobalProps();
@@ -136,7 +147,7 @@ export function SuggestedFriendSheet({
             <text className="suggested-sheet-name" data-testid={ids.sheetName}>
               {character.name}
             </text>
-            {character.kind === "general" ? (
+            {character.kind === "general" && model.status !== "added" ? (
               <view className="messenger-list-new">
                 <text className="messenger-list-new-text">{copy.newBadge}</text>
               </view>
@@ -163,6 +174,14 @@ export function SuggestedFriendSheet({
           catchtouchend={budget.scrollable ? holdTouch : undefined}
         >
           <view className="suggested-sheet-body" bindlayoutchange={budget.onContentLayout}>
+            {!locked && (character.voiceSamplePath ?? null) !== null ? (
+              <ProfileVoiceButton
+                key={character.id}
+                characterId={character.id}
+                name={character.name}
+                url={voiceSampleUrl}
+              />
+            ) : null}
             {!locked && character.tags.length > 0 ? (
               <view
                 className="suggested-sheet-tags"
@@ -182,16 +201,17 @@ export function SuggestedFriendSheet({
                 ))}
               </view>
             ) : null}
-            {!locked && character.sheetOpening !== null ? (
+            {line === null ? null : (
               <view className="suggested-sheet-opening" data-testid={ids.sheetOpening}>
                 <ChatTextBubble
                   direction="incoming"
                   speaker={character.name}
-                  message={character.sheetOpening.ko}
-                  translation={localizedLine(character.sheetOpening, copy.language)}
+                  message={line.ko}
+                  translation={"translation" in line.lines ? line.lines.translation : null}
+                  {...("annotation" in line.lines ? { annotation: line.lines.annotation } : {})}
                 />
               </view>
-            ) : null}
+            )}
             {locked ? (
               <view className="suggested-sheet-info" data-testid={ids.sheetInfo}>
                 <text
@@ -215,7 +235,7 @@ export function SuggestedFriendSheet({
           }
           bindlayoutchange={budget.onFixedLayout("actions")}
         >
-          {!locked ? (
+          {actions === "close" ? null : !locked ? (
             <view data-testid={ids.sheetStart}>
               <Button
                 label={copy.startChatting}
@@ -256,8 +276,15 @@ export function SuggestedFriendSheet({
               </view>
             </view>
           )}
-          <view data-testid={ids.sheetLater}>
-            <Button label={copy.notNow} variant="text" size="l" width="fill" bindtap={onClose} />
+          {/* 대화방에서 연 시트(close)는 같은 자리의 닫기가 「Close」입니다 — 「Not now」는 추가를 미루는 말이라서. */}
+          <view data-testid={actions === "close" ? ids.sheetClose : ids.sheetLater}>
+            <Button
+              label={actions === "close" ? ui.messengerChat.stories.viewer.close : copy.notNow}
+              variant="text"
+              size="l"
+              width="fill"
+              bindtap={onClose}
+            />
           </view>
         </view>
       </view>

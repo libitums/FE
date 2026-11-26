@@ -119,6 +119,15 @@
   line-height: var(--libitum-typography-body-m-line-height);
 }
 
+/* 키보드 단계의 작은 줄(ADR-0190) — 본문 아래 한 단계 작은 글. */
+.messenger-guide-detail {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
 .messenger-guide-actions {
   display: flex;
   flex-direction: row;
@@ -165,10 +174,6 @@
   margin-top: calc(var(--libitum-spacing-8) * -1);
 }
 
-.messenger-guide-tail-chat {
-  margin-left: var(--libitum-spacing-96);
-}
-
 .messenger-guide-tail-ideas {
   margin-left: var(--libitum-spacing-24);
 }
@@ -177,13 +182,31 @@
   margin-left: var(--libitum-spacing-48);
 }
 
+.messenger-guide-tail-sample {
+  margin-left: var(--libitum-spacing-48);
+}
+
+/* 음성 알약은 사진 알약 오른쪽 — 꼬리를 그만큼 옮깁니다. */
+.messenger-guide-tail-voice {
+  margin-left: calc(var(--libitum-spacing-96) + var(--libitum-spacing-48));
+}
+
 /* 가리키는 입력 줄 부품의 고리. */
-.messenger-guide-target-chat .messenger-chat-composer-pill {
+.messenger-guide-target-ideas .messenger-chat-bulb {
   border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
   border-color: var(--libitum-color-brand-primary);
 }
 
-.messenger-guide-target-ideas .messenger-chat-bulb {
+/* 예시 스냅샷 단계 — 사진 알약만. 주황 면이라 고리는 흰 테두리로 띄웁니다. */
+.messenger-guide-target-sample .messenger-chat-pill-snapshot {
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+}
+
+/* 예시 음성 단계 — 음성 알약만. 흰 면이라 고리는 브랜드 색으로. */
+.messenger-guide-target-voice .messenger-chat-pill-voice {
   border-width: var(--libitum-stroke-width-strong);
   border-style: solid;
   border-color: var(--libitum-color-brand-primary);
@@ -197,5 +220,53 @@
 
 /* 방 코치마크의 막은 말풍선 아래(문서 순서). */
 .messenger-guide-room .ui-lynx-overlay {
+  z-index: 0;
+}
+
+/* 키보드 두 갈래 단계(ADR-0190) — 방 화면 전체에 겹치는 세 칸: 위(막 + 말풍선) · 토글 줄(막 없이 밝게) · 키보드 자리 높이.
+   원본 토글 줄의 위치는 재지 않습니다 — 아래 칸이 자리 높이, 가운데 칸이 같은 토글 부품의 높이를 가져 원본과 겹칩니다. */
+.messenger-guide-keyboard {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  display: flex;
+  flex-direction: column;
+}
+
+.messenger-guide-keyboard-top {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* 꼬리 끝이 토글 줄 바로 위에 닿게 아래 여백을 줄입니다. */
+.messenger-guide-keyboard .messenger-guide-room-body {
+  padding-bottom: var(--libitum-spacing-4);
+}
+
+/* 토글의 두 칸과 같은 두 몫 — 꼬리는 가리키는 칸 쪽 몫의 가운데. */
+.messenger-guide-keyboard-tails {
+  display: flex;
+  flex-direction: row;
+}
+
+.messenger-guide-keyboard-half {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.messenger-guide-keyboard-slot {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.messenger-guide-keyboard .ui-lynx-overlay {
   z-index: 0;
 }

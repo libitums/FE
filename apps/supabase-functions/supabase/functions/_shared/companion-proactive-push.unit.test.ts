@@ -32,7 +32,7 @@ const segments = [
   { kind: "action" as const, text: "(창밖을 본다)" },
   { kind: "speech" as const, text: "오늘 뭐 했어?\n나는 방금 퇴근했어!" },
 ];
-const base = { name: "미나", characterId: "mina", segments, hasDevice: true };
+const base = { name: "미나", characterId: "mina", segments, hasDevice: true, hasRoom: true };
 
 test("PP1. 스위치 — off는 아무도, testers는 시험 계정만(대조군 없이 모두 받음 · 기록 없음), 기기가 없으면 보내지 않는다", () => {
   const userId = pick({ control: true });
@@ -49,6 +49,16 @@ test("PP1. 스위치 — off는 아무도, testers는 시험 계정만(대조군
   expect(
     proactivePushPlan({ ...base, userId, mode: "on", tester: false, hasDevice: false }),
   ).toEqual({ skip: "no_device" });
+});
+
+test("PP7. 기기에 그 방이 없으면(새로 깐 뒤 그 인물과 말한 적 없음) 보내지 않는다 — 시험 계정 단계도 같다", () => {
+  const userId = pick({ control: false });
+  expect(proactivePushPlan({ ...base, userId, mode: "on", tester: false, hasRoom: false })).toEqual(
+    { skip: "no_room" },
+  );
+  expect(
+    proactivePushPlan({ ...base, userId, mode: "testers", tester: true, hasRoom: false }),
+  ).toEqual({ skip: "no_room" });
 });
 
 test("PP2. on — 대조군 30%는 기록만(변형 없음), 받는 쪽은 A 한국어 첫 말 · B 「{이름} sent you a message」", () => {
@@ -152,7 +162,7 @@ function setup(options: {
   };
   return { run, requests, bodyOf };
 }
-const on = { mode: "on", tester: false, hasDevice: true };
+const on = { mode: "on", tester: false, hasDevice: true, hasRoom: true };
 
 test("PP4. 받는 쪽 — 배정을 먼저 남기고 send-push에 그 사람 하나 · 목적지 companion-chat · 변형을 싣는다", async () => {
   const userId = pick({ control: false, variant: 0 });
@@ -163,6 +173,10 @@ test("PP4. 받는 쪽 — 배정을 먼저 남기고 send-push에 그 사람 하
     "/rest/v1/push_campaign_sends",
     "/functions/v1/send-push",
   ]);
+  expect(t.bodyOf("/rest/v1/rpc/companion_proactive_push_gate")).toEqual({
+    p_user_id: userId,
+    p_character_id: "mina",
+  });
   expect(t.bodyOf("/rest/v1/push_campaign_sends")).toEqual([
     {
       run_at: "2026-11-22T09:30:00.000Z",
@@ -200,7 +214,7 @@ test("PP5. 대조군은 기록만 남기고 보내지 않는다. 기록에 실�
 });
 
 test("PP6. 시험 계정 단계 — 기록 없이 보낸다. 스위치를 못 읽으면(옛 DB · 오류) 꺼진 것으로 보고, 발송 실패는 던지지 않는다", async () => {
-  const tester = setup({ gate: { mode: "testers", tester: true, hasDevice: true } });
+  const tester = setup({ gate: { mode: "testers", tester: true, hasDevice: true, hasRoom: true } });
   expect(await tester.run(pick({ control: true }))).toBe("sent");
   expect(tester.bodyOf("/rest/v1/push_campaign_sends")).toBeUndefined();
   expect(tester.bodyOf("/functions/v1/send-push")).toMatchObject({
@@ -217,4 +231,18 @@ test("PP6. 시험 계정 단계 — 기록 없이 보낸다. 스위치를 못 �
       pick({ control: false }),
     ),
   ).toBe("send_failed");
+});
+
+test("PP9. 오늘(현지) 선톡 · 스토리 알림이 이미 나갔으면 보내지 않는다 — 하루 한 번 합산(ADR-0178 D7), 기록 · 발송 없음", async () => {
+  const userId = pick({ control: false, variant: 0 });
+  expect(
+    proactivePushPlan({ ...base, userId, mode: "on", tester: false, pushedToday: true }),
+  ).toEqual({ skip: "daily_cap" });
+  expect(
+    proactivePushPlan({ ...base, userId, mode: "testers", tester: true, pushedToday: true }),
+  ).toEqual({ skip: "daily_cap" });
+  const t = setup({ gate: { ...on, pushedToday: true } });
+  expect(await t.run(userId)).toBe("daily_cap");
+  expect(t.bodyOf("/rest/v1/push_campaign_sends")).toBeUndefined();
+  expect(t.bodyOf("/functions/v1/send-push")).toBeUndefined();
 });

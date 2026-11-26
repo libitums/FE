@@ -29,6 +29,11 @@
   transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
 }
 
+/* 고민 힌트(ADR-0177) — 다음 정답 조각의 테두리는 브랜드 색. 클래스 둘을 묶어 위 회색 테두리를 이깁니다. */
+.sentence-order-chip-bank.answer-nudge-target {
+  border-color: var(--libitum-color-brand-primary);
+}
+
 .sentence-order-chip-bank .sentence-order-chip-label {
   color: var(--libitum-color-gray-900);
 }

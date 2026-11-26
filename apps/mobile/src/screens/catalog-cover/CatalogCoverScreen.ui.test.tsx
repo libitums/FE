@@ -7,7 +7,8 @@ import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { CatalogCoverScreen } from "./CatalogCoverScreen";
 import type { CatalogCutView, CatalogCuts } from "./catalog-cover.contract";
 
-// `ui` 계층: 표지 컷 화면 — 컷 순서 · 로마자 토글 · 지문 · 이미지 층 분리 · 진행 버튼 · 접근성.
+// `ui` 계층: 표지 컷 화면 — 컷 순서 · 지문 · 이미지 층 분리 · 진행 버튼 · 접근성.
+// 2026-11-24(ADR-0188 개정 D7): 대사 상자를 눌러 영어 ↔ 로마자를 바꾸던 토글이 없어졌습니다 — 로마자는 상자 안 스위치가 맡습니다.
 // 컷 표시 모델을 만드는 계산(치환 · URL · 화자 정리)은 순수 함수 unit이 지므로 여기서는 손으로
 // 세운 표시 모델을 넣고 렌더만 봅니다. 표준 모션에서 대사는 타자기로 쓰이므로 가짜 타이머로 시간을 흘립니다.
 
@@ -124,6 +125,8 @@ const nextCut = () => {
 };
 const dialog = () => screen.getByTestId("ui-lynx-visual-novel-dialog");
 const dialogLine = () => screen.getByTestId("ui-lynx-visual-novel-dialog-line");
+// 대사를 읽는 접근성 요소 — 스위치가 없으면 대사 상자 루트입니다.
+const reading = () => dialog();
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -145,7 +148,6 @@ describe("CatalogCoverScreen", () => {
     expect(title).toHaveTextContent("Episode 1.");
     expect(title).toHaveAttribute("accessibility-traits", "header");
     expect(root()).toHaveAttribute("data-cut-index", "0");
-    expect(root()).toHaveAttribute("data-script", "en");
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-speaker")).toHaveTextContent("Me");
     settle();
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(monologueKo);
@@ -154,33 +156,21 @@ describe("CatalogCoverScreen", () => {
     expect(nextWrapper()).toHaveAttribute("accessibility-label", "Next scene, 1 of 6");
   });
 
-  test("UC2. 대사 상자를 누르면 영어와 로마자가 번갈아 서고 낭독 꼬리가 따라간다", () => {
+  test("UC2. 대사 상자를 눌러도 아래 줄이 바뀌지 않는다 — 토글이 없다(ADR-0188 개정 D7)", () => {
     mount();
-    const line = () => screen.getByTestId("catalog-cover-screen-line");
-    expect(line().getAttribute("accessibility-label")).toMatch(/Show romanization$/);
-
+    settle();
     tapLine();
-
-    expect(root()).toHaveAttribute("data-script", "roman");
-    expect(translation()).toHaveTextContent(monologueRoman);
-    expect(line().getAttribute("accessibility-label")).toMatch(/Show English$/);
-
-    tapLine();
-
-    expect(root()).toHaveAttribute("data-script", "en");
     expect(translation()).toHaveTextContent(monologueEn);
-    expect(line().getAttribute("accessibility-label")).toMatch(/Show romanization$/);
+    expect(screen.queryByTestId("ui-lynx-visual-novel-dialog-romanization")).toBeNull();
+    expect(root()).not.toHaveAttribute("data-script");
   });
 
-  test("UC3. 로마자 상태로 다음 컷에 가도 로마자가 유지된다", () => {
+  test("UC3. 대사 상자를 감싼 칸은 버튼도 접근성 요소도 아니다 — 대사는 대사 상자가 읽는다", () => {
     mount();
-
-    tapLine();
-    nextCut();
-
-    expect(root()).toHaveAttribute("data-cut-index", "1");
-    expect(root()).toHaveAttribute("data-script", "roman");
-    expect(translation()).toHaveTextContent(narrationRoman);
+    const line = screen.getByTestId("catalog-cover-screen-line");
+    expect(line.getAttribute("accessibility-element")).not.toBe("true");
+    expect(line.getAttribute("accessibility-traits")).toBeNull();
+    expect(reading()).toHaveAttribute("accessibility-traits", "text");
   });
 
   test("UC4. 지문은 지문 있는 대사 컷에만 서고 ko 아래 en 둘째 줄이 든다 · 내레이션은 화자가 없다", () => {
@@ -290,22 +280,14 @@ describe("CatalogCoverScreen", () => {
     expect(onExit).toHaveBeenCalledTimes(1);
   });
 
-  test("UC8a. 토글 있는 대사 상자는 하나의 버튼 요소이고 이름이 본문 · 번역 · 다음 동작을 읽는다", () => {
+  test("UC8a. 대사를 읽는 요소는 text이고 이름이 본문 · 번역을 읽는다(토글 꼬리 없음)", () => {
     mount();
 
-    const line = screen.getByTestId("catalog-cover-screen-line");
-    expect(line).toHaveAttribute("accessibility-element", "true");
-    expect(line).toHaveAttribute("accessibility-traits", "button");
-    expect(line).toHaveAttribute(
+    expect(reading()).toHaveAttribute("accessibility-element", "true");
+    expect(reading()).toHaveAttribute("accessibility-traits", "text");
+    expect(reading()).toHaveAttribute(
       "accessibility-label",
-      `Me, thinking: ${monologueKo} ${monologueEn}, Show romanization`,
-    );
-
-    tapLine();
-
-    expect(line).toHaveAttribute(
-      "accessibility-label",
-      `Me, thinking: ${monologueKo} ${monologueRoman}, Show English`,
+      `Me, thinking: ${monologueKo} ${monologueEn}`,
     );
   });
 
@@ -313,13 +295,10 @@ describe("CatalogCoverScreen", () => {
     mount();
     nextCut();
 
-    expect(screen.getByTestId("catalog-cover-screen-line")).toHaveAttribute(
-      "accessibility-label",
-      `${narrationKo} ${narrationEn}, Show romanization`,
-    );
+    expect(reading()).toHaveAttribute("accessibility-label", `${narrationKo} ${narrationEn}`);
   });
 
-  test("UC8c. 번역이 한쪽뿐이라 토글이 없는 컷은 text trait이고 눌러도 스크립트가 안 바뀐다", () => {
+  test("UC8c. 로마자가 없는 컷도 같은 모양이다 — 눌러도 영어 그대로", () => {
     mount([
       {
         kind: "line",
@@ -332,13 +311,9 @@ describe("CatalogCoverScreen", () => {
       },
     ]);
 
-    const line = screen.getByTestId("catalog-cover-screen-line");
-    expect(line).toHaveAttribute("accessibility-traits", "text");
-    expect(line).toHaveAttribute("accessibility-label", "점원: 어서 오세요. Welcome.");
-
+    expect(reading()).toHaveAttribute("accessibility-traits", "text");
+    expect(reading()).toHaveAttribute("accessibility-label", "점원: 어서 오세요. Welcome.");
     tapLine();
-
-    expect(root()).toHaveAttribute("data-script", "en");
     expect(translation()).toHaveTextContent("Welcome.");
   });
 
@@ -347,9 +322,9 @@ describe("CatalogCoverScreen", () => {
     nextCut();
     nextCut();
 
-    expect(screen.getByTestId("catalog-cover-screen-line")).toHaveAttribute(
+    expect(reading()).toHaveAttribute(
       "accessibility-label",
-      `점원, ${asideKo}: 어서 오세요. Welcome., Show romanization`,
+      `점원, ${asideKo}: 어서 오세요. Welcome.`,
     );
   });
 

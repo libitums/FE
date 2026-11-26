@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  lastPreviewLine,
   chatRowPreview,
   chatTimeOf,
   newBadgeShown,
@@ -218,5 +219,54 @@ describe("newBadgeShown (MC2-U17)", () => {
     expect(
       chatRowPreview(room("b", { isNew: true, lastMessage: text("them", "안녕", "Hi") })),
     ).toEqual({ kind: "text", from: "them", text: { ko: "안녕", en: "Hi" } });
+  });
+});
+
+describe("미리보기로 고르는 줄", () => {
+  const text = (id: string, at: number): ChatMessage => ({
+    id,
+    at,
+    kind: "text",
+    from: "them",
+    text: { ko: "안녕", en: "Hi" },
+  });
+  const mediaNotice = (id: string, at: number): ChatMessage => ({
+    id,
+    at,
+    kind: "media-notice",
+    media: "voice",
+    notice: "sample-gift",
+    until: null,
+  });
+  const voice: ChatMessage = {
+    id: "v",
+    at: 5,
+    kind: "voice",
+    durationMs: 0,
+    text: { ko: "안녕", en: "Hi" },
+  };
+
+  test("MC-U30 맨 끝이 사진 · 음성 안내 줄이면 그 앞의 줄 — 여럿 이어져도", () => {
+    expect(lastPreviewLine([text("a", 1), voice, mediaNotice("n1", 6)])).toBe(voice);
+    expect(lastPreviewLine([text("a", 1), voice, mediaNotice("n1", 6), mediaNotice("n2", 7)])).toBe(
+      voice,
+    );
+    const plain = text("a", 1);
+    expect(lastPreviewLine([plain])).toBe(plain);
+    expect(lastPreviewLine([])).toBeNull();
+  });
+
+  test("MC-U31 사진 · 음성 안내 줄뿐이면 마지막 줄 그대로(빈 미리보기) — 없는 방처럼 첫 인사를 보이지 않는다", () => {
+    const only = mediaNotice("n1", 6);
+    expect(lastPreviewLine([only])).toBe(only);
+  });
+
+  test("MC-U32 다른 회색 줄은 건너뛰지 않는다 — 전송 실패 안내 뒤의 내 글 · 위기 안내 앞의 글이 목록에 드러나지 않게", () => {
+    const failed: ChatMessage = { id: "f", at: 3, kind: "notice", notice: "server-error" };
+    const crisis: ChatMessage = { id: "c", at: 4, kind: "crisis", resources: [] };
+    expect(lastPreviewLine([text("a", 1), failed])).toBe(failed);
+    expect(lastPreviewLine([text("a", 1), crisis])).toBe(crisis);
+    // 그 뒤에 사진 · 음성 안내가 와도 그 줄에서 멈춘다.
+    expect(lastPreviewLine([text("a", 1), crisis, mediaNotice("n", 5)])).toBe(crisis);
   });
 });

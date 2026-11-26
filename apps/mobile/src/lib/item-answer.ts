@@ -3,12 +3,23 @@
 import type { AnswerResult } from "./answer-result";
 import type { LearningItem } from "./episode-content";
 import type { LearningDensity } from "./learning-density";
-import type { SpeechAttemptPhase, SpeechUnavailableReason } from "./speech-attempt";
+import type {
+  SpeechAttemptPhase,
+  SpeechDiagnostic,
+  SpeechMissReason,
+  SpeechUnavailableReason,
+} from "./speech-attempt";
 
 export type ItemAnswerOutcome = AnswerResult | "skipped";
 
-/** 건너뛴 까닭 — 직접 누른 Skip(`user`) 또는 말하기를 쓸 수 없던 까닭입니다. */
-export type ItemSkipReason = "user" | `unavailable:${SpeechUnavailableReason}`;
+/**
+ * 건너뛴 까닭 — 직접 누른 Skip(`user`) · 말하기를 쓸 수 없던 까닭(`unavailable:<reason>`) ·
+ * 못 알아들은 뒤 다시 말하지 않고 넘긴 까닭(`missed:<reason>`, ADR-0181)입니다.
+ */
+export type ItemSkipReason =
+  | "user"
+  | `unavailable:${SpeechUnavailableReason}`
+  | `missed:${SpeechMissReason}`;
 
 export type ItemAnswerReport = {
   readonly questionIndex: number;
@@ -23,6 +34,8 @@ export type ItemAnswerReport = {
   readonly skipReason?: ItemSkipReason;
   /** 판정 전에 쓴 힌트 — 정답 보기가 정답 듣기보다 앞섭니다(ADR-0153). 안 썼으면 없습니다. */
   readonly hintUsed?: "listen" | "show";
+  /** 말하기 문항에서 인식기가 결과를 올렸을 때의 진단입니다. 결과 없이 판정 · 건너뛰었으면 없습니다. */
+  readonly speech?: SpeechDiagnostic;
 };
 
 /** 고른 글자가 있을 때만 `selectedAnswer` 키를 싣습니다. */
@@ -60,9 +73,37 @@ export function selectedTilesText(
   return placed.length === 0 ? undefined : placed.join(joiner);
 }
 
-/** 말하기 건너뜀의 까닭입니다 — 쓸 수 없는 국면이면 `unavailable:<reason>`, 아니면 `user`. */
+/**
+ * 말하기 건너뜀의 까닭입니다 — 쓸 수 없는 국면이면 `unavailable:<reason>`, 못 알아들은 국면이면
+ * `missed:<reason>`, 아니면 `user`.
+ */
 export function speechSkipReasonOf(phase: SpeechAttemptPhase): ItemSkipReason {
-  return phase.kind === "unavailable" ? `unavailable:${phase.reason}` : "user";
+  if (phase.kind === "unavailable") return `unavailable:${phase.reason}`;
+  return phase.kind === "missed" ? `missed:${phase.reason}` : "user";
+}
+
+/** 국면이 인식 진단을 들고 있을 때만 `speech` 키를 싣습니다. */
+export function speechDiagnosticField(phase: SpeechAttemptPhase): {
+  readonly speech?: SpeechDiagnostic;
+} {
+  if (phase.kind === "ready" || phase.kind === "listening") return {};
+  return phase.diagnostic === undefined ? {} : { speech: phase.diagnostic };
+}
+
+/** 말하기 문항의 보고입니다 — 건너뜀이면 까닭을, 인식기가 결과를 올렸으면 진단을 함께 싣습니다. */
+export function speechItemReportOf(
+  questionIndex: number,
+  outcome: ItemAnswerOutcome,
+  density: LearningDensity,
+  phase: SpeechAttemptPhase,
+): ItemAnswerReport {
+  return {
+    questionIndex,
+    outcome,
+    density,
+    ...(outcome === "skipped" ? { skipReason: speechSkipReasonOf(phase) } : {}),
+    ...speechDiagnosticField(phase),
+  };
 }
 
 export type ItemAnswerReporter = (report: ItemAnswerReport) => void;

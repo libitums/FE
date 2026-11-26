@@ -3,6 +3,7 @@ package com.libitum.host;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.lynx.react.bridge.JavaOnlyMap;
 import org.junit.Test;
@@ -32,6 +33,16 @@ public class PushTargetJsonTest {
         "{\"kind\":\"journey-map\",\"campaignId\":\"202611211930-story-next-ab12\"}");
     assertEquals("journey-map", target.getString("kind"));
     assertEquals("202611211930-story-next-ab12", target.getString("campaignId"));
+  }
+
+  // 친구 스토리 알림(ADR-0178 D7) — `story`는 불리언 true일 때만 옮긴다(그 밖의 값은 버림).
+  @Test public void carriesStoryFlagOnlyWhenTrue() {
+    JavaOnlyMap story = PushNotificationController.targetFromJson(
+        "{\"kind\":\"companion-chat\",\"characterId\":\"mina\",\"story\":true}");
+    assertTrue(story.getBoolean("story"));
+    JavaOnlyMap notStory = PushNotificationController.targetFromJson(
+        "{\"kind\":\"companion-chat\",\"characterId\":\"mina\",\"story\":\"yes\"}");
+    assertFalse(notStory.hasKey("story"));
   }
 
   @Test public void rejectsBadShapes() {

@@ -1,4 +1,4 @@
-// ADR-0177 D15(2026-11-23 사용자 결정) — 화계 상한 · 고치기/더 나은 표현 · 먼저 말하면 안 되는 것 · 순서 검사.
+// ADR-0193 D15(2026-11-23 사용자 결정) — 화계 상한 · 고치기/더 나은 표현 · 먼저 말하면 안 되는 것 · 순서 검사.
 import { describe, expect, test } from "vitest";
 
 import { missionFeedbackRequest } from "./mission-context.ts";

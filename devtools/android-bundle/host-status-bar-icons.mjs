@@ -121,6 +121,19 @@ export const statusBarSurfaceRegistry = {
       carriers: [],
     },
     // 추천 친구 프로필 시트(ADR-0162) — 새 친구 시트와 같은 ui-lynx 기본 스크림이라 표지가 없다.
+    // 내 스토리 만들기 · 보기 층(ADR-0194) — 밝은 앱 바탕(background-primary) · 밝은 색 바탕을 띠 밑까지 덮어 기본(어두운) 아이콘 그대로다.
+    // 사진 위 편집(ADR-0199, 2026-11-26 화면 끝까지)만 사진 위 검정 그늘(`my-story-editor-shade`, 사진일 때만 그림)이 띠를 덮어 그 그늘이
+    // 밝은 아이콘 표지를 단다.
+    "screens/messenger-chat/my-stories.css": {
+      classification: "light-icons",
+      carriers: [
+        {
+          component: "MyStoryEditor",
+          file: "screens/messenger-chat/MyStoryEditor.tsx",
+          className: "my-story-editor-shade",
+        },
+      ],
+    },
     "screens/messenger-chat/suggested-sheet.css": {
       classification: "default-scrim",
       carriers: [],
@@ -141,6 +154,11 @@ export const statusBarSurfaceRegistry = {
       carriers: [
         { component: "AlbumPhotoViewer", file: "screens/messenger-chat/AlbumPhotoViewer.tsx" },
       ],
+    },
+    // 친구 스토리 보기(ADR-0178) — 짙은 바탕(gray-950) · 사진 위 검정 그늘을 띠 밑까지 덮어 밝은 아이콘을 단다.
+    "screens/messenger-chat/story-viewer.css": {
+      classification: "light-icons",
+      carriers: [{ component: "StoryViewer", file: "screens/messenger-chat/StoryViewer.tsx" }],
     },
     "components/first-unit-guide.css": {
       classification: "light-icons",

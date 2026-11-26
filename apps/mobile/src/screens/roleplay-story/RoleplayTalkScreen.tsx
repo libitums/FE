@@ -23,7 +23,11 @@ import {
   roleplayTalkReducer,
 } from "./roleplay-story";
 import type { RoleplayTalkScreenProps } from "./roleplay-story.contract";
-import { RoleplaySpeakControls } from "./RoleplaySpeakControls";
+import {
+  RoleplaySpeakControls,
+  roleplayMissedMessage,
+  unavailableMessage,
+} from "./RoleplaySpeakControls";
 
 import "./roleplay-story-screen.css";
 
@@ -60,6 +64,10 @@ export function RoleplayTalkScreen({
       });
       return;
     }
+    if (outcome.kind === "missed") {
+      dispatch({ type: "missed", reason: outcome.reason });
+      return;
+    }
     dispatch({ type: "unavailable", reason: outcome.reason });
   });
 
@@ -78,6 +86,20 @@ export function RoleplayTalkScreen({
     finished.current = true;
     onFinish(state.results, state.skippedCount);
   }, [done, onFinish, state.results, state.skippedCount]);
+
+  // 못 알아들음 안내는 서는 순간 한 번 알립니다 — 듣는 중에는 알리지 않습니다(낭독이 인식기에 들어갑니다).
+  useEffect(() => {
+    if (state.missedReason !== null) {
+      announce(roleplayMissedMessage(state.missedReason, copy));
+    }
+  }, [state.turnIndex, state.missedReason]);
+
+  // 불가 안내도 서는 순간 한 번 알립니다(낱말 말하기 · 따라 읽기와 같다).
+  useEffect(() => {
+    if (state.unavailableReason !== null) {
+      announce(unavailableMessage(state.unavailableReason, copy));
+    }
+  }, [state.turnIndex, state.unavailableReason]);
 
   useEffect(() => {
     if (state.verdict !== null) {
@@ -258,6 +280,8 @@ export function RoleplayTalkScreen({
             <RoleplaySpeakControls
               phase={state.phase}
               unavailableReason={state.unavailableReason}
+              missedReason={state.missedReason}
+              retrying={state.retrying}
               hint={state.hintShown ? turn.replyTranslation : null}
               canShowHint={turn.replyTranslation !== null && !state.hintShown}
               onMic={tapMic}

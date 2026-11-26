@@ -89,6 +89,8 @@ export async function flush(): Promise<void> {
 export type SpeechOption = {
   readonly granted: boolean;
   readonly heard: (attempt: number) => string | null;
+  /** 인식 실패 페이로드에 더 실을 키입니다(예: Android의 오류 코드 · 한국어 팩 · 되돌아감). */
+  readonly failure?: Readonly<Record<string, unknown>>;
 };
 export type BootOptions = {
   readonly speech?: SpeechOption;
@@ -111,7 +113,7 @@ function speechModuleOf(speech: SpeechOption) {
       attempts += 1;
       callback(
         text === null
-          ? { status: "recognition-failed", text: "", isFinal: true }
+          ? { status: "recognition-failed", text: "", isFinal: true, ...speech.failure }
           : { status: "recognized", text, isFinal: true },
       );
     },

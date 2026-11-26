@@ -12,6 +12,7 @@ export function ChatHeader({
   start,
   end,
   subtitle,
+  onTitleTap,
 }: ChatHeaderProps): ReactNode {
   // 부제가 있으면 제목은 한 줄로 자릅니다(`text-maxline` + 말줄임) — 가장 큰 글자에서 제목 · 부제가 네 줄이 되어 화면 40%를 먹었습니다(기기 F3).
   // 묶음 안 제목은 `flex: 1`(basis 0)을 쓰지 않습니다 — 세로 묶음에서 높이 0으로 접혀 부제와 겹쳤습니다(기기 F1).
@@ -25,6 +26,14 @@ export function ChatHeader({
       accessibility-element={true}
       accessibility-traits="header"
       text-maxline={subtitle === undefined ? undefined : "1"}
+      bindtap={
+        onTitleTap === undefined
+          ? undefined
+          : () => {
+              "background only";
+              onTitleTap();
+            }
+      }
     >
       {title}
     </text>

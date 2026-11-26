@@ -96,7 +96,7 @@ test("UL5. uiLanguageFromDeviceTag는 고를 수 있는 영어만 받는다", ()
 });
 
 test("UL5. 목록에만 있는 언어 · 모르는 태그 · 빈 값은 null이다", () => {
-  for (const tag of ["ko-KR", "zh-Hant-TW", "fr-FR", "", " ", null]) {
+  for (const tag of ["ko-KR", "fr-FR", "", " ", null]) {
     expect(uiLanguageFromDeviceTag(tag)).toBeNull();
   }
 });
@@ -130,6 +130,36 @@ test("UL5f. 태국어 · 미얀마어 기기 태그는 th · my다(ADR-0158)", (
     expect(uiLanguageFromDeviceTag(tag)).toBe("my");
   }
   expect(returningUiLanguageFrom("my", null)).toBe("my");
+});
+
+test("UL5g. 번체 중국어 기기 태그(Hant · TW · HK · MO)는 zh-TW다(ADR-0185)", () => {
+  for (const tag of [
+    "zh-TW",
+    "zh_TW",
+    "zh-Hant",
+    "zh-Hant-TW",
+    "zh-Hant-HK",
+    "zh-HK",
+    "zh-MO",
+    "ZH-hant-mo",
+  ]) {
+    expect(uiLanguageFromDeviceTag(tag), tag).toBe("zh-TW");
+  }
+  expect(returningUiLanguageFrom(null, "zh-Hant-TW")).toBe("zh-TW");
+  expect(returningUiLanguageFrom("zh-TW", "en-US")).toBe("zh-TW");
+  expect(uiLanguageFrom("zh-TW")).toBe("zh-TW");
+});
+
+test("UL5h. 간체 · 지역 없는 중국어 기기 태그는 받지 않는다 — 영어로 떨어진다(ADR-0185)", () => {
+  for (const tag of ["zh", "zh-CN", "zh-SG", "zh-Hans", "zh-Hans-CN", "zh-Hans-HK"]) {
+    expect(uiLanguageFromDeviceTag(tag), tag).toBeNull();
+  }
+  expect(returningUiLanguageFrom(null, "zh-CN")).toBe("en");
+  // 안드로이드 자바 Locale 표기 — 스크립트가 `#` 뒤에 붙는다(리뷰 S5).
+  expect(uiLanguageFromDeviceTag("zh_HK_#Hans")).toBeNull();
+  expect(uiLanguageFromDeviceTag("zh_TW_#Hant")).toBe("zh-TW");
+  expect(uiLanguageFrom("zh")).toBe("en");
+  expect(uiLanguageFrom("zh-tw")).toBe("en");
 });
 
 test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {

@@ -11,6 +11,8 @@ import { Button } from "@libitums/ui-lynx/button";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { readingOf } from "../../lib/romanization-display";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useAudioCue } from "../../lib/use-audio-cue";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -20,13 +22,45 @@ import {
   storyCallTestIds as ids,
   type StoryCallLineView,
   type StoryCallScreenProps,
+  type StoryCallText,
 } from "./story-call.contract";
 
 import "./story-call.css";
 
 type Phase = "incoming" | "active" | "ended";
 
-function CallLine({ line, me }: { line: StoryCallLineView; me: string }): ReactNode {
+// 로마자 켬이면 한글 아래 읽기 줄(콘텐츠 로마자, 없으면 변환)이 섭니다(ADR-0188 D3).
+// 낭독은 「Pronunciation: …」 접두입니다(ADR-0084 D19).
+function readingLine(
+  text: StoryCallText,
+  romanization: ChoiceRomanization,
+  pronunciation: (romanization: string) => string,
+  testId: string,
+): ReactNode {
+  const reading = romanization === "shown" ? readingOf(text.ko, text.roman) : null;
+  return reading === null ? null : (
+    <text
+      className="story-call-line-roman"
+      data-testid={testId}
+      accessibility-element={true}
+      accessibility-label={pronunciation(reading)}
+    >
+      {reading}
+    </text>
+  );
+}
+
+function CallLine({
+  line,
+  me,
+  romanization,
+  pronunciation,
+}: {
+  line: StoryCallLineView;
+  me: string;
+  romanization: ChoiceRomanization;
+  pronunciation: (romanization: string) => string;
+}): ReactNode {
   return (
     <view
       className={`story-call-line story-call-line-${line.kind}`}
@@ -39,6 +73,7 @@ function CallLine({ line, me }: { line: StoryCallLineView; me: string }): ReactN
       <text className="story-call-line-text" data-testid={ids.lineText}>
         {line.text.ko}
       </text>
+      {readingLine(line.text, romanization, pronunciation, "story-call-line-roman")}
       {line.text.en === "" ? null : <text className="story-call-line-en">{line.text.en}</text>}
     </view>
   );
@@ -52,8 +87,10 @@ export function StoryCallScreen({
   call,
   onComplete,
   onExit,
+  romanization = "hidden",
 }: StoryCallScreenProps): ReactNode {
-  const copy = useUiCopy().storyCall;
+  const uiCopy = useUiCopy();
+  const copy = uiCopy.storyCall;
   const [phase, setPhase] = useState<Phase>("incoming");
   const [shown, setShown] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -167,7 +204,12 @@ export function StoryCallScreen({
               {current === undefined ? (
                 <text className="story-call-connecting">{copy.connecting}</text>
               ) : (
-                <CallLine line={current} me={copy.me} />
+                <CallLine
+                  line={current}
+                  me={copy.me}
+                  romanization={romanization}
+                  pronunciation={uiCopy.readAloud.pronunciation}
+                />
               )}
             </view>
             <view className="story-call-controls" accessibility-elements-hidden={true}>
@@ -204,6 +246,12 @@ export function StoryCallScreen({
                   <text className="story-call-end-text" data-testid={ids.endText}>
                     {call.end.ko}
                   </text>
+                  {readingLine(
+                    call.end,
+                    romanization,
+                    uiCopy.readAloud.pronunciation,
+                    "story-call-end-roman",
+                  )}
                   {call.end.en === "" ? null : (
                     <text className="story-call-line-en">{call.end.en}</text>
                   )}

@@ -1,6 +1,6 @@
 # 롤플레이 미션 — 실제 앱에 들어갈 파이프라인
 
-- 상태: 초안(2026-11-23, 세 갈래 통합 `feat/companion-mission-e2e-int`). 서버 코드는 브랜치 `feat/companion-mission-server` 계열, 결정은 [ADR-0177](../adr/0177-companion-mission.md)(D10 ~ D12가 이 문서의 결정), 기능 규칙은 [PRD](ai-companion-mission.md).
+- 상태: 초안(2026-11-23, 세 갈래 통합 `feat/companion-mission-e2e-int`). 서버 코드는 브랜치 `feat/companion-mission-server` 계열, 결정은 [ADR-0193](../adr/0193-companion-mission.md)(D10 ~ D12가 이 문서의 결정), 기능 규칙은 [PRD](ai-companion-mission.md).
 - 이 문서는 「한 턴이 어떤 단계를 거치고, 단계마다 무엇을 부르고, 실패하면 어떻게 되는가」와 **실제 실행으로 잰 수치**를 적는다.
   §5 채점 · 리포트는 에이전트 C, §6 음성 · 플레이어는 에이전트 B가 쓴 것을 합쳤다. 앱이 할 일은 §10, 사용자 결정은 §11에 모았다.
 
@@ -19,23 +19,23 @@
 ```
 
 - 모델: 답 · 판정 · 교정 · 힌트 = `claude-haiku-5-5`, 채점 = `claude-sonnet-5-5`. 환경 값 `COMPANION_MISSION_{,JUDGE_,FEEDBACK_,HINT_,GRADER_}MODEL`로 바꾼다(`mission-env.ts`). 입력 · 출력 검사와 번역은 1단계 설정 그대로.
-- 미션에서 **발음 평가는 하지 않는다**(ADR-0177 D5).
+- 미션에서 **발음 평가는 하지 않는다**(ADR-0193 D5).
 
 ## 2. 한 턴의 단계
 
 | 단계 | 어디서 | 모델 | 입력 → 출력 | 실패하면 | 지연 예산(목표) |
 | --- | --- | --- | --- | --- | --- |
-| ① STT | 앱 → 음성 벤더 | ElevenLabs Scribe | 16kHz WAV → 글 | 앱이 다시 녹음을 권함(§6) | 0.6초 |
+| ① STT | 앱 → `mission-stt` → 음성 벤더 | ElevenLabs Scribe | 16kHz WAV → 글 | 앱이 다시 녹음을 권함(§6) | 0.6초 |
 | ② 입력 검사 | `mission-turn.ts` `moderateInput` | 1단계 검사 모델 | 학습자 글 → allow · block · crisis | 오류면 턴 실패(`upstream_unavailable`, 턴을 세지 않음) | 답과 동시(답을 미리 띄우고 검사 결과로 끊는다) |
 | ③ 연출 지시 | `mission-direction.ts` | 없음(코드) | 판 상태(목표 · 턴 · stall) → 한 줄 | — | 0 |
 | ④ 상대역 답 | `startReply`(1단계 부품) | Haiku 5.5, effort low, 고정 앞부분 캐시 | 장면 · 역할 카드 · 규칙(캐시) + 목표 상태 · 연출 지시(턴마다) + 지난 대화 → `@speech` · `@action` 조각 + `@state` 한 줄 | 오류면 턴 실패. 미성년 · 나이 모름은 출력 검사 뒤 한 번 다시 만들기 | 첫 조각 0.5초 · 끝 1초(중앙값) |
 | ⑤ 목표 판정 | `startMissionJudge`(`mission-judge.ts`) | Haiku 5.5, 구조화 출력, 600 토큰 | 남은 목표 · 최근 4줄 · 이번 말 → `{goals: [{id, quote}], off_task}` | 오류 · 6초 초과 → **상태 줄의 goals_done으로 돌아감** | 답과 동시, 0.8초 |
 | ⑤' 교정 | `startMissionFeedback`(1단계 프롬프트) | Haiku 5.5 | 이번 말 + 최근 대화 → 교정 | 시간 초과면 `unavailable`(턴은 이어짐) | 답과 동시, 1초 |
 | ⑥ 상태 전이 | SQL `companion_mission_finish_turn` | 없음 | 지난 달성 ∪ 판정 → 목표 · 턴 · stall · 끝난 까닭 | RPC 실패면 `internal_error` | 0.1초 |
-| ⑦ TTS | 앱 → 음성 벤더 | ElevenLabs | 상대역 말 → 음성 | 글만 보여 줌(§6) | 첫 바이트 0.8초 |
+| ⑦ TTS | 앱 → `mission-tts` → 음성 벤더 | ElevenLabs | 상대역 말 → 음성 | 글만 보여 줌(§6) | 첫 바이트 0.8초 |
 
-- **코드 쪽 거르개**(ADR-0177 D13, `mission-guards.ts`): ⑤'의 교정에 원문에 없는 한자 · 가나 등 비한글 글자가 있으면 교정 없음(로그 `mission_feedback_foreign_script`, QA: 「마실게요」 → 「마实 할게요」). ④의 답은 학습자가 꺼낼 목표가 남고 상대역이 꺼낼 목표가 하나 이하일 때(`farewellRisk`)만 스트리밍하지 않고 모았다가, 이 턴에 판이 끝나지 않으면(판정 기준 — 답의 `closing`은 믿지 않는다) 작별 인사 문장(미션 파일 `counterpart.farewells`)을 빼고 보낸다. 말이 하나도 안 남으면 한 번만 다시 만든다(그래도 인사뿐이면 그대로).
-- **답 다듬기**(ADR-0177 D14, `mission-reply-clean.ts` — 2026-11-23 조율자 QA 뒤): 미션 답은 스트리밍하지 않고 모았다가 ① 혼잣말(영어 메타 줄과 그 앞 초안) ② 작별 인사(판이 이 턴에 안 끝나면) ③ 대신 묻기(학습자가 꺼낼 목표가 남았으면 「다른 필요하신 거」 류)를 뺀 뒤 보낸다. 말이 안 남으면 한 번 다시, 혼잣말뿐이면 미션의 안전한 한 줄. 교정은 고친 문장 = 원문이거나 외국어로만 말한 턴이면 버린다. 실험실 플레이어의 `replyDelta`는 이제 오지 않는다(`reply` → `detail`).
+- **코드 쪽 거르개**(ADR-0193 D13, `mission-guards.ts`): ⑤'의 교정에 원문에 없는 한자 · 가나 등 비한글 글자가 있으면 교정 없음(로그 `mission_feedback_foreign_script`, QA: 「마실게요」 → 「마实 할게요」). ④의 답은 학습자가 꺼낼 목표가 남고 상대역이 꺼낼 목표가 하나 이하일 때(`farewellRisk`)만 스트리밍하지 않고 모았다가, 이 턴에 판이 끝나지 않으면(판정 기준 — 답의 `closing`은 믿지 않는다) 작별 인사 문장(미션 파일 `counterpart.farewells`)을 빼고 보낸다. 말이 하나도 안 남으면 한 번만 다시 만든다(그래도 인사뿐이면 그대로).
+- **답 다듬기**(ADR-0193 D14, `mission-reply-clean.ts` — 2026-11-23 조율자 QA 뒤): 미션 답은 스트리밍하지 않고 모았다가 ① 혼잣말(영어 메타 줄과 그 앞 초안) ② 작별 인사(판이 이 턴에 안 끝나면) ③ 대신 묻기(학습자가 꺼낼 목표가 남았으면 「다른 필요하신 거」 류)를 뺀 뒤 보낸다. 말이 안 남으면 한 번 다시, 혼잣말뿐이면 미션의 안전한 한 줄. 교정은 고친 문장 = 원문이거나 외국어로만 말한 턴이면 버린다. 실험실 플레이어의 `replyDelta`는 이제 오지 않는다(`reply` → `detail`).
 - 턴의 벽시계 = ① + max(②, ④, ⑤, ⑤') + ⑥ + ⑦의 첫 바이트. 답 · 판정 · 교정은 같은 순간에 띄운다 — 판정은 학습자 말만 보면 되므로 답을 기다리지 않는다.
 - 상태 줄의 `closing` · `off_task`는 답 모델의 것을 쓴다. 판정과 답이 어긋날 수 있다(예: 판정은 마지막 목표를 인정했는데 답은 장면을 안 닫음) — 판은 판정 기준으로 닫히고, 앱은 끝 화면으로 덮는다.
 - 판의 상태 jsonb: `{ goalsDone, turns, hints, hintGoals, offTask, stall, gradingFailed? }`. `stall` = 새 목표 없이 이어진 학습자 턴 수(새 목표가 생긴 턴에 0).
@@ -265,10 +265,8 @@ es · ja · id · vi 번역은 필요. 점수 항 구역을 앱에 낼지는 사
 
 ### 6.5 앱 인계(음성 — §10에 모음)
 1. **녹음 형식**: 16kHz mono 16-bit PCM WAV(0.4 ~ 30초). 앱이 기기 음성 인식(useSpeechAttempt)을 계속 쓸지, 서버 STT로 바꿀지 결정이 필요하다. 서버 STT로 바꾸면 아래 ②.
-2. **엔드포인트 제안**:
-   - `mission-stt`: multipart audio → `{text, words[{text, start, end, confidence}], durationMs}`. 서버가 Scribe를 `kor`로 부른다.
-   - `mission-tts`: `{conversationId, messageId}` → 서버가 그 답의 말 조각만, 읽기 정규화 후 합성 → 서명된 오디오 주소(같은 글 캐시).
-   - 또는 `chat-send` SSE의 `done`에 `audioUrl`을 싣는다. 단, 첫 소리를 당기려면 `delta`가 끝난 말 조각마다 `audio` 이벤트를 따로 보내는 편이 낫다.
+2. **엔드포인트(확정 — §6.6)**: `mission-stt` · `mission-tts`. 계약 `packages/companion-contract/src/mission-voice.ts`.
+   (버린 안: `chat-send` SSE의 `done`에 `audioUrl`을 싣기 — 턴 로직을 바꾸고, 진입 대사 · 힌트 · 다시 듣기를 못 덮는다.)
 3. **자동 재생 규칙**: 상대역 말 조각이 다 오면 자동 재생(설정에서 끔). 진입 대사도 재생. 행동 지문은 읽지 않음. 마이크를 누르면 멈춤. 화면을 떠나면 멈춤. TTS 실패는 조용히(글자는 그대로).
 4. **받아 적은 글**: 입력 칸에 넣고 확인 뒤 보내기(기본) / 바로 보내기(설정). 서버에는 `input_mode: voice`와 받아 적은 원문을 함께 보내 「고쳤는지」를 남긴다.
 5. **문구 표**(새 칸, 영어만 확정 — 대시보드가 쓴 한국어 안내는 운영자용이라 앱 문구가 아님):
@@ -286,6 +284,46 @@ es · ja · id · vi 번역은 필요. 점수 항 구역을 앱에 낼지는 사
 | hintListen | Listen | 힌트 예문 듣기 |
 
 지금 앱 문구 표에 있는 칸 `listening` · `speechUnavailable` · `speak` · `stop`은 그대로 쓴다.
+
+### 6.6 서버 엔드포인트(확정, 2026-11-23 — 브랜치 `feat/companion-mission-voice-api`)
+
+> 가짜 ElevenLabs로만 테스트했다. 매개변수는 §6.1 · 대시보드 실험실(맥미니 진짜 호출)과 같다. 진짜 호출 확인은 §6.7.
+
+**`POST /functions/v1/mission-stt`** — multipart, 인증은 다른 미션 함수와 같다(사용자 JWT).
+
+| 칸 | 값 |
+| --- | --- |
+| 요청 | `contract_version`(글자 `"1"`) · `conversation_id`(자기의 **열린 판** — active이고 끝나지 않음) · `audio`(16kHz mono 16-bit PCM WAV, ≤ 30초(+0.5초 여유) · ≤ 1 MiB) |
+| 200 | `MissionSttResponse` `{text, autoSend, reason, words[{text, start, end, confidence}], features{confMin, confMean, chars, hangulRatio, seconds}, latencyMs}` |
+| 오류 | `speech_empty` 422(빈 결과 · 0.2초 미만) · `speech_busy` 429 · `speech_unavailable` 503 · `voice_limit` 429 · `audio_too_long` 413 · `invalid_audio` 400 · `mission_not_found` 404 · `mission_closed` · `mission_ended` 409 · `voice_not_configured` 503 |
+| 벤더 | Scribe `scribe_v3` · `language_code=kor` · `tag_audio_events=false` · `timestamps_granularity=word` · 무보존 `enable_logging=false`는 기본 끔(env `on`으로 켬 — 엔터프라이즈 계정 전용) · 화자 분리 없음. 제한 시간 12초, 연결 실패 · 5xx만 한 번 다시(429 · 시간 초과는 다시 하지 않음) |
+| 저장 | **우리 서버는 녹음 · 받아 적은 글을 저장하지 않는다**(메모리에서 벤더로 넘기고 버림). 호출 기록 줄에는 길이 · 결과 · 벤더 시간만. 벤더(ElevenLabs) 쪽 보존은 개인정보 처리방침에 적힌 범위에서 허용하고, 무보존 옵션은 엔터프라이즈 계정일 때 켤 수 있다(2026-11-26 사용자 결정). 사용자 음성 수집은 별도 트랙으로 보류 — 동의 화면 · 방침이 먼저 |
+
+**바로 보내기(`autoSend`)**: 순수 함수 `autosendDecision`(대시보드 `autosend_decision`과 같은 순서) — 빈 글 `empty` → 녹음 < 0.35초 `too_short` → 한글 비율 < 0.6 `not_korean` →
+확신도 없음 `no_confidence`(설정 `withoutConfidence`, 기본 확인) → 확신도 최소 < 0.85 또는 평균 < 0.93 `low_confidence` → `ok`. 문턱은 env `COMPANION_MISSION_AUTOSEND_*`.
+근거(맥미니 Scribe 150회): 맞은 받아 적기의 90%를 바로 보내고, 소리가 뭉개져 다른 말로 적힌 22건은 하나도 바로 보내지 않았다. 잘린 녹음 · 틀린 발음을 바른 말로 고쳐 적는 것은 확신도로 못 가린다.
+
+**`POST /functions/v1/mission-tts`** — JSON.
+
+| 칸 | 값 |
+| --- | --- |
+| 요청 | `{contract_version, conversation_id, kind: "message", message_id}`(그 판의 상대역 메시지 — 진입 대사 `opening.messageId` 포함) 또는 `{…, kind: "hint", hint_no}`(`mission-hint` 응답의 새 칸 `hintNo`). **글은 받지 않는다** |
+| 200 | `MissionTtsResponse` `{url, expiresAt, cached, mime: "audio/mpeg"}` — 비공개 버킷 `companion-media`의 서명 주소(1시간). 만료되면 같은 요청(캐시 적중, 비용 없음) |
+| 오류 | `tts_unavailable` 503(`detail.reason` busy · server · failed — 조용히 글자만) · `voice_target_not_found` 404 · `mission_not_found` 404 · `voice_limit` 429 · `voice_not_configured` 503 |
+| 글 | SQL이 메시지의 말 조각(speech)만 이어 붙인다(행동 지문 · 서술 제외) → 숫자 읽기 정규화(`spokenText`) → ≤ 400자 |
+| 벤더 | `eleven_v4_turbo`, 음성 = 미션 파일 `counterpart.voice`(u01 점원 `l6fNdLYgoqjfTIPUeFc9` · u06 도윤 `rCm09Tf1yMYbOyCRLDyB`), mp3 44.1kHz 128kbps(1단계 `elevenSpeech`) |
+| 캐시 | 파일 `mission-tts/<모델>/<음성>/<읽는 글 sha256>.mp3` — 판 · 사용자와 무관(진입 대사 · 같은 문장은 한 번만 합성). 판 상태와 무관하게 자기 판이면 된다(끝난 턴의 마지막 답 · 다시 듣기) |
+
+**상한 · 기록**(엽전은 따로 받지 않는다 — 판 단위 과금, 원가 절감은 나중): 판당 받아 적기 ≤ 턴 상한 × 3, 합성 ≤ (턴 상한 + 1 + 힌트 상한) × 3, 사용자 하루(UTC) 받아 적기 1800초 ·
+합성 20000자(값은 `companion.settings`의 `mission_voice_per_turn` · `mission_stt_daily_seconds` · `mission_tts_daily_chars`, 배수 0 = 음성 끔). 호출마다 `companion.mission_voice_calls`
+한 줄 — 원가 = `outcome = 'ok'`인 줄의 초(Scribe) · 글자(TTS).
+
+### 6.7 진짜 호출로 확인할 것(키가 있는 곳에서)
+
+1. (무보존을 켤 때만) Scribe에 `enable_logging=false`를 실었을 때 계정이 받는가(엔터프라이즈 전용이라는 문서) — 기본은 끔이라 보내지 않는다.
+2. 비스트리밍 `/v1/text-to-speech/<voice>`(1단계와 같은 주소)의 `eleven_v4_turbo` 지연이 실험실의 `/stream` 수치(첫 바이트 0.24초 · 전체 0.4초)와 비슷한가.
+3. Supabase Storage 서명 주소의 mp3를 앱 재생 모듈이 바로 재생하는가(내용 형식 `audio/mpeg`).
+4. 30초 녹음 · 1 MiB 본문이 Edge Function 앞단에서 막히지 않는가.
 
 
 ## 7. 실험실(대시보드)과의 관계
@@ -350,7 +388,7 @@ Scribe로 받아 적고 → 플레이어의 스트리밍 턴(`turn-stream`, 답 
 ## 9. 남은 것 · 제안
 
 - **판정 · 답의 마지막 턴 어긋남**: 판정이 마지막 목표를 인정했는데 답이 장면을 안 닫는 일이 있다. 앱이 끝 화면으로 덮는 것으로 충분한지 사용자 판단. 대안은 판정을 먼저(+0.8초).
-- **턴 지연을 더 줄이려면**: ① 연출 지시를 `system` 뒷부분 대신 대화 끝의 mid-conversation system 메시지로 보내면(Haiku 5.5 지원) 지난 대화까지 캐시된다 — 1단계 답 부품(`startReply`)을 고쳐야 해서 이번에는 하지 않았다. ② 교정을 판정과 한 호출로 합치면 호출이 하나 준다 — 1단계 교정 프롬프트를 바꿔야 해서 버렸다(ADR-0177 버린 대안 11).
+- **턴 지연을 더 줄이려면**: ① 연출 지시를 `system` 뒷부분 대신 대화 끝의 mid-conversation system 메시지로 보내면(Haiku 5.5 지원) 지난 대화까지 캐시된다 — 1단계 답 부품(`startReply`)을 고쳐야 해서 이번에는 하지 않았다. ② 교정을 판정과 한 호출로 합치면 호출이 하나 준다 — 1단계 교정 프롬프트를 바꿔야 해서 버렸다(ADR-0193 버린 대안 11).
 - **미션 파일 내용**: 메뉴 · 값이 장면에 없어 상대역이 지어낸 일 → 장면에 가게 사실(메뉴와 값 · 물건)을 적었다(version 2). 「라떼」가 카페라떼 · 바닐라 라떼 사이에서 모호해 되묻는 일이 있어 「라떼(카페라떼)」로 적었다.
 - **곁가지 질문 되풀이**: 직원이 따뜻한 것 · 아이스를 턴을 넘겨 다시 묻는 일이 남았다(규칙은 「한 번」). 판정 · 점수에는 영향 없음.
 - **교정의 이상한 「ok」**: 「너 AI지?」에 고친 문장이 원문 그대로인 교정이 붙은 일(1단계 교정 프롬프트 — 미션 쪽에서 「고친 문장 = 원문이면 버림」을 더할지는 C와 함께 볼 일).
@@ -368,9 +406,12 @@ Scribe로 받아 적고 → 플레이어의 스트리밍 턴(`turn-stream`, 답 
 | `mission-finish` | `abandon: true`의 뜻 | **필수 목표를 이룬 판이면 끝내기와 같다**(`status: "graded"`, 리포트, `endReason: "finish"`). 필수 전이면 지금처럼 `abandoned` |
 | 판 상태 `status` | `pending` | 채점 대기(위). 턴은 닫혀 있다(`mission_closed`) |
 | SSE `correction`(`kind`) | `correction` · `l1_to_ko` = **고치기**, `better` = **더 나은 표현** | 미션 턴의 교정은 둘로 갈린다(2026-11-23 사용자 결정). 고치기는 틀린 것(문법 · 어휘 · 화계 · 뜻 안 통함), 더 나은 표현은 틀리지 않았지만 더 자연스러운 말 — 점수와 무관. 미션 턴에서는 `better` 덧붙이기 칸은 비어 온다 |
-| 리포트 `corrections[].kind` | 위와 같음 | 「Key corrections」(`focus`)와 고친 문장 구역은 고치기에서만, 더 나은 표현은 따로 |
+| 리포트 `corrections[].kind` | 위와 같음 | `corrections`는 턴 교정 **전부**(고치기 + 더 나은 표현). 앱은 `kind === "better"`인 것을 「Sounds more natural」에만, 나머지를 고친 문장 구역에 그린다 |
+| 리포트 `focus` | 고치기만 | 「Key corrections」는 **서버가 코드로 고치기만** 담는다(채점자에게 고치기만 넘기고, 더 나은 표현을 가리키는 번호는 버리며, 빈 묶음은 뺀다 — `focusCorrections`). 앱은 focus를 그대로 그리면 된다(같은 문장이 두 구역에 겹치지 않는다) |
 | 리포트 `accuracyScore` | 화계 상한 | 장면의 기대 화계(미션 `counterpart.learnerRegister`, 두 미션 모두 존댓말)와 어긋난 학습자 턴의 비율로 상한 — 내내 50 · 절반 75 · 다섯 중 하나 90. 「네」 · 「카드요」처럼 화계가 드러나지 않는 말은 세지 않는다. 어긋났으면 `focus` 첫 묶음과 `summary`에 말투 이야기가 온다 |
-| 미션 정의(`missionDefinitionSchema`) | `counterpart.learnerRegister` · `learnerRegisterNote` · `farewells` · `noOffer` · `fallback`, `goals[].opener` · `cue` · `withhold` | 서버 거르개 · 연출 지시용. 앱 화면에는 쓰지 않는다(목록 · 카드 칸은 그대로) |
+| 미션 정의(`missionDefinitionSchema`) | `counterpart.learnerRegister` · `learnerRegisterNote` · `farewells` · `noOffer` · `fallback` · `voice`, `goals[].opener` · `cue` · `withhold` | 서버 거르개 · 연출 지시 · 합성 음성용. 앱 화면에는 쓰지 않는다(목록 · 카드 칸은 그대로) |
+| `mission-hint`(`missionHintResponseSchema`) | `hintNo?` | 이 판에서 몇 번째 힌트인지 — 힌트 듣기(`mission-tts` `kind: "hint"`)에 쓴다. 없으면(예문 저장 실패) 듣기 단추를 숨긴다 |
+| 새 함수 `mission-stt` · `mission-tts` | §6.6 | 계약 `mission-voice.ts` — 앱 초안의 임시 타입을 아래 표대로 바꿔 끼운다 |
 
 ### 10.2 화면 요소
 
@@ -378,8 +419,19 @@ Scribe로 받아 적고 → 플레이어의 스트리밍 턴(`turn-stream`, 답 
 2. **리포트**: 구역 순서 — 히어로(결과 · 점수 · 최고 기록 · 결과 한 줄) → 목표 → You could have said → 목표 표현 → 정확도 · 힌트 → **How your score adds up(점수 항 — 앱에서도 보인다, 사용자 결정)** → What went well → Key corrections → **Sounds more natural(새 — kind better만)** → 고친 문장(고치기 중 Key corrections에 없는 것) → 다시 해 볼 표현 → 총평 → Next challenge.
 3. **그만두기 대화상자**: 필수 목표를 이룬 판이면 문구를 바꾸고 「Finish」를 누르면 **채점 → 리포트 화면**(`mission-finish`를 `abandon` 없이 불러도, 있어도 같다). 필수 전이면 지금 문구 그대로.
 4. **목록 화면**: `pendingReports`가 있으면 그 판의 리포트를 받아(위) 지난 리포트에 넣는다 — 「채점 중」 표시를 잠깐 둘 수 있다.
-5. **음성**(§6, 결정됨): 롤플레이에서는 **서버 STT(ElevenLabs Scribe v3) API**를 쓰고 기기 음성 인식은 쓰지 않는다. TTS는 `eleven_v4_turbo`. 받아 적은 글은 **확신도가 높으면 바로 보내고, 낮으면 입력 칸에 넣어 확인**(문턱값은 에이전트 B의 구현을 따른다). 엔드포인트 제안(`mission-stt` · `mission-tts`)과 자동 재생 규칙 · 음성 문구 표는 §6.5.
-6. **첫 소리**: 서버는 미션 답을 다듬은 뒤 한꺼번에 보낸다(`delta`가 답 끝에 몰려 온다, ADR-0177 D14). 첫 말 조각이 오면 바로 TTS.
+5. **음성**(§6, 결정됨): 롤플레이에서는 **서버 STT(ElevenLabs Scribe v3) API**를 쓰고 기기 음성 인식은 쓰지 않는다. TTS는 `eleven_v4_turbo`. 받아 적은 글은 **서버의 `autoSend`가 참이면 바로 보내고, 아니면 입력 칸에 넣어 확인**(문턱 §6.6). 엔드포인트는 §6.6(확정), 자동 재생 규칙 · 음성 문구 표는 §6.5.
+   앱 초안(`feat/companion-mission-app-v2`, `roleplay-mission/mission-voice.contract.ts`)의 임시 타입 → 계약:
+
+   | 앱 임시 타입 | 계약(`@libitums/companion-contract`) | 차이 |
+   | --- | --- | --- |
+   | `MissionTranscript` `heard {text, autoSend, reason}` | `MissionSttResponse` | 칸 이름 · 뜻 같음. `words` · `features` · `latencyMs`가 더 온다(쓰지 않아도 됨). `reason`은 `MissionAutoSendReason`(같은 여섯 값) |
+   | `MissionTranscript` `failed {code: empty · busy · server}` | 오류 본문 `MissionVoiceErrorBody` + `missionSttFailure(error)` | 서버는 오류 코드로 준다 — `missionSttFailure`가 세 갈래로 바꾼다(`voice_limit`은 `busy`). 빈 결과는 200 `reason: "empty"`가 아니라 422 `speech_empty`로 온다 |
+   | `MissionSpeakRequest` `{kind: "message", messageId}` | `MissionTtsRequest` `{kind: "message", message_id}` | 요청 키 snake_case(다른 미션 요청과 같음) + `contract_version` · `conversation_id` |
+   | `MissionSpeakRequest` `{kind: "text", text}`(힌트 예문) | `{kind: "hint", hint_no}` | **바뀜** — 서버는 앱이 보낸 글을 합성하지 않는다. 힌트 응답의 `hintNo`를 넘긴다 |
+   | `MissionSpeech` `{kind: "audio", url}` · `{kind: "failed"}` | 200 `MissionTtsResponse {url, expiresAt, cached, mime}` · 오류 본문 | 어느 오류든 `failed`로(조용히). `expiresAt`이 지난 주소는 같은 요청으로 다시 받는다 |
+
+   녹음은 `MissionAudioClip.uri`의 파일을 multipart `audio`로 올린다(`MISSION_STT_AUDIO_FIELD`). 상한 상수 `MISSION_STT_MAX_SECONDS` · `MISSION_STT_MAX_BYTES`도 계약에 있다.
+6. **첫 소리**: 서버는 미션 답을 다듬은 뒤 한꺼번에 보낸다(`delta`가 답 끝에 몰려 온다, ADR-0193 D14). 첫 말 조각이 오면 바로 TTS.
 7. **채점 중 화면**: 5 ~ 6초. `grading_failed`면 같은 요청으로 채점만 다시.
 
 ### 10.3 새 문구(영어 확정)
@@ -408,13 +460,20 @@ active(필수 전) ──그만두기 · 30분 방치 · 새 판 시작──▶
 
 ### 11.1 결정됨 (2026-11-23)
 
-1. **화계 어긋남을 더 무겁게** — 내내 어긋나면 정확도 상한 50(합계 85 근처), 절반 75, 다섯 중 하나 90. 반대 방향(반말 장면에서 존댓말)도 같다. 미션 파일 `counterpart.learnerRegister`(ADR-0177 D15).
+1. **화계 어긋남을 더 무겁게** — 내내 어긋나면 정확도 상한 50(합계 85 근처), 절반 75, 다섯 중 하나 90. 반대 방향(반말 장면에서 존댓말)도 같다. 미션 파일 `counterpart.learnerRegister`(ADR-0193 D15).
 2. **교정을 둘로** — 고치기(점수 · Key corrections)와 더 나은 표현(점수와 무관, 다른 카드 · 리포트의 따로 된 구역).
 3. **성공해도 리포트는 준다** — 필수 달성 뒤 그만두기 = 끝내기, 방치 · 새 판 시작 = 채점 대기 뒤 게으른 채점.
 4. **점수 항 구역은 앱에서도 보인다.**
 5. **앱의 음성 인식은 서버 STT(Scribe)**, TTS는 `eleven_v4_turbo`.
 6. **받아 적은 글은 확신도로** — 높으면 바로 보내고 낮으면 입력 칸.
 7. 목표 순서 — 답이 스스로 `opens`를 적고 코드가 검사, 어긋나면 한 번 다시(조율자 추천 · 사용자 승인).
+
+⟨2026-11-26⟩
+
+8. **힌트 듣기는 `hint_no`** — 앱이 보낸 글은 합성하지 않는다. 힌트 응답의 `hintNo`로 저장된 예문을 읽는다(§6.6).
+9. **음성 한도 기본값 확정** — 판당 받아 적기 턴 상한 × 3 · 합성 (턴 상한 + 1 + 힌트 상한) × 3, 사용자 하루 받아 적기 1800초 · 합성 20000자(§6.6).
+10. **벤더 보존 허용 · 무보존 옵션 기본 끔** — ElevenLabs 보존은 개인정보 처리방침에 적힌 범위에서 허용(`COMPANION_MISSION_STT_ZERO_RETENTION` 기본 끔, 엔터프라이즈 계정이면 켤 수 있음). 우리 서버는 녹음 · 받아 적은 글을 저장하지 않고, 사용자 음성 수집은 별도 트랙으로 보류(동의 화면 · 방침이 먼저).
+11. **선톡 푸시는 미션 판을 메신저 방으로 세지 않는다** — 미션 마이그레이션이 `companion_proactive_push_gate`를 다시 정의(ADR-0193 「다시 정의한 기존 함수」).
 
 ### 11.2 아직 결정 필요
 

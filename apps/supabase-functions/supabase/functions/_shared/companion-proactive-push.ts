@@ -3,6 +3,8 @@
 // - 스위치 `companion.settings.proactive_push`: off(기본) · testers(시험 계정만 — 대조군 없이 모두 받고 기록하지 않음) · on.
 // - on: 대조군 30%(기록만) · 미리보기 A 한국어 첫 말 / B 「{이름} sent you a message」 — 자동 캠페인과 같은 해시(사용자 id)로 나눕니다.
 // - 배정은 `push_campaign_sends`(묶음 「선톡」)에 먼저 남깁니다 — 캠페인의 쉬는 시간이 이 표를 보므로 학습 알림이 연달아 가지 않습니다.
+// 그 사람 기기에 방이 있는 인물만 보냅니다(2026-11-22) — 방은 기기 저장이라 새로 깐 기기에는 없고, 누르면 「열 수 없음」 안내만 뜹니다.
+// 서버는 「가장 새 기기를 등록한 뒤 그 인물에게 말한 적이 있는가」로 가늠합니다(문 `hasRoom`).
 // 푸시 기기가 없는 사람은 실험에 넣지 않습니다(받을 수 없어 두 칸의 차이를 흐립니다). 던지지 않습니다 — 푸시가 실패해도 선톡은 남습니다.
 
 import type { Segment } from "./chat-send.contract.ts";
@@ -18,7 +20,8 @@ const SEED = `series:${PROACTIVE_PUSH_SERIES}`;
 const PREVIEW_MAX = 120;
 
 export type ProactivePushMode = "off" | "testers" | "on";
-export type ProactivePushSkip = "off" | "not_tester" | "no_device";
+/** `daily_cap`: 오늘(현지) 선톡 · 스토리 알림이 이미 나감 — 하루 한 번 합산(ADR-0178 D7, 문 `pushedToday`). */
+export type ProactivePushSkip = "off" | "not_tester" | "no_device" | "no_room" | "daily_cap";
 export type ProactivePushResult =
   | ProactivePushSkip
   | "control"
@@ -39,7 +42,7 @@ export type ProactivePushPlan =
     };
 
 /** 한국어 첫 말 한 줄 — 줄바꿈은 빈칸으로, 120자를 넘으면 자르고 「…」. 말이 없으면 null. */
-function previewLine(segments: readonly Segment[]): string | null {
+export function previewLine(segments: readonly Segment[]): string | null {
   const line = segments
     .find((segment) => segment.kind === "speech" && segment.text.trim() !== "")
     ?.text.replace(/\s+/gu, " ")
@@ -54,6 +57,9 @@ export function proactivePushPlan(input: {
   readonly mode: ProactivePushMode;
   readonly tester: boolean;
   readonly hasDevice: boolean;
+  readonly hasRoom: boolean;
+  /** 오늘(현지) 선톡 · 스토리 알림이 이미 나갔는가. 옛 DB(칸 없음)는 거짓. */
+  readonly pushedToday?: boolean;
   readonly userId: string;
   readonly name: string;
   readonly segments: readonly Segment[];
@@ -61,6 +67,8 @@ export function proactivePushPlan(input: {
   if (input.mode === "off") return { skip: "off" };
   if (input.mode === "testers" && !input.tester) return { skip: "not_tester" };
   if (!input.hasDevice) return { skip: "no_device" };
+  if (!input.hasRoom) return { skip: "no_room" };
+  if (input.pushedToday === true) return { skip: "daily_cap" };
   const experiment = input.mode === "on";
   const group =
     experiment && inHoldout(SEED, input.userId, PROACTIVE_PUSH_HOLDOUT) ? "control" : "sent";
@@ -77,7 +85,13 @@ export function proactivePushPlan(input: {
   };
 }
 
-type Gate = { mode?: unknown; tester?: unknown; hasDevice?: unknown };
+type Gate = {
+  mode?: unknown;
+  tester?: unknown;
+  hasDevice?: unknown;
+  hasRoom?: unknown;
+  pushedToday?: unknown;
+};
 const MODES: readonly ProactivePushMode[] = ["off", "testers", "on"];
 
 const succeeded = (status: number) => status >= 200 && status < 300;
@@ -98,6 +112,7 @@ export async function pushProactive(
   try {
     gate = await callRpc<Gate | null>(outbound, env, "companion_proactive_push_gate", {
       p_user_id: input.userId,
+      p_character_id: input.characterId,
     });
   } catch {
     return "off";
@@ -108,6 +123,8 @@ export async function pushProactive(
     mode,
     tester: gate?.tester === true,
     hasDevice: gate?.hasDevice === true,
+    hasRoom: gate?.hasRoom === true,
+    pushedToday: gate?.pushedToday === true,
     userId: input.userId,
     name: input.name,
     segments: input.segments,

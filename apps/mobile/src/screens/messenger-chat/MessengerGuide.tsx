@@ -9,30 +9,32 @@ import { useLayerBack } from "../../lib/use-back-handler";
 import { ChatListRow } from "./ChatListRow";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
-import type { GuideStep } from "./messenger-guide";
+import { isSampleStep, type GuideStep } from "./messenger-guide";
 
 import "./messenger-guide.css";
 
 // 덕수쌤 첫 입장 안내(사용자 결정 2026-11-13, 시안 KMsLcR9rCRbVjqRtGcC2Ji 2판).
 // 목록: 화면 전체를 덮고 덕수쌤 줄만 맨 위에 떠 있습니다 — 원본 줄에 구멍을 뚫지 않고 같은 줄 부품을 다시 그려 위치를 재지 않습니다.
-// 방: 머리 · 로그만 덮고(입력 줄 영역은 밝게) 아래쪽 말풍선이 가리킬 자리를 말합니다.
+// 방: 머리 · 로그만 덮고(입력 줄 영역은 밝게) 아래쪽 말풍선이 가리킬 자리를 말합니다. 키보드 단계는 `KeyboardGuideLayer`(ADR-0190).
 
 type Bubble = {
   readonly avatarUrl: string | null;
   readonly title: string;
   readonly body: string;
+  /** 본문 아래 작은 줄(키보드 단계, ADR-0190). */
+  readonly detail?: string;
   readonly step?: string;
   readonly children: ReactNode;
 };
 
-function GuideBubble({ avatarUrl, title, body, step, children }: Bubble): ReactNode {
+export function GuideBubble({ avatarUrl, title, body, detail, step, children }: Bubble): ReactNode {
   return (
     <view className="messenger-guide-bubble">
       <view
         className="messenger-guide-copy"
         flatten={false}
         accessibility-element={true}
-        accessibility-label={`${title}. ${body}${step === undefined ? "" : ` ${step}`}`}
+        accessibility-label={`${title}. ${body}${detail === undefined ? "" : ` ${detail}`}${step === undefined ? "" : ` ${step}`}`}
       >
         <view className="messenger-guide-top" accessibility-elements-hidden={true}>
           {avatarUrl === null ? (
@@ -46,13 +48,18 @@ function GuideBubble({ avatarUrl, title, body, step, children }: Bubble): ReactN
         <text className="messenger-guide-body" accessibility-elements-hidden={true}>
           {body}
         </text>
+        {detail === undefined ? null : (
+          <text className="messenger-guide-detail" accessibility-elements-hidden={true}>
+            {detail}
+          </text>
+        )}
       </view>
       <view className="messenger-guide-actions">{children}</view>
     </view>
   );
 }
 
-function GuideButton(props: {
+export function GuideButton(props: {
   readonly label: string;
   readonly testId: string;
   readonly primary: boolean;
@@ -140,26 +147,31 @@ export type RoomGuideProps = {
   readonly name: string;
   readonly avatarUrl: string | null;
   readonly onNext: () => void;
-  readonly onSkip: () => void;
+  /** 안내를 이미 본 사람에게 예시 단계만 뜬 것 — 단계 수 대신 「New」. */
+  readonly sampleOnly?: boolean;
 };
 
-/** 방 첫 입장 코치마크 — 머리 · 로그 위만 덮습니다. 아무 데나 탭 = Next, 뒤로가기 = Skip. */
+/**
+ * 방 첫 입장 코치마크 — 머리 · 로그 위만 덮습니다. 아무 데나 탭 = Next. **건너뛸 수 없습니다**(사용자 결정 2026-11-23): Skip 단추가
+ * 없고 뒤로가기는 삼키기만 합니다 — 단계를 끝까지 눌러야 끝납니다(예시 단계는 사진 · 음성 알약).
+ */
 export function MessengerRoomGuide({
   steps,
   index,
   name,
   avatarUrl,
   onNext,
-  onSkip,
+  sampleOnly = false,
 }: RoomGuideProps): ReactNode {
   const copy = useUiCopy().messengerChat.guide;
-  const step = steps[index] ?? "chat";
+  // 키보드 단계는 `KeyboardGuideLayer`가 그립니다(ADR-0190) — 여기 오지 않습니다.
+  const at = steps[index];
+  const step = at === undefined || at === "keyboard" ? "ideas" : at;
   const last = index >= steps.length - 1;
-  const skip = () => {
+  // 뒤로가기를 삼킵니다 — 안내를 닫지도 방을 나가지도 않습니다.
+  useLayerBack(() => {
     "background only";
-    onSkip();
-  };
-  useLayerBack(skip);
+  });
   return (
     <view
       className="messenger-guide-room"
@@ -177,20 +189,17 @@ export function MessengerRoomGuide({
           avatarUrl={avatarUrl}
           title={name}
           body={copy.steps[step]}
-          step={copy.stepOf(index + 1, steps.length)}
+          step={sampleOnly ? copy.newTag : copy.stepOf(index + 1, steps.length)}
         >
-          <GuideButton
-            label={copy.skip}
-            testId={ids.guideCoachSkip}
-            primary={false}
-            onTap={onSkip}
-          />
-          <GuideButton
-            label={last ? copy.done : copy.next}
-            testId={ids.guideCoachNext}
-            primary={true}
-            onTap={onNext}
-          />
+          {/* 예시 단계는 그 알약(사진 · 음성)을 누르는 것이 다음입니다 — 「다음」 단추가 없습니다. */}
+          {isSampleStep(step) ? null : (
+            <GuideButton
+              label={last ? copy.done : copy.next}
+              testId={ids.guideCoachNext}
+              primary={true}
+              onTap={onNext}
+            />
+          )}
         </GuideBubble>
         <view
           className={`messenger-guide-tail messenger-guide-tail-down messenger-guide-tail-${step}`}

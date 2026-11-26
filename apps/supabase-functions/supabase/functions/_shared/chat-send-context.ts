@@ -12,6 +12,7 @@ import type {
 import type { Choice } from "./chat-send-choice.ts";
 import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
+import type { TurnStory } from "./chat-send-story.ts";
 import type { ChatSendRequest } from "./companion-contract/index.ts";
 import { effectiveRomanceTier, romanceLine } from "./companion-safety.ts";
 import type { UsageCollector } from "./companion-usage.ts";
@@ -24,7 +25,8 @@ export type TurnContext = {
   body: ChatSendRequest;
   userId: string;
   gate: Extract<GateResult, { result: "ok" }>;
-  turn: BegunTurn;
+  /** 턴 시작 결과 + 친밀도 숫자(ADR-0180, 마이그레이션 `20270103120000`). 옛 DB면 친밀도가 없다 — 친밀도 구간 줄이 빠진다. */
+  turn: BegunTurn & { readonly intimacy?: number };
   learning: LearningContext;
   /** 턴 시작 때 반복 위반 수 · 기억 가득 참. 읽지 못했으면 null — 입력 차단은 지금처럼 `guardrail_blocked`, `memoryFull`은 싣지 않는다. */
   status: TurnStatus | null;
@@ -36,6 +38,8 @@ export type TurnContext = {
   historyKeep: number;
   /** 이 턴의 LLM 사용량 — `llm`이 기록하는 곳. 저장 meta의 `usage`가 된다. */
   usage: UsageCollector;
+  /** 친구 스토리 답장(ADR-0178) — 요청에 `story_id`가 있었을 때의 판정 결과 · 한 줄. 없으면 null · 생략. */
+  story?: TurnStory | null;
 };
 
 /** 이 턴의 적용 수위(ADR-0164 — 성인이 아니면 standard)와 로맨스 선(ADR-0168). */
@@ -44,7 +48,7 @@ export const turnRomance = (context: Pick<TurnContext, "gate" | "turn">) => ({
   line: turnRomanceLine(context),
 });
 
-/** 로맨스 선이 읽는 값만 — 미션 턴(ADR-0177)은 인물 · 수위 없이 넘긴다. */
+/** 로맨스 선이 읽는 값만 — 미션 턴(ADR-0193)은 인물 · 수위 없이 넘긴다. */
 export type RomanceContext = {
   readonly gate: Pick<TurnContext["gate"], "ageBand" | "romanceTier">;
   readonly turn: Pick<BegunTurn, "persona" | "speechLevel">;

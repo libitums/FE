@@ -6,6 +6,7 @@ import type { ItemAnswerOutcome, ItemSkipReason, ScoredItemType } from "./item-a
 import type { LearningDensity } from "./learning-density";
 import type { ListenPace } from "./listen-pace";
 import type { ListenItemResult, ListenItemType } from "./question-audio";
+import type { SpeechFallback, SpeechKoreanPack } from "./speech-recognition-types";
 
 export type CatalogUnitRole = "lesson" | "final";
 
@@ -58,7 +59,7 @@ export type EpisodeListenItemAnsweredEvent = {
   readonly slowTurnedOn: boolean;
   /** 1.0일 때 누른 다시 듣기 수입니다(10진 문자열). */
   readonly replayCount: string;
-  /** 0.85일 때 누른 다시 듣기 수입니다(10진 문자열). */
+  /** 「천천히」일 때 누른 다시 듣기 수입니다(10진 문자열). 배율은 2026-11-24에 0.85 → 0.7 — 전후 비교는 앱 버전으로 나눕니다. */
   readonly slowReplayCount: string;
 };
 
@@ -83,6 +84,35 @@ export type EpisodeItemAnsweredEvent = {
   readonly skipReason?: ItemSkipReason;
   /** 판정 전에 쓴 힌트입니다 — `listen`(정답 듣기) · `show`(정답 보기). 안 썼으면 없습니다(ADR-0153). */
   readonly hintUsed?: "listen" | "show";
+  /** 말하기 문항: 인식기 오류 코드(10진 문자열, 오류 없음은 `"0"`). 인식기가 결과를 올렸을 때만입니다. */
+  readonly speechErrorCode?: string;
+  /** 말하기 문항: 네트워크 인식기로 되돌아갔는가 — `none` · `pack-missing` · `on-device-error`. */
+  readonly speechFallback?: SpeechFallback;
+  /** 말하기 문항: 그 세션이 본 기기 안 한국어 팩 상태입니다. */
+  readonly speechKoreanPack?: SpeechKoreanPack;
+};
+
+/** 이야기 컷이 서는 자리입니다(`CatalogCutStage`와 같은 값). */
+export type ReplayStoryStage = "prologue" | "epilogue" | "interlude";
+
+/**
+ * 지나간 한국어 문장을 스피커로 다시 들은 순간 한 번 나는 이벤트입니다(ADR-0189). 회색(소리 없음) 단추는 눌리지 않아 나지 않습니다.
+ * 이야기 컷은 `stage`, 레슨 판정 뒤 정답 문장은 `unitKey`를 싣습니다.
+ */
+export type SentenceAudioReplayedEvent = {
+  readonly name: "sentence_audio_replayed";
+  readonly episodeId: string;
+  readonly surface: "story_cut" | "lesson_answer";
+  readonly stage?: ReplayStoryStage;
+  readonly unitKey?: string;
+};
+
+/** 단어 고르기 · 조립 칩을 눌러 그 낱말 소리가 난 순간 한 번 나는 이벤트입니다(ADR-0189). 소리가 없는 칩은 나지 않습니다. */
+export type ChoiceChipSoundPlayedEvent = {
+  readonly name: "choice_chip_sound_played";
+  readonly episodeId: string;
+  readonly unitKey: string;
+  readonly surface: "word_choice" | "sentence_order";
 };
 
 export type CatalogLearningEvent =
@@ -90,4 +120,6 @@ export type CatalogLearningEvent =
   | EpisodeLessonFinishedEvent
   | EpisodeFinalPassedEvent
   | EpisodeListenItemAnsweredEvent
-  | EpisodeItemAnsweredEvent;
+  | EpisodeItemAnsweredEvent
+  | SentenceAudioReplayedEvent
+  | ChoiceChipSoundPlayedEvent;

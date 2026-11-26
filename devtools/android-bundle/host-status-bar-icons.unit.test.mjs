@@ -200,7 +200,9 @@ function registryFill({ componentSources, cssSources }) {
       fillComponents[carrier.file] =
         carrier.className === undefined
           ? carrierComponent(name, name)
-          : journeyMapScreen({ scrimAttr: "data-statusbar={lightStatusBarIcons}" });
+          : carrier.className === "first-unit-map-scrim"
+            ? journeyMapScreen({ scrimAttr: "data-statusbar={lightStatusBarIcons}" })
+            : carrierComponent(name, carrier.className);
     }
   }
   return { componentSources: fillComponents, cssSources: fillCss };
@@ -525,12 +527,20 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
     "screens/messenger-chat/friend-directory.css",
     // 메신저 첫 입장 목록 안내(ADR-0139) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/messenger-guide.css",
+    // 내 스토리 만들기 · 보기 층(ADR-0194) — 밝은 앱 바탕, 표지 없음.
+    "screens/messenger-chat/my-stories.css",
     // 메신저 새 친구 시트(ADR-0117) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/new-friend.css",
+    // 친구 스토리 보기(ADR-0178) — 짙은 바탕 · 사진 그늘이라 밝은 아이콘 표지.
+    "screens/messenger-chat/story-viewer.css",
     // 추천 친구 프로필 시트(ADR-0162) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/suggested-sheet.css",
     "screens/tickets/tickets.css",
   ]);
+  assert.match(
+    JSON.stringify(fixedLayers["screens/messenger-chat/story-viewer.css"]),
+    /StoryViewer/,
+  );
   assert.match(
     JSON.stringify(fixedLayers["screens/messenger-chat/suggested-sheet.css"]),
     /default-scrim/,
@@ -550,6 +560,9 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /JourneyStatModal/);
   assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /light-icons/);
   assert.match(layerText("screens/messenger-chat/chat-album.css"), /AlbumPhotoViewer/);
+  // 내 스토리 사진 위 편집(2026-11-26 화면 끝까지) — 사진일 때만 그리는 그늘이 밝은 아이콘 표지를 단다.
+  assert.match(layerText("screens/messenger-chat/my-stories.css"), /light-icons/);
+  assert.match(layerText("screens/messenger-chat/my-stories.css"), /my-story-editor-shade/);
   assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /CoinShopScreen/);
   const guide = layerText("components/first-unit-guide.css");
   assert.match(guide, /light-icons/);

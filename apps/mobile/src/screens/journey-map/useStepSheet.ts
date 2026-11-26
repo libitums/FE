@@ -12,7 +12,12 @@ import {
 } from "./journey-map-scroll";
 import { catalogUnitDomId } from "./catalog-map";
 import { catalogSheetTargetOf } from "./catalog-sheet";
-import { mapScrollBehaviorFor, mapUnitPlacement } from "./journey-map-scroll-position";
+import { rememberMapScroll } from "./journey-map-scroll-memory";
+import {
+  autoScrollTolerance,
+  mapScrollBehaviorFor,
+  mapUnitPlacement,
+} from "./journey-map-scroll-position";
 import {
   initialStepSheetState,
   stepSheetCaretLimit,
@@ -144,6 +149,10 @@ export function useStepSheet(): StepSheetControls {
         setOpenScrollTop(scrollTop);
         setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
         entrance.measured(id, placement.targetScrollTop, scrollTop);
+        // 자동 스크롤과 같습니다 — 제자리로의 이동은 스크롤 소식을 내지 않습니다(AS10c).
+        if (Math.abs(placement.targetScrollTop - scrollTop) <= autoScrollTolerance) {
+          rememberMapScroll(placement.targetScrollTop);
+        }
         scrollMapTo(placement.targetScrollTop, behavior);
       },
     );

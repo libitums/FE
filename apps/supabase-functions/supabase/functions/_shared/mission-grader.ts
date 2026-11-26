@@ -1,4 +1,4 @@
-// 미션 채점(ADR-0177 D5, PRD §3.7) — 판이 끝난 뒤 상위 모델을 한 번 부르는 user 글과, 받은 결과를 리포트 값으로 다듬는 함수.
+// 미션 채점(ADR-0193 D5, PRD §3.7) — 판이 끝난 뒤 상위 모델을 한 번 부르는 user 글과, 받은 결과를 리포트 값으로 다듬는 함수.
 // 프롬프트 · 스키마는 `mission-grader-prompt.ts`. 최종 점수는 모델이 아니라 `scoreMission`이 계산한다. 목표의 최종 달성 = 턴에서
 // 쌓인 것 ∪ 채점자가 찾은 것(PRD M4). 고친 문장은 턴마다 저장된 교정을 그대로 쓰고, 채점자는 그중 중요한 것을 번호로 고른다. 순수 모듈이다.
 
@@ -206,18 +206,26 @@ export function normalizeGrade(
   };
 }
 
-/** 교정 묶음(번호) → 리포트의 「꼭 볼 고친 문장」(원문 → 고친 문장은 턴 교정 그대로, 까닭은 채점자의 한 줄). */
+/**
+ * 교정 묶음(번호) → 리포트의 「꼭 볼 고친 문장」(원문 → 고친 문장은 턴 교정 그대로, 까닭은 채점자의 한 줄). `corrections`는 채점자에게
+ * 넘긴 목록(고치기만 — 번호가 이 목록 기준)이다. 그래도 「더 나은 표현」(kind better)을 가리키는 번호는 버리고, 그래서 빈 묶음은 뺀다
+ * (2026-11-23 — Key corrections는 고치기만, 더 나은 표현은 「Sounds more natural」에만).
+ */
 export function focusCorrections(
   focus: MissionGrade["focus"],
   corrections: readonly MissionCorrection[],
 ): NonNullable<MissionReport["focus"]> {
-  return focus.map((entry) => ({
-    examples: entry.refs.flatMap((n) => {
-      const hit = corrections[n - 1];
-      return hit === undefined ? [] : [{ original: hit.original, corrected: hit.corrected }];
-    }),
-    reason: entry.reason,
-  }));
+  return focus
+    .map((entry) => ({
+      examples: entry.refs.flatMap((n) => {
+        const hit = corrections[n - 1];
+        return hit === undefined || !isFix(hit)
+          ? []
+          : [{ original: hit.original, corrected: hit.corrected }];
+      }),
+      reason: entry.reason,
+    }))
+    .filter((entry) => entry.examples.length > 0);
 }
 
 /** 다듬은 채점 + 판의 메타 → 리포트(계약 `missionReportSchema`). `previousBest`는 이 판 앞의 이 미션 최고 기록. */
@@ -255,7 +263,8 @@ export function buildMissionReport(input: {
       corrected,
       kind,
     })),
-    focus: focusCorrections(grade.focus, input.corrections),
+    // 번호는 채점자에게 넘긴 고치기 목록 기준(mission-finish-handler와 같다).
+    focus: focusCorrections(grade.focus, input.corrections.filter(isFix)),
     strengths: [...grade.strengths],
     retry: [...grade.retry],
     summary: grade.summary,

@@ -156,7 +156,12 @@ export function ReadAloudActivity({
   };
   const handleWaves = (): void => {
     "background only";
-    if (primary === "speak" || primary === "stop") {
+    // 못 알아들은 뒤에는 마이크도 같은 문장을 다시 듣습니다(주 버튼 Try again과 같은 동작).
+    if (
+      primary === "speak" ||
+      primary === "stop" ||
+      (primary === "retry" && phase.kind === "missed")
+    ) {
       playSound("button");
       run(primary);
     }
@@ -217,7 +222,9 @@ export function ReadAloudActivity({
           data-testid="read-aloud-content"
           data-questionindex={index}
           data-phase={phase.kind}
-          data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
+          data-reason={
+            phase.kind === "unavailable" || phase.kind === "missed" ? phase.reason : undefined
+          }
         >
           {question === undefined ? null : (
             <>

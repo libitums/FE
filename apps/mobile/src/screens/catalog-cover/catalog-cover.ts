@@ -1,4 +1,4 @@
-// 카탈로그 표지 컷의 순수 표시 모델입니다 — 컷 → 표시 모델, 번역 · 토글 · 다음 · 낭독.
+// 카탈로그 표지 컷의 순수 표시 모델입니다 — 컷 → 표시 모델, 대사 아래 줄 · 로마자 스위치 · 다음 · 낭독.
 
 import { EPISODE_SELF_SPEAKER } from "@libitums/episode-core/lines";
 
@@ -6,12 +6,13 @@ import { audioSyncLengthMs } from "../../lib/audio-manifest";
 import { contentAudioSourceOf } from "../../lib/content-audio";
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import type { FillScript } from "../../lib/placeholder-fill";
+import { readingOf } from "../../lib/romanization-display";
+import { sessionOptionStateLabel, type ChoiceRomanization } from "../../lib/session-options";
 import type { AudioCue } from "../../lib/use-audio-cue";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   CatalogCutPort,
   CatalogCuts,
-  CatalogCutScript,
   CatalogCutSpeaker,
   CatalogCutText,
   CatalogCutView,
@@ -128,19 +129,43 @@ export function catalogCutsOf(views: readonly CatalogCutView[]): CatalogCuts | n
   return first === undefined ? null : [first, ...rest];
 }
 
-export function catalogCutTranslation(
+/** 대사 아래 줄 — 로마자 줄 · 번역(영어) 줄입니다(ADR-0188 D2 · 개정 D7). */
+export type CatalogCutLines = {
+  readonly romanization: string | null;
+  readonly translation: string | null;
+};
+
+/**
+ * 컷 대사 아래 줄입니다. 영어 줄은 늘 영어이고(없으면 없음), 로마자 줄은 스위치가 켜져 있을 때만 섭니다 — 끄면 로마자 줄만
+ * 빠집니다. 2026-11-24 개정(D7) 전에는 끔이면 대사 상자를 눌러 영어 ↔ 로마자를 바꿨습니다 — 스위치가 대사 상자 안에 서면서 없앴습니다.
+ */
+export function catalogCutLinesOf(
   text: CatalogCutText,
-  script: CatalogCutScript,
-): string | null {
-  return script === "en" ? (text.en ?? text.roman) : (text.roman ?? text.en);
+  display: ChoiceRomanization,
+): CatalogCutLines {
+  return {
+    romanization: display === "shown" ? readingOf(text.ko, text.roman) : null,
+    translation: text.en,
+  };
 }
 
-export function catalogCutHasToggle(text: CatalogCutText): boolean {
-  return text.en !== null && text.roman !== null;
-}
+/** 대사 상자 이름 줄 오른쪽의 로마자 스위치입니다 — 글자는 설정 토글 제목과 같고 값도 같은 세션 옵션입니다(개정 D7). */
+export type CatalogRomanizationSwitch = {
+  readonly label: string;
+  readonly checked: boolean;
+  readonly stateLabel: string;
+};
 
-export function nextCatalogCutScript(script: CatalogCutScript): CatalogCutScript {
-  return script === "en" ? "roman" : "en";
+export function catalogRomanizationSwitchOf(
+  display: ChoiceRomanization,
+  copy: UiCopy,
+): CatalogRomanizationSwitch {
+  const checked = display === "shown";
+  return {
+    label: copy.settings.sessionOption["show-choice-romanization"],
+    checked,
+    stateLabel: sessionOptionStateLabel(checked, copy),
+  };
 }
 
 export function nextCatalogCutIndex(index: number, total: number): number | null {
@@ -165,8 +190,8 @@ function withoutParentheses(text: CatalogCutText): CatalogCutText {
 
 export function catalogCutAccessibilityLabel(
   view: CatalogCutView,
-  script: CatalogCutScript,
   copy: UiCopy,
+  display: ChoiceRomanization = "hidden",
 ): string {
   // 지문은 화자 뒤에 둡니다 — 보조기술 사용자가 장면 지시를 놓치지 않게(시각 패널과 같은 순서).
   const thought = view.kind === "line" && view.voice === "thought";
@@ -177,8 +202,13 @@ export function catalogCutAccessibilityLabel(
       ? `${catalogCutSpeakerName(view.speaker, copy)}${thought ? `, ${copy.catalogCover.thinking}` : ""}${view.aside === null ? "" : `, ${view.aside.ko}`}: `
       : "";
   let label = `${lead}${spoken.ko}`;
-  const translation = catalogCutTranslation(spoken, script);
-  if (translation !== null) label += ` ${translation}`;
-  if (catalogCutHasToggle(view.text)) label += `, ${copy.catalogCover.toggleScript[script]}`;
+  const lines = catalogCutLinesOf(spoken, display);
+  if (lines.romanization !== null) {
+    // 로마자 켬 — 한글 · 「Pronunciation: 로마자」 · 영어 순서(화면에 선 순서, ADR-0084 D19의 접두)입니다.
+    label += `, ${copy.readAloud.pronunciation(lines.romanization)}`;
+    if (lines.translation !== null) label += `, ${lines.translation}`;
+    return label;
+  }
+  if (lines.translation !== null) label += ` ${lines.translation}`;
   return label;
 }

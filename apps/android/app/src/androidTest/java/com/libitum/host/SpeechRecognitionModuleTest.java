@@ -68,6 +68,106 @@ public final class SpeechRecognitionModuleTest {
     }
   }
 
+  @Test public void koreanPackAnswersOnceWithAKnownStatus() throws InterruptedException {
+    Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+    MainActivity activity = launch(instrumentation);
+    try {
+      SpeechRecognitionModule module = new SpeechRecognitionModule(activity,
+          new SpeechRecognitionController(activity));
+      CountDownLatch done = new CountDownLatch(1);
+      AtomicInteger calls = new AtomicInteger();
+      AtomicReference<JavaOnlyMap> pack = new AtomicReference<>();
+      module.getKoreanPack(values -> {
+        calls.incrementAndGet();
+        pack.set((JavaOnlyMap) values[0]);
+        done.countDown();
+      });
+      assertTrue(done.await(3, TimeUnit.SECONDS));
+      Thread.sleep(1500); // past the check timeout: a late answer must not call back again
+      assertEquals(1, calls.get());
+      String status = pack.get().getString("koreanPack");
+      assertTrue(status, java.util.Arrays.asList("installed", "downloading", "available",
+          "unsupported", "unknown").contains(status));
+      boolean onDevice = Build.VERSION.SDK_INT >= 31
+          && SpeechRecognizer.isOnDeviceRecognitionAvailable(activity);
+      if (!onDevice) assertEquals("unsupported", status);
+      else if (Build.VERSION.SDK_INT < 33) assertEquals("unknown", status);
+    } finally {
+      instrumentation.runOnMainSync(activity::finish);
+    }
+  }
+
+  @Test public void onDeviceRequestSettlesOnceAndDisclosesAnyFallback() throws InterruptedException {
+    Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+    MainActivity activity = launch(instrumentation);
+    try {
+      org.junit.Assume.assumeTrue("needs both recognizers",
+          SpeechRecognizer.isRecognitionAvailable(activity) && Build.VERSION.SDK_INT >= 31
+              && SpeechRecognizer.isOnDeviceRecognitionAvailable(activity));
+      instrumentation.getUiAutomation().grantRuntimePermission(
+          activity.getPackageName(), Manifest.permission.RECORD_AUDIO);
+      SpeechRecognitionModule module = new SpeechRecognitionModule(activity,
+          new SpeechRecognitionController(activity));
+      CountDownLatch done = new CountDownLatch(1);
+      AtomicInteger calls = new AtomicInteger();
+      AtomicReference<JavaOnlyMap> result = new AtomicReference<>();
+      module.start(new JavaOnlyMap(), values -> {
+        calls.incrementAndGet();
+        result.set((JavaOnlyMap) values[0]);
+        done.countDown();
+      });
+      Thread.sleep(2500);
+      module.stop();
+      assertTrue(done.await(10, TimeUnit.SECONDS));
+      Thread.sleep(1500);
+      assertEquals(1, calls.get());
+      JavaOnlyMap payload = result.get();
+      android.util.Log.i("SpeechFallbackTest", "status=" + payload.getString("status")
+          + " errorCode=" + payload.getInt("errorCode")
+          + " koreanPack=" + payload.getString("koreanPack")
+          + " fallback=" + payload.getString("fallback")
+          + " fallbackErrorCode=" + payload.getInt("fallbackErrorCode")
+          + " requiresOnDevice=" + payload.getBoolean("requiresOnDevice")
+          + " onDevice=" + payload.getString("onDevice"));
+      assertTrue(payload.getBoolean("requestedOnDevice"));
+      assertTrue(payload.getBoolean("supportsOnDevice"));
+      boolean fellBack = !"none".equals(payload.getString("fallback"));
+      // A fallback session never claims the on-device guarantee.
+      assertEquals(!fellBack, payload.getBoolean("requiresOnDevice"));
+      assertEquals(fellBack ? "not-guaranteed" : "guaranteed", payload.getString("onDevice"));
+      if (Build.VERSION.SDK_INT >= 33) {
+        String pack = payload.getString("koreanPack");
+        if ("available".equals(pack) || "unsupported".equals(pack)) {
+          assertEquals("pack-missing", payload.getString("fallback"));
+        }
+        if ("installed".equals(pack)) assertEquals("none", payload.getString("fallback"));
+      }
+    } finally {
+      instrumentation.runOnMainSync(activity::finish);
+    }
+  }
+
+  @Test public void downloadWithoutOnDeviceServiceIsUnsupported() throws InterruptedException {
+    Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
+    MainActivity activity = launch(instrumentation);
+    try {
+      assumeFalse("needs a device without an on-device service or below API 33",
+          Build.VERSION.SDK_INT >= 33 && SpeechRecognizer.isOnDeviceRecognitionAvailable(activity));
+      SpeechRecognitionModule module = new SpeechRecognitionModule(activity,
+          new SpeechRecognitionController(activity));
+      CountDownLatch done = new CountDownLatch(1);
+      AtomicReference<JavaOnlyMap> result = new AtomicReference<>();
+      module.downloadKoreanPack(values -> {
+        result.set((JavaOnlyMap) values[0]);
+        done.countDown();
+      });
+      assertTrue(done.await(3, TimeUnit.SECONDS));
+      assertEquals("unsupported", result.get().getString("status"));
+    } finally {
+      instrumentation.runOnMainSync(activity::finish);
+    }
+  }
+
   @Test public void missingRecognizerSettlesWithoutOpeningMicrophone() throws InterruptedException {
     Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
     MainActivity activity = launch(instrumentation);

@@ -1,6 +1,6 @@
 // 생성 파일입니다 — 고치지 않습니다. 정본은 packages/companion-contract/src이고
 // `pnpm --filter @libitums/companion-contract sync:functions`가 다시 씁니다.
-// 롤플레이 미션의 끝 · 리포트 · 목록입니다(ADR-0177, PRD §3.6 ~ §3.8 · §4.1 · §6). `mission-finish` 요청 · 응답과
+// 롤플레이 미션의 끝 · 리포트 · 목록입니다(ADR-0193, PRD §3.6 ~ §3.8 · §4.1 · §6). `mission-finish` 요청 · 응답과
 // 창구 함수 `companion_list_missions()` · `companion_list_mission_results(p_mission_id)`의 반환 모양입니다.
 import { z } from "zod/mini";
 

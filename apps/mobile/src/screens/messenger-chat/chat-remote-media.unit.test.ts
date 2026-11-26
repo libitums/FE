@@ -44,6 +44,7 @@ const media = (over: Partial<RemoteMedia> = {}): RemoteMedia => ({
   aspect: null,
   failure: null,
   createdAt: 1_000,
+  stage: null,
   ...over,
 });
 
@@ -54,6 +55,7 @@ function setup(
     noMedia?: boolean;
     history?: typeof history;
     sign?: ChatMediaRemote["sign"];
+    sample?: NonNullable<ChatMediaRemote["sample"]>;
   } = {},
 ) {
   const timers = fakeTimers();
@@ -67,6 +69,7 @@ function setup(
     load: vi.fn(async () => (loads.length > 0 ? (loads.shift() ?? null) : [])),
     sign: vi.fn(over.sign ?? (async (path: string) => `https://signed/${path}`)),
     balance: vi.fn(async () => 465),
+    ...(over.sample === undefined ? {} : { sample: over.sample }),
   };
   const remote: ChatRemote = {
     loadHistory: async () => over.history ?? history,
@@ -110,16 +113,19 @@ describe("요청 → 다시 읽기 → 결과", () => {
       ],
     });
     env.source.requestMedia("duksu", "photo");
-    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending" });
+    // 자리표시자는 요청한 때의 기기 시계를 싣는다(대기 문구 단계의 출발, 리뷰 #541).
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
     expect(env.source.snapshot().rooms.find((r) => r.roomId === "duksu")?.activity).toBe(
       "sending-photo",
     );
     await flush();
     expect(env.port.request).toHaveBeenCalledWith("snapshot", A1);
     expect(env.lines().at(-1)?.id).toBe(mediaLineId(A1, "photo", M1));
+    // 서버 줄로 바뀌어도(id · at이 서버 것) 시작 시각은 요청한 때 그대로 — 단계가 처음으로 돌아가지 않는다.
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
     expect(env.balances).toEqual([465]);
     await env.advance(2_000);
-    expect(env.lines().at(-1)?.kind).toBe("photo-pending");
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
     await env.advance(3_000);
     expect(env.lines().at(-1)).toEqual({
       id: mediaLineId(A1, "photo", M1),
@@ -218,6 +224,35 @@ describe("저장본 · 거절 · 연결 실패", () => {
   });
 });
 
+describe("서버 진행 단계", () => {
+  test("CM-U9d 다시 읽을 때 단계가 drawing으로 바뀌면 대기 줄에 단계 · 비율이 실리고, 시작 시각은 그대로다", async () => {
+    const env = await opened({
+      request: { kind: "accepted", media: media({ stage: "preparing" }), cached: false },
+      loads: [
+        [], // 방을 열 때 resume
+        [media({ stage: "drawing", aspect: "3:2" })], // 2초
+        [media({ stage: "drawing", aspect: "3:2" })], // 3초 뒤
+      ],
+    });
+    env.source.requestMedia("duksu", "photo"); // 기기 시계 1,000
+    await flush();
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 1_000,
+      serverStage: "preparing",
+    });
+    await env.advance(2_000);
+    expect(env.lines().at(-1)).toMatchObject({
+      kind: "photo-pending",
+      startedAt: 1_000,
+      serverStage: "drawing",
+      aspect: "3:2",
+    });
+    await env.advance(3_000);
+    expect(env.lines().at(-1)).toMatchObject({ startedAt: 1_000, serverStage: "drawing" });
+  });
+});
+
 describe("방을 나가고 다시 열기 · 상한", () => {
   test("CM-U11a 나가면 다시 읽기가 멈추고, 다시 열면 메시지 id로 물어 결과를 놓는다", async () => {
     const env = await opened({
@@ -233,6 +268,22 @@ describe("방을 나가고 다시 열기 · 상한", () => {
     await flush();
     expect(env.port.load).toHaveBeenLastCalledWith({ messageIds: [A1] });
     expect(env.lines().at(-1)).toMatchObject({ kind: "photo", imageUrl: "https://signed/u/a.png" });
+  });
+
+  test("CM-U11c 다시 열어도 아직 만드는 중이면 대기 줄의 시작 시각(기기 시계)은 요청한 때 그대로다(리뷰 #541)", async () => {
+    const env = await opened({ loads: [[], [media()], [media()]] });
+    env.source.requestMedia("duksu", "photo"); // 기기 시계 1,000
+    await flush();
+    env.source.closeRoom("duksu");
+    await env.advance(8_000);
+    env.source.openRoom("duksu");
+    await flush();
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
+    env.source.closeRoom("duksu");
+    await env.advance(4_000);
+    env.source.openRoom("duksu");
+    await flush();
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
   });
 
   test("CM-U11b 서버가 끝내 pending이면 앱 상한(11분) 뒤 failed 줄, 더 읽지 않는다", async () => {
@@ -308,5 +359,115 @@ describe("늦게 끝난 옛 다시 읽기(리뷰 #442)", () => {
     release("https://signed/u/1.png"); // 옛 세대가 늦게 끝남
     await flush();
     expect(photoOf(A2)).toEqual(["photo"]);
+  });
+});
+
+describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 장)", () => {
+  const sampleMedia = media({
+    status: "complete",
+    path: "samples/duksu-guide-01.png",
+    aspect: "3:2",
+  });
+  const sampleOf = (result: MediaRequestResult, offered = true) => ({
+    offer: vi.fn(async () => ({ snapshot: offered, voice: offered })),
+    claim: vi.fn(async (_messageId: string, _kind: string) => result),
+  });
+
+  test("CM-U30 제안 — 서버가 준다고 할 때만, 예시 포트가 없으면(옛 원격) 거짓", async () => {
+    const offered = await opened({
+      sample: sampleOf({ kind: "accepted", media: sampleMedia, cached: false }),
+    });
+    expect(await offered.source.sampleSnapshot?.offered("duksu")).toEqual({
+      snapshot: true,
+      voice: true,
+    });
+    expect(offered.port.sample?.offer).toHaveBeenCalledWith("duksu");
+    // 예시 포트가 없는 원격에서는 출처도 예시 길을 내놓지 않는다 — 안내가 답을 기다리지 않게.
+    const none = await opened();
+    expect(none.source.sampleSnapshot).toBeUndefined();
+  });
+
+  test("CM-U31 받기 — 곧바로 대기 줄, 잠깐 뒤 예시 사진 · 「이번 것은 무료」 줄. 잔액은 읽지 않는다(값 없음)", async () => {
+    const sample = sampleOf({ kind: "accepted", media: sampleMedia, cached: false });
+    const env = await opened({ sample });
+    const done = env.source.sampleSnapshot?.claim("duksu");
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending", startedAt: 1_000 });
+    expect(sample.claim).toHaveBeenCalledWith(A1, "snapshot");
+    await flush();
+    // 서버가 곧바로 답해도 잠깐은 만드는 중으로 보인다.
+    expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending" });
+    await env.advance(1_500);
+    expect(await done).toBe(true);
+    const tail = env.lines().slice(-2);
+    expect(tail[0]).toMatchObject({
+      kind: "photo",
+      imageUrl: "https://signed/samples/duksu-guide-01.png",
+      aspect: "3:2",
+      aiGenerated: true,
+    });
+    expect(tail[1]).toMatchObject({ kind: "media-notice", media: "photo", notice: "sample-gift" });
+    expect(env.balances).toEqual([]);
+    expect(env.port.request).not.toHaveBeenCalled();
+  });
+
+  test("CM-U34 예시 음성 — 음성 대기 줄, 잠깐 뒤 음성 말풍선 · 「이번 것은 무료」 줄(음성). 서버에는 voice로 받는다", async () => {
+    const voice = media({
+      kind: "voice",
+      status: "complete",
+      path: "samples/duksu-guide-voice-01.mp3",
+    });
+    const sample = sampleOf({ kind: "accepted", media: voice, cached: false });
+    const env = await opened({ sample });
+    const done = env.source.sampleSnapshot?.claim("duksu", "voice");
+    expect(env.lines().at(-1)).toMatchObject({ kind: "voice-pending", startedAt: 1_000 });
+    expect(sample.claim).toHaveBeenCalledWith(A1, "voice");
+    await env.advance(1_500);
+    expect(await done).toBe(true);
+    const tail = env.lines().slice(-2);
+    expect(tail[0]).toMatchObject({
+      kind: "voice",
+      audioUrl: "https://signed/samples/duksu-guide-voice-01.mp3",
+    });
+    expect(tail[1]).toMatchObject({ kind: "media-notice", media: "voice", notice: "sample-gift" });
+    expect(env.balances).toEqual([]);
+    expect(env.port.request).not.toHaveBeenCalled();
+  });
+
+  test("CM-U35 목록 미리보기 — 마지막 줄이 회색 안내(「이번 것은 무료」)여도 그 앞의 음성 · 사진이 보인다(빈 줄이 아니다)", async () => {
+    const voice = media({
+      kind: "voice",
+      status: "complete",
+      path: "samples/duksu-guide-voice-01.mp3",
+    });
+    const env = await opened({
+      sample: sampleOf({ kind: "accepted", media: voice, cached: false }),
+    });
+    const done = env.source.sampleSnapshot?.claim("duksu", "voice");
+    await env.advance(1_500);
+    await done;
+    expect(env.lines().at(-1)?.kind).toBe("media-notice");
+    const row = env.source.snapshot().rooms.find((room) => room.roomId === "duksu");
+    expect(row?.lastMessage?.kind).toBe("voice");
+    // 시각 · 정렬도 보이는 그 줄의 것 — 내용과 시각이 서로 다른 줄을 가리키지 않는다.
+    expect(row?.updatedAt).toBe(row?.lastMessage?.at);
+  });
+
+  test("CM-U32 받지 못하면 대기 줄이 회색 안내로 바뀌고 false — 사진 · 무료 줄은 서지 않는다", async () => {
+    const env = await opened({ sample: sampleOf({ kind: "failed" }) });
+    const done = env.source.sampleSnapshot?.claim("duksu");
+    await env.advance(1_500);
+    expect(await done).toBe(false);
+    expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "request-failed" });
+    expect(env.lines().some((m) => m.kind === "photo" || m.kind === "photo-pending")).toBe(false);
+  });
+
+  test("CM-U33 서버가 주지 않기로 했으면(다른 기기에서 이미 씀 · 예시 꺼짐) 「연결 확인」이 아니라 「지금은 쓸 수 없음」 줄이 선다", async () => {
+    const env = await opened({
+      sample: sampleOf({ kind: "refused", notice: "not-eligible", until: null }),
+    });
+    const done = env.source.sampleSnapshot?.claim("duksu");
+    await env.advance(1_500);
+    expect(await done).toBe(false);
+    expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "unavailable" });
   });
 });

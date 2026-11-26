@@ -1,5 +1,5 @@
-// 여정 맵 루트의 일회성 안내를 한 자리에서 잇습니다 — 가입 보상(ADR-0174) → 푸시 캠페인 보상(ADR-0175) → 엽전 출시 · 채팅
-// 모달(ADR-0140) → 끝낸 에피소드 업데이트 안내(시안 G-A) → Letters 추천(ADR-0169). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
+// 여정 맵 루트의 일회성 안내를 한 자리에서 잇습니다 — 가입 보상(ADR-0174) → 푸시 캠페인 보상(ADR-0175) → Chat Plus 첫 구독
+// 보너스(ADR-0196) → 엽전 출시 · 채팅 모달(ADR-0140) → 끝낸 에피소드 업데이트 안내(시안 G-A) → Letters 추천(ADR-0169). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
 
 import type { ReactNode } from "@lynx-js/react";
 import { useEffect, useRef, useState } from "@lynx-js/react";
@@ -14,8 +14,11 @@ import { useLettersRecommend } from "./use-letters-recommend";
 import { useLaunchCoins, type LaunchCoins } from "./use-launch-coins";
 import { useSignupReward } from "./use-signup-reward";
 import { usePushReward } from "./use-push-reward";
+import { useSubscriptionBonus } from "./use-subscription-bonus";
+import { useWelcomePass } from "./use-welcome-pass";
 import { pushRewardGuideOn } from "./push-reward-record";
 import { guestUnlimitedPass, type UnlimitedPass } from "../lib/unlimited-pass";
+import { laterTimedPass } from "../lib/welcome-pass";
 import { tutorialDone } from "./launch-coins";
 import { useMessengerMediaHooks } from "./use-messenger-media-hooks";
 import { useStreakReward } from "./use-streak-reward";
@@ -45,7 +48,7 @@ export function useMapNotices(input: MapNoticesInput): {
   readonly blocking: boolean;
   /** 알림 권한 창의 답을 기다리는 중(ADR-0176 D5) — 머리가 연속 모달 · 설문을 저절로 열지 않습니다. */
   readonly holdsHeader: boolean;
-  /** 푸시 보상으로 받은 무제한 티켓(ADR-0175) — 머리 칩 · 무제한 모달. 구독 판이 있으면 그쪽이 앞섭니다. */
+  /** 시간 한정 무제한 티켓 — 푸시 보상(ADR-0175) · 첫날 이용권(ADR-0186) 중 늦게 끝나는 쪽. 구독 판이 있으면 그쪽이 앞섭니다. */
   readonly ticketPass: UnlimitedPass | undefined;
 } {
   // 업데이트 안내가 이미 떠 있으면 엽전 모달이 그 위로 끼어들지 않습니다 — 안내가 닫힘 처리 없이 사라졌다가 다시 뜨면
@@ -58,21 +61,29 @@ export function useMapNotices(input: MapNoticesInput): {
   const launchOpen = useRef(false);
   // 푸시 보상(ADR-0175)은 가입 보상 다음 · 엽전 출시 앞 — 가입 보상이 지난 그림의 푸시 모달을 보고 끼어들지 않습니다.
   const pushOpen = useRef(false);
+  // 구독 보너스(ADR-0196)는 푸시 보상 다음 · 엽전 출시 앞 — 가입 보상이 지난 그림의 보너스 모달을 보고 끼어들지 않습니다.
+  const bonusOpen = useRef(false);
   // 알림 권한 창의 답을 기다리는 동안 어떤 안내도 그 밑에 서지 않습니다(ADR-0176 D5).
   const [promptAsking, setPromptAsking] = useState(false);
   const idle = input.idle && !promptAsking;
+  // 첫날 무제한 티켓(ADR-0186) — 회원만, 따로 안내 모달 없음. 구독 중이면 없고 구독 상태를 모르는 동안은 칩을 그리지 않습니다(개정 2).
+  // 요금제 결선이 없으면(비회원 · 플래그 꺼짐) 구독 없음과 같습니다. 가입 보상 창이 선물 두 줄로 알립니다(개정 3).
+  const welcomePass = useWelcomePass(input.wiring.plans?.subscription ?? "none");
   const signup = useSignupReward({
+    welcomePass,
     wiring: input.wiring,
     idle:
       idle &&
       !launchOpen.current &&
       !updateOpen.current &&
       !lettersOpen.current &&
-      !pushOpen.current,
+      !pushOpen.current &&
+      !bonusOpen.current,
     tutorialDone: tutorialDone(input.progress, input.wiring.legacyTutorialPassed),
     chip: () => launchRef.current?.coinCount ?? null,
     acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
   });
+  const guideOn = pushRewardGuideOn(input.progress, input.wiring.legacyTutorialPassed);
   const push = usePushReward({
     wiring: input.wiring,
     idle:
@@ -82,21 +93,33 @@ export function useMapNotices(input: MapNoticesInput): {
       !launchOpen.current &&
       !updateOpen.current &&
       !lettersOpen.current,
-    guideOn: pushRewardGuideOn(input.progress, input.wiring.legacyTutorialPassed),
+    guideOn,
     chip: () => launchRef.current?.coinCount ?? null,
     acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
   });
   pushOpen.current = push.open;
+  const bonus = useSubscriptionBonus({
+    wiring: input.wiring,
+    entitlements: input.wiring.plans?.entitlements ?? null,
+    idle:
+      idle &&
+      !signup.open &&
+      !signup.holdsLaunch &&
+      !push.holdsLater &&
+      !launchOpen.current &&
+      !updateOpen.current &&
+      !lettersOpen.current,
+    guideOn,
+    chip: () => launchRef.current?.coinCount ?? null,
+    acceptBalance: (balance) => launchRef.current?.acceptServerBalance(balance),
+  });
+  bonusOpen.current = bonus.open;
+  const later = push.holdsLater || bonus.holdsLater;
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
     localCoins: input.localCoins,
-    idle:
-      idle &&
-      !updateOpen.current &&
-      !lettersOpen.current &&
-      !signup.holdsLaunch &&
-      !push.holdsLater,
+    idle: idle && !updateOpen.current && !lettersOpen.current && !signup.holdsLaunch && !later,
     onStartChatting: input.onStartChatting,
   });
   launchRef.current = launch;
@@ -105,7 +128,7 @@ export function useMapNotices(input: MapNoticesInput): {
     catalog: input.catalog,
     sections: input.sections,
     progress: input.progress,
-    ready: idle && !launch.open && !signup.open && !push.holdsLater && !lettersOpen.current,
+    ready: idle && !launch.open && !signup.open && !later && !lettersOpen.current,
   });
   useEffect(() => {
     updateOpen.current = updateNotice.open;
@@ -115,12 +138,7 @@ export function useMapNotices(input: MapNoticesInput): {
     trail: input.wiring.learningTrail,
     more: input.wiring.more,
     ready:
-      idle &&
-      !launch.open &&
-      !signup.open &&
-      !push.holdsLater &&
-      !updateNotice.open &&
-      !updateOpen.current,
+      idle && !launch.open && !signup.open && !later && !updateNotice.open && !updateOpen.current,
   });
   useEffect(() => {
     lettersOpen.current = letters.open;
@@ -133,7 +151,7 @@ export function useMapNotices(input: MapNoticesInput): {
       input.idle &&
       !input.promptGate.shopOpen &&
       !signup.open &&
-      !push.holdsLater &&
+      !later &&
       !launch.open &&
       !updateNotice.open &&
       !letters.waiting &&
@@ -151,16 +169,17 @@ export function useMapNotices(input: MapNoticesInput): {
   useMessengerMediaHooks(launch.acceptServerBalance, input.wiring.messengerChat.eventSink);
   return {
     coinCount: ((count) => (count === null ? null : Math.max(0, count - streak.held)))(
-      push.coinCount(signup.coinCount(launch.coinCount)),
+      bonus.coinCount(push.coinCount(signup.coinCount(launch.coinCount))),
     ),
     streakReward: streak.wiring,
-    blocking: updateNotice.open || letters.open || signup.open || push.open,
+    blocking: updateNotice.open || letters.open || signup.open || push.open || bonus.open,
     holdsHeader: promptAsking,
-    ticketPass: push.ticketPass,
+    ticketPass: laterTimedPass(push.ticketPass, welcomePass),
     layer: (
       <>
         {signup.layer}
         {push.layer}
+        {bonus.layer}
         {launch.layer}
         {updateNotice.open ? <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} /> : null}
         {letters.layer}

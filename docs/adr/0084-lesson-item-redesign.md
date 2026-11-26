@@ -99,7 +99,7 @@
 - **S3 그림 고르기** — 그림이 카드 가장자리까지 채운다. iOS Lynx는 바깥 `Card.Media`의 둥근 모서리로 안쪽 그림을 자르지 않아 [실측 — 시뮬레이터] 그림 틀 · 그림에 카드와 같은 반지름(`radius-xl`)을 직접 준다(S13 장면 띠도 위 두 모서리를 직접). 그림 비율은 기기가 아니라 **보기 행 수**로: 2지(1행) 1:1, 3 ~ 4지(2행) 4:3. 보기 2열 m.
 - **S4 음절 조립** — 답 칸은 음절마다 한 칸(48×56, `CompactNumericInput` s 모양 — 자판을 띄우면 안 되는 칸이라 컴포넌트는 쓰지 않는다). 칸 상태 `filled` · `current`(흰 면 + `brand-strong` 테두리) · `empty`, 채점 뒤 판정 색.
   **쓴 타일은 자리를 지키고 비활성 색으로 남으며 `X, used`로 읽힌다**(traits `disabled`) — 전에는 숨기고 낭독에서 뺐다.
-- **S5 그림 보고 말하기** — 카드 = 그림 + 정답 로마자(글 역할). **영어 뜻 줄을 지웠다**(뜻은 그림 이름 · 실패 대체 글자에 남는다). 파형은 카드와 버튼 사이(하한 56). 그림 비율 regular 5:4 · compact 4:3.
+- **S5 그림 보고 말하기** — 카드 = 그림 + 정답 로마자(글 역할) ⟨2026-11-23 판정 전 로마자는 「Hint」 뒤로 — 아래 적용 기록⟩. **영어 뜻 줄을 지웠다**(뜻은 그림 이름 · 실패 대체 글자에 남는다). 파형은 카드와 버튼 사이(하한 56). 그림 비율 regular 5:4 · compact 4:3.
 - **S6 · S9 · S10 · S13 질문 카드** — 한글(D4) → 로마자 → 구분선(뜻이 있을 때) → 뜻. **빈칸 채우기(`CLOZE`)의 로마자 줄은 첫 `___`를 정답 로마자(`answers[0].roman`)로 바꾼 전체 문장**이고, 그 조각은 **`fg-brand` 글자색 + 기본 밑줄**이다(재검토 조건 6의 결과 — 처음 정한 `brand-primary` 밑줄 색은 iOS가 그리지 않았다. `fg-brand`는 흰 바탕 5.46). 정답 로마자가 비면 문맥 로마자 그대로(강조 없음).
 
 ### D12. `LISTEN_BUILD` · `WORD_ORDER`는 카드 없는 「줄」 배치이고, 채점은 `Check`로만
@@ -186,8 +186,11 @@
 | `contentSource` ⟨2026-11-16⟩ | `bundled`(앱 내장) · `remote`(버킷에서 받은 판) |
 | `contentLevel` ⟨2026-11-16⟩ | 원격 판을 받은 매니페스트의 `min_client_level`(10진 문자열, 예 `"5"`). 내장판은 없음 |
 | `selectedAnswer` ⟨2026-11-16 · 개정 11-17⟩ | 처음 판정 때 고른 보기 · 타일의 **자리표시자를 치환하기 전 콘텐츠 원문**(예 「{이름}(으)로 예약했어요.」 — 화면 글자는 학습자 이름 · 나라로 바뀌어 있어 쓰지 않는다). 보기형은 고른 보기, 문장 · 듣고 조립은 놓은 타일을 공백으로, 대화 조립은 **놓은 턴만(고정된 첫 턴 제외)** `" \| "`로, 음절 조립은 이음 없이. 원문 배열이 없는 문항은 싣지 않는다. **직접 입력 · 말하기 결과는 싣지 않는다** |
-| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user"` 또는 `unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) |
+| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user"` 또는 `unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) · ⟨2026-11-24⟩ `missed:<reason>`(`no-match` · `network` — 못 알아들은 뒤 다시 말하지 않고 넘김, [ADR-0181](0181-speech-no-match-retry.md)) |
 | `hintUsed` ⟨2026-11-17⟩ | 판정 전에 쓴 힌트 — `listen`(정답 듣기) · `show`(정답 보기, 앞섬). 음절 조립 · 문장 조립만. 안 썼으면 없음([ADR-0153](0153-assembled-item-romanization-hint.md)) |
+| `speechErrorCode` ⟨2026-11-19⟩ | 낱말 말하기: 인식기 오류 코드(10진 문자열, 오류 없음 `"0"`). Android는 `SpeechRecognizer.ERROR_*`, iOS는 그 오류 도메인의 코드. **인식기가 결과를 올렸을 때만**(판정 · 실패 뒤 Skip) — 말하기 전 Skip · 접점 없음 · 권한 막힘에는 없음([ADR-0017](0017-host-native-capabilities-and-audio.md) 2026-11-19 적용 기록) |
+| `speechFallback` ⟨2026-11-19⟩ | 낱말 말하기: 네트워크 인식기로 되돌아갔는가 — `none` · `pack-missing`(시작 전 확인에서 한국어 팩 없음) · `on-device-error`(온디바이스 언어 오류). iOS는 늘 `none`. 있고 없음은 `speechErrorCode`와 같다 |
+| `speechKoreanPack` ⟨2026-11-19⟩ | 낱말 말하기: 그 세션이 본 기기 안 한국어 팩 — `installed` · `downloading` · `available` · `unsupported` · `unknown`(Android 12 이하 · 확인 못 함 · iOS). 있고 없음은 `speechErrorCode`와 같다 |
 
 - 발생: 채점 문항이 **처음 판정되는 순간 문항당 한 번**. 따라 읽기 · 단어 카드 · 문화 카드 · 짝 맞추기 · 타자 입력은 내지 않는다(채점 밖이거나 이번에 화면이 바뀌지 않음 — 비교 대상 아님). 듣기 여섯 유형은 `episode_listen_item_answered`와 **둘 다** 낸다(묻는 것이 다르다).
 - 읽는 법: 유형별 정답률 = `itemType`별 correct ÷ (correct + incorrect) · 줄 배치 Check 뒤 오답률 = `itemType ∈ {LISTEN_BUILD, WORD_ORDER}`의 incorrect 비율 · 대화 조립 정답률 = `TURN_ORDER`. 모두 `density`로 갈라 작은 화면 효과를 본다.
@@ -266,3 +269,14 @@
 ### 적용 기록 ⟨2026-11-17⟩ — `selectedAnswer`는 치환 전 원문(리뷰 C1)
 
 화면 글자로 `selectedAnswer`를 실으면 `{이름}` · `{나라}`가 학습자 입력값으로 바뀐 채 PostHog로 나갔다(u02 checkin 「{이름}(으)로 예약했어요.」 · 타일 「{이름}(으)로」, u03 S8-01 · S8-03). 사용자 결정으로 계약을 바꿨다 — 매핑이 보기 · 타일의 치환 전 원문 배열(`choicesSource` · `chipsSource` · `tilesSource`, 표시 순서)을 질문에 함께 싣고, 화면 보고는 그것만 쓴다. 원문이 없으면 싣지 않는다. 이 표가 `episode_item_answered`의 정본 속성표다(위키 Analytics-Events는 이 표를 옮긴 것).
+
+## 적용 기록 ⟨2026-11-23 — 낱말 말하기의 판정 전 로마자를 힌트 뒤로⟩
+
+**사용자 결정**(2026-11-23, 안 C): 낱말 말하기(SPEAK_WORD)는 판정 전에 정답 로마자를 **늘** 보이지 않고, 「Hint」를 눌러 보게 한다. 위 D10의 「카드 = 그림 + 정답 로마자」(사용자 결정 2026-10-22)를 바꾼다. 버린 안: A 늘 보이기(떠올리는 연습이 안 됨) · B 늘 숨기기(초보가 막혀 Skip — 튜토리얼 통과가 시작한 사람의 약 18%라 초보가 많다).
+
+- 까닭: 그림 아래 정답 로마자(예: `kadeu`)가 말하기 전부터 서 있어, 그림을 보고 낱말을 떠올리는 문항이 읽고 말하는 문항이 됐다(2026-11-23 Android 에뮬레이터 화면 확인). 이 문항은 에피소드마다 하나씩 S6 복습 레슨에만 있고(u01 카드 · u02 비밀번호 · u03 침대 · u04 왼쪽 · u05 된장찌개), 낱말은 앞 레슨에서 배운 것이다. 튜토리얼에는 없다.
+- 판정 전 카드는 그림과 그림 위 오른쪽 「Hint」 버튼이다. 버튼은 조립 문항 힌트([ADR-0153](0153-assembled-item-romanization-hint.md))의 부품 · 시트 · 기록을 그대로 쓴다 — 「Show the answer」는 그림 아래 정답 로마자 줄(전과 같은 글 역할 · heading-m)을, 「Hear the answer」는 정답 소리(`feedback.audio_url`)를 한 번 낸다. 버튼은 준비 국면에만 서고(듣는 중 · 판정 뒤 · 인식 불가에는 없음), 로마자가 없는 문항에는 없다. 문항이 바뀌면 힌트 기록이 비워진다.
+- 쓴 힌트는 판정 · 건너뜀 보고의 `hintUsed`(`show` > `listen`)로 남는다 — 조립 문항과 같은 속성이라 PostHog에서 한 질의로 본다.
+- 영어 뜻은 전처럼 그림 틀의 낭독 이름(`Picture: …`) · 그림 실패 대체 글자에 남는다. 판정이 나면 정답 상자 `Answer: 낱말 · 로마자`가 맞아도 선다(바뀌지 않음).
+- 측정: 이 문항의 「들은 응답 중 정답률」(u01 S6-10 53% · u02 S6-13 67%, 최근 30일)은 로마자 도움을 받은 숫자다. 배포 뒤 같은 지표로 다시 본다.
+

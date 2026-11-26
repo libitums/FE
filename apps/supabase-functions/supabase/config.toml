@@ -19,7 +19,7 @@ verify_jwt = false
 [functions.companion-greet]
 verify_jwt = false
 
-# 롤플레이 미션(ADR-0177) — 1단계와 같이 함수 안에서 사용자 토큰 · 서버 키를 확인한다.
+# 롤플레이 미션(ADR-0193) — 1단계와 같이 함수 안에서 사용자 토큰 · 서버 키를 확인한다.
 [functions.mission-start]
 verify_jwt = false
 
@@ -27,6 +27,13 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.mission-finish]
+verify_jwt = false
+
+# 미션 음성(ElevenLabs Scribe · eleven_v4_turbo) — 같은 규칙으로 함수 안에서 확인한다.
+[functions.mission-stt]
+verify_jwt = false
+
+[functions.mission-tts]
 verify_jwt = false
 
 [functions.send-push]
@@ -42,4 +49,19 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.push-campaigns]
+verify_jwt = false
+
+[functions.companion-stories]
+verify_jwt = false
+
+[functions.companion-story-reactions]
+verify_jwt = false
+
+[functions.companion-my-story]
+verify_jwt = false
+
+[functions.companion-story-studio]
+verify_jwt = false
+
+[functions.companion-story-images]
 verify_jwt = false

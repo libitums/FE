@@ -52,6 +52,10 @@ export const pushCampaignConfig: CampaignConfig = {
         title: "{character}: 어서 오세요 ✈️",
         body: "{name}さん、「어서 오세요」は「ようこそ」という意味です。最初の韓国語はレッスン1にあります。マップでタップしてください。",
       },
+      "zh-TW": {
+        title: "{character}: 어서 오세요 ✈️",
+        body: "{name}，「어서 오세요」是「歡迎光臨」的意思。你的第一批韓語單字就在第1課，在地圖上點一下吧。",
+      },
     },
     "tutorial-lesson2": {
       en: {
@@ -73,6 +77,10 @@ export const pushCampaignConfig: CampaignConfig = {
       ja: {
         title: "{character}: 괜찮아요 🙂",
         body: "{name}さん、「괜찮아요」は「大丈夫」という意味です。レッスン2は最初はほとんどの人が難しく感じます。マップでレッスン2をもう一度どうぞ。",
+      },
+      "zh-TW": {
+        title: "{character}: 괜찮아요 🙂",
+        body: "{name}，「괜찮아요」是「沒關係」的意思。第2課一開始幾乎每個人都覺得難。在地圖上點第2課，再試一次吧。",
       },
     },
     "tutorial-rest": {
@@ -98,6 +106,15 @@ export const pushCampaignConfig: CampaignConfig = {
         title: "{character}: 수고했어요 👏",
         body: "{name}, «수고했어요» significa «Lo hiciste muy bien». Tu próxima historia, {episode}, ya está en el mapa.",
       },
+      // ja는 2026-11-24 언어 검증에서 빠진 것을 찾아 더했습니다(ADR-0185) — 그 전에는 일본 학습자에게 영어가 갔습니다.
+      ja: {
+        title: "{character}: 수고했어요 👏",
+        body: "{name}さん、「수고했어요」は「よく頑張りました」という意味です。次のストーリー「{episode}」がマップで待っています。",
+      },
+      "zh-TW": {
+        title: "{character}: 수고했어요 👏",
+        body: "{name}，「수고했어요」是「你辛苦了，做得很好」的意思。下一個故事「{episode}」已經在地圖上等你了。",
+      },
     },
     "episode-mid": {
       en: {
@@ -119,6 +136,10 @@ export const pushCampaignConfig: CampaignConfig = {
       ja: {
         title: "{character}: 같이 가요 😊",
         body: "{name}さん、「같이 가요」は「一緒に行こう」という意味です。マップでストーリーが待っています。今夜レッスンを1つどうですか。",
+      },
+      "zh-TW": {
+        title: "{character}: 같이 가요 😊",
+        body: "{name}，「같이 가요」是「一起走吧」的意思。你的故事正在地圖上等你。今晚來上一課吧？",
       },
     },
   },

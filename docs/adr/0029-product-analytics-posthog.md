@@ -366,7 +366,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - ⟨2026-10-20 — 학습 티켓. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 둘이 더해져 이름이 40 → 42개다**(모양 44 → 46). 결정은 [ADR-0075](0075-learning-tickets.md) D6.
   sink는 새로 만들지 않았다 — 앱 훅(`useLearningTickets`)이 `episodeIntroEventSink`로 낸다. 타입 정본은 `screens/tickets/tickets.contract.ts`(`TicketEvent`)이고 `EpisodeIntroEvent` union에 든다.
   - **`tickets_ran_out`** — 티켓 0에서 새 레슨을 열려 해 대화상자가 선 순간. 속성 없음.
-  - **`ticket_more_tapped`** — `Get more tickets`를 누름. 속성 `surface`(`ticket_modal` | `out_of_tickets`) · `granted`(불리언 — 하루 한 장 무료를 받았는가).
+  - **`ticket_more_tapped`** — `Get 1 ticket`(엽전으로 1장, 2026-11-23 — 전에는 `Get more tickets`)을 누른 결과. 속성 `surface`(`ticket_modal` | `out_of_tickets`) · `result`(`bought` | `short` | `full` | `sign_in` | `failed`) · `price`(10진 문자열 — 그 탭의 엽전 값). ⟨2026-11-23 전에는 `granted`(불리언 — 하루 한 장 무료를 받았는가)⟩ — [ADR-0075](0075-learning-tickets.md) 적용 기록.
   - Meta 앱 이벤트 매핑은 둘을 옮기지 않는다. PostHog 도착은 보지 않았다.
 - ⟨2026-10-20 — 에피소드 롤플레이. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 둘이 더해져 이름이 42 → 44개다**(모양 46 → 48). 결정은 [ADR-0076](0076-episode-roleplay.md) D5.
   sink는 새로 만들지 않았다 — 열림은 롤플레이 목록 결선(`journey-wiring.ts`), 끝은 `roleplay-story-wiring.ts`가 `episodeIntroEventSink`로 낸다. 타입 정본은 `screens/roleplay-story/roleplay-story.contract.ts`(`RoleplayStoryEvent`)이고 `EpisodeIntroEvent` union에 든다.
@@ -422,11 +422,15 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - ⟨2026-11-14 — 엽전 출시 · 메신저 · 새 친구 · D3 목적 구분. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **이벤트 열넷이 더해져 이름이 46 → 60개다**(`analytics-event-names.ts` [코드]). sink는 새로 만들지 않았다 — 모두 `episodeIntroEventSink`로 나가고, 메신저 화면은 결선(`render-messenger-chat.tsx`)이 내린 이벤트 자리(`screens/messenger-chat/chat-events.ts`의 `ChatEventsContext`)로 받는다. 타입 정본은 `lib/companion-event.contract.ts`(`CompanionEvent`)이고 `EpisodeIntroEvent` union에 든다. 시험 계정은 지금처럼 전부 거른다(ADR-0085) — 메신저가 모두에게 열릴 때부터 의미가 있다.
   - **공통 속성 둘(새 이벤트만)** — `surface`(`learning` | `chat`, 일어난 영역) · `daysSinceFirstOpen`(기기 첫 실행일부터 지난 날 수, 10진 문자열 — 첫날 `"0"`). 첫 실행일은 새 기기 키 `libitum.analytics.first-open-day`(`lib/first-open.ts`, 진입점이 실행마다 한 번 `noteFirstOpen`)에 처음 한 번 적는다 — 앱에 설치 · 첫 실행 기록이 따로 없었다. **이 키가 생기기 전에 설치한 기기는 업데이트 뒤 첫 실행이 0일**이다. 기존 학습 이벤트(`episode_lesson_*` 등)에는 붙이지 않았다.
   - **엽전 출시(ADR-0140, `app/use-launch-coins.tsx`)** — `launch_coins_shown { learning, bonus, balance }`(엽전 모달이 설 때) · `launch_coins_closed`(「Got it」 뒤 닫힘) · `launch_chat_shown { met, total }`(채팅 모달이 설 때) · `launch_chat_closed { choice: start | later | back }`. 영역 `learning`.
-  - **메신저 안내 · 탭(ADR-0139)** — `messenger_guide_finished { part: list | room, outcome: done | skipped }`(목록 오버레이 · 방 코치마크를 끝냄) · `messenger_tab_opened { badge: first | new_friend | none }`(메신저 탭으로 들어올 때, 들어가기 직전 NEW 배지의 까닭). 영역 `chat`.
+  - **메신저 안내 · 탭(ADR-0139)** — `messenger_guide_finished { part: list | room | snapshot | keyboard, outcome: done | skipped }`(목록 오버레이 · 방 코치마크를 끝냄 — `keyboard`는 안내를 이미 본 사람에게 키보드 단계가 든 것, ADR-0190) · `messenger_guide_keyboard { stage: phone | hangul, action: shown | next | switched | hidden }`(방 안내 키보드 단계의 화면이 섬 · Next · 안내 안 토글을 직접 바꿈 · 휴대폰 키보드가 내려가 Hangul keys로 저절로 넘어감, ADR-0190) · `messenger_tab_opened { badge: first | new_friend | none }`(메신저 탭으로 들어올 때, 들어가기 직전 NEW 배지의 까닭). 영역 `chat`.
   - **새 친구(ADR-0141)** — `companion_unlocked { characterId, episodeId, source: episode | backfill }`(뒤 컷을 지나 해금 · 진도 보정 해금, `app/new-friend-wiring.ts`) · `new_friend_sheet_closed { characterId, choice: reply | later }`(Later · 막 · 뒤로가기 · 끌어내림은 `later`). 영역 `learning`.
-  - **메신저 보내기 · 엽전** — `chat_message_sent { characterId, paid, cost }`(보내기 관문 통과 — 무료 · 무제한은 `paid: false, cost: "0"`, `use-chat-turns.ts`) · `chat_media_requested { characterId, media: photo | voice, price }`(요청 확인 · 엽전 지불) · `chat_coins_short { reason: message | photo | voice, shortBy }`(엽전이 모자라 상점으로 감). 본문은 싣지 않는다. 영역 `chat`.
+  - **메신저 보내기 · 엽전** — `chat_message_sent { characterId, paid, cost, fromSuggestion }`(보내기 관문 통과 — 무료 · 무제한은 `paid: false, cost: "0"`, `use-chat-turns.ts` · `fromSuggestion` = 답할 문장 추천 보기를 눌러 보냄, ADR-0195) · `chat_media_requested { characterId, media: photo | voice, price }`(요청 확인 · 엽전 지불) · `chat_coins_short { reason: message | photo | voice, shortBy }`(엽전이 모자라 상점으로 감). 본문은 싣지 않는다. 영역 `chat`.
+  - **「새 메시지 ↓」 알약**(ADR-0117 2026-11-25) — `chat_new_messages_jumped { characterId, count, media: message | photo | voice }`(위로 올려 읽는 중 온 상대 줄의 알약을 눌러 끝으로 감, 누름마다 한 번 — `count` = 그동안 온 줄 수, `media` = 마지막 줄 종류, `use-new-message-pill.tsx`). PostHog만(Airbridge 매핑 없음). 영역 `chat`.
+  - **답장 도착 토스트**(ADR-0200) — `chat_reply_toast_shown { characterId, kind: reply | proactive, more, stack, deferred: true | false, screen }`(채팅 목록 · 그 방 밖에서 새 카드가 섬 — 같은 인물 바꿔 끼움은 내지 않음, `more` = 맨 아래 「+N」, `stack` = 그 카드가 섰을 때 쌓인 장 수(ADR-0200 개정 1), `deferred` = 레슨 중 미뤘다가 띄움, `screen` = 그때 화면 이름) · `chat_reply_toast_opened { characterId, kind }`(카드를 눌러 그 방으로, `app/use-reply-toast.tsx`). 본문은 싣지 않는다. PostHog만(Airbridge 매핑 없음). 영역 `chat`.
+  - **프로필 시트 목소리 견본**(ADR-0198 D4) — `friend_voice_sample_played { characterId }`(추천 친구 프로필 시트의 Hear voice로 견본 재생이 시작됨, 시트가 설 때마다 처음 한 번 — 이어 듣기 · 끝난 뒤 다시 듣기 · 못 틈은 내지 않음, `ProfileVoiceButton.tsx`). PostHog만(Airbridge 매핑 없음). 영역 `chat`.
+  - **채팅 답할 문장 추천(ADR-0195, PostHog만)** — `chat_suggestion_shown { characterId, count, replyOrigin: greeting | turn | proactive | unknown, myMessageNumber: 1 | 2 | 3 | 4+ }`(보기 판이 그 묶음으로 처음 그려질 때 — 방 화면 마운트당 묶음마다 한 번) · `chat_suggestion_tapped { …같은 넷, index }`(보기를 누름 — 보내기 관문 전, 같은 묶음 같은 자리는 한 번). 추천 문장은 싣지 않는다. 영역 `chat`. 노출 대비 누름 = tapped ÷ shown, 보냄 중 추천 비율 = `chat_message_sent`의 `fromSuggestion` 참 비율 — `myMessageNumber`로 첫 대화 1 ~ 3통을 나눠 본다.
   - **`surface_session_ended { seconds }`** — 학습(여정 · 롤플레이 탭) ↔ 채팅(메신저 탭) 영역이 바뀌거나 설정 탭 · 진입 화면으로 가거나 세션이 내려갈 때, 머문 영역과 초(반올림, 1초 미만은 내지 않음). 탭 위에 쌓인 레슨 · 대화방은 그 탭의 영역이다(`app/use-surface-sessions.ts`). **한계**: 앱이 배경으로 가는 신호를 호스트가 아직 보내지 않아 배경 시간도 그 영역에 들고, 배경에서 종료되면 마지막 영역은 보내지 못한다.
-  - **첫 경험 마일스톤(기기당 한 번)** — `first_lesson_completed`(첫 `episode_lesson_finished { verdict: passed }` 뒤) · `first_chat_message_sent { characterId }`(첫 `chat_message_sent` 뒤). PostHog sink를 감싸 낸다(`withFirstMilestones`, 기기 키 `libitum.analytics.milestones`) — 시험 계정 거름이 바깥이라 시험 계정의 행동은 기록되지 않는다. 같은 capture에 사람 속성 `$set_once { first_lesson_day | first_chat_day }`(첫 날 수, 정수)를 싣는다 — 사람 속성은 다른 기기 · 재설치에서도 처음 값이 남는다.
+  - **첫 경험 마일스톤(기기당 한 번)** — `first_lesson_completed`(첫 `episode_lesson_finished { verdict: passed }` 뒤) · `first_chat_message_sent { characterId }`(첫 `chat_message_sent` 뒤). PostHog sink를 감싸 낸다(`withFirstMilestones`, 기기 키 `libitum.analytics.milestones`; ⟨2026-11-24 — [ADR-0063](0063-airbridge-events.md) 적용 기록⟩ 감싸는 자리는 진입점 조립 `productEventSinks`이고 Airbridge 합성 바깥이라 마일스톤이 Airbridge로도 간다) — 시험 계정 거름이 바깥이라 시험 계정의 행동은 기록되지 않는다. 같은 capture에 사람 속성 `$set_once { first_lesson_day | first_chat_day }`(첫 날 수, 정수)를 싣는다 — 사람 속성은 다른 기기 · 재설치에서도 처음 값이 남는다.
   - Airbridge 매핑은 열넷을 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
   - ⟨2026-11-19 — 비회원 메신저(ADR-0166). 적용 기록⟩ **`chat_sign_in_prompt_closed { trigger: send | media | menu | coins | add_friend, choice: sign_in | later }`**
     (공통 속성 둘 포함, `surface: chat`) — 비회원 「로그인 필요」 대화상자를 닫을 때 한 번(`screens/messenger-chat/use-guest-gate.tsx`). 뜬 수 = 이 이벤트 수,
@@ -437,9 +441,14 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-21 — 가입 보상(ADR-0174). 적용 기록⟩ **`signup_reward_card_shown`**(손님 지도 하단 권유 카드가 세션에 처음 보일 때 한 번) ·
     **`signup_reward_card_tapped`**(카드를 눌러 로그인 화면으로 갈 때마다) · **`signup_reward_shown { amount }`**(서버 지급 뒤 보상 모달이 설 때 한 번). 공통 속성 둘 포함,
     `surface: learning`, 제품 이벤트 sink(`app/use-signup-reward.tsx`). 카드 → 가입 전환 = `entry_login_method_selected` ÷ `signup_reward_card_tapped`. Airbridge 매핑 없음.
+  - ⟨2026-11-25 — 첫날 무제한 안내 줄(ADR-0186 개정 3). 적용 기록⟩ `signup_reward_shown`에 **`unlimited`**(`shown` · `none`)를 더한다 — 그 창에
+    첫날 무제한 줄이 섰는지. 새 이벤트 이름은 없다. 줄을 본 신규 회원과 아닌 회원의 u01 클리어율 · D1을 이 값으로 가른다.
   - ⟨2026-11-21 — 푸시 캠페인 보상(ADR-0175). 적용 기록⟩ **`push_reward_claimed { kind, amount }`**(보상 알림을 눌러 서버가 지급했을 때 한 번 — amount는 엽전 수 또는
     무제한 티켓 시간) · **`push_reward_failed { reason }`**(already_claimed · not_recipient · expired · unknown · guest · error, 캠페인 id가 없는 알림은 내지 않음).
     공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-push-reward.tsx`). Airbridge 매핑 없음.
+  - ⟨2026-11-25 — Chat Plus 첫 구독 보너스(ADR-0196). 적용 기록⟩ **`subscription_bonus_shown { plan: chat_plus, amount }`**(서버가 알린 보너스 모달이 설 때 한 번).
+    공통 속성 둘 포함, `surface: learning`, 제품 이벤트 sink(`app/use-subscription-bonus.tsx`). 지급 수는 서버 원장 `chat_plus_first_bonus`가 센다. 이름이 110 → 111개,
+    Airbridge 매핑 없음.
 
   #### D3 목적 구분 — 쓰는 법
 
@@ -522,6 +531,14 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   `entry_path_selected { path: basics | story }` · `entry_basics_step_completed { step: letters | compose | ready }` ·
   `entry_basics_skipped { step: letters | compose }`. `entry_screen_viewed.screen`에 기초 세 화면이 더해진다. `entry_completed`는 실제
   `enterApp` 때 한 번 그대로다 — 기초 도중 이탈만큼 여정 입장 열람 → 완주 전환율의 해석이 이날 바뀐다. GitHub wiki 사전은 따로 고친다.
+- ⟨2026-11-24 — [ADR-0189](0189-replay-audio-and-chip-sound.md) D5⟩ 다시 듣기 · 칩 소리 이벤트 둘을 더한다(`episodeIntroEventSink`, 이름 105 → 107, PostHog만):
+  `sentence_audio_replayed { episodeId, surface: story_cut | lesson_answer, stage?, unitKey? }`(켜진 스피커를 누를 때마다) ·
+  `choice_chip_sound_played { episodeId, unitKey, surface: word_choice | sentence_order }`(소리가 난 칩 누름마다). 기존 이벤트의 모양 · 발생 시점은 그대로다.
+  GitHub wiki 사전은 따로 고친다.
+- ⟨2026-11-25 — [ADR-0197](0197-chat-push-ask-card.md) D4⟩ 채팅 첫 답장 뒤 알림 권한 카드 이벤트 셋을 더한다(`episodeIntroEventSink`, 공통 속성 둘 ·
+  `surface: chat`, 이름 110 → 113, PostHog만 — Airbridge 매핑 없음): `chat_push_ask_shown { characterId, count }`(카드가 섬, 이번이 몇 번째 "1" | "2") ·
+  `chat_push_ask_tapped { characterId, choice: turn_on | not_now }` · `chat_push_ask_answered { characterId, result: allowed | denied }`(Turn on 뒤 시스템 창의
+  결과, 권한을 모르면 내지 않음). 보낸 곳은 `screens/messenger-chat/ChatPushAsk.tsx`. 허용률 = `answered.allowed` ÷ `shown`. GitHub wiki 사전은 따로 고친다.
 
 ## 재검토 조건
 

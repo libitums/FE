@@ -2,6 +2,7 @@
 // 첫 말이 그 파일과 같아야 합니다(단위 테스트 FA1이 맞춥니다). 순수 데이터. 이름 · 첫 말은 학습 내용이라 한글 그대로 둡니다.
 // 얼굴 그림은 이야기 인물처럼 콘텐츠 버킷의 `content/images/profiles/<id>-casual.webp`입니다 — 올라가기 전에는 빈 얼굴(아바타 자리표시)입니다.
 
+import { voiceSampleOf } from "./companion-voice-samples";
 import type { FriendProfile, LocalizedLine } from "./friend-catalog.contract";
 
 /** `companion-roster.ts`의 `CompanionCharacter`와 같은 모양입니다(그 파일이 이 표를 가져가 순환을 피해 여기 둡니다). */
@@ -16,6 +17,7 @@ const ageTag = (age: number): LocalizedLine => ({
   vi: `${age} tuổi`,
   th: `อายุ ${age} ปี`,
   my: `အသက် ${age} နှစ်`,
+  "zh-TW": `${age}歲`,
 });
 
 type FriendSource = {
@@ -27,15 +29,15 @@ type FriendSource = {
   readonly romanceTier: "open" | "standard";
   readonly job: LocalizedLine;
   readonly bio: LocalizedLine;
-  /** 첫 말 — ko · en은 정본 JSON, es · id · ja · vi · th · my는 시트 뜻풀이(정본 JSON에 없어 이 표가 정본, 2026-11-19 · th · my 11-20). */
+  /** 첫 말 — ko · en은 정본 JSON, es · id · ja · vi · th · my는 시트 뜻풀이(정본 JSON에 없어 이 표가 정본, 2026-11-19 · th · my 11-20 · zh-TW 11-24). */
   readonly first: Readonly<
-    Record<"ko" | "en" | "es" | "id" | "ja" | "vi" | "th" | "my", readonly string[]>
+    Record<"ko" | "en" | "es" | "id" | "ja" | "vi" | "th" | "my" | "zh-TW", readonly string[]>
   >;
 };
 
-/** 말풍선 여러 개를 시트의 한 줄로 — 일본어는 띄우지 않습니다. */
+/** 말풍선 여러 개를 시트의 한 줄로 — 일본어 · 중국어는 띄우지 않습니다. */
 const joined = (lines: readonly string[], language: string) =>
-  lines.join(language === "ja" ? "" : " ");
+  lines.join(language === "ja" || language === "zh-TW" ? "" : " ");
 
 const entryOf = (source: FriendSource): FriendRosterEntry => ({
   id: source.id,
@@ -56,8 +58,10 @@ const entryOf = (source: FriendSource): FriendRosterEntry => ({
     vi: joined(source.first.vi, "vi"),
     th: joined(source.first.th, "th"),
     my: joined(source.first.my, "my"),
+    "zh-TW": joined(source.first["zh-TW"], "zh-TW"),
   },
   earlyAccess: null,
+  ...voiceSampleOf(source.id),
   romanceTier: source.romanceTier,
   gender: source.gender,
   firstLine: source.first.ko[0] ?? null,
@@ -80,6 +84,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Thợ xăm & họa sĩ minh họa",
       th: "ช่างสักและนักวาดภาพประกอบ",
       my: "တက်တူးဆရာနဲ့ သရုပ်ဖော်ပန်းချီဆရာ",
+      "zh-TW": "刺青師兼插畫家",
     },
     bio: {
       en: "I do tattoos in Seongsu. Art talk, any talk — all good.",
@@ -89,6 +94,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Mình làm hình xăm ở Seongsu. Chuyện nghệ thuật hay chuyện gì cũng được.",
       th: "เราทำรอยสักอยู่ที่ซองซู คุยเรื่องศิลปะหรือเรื่องอะไรก็ได้",
       my: "Seongsu မှာ တက်တူးထိုးပါတယ်။ အနုပညာအကြောင်းဖြစ်ဖြစ်၊ ဘာအကြောင်းဖြစ်ဖြစ် ပြောလို့ရပါတယ်။",
+      "zh-TW": "我在聖水洞當刺青師。聊藝術、聊什麼都可以。",
     },
     first: {
       ko: ["안녕하세요, 차서연이에요.", "한국엔 왜 왔어요? 궁금해요."],
@@ -99,6 +105,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: ["Chào bạn, mình là Cha Seoyeon.", "Sao bạn lại đến Hàn Quốc? Mình tò mò ghê."],
       th: ["สวัสดี เรา Cha Seoyeon", "มาเกาหลีเพราะอะไรเหรอ? อยากรู้จัง"],
       my: ["မင်္ဂလာပါ၊ Cha Seoyeon ပါ။", "ကိုရီးယားကို ဘာလို့ လာတာလဲ။ သိချင်လို့ပါ။"],
+      "zh-TW": ["嗨，我是 Cha Seoyeon。", "你為什麼會來韓國？我很好奇。"],
     },
   }),
   entryOf({
@@ -116,6 +123,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Chủ quán bar đĩa than",
       th: "เจ้าของบาร์แผ่นเสียง",
       my: "ဓာတ်ပြားဘား ပိုင်ရှင်",
+      "zh-TW": "黑膠酒吧老闆",
     },
     bio: {
       en: "I run a small LP bar in Mangwon. I'll share good songs with you.",
@@ -125,6 +133,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Mình có một quán bar đĩa than nhỏ ở Mangwon. Mình sẽ giới thiệu nhạc hay cho bạn.",
       th: "เรามีบาร์แผ่นเสียงเล็กๆ ที่มังวอน เดี๋ยวจะแนะนำเพลงเพราะๆ ให้นะ",
       my: "Mangwon မှာ ဓာတ်ပြားဘားလေး တစ်ဆိုင် ဖွင့်ထားပါတယ်။ သီချင်းကောင်းတွေ မျှဝေပေးပါမယ်။",
+      "zh-TW": "我在望遠洞開了一間小小的黑膠酒吧。會跟你分享好聽的歌。",
     },
     first: {
       ko: ["안녕하세요, 권해준이에요.", "한국 노래 좋아해요? 좋아하는 가수 있어요?"],
@@ -141,6 +150,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       ],
       th: ["สวัสดี เรา Kwon Haejun", "ชอบเพลงเกาหลีไหม? มีนักร้องคนโปรดไหม?"],
       my: ["မင်္ဂလာပါ၊ Kwon Haejun ပါ။", "ကိုရီးယားသီချင်း ကြိုက်လား။ အကြိုက်ဆုံး အဆိုတော် ရှိလား။"],
+      "zh-TW": ["嗨，我是 Kwon Haejun。", "你喜歡韓國音樂嗎？有喜歡的歌手嗎？"],
     },
   }),
   entryOf({
@@ -158,6 +168,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Sinh viên (Khoa học máy tính, năm 3)",
       th: "นักศึกษา (วิทยาการคอมพิวเตอร์ ปี 3)",
       my: "တက္ကသိုလ်ကျောင်းသူ (ကွန်ပျူတာသိပ္ပံ၊ တတိယနှစ်)",
+      "zh-TW": "大學生（資訊工程系三年級）",
     },
     bio: {
       en: "CS junior. I love games and idols. I want to make a foreign friend!",
@@ -167,6 +178,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Sinh viên CNTT năm 3. Mình mê game và thần tượng. Mình muốn có bạn nước ngoài!",
       th: "นักศึกษาคอมฯ ปี 3 ชอบเกมกับไอดอลมาก อยากมีเพื่อนต่างชาติ!",
       my: "ကွန်ပျူတာ တတိယနှစ်ပါ။ ဂိမ်းနဲ့ အိုင်ဒေါတွေကို အရမ်းကြိုက်တယ်။ နိုင်ငံခြားသား သူငယ်ချင်း လိုချင်တယ်!",
+      "zh-TW": "資工系大三。超愛遊戲和偶像。想交外國朋友！",
     },
     first: {
       ko: ["안녕하세요! 송다은이에요.", "어느 나라에서 왔어요? 저 외국인 친구 처음이에요!"],
@@ -183,6 +195,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       ],
       th: ["สวัสดี! เรา Song Daeun", "มาจากประเทศไหนเหรอ? คุณเป็นเพื่อนต่างชาติคนแรกของเราเลย!"],
       my: ["မင်္ဂလာပါ။ Song Daeun ပါ။", "ဘယ်နိုင်ငံက လာတာလဲ။ ပထမဆုံး နိုင်ငံခြားသား သူငယ်ချင်းပဲ!"],
+      "zh-TW": ["你好！我是 Song Daeun。", "你從哪裡來的？你是我第一個外國朋友！"],
     },
   }),
   entryOf({
@@ -200,6 +213,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Sinh viên (Kinh doanh, năm 2, vừa xong nghĩa vụ quân sự)",
       th: "นักศึกษา (บริหารธุรกิจ ปี 2 เพิ่งกลับจากเกณฑ์ทหาร)",
       my: "တက္ကသိုလ်ကျောင်းသား (စီးပွားရေး၊ ဒုတိယနှစ်၊ စစ်မှုထမ်းပြီး ပြန်တက်)",
+      "zh-TW": "大學生（企管系二年級，當完兵復學）",
     },
     bio: {
       en: "Back at uni after the army. I like running and good food. Let's practise Korean together!",
@@ -209,6 +223,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       vi: "Mình vừa đi học lại sau nghĩa vụ quân sự. Mình thích chạy bộ và đồ ăn ngon. Cùng luyện tiếng Hàn nhé!",
       th: "เพิ่งกลับมาเรียนต่อหลังเกณฑ์ทหาร ชอบวิ่งกับของอร่อย มาฝึกภาษาเกาหลีด้วยกันนะ!",
       my: "စစ်မှုထမ်းပြီး ကျောင်းပြန်တက်နေတယ်။ အပြေးလေ့ကျင့်တာနဲ့ အစားကောင်းတွေ ကြိုက်တယ်။ ကိုရီးယားစကား အတူလေ့ကျင့်ကြရအောင်!",
+      "zh-TW": "當完兵回到學校。喜歡跑步和美食。一起練習韓語吧！",
     },
     first: {
       ko: ["안녕하세요! 임건우예요.", "한국 음식 뭐 좋아해요? 맛집 알려 줄게요."],
@@ -228,6 +243,7 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       ],
       th: ["สวัสดี! เรา Lim Geonwoo", "ชอบอาหารเกาหลีอะไร? เดี๋ยวบอกร้านอร่อยให้"],
       my: ["မင်္ဂလာပါ။ Lim Geonwoo ပါ။", "ကိုရီးယားအစားအစာ ဘာကြိုက်လဲ။ စားကောင်းတဲ့ဆိုင်တွေ ပြောပြမယ်။"],
+      "zh-TW": ["你好！我是 Lim Geonwoo。", "你喜歡什麼韓國料理？我告訴你好吃的店。"],
     },
   }),
 ];

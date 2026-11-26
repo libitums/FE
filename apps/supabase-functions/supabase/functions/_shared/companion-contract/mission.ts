@@ -1,6 +1,6 @@
 // 생성 파일입니다 — 고치지 않습니다. 정본은 packages/companion-contract/src이고
 // `pnpm --filter @libitums/companion-contract sync:functions`가 다시 씁니다.
-// 롤플레이 미션(2단계, ADR-0177)의 정의와 함수 요청 · 응답입니다. 정의는 저장소의 미션 파일이 정본이고
+// 롤플레이 미션(2단계, ADR-0193)의 정의와 함수 요청 · 응답입니다. 정의는 저장소의 미션 파일이 정본이고
 // (`apps/supabase-functions/supabase/functions/_shared/missions/`) 스크립트가 서버 표로 올립니다 — 이 스키마가 그 파일의 모양입니다.
 // 요청 키는 `chat-send`처럼 snake_case, 응답은 camelCase입니다(정의만 미션 파일 그대로 camelCase).
 import { z } from "zod/mini";
@@ -90,6 +90,11 @@ export const missionCounterpartSchema = z.object({
    */
   learnerRegister: z.optional(z.enum(["polite", "casual"])),
   learnerRegisterNote: z.optional(text(200)),
+  /**
+   * (음성) 상대역의 ElevenLabs 음성 id — `mission-tts`가 이 목소리로 읽는다. 없으면 서버 기본값(`COMPANION_MISSION_TTS_VOICE`, 비우면
+   * 편의점 점원 음성). 앱 화면에는 쓰지 않는다.
+   */
+  voice: z.optional(z.string().check(z.regex(/^[A-Za-z0-9]{8,64}$/))),
   base: z.optional(missionCounterpartBaseSchema),
 });
 
@@ -217,6 +222,8 @@ export const missionHintResponseSchema = z.object({
   roman: z.string(),
   meaning: z.string(),
   hintsLeft: nonNegativeInt,
+  /** (음성) 이 판에서 몇 번째 힌트인지(1부터) — `mission-tts`의 `hint_no`. 서버가 예문을 저장하지 못했으면 없다(듣기 단추를 숨김). */
+  hintNo: z.optional(z.int().check(z.gte(1), z.lte(20))),
 });
 
 // ------------------------------------------------------------------ 미션 함수의 오류

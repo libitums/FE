@@ -5,8 +5,21 @@ import type { CalendarDate } from "../../lib/unlimited-pass";
 /** 「Get more tickets」를 누른 자리입니다. */
 export type TicketSurface = "ticket_modal" | "out_of_tickets";
 
-/** 눌렀을 때 무료 1장을 받았는가입니다 — 아직 누르지 않았으면 `null`. Coming soon 안내 문구가 갈립니다. */
-export type TicketMoreResult = { readonly granted: boolean } | null;
+/**
+ * 「Get 1 ticket」(엽전으로 1장, 사용자 결정 2026-11-23)을 누른 결과입니다 — 아직 누르지 않았으면 `null`. `buying`은 서버 응답을
+ * 기다리는 동안이고 버튼이 눌리지 않습니다. 나머지는 버튼 아래 안내 한 줄로 섭니다.
+ */
+export type TicketMoreResult =
+  | { readonly kind: "buying" }
+  | { readonly kind: "bought" }
+  | { readonly kind: "short"; readonly shortBy: number }
+  | { readonly kind: "full" }
+  | { readonly kind: "sign-in" }
+  | { readonly kind: "failed" }
+  | null;
+
+/** 측정 이벤트에 싣는 결과 — 화면 결과에서 `buying`을 뺀 것입니다. */
+export type TicketMoreOutcome = "bought" | "short" | "full" | "sign_in" | "failed";
 
 export type TicketsCopy = {
   /** 칩 · 결과 줄의 「N tickets left」입니다. */
@@ -47,8 +60,18 @@ export type TicketsCopy = {
     readonly slotReady: string;
     readonly message: string;
   };
+  /** 버튼 글자 「Get 1 ticket」 — 값(엽전)은 옆 알약에 숫자로 섭니다. */
   readonly getMore: string;
-  readonly moreNotice: { readonly granted: string; readonly notGranted: string };
+  /** 버튼 낭독 「Get 1 ticket for 20 coins」. */
+  readonly getMoreLabel: (price: number) => string;
+  readonly moreNotice: {
+    readonly bought: string;
+    /** 모자란 엽전 수를 말합니다. */
+    readonly short: (more: number) => string;
+    readonly full: string;
+    readonly signIn: string;
+    readonly failed: string;
+  };
   readonly outOfTickets: {
     readonly title: string;
     readonly untilNext: string;
@@ -67,5 +90,7 @@ export type TicketEvent =
   | {
       readonly name: "ticket_more_tapped";
       readonly surface: TicketSurface;
-      readonly granted: boolean;
+      readonly result: TicketMoreOutcome;
+      /** 그 탭의 값(엽전, 10진 문자열 — 이벤트 속성은 문자열 · 불리언뿐) — 서버가 돌려준 값, 모르면 앱 기본값입니다. */
+      readonly price: string;
     };

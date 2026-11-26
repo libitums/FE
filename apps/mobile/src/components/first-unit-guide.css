@@ -80,17 +80,34 @@
   z-index: var(--libitum-elevation-z-dialog);
 }
 
+/* 일러스트가 있는 표지는 래퍼째 올립니다(사용자 결정 2026-11-22) — 겹침은 가림막 < 그림 < 노드 · 라벨 · 안내 글.
+   그림에 z-index를 따로 주지 않습니다: 스크롤 상자 안에서 그림과 노드가 각자 뜨면 순서가 어긋납니다(ADR-0099). */
+/* 아래 320은 안내 글 몫입니다(토큰 없는 기하값 — 위 24 + 안쪽 24 · 24 + 네 줄). Android는 들린 상자마다 네이티브
+   View라, 글이 상자 밖에 서면 TalkBack 초점이 가지 않았습니다(기기 확인 2026-11-22). 같은 만큼의 음수 여백이라
+   배치는 그대로이고, 글은 커진 상자 안의 원래 자리(노드 묶음 아래 24)로 당깁니다(unit SC11). */
+.catalog-cover-illustrated-guided {
+  z-index: var(--libitum-elevation-z-dialog);
+  padding-bottom: 320px;
+  margin-bottom: -320px;
+}
+
+.catalog-cover-illustrated-guided .journey-special-unit-guided {
+  width: 250px;
+  padding-bottom: 320px;
+  margin-bottom: -320px;
+}
+
+.catalog-cover-illustrated-guided .first-unit-map-tooltip {
+  margin-top: -296px;
+}
+
 /* 톤 규칙(클래스 둘)보다 구체도가 높아야 스크림 위에서 제목이 흰색입니다. */
 .journey-special-unit-guided .journey-special-unit-label .journey-special-unit-title {
   color: var(--libitum-color-white);
 }
 
-/* 스크림 위에서는 배지 옆 바탕이 스크림 합성색이라 Face가 1.503:1로 묻힙니다. Halo를 흰색으로 깔아
-   Face ↔ 흰색 3.016:1 · 흰색 ↔ 스크림 4.533:1을 지킵니다. Active Halo 규칙(클래스 둘)을 이기도록 셋입니다. */
-.journey-special-unit-guided .ui-lynx-special-unit .ui-lynx-special-unit-halo {
-  background-color: var(--libitum-color-white);
-}
-
+/* 배지(Halo · 면 · 두께)는 덮어쓰지 않습니다 — 안내를 닫았을 때와 같은 모양입니다(사용자 결정 2026-11-22, ADR-0068).
+   Face ↔ 가림막은 1.503:1이고, 알아보는 단서는 별 ↔ Face 3.016:1 · 라벨 ↔ 가림막 4.533:1입니다(unit SC10). */
 .first-unit-map-tooltip {
   position: absolute;
   top: 100%;
@@ -100,24 +117,14 @@
   margin-top: var(--libitum-spacing-24);
 }
 
-.first-unit-map-tooltip .ui-lynx-tooltip {
-  position: relative;
-  top: 0;
-  left: 0;
-  transform: none;
-  margin-top: 0;
-  width: 100%;
-  max-width: 250px;
-}
-
-.first-unit-map-tooltip .ui-lynx-tooltip-bubble {
+.first-unit-map-tooltip-body {
   width: 100%;
   max-width: 250px;
   padding: var(--libitum-spacing-24) var(--libitum-spacing-12);
 }
 
 /* 오버레이 위 가이드 문구는 흰색입니다 — 다른 첫 안내(제목 · 설명)와 같습니다. */
-.first-unit-map-tooltip .ui-lynx-tooltip-message {
+.first-unit-map-tooltip-message {
   color: var(--libitum-color-white);
   text-align: center;
   font-family: var(--libitum-typography-heading-s-font-family);

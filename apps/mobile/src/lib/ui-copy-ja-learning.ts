@@ -53,6 +53,8 @@ export const speakingJa: SpeakingCopy = {
     "Siriまたは音声入力がオフです。「設定」>「一般」>「キーボード」>「音声入力」をオンにしてから、もう一度お試しください。",
   tapToContinue: "画面をタップして続ける",
   recognitionUnavailable: "今は音声認識を使えません。「スキップ」をタップして続けてください。",
+  notCaught: "聞き取れませんでした。マイクをタップしてもう一度お試しください。",
+  networkRetry: "音声認識に接続できませんでした。通信状況を確認して、もう一度お試しください。",
 };
 
 export const assessmentJa: AssessmentCopy = {

@@ -146,3 +146,11 @@ Android의 FCM 전송은 [ADR-0041](0041-android-push-transport.md), 수신 호�
 
 - [ADR-0127](0127-companion-push-target.md): 닫힌 목적지 목록에 `companion-chat { characterId, variant? }` 하나를 더했다. 여전히 URL이 아니라 이름이고, 인물 id 형식이 틀리면 목적지 없음이다(D4 딥링크 금지 그대로). `push_notification_opened`에 선택 속성 `variant`가 생겼다. Android 호스트는 목적지의 `characterId` · `variant` 문자열도 JS로 옮긴다. 누름 처리 결선이 `journey-wiring`에서 `screen-wiring`으로 옮겨졌다.
 
+## 적용 기록 ⟨2026-11-25 — 채팅 첫 답장 뒤 알림 권한 카드⟩
+
+- D4(묻는 시점)에 한 곳이 더해졌다 — [ADR-0197](0197-chat-push-ask-card.md): 메신저 방에서 보낸 말에 인물이 처음 답한 직후, 로그인 · 미결정(iOS 미결정 ·
+  Android 13+ 미요청)이면 카드의 Turn on이 `syncPushDevice({ ask: true })`로 시스템 창을 띄운다. 이미 허용이면 카드 없이 `syncPushDevice({ ask: false })`로
+  조용히 등록하고, 거절이면 묻지 않는다. 첫 이야기 뒤 · 기존 회원 로그인 · 설정의 묻기는 그대로다.
+- `syncPushDevice`가 끝난 뒤의 권한(`PushPermission | null`)을 돌려준다(전에는 `void`) — 카드가 시스템 창의 결과(허용 · 거절)를 읽는다. 다른 부르는 곳은
+  값을 버린다. 서버 · 호스트 변경 없음.
+

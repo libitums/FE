@@ -1,7 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { ChoiceRomanization } from "../../lib/session-options";
+import { PLAYING_LETTER_FALLBACK_MS } from "../../components/use-playing-letter";
 import { LettersScreen } from "./LettersScreen";
 import { lettersTestIds as ids } from "./letters.contract";
 
@@ -23,14 +24,18 @@ function expectNotLit(element: HTMLElement) {
 function mount(
   options: { romanization?: ChoiceRomanization; available?: (s: string) => boolean } = {},
 ) {
-  const play = vi.fn<(source: string) => void>();
+  const play = vi.fn<(source: string, onDone?: () => void) => void>();
   const onPractice = vi.fn();
   const onCellTapped = vi.fn();
   const available = options.available ?? (() => true);
   render(
     <LettersScreen
       romanization={options.romanization ?? "shown"}
-      sound={{ sourceOf: (s) => (available(s) ? `src:${s}` : null), play }}
+      sound={{
+        sourceOf: (s) => `src:${s}`,
+        letterSourceOf: (letter) => (available(letter) ? `clip:${letter}` : null),
+        play,
+      }}
       onPractice={onPractice}
       onCellTapped={onCellTapped}
     />,
@@ -73,19 +78,38 @@ test("LS3. 로마자 설정이 켜져 있으면 칸에 로마자, 꺼지면 없�
   expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k");
 });
 
-test("LS4. 누르면 자음 + ㅏ 소리 · 들은 칸 표시 · 이벤트 — 누른 칸이 켜진 채 남지 않는다", () => {
+// ⟨2026-11-23 개정⟩ 스피커 색은 소리가 나는 동안만 바뀝니다 — 끝나면 처음 색으로 돌아가고, 들었다는 표시는 남지 않습니다.
+const speaker = (index: number) => screen.getByTestId(`${ids.cell(index)}-speaker`);
+const finish = (play: ReturnType<typeof mount>["play"], call: number) =>
+  act(() => {
+    play.mock.calls[call]?.[1]?.();
+  });
+
+test("LS4. 누르면 그 자모의 내장 소리 · 이벤트, 스피커는 나는 동안만 playing — 끝나면 ready", () => {
   const { play, onCellTapped } = mount();
   fireEvent.tap(cell(0), {});
-  expect(play).toHaveBeenCalledExactlyOnceWith("src:가");
+  expect(play).toHaveBeenCalledExactlyOnceWith("clip:ㄱ", expect.any(Function));
   expectNotLit(cell(0));
-  expect(cell(0)).toHaveAttribute("data-heard", "true");
+  expect(speaker(0)).toHaveAttribute("data-audio", "playing");
   expect(onCellTapped).toHaveBeenCalledWith("ㄱ", "consonants", "played");
+  finish(play, 0);
+  expect(speaker(0)).toHaveAttribute("data-audio", "ready");
+  expect(cell(0)).not.toHaveAttribute("data-heard");
+});
+
+test("LS4b. 다른 칸을 누르면 앞 칸은 곧바로 ready, 새 칸이 playing — 앞 재생의 늦은 끝은 새 칸을 끄지 않는다", () => {
+  const { play } = mount();
+  fireEvent.tap(cell(0), {});
   fireEvent.tap(cell(14), {});
-  expect(play).toHaveBeenLastCalledWith("src:아");
+  expect(play).toHaveBeenLastCalledWith("clip:ㅏ", expect.any(Function));
+  expect(speaker(0)).toHaveAttribute("data-audio", "ready");
+  expect(speaker(14)).toHaveAttribute("data-audio", "playing");
+  finish(play, 0);
+  expect(speaker(14)).toHaveAttribute("data-audio", "playing");
+  finish(play, 1);
+  expect(speaker(14)).toHaveAttribute("data-audio", "ready");
   expectNotLit(cell(0));
   expectNotLit(cell(14));
-  expect(cell(0)).toHaveAttribute("data-heard", "true");
-  expect(cell(1)).toHaveAttribute("data-heard", "false");
 });
 
 test("LS5. 소리가 아직 없으면 재생하지 않고 스피커가 unavailable, 칸은 켜지지 않고 이벤트 unavailable", () => {
@@ -109,10 +133,47 @@ test("LS6. 연습 단추 → 합치기 퀴즈", () => {
 
 // ---------------------------------------------------------------- 접근성 감사(ADR-0169 a11y)
 
-test("LS7. 들은 칸은 낭독 이름에도 「heard」", () => {
-  mount();
+test("LS4c. 끝 알림이 오지 않아도(호스트 없음) 안전망 시간 뒤 ready로 돌아간다", () => {
+  vi.useFakeTimers();
+  try {
+    mount();
+    fireEvent.tap(cell(0), {});
+    expect(speaker(0)).toHaveAttribute("data-audio", "playing");
+    act(() => {
+      vi.advanceTimersByTime(PLAYING_LETTER_FALLBACK_MS);
+    });
+    expect(speaker(0)).toHaveAttribute("data-audio", "ready");
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("LS4d. 끝 알림이 오면 안전망 타이머도 걷힌다 · 화면을 떠나면 남은 타이머가 없다(리뷰 #567)", () => {
+  vi.useFakeTimers();
+  try {
+    const { play } = mount();
+    fireEvent.tap(cell(0), {});
+    expect(vi.getTimerCount()).toBe(1);
+    finish(play, 0);
+    expect(vi.getTimerCount()).toBe(0);
+    fireEvent.tap(cell(1), {});
+    expect(vi.getTimerCount()).toBe(1);
+    const clear = vi.spyOn(globalThis, "clearTimeout");
+    act(() => {
+      cleanup();
+    });
+    expect(clear).toHaveBeenCalled();
+    play.mock.calls[1]?.[1]?.();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("LS7. 누른 뒤에도 낭독 이름은 그대로 — 「heard」를 붙이지 않는다", () => {
+  const { play } = mount();
   fireEvent.tap(cell(0), {});
-  expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k, heard");
+  finish(play, 0);
+  expect(cell(0)).toHaveAttribute("accessibility-label", "ㄱ, g / k");
 });
 
 // ---------------------------------------------------------------- 진동 없음(⟨2026-11-21 개정⟩)

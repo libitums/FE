@@ -51,8 +51,8 @@ export function renderCopy(
   const name = cleanName(vars.name);
   if (name === "") {
     text = text
-      .replace(/\{name\}(さん)?\s*[,、]\s*/gu, "")
-      .replace(/\s*[,、]?\s*\{name\}(さん)?/gu, "");
+      .replace(/\{name\}(さん)?\s*[,、，]\s*/gu, "")
+      .replace(/\s*[,、，]?\s*\{name\}(さん)?/gu, "");
     text = text.charAt(0).toUpperCase() + text.slice(1);
   } else {
     text = text.replaceAll("{name}", name);

@@ -151,6 +151,8 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 15항목과 같다 — 지�
     "companion-roster.ts#COMPANION_CHARACTERS",
     // 추천 친구 넷의 이름 · 첫 말(ADR-0164).
     "companion-friends-roster.ts#COMPANION_FRIENDS",
+    // 인물 아홉의 목소리 견본 대본(ADR-0198).
+    "companion-voice-samples.ts#VOICE_SAMPLE_SCRIPTS",
     // 한글 자모표 · 합치기 퀴즈(ADR-0169).
     "jamo.ts#JAMO_GROUPS",
     "jamo.ts#INITIALS",
@@ -172,7 +174,7 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 15항목과 같다 — 지�
     "mission-fake-rules.ts#FAKE_CAFE_SCRIPT",
   ];
 
-  assert.equal(expected.length, 34);
+  assert.equal(expected.length, 35);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

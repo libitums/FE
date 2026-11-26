@@ -8,6 +8,7 @@ import { assembledHintEs } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
   audioUnavailableEs,
+  sentenceReplayEs,
   catalogCoverEs,
   catalogFinalEs,
   catalogStoryFinalEs,
@@ -110,6 +111,7 @@ export const uiCopyEs: UiCopy = {
   catalogFinal: catalogFinalEs,
   catalogStoryFinal: catalogStoryFinalEs,
   audioUnavailable: audioUnavailableEs,
+  sentenceReplay: sentenceReplayEs,
   learnerProfile: learnerProfileEs,
   progressLoad: progressLoadEs,
   splash: splashEs,

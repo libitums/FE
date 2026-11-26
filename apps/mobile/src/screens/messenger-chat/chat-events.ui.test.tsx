@@ -109,6 +109,8 @@ describe("방 코치마크", () => {
       eventSink: sink,
     });
     await flush();
+    // 키보드 단계 두 화면(ADR-0190) · 전구.
+    fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     cleanup();
@@ -119,16 +121,14 @@ describe("방 코치마크", () => {
       eventSink: sink,
     });
     await flush();
-    fireEvent.tap(screen.getByTestId(ids.guideCoachSkip), { eventType: "catchEvent" });
+    // 건너뛰기가 없다(2026-11-23) — 둘째 방문은 도중에 떠난 것이라 완료 이벤트가 나지 않는다.
+    fireEvent.tap(screen.getByTestId(ids.guideCoachNext), { eventType: "catchEvent" });
     expect(
       finished().map((event) => [
         event.name,
         (event as { part: string }).part,
         (event as { outcome: string }).outcome,
       ]),
-    ).toEqual([
-      ["messenger_guide_finished", "room", "done"],
-      ["messenger_guide_finished", "room", "skipped"],
-    ]);
+    ).toEqual([["messenger_guide_finished", "room", "done"]]);
   });
 });

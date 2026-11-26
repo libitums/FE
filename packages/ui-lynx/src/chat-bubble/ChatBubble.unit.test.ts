@@ -149,6 +149,15 @@ describe("chat-bubble.css", () => {
       /\.ui-lynx-chat-bubble-outgoing \.ui-lynx-chat-bubble-translation\s*\{[^}]*color:\s*var\(--libitum-color-gray-200\)/,
     );
   });
+
+  test("CB8: 로마자는 주황 글자 fg.brand(gray.100 위 5.1:1), 구분선은 gray.100 면에서 보이는 gray.500이다", () => {
+    expect(styles).toMatch(
+      /\.ui-lynx-chat-bubble-annotation-romanization\s*\{[^}]*color:\s*var\(--libitum-color-fg-brand\)/,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-chat-bubble-annotation-divider\s*\{[^}]*background-color:\s*var\(--libitum-color-gray-500\)/,
+    );
+  });
 });
 
 const annotationBase = {
@@ -198,19 +207,26 @@ describe("ChatBubble annotation", () => {
     ).toThrow(/annotation|translation|romanization|meaning/i);
   });
 
-  test("CB3: 빈 로마자나 빈 뜻(trim)은 던진다", () => {
-    expect(() =>
-      getChatBubbleContract({
-        ...annotationBase,
-        annotation: { romanization: "  ", meaning: "Good" },
-      }),
-    ).toThrow(/annotation|translation|romanization|meaning/i);
+  test("CB3: 빈 뜻(trim)은 던진다", () => {
     expect(() =>
       getChatBubbleContract({
         ...annotationBase,
         annotation: { romanization: "hangugeo", meaning: "" },
       }),
     ).toThrow(/annotation|translation|romanization|meaning/i);
+  });
+
+  test("CB3b: 로마자가 없거나 비면(trim) 뜻만 싣는다 — 구분선 · 뜻 묶음(ADR-0188 개정 D8)", () => {
+    const omitted = getChatBubbleContract({ ...annotationBase, annotation: { meaning: " Good " } });
+    const blank = getChatBubbleContract({
+      ...annotationBase,
+      annotation: { romanization: "  ", meaning: "Good", spokenRomanization: "Pronunciation: x" },
+    });
+
+    for (const contract of [omitted, blank]) {
+      expect(contract.annotation).toEqual({ meaning: "Good" });
+      expect(contract.accessibilityLabel).toBe("민서: 한국어 잘하시네요!, Good");
+    }
   });
 
   test("annotation이 없으면 이름은 지금과 같다", () => {

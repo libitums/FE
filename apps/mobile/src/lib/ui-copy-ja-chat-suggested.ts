@@ -26,6 +26,18 @@ export const messengerChatSuggestedJa: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `期間限定 · 残り${days}日${hours}時間`,
   added: (name) => `${name}をチャットに追加しました`,
   addFailed: (name) => `${name}を追加できませんでした。もう一度お試しください。`,
+  voice: {
+    hear: "声を聞く",
+    pause: "一時停止",
+    resume: "再開",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `${name}の声を聞く`
+        : phase === "playing"
+          ? `${name}の声を一時停止`
+          : `${name}の声を再開`,
+    unavailable: "ボイスサンプルを再生できません",
+  },
   adultAck: {
     title: (name) => `${name}ともっと仲良くなる？`,
     body: () => "少しずつ知り合っていく相手のように、もっとあたたかく親しく話してくれます。",

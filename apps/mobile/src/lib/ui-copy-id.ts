@@ -8,6 +8,7 @@ import { assembledHintId } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
   audioUnavailableId,
+  sentenceReplayId,
   catalogCoverId,
   catalogFinalId,
   catalogStoryFinalId,
@@ -110,6 +111,7 @@ export const uiCopyId: UiCopy = {
   catalogFinal: catalogFinalId,
   catalogStoryFinal: catalogStoryFinalId,
   audioUnavailable: audioUnavailableId,
+  sentenceReplay: sentenceReplayId,
   learnerProfile: learnerProfileId,
   progressLoad: progressLoadId,
   splash: splashId,

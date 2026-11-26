@@ -37,10 +37,14 @@ export const ticketsVi: TicketsCopy = {
     slotReady: "Sẵn sàng",
     message: "Mỗi bài học dùng một vé.\nVé đã dùng sẽ được hồi lại sau 1 giờ.",
   },
-  getMore: "Nhận thêm vé",
+  getMore: "Nhận 1 vé",
+  getMoreLabel: (price) => `Nhận 1 vé với ${String(price)} xu`,
   moreNotice: {
-    granted: "Sắp có thêm cách nhận vé. Tặng bạn một vé miễn phí hôm nay!",
-    notGranted: "Sắp có thêm cách nhận vé.",
+    bought: "Đã thêm 1 vé.",
+    short: (more) => `Không đủ xu. Bạn cần thêm ${String(more)} xu.`,
+    full: "Vé của bạn đã đầy.",
+    signIn: "Đăng nhập để dùng xu.",
+    failed: "Không nhận được vé. Vui lòng thử lại.",
   },
   outOfTickets: {
     title: "Hết vé",

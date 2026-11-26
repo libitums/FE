@@ -1,13 +1,12 @@
-import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import volume from "@libitums/icons/lynx/volume";
 import { Button } from "@libitums/ui-lynx/button";
 
+import { usePlayingLetter } from "../../components/use-playing-letter";
 import { ENTRY_BASICS_LETTERS, lettersHearable } from "../../lib/entry-basics";
 import type { EntryBasicsLetter } from "../../lib/entry-basics";
-import { jamoSoundOf } from "../../lib/letters/jamo";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLeaveOnce } from "../../lib/use-leave-once";
 import { EntryBasicsFrame } from "./EntryBasicsFrame";
@@ -27,10 +26,11 @@ export function EntryBasicsLettersScreen({
   const uiCopy = useUiCopy();
   const copy = uiCopy.journeyEntry.firstSteps;
   const leave = useLeaveOnce();
-  const [heard, setHeard] = useState<readonly string[]>([]);
+  // 스피커 색 · 테두리는 소리가 나는 동안만 바뀝니다(2026-11-23) — 들었다는 표시는 남기지 않습니다.
+  const playback = usePlayingLetter(sound.play);
   // 일본어는 문장 사이에 빈칸이 없습니다(「。」로 끝남).
   const gap = copy.lettersLead.slice(-1) === "。" ? "" : " ";
-  const lead = lettersHearable(sound.sourceOf)
+  const lead = lettersHearable((letter) => sound.letterSourceOf(letter))
     ? `${copy.lettersLead}${gap}${copy.lettersHear}`
     : copy.lettersLead;
 
@@ -89,14 +89,9 @@ export function EntryBasicsLettersScreen({
                     key={letter.letter}
                     index={index}
                     letter={letter}
-                    source={sound.sourceOf(jamoSoundOf(letter.letter))}
-                    heard={heard.indexOf(letter.letter) >= 0}
-                    onPlay={(source) => {
-                      sound.play(source);
-                      setHeard((before) =>
-                        before.indexOf(letter.letter) >= 0 ? before : [...before, letter.letter],
-                      );
-                    }}
+                    source={sound.letterSourceOf(letter.letter)}
+                    playing={playback.playing === letter.letter}
+                    onPlay={(source) => playback.start(letter.letter, source)}
                   />
                 ) : null,
               )}
@@ -112,19 +107,19 @@ function LetterCell({
   index,
   letter,
   source,
-  heard,
+  playing,
   onPlay,
 }: {
   readonly index: number;
   readonly letter: EntryBasicsLetter;
   readonly source: string | null;
-  readonly heard: boolean;
+  /** 지금 이 칸의 소리가 나는 중인가. */
+  readonly playing: boolean;
   readonly onPlay: (source: string) => void;
 }): ReactNode {
   const copy = useUiCopy().more.letters;
-  const audio = source === null ? "unavailable" : heard ? "heard" : "ready";
-  const suffix =
-    audio === "unavailable" ? `, ${copy.soundUnavailable}` : heard ? `, ${copy.heard}` : "";
+  const audio = source === null ? "unavailable" : playing ? "playing" : "ready";
+  const suffix = audio === "unavailable" ? `, ${copy.soundUnavailable}` : "";
   const handleTap = () => {
     "background only";
     if (source !== null) onPlay(source);
@@ -134,7 +129,7 @@ function LetterCell({
       className={
         source === null
           ? "entry-basics-cell"
-          : `entry-basics-cell entry-basics-cell-playable${heard ? " entry-basics-cell-heard" : ""}`
+          : `entry-basics-cell entry-basics-cell-playable${playing ? " entry-basics-cell-playing" : ""}`
       }
       data-testid={ids.letter(index)}
       accessibility-element={true}
@@ -163,7 +158,7 @@ function LetterCell({
         data-audio={audio}
         content={volume}
         current-color={
-          source === null ? color.fg.disabled : heard ? color.brand.strong : color.gray["700"]
+          source === null ? color.fg.disabled : playing ? color.brand.strong : color.gray["700"]
         }
       />
     </view>

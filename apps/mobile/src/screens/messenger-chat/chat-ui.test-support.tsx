@@ -3,6 +3,7 @@
 
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
 import { ChatEventsContext } from "./chat-events";
+import { ChatProfileContext, type ChatProfilePort } from "./chat-profile";
 import type { GuideStore } from "./messenger-guide";
 import { vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -10,6 +11,9 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { backHandlers } from "../../lib/back-handler";
 import { zeroKeyboardDockEdges, type KeyboardDockEdges } from "../../lib/keyboard-dock";
 import { createFixtureChatSource } from "./chat-fixture-source";
+import { tapEl } from "./lynx-tap.test-support";
+
+export { tapEl };
 import type { ChatFixtureRoom, ChatFixtureSeed, ChatSource } from "./chat-source.contract";
 import { createCoinWallet, type SyncedCoinWallet } from "./coin-wallet";
 import type { ChatTier } from "./free-turns";
@@ -93,6 +97,8 @@ export type MountChatOptions = {
   readonly eventSink?: EpisodeIntroEventSink;
   /** 비회원 방(ADR-0166) — 주면 보내기 같은 계정 동작이 로그인 권유가 됩니다. */
   readonly onSignInRequired?: () => void;
+  /** 대화방 안 프로필 시트의 카탈로그 포트(ADR-0178 개정 ⟨대화방⟩) — 주면 결선처럼 `ChatProfileContext`로 감쌉니다. */
+  readonly profile?: ChatProfilePort;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -122,7 +128,13 @@ export function mountChat(options: MountChatOptions = {}) {
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
     onSignInRequired: options.onSignInRequired ?? null,
   };
-  const room = <MessengerChatScreen {...screenProps} />;
+  const screenEl = <MessengerChatScreen {...screenProps} />;
+  const room =
+    options.profile === undefined ? (
+      screenEl
+    ) : (
+      <ChatProfileContext.Provider value={options.profile}>{screenEl}</ChatProfileContext.Provider>
+    );
   const view = render(
     options.eventSink === undefined ? (
       room
@@ -158,12 +170,12 @@ export const tapId = (testId: string): void => {
   const inner = el.querySelector(
     '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
   );
-  fireEvent.tap(inner ?? el, {});
+  tapEl(inner ?? el);
 };
 
 /** ui-lynx 버튼은 감싸개가 test-id를 갖고 탭은 안쪽 `ui-lynx-button`이 받습니다. */
 export const tapButtonIn = (wrapperTestId: string): void => {
-  fireEvent.tap(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"), {});
+  tapEl(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"));
 };
 
 /** 요소 안 가장 가까운 ui-lynx 단추(없으면 요소 자신)를 누릅니다. 같은 test-id가 여러 줄에 있을 때 `within(줄)`과 함께 씁니다. */
@@ -172,7 +184,7 @@ export const tapWithin = (scope: HTMLElement, testId: string): void => {
   const inner = el.querySelector(
     '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
   );
-  fireEvent.tap(inner ?? el, {});
+  tapEl(inner ?? el);
 };
 
 export const tapKeys = (...keys: string[]): void => {

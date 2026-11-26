@@ -1,19 +1,22 @@
 // 출처의 서버 모드입니다(ADR-0137) — 방을 열면 서버 기록을 읽고(비면 첫 인사), 보내기는 서버 턴(SSE)으로 답을 받습니다. 해금 선톡(ADR-0152).
 // 배달 실패(ADR-0138): 받지 못한 글은 Not sent로 남아 다시 보내고, 받은 뒤 끊긴 답은 기록을 다시 읽어 채웁니다. 던지지 않습니다.
 
-import type { RoomState } from "./chat-fixture-room";
+import { setRemoteIdeas, type RoomState } from "./chat-fixture-room";
 import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
+import { remotePull, theirLines } from "./chat-remote-pull";
 import { previewRemoteRooms } from "./chat-remote-preview";
 import { remoteWalletSync } from "./chat-remote-wallet";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
-import type { ChatMessage } from "./chat-source.contract";
+import type { ChatMessage, ChatSendOptions } from "./chat-source.contract";
 import { renderTurn, withHistoryNotes } from "./chat-remote-notes";
+import { myTextLine, storyIdIn } from "./friend-stories";
 import { hasReplyAfter, mergeLog, sameIdeas, serverCopyOf } from "./chat-log-merge";
 import { turnOutcomeOf, type TurnOutcome } from "./companion-outcome";
 import { applyTurnEvent, initialTurnState, type TurnState } from "./companion-turn";
+import { quizAnswerPending } from "./story-quiz";
 
 /** 끊긴 답 채우기 — 바로 한 번, 그 뒤 이 간격마다(누적 30초). 다 돌면 stalled. */
 const RECOVERY_RETRY_MS = [2_000, 3_000, 5_000, 20_000] as const;
@@ -31,7 +34,6 @@ export type RemoteRoomDeps = {
 };
 
 export { uuidV4 } from "./chat-remote-notes";
-
 export function remoteRoomMethods(deps: RemoteRoomDeps) {
   const { remote, live, changed, now, schedule } = deps;
   const roomIdOf = (room: RoomState) => room.seed.roomId;
@@ -63,7 +65,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     room.messages = mergeLog(room.messages, history.messages);
     room.notes = withHistoryNotes(room.notes, history);
     if (room.pendingReplies === 0 && !sameIdeas(room.remoteIdeas, history.ideas))
-      room.remoteIdeas = history.ideas;
+      setRemoteIdeas(room, history.ideas, history.ideasOrigin);
     if (room.recovery === "stalled" && recoveryTargets.get(room)?.(history.messages) === true)
       room.recovery = "none";
     return confirmed;
@@ -94,9 +96,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     })();
   };
 
-  const replies = (room: RoomState) =>
-    room.messages.filter((m) => (m.kind === "text" && m.from === "them") || m.kind === "action")
-      .length;
+  const replies = (room: RoomState) => theirLines(room.messages);
 
   // 서버가 받은 뒤 끊긴 답 — 기록에 그 답이 설 때까지 다시 읽습니다(바로 · 2 · 5 · 10 · 30초, 다 돌면 stalled).
   const recover = (room: RoomState, isDone: (log: readonly ChatMessage[]) => boolean) => {
@@ -186,8 +186,10 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     const placed = new Set<string>();
     const clientMessageId = clientIds.get(localId) ?? deps.uuid();
     clientIds.set(localId, clientMessageId);
+    const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0178 D5) — 다시 보내기에도 실림
+    const quiz = quizAnswerPending(room.messages, localId); // 퀴즈 답이면 턴 뒤 판정을 다시 읽음
     remote.openTurn(
-      { characterId: characterOf(room), text, clientMessageId },
+      { characterId: characterOf(room), text, clientMessageId, ...(storyId ? { storyId } : {}) },
       {
         onOpen: () => undefined,
         onEvent: (event, data) => {
@@ -206,6 +208,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
           settle(room, myId, outcome, turn);
           wallet.afterTurn(characterOf(room), turn.wallet);
           changed(room);
+          if (outcome.kind === "ok" && quiz) refresh(room);
           if (outcome.kind === "ok") sendNextUnsent(room);
         },
       },
@@ -228,22 +231,19 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     startTurn(room, next, text);
   };
 
-  const sendText = (roomId: string, text: string) => {
+  const sendText = (roomId: string, text: string, options?: ChatSendOptions) => {
     const room = live(roomId);
     const trimmed = text.trim();
     if (room === null || room.access.kind !== "open" || trimmed === "") return;
     const localId = `local-${deps.uuid()}`;
-    room.messages = [
-      ...room.messages,
-      { id: localId, at: now(), kind: "text", from: "me", text: { ko: trimmed, en: "" } },
-    ];
+    room.messages = [...room.messages, myTextLine(localId, now(), trimmed, options?.story)];
     // 앞에 보내지 못한 글이 있으면 순서가 섞이지 않게 그 뒤에 쌓습니다.
     if (room.unsent.length > 0) {
       room.unsent = [...room.unsent, localId];
       changed(room);
       return;
     }
-    startTurn(room, localId, trimmed);
+    greeting.after(room, () => live(roomId) === room && startTurn(room, localId, trimmed));
   };
 
   /** 열린 방을 조용히 다시 읽습니다 — 답을 기다리는 중이면 읽지 않습니다. */
@@ -285,6 +285,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       const room = id === null ? null : live(id);
       if (room !== null && room.access.kind === "open") refresh(room);
     },
+    pullRoom: remotePull({ remote, live, changed, isOpen, schedule, busy, refresh, applyHistory }),
   };
   return {
     loadRoom,
@@ -293,5 +294,6 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     controls,
     requestMedia: media.request,
     remake: media.remake,
+    sample: media.sample,
   };
 }

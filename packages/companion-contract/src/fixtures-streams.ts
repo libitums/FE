@@ -234,7 +234,7 @@ export const turnFixtureEvents = {
     },
     done(0),
   ]),
-  // 미션 턴(ADR-0177) — 교정 · 번역 뒤 `state` 자리에 `mission`. 차감이 없다(판 단위로 `mission-start`에서 낸다).
+  // 미션 턴(ADR-0193) — 교정 · 번역 뒤 `state` 자리에 `mission`. 차감이 없다(판 단위로 `mission-start`에서 낸다).
   "turn-mission": numbered([
     start(),
     delta(0, "speech", "네, 아이스 아메리카노 한 잔이요. "),
