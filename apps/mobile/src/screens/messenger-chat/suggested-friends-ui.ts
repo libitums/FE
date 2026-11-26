@@ -88,7 +88,8 @@ export type SheetView = {
 /** 견본이 없거나 포트가 못 풀면 주소 null, 포트가 없거나 스위치가 꺼졌으면 hidden. */
 export const sheetViewOf = (
   model: SuggestedFriendSheetModel,
-  port: SuggestedFriendsPort | undefined,
+  // 대화방 시트(ADR-0178 개정 ⟨대화방⟩)는 추천 친구 포트 대신 견본 주소 · 로마자만 든 포트를 넘깁니다.
+  port: Pick<SuggestedFriendsPort, "voiceSampleUrl" | "romanization"> | undefined,
 ): SheetView => {
   const path = model.character.voiceSamplePath ?? null;
   return {

@@ -28,12 +28,3 @@ export function chatProfileModelOf(
 ): SuggestedFriendSheetModel {
   return modelOfMetFriend(port?.profileOf(counterpart.id) ?? null, counterpart);
 }
-
-/** 시트의 목소리 견본 재생 주소 — 견본이 없거나 포트가 못 풀면 null. */
-export function chatProfileVoiceUrlOf(
-  port: ChatProfilePort | null,
-  model: SuggestedFriendSheetModel,
-): string | null {
-  const path = model.character.voiceSamplePath ?? null;
-  return path === null ? null : (port?.voiceSampleUrl?.(path) ?? null);
-}

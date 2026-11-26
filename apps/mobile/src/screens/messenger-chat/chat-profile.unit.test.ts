@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { focusOriginOf } from "./chat-overlay-focus";
-import { chatProfileModelOf, chatProfileVoiceUrlOf, type ChatProfilePort } from "./chat-profile";
+import { chatProfileModelOf, type ChatProfilePort } from "./chat-profile";
 import {
   chatRoomReducer,
   initialChatRoomState,
@@ -9,6 +9,7 @@ import {
   overlayParent,
 } from "./chat-room-state";
 import { guestGateOf } from "./guest-gate";
+import { sheetViewOf } from "./suggested-friends-ui";
 import { friend } from "./suggested-friends.test-support";
 
 // `unit` 계층(CP-U1 ~ U6): 대화방 안 상대 프로필 시트(ADR-0178 개정 ⟨대화방⟩) — 겹침 전이 · 시트 모델 · 목소리 주소.
@@ -76,14 +77,19 @@ describe("chatProfileModelOf (CP-U4 · U5)", () => {
   });
 });
 
-describe("chatProfileVoiceUrlOf (CP-U6)", () => {
-  test("CP-U6. 견본이 있고 포트가 풀면 주소, 아니면 null", () => {
+describe("sheetViewOf · 대화방 포트 (CP-U6)", () => {
+  test("CP-U6. 다른 자리와 같은 sheetViewOf — 견본이 있고 포트가 풀면 주소 · 로마자 스위치, 아니면 null · hidden", () => {
     const model = chatProfileModelOf(port(), mina);
-    const resolving = port({ voiceSampleUrl: (path) => `https://cdn/${path}` });
-    expect(chatProfileVoiceUrlOf(resolving, model)).toBe("https://cdn/voice/mina.mp3");
-    expect(chatProfileVoiceUrlOf(port(), model)).toBeNull();
-    expect(chatProfileVoiceUrlOf(null, model)).toBeNull();
-    expect(chatProfileVoiceUrlOf(resolving, chatProfileModelOf(null, mina))).toBeNull();
+    const resolving = port({
+      voiceSampleUrl: (path) => `https://cdn/${path}`,
+      romanization: () => true,
+    });
+    expect(sheetViewOf(model, resolving)).toEqual({
+      voiceSampleUrl: "https://cdn/voice/mina.mp3",
+      romanization: "shown",
+    });
+    expect(sheetViewOf(model, port())).toEqual({ voiceSampleUrl: null, romanization: "hidden" });
+    expect(sheetViewOf(chatProfileModelOf(null, mina), resolving).voiceSampleUrl).toBeNull();
   });
 });
 
