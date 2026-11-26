@@ -26,8 +26,14 @@ function useLive({ port, open, rooms, setState }: Args): void {
   const active = open && port !== undefined && foreground;
   const activeRef = useRef(active);
   activeRef.current = active;
+  const openRef = useRef(open);
+  openRef.current = open;
+  // 보기가 열려 있으면 Seen by · 답만 얹고(장 · 자리 그대로), 닫혀 있거나 첫 읽기를 못 했으면 서버 것을 통째로(새 스토리 · 창 포함).
   const apply = (state: MyStoriesState | null) => {
-    if (state !== null) setState((before) => stateWithLive(before, state.stories));
+    if (state !== null)
+      setState((before) =>
+        before === null || !openRef.current ? state : stateWithLive(before, state.stories),
+      );
   };
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const read = useMemo(

@@ -9,7 +9,7 @@ import { fakeMyStories, MS_NOW, myStory } from "./my-stories.test-support";
 import { MyStoryFullOpen } from "./MyStoryFullOpen";
 import { useMyStoryLive } from "./use-my-story-live";
 
-// `ui` 계층(LV-UI1 ~ UI7): 내 스토리 보기를 연 동안 다시 읽기(ADR-0194 개정 ⟨살아 있는 보기⟩) — 가짜 타이머로 30초 주기 · 닫으면 멈춤 ·
+// `ui` 계층(LV-UI1 ~ UI8): 내 스토리 보기를 연 동안 다시 읽기(ADR-0194 개정 ⟨살아 있는 보기⟩) — 가짜 타이머로 30초 주기 · 닫으면 멈춤 ·
 // 앱이 뒤로 가면 멈추고 앞으로 오면 바로 · 답 도착이면 바로 · 겹치면 하나 · 실패는 조용히 다음 주기.
 
 beforeEach(() => {
@@ -172,4 +172,24 @@ test("LV-UI7. 보기를 연 채 목록이 바뀌면 아래 바의 Seen by가 바
   expect(screen.getByTestId(fsIds.progress).getAttribute("accessibility-label")).toBe(
     "Story 1 of 1",
   );
+});
+
+test("LV-UI8. 보기가 닫혀 있을 때 앞으로 와서 읽은 것은 통째로(새 스토리 포함), 열려 있으면 Seen by · 답만 얹는다", async () => {
+  const loaded: MyStoriesState = {
+    enabled: true,
+    keep: true,
+    stories: [myStory("a"), myStory("new")],
+    window: null,
+    kinds: ["word"],
+  };
+  const { Probe, got, signal } = harness(async () => loaded);
+  const before: MyStoriesState = { ...loaded, stories: [myStory("a")] };
+  const view = render(<Probe open={false} rooms={[]} />);
+  signal("resume");
+  await advance(1);
+  expect(got.mock.calls[0]?.[0](before)).toBe(loaded);
+  expect(got.mock.calls[0]?.[0](null)).toBe(loaded);
+  view.rerender(<Probe open rooms={[]} />);
+  await advance(1);
+  expect(got.mock.calls[1]?.[0](before)).toBe(before);
 });
