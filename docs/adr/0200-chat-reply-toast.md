@@ -106,9 +106,9 @@
   바로 앞 줄로 정함(선톡은 보통 `proactive`).
 - **같은 메시지는 한 번**: 중복 제거는 **메시지 id** 기준이다 — 기록 합치기(`mergeLog`)가 같은 id를 한 줄로 두므로, SSE로 먼저 온 말 · 같은
   푸시가 두 번 와도 안 읽음이 다시 오르지 않는다. 그 방이 답을 기다리는 중(턴 진행)이면 읽지 않는다(SSE가 가져옴).
-- 기록을 못 읽으면 2초 뒤 한 번 더. 그래도 못 읽으면 다음 앞으로 옴 · 방 열기가 채운다(토스트는 서지 않고 배너도 없었음 — 드묾).
+- 기록을 못 읽으면(포트가 던져도 같음) 2초 뒤 한 번 더. 그래도 못 읽으면 다음 앞으로 옴 · 방 열기가 채운다(토스트는 서지 않고 배너도 없었음 — 드묾).
 - 기기에 그 인물의 방이 없거나 잠겼으면 아무것도 하지 않는다(서버는 방이 있는 인물에게만 보낸다 — ADR-0127 서버 쪽 개정).
-- 테스트: unit FP-U1 ~ U3(`foreground-push.unit.test.ts`), ui FP-UI1(`use-messenger-refresh.ui.test.tsx`), integration FP-I1 ~ I6
+- 테스트: unit FP-U1 ~ U3(`foreground-push.unit.test.ts`), ui FP-UI1(`use-messenger-refresh.ui.test.tsx`), integration FP-I1 ~ I7
   (`chat-fixture-pull.integration.test.ts`) · FPI1 ~ FPI5(`App.foreground-push.integration.test.tsx`), 호스트 HostTests PN6 · Android JVM
   `ForegroundPushTest` FP1 ~ FP4, e2e MC-E18(`docs/e2e/messenger-chat-ui.md`).
 - **대가**: 진입 흐름 중(스플래시 ~ 여정 입장)에 온 채팅 푸시는 배너도 토스트도 없다(안 읽음만 맞음). 앞에서 받은 채팅 푸시 하나마다 기록
