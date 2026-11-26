@@ -17,6 +17,7 @@ export {
   type SpokenGrade,
 } from "./spoken-answer";
 export { spokenTrackOf, spokenUnitsOf, type SpokenTrack } from "./hangul-pronunciation";
+export { addsNegation } from "./spoken-negation";
 export {
   judgeSpokenLenient,
   SPOKEN_EXACT_MAX_UNITS,

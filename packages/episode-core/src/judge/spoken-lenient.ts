@@ -2,16 +2,23 @@
 // (`judgeSpokenLenient`)이 같은 잣대를 씁니다.
 //
 // 정답을 문장 부호로 마디(「안녕하세요 · 네 · 처음이에요」)로 나누고, 마디마다 들은 문장 안의 가장 비슷한 연속 구간과
-// 발음형 자모 편집 거리를 잽니다. 앞뒤에 덧붙은 **낱말**과 마디 순서 바뀜은 허용하고, 마디 하나를 통째로 빠뜨리면 하한이 막습니다.
+// 발음형 자모 편집 거리를 잽니다. 뒤에 덧붙은 **낱말**과 마디 순서 바뀜은 허용하고, 마디 하나를 통째로 빠뜨리면 하한이 막습니다.
 // 이름 · 나라(와일드카드)가 든 낱말은 마디를 끊는 자리로만 쓰고 비교에서 뺍니다.
+//
+// 뜻이 반대인 답은 길이 허용 오차로 넘어가지 않습니다(ADR-0201 개정 ⟨부정어 · 앞 낱말 · 어간⟩).
+//   - 들은 말에만 있는 부정 낱말(안 · 못 · 아니 · 없 · 않 · 싫 · 모르 · -지 마)이 있으면 오답(`addsNegation`).
+//   - 들은 말 **앞**에 덧붙은 낱말은 군말만 공짜이고 나머지는 거리로 셉니다(「이거 사과」 ≠ 「사과」).
+//   - 낱말 첫 음절의 자모가 다른 자모로 바뀌면 오답입니다(「가세요」 ≠ 「계세요」).
 //
 // 허용 오차는 비율 하나가 아니라 정답 길이로 정합니다 — 짧은 말은 자모 하나가 뜻을 바꿉니다(고기 / 거기).
 //   자모 5개 이하: 0개(발음형이 같아야) · 6 ~ 11개: 1개 · 12개 이상: 25%(내림).
 
-import { spokenTrackOf, spokenUnitsOf } from "./hangul-pronunciation";
+import { spokenTrackOf } from "./hangul-pronunciation";
 import type { SpokenTrack } from "./hangul-pronunciation";
 import type { NonEmpty } from "./non-empty";
 import { judgeRoleplayReplyExact } from "./roleplay-reply";
+import { alignWindow, stemPositions } from "./spoken-align";
+import { addsNegation } from "./spoken-negation";
 import { speakingWords } from "./speaking-judge";
 
 /** 긴 정답(자모 12개 이상)에서 일치도가 이 값 이상이면 발음 기준 정답입니다. */
@@ -35,6 +42,8 @@ export type SpokenSimilarity = {
   readonly distance: number;
   /** 비교한 정답 자모 수(와일드카드 낱말 제외). 0이면 비교할 것이 없습니다. */
   readonly length: number;
+  /** 낱말 첫 음절 자모가 다른 자모로 바뀐 수. 0이 아니면 통과하지 않습니다. */
+  readonly stemSlips: number;
 };
 export type SpokenJudgement = {
   readonly outcome: SpokenOutcome;
@@ -46,35 +55,6 @@ export type SpokenJudgement = {
   readonly expected: string;
 };
 
-/**
- * `pattern`과 `text` 안 어느 연속 구간 사이의 최소 편집 거리입니다. 구간은 `text`의 낱말 경계에서만 시작하고 끝납니다 —
- * 앞뒤에 덧붙은 낱말은 공짜지만, 낱말을 반만 떼어 맞추지는 못합니다(「현금으로」의 「금으로」 ≠ 「카드로」).
- */
-function windowDistance(pattern: readonly string[], text: SpokenTrack): number {
-  const { units, wordStarts } = text;
-  const boundary = new Set([...wordStarts, units.length]);
-  let previous: number[] = Array.from({ length: units.length + 1 }, (_, column) =>
-    boundary.has(column) ? 0 : Number.POSITIVE_INFINITY,
-  );
-  if (units.length === 0) previous = [0];
-  for (let row = 1; row <= pattern.length; row += 1) {
-    const current = [row];
-    for (let column = 1; column <= units.length; column += 1) {
-      const substitute =
-        (previous[column - 1] ?? 0) + (pattern[row - 1] === units[column - 1] ? 0 : 1);
-      current.push(
-        Math.min((previous[column] ?? 0) + 1, (current[column - 1] ?? 0) + 1, substitute),
-      );
-    }
-    previous = current;
-  }
-  let best = pattern.length;
-  previous.forEach((value, column) => {
-    if ((boundary.has(column) || units.length === 0) && value < best) best = value;
-  });
-  return best;
-}
-
 const round = (value: number) => Math.round(value * 1000) / 1000;
 const toNfc = (text: string) =>
   typeof text.normalize === "function" ? text.normalize("NFC") : text;
@@ -83,10 +63,18 @@ function containsWildcard(word: string, pieces: readonly string[]): boolean {
   return pieces.some((piece) => piece !== "" && word.includes(piece));
 }
 
+type Segments = {
+  /** 마디마다의 발음형 열(빈 마디 제외). */
+  readonly tracks: readonly SpokenTrack[];
+  /** 정답이 와일드카드 낱말로 시작하면 들은 말 앞의 낱말은 그 자리입니다(공짜). */
+  readonly leadingFree: boolean;
+};
+
 /** 정답을 마디로 나눈 발음형 열들 — 문장 부호와 와일드카드 낱말이 마디를 끊고, 와일드카드 낱말은 버립니다. */
-function segmentsOf(expected: string, wildcards: readonly string[]): string[][] {
+function segmentsOf(expected: string, wildcards: readonly string[]): Segments {
   const pieces = wildcards.flatMap((wildcard) => speakingWords(wildcard));
-  return toNfc(expected)
+  const firstWord = speakingWords(expected)[0];
+  const tracks = toNfc(expected)
     .split(/[.,!?…~]+/)
     .flatMap((segment) => {
       const groups: string[][] = [[]];
@@ -97,8 +85,12 @@ function segmentsOf(expected: string, wildcards: readonly string[]): string[][] 
       }
       return groups.map((group) => group.join(" "));
     })
-    .map((text) => [...spokenUnitsOf(text)])
-    .filter((units) => units.length > 0);
+    .map((text) => spokenTrackOf(text))
+    .filter((track) => track.units.length > 0);
+  return {
+    tracks,
+    leadingFree: firstWord !== undefined && containsWildcard(firstWord, pieces),
+  };
 }
 
 export function spokenSimilarity(
@@ -107,23 +99,32 @@ export function spokenSimilarity(
   wildcards: readonly string[] = [],
 ): SpokenSimilarity {
   const heardTrack = spokenTrackOf(heard);
+  const { tracks, leadingFree } = segmentsOf(expected, wildcards);
   let distance = 0;
   let length = 0;
   let weakest = 1;
-  for (const segment of segmentsOf(expected, wildcards)) {
-    const gap = windowDistance(segment, heardTrack);
-    distance += gap;
+  let stemSlips = 0;
+  let firstStart = heardTrack.units.length;
+  for (const track of tracks) {
+    const segment = track.units;
+    const aligned = alignWindow(segment, stemPositions(track), heardTrack);
+    distance += aligned.distance;
     length += segment.length;
+    stemSlips += aligned.stemSlips;
+    firstStart = Math.min(firstStart, aligned.start);
     if (segment.length >= SPOKEN_FLOOR_MIN_UNITS) {
-      weakest = Math.min(weakest, 1 - gap / segment.length);
+      weakest = Math.min(weakest, 1 - aligned.distance / segment.length);
     }
   }
-  if (length === 0) return { similarity: 0, weakest: 0, distance: 0, length: 0 };
+  if (length === 0) return { similarity: 0, weakest: 0, distance: 0, length: 0, stemSlips: 0 };
+  // 들은 말 앞에 덧붙은 낱말(군말은 이미 빠짐)은 빠짐없이 거리로 셉니다.
+  if (!leadingFree) distance += firstStart;
   return {
     similarity: Math.max(0, 1 - distance / length),
     weakest: Math.max(0, weakest),
     distance,
     length,
+    stemSlips,
   };
 }
 
@@ -134,12 +135,13 @@ export function spokenAllowedDistance(length: number): number {
   return Math.floor(length * (1 - SPOKEN_LENIENT_THRESHOLD));
 }
 
-/** 발음 기준 통과 — 허용 오차 안이고 빠뜨린 마디가 없습니다. */
+/** 발음 기준 통과 — 허용 오차 안이고 빠뜨린 마디 · 바뀐 첫 음절이 없습니다. */
 export function spokenPasses(score: SpokenSimilarity): boolean {
   return (
     score.length > 0 &&
     score.distance <= spokenAllowedDistance(score.length) &&
-    score.weakest >= SPOKEN_SEGMENT_FLOOR
+    score.weakest >= SPOKEN_SEGMENT_FLOOR &&
+    score.stemSlips === 0
   );
 }
 
@@ -155,8 +157,12 @@ export function judgeSpokenLenient(
     accepted
       .map((sentence) => ({ sentence, score: spokenSimilarity(sentence, heard) }))
       .reduce((best, entry) => (entry.score.similarity > best.score.similarity ? entry : best));
-  const strict = alternatives.find(
-    (heard) => judgeRoleplayReplyExact(accepted, heard, []) === "correct",
+  const strict = alternatives.find((heard) =>
+    accepted.some(
+      (sentence) =>
+        !addsNegation(sentence, heard) &&
+        judgeRoleplayReplyExact([sentence], heard, []) === "correct",
+    ),
   );
   if (strict !== undefined) {
     return { outcome: "strict", similarity: 1, heard: strict, expected: closest(strict).sentence };
@@ -165,7 +171,7 @@ export function judgeSpokenLenient(
   for (const heard of alternatives) {
     for (const sentence of accepted) {
       const score = spokenSimilarity(sentence, heard);
-      const pass = spokenPasses(score);
+      const pass = spokenPasses(score) && !addsNegation(sentence, heard);
       const better = pass === best.pass ? score.similarity > best.similarity : pass;
       if (better) best = { heard, sentence, similarity: score.similarity, pass };
     }

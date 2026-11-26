@@ -25,6 +25,7 @@ import {
   speakWordControlsOf,
   speakWordHintOf,
   speakWordInstructionOf,
+  speakWordJudgementOf,
   speakWordResultAt,
   speakWordResultAnnouncement,
   speakWordRevealText,
@@ -42,9 +43,8 @@ import { useSpeakWordPicture } from "./use-speak-word-picture";
 
 import "./speak-word-activity.css";
 
-// 그림을 보고 낱말을 말하는 활동입니다(카탈로그 SPEAK_WORD). 채점합니다 — 들은 글자의 앞 낱말이 정답과 같으면
-// 정답이고, 판정 뒤 정답 상자가 맞아도 서며 2.5초 뒤 스스로 다음 문항으로 넘어갑니다. 뼈대는 `LearningShell`이
-// 집니다. DOM 순서 = 낭독 순서입니다: 판정 → 그림 틀 → (뜻 줄 — 낭독 밖) → 정답 상자 → 마이크 → 안내 줄 → 버튼.
+// 그림을 보고 낱말을 말하는 활동입니다(카탈로그 SPEAK_WORD). 발음 기준으로 채점하고(ADR-0201), 판정 뒤 정답 상자가
+// 서며 2.5초 뒤 다음 문항으로 넘어갑니다. 뼈대는 `LearningShell`. DOM 순서 = 낭독 순서: 판정 → 그림 → 정답 → 마이크 → 버튼.
 export function SpeakWordActivity({
   questions,
   onExit,
@@ -57,13 +57,16 @@ export function SpeakWordActivity({
   const density = useLearningDensity();
   const [state, dispatch] = useReducer(speakWordSessionReducer, initialSpeakWordSessionState);
   const finished = useRef(false);
-  const attempt = useSpeechAttempt((outcome) => dispatch({ type: "outcome", outcome }));
-
   const complete = isSpeakWordSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
+  // 판정은 결말 콜백(배경 스레드)에서 잽니다 — 렌더는 담아 둔 값만 읽습니다(ADR-0201 개정 ⟨렌더 밖 판정⟩).
+  const attempt = useSpeechAttempt((outcome) => {
+    const judgement = question == null ? null : speakWordJudgementOf(question, outcome);
+    dispatch({ type: "outcome", outcome, judgement });
+  });
   const picture = useSpeakWordPicture(state.questionIndex, question?.meaning ?? null);
   const { phase } = state;
-  const result = question == null ? null : speakWordResultAt(question, state);
+  const result = question == null ? null : speakWordResultAt(state);
   const counter = lessonCounter(
     lesson,
     question == null ? Math.max(0, questions.length - 1) : state.questionIndex,
@@ -88,8 +91,7 @@ export function SpeakWordActivity({
     answerEchoCueOf(String(state.questionIndex), question?.audio, phase.kind === "heard", autoPlay),
   );
 
-  // 판정은 서는 순간, 불가 안내(또는 받아쓰기 지시문)도 서는 순간 한 번 알립니다. 듣는 중에는 알리지 않습니다 —
-  // 마이크가 켜진 동안의 화면 낭독은 인식기에 그대로 들어갑니다.
+  // 판정 · 불가 안내는 서는 순간 한 번 알립니다. 듣는 중에는 알리지 않습니다(낭독이 인식기에 들어갑니다).
   useEffect(() => {
     if (result !== null && question != null) {
       report(result);
@@ -106,7 +108,7 @@ export function SpeakWordActivity({
     announceCompletion(speakWordCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
-  // 결과는 한 번만 올라갑니다 — 부모가 화면을 걷기 전의 두 번째 탭을 막습니다.
+  // 결과는 한 번만 올라갑니다(부모가 걷기 전의 두 번째 탭을 막음).
   const finish = (heard: readonly (string | null)[]): void => {
     if (finished.current) return;
     finished.current = true;
@@ -142,8 +144,7 @@ export function SpeakWordActivity({
     }
   };
 
-  // 판정 뒤 스스로 넘어가는 걸음입니다. 관계없는 리렌더(그림 로드 등)가 기다림을 되돌리지 않게 참조를
-  // 메모하고, 부르는 시점의 최신 값은 ref로 읽습니다.
+  // 판정 뒤 스스로 넘어가는 걸음 — 리렌더가 기다림을 되돌리지 않게 메모하고, 최신 값은 ref로 읽습니다.
   const latest = useRef({ run, finish, handsOff, heard: state.heard });
   latest.current = { run, finish, handsOff, heard: state.heard };
   const advance = useMemo(
@@ -192,7 +193,6 @@ export function SpeakWordActivity({
       <SpeakWordSecondary control={secondary} label={labelOf(secondary)} onTap={handleSecondary} />
     );
 
-  // 완료면 주 버튼이 결과를 올립니다. 그 밖에는 국면별 조작입니다.
   const action: { label: string; run: () => void } | undefined =
     question == null
       ? { label: copy.common.seeResults, run: () => finish(state.heard) }

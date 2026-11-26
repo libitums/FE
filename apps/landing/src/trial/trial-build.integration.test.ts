@@ -199,10 +199,11 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
 
   // r3: 발음 기준 판정 · 시도 측정 · 수집으로 39,813 → 45,888 B(실측) — 상한을 실측(100 B 올림)으로 올렸다.
   // ADR-0201: 길이별 허용 오차 · 낱말 경계 · 와일드카드 마디로 45,888 → 46,053 B(실측) — 같은 방식으로 46,100.
-  it("IB5 스크립트 예산 ≤ 46,100 bytes · zod · 디코더 흔적 없음", () => {
+  // ADR-0201 개정 ⟨부정어 · 앞 낱말 · 어간⟩: 부정어 갈래 · 맞춤 되짚기로 46,053 → 47,584 B(실측) — 같은 방식으로 47,600.
+  it("IB5 스크립트 예산 ≤ 47,600 bytes · zod · 디코더 흔적 없음", () => {
     const { bytes, text } = scriptBytes(build, read(build, "try/index.html"));
     expect(bytes).toBeGreaterThan(0);
-    expect(bytes).toBeLessThanOrEqual(46_100);
+    expect(bytes).toBeLessThanOrEqual(47_600);
     expect(text).not.toContain("_zod");
     expect(text).not.toContain("schema-mismatch");
   });

@@ -151,8 +151,8 @@ describe("SP2 사례 표", () => {
     expect(judgeSpokenLenient([T1], [""]).similarity).toBe(0);
   });
 
-  test("알려진 한계 — 뜻이 반대인 삽입도 발음이 가까우면 통과한다(문서에 둔다)", () => {
-    expect(judgeSpokenLenient([T1], ["안녕하세요 네 처음이 아니에요"]).outcome).toBe("lenient");
+  test("뜻이 반대인 삽입은 발음이 가까워도 오답이다(옛 「알려진 한계」, ADR-0201 개정 ⟨부정어⟩)", () => {
+    expect(judgeSpokenLenient([T1], ["안녕하세요 네 처음이 아니에요"]).outcome).toBe("incorrect");
   });
 });
 

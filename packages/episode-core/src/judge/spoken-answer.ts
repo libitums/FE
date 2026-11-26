@@ -2,7 +2,7 @@
 //
 // - perfect: 낱말 그대로 맞거나(`judgeRoleplayReplyExact`) 발음형이 같습니다(띄어쓰기 · 연음 · 받침 표기 · 군말만 다름).
 // - close: 발음형이 조금 다르지만 허용 오차 안입니다(`spokenPasses`). 화면은 맞음과 함께 모범 정답을 보입니다(ADR-0201).
-// - incorrect: 그 밖.
+// - incorrect: 그 밖. 들은 말에만 있는 부정어(안 · 못 · 아니 …)가 있으면 발음이 같아도 incorrect입니다.
 //
 // 판정(정오답)은 perfect · close가 correct입니다.
 
@@ -10,6 +10,7 @@ import type { AnswerResult } from "./answer-result";
 import type { NonEmpty } from "./non-empty";
 import { judgeRoleplayReplyExact } from "./roleplay-reply";
 import { spokenPasses, spokenSimilarity } from "./spoken-lenient";
+import { addsNegation } from "./spoken-negation";
 
 export type SpokenGrade = "perfect" | "close" | "incorrect";
 
@@ -40,8 +41,10 @@ export function judgeSpokenAnswer(
   for (const sentence of accepted) {
     const score = spokenSimilarity(sentence, heard, wildcards);
     const exact = judgeRoleplayReplyExact([sentence], heard, wildcards) === "correct";
-    const grade: SpokenGrade =
-      exact || (score.length > 0 && score.distance === 0)
+    // 들은 말에만 있는 부정어는 발음이 같아도 뜻이 반대입니다(ADR-0201 개정 ⟨부정어⟩).
+    const grade: SpokenGrade = addsNegation(sentence, heard)
+      ? "incorrect"
+      : exact || (score.length > 0 && score.distance === 0)
         ? "perfect"
         : spokenPasses(score)
           ? "close"
