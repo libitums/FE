@@ -206,7 +206,7 @@
 | 중간 산출물 `main-thread.js`(DEBUG 빌드) | 1,631,327 | 1,222,503 | −408,824 |
 | 중간 산출물 `background.js` · `main.css` | 3,428,162 · 622,519 | 같음 | 0 |
 
-- 실측은 D3과 같이 `.env.local` 없는 설정이다. 로컬은 같은 커밋의 CI보다 약 9 kB 크다 — 판정은 PR CI 값이다. 그림 · ui-lynx 천장은 그대로다.
+- 실측은 D3과 같이 `.env.local` 없는 설정이다. **CI 값(PR #642)**: main `f2bffc5e` 6,179.3 kB → 5,747.5 kB(−431.7 kB), 천장까지 432.5 kB. 그림 · ui-lynx 천장은 그대로다.
 - 층별 분석 · 남은 레버(제안만)는 `docs/performance/reports/bundle-reduce-01.md`.
 - 바꾼 자리: `apps/mobile/src/app/render-app-content.tsx` · `apps/mobile/lynx.config.ts` · `devtools/bundle-size/snapshot-coverage*.mjs` ·
   `package.json`(`size:snapshots`, `verify`) · `.github/workflows/verify.yml` · 이 ADR · 위 보고서.
