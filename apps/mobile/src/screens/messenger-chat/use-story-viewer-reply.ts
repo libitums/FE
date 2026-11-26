@@ -1,5 +1,6 @@
 // 스토리 보기의 답장 상태(ADR-0178 D5 개정) — 입력 중 · 보내는 중 · 실패 안내 · 「Sent」 알림 · 칸 비우기 · 키보드 높이 · 무료 안내.
-// 보내기는 `onReply`(목록이 출처로 보냄)가 지고, 이 훅은 보기가 멈출지 · 칸을 어디에 둘지만 정합니다.
+// 보내기는 `onReply`(목록이 출처로 보냄)가 지고, 이 훅은 보기가 멈출지 · 칸을 어디에 둘지만 정합니다. 상태는 보기 단위라 장 · 인물을
+// 넘겨도 「Sent」 알림은 남습니다(보기를 닫으면 함께 사라짐).
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
@@ -30,7 +31,7 @@ export type StoryViewerReply = {
   readonly sentItem: StoryViewerItem | null;
   /** 답장 칸의 key 조각 — 보내면 바뀌어 칸이 비워집니다. */
   readonly epoch: number;
-  /** 보기를 멈출 까닭(입력 · 보내는 중 · 알림). */
+  /** 보기를 멈출 까닭(입력 · 보내는 중) — 보낸 뒤 알림 동안은 멈추지 않습니다(사용자 결정 2026-11-26). */
   readonly holding: boolean;
   readonly freeShown: (item: StoryViewerItem) => boolean;
   /** 아래 묶음의 아래 여백(px) — 입력 중이면 키보드 위, 아니면 바닥 인셋 + 16. */
@@ -92,12 +93,11 @@ export function useStoryViewerReply({
     return true;
   };
 
-  // 장이 바뀌면 안내 · 알림을 걷습니다(칸은 장마다 새로 섭니다).
+  // 장이 바뀌면 실패 안내를 걷습니다(칸은 장마다 새로 섭니다). 「Sent」 알림은 장 · 인물이 바뀌어도 남습니다(사용자 결정 2026-11-26).
   useEffect(() => {
     setError(null);
-    setSentItem(null);
   }, [index]);
-  // 알림은 3초(목록 안내 줄과 같은 시간) 뒤 걷히고, 그동안 보기는 멈춰 있습니다.
+  // 알림은 3초(목록 안내 줄과 같은 시간) 뒤 걷힙니다 — 그동안에도 보기는 이어 갑니다(인스타 방식, 사용자 결정 2026-11-26).
   useEffect(() => {
     if (sentItem === null) return undefined;
     const handle = setTimeout(() => setSentItem(null), LIST_NOTICE_MS);
@@ -147,7 +147,7 @@ export function useStoryViewerReply({
     error,
     sentItem,
     epoch,
-    holding: typing || sending || sentItem !== null,
+    holding: typing || sending,
     freeShown: (item) => item.story.freeReply && !usedFree.has(item.story.id),
     bottomPadding: (bottomInset) => (typing ? lifted + KEYBOARD_GAP : bottomInset + 16),
     send,

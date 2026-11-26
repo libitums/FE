@@ -276,6 +276,23 @@
   gap: var(--libitum-spacing-12);
 }
 
+/* 답장 묶음(무료 안내 · 칩 · 칸 또는 만나기) — 높이를 재어 그 위에 보기 단위 「Sent」 알림을 둡니다. */
+.story-viewer-reply-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 보기 단위 「Sent · Open chat」 층 — 큐브 면(z-index 0) 위, 아래 여백 · 좌우는 인라인(답장 묶음 위 틈 12 + 알림 자신의 아래 여백 12 — 면 안에 있던 때와 같은 자리). */
+.story-viewer-sent-layer {
+  z-index: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* 무료 안내 — 사진 위에서도 읽히게 어두운 알약(접근성 C2) · 12 이상 글(m7). */
 .story-free {
   align-self: flex-start;

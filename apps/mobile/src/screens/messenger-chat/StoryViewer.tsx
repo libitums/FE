@@ -12,7 +12,7 @@ import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-sto
 import { sideFace, StoryFaceBackdrop, StoryFaceShell, StoryLineCard } from "./StoryCubeFace";
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
 import { StoryViewerHead } from "./StoryViewerHead";
-import { StoryReplyArea } from "./StoryReplyArea";
+import { StoryReplyArea, StoryViewerSent } from "./StoryReplyArea";
 import { useViewerCube } from "./use-viewer-cube";
 import { useStoryNavigation } from "./use-story-navigation";
 import { useStoryViewerReply } from "./use-story-viewer-reply";
@@ -24,6 +24,8 @@ export { STORY_SHOW_MS } from "./StoryViewerParts";
 
 /** 숨김이 풀린 다음 프레임에 초점을 보냅니다(16 ms — 대화방 겹침과 같은 값). */
 const NEXT_FRAME_MS = 16;
+/** 답장 묶음과 「Sent」 알림 층 사이 틈(면 안 아래 묶음의 gap과 같음, pt/dp). */
+const REPLY_GAP = 12;
 
 /**
  * 스토리 보기(ADR-0178 D4, 시안 2 · 4번) — 목록 위 전체 화면 층. 칸 이동은 `viewerStep`, 경과는 `storyAgeOf`가 정하고 여기서는 그리기 ·
@@ -57,6 +59,7 @@ export function StoryViewer({
   const group = viewerGroupOf(items, index);
   const groupLabel = copy.viewer.progress(group.at + 1, group.count);
   const [paused, setPaused] = useState(false);
+  const [replyHeight, setReplyHeight] = useState(0);
   const reply = useStoryViewerReply({
     index,
     copy,
@@ -75,7 +78,7 @@ export function StoryViewer({
 
   // 모션 줄이기면 저절로 넘어가지 않습니다(넘김은 탭으로). 위에 시트가 덮으면 멈춥니다. 멈춤 단추는 낭독 순서 둘째(닫기 다음)이고
   // 안 만난 친구에도 섭니다(WCAG 2.2.1, 접근성 C1). 스크린리더 실행 여부로 자동 넘김을 끄는 것은 호스트 값이 생기면 더합니다.
-  // 답장을 쓰는 중 · 보내는 중 · 「Sent」 알림 동안에도, 가로로 끄는 동안에도 멈춥니다(D5 · D4 개정).
+  // 답장을 쓰는 중 · 보내는 중에도, 가로로 끄는 동안에도 멈춥니다(D5 · D4 개정). 보낸 뒤 「Sent」 알림 동안은 이어 갑니다(사용자 결정 2026-11-26).
   const held = useStoryToastLink(true); // 답장 도착 토스트가 머리 위에 떠 있는 동안 진행만 멈춤(ADR-0200)
   const stopped = paused || covered || held || reply.holding || nav.dragging;
   const running = !stopped && !reducedMotion && item !== undefined;
@@ -198,11 +201,21 @@ export function StoryViewer({
               />
             ) : null}
           </view>
-          {unmet === null ? (
-            <StoryReplyArea item={item} copy={copy} reply={reply} onOpenChat={onOpenChat} />
-          ) : (
-            <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
-          )}
+          {/* 높이를 재어 보기 단위 「Sent」 알림을 이 묶음 바로 위에 둡니다. */}
+          <view
+            className="story-viewer-reply-group"
+            bindlayoutchange={(event: { detail?: { height?: unknown } }) => {
+              "background only";
+              const height = event.detail?.height;
+              if (typeof height === "number") setReplyHeight(height);
+            }}
+          >
+            {unmet === null ? (
+              <StoryReplyArea item={item} copy={copy} reply={reply} />
+            ) : (
+              <StoryMeet item={item} friend={unmet} copy={copy} onMeet={() => onMeet(item)} />
+            )}
+          </view>
         </view>
 
         <view className="story-viewer-taps" data-testid={ids.taps}>
@@ -222,6 +235,14 @@ export function StoryViewer({
         </view>
       </StoryFaceShell>
       {side("next")}
+      {/* 보낸 뒤 알림은 인물마다 새로 서는 면 밖, 보기 단위 층 — 장 · 인물 · 큐브 넘김에도 다시 그려지지 않습니다(사용자 결정 2026-11-26). */}
+      <StoryViewerSent
+        copy={copy}
+        reply={reply}
+        bottom={reply.bottomPadding(insets.bottom) + replyHeight + REPLY_GAP}
+        sides={{ left: insets.left + 16, right: insets.right + 16 }}
+        onOpenChat={onOpenChat}
+      />
     </view>
   );
 }
