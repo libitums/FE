@@ -75,10 +75,11 @@ function photoPortOf(remote: () => ReturnType<typeof companionServerRemote>): My
   return {
     pick: pickStoryPhoto,
     // 위기 연락처 지역 — 색 바탕과 같이 스토어 계정 나라를 알면 싣습니다(#598 `client_region`).
-    post: async (draft) =>
-      (await photo()?.post({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {
-        result: "failed",
-      },
+    post: async (draft, onUploaded) =>
+      (await photo()?.post(
+        { ...draft, region: regionOf(purchaseStore().storefront) },
+        onUploaded,
+      )) ?? { result: "failed" },
     url: async (imagePath) => {
       const now = Date.now();
       const kept = signed.get(imagePath);

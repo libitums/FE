@@ -87,7 +87,9 @@ export type FakeMyStories = {
 
 export type FakePhoto = {
   readonly pick: ReturnType<typeof vi.fn<(source: StoryPhotoSource) => Promise<PhotoPickResult>>>;
-  readonly post: ReturnType<typeof vi.fn<(draft: MyPhotoStoryDraft) => Promise<MyStoryPostResult>>>;
+  readonly post: ReturnType<
+    typeof vi.fn<(draft: MyPhotoStoryDraft, onUploaded?: () => void) => Promise<MyStoryPostResult>>
+  >;
   readonly url: ReturnType<typeof vi.fn<(path: string) => Promise<string | null>>>;
   readonly requestReview: ReturnType<typeof vi.fn<(id: string) => Promise<boolean>>>;
   readonly discard: ReturnType<typeof vi.fn<(path: string) => void>>;
@@ -181,24 +183,29 @@ export function fakeMyStories(options: {
       ? null
       : {
           pick: vi.fn(async () => options.photo?.pick ?? PICKED),
-          post: vi.fn(async (draft: MyPhotoStoryDraft): Promise<MyStoryPostResult> => {
-            const planned = options.photo?.post;
-            if (planned !== undefined && planned !== "checking") return planned;
-            const story = myStory(`photo-${draft.clientId}`, {
-              kind: "photo",
-              status: planned === "checking" ? "checking" : "live",
-              imagePath: PHOTO_PATH,
-              word: null,
-              ko: draft.ko,
-              roman: "",
-              meaning: "",
-              example: null,
-              overlays: draft.overlays,
-              postedAt: Date.now(),
-            });
-            stories = [story, ...stories];
-            return { result: "ok", story, window };
-          }),
+          post: vi.fn(
+            async (
+              draft: MyPhotoStoryDraft,
+              _onUploaded?: () => void,
+            ): Promise<MyStoryPostResult> => {
+              const planned = options.photo?.post;
+              if (planned !== undefined && planned !== "checking") return planned;
+              const story = myStory(`photo-${draft.clientId}`, {
+                kind: "photo",
+                status: planned === "checking" ? "checking" : "live",
+                imagePath: PHOTO_PATH,
+                word: null,
+                ko: draft.ko,
+                roman: "",
+                meaning: "",
+                example: null,
+                overlays: draft.overlays,
+                postedAt: Date.now(),
+              });
+              stories = [story, ...stories];
+              return { result: "ok", story, window };
+            },
+          ),
           url: vi.fn(async () => "https://signed.example/p1.jpg"),
           requestReview: vi.fn(async () => true),
           discard: vi.fn(),

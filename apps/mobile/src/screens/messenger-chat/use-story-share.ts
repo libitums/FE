@@ -24,6 +24,8 @@ export type RejectionView = {
 
 export type StoryShare = {
   readonly busy: boolean;
+  /** 사진이 올라가고 서버가 확인하는 중(ADR-0199 개정) — busy 안에서만 true. */
+  readonly checking: boolean;
   readonly error: string | null;
   readonly crisis: readonly ChatCrisisResource[] | null;
   readonly rejected: RejectionView | null;
@@ -47,6 +49,7 @@ export function useStoryShare({
   const { emit } = useChatEvents();
   const copy = useUiCopy().messengerChat.myStories;
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [crisis, setCrisis] = useState<readonly ChatCrisisResource[] | null>(null);
   const [rejected, setRejected] = useState<RejectionView | null>(null);
@@ -94,15 +97,18 @@ export function useStoryShare({
       if (share.kind === "photo") {
         if (photo === null || port.photo === undefined)
           return Promise.resolve({ result: "failed" });
-        return port.photo.post({
-          clientId: id,
-          photo,
-          ko: share.ko,
-          overlays: share.overlays,
-          lang: language,
-          tzOffsetMin: tz,
-          region: null,
-        });
+        return port.photo.post(
+          {
+            clientId: id,
+            photo,
+            ko: share.ko,
+            overlays: share.overlays,
+            lang: language,
+            tzOffsetMin: tz,
+            region: null,
+          },
+          () => setChecking(true),
+        );
       }
       return port.postText({
         clientId: id,
@@ -117,6 +123,7 @@ export function useStoryShare({
     const posted = await request().catch((): MyStoryPostResult => ({ result: "failed" }));
     posting.current = false;
     setBusy(false);
+    setChecking(false);
     if (posted.result !== "ok") {
       emit({ name: "my_story_post_failed", surface: "chat", reason: posted.result });
       if (posted.result === "window_used") {
@@ -147,5 +154,5 @@ export function useStoryShare({
     setRejected({ rejection: target, review: ok ? "sent" : "failed" });
   }
 
-  return { busy, error, crisis, rejected, share, requestReview, reset };
+  return { busy, checking, error, crisis, rejected, share, requestReview, reset };
 }
