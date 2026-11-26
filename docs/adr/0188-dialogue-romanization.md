@@ -6,6 +6,9 @@
 - **개정 D7(2026-11-24, 브랜치 `feat/dialog-romanization-switch`)**: 대사 상자 이름 줄 오른쪽에 로마자 스위치 · 줄 순서 「한국어 → 로마자 →
   구분선 → 영어」 · 컷의 숨은 영어 ↔ 로마자 토글 폐지 · 다시 듣기 스피커를 대사 상자 색으로. 아래 「개정 D7」이 D1 표의 「이야기 컷 대사」 행과
   D2의 「대사 → 구분선 → 로마자 → 영어」 · 「끔이면 이 변경 전 그대로(영어, 누르면 로마자)」를 대체한다.
+- **개정 D8(2026-11-26, 브랜치 `feat/chat-romanization-group`)**: 메신저 말풍선도 대사 상자(D7)와 같은 줄 순서 — 「[한국어 / 로마자] 묶음 →
+  구분선 → 뜻」, 로마자가 없으면 「한국어 → 구분선 → 뜻」. 들어오는 말풍선의 로마자는 주황 글자(`fg.brand`), 구분선은 보이는 회색(`gray.500`).
+  아래 「개정 D8」이 D3의 「끔 → 뜻 한 줄」(구분선 없는 번역 줄)과 내 말풍선 해석 펼침의 「구분선 → 로마자 → 뜻」을 대체한다.
 - **사용자 결정**(2026-11-24, 「123 진행」 — 피드백 3번): 운영 `public.feedback` 튜토리얼 별점 의견에서 가장 많은 것이 「한글을 못 읽는다 ·
   대화문에 로마자가 없다」였다. 「이야기 대화(말풍선) · 레슨 문장에 로마자 줄을 보이게 하고 **같은 스위치로** 켜고 끈다. 기본값은 합리적으로
   정하고 ADR에 근거. 로마자 원천은 콘텐츠 로마자, 없으면 변환 함수 — 새로 만들면 규칙을 ADR에 적고 unit을 충분히.」
@@ -162,6 +165,45 @@
   `VisualNovelDialog.header-switch.ui` HS1 ~ HS6 · `.romanization.ui` VNR-U1 ~ U3, `CatalogCoverScreen.romanization-switch.ui` RS1 ~ RS6 / integration
   `App.dialog-romanization-switch.integration` DS1 ~ DS3 / e2e [DR-E8 ~ DR-E12](../e2e/dialogue-romanization.md).
 
+### D8. 개정(2026-11-26) — 메신저 말풍선: [한국어 / 로마자] 묶음 → 구분선 → 뜻, 로마자는 주황
+
+- **사용자 말**(2026-11-26): 「채팅 내용도 로마니제이션이랑 한글 묶어서, 번역이랑은 구분선으로 나누고, 로마니제이션은 주황색 기반으로」. 바로 앞에
+  본 것은 프로필 시트 첫 인사 말풍선이었다 — 로마자(회색 기울임)와 번역 사이 구분선(`gray.300`)이 `gray.100` 면에서 거의 보이지 않아(대비 약 1.1:1)
+  한국어 · 로마자 · 번역이 구분 없이 이어져 보였다 [실측 · 코드].
+- **줄 순서**(ui-lynx `ChatBubble` annotation): 한국어 → 로마자 → 구분선 → 뜻. 로마자는 한국어 바로 아래(말풍선 간격 2)라 둘이 한 덩어리이고,
+  구분선 아래는 뜻만이다(D7 대사 상자와 같은 규칙). `annotation.romanization`을 선택으로 바꿔, 없거나 비면 한국어 → 구분선 → 뜻이다(전에는 던졌다).
+  낭독은 `화자: 한국어, (Pronunciation: 로마자,) 뜻` 그대로.
+- **로마자 표시 여부는 바꾸지 않았다.** 프로필 시트 · 새 친구 시트 첫 말 · 막간 메신저 · 문화 확인 장면은 지금처럼 설정 스위치(D1)를 따르고, 대화방
+  상대 말풍선은 지금처럼 로마자가 없다(서버 메시지에 로마자가 없고 D1 표에 대화방 행이 없다). 내 말풍선의 해석 펼침은 지금처럼 「뜻」 단추를 누르면
+  선다(서버 notes).
+- **번역 줄 → 구분선 아래 뜻 줄**(앱 `ChatTextBubble`, 메신저 말풍선 공용): 로마자 묶음이 없고 번역이 있으면 `annotation: { meaning }`으로 넘겨
+  한국어 → 구분선 → 뜻이다. 번역도 없으면(빈 문자열 포함) 구분선도 없다. 그래서 스위치를 켜든 끄든 구분선 아래 뜻 줄의 모양(body-s semi-bold)이 같다.
+  ui-lynx `translation`(구분선 없는 회색 번역 줄)은 그대로 두었다 — 온보딩 카드 · 롤플레이 말하기 · 최종 테스트 · 문화 확인 장면(끔) 말풍선은 이
+  개정의 범위 밖이라 전과 같다.
+- **색**(새 토큰 0):
+
+| 자리 | 토큰 | 면 | 대비 |
+|---|---|---|---|
+| 들어오는 말풍선 로마자 | `fg.brand` #B94208(= brand.primary-pressed 값) | `gray.100` #F7F8F9 | **5.14:1** (AA 4.5:1 통과) |
+| 버린 후보 — `brand.reward-border` #C94B09 | | `gray.100` | 4.39:1 (미달) |
+| 버린 후보 — `brand.primary` #F46B18 | | `gray.100` | 2.84:1 (미달) |
+| 구분선(장식) | `gray.500` #D1D3D8(전 `gray.300` #EEEFF1) | `gray.100` | 1.4:1(전 1.1:1) — 글자가 아니라 AA 대상 아님 |
+| 내 말풍선 로마자 · 구분선 · 뜻 | `gray.200` · `gray.200` · 흰색(그대로, `chat.css`) | `brand.primary` | 2.7:1 · — · 3.0:1(「대가」 2 그대로) |
+
+  - `fg.brand`를 고른 이유: 주황 글자용 의미 토큰이 이것 하나이고(`fg.*`), 4.5:1을 넘는 주황 토큰이 이것뿐이다. 주황 면(내 말풍선)에서는 주황 글자가
+    1.8:1로 사라지므로 흰 계열을 유지한다. 앱에 다크 모드가 없어(토큰 · CSS에 `prefers-color-scheme` 없음) 어두운 면 대비는 해당 없다.
+  - 크기 · 기울임 · 굵기(body-m · italic · medium)와 글꼴(Duru Roman, `app.css`)은 그대로다.
+- **내 말풍선 해석 펼침**(`MyMessage.MeaningLines` · 스켈레톤): 「구분선 → 로마자 → 뜻」을 「로마자 → 구분선 → 뜻」으로 — 한국어 바로 아래 로마자,
+  구분선 아래 뜻. 스켈레톤도 같은 자리(로마자 막대 → 구분선 → 뜻 막대)라 도착할 때 줄이 자리를 바꾸지 않는다. 색은 그대로(흰 계열).
+- **적용 자리**: 대화방 상대 텍스트 말풍선(`ChatMessageRows`) · 내 말풍선 해석 펼침(`MyMessage`) · 프로필 시트 첫 인사(`SuggestedFriendSheet`
+  `suggested-sheet-opening`) · 새 친구 시트 첫 말(`NewFriendSheet`) · 막간 메신저 말풍선(`StoryMessengerScreen`, 양쪽) — 모두 `ChatTextBubble` 또는
+  `MyMessage`. ui-lynx annotation 색 · 순서는 레슨 문화 확인 장면 말풍선(`CultureCheckScene`, 켬)에도 같이 닿는다.
+- **대사 상자(D7)는 바꾸지 않았다** — 로마자가 이미 따뜻한 살구색 `brand.reward-disabled-text`(gray-950 면 위 7.1:1)로 주황 계열이고 순서도 같다.
+  `fg.brand`는 그 면에서 약 3.1:1이라 그쪽에는 맞지 않는다.
+- 확인: unit `ChatBubble.unit` CB3 · CB3b · CB8 / ui `ChatBubble.ui` CB5 ~ CB7 · `ChatMessageRow.lines.ui` CL1 ~ CL4 · `ChatMessageRow.ui` MC-UI3 ·
+  `MyMessage.lines.ui` ML1 · ML2 · `SuggestedFriendSheet.voice.ui` PV-UI7 · `StoryMessengerScreen.romanization.ui` SMR-U3 / integration
+  `App.dialogue-romanization.integration` DRI2.
+
 ## 대가
 
 1. **화면이 길어진다** — 컷 대사 · 말풍선 · 전화 대사가 한 줄씩(긴 문장은 두세 줄) 높아진다. 컷 대화 상자는 제 스크롤 안이라 잘리지 않고,
@@ -173,6 +215,8 @@
 4. **ui-lynx `VisualNovelDialog`에 FE 확장 하나** — design-system 보고 대상(ADR-0084 「미확인 · 후속」 5 목록에 더함). 개정 D7에서 둘째 확장
    `headerSwitch`(이름 줄 오른쪽 스위치)가 더해졌고 `romanization`의 자리가 번역 묶음 밖(대사 바로 아래)으로 옮겨졌다.
 6. **(개정 D7) 스위치 줄이 44 높이라 상자가 조금 높아진다** — 위 여백을 12로 줄여 이름 한 줄 기준 약 8 늘어난다. 큰 글자에서는 스크롤이 받는다.
+7. **(개정 D8) 로마자가 꺼진 메신저 말풍선도 구분선 한 줄(1 + 위아래 6)만큼 높아지고, 뜻 줄이 회색 보통 굵기에서 검정 semi-bold로 바뀐다** — 켬 · 끔의
+   뜻 줄 모양을 하나로 맞춘 값이다. 메신저 밖의 `translation` 말풍선(온보딩 · 롤플레이 · 최종 테스트)과는 모양이 갈린다.
 
 5. **컷 대사 스크롤이 버튼을 덮던 결함을 함께 고쳤다** — 대화창이 z-index를 가져 스크롤 경계 밖에 그려졌다. 로마자 줄이 더해진 긴 내레이션이
    iPhone SE에서 `Continue` 단추를 덮는 것을 기기(시뮬레이터)에서 봤고, 최종 테스트 `-line-scroll`과 같은 규칙(`overflow: hidden` +

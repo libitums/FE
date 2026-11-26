@@ -223,3 +223,60 @@ test("CB4: annotation은 로마자 · 구분선 · 뜻을 말풍선 안에 그�
   );
   expect(screen.queryByTestId("ui-lynx-chat-bubble-translation")).toBeNull();
 });
+
+describe("ChatBubble annotation 줄 순서(ADR-0188 개정 D8)", () => {
+  // testing-environment가 조건부 · Fragment 자리에 두는 wrapper 요소는 펼쳐서 보이는 줄만 셉니다.
+  const ids = (parent: Element): string[] =>
+    Array.from(parent.children).flatMap((child) =>
+      child.tagName.toLowerCase() === "wrapper"
+        ? ids(child)
+        : [child.getAttribute("data-testid") ?? child.className],
+    );
+
+  test("CB5: 한국어 → 로마자 → 구분선 → 뜻 순서이고 번역 줄은 없다", () => {
+    render(
+      <ChatBubble
+        direction="incoming"
+        speaker="Partner"
+        message="안녕"
+        annotation={{ romanization: "annyeong", meaning: "Hi" }}
+      />,
+    );
+
+    expect(ids(screen.getByTestId("ui-lynx-chat-bubble"))).toEqual([
+      "ui-lynx-chat-bubble-message-slot",
+      "ui-lynx-chat-bubble-annotation-romanization",
+      "ui-lynx-chat-bubble-annotation-divider",
+      "ui-lynx-chat-bubble-annotation-meaning",
+    ]);
+  });
+
+  test("CB6: 로마자가 없으면 한국어 → 구분선 → 뜻이고 로마자 줄은 없다", () => {
+    render(
+      <ChatBubble
+        direction="incoming"
+        speaker="Partner"
+        message="안녕"
+        annotation={{ meaning: "Hi" }}
+      />,
+    );
+
+    const bubble = screen.getByTestId("ui-lynx-chat-bubble");
+    expect(ids(bubble)).toEqual([
+      "ui-lynx-chat-bubble-message-slot",
+      "ui-lynx-chat-bubble-annotation-divider",
+      "ui-lynx-chat-bubble-annotation-meaning",
+    ]);
+    expect(screen.queryByTestId("ui-lynx-chat-bubble-annotation-romanization")).toBeNull();
+    expect(screen.getByTestId("ui-lynx-chat-bubble-annotation-meaning")).toHaveTextContent("Hi");
+    expect(bubble).toHaveAttribute("accessibility-label", "Partner: 안녕, Hi");
+  });
+
+  test("CB7: 줄이 없으면 구분선도 없다", () => {
+    render(<ChatBubble direction="incoming" speaker="Partner" message="안녕" />);
+
+    expect(ids(screen.getByTestId("ui-lynx-chat-bubble"))).toEqual([
+      "ui-lynx-chat-bubble-message-slot",
+    ]);
+  });
+});

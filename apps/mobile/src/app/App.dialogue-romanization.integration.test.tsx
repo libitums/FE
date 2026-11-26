@@ -146,10 +146,12 @@ test("DRI1. 저장값이 없으면(기본 켬) 막간 메신저 말풍선에 로
   );
 });
 
-test("DRI2. 설정에서 끈 값(off)이 저장돼 있으면 말풍선은 뜻 한 줄뿐이다", async () => {
+test("DRI2. 설정에서 끈 값(off)이 저장돼 있으면 말풍선은 구분선 아래 뜻 한 줄뿐이다(ADR-0188 개정 D8)", async () => {
   await boot({ [storageKey]: "off" });
   openStory();
   const incoming = bubble("story-messenger-incoming");
   expect(incoming.queryByTestId("ui-lynx-chat-bubble-annotation-romanization")).toBeNull();
-  expect(incoming.getByTestId("ui-lynx-chat-bubble-translation").textContent).toBe("Found it?");
+  expect(incoming.getByTestId("ui-lynx-chat-bubble-annotation-meaning").textContent).toBe(
+    "Found it?",
+  );
 });
