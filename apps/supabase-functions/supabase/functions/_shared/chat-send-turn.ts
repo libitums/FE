@@ -36,7 +36,7 @@ import { withChatWords } from "./chat-send-chat-words.ts";
 import { withStoryDirective } from "./chat-send-story.ts";
 import { sendSuggestions, suggestionSettings, suggestionsMeta } from "./chat-send-suggest.ts";
 import { applyTranslation } from "./chat-send-translate.ts";
-import { outputChecker, recoverReply, startFollowUps } from "./chat-send-turn-recover.ts";
+import { outputChecker, recoverReply, startFollowUps, withheld } from "./chat-send-turn-recover.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
@@ -187,7 +187,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   // 번역 · 칩은 남은 기다림(출력 검사 · 피드백)과 동시에. 검사에 걸리면 끊고, 걸린 답의 번역 · 칩은 내보내지 않는다.
   const followInput = { persona, history, target, signal: abort.signal };
   let follow = startFollowUps(context, followInput, result.segments);
-  let recovered: string | null = null;
+  let recovered: ReturnType<typeof withheld> | null = null;
 
   if (checkOutput) {
     const check = outputChecker(context, moderation);
@@ -207,8 +207,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
         category: output.category,
       });
       if (again === null) return fail("guardrail_blocked", "blocked");
+      recovered = withheld(output.category, result.segments);
       ({ reply, result } = again);
-      recovered = output.category;
       follow = startFollowUps(context, followInput, result.segments);
     }
     reply.goLive(sendDelta);
@@ -258,7 +258,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           ...suggestionsMeta(suggested),
           trial: turn.trial,
           playground: context.playground,
-          ...(recovered === null ? {} : { guardrailRecovered: { category: recovered } }),
+          ...(recovered === null ? {} : { guardrailRecovered: recovered }),
         },
       }),
       {
