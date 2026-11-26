@@ -85,7 +85,7 @@
 - `my_story_create_opened { first: boolean }` — 「+」를 누름(처음 안내가 섰는가).
 - `my_story_guide_closed { choice: start | later }` — 처음 안내를 닫음.
 - `my_story_posted { kind }` · `my_story_post_failed { reason: off | daily_limit | failed }` — 올림 성공 · 실패.
-- `my_story_viewed { reactions, unseen, from: row | archive | posted }` — 내 스토리를 엶(`unseen` = 그때 처음 본 반응 수). 보관함에서 열어도
+- `my_story_viewed { reactions, unseen, from: row | archive | posted | chat }`(`chat` = 대화방 인용 판, 개정 ⟨판⟩) — 내 스토리를 엶(`unseen` = 그때 처음 본 반응 수). 보관함에서 열어도
   반응을 본 것으로 둔다.
 - `my_story_answered { characterId }` — 반응의 Answer로 대화방에 감.
 - `my_story_replied { characterId }` — 내 스토리 인용이 실린 글을 보냄. 친구 스토리의 `friend_story_replied`와 따로 센다.
@@ -310,3 +310,17 @@
 - 「Swipe up for replies」는 본 사람이나 답이 있을 때만. 「Seen by」 단추는 본 사람이 없어도 시트를 연다.
 - 「+」의 낭독 이름은 기존 「New story」. 내 스토리 장의 아바타는 사진 없이 이름 첫 글자, 내부 인물 id는 `"me"`.
 - 설정 보기의 한 줄 카드는 로마자를 늘 보인다(설정 화면은 로마자 설정 포트를 받지 않음 — 옛 보기와 같음).
+
+## 개정 ⟨판⟩ — 대화방 인용에 올린 그대로, 누르면 그 스토리 ⟨2026-11-26⟩
+
+- **사용자 보고 · 요청(2026-11-26)**: 인물이 내 스토리에 단 반응 위 「Replied to your story」에 그림 없이 글만 떠 있었다 → 시안 37 ~ 39번. 대화방 전체 규칙은
+  [ADR-0178](0178-friend-stories.md) D5 개정 ⟨판⟩이고, 여기는 내 스토리 몫이다.
+- **그림**: 인용(`kind: "mine"`)에는 그림이 없어(사진은 서명 주소 ADR-0199, 글 스토리는 그림 없음) 이미 받은 내 스토리 목록(`companion_my_stories`)에서 `storyId`로
+  찾아 **전체 화면 보기와 같은 카드**(`MyPhotoStoryCard` · `MyTextStoryCard`)를 줄여 그린다 — 사진 · 바탕색 · 얹은 글 상자 · 단어 스티커가 그대로. 목록은 판이
+  처음 설 때 방마다 한 번 받는다. 목록에 없으면(보관을 껐고 24시간 지남 · 못 받음) 주황 바탕 + 한 줄로 대신하고 누를 수 없다 — 내 스토리 하나만 받는 서버 RPC는 없다.
+- **사진 서명 주소**: 같은 사진을 여러 판이 동시에 그려도 서명 요청은 하나(기다리는 요청을 묶음) · 받은 주소는 45분 다시 씀 · 못 받으면 다음에 다시(`my-stories-wiring.ts`).
+- **누르면**: 설정 › My stories와 같은 「한 장」 전체 화면 보기(개정 ⟨보기⟩) — 24시간 지난 것도 보관함에 있으면 연다. 열 때 그 스토리의 반응을 본 것으로 두고
+  `my_story_viewed { from: chat }`. 보기의 답 줄 · Open chat이 이 방 인물이면 보기만 닫고, 다른 인물이면 그 방으로. 보기에서 지우면 판이 바로 「Deleted story」
+  (`my_story_deleted { from: viewer }`).
+- **이벤트**: 새 이벤트 없음 — `my_story_viewed.from`에 `chat`(AN1 · AB3 개수 그대로).
+- 확인: unit CT-U1 ~ U3 · CT-U9, ui CT-UI1 ~ UI3 · UI6 · UI7, integration CT-I1 · CT-I4, e2e MS-E10(기기).

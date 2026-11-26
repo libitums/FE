@@ -346,7 +346,7 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
 - **이벤트**: 새 이벤트 없음 — `friend_story_viewed.from`에 `chat`을 더하고(장 단위 그대로, `met` true) 판에서 연 보기도 닫힐 때 `friend_story_closed`를 낸다
   (AN1 · AB3 개수 그대로).
 - 확인: unit CT-U1 ~ U8(`chat-story-thumb.unit.test.ts`), ui CT-UI1 ~ UI8(`StoryQuote.thumb.ui.test.tsx`) · FS-UI8 갱신, integration CT-I1 ~ I5
-  (`ChatStoryHost.integration.test.tsx`), e2e FS-E12(기기).
+  (`ChatStoryHost.integration.test.tsx`), e2e FS-E18(기기). 번들 천장은 사용자 결정으로 6,180,000 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 7).
 
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 
