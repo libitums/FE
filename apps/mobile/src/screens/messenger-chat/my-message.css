@@ -38,7 +38,7 @@
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }
 
-/* 해석 펼침 — 구분선 → 로마자 → 뜻. 구분선은 장식입니다. */
+/* 해석 펼침 — [한국어 / 로마자] → 구분선 → 뜻(ADR-0188 개정 D8). 구분선은 장식입니다. 주황 면이라 로마자는 흰 글자 그대로입니다. */
 .my-message-meaning {
   align-self: stretch;
   display: flex;
