@@ -42,6 +42,9 @@ export function ChatTextBubble({
   translation,
   annotation,
 }: ChatTextBubbleProps): ReactNode {
+  // 줄 순서(ADR-0188 개정 D8): [한국어 / 로마자] → 구분선 → 뜻. 로마자가 없으면 번역도 구분선 아래 뜻 줄로 둡니다. 뜻이 없으면 줄도 구분선도 없습니다.
+  const meaning = translation?.trim();
+  const lines = annotation ?? (meaning ? { meaning } : undefined);
   return (
     <ChatBubble
       direction={direction}
@@ -50,7 +53,7 @@ export function ChatTextBubble({
       size="m"
       contentLanguage="learning"
       languageTag="ko"
-      {...(annotation === undefined ? { translation: translation ?? undefined } : { annotation })}
+      {...(lines === undefined ? {} : { annotation: lines })}
     />
   );
 }

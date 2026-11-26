@@ -187,6 +187,35 @@ test("PV-UI5. 로마자 스위치 켬 — 대본 아래 정본 로마자 · 뜻,
   expect(hidden).toContain("I'm Cha Seoyeon. Want to see my drawings? They're pricey. lol");
 });
 
+// 첫 말 말풍선 줄 순서(ADR-0188 개정 D8) — [한국어 / 로마자] 묶음 → 구분선 → 뜻. 끔이면 한국어 → 구분선 → 뜻.
+const bubbleLines = (): string[] => {
+  const opening = screen.getByTestId(ids.sheetOpening);
+  const lines = opening.querySelectorAll(
+    "[data-testid='ui-lynx-chat-bubble-message'], .ui-lynx-chat-bubble-annotation-romanization, .ui-lynx-chat-bubble-annotation-divider, .ui-lynx-chat-bubble-annotation-meaning, .ui-lynx-chat-bubble-translation",
+  );
+  return Array.from(lines).map((line) =>
+    line.getAttribute("data-testid") === "ui-lynx-chat-bubble-message" ? "ko" : line.className,
+  );
+};
+
+test("PV-UI7. 로마자 켬 — 한국어 · 로마자 → 구분선 → 뜻, 끔 — 한국어 → 구분선 → 뜻(번역 줄 없음)", () => {
+  mount({ romanization: "shown" });
+  expect(bubbleLines()).toEqual([
+    "ko",
+    "ui-lynx-chat-bubble-annotation-romanization",
+    "ui-lynx-chat-bubble-annotation-divider",
+    "ui-lynx-chat-bubble-annotation-meaning",
+  ]);
+  cleanup();
+
+  mount({ romanization: "hidden" });
+  expect(bubbleLines()).toEqual([
+    "ko",
+    "ui-lynx-chat-bubble-annotation-divider",
+    "ui-lynx-chat-bubble-annotation-meaning",
+  ]);
+});
+
 test("PV-UI6. 잠긴 인물 — 단추 · 대본 없음", () => {
   mount({ status: "locked" });
   expect(screen.queryByTestId(ids.sheetVoice)).toBeNull();
