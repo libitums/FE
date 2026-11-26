@@ -70,3 +70,23 @@ test("[DP-I1] 최종 설정: render-dev-probe.tsx를 부수 효과 없는 모듈
   );
   expect(sideEffectFreeRules).toHaveLength(1);
 });
+
+test("[FS-I1] 최종 설정: 메인 스레드에서는 ui-lynx 모듈을 부수 효과 있음으로 둔다(ADR-0149 「줄인 기록」 1)", () => {
+  // 메인 스레드는 스플래시 밖 화면을 그리지 않아(render-app-content.tsx) 그 화면만 쓰는 ui-lynx 컴포넌트의 import가
+  // 쓰이지 않게 됩니다. ui-lynx는 `sideEffects`에 CSS만 적어 두어, 이 규칙이 없으면 번들러가 그 모듈을 통째로 버리고
+  // 모듈 최상위의 그리기 틀(snapshot) 등록도 함께 사라집니다 — background가 그 화면을 열면 메인 스레드가
+  // 「Snapshot not found」로 멈춥니다. 같은 규칙이 background에 걸리면 쓰지 않는 컴포넌트까지 실려 커집니다.
+  const uiLynxDist = resolve(import.meta.dirname, "../../../../packages/ui-lynx/dist");
+  const uiLynxModules = [
+    resolve(uiLynxDist, "settings-cell/SettingsCell.jsx"),
+    resolve(uiLynxDist, "settings-cell/index.js"),
+  ];
+  const keepRules = bundlerConfig.module.rules.filter(
+    (rule) =>
+      rule?.sideEffects === true &&
+      rule.test instanceof RegExp &&
+      uiLynxModules.every((file) => (rule.test as RegExp).test(file)),
+  );
+  expect(keepRules).toHaveLength(1);
+  expect(keepRules[0]?.issuerLayer).toBe("react:main-thread");
+});
