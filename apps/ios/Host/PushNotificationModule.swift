@@ -124,12 +124,30 @@ enum PushEnvironment {
   }
 }
 
+/// 앞에서 받은 푸시 중 JS 토스트로 넘길 것 — 순수, `HostTests`가 잰다(ADR-0200 개정).
+/// 목적지가 인물의 방(`companion-chat`)이고 친구 스토리 알림(`story: true`)이 아닐 때만 인물 id를 돌려준다.
+/// id 형식 검증은 JS가 다시 한다(`foreground-push.ts`) — 여기서는 비어 있지 않은 64자 이하 문자열만.
+enum ForegroundPush {
+  static func chatCharacterId(_ target: Any?) -> String? {
+    guard
+      let target = target as? [AnyHashable: Any],
+      target["kind"] as? String == "companion-chat",
+      (target["story"] as? Bool) != true,
+      let characterId = target["characterId"] as? String,
+      !characterId.isEmpty, characterId.count <= 64
+    else { return nil }
+    return characterId
+  }
+}
+
 /// 앱 전체에서 하나다. 시스템 콜백(토큰 · 알림 누름)이 오는 자리가 `AppDelegate`라 모듈 인스턴스가
 /// 아니라 여기에 모은다.
 final class PushNotificationHub: NSObject, UNUserNotificationCenterDelegate {
   static let shared = PushNotificationHub()
   /// 누른 알림이 도착했다 — `ViewController`가 LynxView에 전역 이벤트로 알린다.
   static let openedNotification = Notification.Name("PushNotificationHub.opened")
+  /// 앱이 앞에 있을 때 인물의 채팅 메시지 푸시가 왔다 — `ViewController`가 `pushNotificationReceived`로 알린다.
+  static let receivedNotification = Notification.Name("PushNotificationHub.received")
   static let tokenTimeout: TimeInterval = 10
 
   private let queue = DispatchQueue(label: "com.libitum.push-notifications")
@@ -183,13 +201,21 @@ final class PushNotificationHub: NSObject, UNUserNotificationCenterDelegate {
 
   // MARK: - UNUserNotificationCenterDelegate
 
-  /// 앱이 앞에 있을 때도 배너를 보인다.
+  /// 앱이 앞에 있을 때 — 인물의 채팅 메시지(선톡 · 스토리 반응)는 배너 없이 JS로 넘기고(앱 안 토스트, ADR-0200 개정),
+  /// 그 밖(캠페인 · 시스템 · 친구 스토리)은 지금처럼 배너를 보인다.
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
-    completionHandler([.banner, .list, .sound])
+    let userInfo = notification.request.content.userInfo
+    guard let characterId = ForegroundPush.chatCharacterId(userInfo["target"]) else {
+      completionHandler([.banner, .list, .sound])
+      return
+    }
+    NotificationCenter.default.post(
+      name: Self.receivedNotification, object: nil, userInfo: ["characterId": characterId])
+    completionHandler([])
   }
 
   func userNotificationCenter(

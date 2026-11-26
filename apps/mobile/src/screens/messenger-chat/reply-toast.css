@@ -1,4 +1,4 @@
-/* 답장 도착 토스트(ADR-0200 · 시안 1 ~ 4) — 짙은 면(gray-900) · 얼굴 32 · 흰 이름 · 옅은 회색 미리보기(gray-400, 대비 10 : 1) ·
+/* 답장 도착 토스트(ADR-0200 · 시안 1 ~ 4, 개정 1 쌓기) — 짙은 면(gray-900) · 얼굴 32 · 흰 이름 · 옅은 회색 미리보기(gray-400, 대비 10 : 1) ·
    브랜드 「+N」 · 44pt 닫기. 위에서 내려와(d6 · enter) 올라갑니다(d4 · exit). 움직임 줄이기면 페이드(d4). 새 토큰 없음. */
 
 @keyframes reply-toast-down {
@@ -41,11 +41,18 @@
   }
 }
 
-.reply-toast {
+/* 쌓인 카드(개정 1) — 맨 위가 가장 새것, 카드 사이 8pt. 줄은 카드 높이만큼만 차지합니다. */
+.reply-toast-stack {
   position: absolute;
   left: var(--libitum-spacing-12);
   right: var(--libitum-spacing-12);
   z-index: var(--libitum-elevation-z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.reply-toast {
   display: flex;
   flex-direction: row;
   align-items: center;

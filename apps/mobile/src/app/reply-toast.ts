@@ -4,6 +4,7 @@ import type { ChatMessage, ChatRoomSummary } from "../screens/messenger-chat/cha
 import type { Screen } from "./nav-state";
 import {
   REPLY_TOAST_LIMIT,
+  REPLY_TOAST_STACK,
   REPLY_TOAST_WINDOW_MS,
   type ReplyArrival,
   type ReplyToastAction,
@@ -13,7 +14,8 @@ import {
 } from "./reply-toast.contract";
 
 export const initialReplyToastState: ReplyToastState = {
-  card: null,
+  cards: [],
+  more: 0,
   deferred: [],
   shownAt: [],
   nextKey: 1,
@@ -70,47 +72,61 @@ export function replyToastPlaceOf(input: ReplyToastPlaceInput): ReplyToastPlace 
   return DEFERRING.has(screen.name) ? { kind: "defer" } : { kind: "show" };
 }
 
-/** 도착 여럿을 카드 하나로 접습니다 — 같은 인물이면 내용만, 다른 인물이면 최신으로 바꾸고 +1. */
-function fold(
-  card: ReplyToastCard | null,
-  arrivals: readonly ReplyArrival[],
-  key: number,
-  deferred: boolean,
-) {
-  let next = card;
-  for (const each of arrivals) {
-    const more =
-      next === null ? 0 : next.characterId === each.characterId ? next.more : next.more + 1;
-    next = {
-      key,
-      roomId: each.roomId,
-      characterId: each.characterId,
-      kind: each.kind,
-      more,
-      deferred,
-    };
-  }
-  return next;
+type Stack = Pick<ReplyToastState, "cards" | "more" | "shownAt" | "nextKey">;
+
+/**
+ * 도착 하나를 쌓습니다 — 같은 인물이면 그 카드만 갈아 끼워 맨 위로(새 key, 상한을 세지 않음), 새 인물이면 맨 위에 새 카드(상한을 셈)를 두고
+ * 장 수를 넘으면 맨 아래가 빠져 「+N」에 합칩니다. 1분 상한에 걸린 새 인물은 카드 대신 「+N」(떠 있는 카드가 없으면 버림).
+ */
+function stackOne(stack: Stack, each: ReplyArrival, now: number, deferred: boolean): Stack {
+  const recent = stack.shownAt.filter((at) => now - at < REPLY_TOAST_WINDOW_MS);
+  const same = stack.cards.find((card) => card.characterId === each.characterId);
+  const rest = stack.cards.filter((card) => card !== same);
+  if (same === undefined && recent.length >= REPLY_TOAST_LIMIT)
+    return stack.cards.length === 0 ? stack : { ...stack, more: stack.more + 1 };
+  const card: ReplyToastCard = {
+    key: stack.nextKey,
+    roomId: each.roomId,
+    characterId: each.characterId,
+    kind: each.kind,
+    deferred,
+  };
+  const cards = [card, ...rest];
+  const kept = cards.slice(0, REPLY_TOAST_STACK);
+  return {
+    cards: kept,
+    more: stack.more + (cards.length - kept.length),
+    shownAt: same === undefined ? [...recent, now] : recent,
+    nextKey: stack.nextKey + 1,
+  };
 }
 
-function present(
-  state: ReplyToastState,
-  arrivals: readonly ReplyArrival[],
-  now: number,
-  deferred = false,
-) {
+function present(state: ReplyToastState, arrivals: readonly ReplyArrival[], now: number) {
   if (arrivals.length === 0) return state;
-  const recent = state.shownAt.filter((at) => now - at < REPLY_TOAST_WINDOW_MS);
-  const card = fold(state.card, arrivals, state.nextKey, deferred);
-  // 떠 있는 카드에 같은 인물만 이어 오면 새 카드가 아닙니다 — 상한을 세지 않습니다.
-  const fresh = state.card === null || card?.characterId !== state.card.characterId;
-  if (fresh && recent.length >= REPLY_TOAST_LIMIT) return { ...state, deferred: [] };
-  return {
-    card,
-    deferred: [],
-    shownAt: fresh ? [...recent, now] : recent,
-    nextKey: state.nextKey + 1,
-  };
+  let stack: Stack = state;
+  for (const each of arrivals) stack = stackOne(stack, each, now, false);
+  return { ...state, ...stack };
+}
+
+/** 레슨 밖으로 나올 때 — 미룬 것을 인물별로 접어 최신 인물부터 남은 자리(장 수 · 1분 상한)만큼 카드로, 나머지는 「+N」. */
+function flush(state: ReplyToastState, deferred: readonly ReplyArrival[], now: number) {
+  const latest: ReplyArrival[] = [];
+  for (let i = deferred.length - 1; i >= 0; i -= 1) {
+    const each = deferred[i];
+    if (each !== undefined && !latest.some((seen) => seen.characterId === each.characterId))
+      latest.push(each);
+  }
+  const recent = state.shownAt.filter((at) => now - at < REPLY_TOAST_WINDOW_MS).length;
+  const fresh = latest.filter(
+    (each) => !state.cards.some((c) => c.characterId === each.characterId),
+  );
+  const room = Math.max(0, Math.min(REPLY_TOAST_STACK, REPLY_TOAST_LIMIT - recent));
+  const overflow = new Set(fresh.slice(room));
+  let stack: Stack = state;
+  for (const each of latest.filter((one) => !overflow.has(one)).reverse())
+    stack = stackOne(stack, each, now, true);
+  const extra = stack.cards.length === 0 ? 0 : overflow.size;
+  return { ...state, ...stack, more: stack.more + extra, deferred: [] };
 }
 
 /** 그 자리에서 버릴 것 — 목록이면 전부, 방이면 그 방 것. */
@@ -120,6 +136,15 @@ function dropFor(place: ReplyToastPlace, arrivals: readonly ReplyArrival[]) {
   return arrivals;
 }
 
+/** 카드를 걷어 냄 — 맨 아래 카드가 빠지면 「+N」도 함께 사라집니다. */
+function without(state: ReplyToastState, keep: (card: ReplyToastCard) => boolean) {
+  const cards = state.cards.filter(keep);
+  if (cards.length === state.cards.length) return state;
+  const bottom = state.cards[state.cards.length - 1];
+  const more = cards.length === 0 || (bottom !== undefined && !keep(bottom)) ? 0 : state.more;
+  return { ...state, cards, more };
+}
+
 export function replyToastReducer(
   state: ReplyToastState,
   action: ReplyToastAction,
@@ -127,7 +152,9 @@ export function replyToastReducer(
   "background only"; // 보냄(배경 스레드)에서만 불립니다 — 메인 스레드 번들에서 뺍니다.
   switch (action.type) {
     case "dismiss":
-      return state.card === null ? state : { ...state, card: null };
+      return without(state, (card) => card.key !== action.key);
+    case "clear":
+      return without(state, () => false);
     case "arrive": {
       const { place } = action;
       const kept = dropFor(place, action.arrivals);
@@ -138,17 +165,17 @@ export function replyToastReducer(
     case "place": {
       const { place } = action;
       const deferred = dropFor(place, state.deferred);
-      const cardGone =
-        state.card !== null &&
-        place.kind !== "show" &&
-        !(place.kind === "room" && place.roomId !== state.card.roomId);
-      const card = cardGone ? null : state.card;
-      if (place.kind === "defer") {
-        return cardGone || deferred !== state.deferred ? { ...state, card, deferred } : state;
-      }
-      if (deferred.length > 0) return present({ ...state, card }, deferred, action.now, true);
-      if (!cardGone && deferred.length === state.deferred.length) return state;
-      return { ...state, card, deferred };
+      // 목록 · 레슨 · 앱 구간 밖이면 모두, 방이면 그 인물 카드만 걷습니다.
+      const after =
+        place.kind === "show"
+          ? state
+          : place.kind === "room"
+            ? without(state, (card) => card.roomId !== place.roomId)
+            : without(state, () => false);
+      if (place.kind === "defer")
+        return deferred === state.deferred && after === state ? state : { ...after, deferred };
+      if (deferred.length > 0) return flush(after, deferred, action.now);
+      return deferred.length === state.deferred.length ? after : { ...after, deferred };
     }
     default: {
       const unreachable: never = action;
