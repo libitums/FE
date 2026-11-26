@@ -123,6 +123,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-UI16 보기가 열려 있으면 다시 읽은 목록을 보류(줄 그대로), 닫은 뒤 반영.
 - FS-UI17 다시 읽기 실패(null · 던짐)면 있던 줄을 지킴.
 - FS-UI18 `useMessengerRefresh`: `contentSyncOpportunity`에 스토리 목록에도 다시 읽기를 알림.
+- FS-UI49 보기에서 추가(`MessengerListScreen.story-add.ui.test.tsx`, D5 개정 ⟨보기에서 추가⟩): Add friend and reply → 방을 열지 않고 보기에 남아 답장 칸(무료 안내 · 칩), NEW FRIEND 없음, 진행 이어 감, 닫으면 목록에 그 방 · 보낸 답장이 마지막 말.
 
 ### 2.3 integration (앱)
 
@@ -130,7 +131,8 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FSI10 (D4 개정) 한 인물의 스토리 둘 → 진행 막대 「Story 1 of 2」 → 다 보면 닫힘 · 둘 다 본 것.
 - FSI11 보기 위 아바타 → 프로필 시트(보기 covered) → Start chatting → 보기 닫힘 · 그 방. 안 만난 친구 아바타 → 추천 시트, 보기는 남음.
 - FSI2 (D5 개정) 답장 칸에 쓰고 보내기 → 보기에 남은 채 인용과 함께 보냄 · 칸이 빔.
-- FSI3 안 만난 친구 스토리 → Add friend and reply → 방이 열리고(추가 길) 인용 띠.
+- FSI3 안 만난 친구 스토리 → Add friend and reply → ~~방이 열리고(추가 길) 인용 띠~~ 보기에 남아 답장 칸 → 답장 → 닫으면 목록에 그 방 · 마지막 말(D5 개정 ⟨보기에서 추가⟩). SEI1 먼저 만나기 열림도 같은 끝.
+- SS-I13(`chat-fixture-remote.unlock-send.integration.test.ts`): 해금 선톡을 청하는 중에 보낸 글은 그 답 뒤에 턴.
 - FSI4 → `chat-fixture-remote.story.integration.test.ts` FSI-R2(서버 기록의 `story`가 인용으로 다시 섬) · FSI-R1(재전송에도 `storyId`).
 - FSI5 → `friend-story-push.unit.test.ts` FS-U14(목적지 `story: true`) · `MessengerListScreen.stories.ui.test.tsx` FS-UI7(알림 — 마운트 전 · 탭 유지 · 다시 읽기 · 없으면 방)
   · Android `PushTargetJsonTest`(불리언 `story` 옮김).

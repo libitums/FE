@@ -8,7 +8,10 @@ import { COMPANION_FRIENDS } from "../screens/messenger-chat/companion-friends-r
 import { companionSeed } from "../screens/messenger-chat/companion-roster";
 import { friendStoriesTestIds as ids } from "../screens/messenger-chat/friend-stories.contract";
 import { story } from "../screens/messenger-chat/friend-stories.test-support";
-import { messengerChatTestIds as chat } from "../screens/messenger-chat/messenger-chat.contract";
+import {
+  messengerChatTestIds as chat,
+  messengerListTestIds as rows,
+} from "../screens/messenger-chat/messenger-chat.contract";
 import { suggestedFriendsTestIds as suggestedIds } from "../screens/messenger-chat/suggested-friends.contract";
 import { App } from "./App";
 import { setFriendStoriesStoresForTests } from "./friend-stories-wiring";
@@ -56,7 +59,7 @@ async function settle() {
   });
 }
 
-test("SEI1. 잠긴 친구 스토리 → Chat now · 100 → 열림: 대화방 인용 띠 · 해금 저장, 돌아오면 친구 칸 · 다시 사라고 하지 않는다", async () => {
+test("SEI1. 잠긴 친구 스토리 → Chat now · 100 → 열림: 보기에 남아 답장 칸(D5 개정 ⟨보기에서 추가⟩) · 해금 저장, 닫으면 친구 칸 · 목록에 방 · 다시 사라고 하지 않는다", async () => {
   const unlock = vi.fn(async () => ({ result: "unlocked", shortBy: null, balance: 120 }) as const);
   setEarlyAccessRemote(
     () =>
@@ -83,10 +86,11 @@ test("SEI1. 잠긴 친구 스토리 → Chat now · 100 → 열림: 대화방 �
   await settle();
   expect(unlock).toHaveBeenCalledTimes(1);
   expect(messengerUnlockStore().read().has("mina")).toBe(true);
-  expect(present(chat.screen)).toBe(true);
-  expect(screen.getByTestId(ids.quoteBar).textContent).toContain("Replying to");
-  tapId(chat.back);
+  expect(present(chat.screen)).toBe(false);
+  expect(present(ids.replyInput)).toBe(true);
+  tapId(ids.close);
   await settle();
+  expect(present(rows.row("mina"))).toBe(true);
   expect(present(ids.unmet("mina"))).toBe(false);
   expect(present(ids.friend("mina"))).toBe(true);
 });

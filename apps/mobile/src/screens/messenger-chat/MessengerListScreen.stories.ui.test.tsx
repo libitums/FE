@@ -240,12 +240,14 @@ test("FS-UI7. 스토리 줄의 추천 아바타 → 프로필 시트(from story)
   expect(screen.getByTestId("friend-directory-screen")).not.toBeNull();
 });
 
-test("FS-UI7. 안 만난 친구 스토리 → Add friend and reply → 추가 · 인용 띠 넘김 · 방 열기", async () => {
+test("FS-UI7. 안 만난 친구 스토리 → Add friend and reply → 추가 · 보기에 남아 답장 칸(방으로 가지 않음, D5 개정 ⟨보기에서 추가⟩ — FS-UI49)", async () => {
   const { onOpenRoom, events } = await mount(live);
   tapId(ids.unmet("daeun"));
   tapId(ids.meet);
-  expect(onOpenRoom).toHaveBeenCalledWith("daeun");
-  expect(takeStoryReplyHandoff("daeun")).toMatchObject({ roomId: "daeun", text: null });
+  expect(onOpenRoom).not.toHaveBeenCalled();
+  expect(takeStoryReplyHandoff("daeun")).toBeNull();
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.queryByTestId(ids.meetCard)).toBeNull();
   expect(events().filter((e) => e.name === "suggested_friend_added")).toEqual([
     expect.objectContaining({ characterId: "daeun", from: "story_viewer", via: "free" }),
   ]);

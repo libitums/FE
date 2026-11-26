@@ -35,7 +35,7 @@ export function useStoryProfile({
   readonly profileOf: (characterId: string) => FriendProfile | null;
   /** 이미 친구 시트의 「Start chatting」 — 보기를 닫고 그 방으로. */
   readonly onChat: (characterId: string) => void;
-  /** 안 만난 친구가 친구가 된 뒤(추가 · 먼저 만나기 · 이미 친구) — 보기를 닫고 그 방의 인용 띠로. */
+  /** 안 만난 친구가 친구가 된 뒤(추가 · 먼저 만나기 · 이미 친구) — 보기에 남아 그 인물의 장을 친구 장(답장 칸)으로. */
   readonly onMet: (item: StoryViewerItem) => void;
   /** 시트의 기준 시각 — 보기와 같은 값(목록 렌더의 `now`). */
   readonly now: number;
@@ -47,7 +47,7 @@ export function useStoryProfile({
     // 잠긴 안 만난 친구는 지금 판정으로 다시 묻고 먼저 만나기 뒤 보기를 닫습니다(#608). 추가할 수 있는 친구는 시트(Start chatting)부터.
     if (item.unmet !== null)
       return item.unmet.status === "addable"
-        ? suggested.openFriend(item.unmet, "story_viewer")
+        ? suggested.openFriend(item.unmet, "story_viewer", () => onMet(item))
         : meet(item);
     const { characterId } = item.story;
     const who = { id: characterId, name: item.name, avatarUrl: item.avatarUrl };
