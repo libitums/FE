@@ -184,8 +184,8 @@ function firstUnseen(items: readonly StoryViewerItem[], from: number, seen: Read
 }
 
 /**
- * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 줄 순서(`storyOrderOf`)로 이어 붙입니다(D4 개정). 줄의 친구는 친구 묶음 전체 중 그 인물부터,
- * 이어 보기는 첫 인물부터, 안 만난 친구 · 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
+ * 보기의 장 목록과 시작 칸 — 인물 묶음(올린 시각 순)을 줄 순서(`storyOrderOf`)로 이어 붙입니다(D4 개정). 줄의 칸(친구 · 안 만난 친구)은 줄 전체 중
+ * 그 인물부터(D3 개정 ⟨잠긴 인물⟩), 이어 보기는 친구만 첫 인물부터, 알림은 그 인물 묶음 하나. 시작은 그 인물의 안 본 첫 장. 그 인물(또는 친구 스토리)이 없으면 null.
  */
 export function viewerItemsOf(
   row: StoryRow,
@@ -193,25 +193,20 @@ export function viewerItemsOf(
   imageUrl: (path: string) => string | null,
   seen: ReadonlySet<string> = new Set(),
 ): { readonly items: readonly StoryViewerItem[]; readonly start: number } | null {
-  const friends: StoryViewerItem[] = [];
+  const all: StoryViewerItem[] = [];
   for (const each of storyOrderOf(row)) {
-    if (each.kind === "friend")
-      friends.push(...itemsOf(each.entry.stories, each.entry.room, null, imageUrl));
+    const { stories } = each.entry;
+    if (each.kind === "friend") all.push(...itemsOf(stories, each.entry.room, null, imageUrl));
+    else all.push(...itemsOf(stories, each.entry.friend.room, each.entry.friend, imageUrl));
   }
   const one = (items: readonly StoryViewerItem[]) =>
     items.length === 0 ? null : { items, start: firstUnseen(items, 0, seen) };
-  if (open.from === "watch_all") return one(friends);
-  if (open.from === "friend") {
-    const at = friends.findIndex((item) => item.story.characterId === open.characterId);
-    return at < 0 ? null : { items: friends, start: firstUnseen(friends, at, seen) };
+  if (open.from === "watch_all") return one(all.filter((item) => item.unmet === null));
+  if (open.from !== "push") {
+    const at = all.findIndex((item) => item.story.characterId === open.characterId);
+    return at < 0 ? null : { items: all, start: firstUnseen(all, at, seen) };
   }
-  const friend = row.friends.find((entry) => entry.story.characterId === open.characterId);
-  if (friend !== undefined && open.from !== "unmet")
-    return one(itemsOf(friend.stories, friend.room, null, imageUrl));
-  const unmet = row.unmet.find((entry) => entry.story.characterId === open.characterId);
-  return unmet === undefined
-    ? null
-    : one(itemsOf(unmet.stories, unmet.friend.room, unmet.friend, imageUrl));
+  return one(all.filter((item) => item.story.characterId === open.characterId));
 }
 
 /** 그 내 글이 답장한 스토리 id(ADR-0178 D5) — 서버 턴 요청의 `storyId`. 인용이 없으면 undefined. */

@@ -53,9 +53,16 @@ describe("FS-U22 보기의 장 목록 — 인물 묶음을 이어 붙이고, 그
   const row = storyRowOf(input([a1, a2, a3, b1, g1, g2], [...seen]));
 
   test("줄의 친구 → 친구 묶음을 차례로 · 그 인물의 안 본 첫 장에서 시작", () => {
-    // 친구 순서: 안 본 a(가장 새 a3 1h) · b(2h)
+    // 줄 순서: 안 본 a(가장 새 a3 1h) · b(2h) · g(안 만난, g2 2h — id 순 b 뒤)
     const opened = viewerItemsOf(row, { from: "friend", characterId: "a" }, url, seen);
-    expect(opened?.items.map((item) => item.story.id)).toEqual(["a1", "a2", "a3", "b1"]);
+    expect(opened?.items.map((item) => item.story.id)).toEqual([
+      "a1",
+      "a2",
+      "a3",
+      "b1",
+      "g1",
+      "g2",
+    ]);
     expect(opened?.start).toBe(1);
     const fromB = viewerItemsOf(row, { from: "friend", characterId: "b" }, url, seen);
     expect(fromB?.start).toBe(3);
@@ -68,14 +75,14 @@ describe("FS-U22 보기의 장 목록 — 인물 묶음을 이어 붙이고, 그
     expect(viewerItemsOf(seenAll, { from: "watch_all" }, url, all)?.start).toBe(0);
   });
 
-  test("알림 · 안 만난 친구는 그 인물 묶음 하나", () => {
+  test("알림은 그 인물 묶음 하나, 안 만난 친구 칸은 줄 전체 중 그 묶음부터", () => {
     expect(
       viewerItemsOf(row, { from: "push", characterId: "a" }, url)?.items.map((i) => i.story.id),
     ).toEqual(["a1", "a2", "a3"]);
     const unmet = viewerItemsOf(row, { from: "unmet", characterId: "g" }, url);
-    expect(unmet?.items.map((i) => i.story.id)).toEqual(["g1", "g2"]);
-    expect(unmet?.items.every((i) => i.unmet?.character.id === "g")).toBe(true);
-    expect(unmet?.start).toBe(0);
+    expect(unmet?.items.map((i) => i.story.id)).toEqual(["a1", "a2", "a3", "b1", "g1", "g2"]);
+    expect(unmet?.items.slice(4).every((i) => i.unmet?.character.id === "g")).toBe(true);
+    expect(unmet?.start).toBe(4);
   });
 });
 

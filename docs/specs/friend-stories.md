@@ -13,7 +13,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   - `storyRowOf({ stories, rooms, suggested, seen, now })` → `StoryRow` — 친구(열린 방의 인물) · 안 만난 친구(추천 대상)를 각각 `byLatestStory` 순으로, 그 밖 추천.
     한 인물에 스토리가 둘 이상이면 가장 새 것 하나. 본 것은 `seen` 표시만(순서에 안 씀, D3 개정 ⟨2026-11-25⟩).
   - `story-order.ts` `storyOrderOf(row)` → 친구 · 안 만난 친구를 한 줄로 합친 칸 순서(최신 `postedAt` 내림차순, 같으면 인물 id 오름차순).
-    줄과 `viewerItemsOf`(이어 보기 · 친구 열기의 다음 인물)가 함께 쓴다. `byLatestStory`는 그 비교.
+    줄과 `viewerItemsOf`(이어 보기 · 줄 칸에서 연 보기의 다음 인물)가 함께 쓴다. `byLatestStory`는 그 비교.
   - `storyAgeOf(postedAt, now)` → `StoryAge`.
   - `viewerItemsOf(row, from, …)` — 줄 · 이어 보기 · 알림에서 연 보기의 장 목록과 시작 칸.
   - ~~`listStoryOf(row, characterId)` — 채팅 목록 줄의 「New story」~~ 없앰(ADR-0178 D3 개정 2, 2026-11-26).
@@ -71,7 +71,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
 - FS-U7 `seenRecordsWith`: 만료 지난 표시를 지우고 새 표시를 더함, 같은 id 덮어씀.
 - FS-U8 `friendStoriesFrom`: 정상 · 칸 빠짐 버림 · 몸 틀림 null · 시각 문자열 → ms · 칩 3개 넘으면 앞 3개.
 - FS-U9 콘텐츠 정합: 27줄 · id 유일 · 그림 경로가 에피소드 JSON에 있음 · 단어 ref가 그 에피소드 단어에 있음 · 뜻 일곱 언어.
-- FS-U10 `viewerItemsOf`: 줄 친구 → 그 칸부터 친구 스토리 끝까지, 안 만난 친구 → 한 장, 이어 보기 → 처음부터, 알림 → 그 인물 한 장(없으면 null).
+- FS-U10 `viewerItemsOf`: 줄 칸(친구 · 안 만난 친구) → 줄 전체(D3 개정 ⟨잠긴 인물⟩) 중 그 칸부터, 이어 보기 → 친구만 처음부터, 알림 → 그 인물 한 장(없으면 null).
   친구 장 순서는 `storyOrderOf`의 친구 칸 순서와 같다(D3 개정).
 - FS-U11 분석 이름 수(넷 추가) · Airbridge로 보내지 않음.
 - FS-U12 본 것 저장(기기): 계정마다 열쇠, 망가진 값은 빈 표시.
@@ -90,6 +90,7 @@ PR 1 = 친구 스토리(보기 · 답장 · 안 만난 친구 · 스토리 줄 �
   놓았을 때(48px · 반 · 0.5px/ms 같은 방향), 남은 몫의 시간, 옆 인물 면의 장(전환 중엔 방금 장), 쉬는 자리 = 다 돈 끝 값.
 - FS-U33 `storyTapOf`(`story-tap.unit.test.ts`, D4 개정 ⟨탭 자리⟩): 화면 가운데 경계 — 왼쪽 절반 이전 · 가운데부터 다음 · 자리를 모르면 다음.
 - FS-U34 `tapDismissesKeyboard`(`story-keyboard-tap.unit.test.ts`, D5 개정 ⟨키보드 탭⟩): 입력 중이면 참, 내려간 지 `KEYBOARD_TAP_GRACE_MS`(500) 안이면 참, 창이 지났거나 기록이 없거나 시계가 거꾸로면 거짓.
+- FS-U35 `viewerItemsOf`(`story-row-viewer.unit.test.ts`, D3 개정 ⟨잠긴 인물⟩): 친구 칸 · 안 만난 칸 모두 줄 순서 전체 · 그 칸부터, 다음 인물이 안 만난 인물이면 그 장으로(탭 · 6초 · 가로), 안 만난 인물이 마지막이면 닫힘, Watch all은 친구만.
 
 ### 2.2 ui (앱)
 

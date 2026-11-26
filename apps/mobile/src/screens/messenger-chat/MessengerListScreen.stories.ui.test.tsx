@@ -131,8 +131,9 @@ test("FS-UI7. 친구 스토리 → 보기(본 것 표시 · viewed) → 칩 → 
       characterId: "mina",
       met: true,
       from: "row",
-      index: "1",
-      total: "1",
+      // 줄 순서 daeun(안 만난, 더 새것) · mina — 줄 칸에서 연 보기는 줄 전체(D3 개정 ⟨잠긴 인물⟩).
+      index: "2",
+      total: "2",
     }),
   ]);
   // 칩은 그 자리에서 보냅니다(D5 개정) — 넘김을 남기지 않고, Open chat을 눌러야 방이 열립니다.
@@ -324,4 +325,24 @@ test("FS-UI33. 안 만난 친구의 아바타 → 추천 친구 프로필 시트
     expect.objectContaining({ characterId: "daeun", from: "story_viewer" }),
   ]);
   expect(screen.getByTestId(ids.viewer).getAttribute("accessibility-elements-hidden")).toBe("true");
+});
+
+test("FS-UI7. (D3 개정 ⟨잠긴 인물⟩) 안 만난 인물 칸에서 연 보기 — 소개 카드 장에서 탭하면 줄의 다음 인물, 그 마지막 장 뒤 닫힘", async () => {
+  await mount(live);
+  tapId(ids.unmet("daeun"));
+  expect(screen.getByTestId(ids.meetCard)).not.toBeNull();
+  tapId(ids.next);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.queryByTestId(ids.meetCard)).toBeNull();
+  expect(screen.getByTestId(ids.chip(0))).not.toBeNull();
+  tapId(ids.next);
+  expect(screen.queryByTestId(ids.viewer)).toBeNull();
+});
+
+test("FS-UI7. (D3 개정 ⟨잠긴 인물⟩) 친구 칸에서 연 보기 — 이전 인물이 안 만난 인물이면 그 소개 카드 장으로", async () => {
+  await mount(live);
+  tapId(ids.friend("mina"));
+  tapId(ids.previous);
+  expect(screen.getByTestId(ids.viewer)).not.toBeNull();
+  expect(screen.getByTestId(ids.meetCard)).not.toBeNull();
 });
