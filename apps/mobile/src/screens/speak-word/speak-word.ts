@@ -3,7 +3,7 @@
 import type { AnswerResult } from "../../lib/answer-result";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { PictureLoadState } from "../../lib/picture-load";
-import { judgeSpeaking } from "../../lib/speaking-judge";
+import { judgeSpokenAnswer } from "../../lib/speaking-judge";
 import {
   speechAvailabilityAfter,
   speechMissedHintOf,
@@ -70,11 +70,12 @@ export function speakWordSessionReducer(
   }
 }
 
-/** 정답 중 하나라도 맞게 말했으면 정답입니다(앞 낱말 일치 — 부호 · 뒤 낱말은 무시). */
+/**
+ * 정답 중 하나라도 발음 기준으로 맞게 말했으면 정답입니다(ADR-0201) — 띄어쓰기 · 연음 · 받침 표기 · 군말 · 뒤에 덧붙은
+ * 낱말은 무시하고, 긴 정답은 자모 몇 개의 오차까지 받습니다. 「통과(close)」 등급과 모범 정답은 `judgeSpokenAnswer`가 냅니다.
+ */
 export function judgeSpokenWord(answers: NonEmpty<string>, heard: string): AnswerResult {
-  return answers.some((answer) => judgeSpeaking(answer, heard) === "correct")
-    ? "correct"
-    : "incorrect";
+  return judgeSpokenAnswer(answers, heard).result;
 }
 
 export function speakWordResultAt(

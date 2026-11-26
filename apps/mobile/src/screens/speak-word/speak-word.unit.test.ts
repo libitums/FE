@@ -194,17 +194,22 @@ describe("speakWordSessionReducer — 잠금", () => {
 });
 
 describe("judgeSpokenWord", () => {
-  it("SW5. 정답 낱말로 시작하는 말은 부호 · 뒤 낱말과 상관없이 정답이다", () => {
-    for (const text of ["카드", "카드.", "카드 주세요"]) {
+  it("SW5. 정답 낱말을 말하면 부호 · 앞뒤 덧붙은 낱말 · 군말과 상관없이 정답이다", () => {
+    for (const text of ["카드", "카드.", "카드 주세요", "음 카드"]) {
       expect(judgeSpokenWord(answers("카드"), text)).toBe("correct");
     }
   });
 
-  it("SW5. 다른 글자 · 어미 · 붙여 쓴 낱말 · 빈 글자는 오답이다", () => {
+  it("SW5. 띄어쓰기 · 받침 표기만 다르면 정답이다(ADR-0201 발음 기준)", () => {
+    expect(judgeSpokenWord(answers("비밀번호"), "비밀 번호")).toBe("correct");
+    expect(judgeSpokenWord(answers("괜찮아요"), "괜찬아요")).toBe("correct");
+  });
+
+  it("SW5. 짧은 낱말은 자모 하나만 달라도 · 붙은 어미 · 빈 글자는 오답이다", () => {
     for (const text of ["카드요", "카트", ""]) {
       expect(judgeSpokenWord(answers("카드"), text)).toBe("incorrect");
     }
-    expect(judgeSpokenWord(answers("비밀번호"), "비밀 번호")).toBe("incorrect");
+    expect(judgeSpokenWord(answers("고기"), "거기")).toBe("incorrect");
   });
 
   it("SW5. 정답이 여럿이면 하나만 맞아도 정답이다", () => {

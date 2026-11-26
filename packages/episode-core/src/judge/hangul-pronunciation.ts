@@ -71,22 +71,25 @@ type Syllable = { initial: string; vowel: string; final: string } | { other: str
 const toNfc = (text: string) =>
   typeof text.normalize === "function" ? text.normalize("NFC") : text;
 
-/** 군말 · 부호 · 띄어쓰기를 뗀 음절 열. */
-function syllablesOf(text: string): Syllable[] {
-  const joined = toNfc(text)
+function syllableOf(char: string): Syllable {
+  const code = (char.codePointAt(0) ?? 0) - 0xac00;
+  if (code < 0 || code >= 11172) return { other: char.toLowerCase() };
+  return {
+    initial: INITIALS[Math.floor(code / 588)] ?? "",
+    vowel: VOWELS[Math.floor((code % 588) / 28)] ?? "",
+    final: (FINALS[code % 28] ?? "").trim(),
+  };
+}
+
+/** 군말 · 부호를 뗀 낱말들의 음절 열. `wordStart`는 들은 말의 낱말 첫 음절입니다(띄어쓰기는 경계로만 남습니다). */
+function syllablesOf(text: string): { syllable: Syllable; wordStart: boolean }[] {
+  return toNfc(text)
     .replace(/[^0-9A-Za-z가-힣\s]/g, " ")
     .split(/\s+/)
     .filter((word) => word !== "" && !FILLER.test(word))
-    .join("");
-  return Array.from(joined, (char): Syllable => {
-    const code = (char.codePointAt(0) ?? 0) - 0xac00;
-    if (code < 0 || code >= 11172) return { other: char.toLowerCase() };
-    return {
-      initial: INITIALS[Math.floor(code / 588)] ?? "",
-      vowel: VOWELS[Math.floor((code % 588) / 28)] ?? "",
-      final: (FINALS[code % 28] ?? "").trim(),
-    };
-  });
+    .flatMap((word) =>
+      Array.from(word, (char, index) => ({ syllable: syllableOf(char), wordStart: index === 0 })),
+    );
 }
 
 type Hangul = Extract<Syllable, { initial: string }>;
@@ -129,9 +132,13 @@ function assimilatePair(left: Hangul, right: Hangul): void {
   else if (left.final === "ㄹ" && right.initial === "ㄴ") right.initial = "ㄹ";
 }
 
-/** 군말을 떼고 띄어쓰기 · 부호를 무시한 발음형 단위열(초성 · 중성 · 받침 자모, 한글 밖은 소문자 글자). */
-export function spokenUnitsOf(text: string): readonly string[] {
-  const syllables = syllablesOf(text);
+/** 발음형 단위열과, 그 안에서 낱말이 시작하는 자리(단위 번호, 오름차순)입니다. */
+export type SpokenTrack = { readonly units: readonly string[]; readonly wordStarts: readonly number[] };
+
+/** 군말을 떼고 띄어쓰기 · 부호를 무시한 발음형 단위열과 낱말 경계. 연음은 낱말 경계 너머로도 일어납니다. */
+export function spokenTrackOf(text: string): SpokenTrack {
+  const tagged = syllablesOf(text);
+  const syllables = tagged.map((entry) => entry.syllable);
   const pairs = (apply: (left: Hangul, right: Hangul) => void) => {
     for (let index = 0; index + 1 < syllables.length; index += 1) {
       const left = syllables[index];
@@ -144,12 +151,22 @@ export function spokenUnitsOf(text: string): readonly string[] {
     if (isHangul(syllable)) syllable.final = REPRESENTATIVE[syllable.final] ?? syllable.final;
   }
   pairs(assimilatePair);
-  return syllables.flatMap((syllable) => {
-    if (!isHangul(syllable)) return [syllable.other];
-    const units: string[] = [];
+  const units: string[] = [];
+  const wordStarts: number[] = [];
+  syllables.forEach((syllable, index) => {
+    if (tagged[index]?.wordStart === true) wordStarts.push(units.length);
+    if (!isHangul(syllable)) {
+      units.push(syllable.other);
+      return;
+    }
     if (syllable.initial !== "ㅇ") units.push(PLAIN[syllable.initial] ?? syllable.initial);
     units.push(SAME_VOWEL[syllable.vowel] ?? syllable.vowel);
     if (syllable.final !== "") units.push(syllable.final);
-    return units;
   });
+  return { units, wordStarts };
+}
+
+/** 군말을 떼고 띄어쓰기 · 부호를 무시한 발음형 단위열(초성 · 중성 · 받침 자모, 한글 밖은 소문자 글자). */
+export function spokenUnitsOf(text: string): readonly string[] {
+  return spokenTrackOf(text).units;
 }

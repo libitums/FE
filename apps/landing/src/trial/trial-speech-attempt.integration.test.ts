@@ -181,7 +181,7 @@ describe("TI-C1 수집 — 판정 뒤 한 번", () => {
         expected: "진짜요? 감사합니다!",
         alternatives: ["감사합니다"],
         outcome: "incorrect",
-        similarity: 0.778,
+        similarity: 0.667,
       },
     ]);
   });
