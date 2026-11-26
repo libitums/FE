@@ -18,6 +18,8 @@ export type ChatRoomHeaderProps = {
   readonly used: boolean;
   readonly onBack: () => void;
   readonly onMenu: () => void;
+  /** 상대 이름을 손가락으로 누르면 프로필 시트(ADR-0178 개정 ⟨대화방⟩) — 낭독 단추 역할은 줄 아바타가 집니다. */
+  readonly onProfile: () => void;
 };
 
 // 방 머리 — 뒤로 · 상대 이름(+ 턴 줄) · 메뉴(사이드바). `MessengerChatScreen`에서 떼어 냈습니다(300줄).
@@ -27,6 +29,7 @@ export function ChatRoomHeader({
   used,
   onBack,
   onMenu,
+  onProfile,
 }: ChatRoomHeaderProps): ReactNode {
   const copy = useUiCopy().messengerChat.room;
   return (
@@ -38,6 +41,7 @@ export function ChatRoomHeader({
         )
       }
       insetTop={0}
+      onTitleTap={onProfile}
       testIds={{ root: ids.header, title: ids.title }}
       start={
         <ChatHeaderSide testId={ids.back}>

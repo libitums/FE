@@ -5,12 +5,14 @@ import { messengerChatMediaEs } from "./ui-copy-es-chat-media";
 import { messengerChatAlbumEs } from "./ui-copy-es-chat-album";
 import { messengerChatSuggestedEs } from "./ui-copy-es-chat-suggested";
 import { messengerChatStoriesEs } from "./ui-copy-es-chat-stories";
+import { myStoriesEs } from "./ui-copy-es-my-stories";
 
 export const messengerChatExtraEs: MessengerChatExtraCopy = {
   media: messengerChatMediaEs,
   album: messengerChatAlbumEs,
   suggested: messengerChatSuggestedEs,
   stories: messengerChatStoriesEs,
+  myStories: myStoriesEs,
   access: {
     signInTitle: "Escríbeles a las personas de tus historias",
     signInBody:
@@ -23,6 +25,35 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     promptKeepBody: "Crea una cuenta gratis para guardar tus Yeopjeon y boletos.",
   },
   pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Envió una foto"
+          : `Envió una foto · ${count} nuevos`
+        : latest === "voice"
+          ? count === 1
+            ? "Envió un mensaje de voz"
+            : `Envió un mensaje de voz · ${count} nuevos`
+          : count === 1
+            ? "Mensaje nuevo"
+            : `${count} mensajes nuevos`,
+    jump: "Ir a los mensajes nuevos",
+    latest: "Ir al último mensaje",
+  },
+  replyToast: {
+    dismiss: "Cerrar",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `Nuevo mensaje de ${name}: ${preview}` + (more > 0 ? `. ${more} más` : ""),
+  },
+  pushAsk: {
+    title: (name) => `¿Quieres un aviso cuando ${name} te escriba?`,
+    body: "A veces te escribo yo primero: más o menos una vez al día, por la noche.",
+    turnOn: "Activar",
+    notNow: "Ahora no",
+    on: (name) => `Notificaciones activadas: ${name} te avisará.`,
+  },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Ideas de respuesta, mensajes de personajes, recuerdos",

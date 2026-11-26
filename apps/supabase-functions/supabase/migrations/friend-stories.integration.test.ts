@@ -155,19 +155,25 @@ async function country(user: string, code: string) {
     [user, code],
   );
 }
+const ZONES: readonly (readonly [string, string])[] = [
+  ["KR", "Asia/Seoul"],
+  ["US", "America/New_York"],
+  ["GB", "Europe/London"],
+  ["IN", "Asia/Kolkata"],
+  ["AU", "Australia/Sydney"],
+  ["MX", "America/Mexico_City"],
+  ["TH", "Asia/Bangkok"],
+  ["BR", "America/Sao_Paulo"],
+];
+/** 그 나라 코드의 시간대(`zoneAtLocalHour`가 고른 것). */
+function zoneOf(code: string): string {
+  const found = ZONES.find(([each]) => each === code);
+  if (found === undefined) throw new Error(`no zone for ${code}`);
+  return found[1];
+}
 /** 지금이 현지 몇 시인 나라 — 테스트 시각에 맞춰 09 ~ 21시 안 · 밖의 시간대를 고릅니다. */
 async function zoneAtLocalHour(inside: boolean) {
-  const zones: [string, string][] = [
-    ["KR", "Asia/Seoul"],
-    ["US", "America/New_York"],
-    ["GB", "Europe/London"],
-    ["IN", "Asia/Kolkata"],
-    ["AU", "Australia/Sydney"],
-    ["MX", "America/Mexico_City"],
-    ["TH", "Asia/Bangkok"],
-    ["BR", "America/Sao_Paulo"],
-  ];
-  for (const [code, zone] of zones) {
+  for (const [code, zone] of ZONES) {
     const hour = (
       await db.admin.query("select extract(hour from now() at time zone $1)::int as h", [zone])
     ).rows[0].h as number;
@@ -514,6 +520,7 @@ test("FS15. 기록의 내 메시지에 스토리 인용이 실린다 — 무료�
     .rows[0].p as { messages: { text: string; story: unknown }[] };
   const stories = page.messages.map((m) => m.story);
   expect(stories).toContainEqual({
+    kind: "friend", // 내 스토리(20261228140000, ADR-0194)가 종류를 더함
     id: story,
     characterId: "mina",
     line: "mina-01 한 줄",
@@ -576,9 +583,11 @@ test("FS16c. 알림 언어 나라 — 학습 프로필 나라가 마지막 지�
     ])
   ).rows[0].country_code as string;
   const other = code === "VN" ? "TH" : "VN";
+  // 시간대는 학습 나라의 것으로 못 박습니다 — 없으면 `user_timezone`이 마지막 지역(VN · TH)의 시각을 써서, 그곳이 밤인 시각(UTC 14 ~ 02시)에는
+  // 후보에서 빠져 이 테스트가 시각에 따라 실패했습니다. 이 테스트가 보는 것은 알림 언어 나라의 순서뿐입니다.
   await db.admin.query(
-    "insert into companion.profiles (user_id, last_region) values ($1, $2) on conflict (user_id) do update set last_region = excluded.last_region",
-    [member, other],
+    "insert into companion.profiles (user_id, last_region, timezone) values ($1, $2, $3) on conflict (user_id) do update set last_region = excluded.last_region, timezone = excluded.timezone",
+    [member, other, zoneOf(code)],
   );
   expect((await candidates()).find((c) => c.userId === member)?.country).toBe(code);
 });

@@ -36,3 +36,15 @@ verify_jwt = false
 
 [functions.companion-stories]
 verify_jwt = false
+
+[functions.companion-story-reactions]
+verify_jwt = false
+
+[functions.companion-my-story]
+verify_jwt = false
+
+[functions.companion-story-studio]
+verify_jwt = false
+
+[functions.companion-story-images]
+verify_jwt = false

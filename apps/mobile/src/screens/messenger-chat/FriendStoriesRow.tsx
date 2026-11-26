@@ -1,85 +1,32 @@
 import type { ReactNode } from "@lynx-js/react";
 import search from "@libitums/icons/lynx/search";
 import { color } from "@libitums/design-tokens";
-import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { storyAgeOf } from "./friend-stories";
+import { storyOrderOf } from "./story-order";
 import {
   friendStoriesTestIds as ids,
   type FriendStoriesRowProps,
   type FriendStoryEntry,
   type UnmetStoryEntry,
 } from "./friend-stories.contract";
+import { myStoriesTestIds } from "./my-stories.contract";
+import { MyStoryRowFaces } from "./MyStoryRowFaces";
+import { StoryFace } from "./StoryFace";
 import { SuggestedAvatar } from "./SuggestedFriendsRow";
 
 import "./suggested-friends.css";
 import "./friend-stories.css";
 
-type Ring = "unseen" | "seen" | "unmet";
-
-function StoryFace({
-  testId,
-  ring,
-  name,
-  avatarUrl,
-  caption,
-  captionTone,
-  label,
-  onTap,
-}: {
-  readonly testId: string;
-  readonly ring: Ring;
-  readonly name: string;
-  readonly avatarUrl: string | null;
-  readonly caption: string;
-  readonly captionTone: "muted" | "brand";
-  readonly label: string;
-  readonly onTap: () => void;
-}): ReactNode {
-  function handleTap() {
-    "background only";
-    playSound("button");
-    onTap();
-  }
-  return (
-    <view
-      className="story-item"
-      data-testid={testId}
-      data-state={ring}
-      accessibility-element={true}
-      accessibility-label={label}
-      accessibility-traits="button"
-      accessibility-enable-tap={true}
-      flatten={false}
-      bindtap={handleTap}
-    >
-      <view className={`story-ring story-ring-${ring}`}>
-        <Avatar imageSource={avatarUrl ?? undefined} name={name} size="lg" accessibility="hidden" />
-      </view>
-      <text
-        className={ring === "seen" ? "story-name story-name-seen" : "story-name"}
-        accessibility-elements-hidden={true}
-      >
-        {name}
-      </text>
-      <text
-        className={captionTone === "brand" ? "story-caption story-caption-brand" : "story-caption"}
-        accessibility-elements-hidden={true}
-      >
-        {caption}
-      </text>
-    </view>
-  );
-}
-
 /**
- * 채팅 목록 맨 위 스토리 줄(ADR-0178 D3, 시안 1번) — 추천 친구 줄(ADR-0162) 자리를 바꿉니다. 판정은 `storyRowOf`가 하고 여기서는
- * 그리기만 합니다. 목록 스크롤 안이라 z-index 없이 문서 순서로 그립니다.
+ * 채팅 목록 맨 위 스토리 줄(ADR-0178 D3, 시안 1번) — 추천 친구 줄(ADR-0162) 자리를 바꿉니다. 판정은 `storyRowOf`, 칸 순서는
+ * `storyOrderOf`(스토리 있는 인물 최신 순 → 스토리 없는 추천, 구분 선 없음 — D3 개정)가 하고 여기서는 그리기만 합니다. 목록 스크롤 안이라 z-index 없이 문서 순서로 그립니다.
  */
 export function FriendStoriesRow({
   row,
+  mine = null,
   now,
   onOpenFriend,
   onOpenUnmet,
@@ -111,7 +58,7 @@ export function FriendStoriesRow({
       <StoryFace
         key={entry.story.id}
         testId={ids.unmet(counterpart.id)}
-        ring="unmet"
+        ring={entry.seen ? "seen" : "unmet"}
         name={entry.friend.character.name}
         avatarUrl={counterpart.avatarUrl}
         caption={copy.newBadge}
@@ -132,7 +79,7 @@ export function FriendStoriesRow({
     onFindFriends();
   }
   const hasFriends = row.friends.length > 0;
-  const hasRest = row.unmet.length > 0 || row.others.length > 0;
+  const order = storyOrderOf(row);
   return (
     <view className="suggested-row" data-testid={ids.row}>
       <view className="suggested-row-head">
@@ -166,15 +113,17 @@ export function FriendStoriesRow({
         scroll-bar-enable={false}
       >
         <view className="suggested-row-track">
-          {row.friends.map(friendFace)}
-          {hasFriends && hasRest ? (
+          {mine === null ? null : <MyStoryRowFaces slot={mine} />}
+          {mine !== null && order.length + row.others.length > 0 ? (
             <view
-              className="story-divider"
-              data-testid={ids.divider}
-              accessibility-elements-hidden={true}
+              className="story-mine-divider"
+              data-testid={myStoriesTestIds.rowDivider}
+              accessibility-element={false}
             />
           ) : null}
-          {row.unmet.map(unmetFace)}
+          {order.map((each) =>
+            each.kind === "friend" ? friendFace(each.entry) : unmetFace(each.entry),
+          )}
           {row.others.map((friend) => (
             <view key={friend.character.id} data-testid={ids.suggested(friend.character.id)}>
               <SuggestedAvatar friend={friend} onOpen={onOpenSuggested} />

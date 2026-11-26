@@ -64,6 +64,7 @@ describe("milestoneFor · personOnceFor", () => {
         characterId: "duksu",
         paid: false,
         cost: "0",
+        fromSuggestion: false,
       }),
     ).toEqual({ name: "first_chat_message_sent", surface: "chat", characterId: "duksu" });
     expect(milestoneFor({ name: "settings_opened" })).toBeNull();

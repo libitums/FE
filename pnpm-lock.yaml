@@ -130,6 +130,9 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
     devDependencies:
+      '@libitums/companion-contract':
+        specifier: workspace:*
+        version: link:../../packages/companion-contract
       '@lynx-js/qrcode-rsbuild-plugin':
         specifier: 0.6.0
         version: 0.6.0(@lynx-js/rspeedy@0.16.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26)))

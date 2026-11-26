@@ -77,8 +77,8 @@ android {
     minSdk 26
     targetSdk 36
     // Play에 올릴 커밋에서 손으로 1 올린다 (spec §4). Play에는 22가 이미 올라가 있을 수 있다.
-    versionCode 27
-    versionName '1.6.1'
+    versionCode 28
+    versionName '1.7.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     // debug keeps these empty: dev-server and HMR errors must not reach the collector.
     buildConfigField 'String', 'SENTRY_DSN', '""'
@@ -156,6 +156,8 @@ dependencies {
   implementation 'com.squareup.okhttp3:okhttp:4.9.0'
   implementation 'androidx.browser:browser:1.8.0'
   implementation 'androidx.core:core:1.15.0'
+  // 내 스토리 사진 고르기 — Photo Picker 계약(PickVisualMedia, ADR-0199). 아래 constraints와 같은 판이다.
+  implementation 'androidx.activity:activity:1.10.1'
   implementation 'com.google.android.play:review:2.0.2'
   implementation 'io.airbridge:sdk-android:4.12.0'
   // 스토어 결제 · 영수증 · 구독 상태(ADR-0144 D1). 정확 버전 — Play Billing 8을 싣는 줄이다. 키가 없으면 시작하지 않는다.

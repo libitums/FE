@@ -6,6 +6,7 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { ChatRoomHeader } from "./ChatRoomHeader";
 import { ChatWordsStrip } from "./ChatWords";
 import { useChatWordsStrip, type ChatWordsProps } from "./use-chat-words-strip";
+import { useNewMessagePill } from "./use-new-message-pill";
 import { ChatLog } from "../../components/chat/ChatLog";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { announce } from "../../lib/accessibility";
@@ -16,6 +17,7 @@ import { CHAT_COIN_PRICES } from "./chat-coins";
 import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
+import { ChatProfileSheet } from "./ChatProfileSheet";
 import { useAutoIdeas } from "./use-auto-ideas";
 import { guideTargetClass } from "./MessengerGuide";
 import { RoomCoach, RoomKeyboardGuide } from "./ChatRoomGuide";
@@ -25,12 +27,13 @@ import { useRoomGuide } from "./use-room-guide";
 import { useGuideKeyboard } from "./use-guide-keyboard";
 import { useGuestGate } from "./use-guest-gate";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
+import { ChatPushAskSlot } from "./ChatPushAsk";
 import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 import { TRIAL_TOTAL } from "./free-turns";
-import { openPhotoAction } from "./chat-room-state";
+import { OPEN_PROFILE, openPhotoAction } from "./chat-room-state";
 import { chatKeyboardSlotHeight } from "./keyboard-height";
 import {
   messengerChatTestIds as ids,
@@ -69,7 +72,7 @@ export function MessengerChatScreen({
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
-  const gate = useRef<() => boolean>(() => true);
+  const gate = useRef<(idea?: boolean) => boolean>(() => true);
   // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
   const serverBusy = useRef(false);
   const guest = useGuestGate(onSignInRequired); // 비회원 — 보내기 · 계정 동작은 로그인 권유(ADR-0166)
@@ -82,7 +85,7 @@ export function MessengerChatScreen({
     edges,
     onExit,
     // 무료 안내인 스토리 답장은 앱의 체험 · 엽전 관문을 지나지 않습니다 — 정본은 서버 판정(ADR-0178 D6).
-    authorizeSend: (idea) => !serverBusy.current && story.authorize(idea, () => gate.current()),
+    authorizeSend: (idea) => !serverBusy.current && story.authorize(idea, () => gate.current(idea)),
     guest: guest.active,
     takeSendOptions: story.takeSendOptions,
   });
@@ -151,6 +154,7 @@ export function MessengerChatScreen({
   );
 
   const strip = useChatWordsStrip(chatWords, thread); // 이번 주 채팅 단어(ADR-0170)
+  const pill = useNewMessagePill(roomId, thread); // 「새 메시지 ↓」 · 로그의 jumpKey(내가 보낸 것 · 누름은 늘 끝으로)
   if (thread === null) return <view className="messenger-chat-screen" data-testid={ids.screen} />; // 지운 직후 — onExit이 곧 걷음
 
   const slotHeight = chatKeyboardSlotHeight({
@@ -161,12 +165,6 @@ export function MessengerChatScreen({
     height: keyboardHeight,
     bottomInset: edges.bottom,
   });
-
-  // 내가 보낸 말이 늘거나 마지막 글 id가 바뀌면(고친 문장 다시 보내기, ADR-0129) 읽던 자리와 상관없이 끝으로 내립니다(기기 F2).
-  const lastOwnId =
-    [...thread.messages]
-      .reverse()
-      .find((message) => message.kind === "text" && message.from === "me")?.id ?? "";
 
   return (
     <view className="messenger-chat-screen" data-testid={ids.screen}>
@@ -185,6 +183,7 @@ export function MessengerChatScreen({
             used={turn.panelOpen}
             onBack={exit}
             onMenu={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
+            onProfile={() => dispatch(OPEN_PROFILE)}
           />
           {strip === null || chatWords === null ? null : (
             <ChatWordsStrip words={strip.words} rank={strip.rank} onOpen={chatWords.onOpen} />
@@ -192,7 +191,9 @@ export function MessengerChatScreen({
           <ChatLog
             testId={ids.log}
             followKey={slotHeight}
-            jumpKey={lastOwnId}
+            {...pill.logProps}
+            loading={thread.server?.history === "loading"}
+            holdKey={tools.open}
             onTap={
               state.slot.kind === "closed" ? undefined : () => dispatch({ type: "close-keyboard" })
             }
@@ -215,8 +216,10 @@ export function MessengerChatScreen({
                 onToggleTool={tools.toggle}
                 feedback={feedback}
                 onOpenPhoto={(id) => dispatch(openPhotoAction(id))}
+                onOpenProfile={() => dispatch(OPEN_PROFILE)}
               />
             ))}
+            <ChatPushAskSlot thread={thread} busy={busy} />
             {thread.typing ? (
               <ChatTypingRow
                 avatar={{ name: thread.counterpart.name, imageUrl: thread.counterpart.avatarUrl }}
@@ -229,6 +232,7 @@ export function MessengerChatScreen({
               onRefresh={() => source.server?.reload(roomId)}
             />
           </ChatLog>
+          {pill.view}
           <RoomCoach guide={guide} thread={thread} />
           {state.overlay.kind === "more-menu" ? (
             <MoreMenu
@@ -261,7 +265,7 @@ export function MessengerChatScreen({
             keyboard={{ height: keyboardHeight, measure: measurePhoneKeyboard }}
             dispatch={dispatch}
             onSend={send}
-            sendCost={turn.sendCost}
+            sendCost={story.quizFree ? { kind: "free" } : turn.sendCost}
             birthYear={birthYear}
             guideClass={guideTargetClass(guide.step)}
             {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}
@@ -281,17 +285,15 @@ export function MessengerChatScreen({
         slotOpen={state.slot.kind !== "closed" && !turn.panelOpen}
       />
       <ChatRoomOverlays
-        state={state}
-        dispatch={dispatch}
-        thread={thread}
-        source={source}
-        learnerName={learnerName}
-        wallet={wallet}
-        coinBalance={coinBalance}
-        birthYear={birthYear}
-        preferences={preferences}
-        {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
+        {...{ state, dispatch, thread, source, learnerName, wallet, coinBalance, birthYear }}
+        {...{ preferences, onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
+      {state.overlay.kind === "profile" ? (
+        <ChatProfileSheet
+          counterpart={thread.counterpart}
+          onClose={() => dispatch({ type: "close-overlay" })}
+        />
+      ) : null}
       {guest.layer}
     </view>
   );

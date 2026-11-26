@@ -22,7 +22,13 @@ import {
   readBody,
 } from "./chat-send-http.ts";
 import { resolveChoice } from "./chat-send-choice.ts";
-import { claimStory } from "./chat-send-story.ts";
+import {
+  claimQuizAnswer,
+  quizDirective,
+  quizResultOf,
+  recordQuizAnswer,
+} from "./chat-send-quiz.ts";
+import { claimStory, storyContextNote, withQuiz, withStoryNote } from "./chat-send-story.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
 import { memoryLine } from "./companion-memory.ts";
 import { runAfterTurn } from "./companion-after-turn.ts";
@@ -76,6 +82,18 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
             now: new Date(deps.nowMs()).toISOString(),
           });
 
+    // 덕수쌤 퀴즈의 답(ADR-0191 D14): 스토리 답장과 같은 자리(관문 전) — 답이면 금액 0 예약이 먼저 선다. 스토리 답장 턴은 퀴즈가 아니다.
+    const quiz =
+      body.story_id !== undefined || body.replaces_message_id !== undefined
+        ? null
+        : await claimQuizAnswer(deps.outbound, env, {
+            userId: caller.userId,
+            characterId: body.character_id,
+            clientMessageId: body.client_message_id,
+            text: body.text,
+            now: new Date(deps.nowMs()).toISOString(),
+          });
+
     let gate: GateResult;
     try {
       gate = await callRpc<GateResult>(deps.outbound, env, "companion_turn_gate", {
@@ -103,6 +121,12 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     })
       .then((value) => (typeof value?.strikes === "number" ? value : null))
       .catch(() => null);
+    // 스토리 맥락(ADR-0191 D9) — 학습자의 살아 있는 내 스토리 · 이 인물의 최근 스토리. 읽지 못해도 턴은 돈다.
+    const storyNote = storyContextNote(deps.outbound, env, {
+      userId: caller.userId,
+      characterId: body.character_id,
+      now: new Date(deps.nowMs()).toISOString(),
+    });
     let begun: BeginResult;
     let learning: LearningContext;
     try {
@@ -161,21 +185,34 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       playground: caller.playground,
       historyKeep,
       usage,
-      story,
+      story: withQuiz(
+        withStoryNote(story, await storyNote),
+        quiz === null ? null : quizDirective(quiz),
+      ),
     };
     const work = runTurn(context)
       .catch((): TurnOutcome => {
         sink.send({ event: "error", data: { code: "internal_error", retryable: true } });
         return { outcome: "internal_error", afterTurn: null };
       })
-      .then(async ({ outcome, afterTurn, suggestions }) => {
+      .then(async ({ outcome, afterTurn, suggestions, quiz: judged }) => {
         sink.close();
         const turnUsage = usageLine(usage.summary());
-        const storyNote = story === null ? "" : ` story=${story.result}`;
+        const storyLog =
+          (story === null ? "" : ` story=${story.result}`) +
+          (quiz === null ? "" : ` quiz=${quiz.attempt}:${quizResultOf(quiz, judged)}`);
+        // 퀴즈의 답은 턴이 끝났을 때만 센다 — 실패한 턴은 예약이 풀려 그 차례가 다음 메시지로 넘어간다.
+        if (quiz !== null && outcome === "complete")
+          await recordQuizAnswer(deps.outbound, env, {
+            userId: caller.userId,
+            clientMessageId: body.client_message_id,
+            result: quizResultOf(quiz, judged),
+            now: new Date(deps.nowMs()).toISOString(),
+          });
         deps.log({
           event: "chat_send",
           status: "stream",
-          outcome: `${turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`}${storyNote}`,
+          outcome: `${turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`}${storyLog}`,
         });
         // 입력 출처를 유저 메시지에, 앞 캐릭터 메시지의 칩 셋에 결과(고름 · 고침 · 무시)를 적는다. 실패해도 턴은 끝났다.
         await callRpc(deps.outbound, env, "companion_record_choice", {

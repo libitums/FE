@@ -2,8 +2,13 @@
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 import { entryPathEventExamples, entryPathEventNames } from "./entry-path-events.test-support";
 import { planEventExamples } from "./purchase-intent.test-support";
-import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
+import {
+  suggestedFriendEventExamples,
+  suggestedFriendEventNames,
+} from "./suggested-friend-events.test-support";
 import { friendStoryEventNames } from "./friend-story-events.test-support";
+import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
+import { chatNoticeEventExamples, chatNoticeEventNames } from "./chat-push-ask-events.test-support";
 import {
   messengerGuideEventExamples,
   messengerGuideEventNames,
@@ -64,8 +69,10 @@ export const allEventNames = [
   "new_friend_sheet_closed",
   "chat_sign_in_prompt_closed",
   "chat_message_sent",
+  ...suggestionEventNames,
   "chat_media_requested",
   "chat_media_completed",
+  "chat_new_messages_jumped",
   "chat_coins_short",
   "surface_session_ended",
   "first_lesson_completed",
@@ -75,16 +82,13 @@ export const allEventNames = [
   "plan_selected",
   "purchase_intent",
   "shop_tab_switched",
-  "suggested_friend_viewed",
-  "suggested_friend_opened",
-  "suggested_friend_added",
-  "early_access_tapped",
-  "early_access_completed",
+  ...suggestedFriendEventNames,
   ...friendStoryEventNames,
+  ...chatNoticeEventNames,
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
+/** 매핑되는 여덟(가입 · 최종 통과 · 엽전 팩 결제 · 2026-11-24 깔때기 다섯)을 뺀 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "onboarding_step_viewed", step: "1", via: "start" },
@@ -161,7 +165,6 @@ export const unmappedEvents = [
   { name: "progress_load_failed", attempt: "retry" },
   { name: "progress_load_recovered", trigger: "auto" },
   { name: "progress_load_recovered", trigger: "manual" },
-  { name: "tickets_ran_out" },
   { name: "ticket_more_tapped", surface: "ticket_modal", result: "bought", price: "20" },
   { name: "ticket_more_tapped", surface: "out_of_tickets", result: "short", price: "20" },
   { name: "roleplay_story_opened", episodeId: "u01-water" },
@@ -195,6 +198,7 @@ export const unmappedEvents = [
   { name: "launch_chat_shown", surface: "learning", daysSinceFirstOpen: "1", met: "1", total: "4" },
   { name: "launch_chat_closed", surface: "learning", daysSinceFirstOpen: "1", choice: "start" },
   ...messengerGuideEventExamples,
+  ...chatNoticeEventExamples,
   {
     name: "companion_unlocked",
     surface: "learning",
@@ -210,14 +214,7 @@ export const unmappedEvents = [
     characterId: "mina",
     choice: "reply",
   },
-  {
-    name: "chat_message_sent",
-    surface: "chat",
-    daysSinceFirstOpen: "3",
-    characterId: "duksu",
-    paid: true,
-    cost: "3",
-  },
+  ...suggestionEvents,
   {
     name: "chat_media_requested",
     surface: "chat",
@@ -235,6 +232,14 @@ export const unmappedEvents = [
     outcome: "complete",
   },
   {
+    name: "chat_new_messages_jumped",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "duksu",
+    count: "3",
+    media: "photo",
+  },
+  {
     name: "chat_coins_short",
     surface: "chat",
     daysSinceFirstOpen: "3",
@@ -244,19 +249,14 @@ export const unmappedEvents = [
   { name: "surface_session_ended", surface: "chat", daysSinceFirstOpen: "3", seconds: "95" },
   { name: "first_lesson_completed", surface: "learning", daysSinceFirstOpen: "0" },
   {
-    name: "first_chat_message_sent",
-    surface: "chat",
-    daysSinceFirstOpen: "1",
-    characterId: "duksu",
-  },
-  {
     name: "streak_reward_collected",
     surface: "learning",
     daysSinceFirstOpen: "6",
     days: "7",
     amount: "40",
   },
-  ...planEventExamples,
+  // 요금제 이벤트 가운데 상점 탭 전환만 — 보기 · 고름 · 구매 의향은 2026-11-24부터 매핑된다.
+  ...planEventExamples.filter((event) => event.name === "shop_tab_switched"),
   ...suggestedFriendEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
 

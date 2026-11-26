@@ -58,10 +58,10 @@ function Bubble({ ko, label, view, children }: MyMessageBubbleProps): ReactNode 
 function MeaningLines({ meaning }: MyMessageMeaningLinesProps): ReactNode {
   return (
     <view className="my-message-meaning" data-testid={ids.meaning}>
-      <view className="my-message-divider" accessibility-elements-hidden={true} />
       <text className="my-message-roman" data-testid={ids.meaningRoman}>
         {meaning.romanization}
       </text>
+      <view className="my-message-divider" accessibility-elements-hidden={true} />
       <text className="my-message-meaning-text" data-testid={ids.meaningText}>
         {meaning.meaning}
       </text>
@@ -78,10 +78,10 @@ function MeaningSkeleton({ motion }: MyMessageSkeletonProps): ReactNode {
       data-motion={motion}
       accessibility-elements-hidden={true}
     >
-      <view className="my-message-divider" accessibility-elements-hidden={true} />
       <view className="my-message-skeleton-slot-s">
         <view className="my-message-bar my-message-bar-roman" />
       </view>
+      <view className="my-message-divider" accessibility-elements-hidden={true} />
       <view className="my-message-skeleton-slot-m">
         <view className="my-message-bar my-message-bar-meaning" />
       </view>

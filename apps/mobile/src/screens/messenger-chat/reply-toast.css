@@ -1,0 +1,150 @@
+/* 답장 도착 토스트(ADR-0200 · 시안 1 ~ 4, 개정 1 쌓기) — 짙은 면(gray-900) · 얼굴 32 · 흰 이름 · 옅은 회색 미리보기(gray-400, 대비 10 : 1) ·
+   브랜드 「+N」 · 44pt 닫기. 위에서 내려와(d6 · enter) 올라갑니다(d4 · exit). 움직임 줄이기면 페이드(d4). 새 토큰 없음. */
+
+@keyframes reply-toast-down {
+  from {
+    opacity: 0;
+    transform: translateY(-120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reply-toast-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-120%);
+  }
+}
+
+@keyframes reply-toast-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes reply-toast-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 쌓인 카드(개정 1) — 맨 위가 가장 새것, 카드 사이 8pt. 줄은 카드 높이만큼만 차지합니다. */
+.reply-toast-stack {
+  position: absolute;
+  left: var(--libitum-spacing-12);
+  right: var(--libitum-spacing-12);
+  z-index: var(--libitum-elevation-z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.reply-toast {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 14px;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-900);
+  box-shadow: 0 8px 24px rgba(26, 28, 32, 0.28);
+}
+
+.reply-toast-slide {
+  animation: reply-toast-down var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter)
+    both;
+}
+
+.reply-toast-slide.reply-toast-leaving {
+  animation: reply-toast-up var(--libitum-motion-duration-d4) var(--libitum-motion-easing-exit) both;
+}
+
+.reply-toast-fade {
+  animation: reply-toast-in var(--libitum-motion-duration-d4) var(--libitum-motion-easing-linear)
+    both;
+}
+
+.reply-toast-fade.reply-toast-leaving {
+  animation: reply-toast-out var(--libitum-motion-duration-d4) var(--libitum-motion-easing-linear)
+    both;
+}
+
+.reply-toast-open {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  min-height: 44px;
+  padding-top: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-12);
+}
+
+.reply-toast-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.reply-toast-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.reply-toast-name {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.reply-toast-more {
+  padding-left: 7px;
+  padding-right: 7px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.reply-toast-preview {
+  margin-top: 2px;
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: 13px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+}
+
+.reply-toast-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: var(--libitum-spacing-4);
+  margin-right: var(--libitum-spacing-4);
+}
+
+.reply-toast-close-icon {
+  width: 16px;
+  height: 16px;
+}

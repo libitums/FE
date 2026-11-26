@@ -6,7 +6,11 @@ import { useEffect, useRef } from "@lynx-js/react";
 
 import { useChatEvents } from "./chat-events";
 
-export type StoryRowStats = { readonly count: number; readonly unseen: number };
+export type StoryRowStats = {
+  readonly count: number;
+  readonly unseen: number;
+  readonly mine: boolean;
+};
 
 export function useRowImpressions({
   rowShown,
@@ -36,6 +40,7 @@ export function useRowImpressions({
       surface: "chat",
       count: String(story.count),
       unseen: String(story.unseen),
+      mine: story.mine,
     });
   }, [storyDrawn]);
   useEffect(() => {

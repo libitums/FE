@@ -2,7 +2,16 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
-export type ChatAvatar = { readonly name: string; readonly imageUrl: string | null };
+export type ChatAvatar = {
+  readonly name: string;
+  readonly imageUrl: string | null;
+  /** 있으면 아바타가 프로필 단추입니다(버튼 역할 · 낭독 이름 · 손가락 자리 44). */
+  readonly profile?: {
+    readonly label: string;
+    readonly testId: string;
+    readonly onTap: () => void;
+  };
+};
 
 export type ChatHeaderProps = {
   readonly title: string;
@@ -12,6 +21,8 @@ export type ChatHeaderProps = {
   readonly end: ReactNode | null;
   /** 제목 아래 한 줄 자리입니다. 없으면 DOM이 바뀌지 않습니다(messenger-chat-1-5 spec §3.2). */
   readonly subtitle?: ReactNode;
+  /** 제목을 손가락으로 누르면(예: 대화방 상대 프로필). 낭독 역할은 그대로 제목입니다. */
+  readonly onTitleTap?: () => void;
 };
 export type ChatHeaderSideProps = {
   readonly testId?: string;
@@ -25,11 +36,19 @@ export type ChatHeaderSideProps = {
   readonly onTap?: () => void;
   readonly children?: ReactNode;
 };
+/** 로그의 자리 — 끝 근처(48px 안)인지, 끝까지 남은 거리가 뷰포트 높이보다 큰지(한 화면 넘게 위). */
+export type ChatLogPosition = { readonly nearEnd: boolean; readonly far: boolean };
 export type ChatLogProps = {
   readonly testId: string;
   readonly followKey?: number;
   /** 바뀌면(내가 말을 보냄) 읽던 자리와 상관없이 늘 끝으로 내리고 다시 따라갑니다(기기 F2). */
   readonly jumpKey?: number | string;
+  /** 기록을 읽는 중이면 true — 그동안(과 읽은 뒤 첫 끝 맞춤)은 부드럽게 훑지 않고 끝으로 점프합니다(chat-scroll-follow D). */
+  readonly loading?: boolean;
+  /** 참조가 바뀌면 학습자가 말풍선을 펼친 것입니다(뜻 · 교정) — 그 직후의 내용 변화는 따라가지 않습니다(chat-scroll-follow H). */
+  readonly holdKey?: unknown;
+  /** 끝 근처인지 · 한 화면 넘게 멀리 있는지가 바뀔 때 불립니다(「새 메시지 ↓」 알약). */
+  readonly onPositionChange?: (position: ChatLogPosition) => void;
   /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
   readonly onTap?: () => void;
   readonly children: ReactNode;

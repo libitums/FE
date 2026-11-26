@@ -2,6 +2,7 @@
 // (`ui-copy-streak-reward.ts`와 같은 방식). 엽전은 화면에서 「Yeopjeon」으로 적습니다(ADR-0116).
 
 import type { EntryLanguage } from "./entry-language";
+import { clock12, clock24, clock24Padded, type WelcomeGiftEnd } from "./welcome-gift-time";
 
 export type SignupRewardCopy = {
   /** 카드 제목 — `Get 100 Yeopjeon free`. */
@@ -24,6 +25,14 @@ export type SignupRewardCopy = {
   readonly pushTitle: string;
   /** 무제한 티켓 보상의 금액 줄 — `24h`. */
   readonly hoursShort: (hours: number) => string;
+  /** 선물 두 줄(ADR-0186 개정 3)의 엽전 줄 설명 — 줄 제목이 이미 `+100 Yeopjeon`이라 `bodyNew`보다 짧습니다. */
+  readonly coinsLine: string;
+  /** 무제한 줄 설명 — 첫날 무제한이 끝나는 기기 시각(오늘 · 내일 + 시:분, 언어별 시계 관례). */
+  readonly unlimitedUntil: (end: WelcomeGiftEnd) => string;
+  /** Chat Plus 첫 구독 보너스 모달(ADR-0196) — 위 알약 · 제목(요금제 이름은 모든 언어에서 영어) · 보조문. */
+  readonly subscriberTag: string;
+  readonly subscriberTitle: string;
+  readonly subscriberBody: string;
 };
 
 const en: SignupRewardCopy = {
@@ -38,7 +47,16 @@ const en: SignupRewardCopy = {
   gotIt: "Got it",
   pushTag: "GIFT",
   pushTitle: "Your gift is here!",
+  coinsLine: "Chat with the friends you meet.",
+  unlimitedUntil: (end) => {
+    const clock = clock12(end.hours, end.minutes);
+    const day = end.day === "today" ? "today" : "tomorrow";
+    return `Every lesson is free until ${day}, ${clock.hour}:${clock.minutes} ${clock.pm ? "PM" : "AM"}.`;
+  },
   hoursShort: (hours) => `${hours}h`,
+  subscriberTag: "SUBSCRIBER GIFT",
+  subscriberTitle: "Welcome to Chat Plus!",
+  subscriberBody: "A one-time thank-you for subscribing. Use Yeopjeon to chat with your friends.",
 };
 
 const es: SignupRewardCopy = {
@@ -53,7 +71,14 @@ const es: SignupRewardCopy = {
   gotIt: "Entendido",
   pushTag: "REGALO",
   pushTitle: "¡Aquí está tu regalo!",
+  coinsLine: "Chatea con los amigos que conozcas.",
+  // 24시간 표기, 1시만 「a la」.
+  unlimitedUntil: (end) =>
+    `Todas las lecciones son gratis hasta ${end.day === "today" ? "hoy" : "mañana"} ${end.hours === 1 ? "a la" : "a las"} ${clock24(end.hours, end.minutes)}.`,
   hoursShort: (hours) => `${hours} h`,
+  subscriberTag: "REGALO PARA SUSCRIPTORES",
+  subscriberTitle: "¡Te damos la bienvenida a Chat Plus!",
+  subscriberBody: "Un regalo único por suscribirte. Usa los Yeopjeon para chatear con tus amigos.",
 };
 
 const id: SignupRewardCopy = {
@@ -68,7 +93,15 @@ const id: SignupRewardCopy = {
   gotIt: "Mengerti",
   pushTag: "HADIAH",
   pushTitle: "Hadiahmu sudah datang!",
+  coinsLine: "Mengobrol dengan teman yang kamu temui.",
+  // 24시간 · 점 구분 · 두 자리 시(`pukul 09.05`).
+  unlimitedUntil: (end) =>
+    `Semua pelajaran gratis sampai ${end.day === "today" ? "hari ini" : "besok"} pukul ${clock24Padded(end.hours, end.minutes, ".")}.`,
   hoursShort: (hours) => `${hours} jam`,
+  subscriberTag: "HADIAH PELANGGAN",
+  subscriberTitle: "Selamat datang di Chat Plus!",
+  subscriberBody:
+    "Hadiah sekali sebagai terima kasih karena sudah berlangganan. Pakai Yeopjeon untuk mengobrol dengan teman-temanmu.",
 };
 
 const ja: SignupRewardCopy = {
@@ -83,7 +116,14 @@ const ja: SignupRewardCopy = {
   gotIt: "わかりました",
   pushTag: "ギフト",
   pushTitle: "ギフトが届きました！",
+  coinsLine: "出会った友だちとチャットしましょう。",
+  unlimitedUntil: (end) =>
+    `${end.day === "today" ? "今日" : "明日"}${clock24(end.hours, end.minutes)}まで、すべてのレッスンが無料です。`,
   hoursShort: (hours) => `${hours}時間`,
+  subscriberTag: "サブスク特典",
+  subscriberTitle: "Chat Plusへようこそ！",
+  subscriberBody:
+    "ご登録ありがとうございます。一度だけの特典です。Yeopjeonを使って友だちとチャットしましょう。",
 };
 
 const vi: SignupRewardCopy = {
@@ -98,7 +138,14 @@ const vi: SignupRewardCopy = {
   gotIt: "Đã hiểu",
   pushTag: "QUÀ TẶNG",
   pushTitle: "Quà của bạn đây!",
+  coinsLine: "Trò chuyện với những người bạn đã gặp.",
+  unlimitedUntil: (end) =>
+    `Mọi bài học đều miễn phí đến ${clock24(end.hours, end.minutes)} ${end.day === "today" ? "hôm nay" : "ngày mai"}.`,
   hoursShort: (hours) => `${hours} giờ`,
+  subscriberTag: "QUÀ CHO NGƯỜI ĐĂNG KÝ",
+  subscriberTitle: "Chào mừng bạn đến với Chat Plus!",
+  subscriberBody:
+    "Món quà một lần để cảm ơn bạn đã đăng ký. Dùng Yeopjeon để trò chuyện với bạn bè nhé.",
 };
 
 const th: SignupRewardCopy = {
@@ -113,7 +160,13 @@ const th: SignupRewardCopy = {
   gotIt: "เข้าใจแล้ว",
   pushTag: "ของขวัญ",
   pushTitle: "ของขวัญของคุณมาแล้ว!",
+  coinsLine: "แชทกับเพื่อนๆ ที่คุณได้พบ",
+  unlimitedUntil: (end) =>
+    `เรียนได้ฟรีทุกบทเรียนจนถึง${end.day === "today" ? "วันนี้" : "พรุ่งนี้"} เวลา ${clock24(end.hours, end.minutes)} น.`,
   hoursShort: (hours) => `${hours} ชม.`,
+  subscriberTag: "ของขวัญสำหรับสมาชิก",
+  subscriberTitle: "ยินดีต้อนรับสู่ Chat Plus!",
+  subscriberBody: "ของขวัญครั้งเดียวเพื่อขอบคุณที่สมัครสมาชิก ใช้ Yeopjeon แชทกับเพื่อนๆ ของคุณได้เลย",
 };
 
 const my: SignupRewardCopy = {
@@ -128,7 +181,19 @@ const my: SignupRewardCopy = {
   gotIt: "နားလည်ပြီ",
   pushTag: "လက်ဆောင်",
   pushTitle: "သင့်လက်ဆောင် ရောက်ပါပြီ!",
+  // 줄 칸이 좁아 Android가 음절 가운데서 줄을 바꾸므로(기기 확인 2026-11-25) 「만난」을 빼고 한 줄에 서게 짧게.
+  coinsLine: "သူငယ်ချင်းများနှင့် ချတ်ပါ။",
+  // 12시간 — 오전 「နံနက်」 · 오후 「ညနေ」를 시각 앞에.
+  unlimitedUntil: (end) => {
+    const clock = clock12(end.hours, end.minutes);
+    const day = end.day === "today" ? "ယနေ့" : "မနက်ဖြန်";
+    return `${day} ${clock.pm ? "ညနေ" : "နံနက်"} ${clock.hour}:${clock.minutes} အထိ သင်ခန်းစာအားလုံး အခမဲ့ဖြစ်ပါသည်။`;
+  },
   hoursShort: (hours) => `${hours} နာရီ`,
+  subscriberTag: "စာရင်းသွင်းသူ လက်ဆောင်",
+  subscriberTitle: "Chat Plus မှ ကြိုဆိုပါတယ်!",
+  subscriberBody:
+    "စာရင်းသွင်းသည့်အတွက် ကျေးဇူးတင်သော တစ်ကြိမ်တည်း လက်ဆောင်ဖြစ်ပါသည်။ သူငယ်ချင်းများနှင့် ချတ်ရန် Yeopjeon ကို အသုံးပြုပါ။",
 };
 
 // 대만 중국어(번체) — 번역 초안, 원어민 검수 필요(ADR-0185).
@@ -144,7 +209,17 @@ const zhTw: SignupRewardCopy = {
   gotIt: "知道了",
   pushTag: "禮物",
   pushTitle: "你的禮物到了！",
+  coinsLine: "和你認識的朋友聊天吧。",
+  // 12시간 — 「上午 · 下午」를 시각 앞에.
+  unlimitedUntil: (end) => {
+    const clock = clock12(end.hours, end.minutes);
+    const day = end.day === "today" ? "今天" : "明天";
+    return `${day}${clock.pm ? "下午" : "上午"}${clock.hour}:${clock.minutes}前，所有課程都免費。`;
+  },
   hoursShort: (hours) => `${hours}小時`,
+  subscriberTag: "訂閱禮",
+  subscriberTitle: "歡迎加入 Chat Plus！",
+  subscriberBody: "感謝你訂閱，這份禮物只送一次。用 Yeopjeon 和朋友聊天吧。",
 };
 
 export const signupRewardCopy: Readonly<Record<EntryLanguage, SignupRewardCopy>> = {

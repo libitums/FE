@@ -5,12 +5,14 @@ import { messengerChatMediaEn } from "./ui-copy-en-chat-media";
 import { messengerChatAlbumEn } from "./ui-copy-en-chat-album";
 import { messengerChatSuggestedEn } from "./ui-copy-en-chat-suggested";
 import { messengerChatStoriesEn } from "./ui-copy-en-chat-stories";
+import { myStoriesEn } from "./ui-copy-en-my-stories";
 
 export const messengerChatExtraEn: MessengerChatExtraCopy = {
   media: messengerChatMediaEn,
   album: messengerChatAlbumEn,
   suggested: messengerChatSuggestedEn,
   stories: messengerChatStoriesEn,
+  myStories: myStoriesEn,
   access: {
     signInTitle: "Text the people you meet",
     signInBody:
@@ -23,6 +25,35 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     promptKeepBody: "Create a free account to keep your Yeopjeon and tickets.",
   },
   pushNotice: { chatUnavailable: "This chat isn't available right now." },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "Sent a photo"
+          : `Sent a photo · ${count} new`
+        : latest === "voice"
+          ? count === 1
+            ? "Sent a voice message"
+            : `Sent a voice message · ${count} new`
+          : count === 1
+            ? "New message"
+            : `${count} new messages`,
+    jump: "Jump to new messages",
+    latest: "Scroll to latest",
+  },
+  replyToast: {
+    dismiss: "Dismiss",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `New message from ${name}: ${preview}` + (more > 0 ? `. ${more} more` : ""),
+  },
+  pushAsk: {
+    title: (name) => `Get a ping when ${name} texts you?`,
+    body: "I sometimes message first — about once a day, in the evening.",
+    turnOn: "Turn on",
+    notNow: "Not now",
+    on: (name) => `Notifications on — ${name} will ping you.`,
+  },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Reply ideas, messages from characters, memories",

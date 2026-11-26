@@ -26,6 +26,18 @@ export const messengerChatSuggestedMy: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `အကန့်အသတ် · ${days} ရက် ${hours} နာရီ`,
   added: (name) => `${name} ကို ချတ်သို့ ထည့်ပြီးပါပြီ`,
   addFailed: (name) => `${name} ကို ထည့်၍ မရပါ။ ထပ်စမ်းကြည့်ပါ။`,
+  voice: {
+    hear: "အသံနားထောင်ရန်",
+    pause: "ခဏရပ်ရန်",
+    resume: "ဆက်ဖွင့်ရန်",
+    label: (name, phase) =>
+      phase === "idle"
+        ? `${name} ရဲ့ အသံကို နားထောင်ရန်`
+        : phase === "playing"
+          ? `${name} ရဲ့ အသံကို ခဏရပ်ရန်`
+          : `${name} ရဲ့ အသံကို ဆက်ဖွင့်ရန်`,
+    unavailable: "နမူနာအသံ ဖွင့်မရပါ",
+  },
   adultAck: {
     title: (name) => `${name} နှင့် ပိုရင်းနှီးမလား`,
     body: (gender) =>

@@ -88,6 +88,12 @@ export function MessengerListScreen({
     suggested,
     covered: coinShopOpen || suggested.layerOpen,
     onOpenRoom,
+    source,
+    wallet,
+    onShortOfCoins: () => setCoinShopOpen(true),
+    // 보기 위 아바타의 프로필 시트(이미 친구) — 추천 친구와 같은 카탈로그 인물.
+    profileOf: (characterId) =>
+      friends?.catalog().characters.find((character) => character.id === characterId) ?? null,
   });
 
   // 맨 위 줄의 노출 — 실제로 그린 줄만(감사 A5).
@@ -171,14 +177,7 @@ export function MessengerListScreen({
               {/* 안내 중에는 추천 줄을 빼 원본 첫 줄이 떠 있는 덕수쌤 줄 자리에 섭니다. */}
               {isSuggestedRowShown(guideShown) ? (friendStories.row ?? suggested.row) : null}
               {ordered.map((room) => (
-                <ChatListRow
-                  key={room.roomId}
-                  room={room}
-                  now={now}
-                  onOpen={onOpenRoom}
-                  story={friendStories.listStory(room.counterpart.id)}
-                  onOpenStory={() => friendStories.openFromList(room.counterpart.id)}
-                />
+                <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
               ))}
             </view>
           </scroll-view>

@@ -18,8 +18,6 @@ export const messengerChatStoriesEs: FriendStoriesCopy = {
   unmetLabel: (name) => `Historia de ${name}, nueva amistad`,
   findFriends: "Buscar", // 줄 칸(76px)에 맞게 짧게 — 낭독은 findFriendsLabel(친구 찾기 제목 그대로)
   findFriendsLabel: "Buscar amigos",
-  listPreview: (line) => `Nueva historia · ${line}`,
-  listRowLabel: (name, line) => `${name}, nueva historia: ${line}. Abre la historia`,
   viewer: {
     label: (name) => `Historia de ${name}`,
     progress: (index, count) => `Historia ${index} de ${count}`,
@@ -35,9 +33,15 @@ export const messengerChatStoriesEs: FriendStoriesCopy = {
     freeReply: "La primera respuesta es gratis",
     replyPlaceholder: (name) => `Responder a ${name}…`,
     replyChipLabel: (text) => `Responder: ${text}`,
+    send: "Enviar",
+    sent: "Enviado",
+    sentLabel: (name) => `Enviado a ${name}`,
+    openChat: "Abrir chat",
+    sendFailed: "No se pudo enviar. Inténtalo de nuevo.",
+    coinsShort: "No tienes suficientes monedas",
     newFriend: "NUEVA AMISTAD",
     addAndReply: "Agregar y responder",
-    seeHowToMeet: "Ver cómo conocerse",
+    profile: (name) => `Perfil de ${name}`,
   },
   reply: {
     caption: (name) => `Respondiste a la historia de ${name}`,

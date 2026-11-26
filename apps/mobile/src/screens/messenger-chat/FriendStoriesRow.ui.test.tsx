@@ -9,7 +9,7 @@ import { suggestedFriendsTestIds } from "./suggested-friends.contract";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `ui` 계층(FS-UI1 · UI2): 스토리 줄(ADR-0178 D3) — 제목 · Watch all · 친구(안 본 것 · 본 것) · 구분 선 · 안 만난 친구 · 추천 · Find friends.
+// `ui` 계층(FS-UI1 · UI2): 스토리 줄(ADR-0178 D3 · 개정 ⟨2026-11-25⟩) — 제목 · Watch all · 스토리 있는 인물(친구 · 안 만난 친구, 최신 순) · 추천 · Find friends(구분 선 없음).
 
 afterEach(cleanup);
 
@@ -31,7 +31,7 @@ function mount(seenIds: readonly string[] = ["s-b"]) {
     stories: [
       story("a", { postedAt: STORY_NOW - 2 * HOUR_MS }),
       story("b", { postedAt: STORY_NOW - 5 * HOUR_MS }),
-      story("g"),
+      story("g", { postedAt: STORY_NOW - 1 * HOUR_MS }),
     ],
     rooms,
     suggested: suggestedFriendsOf({ catalog, rooms, earlyAccess: false, now: STORY_NOW }),
@@ -54,16 +54,16 @@ const order = () =>
     .map((el) => el.getAttribute("data-testid") ?? "")
     .filter((id) => /^friend-stories-(friend|unmet|suggested|divider|find)/.test(id));
 
-test("FS-UI1. 제목 · Watch all, 순서는 친구(안 본 → 본) · 선 · 안 만난 친구 · 추천 · Find friends", () => {
+test("FS-UI1. 제목 · Watch all, 순서는 스토리 있는 인물(친구 · 안 만난 친구 함께 최신 순) · 추천 · Find friends, 구분 선 없음", () => {
   mount();
   expect(screen.getByTestId(ids.title).textContent).toBe("Stories");
   expect(screen.getByTestId(ids.title).getAttribute("accessibility-traits")).toBe("header");
   expect(screen.getByTestId(ids.watchAll).textContent).toBe("Watch all");
+  // 다은(안 만난 1h) → 윤경(2h) → 해준(본 것, 5h) — 본 것은 고리만, 순서에 쓰지 않는다(ADR-0178 D3 개정).
   expect(order()).toEqual([
+    ids.unmet("g"),
     ids.friend("a"),
     ids.friend("b"),
-    ids.divider,
-    ids.unmet("g"),
     ids.suggested("h"),
     ids.findFriends,
   ]);
@@ -94,6 +94,22 @@ test("FS-UI1. 안 본 것은 경과 시간 · 본 것은 Seen · 안 만난 친�
   }
 });
 
+test("FS-UI48. 고리 — 안 본 것 brand 실선 · 본 것 회색 점선(친구 · 안 만난 친구 모두) · 안 본 안 만난 친구 brand 점선, 낭독은 그대로(ADR-0178 D3 개정 ⟨점선⟩)", () => {
+  mount(["s-b", "s-g"]);
+  const ringOf = (id: string) =>
+    screen.getByTestId(id).querySelector("view")?.getAttribute("class");
+  expect(ringOf(ids.friend("a"))).toBe("story-ring story-ring-unseen");
+  expect(ringOf(ids.friend("b"))).toBe("story-ring story-ring-seen");
+  const g = screen.getByTestId(ids.unmet("g"));
+  expect(g.getAttribute("data-state")).toBe("seen");
+  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-seen");
+  expect(g.textContent).toContain("New");
+  expect(g.getAttribute("accessibility-label")).toBe("다은's story, new friend");
+  cleanup();
+  mount();
+  expect(ringOf(ids.unmet("g"))).toBe("story-ring story-ring-unmet");
+});
+
 test("FS-UI2. 탭은 저마다의 콜백으로", () => {
   const h = mount();
   fireEvent.tap(screen.getByTestId(ids.friend("b")));
@@ -109,7 +125,7 @@ test("FS-UI2. 탭은 저마다의 콜백으로", () => {
   expect(h.onFindFriends).toHaveBeenCalledTimes(1);
 });
 
-test("FS-UI1. 친구 스토리가 없으면 Watch all · 구분 선이 없다", () => {
+test("FS-UI1. 친구 스토리가 없으면 Watch all이 없다", () => {
   const catalog = catalogOf([general("g", { name: "다은" })]);
   const rooms = [room("g", false)];
   const row = storyRowOf({
@@ -131,6 +147,30 @@ test("FS-UI1. 친구 스토리가 없으면 Watch all · 구분 선이 없다", 
     />,
   );
   expect(screen.queryByTestId(ids.watchAll)).toBeNull();
-  expect(screen.queryByTestId(ids.divider)).toBeNull();
   expect(screen.getByTestId(ids.unmet("g"))).not.toBeNull();
+});
+
+test("FS-UI1. 스토리 칸 바로 뒤에 스토리 없는 추천 — 사이에 구분 선이 없다", () => {
+  const catalog = catalogOf([general("g", { name: "다은" }), general("h", { name: "건우" })]);
+  const rooms = [room("g", false), room("h", false)];
+  const row = storyRowOf({
+    stories: [story("g")],
+    rooms,
+    suggested: suggestedFriendsOf({ catalog, rooms, earlyAccess: false, now: STORY_NOW }),
+    seen: new Set(),
+    now: STORY_NOW,
+  });
+  render(
+    <FriendStoriesRow
+      row={row}
+      now={STORY_NOW}
+      onOpenFriend={vi.fn()}
+      onOpenUnmet={vi.fn()}
+      onOpenSuggested={vi.fn()}
+      onWatchAll={vi.fn()}
+      onFindFriends={vi.fn()}
+    />,
+  );
+  expect(screen.queryByTestId(ids.watchAll)).toBeNull();
+  expect(order()).toEqual([ids.unmet("g"), ids.suggested("h"), ids.findFriends]);
 });

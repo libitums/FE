@@ -63,6 +63,15 @@ test("SS1. 추가 가능: 이름 · 소개 · 태그 · 첫 말(ko · en) · Sta
   expect(onClose).toHaveBeenCalledTimes(1);
 });
 
+test("FS-UI33. 이미 친구(added — 스토리 보기 아바타): 소개 · 태그 · 첫 말 · Start chatting 그대로, 일반 인물이어도 NEW 없음", () => {
+  const { onStart } = mount({ ...addable(general("g1", { name: "하나" })), status: "added" });
+  expect(screen.getByTestId(ids.sheet).textContent).not.toContain("NEW");
+  expect(screen.getByTestId(ids.sheetIntro).textContent).toBe("g1 intro");
+  expect(screen.queryByTestId(ids.sheetInfo)).toBeNull();
+  tapId(ids.sheetStart);
+  expect(onStart).toHaveBeenCalledTimes(1);
+});
+
 test("SS1. 일반 인물(R6)은 이름 옆 NEW, 시스템 뒤로가기는 Not now와 같다", () => {
   const { onClose } = mount(addable(general("g1", { name: "하나" })));
   expect(screen.getByTestId(ids.sheet).textContent).toContain("NEW");

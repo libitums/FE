@@ -34,6 +34,7 @@ import { useNewFriendBackfill } from "./use-new-friend-backfill";
 import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
 import { useOpenedDeeplink } from "./use-opened-deeplink";
 import { useOpenedPush } from "./use-opened-push";
+import { useReplyToast } from "./use-reply-toast";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
 import { useJourneyProgress } from "./use-journey-progress";
@@ -87,8 +88,8 @@ export function AppSession({
   // 앱이 누구로 도는지입니다(ADR-0111) — 설정 행 구성이 읽고, 결선이 전이를 적습니다.
   const [accountState, setAccountState] = useAccountState();
 
-  // 떠난 뒤 새로 선 세션이면 결과를 한 번 낭독합니다 — 화면이 통째로 바뀌어 달리 알 길이 없습니다.
   useEffect(() => {
+    // 떠난 뒤 새로 선 세션이면 결과를 한 번 낭독합니다 — 화면이 통째로 바뀌어 달리 알 길이 없습니다.
     if (exit !== null) announce(uiCopyFor(entryLanguage).settings.exitAnnouncement[exit]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -98,9 +99,8 @@ export function AppSession({
   const progress = useJourneyProgress(progressSeed, catalogSections);
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile(entryLanguage);
-  // 머리 칩이 서 있으면 쓴 티켓이 줄어드는 것을 보인 뒤 레슨을 엽니다(시안 E4).
   const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink, {
-    chipShown: showsTabNavigator(nav),
+    chipShown: showsTabNavigator(nav), // 머리 칩이 서 있으면 쓴 티켓이 줄어드는 것을 보인 뒤 레슨을 엽니다(시안 E4)
   });
   const { catalogProgress, setCatalogProgress } = progress;
   // 남아 있는 알림 — 지운 알림은 세션 동안만 빠집니다(영속하지 않음, ADR-0007 D1).
@@ -117,7 +117,7 @@ export function AppSession({
   // 탭 루트 화면 안 겹침 레이어 — 화면이 알려 오고(`onScreenLayerChange`) 그 동안 전역 머리가 낭독에서 빠집니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false); // 더보기 메뉴 — 뒤 화면 낭독 가림(ADR-0169)
-  const learningTrail = useLearningTrail(); // 단어장 · 추천 신호(ADR-0169)
+  const learningTrail = useLearningTrail(catalogProgress, episodeContent.catalog); // 단어장 · 추천 신호 · 끝낸 레슨 단어 채움(ADR-0169)
 
   // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
   const catalog = { episodeContent, catalogSections, catalogProgress };
@@ -186,13 +186,12 @@ export function AppSession({
   const messengerTabBadge = useMessengerTabBadge(wiring, nav.tab); // 하단 탭 NEW(2026-11-13)
   useSurfaceSessions(nav.entry.length === 0 ? nav.tab : null, episodeIntroEventSink); // D3 목적 구분
 
-  // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
-  useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
+  useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget); // 누른 서버 푸시는 앱 구간에 들어선 뒤에(ADR-0034)
   // Airbridge 딥링크 · 지연 딥링크도 앱 구간에 들어선 뒤에 그 탭을 엽니다(ADR-0080).
   useOpenedDeeplink(nav.entry.length === 0, (target) => deeplinkActions(target).forEach(dispatch));
   usePushTokenRefresh();
-  // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
-  useSystemBack(nav, dispatch);
+  useSystemBack(nav, dispatch); // Android 시스템 뒤로가기 = 화면의 닫기(ADR-0043)
+  const replyToast = useReplyToast(nav, dispatch, wiring, insets.top, shop.close); // 답장 토스트 ADR-0200
 
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const showsNavigator = showsTabNavigator(nav);
@@ -294,6 +293,7 @@ export function AppSession({
         <OutOfTicketsLayer dialog={tickets.outOfTickets} offerFor={plans?.ticketsOffer} />
         {downloadGate.layer}
         {notices.layer}
+        {replyToast}
       </view>
     </SessionProviders>
   );

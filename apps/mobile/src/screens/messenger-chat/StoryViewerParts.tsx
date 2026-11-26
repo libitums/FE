@@ -24,6 +24,11 @@ export const STORY_SHOW_MS = 6_000;
 
 const SLOP = { top: "8px", bottom: "8px", left: "8px", right: "8px" } as const;
 
+/** 탭을 여기서 멈춥니다(`catchtap`) — 누를 수 있는 묶음의 탭이 면의 넘김(D4 개정 ⟨탭 자리⟩)으로 올라가지 않게. */
+export const noTap = (): void => {
+  "background only";
+};
+
 /** 저절로 넘김 타이머 — 멈추면 남은 시간을 기억했다가 이어 갑니다. 장이 바뀌면 처음부터. */
 export function useAdvanceTimer(index: number, running: boolean, onDone: () => void): void {
   const left = useRef(STORY_SHOW_MS);
@@ -111,7 +116,7 @@ export function IconButton({
       accessibility-traits="button"
       accessibility-enable-tap={true}
       flatten={false}
-      bindtap={() => {
+      catchtap={() => {
         "background only";
         onTap();
       }}
@@ -158,7 +163,7 @@ export function WordPill({
       accessibility-traits={saved ? undefined : "button"}
       accessibility-enable-tap={!saved}
       flatten={false}
-      bindtap={saved ? undefined : handleTap}
+      catchtap={saved ? undefined : handleTap}
     >
       {saved ? null : (
         <svg className="story-word-icon" content={plus} current-color={color.white} />
@@ -168,25 +173,22 @@ export function WordPill({
   );
 }
 
-/** 내 친구 스토리의 아래 — 무료 안내(첫 답장) · 답장 칩 · 답장 칸. */
+/** 내 친구 스토리의 아래 — 무료 안내(첫 답장, 보내기 전만) · 답장 칩(누르면 그 자리에서 보냄, D5 개정). 답장 칸은 `StoryReplyInput`. */
 export function StoryReplyBar({
   item,
   copy,
-  onReply,
+  free,
+  onChip,
 }: {
   readonly item: StoryViewerItem;
   readonly copy: FriendStoriesCopy;
-  readonly onReply: (text: string | null) => void;
+  readonly free: boolean;
+  readonly onChip: (text: string) => void;
 }): ReactNode {
   const { story } = item;
-  const reply = (text: string | null) => {
-    "background only";
-    playSound("button");
-    onReply(text);
-  };
   return (
     <>
-      {story.freeReply ? (
+      {free ? (
         <view className="story-free">
           <text className="story-free-text" data-testid={ids.free}>
             {copy.viewer.freeReply}
@@ -210,7 +212,10 @@ export function StoryReplyBar({
                 accessibility-traits="button"
                 accessibility-enable-tap={true}
                 flatten={false}
-                bindtap={() => reply(text)}
+                catchtap={() => {
+                  "background only";
+                  onChip(text);
+                }}
               >
                 <text className="story-chip-text">{text}</text>
               </view>
@@ -218,37 +223,35 @@ export function StoryReplyBar({
           </view>
         </scroll-view>
       )}
-      <view
-        className="story-reply"
-        data-testid={ids.reply}
-        accessibility-element={true}
-        accessibility-label={copy.viewer.replyPlaceholder(item.name)}
-        accessibility-traits="button"
-        accessibility-enable-tap={true}
-        flatten={false}
-        bindtap={() => reply(null)}
-      >
-        <text className="story-reply-text">{copy.viewer.replyPlaceholder(item.name)}</text>
-      </view>
     </>
   );
 }
 
-/** 안 만난 친구의 아래 — 소개 카드 · 「Add friend and reply」(추가 가능) / 「See how to meet」(잠김). */
+/** 안 만난 친구의 아래 — 소개 카드(누르면 위 아바타와 같은 프로필 시트) · 「Add friend and reply」(추가 가능일 때만). */
 export function StoryMeet({
   item,
   friend,
   copy,
   onMeet,
+  onProfile,
 }: {
   readonly item: StoryViewerItem;
   readonly friend: SuggestedFriend;
   readonly copy: FriendStoriesCopy;
   readonly onMeet: () => void;
+  readonly onProfile: () => void;
 }): ReactNode {
   return (
     <>
-      <view className="story-meet-card" data-testid={ids.meetCard}>
+      {/* 낭독의 시트 단추는 위 아바타 하나(같은 이름 단추를 둘 세우지 않음) — 카드는 손가락 길만 더합니다(D4 개정 ⟨소개 카드⟩). */}
+      <view
+        className="story-meet-card"
+        data-testid={ids.meetCard}
+        catchtap={() => {
+          "background only";
+          onProfile();
+        }}
+      >
         <Avatar
           imageSource={item.avatarUrl ?? undefined}
           name={item.name}
@@ -264,18 +267,21 @@ export function StoryMeet({
           )}
         </view>
       </view>
-      <view data-testid={ids.meet}>
-        <Button
-          label={friend.status === "addable" ? copy.viewer.addAndReply : copy.viewer.seeHowToMeet}
-          variant="brand"
-          size="xl"
-          width="fill"
-          bindtap={() => {
-            "background only";
-            onMeet();
-          }}
-        />
-      </view>
+      {/* 잠긴 친구는 단추가 없습니다 — 만나는 길(프로필 시트)은 위 아바타가 엽니다(옛 「See how to meet」을 옮김). */}
+      {friend.status === "addable" ? (
+        <view data-testid={ids.meet} catchtap={noTap}>
+          <Button
+            label={copy.viewer.addAndReply}
+            variant="brand"
+            size="xl"
+            width="fill"
+            bindtap={() => {
+              "background only";
+              onMeet();
+            }}
+          />
+        </view>
+      ) : null}
     </>
   );
 }

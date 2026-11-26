@@ -6,12 +6,14 @@ import { messengerChatMediaMy } from "./ui-copy-my-chat-media";
 import { messengerChatAlbumMy } from "./ui-copy-my-chat-album";
 import { messengerChatSuggestedMy } from "./ui-copy-my-chat-suggested";
 import { messengerChatStoriesMy } from "./ui-copy-my-chat-stories";
+import { myStoriesMy } from "./ui-copy-my-my-stories";
 
 export const messengerChatExtraMy: MessengerChatExtraCopy = {
   media: messengerChatMediaMy,
   album: messengerChatAlbumMy,
   suggested: messengerChatSuggestedMy,
   stories: messengerChatStoriesMy,
+  myStories: myStoriesMy,
   access: {
     signInTitle: "တွေ့ခဲ့တဲ့ သူတွေနဲ့ စာပို့ပါ",
     signInBody: "သင့်ဇာတ်လမ်းထဲက လူတွေနဲ့ ကိုရီးယားလို စကားပြောရန် အခမဲ့ အကောင့်ဖွင့်ပါ။ သင့်တိုးတက်မှု မပျောက်ပါဘူး။",
@@ -22,6 +24,35 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     promptLater: "နောက်မှ",
   },
   pushNotice: { chatUnavailable: "ဒီချတ်ကို ယခု သုံး၍ မရပါ။" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "ဓာတ်ပုံ ပို့ထားသည်"
+          : `ဓာတ်ပုံ ပို့ထားသည် · အသစ် ${count} ခု`
+        : latest === "voice"
+          ? count === 1
+            ? "အသံမက်ဆေ့ချ် ပို့ထားသည်"
+            : `အသံမက်ဆေ့ချ် ပို့ထားသည် · အသစ် ${count} ခု`
+          : count === 1
+            ? "မက်ဆေ့ချ်အသစ်"
+            : `မက်ဆေ့ချ်အသစ် ${count} ခု`,
+    jump: "မက်ဆေ့ချ်အသစ်များသို့ သွားရန်",
+    latest: "နောက်ဆုံးမက်ဆေ့ချ်သို့ ဆင်းရန်",
+  },
+  replyToast: {
+    dismiss: "ပိတ်ရန်",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name} ထံမှ မက်ဆေ့ချ်အသစ်: ${preview}` + (more > 0 ? `။ နောက်ထပ် ${more} ခု` : ""),
+  },
+  pushAsk: {
+    title: (name) => `${name} စာပို့တဲ့အခါ အသိပေးချက် ရယူမလား?`,
+    body: "တစ်ခါတလေ ကျွန်ုပ်က အရင် စာပို့တတ်ပါတယ် — တစ်ရက် တစ်ကြိမ်လောက်၊ ညနေပိုင်းမှာပါ။",
+    turnOn: "ဖွင့်မယ်",
+    notNow: "နောက်မှ",
+    on: (name) => `အသိပေးချက် ဖွင့်ပြီးပါပြီ — ${name} စာပို့ရင် အသိပေးပါမယ်။`,
+  },
   chatSettings: {
     entryTitle: "ချတ်",
     entryDescription: "အဖြေ အကြံပြုချက်၊ ဇာတ်ကောင်ထံမှ စာ၊ မှတ်ဉာဏ်",

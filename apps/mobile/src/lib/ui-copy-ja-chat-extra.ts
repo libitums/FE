@@ -5,12 +5,14 @@ import { messengerChatMediaJa } from "./ui-copy-ja-chat-media";
 import { messengerChatAlbumJa } from "./ui-copy-ja-chat-album";
 import { messengerChatSuggestedJa } from "./ui-copy-ja-chat-suggested";
 import { messengerChatStoriesJa } from "./ui-copy-ja-chat-stories";
+import { myStoriesJa } from "./ui-copy-ja-my-stories";
 
 export const messengerChatExtraJa: MessengerChatExtraCopy = {
   media: messengerChatMediaJa,
   album: messengerChatAlbumJa,
   suggested: messengerChatSuggestedJa,
   stories: messengerChatStoriesJa,
+  myStories: myStoriesJa,
   access: {
     signInTitle: "出会った人とメッセージしよう",
     signInBody:
@@ -23,6 +25,35 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     promptKeepBody: "無料アカウントを作ると、Yeopjeonとチケットを保存できます。",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "写真が届きました"
+          : `写真が届きました · 新着${count}件`
+        : latest === "voice"
+          ? count === 1
+            ? "ボイスメッセージが届きました"
+            : `ボイスメッセージが届きました · 新着${count}件`
+          : count === 1
+            ? "新着メッセージ"
+            : `新着メッセージ ${count}件`,
+    jump: "新着メッセージへ移動",
+    latest: "最新のメッセージへ",
+  },
+  replyToast: {
+    dismiss: "閉じる",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name}から新しいメッセージ：${preview}` + (more > 0 ? `。ほか${more}件` : ""),
+  },
+  pushAsk: {
+    title: (name) => `${name}からメッセージが来たら通知を受け取りますか？`,
+    body: "ときどき私から先にメッセージします。だいたい1日1回、夕方から夜にかけてです。",
+    turnOn: "オンにする",
+    notNow: "今はしない",
+    on: (name) => `通知オン — ${name}からのメッセージをお知らせします。`,
+  },
   chatSettings: {
     entryTitle: "チャット",
     entryDescription: "返信のヒント・キャラクターからのメッセージ・記憶",

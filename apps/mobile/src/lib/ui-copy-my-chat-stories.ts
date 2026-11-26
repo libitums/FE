@@ -19,8 +19,6 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
   unmetLabel: (name) => `${name}၏ စတိုရီ၊ သူငယ်ချင်းသစ်`,
   findFriends: "ရှာရန်", // 줄 칸(76px)에 맞게 짧게 — 낭독은 findFriendsLabel
   findFriendsLabel: "သူငယ်ချင်း ရှာရန်",
-  listPreview: (line) => `စတိုရီအသစ် · ${line}`,
-  listRowLabel: (name, line) => `${name}၊ စတိုရီအသစ်: ${line}။ စတိုရီ ဖွင့်မည်`,
   viewer: {
     label: (name) => `${name}၏ စတိုရီ`,
     progress: (index, count) => `စတိုရီ ${count} ခုထဲက ${index}`,
@@ -36,9 +34,15 @@ export const messengerChatStoriesMy: FriendStoriesCopy = {
     freeReply: "ပထမဆုံး ပြန်စာ အခမဲ့",
     replyPlaceholder: (name) => `${name} ကို ပြန်စာရေးရန်…`,
     replyChipLabel: (text) => `ပြန်စာ: ${text}`,
+    send: "ပို့ရန်",
+    sent: "ပို့ပြီးပါပြီ",
+    sentLabel: (name) => `${name} ထံ ပို့ပြီးပါပြီ`,
+    openChat: "ချက်ကို ဖွင့်ရန်",
+    sendFailed: "မပို့နိုင်ပါ။ ထပ်စမ်းကြည့်ပါ။",
+    coinsShort: "ဒင်္ဂါး မလုံလောက်ပါ",
     newFriend: "သူငယ်ချင်းသစ်",
     addAndReply: "သူငယ်ချင်းထည့်ပြီး ပြန်စာရေးရန်",
-    seeHowToMeet: "တွေ့ပုံ ကြည့်ရန်",
+    profile: (name) => `${name}၏ ပရိုဖိုင်`,
   },
   reply: {
     caption: (name) => `${name}၏ စတိုရီကို သင် ပြန်စာရေးခဲ့သည်`,

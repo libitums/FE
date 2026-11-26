@@ -198,7 +198,7 @@ test("SV1. 설정 기본값 · 버킷 · 캐릭터 설정 · 학습자 뒷모습
     voice_model: "'eleven_v3'::text",
   });
   const buckets = await db.admin.query(
-    "select id, public, allowed_mime_types from storage.buckets order by id",
+    "select id, public, allowed_mime_types from storage.buckets where id like 'companion-%' order by id",
   );
   expect(buckets.rows).toEqual([
     {
@@ -679,4 +679,36 @@ test("SV12. 중간 그림 미리보기 — 서버가 만드는 중인 행에만 
     .rows[0].m;
   expect(done[0]).toMatchObject({ status: "complete", previewPath: null });
   expect((await preview(path)).rows[0].p).toEqual({ result: "not_pending" });
+});
+
+test("SV13. 진행 단계 · 비율 먼저 — pending은 preparing으로 시작, 서버가 drawing과 비율을 적으면 앱이 보고, 끝나면 사라진다", async () => {
+  const mine = await message();
+  const begun = await begin(mine);
+  const media = begun.media!;
+  const read = async () =>
+    (await app.query("select public.companion_get_media($1, null) as m", [[media.id]])).rows[0]
+      .m[0];
+  const stage = (s: string | null, aspect: string | null, id = media.id) =>
+    server.query("select public.companion_media_stage($1, $2, $3) as r", [id, s, aspect]);
+
+  const first = await read();
+  expect(first).toMatchObject({ status: "pending", stage: "preparing", aspect: null });
+  expect(Date.parse(first.stageAt)).toBe(Date.parse(first.createdAt));
+
+  expect((await stage("drawing", "3:2")).rows[0].r).toEqual({ result: "ok" });
+  const drawing = await read();
+  expect(drawing).toMatchObject({ status: "pending", stage: "drawing", aspect: "3:2" });
+  expect(Date.parse(drawing.stageAt)).toBeGreaterThanOrEqual(Date.parse(first.stageAt));
+
+  // 모르는 단계 · 비율은 받지 않는다. 앱은 부를 수 없다.
+  await expect(stage("done", "3:2")).rejects.toThrow(/invalid stage/);
+  await expect(stage("drawing", "4:3")).rejects.toThrow(/invalid aspect/);
+  await expect(
+    app.query("select public.companion_media_stage($1, 'drawing', '1:1')", [media.id]),
+  ).rejects.toThrow(/permission denied/);
+
+  await complete(media);
+  const done = await read();
+  expect(done).toMatchObject({ status: "complete", stage: null, stageAt: null });
+  expect((await stage("drawing", "1:1")).rows[0].r).toEqual({ result: "not_pending" });
 });

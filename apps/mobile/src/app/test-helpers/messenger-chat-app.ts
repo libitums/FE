@@ -10,6 +10,7 @@ import { memoryUnlockStore } from "../../screens/messenger-chat/chat-local-store
 import type { ChatTier } from "../../screens/messenger-chat/free-turns";
 import type { ChatSource } from "../../screens/messenger-chat/chat-source.contract";
 import { chatFixtureSeed } from "../../screens/messenger-chat/chat-fixture";
+import { tapEl } from "../../screens/messenger-chat/lynx-tap.test-support";
 import * as chatWiring from "../messenger-chat-wiring";
 import { messengerChatSource, resetMessengerChatSourceForTests } from "../messenger-chat-wiring";
 import { renderSignedInApp } from "./signed-in-app";
@@ -57,18 +58,18 @@ export const tapId = (testId: string): void => {
   const inner = el.querySelector(
     '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
   );
-  void fireEvent.tap(inner ?? el, {});
+  tapEl(inner ?? el);
 };
 
 /** ui-lynx RoundButton이 test-id 감싸개 안에 있으면 안쪽 단추를, 아니면 요소 자신을 누릅니다. */
 export const tapRound = (testId: string): void => {
   const el = screen.getByTestId(testId);
   const inner = el.querySelector('[data-testid="ui-lynx-round-button"]');
-  void fireEvent.tap(inner ?? el, {});
+  tapEl(inner ?? el);
 };
 
 export const tapButtonIn = (wrapperTestId: string): void => {
-  void fireEvent.tap(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"), {});
+  tapEl(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"));
 };
 
 export type TabId = "journey" | "roleplay" | "messenger" | "ranking" | "more";

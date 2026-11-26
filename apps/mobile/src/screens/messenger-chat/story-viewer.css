@@ -1,5 +1,5 @@
 /* 스토리 보기(ADR-0178 D4, 시안 2 · 4번) — 목록 위 전체 화면 층. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
-   floating 층이라 추천 시트(z-sheet)가 이 위에 섭니다(안 만난 친구 → 프로필 시트). 위 · 아래 조작은 탭 자리보다 문서 순서가 뒤라 위에 그려집니다.
+   floating 층이라 추천 시트(z-sheet)가 이 위에 섭니다(안 만난 친구 → 프로필 시트). 위 · 아래 조작은 탭 자리보다 위 층이고, 그 위의 탭은 면이 받습니다.
    화면 지역 상수(토큰 없음): 진행 막대 3 · 그늘 높이 170 / 330 · 그늘 불투명도 55% / 70% · 칩 테두리 흰 55% · 칩 바탕 42% · 답장 칸 테두리 75%
    · 한 줄 카드 기울기 −2°(시안 실측). */
 
@@ -45,7 +45,7 @@
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7) 45%, rgba(0, 0, 0, 0.75));
 }
 
-/* 이전(왼쪽 1/3) · 다음(나머지) 탭 자리 — 화면 전체. */
+/* 이전 · 다음 탭 자리 — 화면 전체를 가운데에서 반반(D4 개정 ⟨탭 자리⟩). 손가락 탭은 면 전체가 x로 가르고(`storyTapOf`), 이 자리는 낭독용 단추로 남습니다. */
 /* 탭 자리는 문서 순서로는 맨 뒤(낭독 마지막)지만 층은 맨 아래입니다 — 스크롤 밖 고정 층이라 ADR-0022에 걸리지 않습니다. */
 .story-viewer-taps {
   z-index: 0;
@@ -64,7 +64,7 @@
 }
 
 .story-viewer-tap-next {
-  flex: 2;
+  flex: 1;
   height: 100%;
 }
 
@@ -112,6 +112,15 @@
   align-items: center;
   gap: var(--libitum-spacing-8);
   padding-left: var(--libitum-spacing-2);
+}
+
+/* 이름 · 아바타 묶음 — 누르면 프로필 시트. 머리 줄처럼 row-reverse라 그림은 아바타 · 이름 순. */
+.story-viewer-who {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  flex-shrink: 1;
 }
 
 .story-viewer-avatar {
@@ -267,6 +276,23 @@
   gap: var(--libitum-spacing-12);
 }
 
+/* 답장 묶음(무료 안내 · 칩 · 칸 또는 만나기) — 높이를 재어 그 위에 보기 단위 「Sent」 알림을 둡니다. */
+.story-viewer-reply-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 보기 단위 「Sent · Open chat」 층 — 큐브 면(z-index 0) 위, 아래 여백 · 좌우는 인라인(답장 묶음 위 틈 12 + 알림 자신의 아래 여백 12 — 면 안에 있던 때와 같은 자리). */
+.story-viewer-sent-layer {
+  z-index: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* 무료 안내 — 사진 위에서도 읽히게 어두운 알약(접근성 C2) · 12 이상 글(m7). */
 .story-free {
   align-self: flex-start;
@@ -386,46 +412,12 @@
   margin-bottom: var(--libitum-spacing-4);
 }
 
+/* 인물의 반응 위(ADR-0191 D2, 시안 20번) — 왼쪽 정렬. */
+.story-quote.incoming {
+  align-items: flex-start;
+}
+
 .story-quote-caption {
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-caption-font-family);
-  font-size: var(--libitum-typography-caption-font-size);
-  line-height: var(--libitum-typography-caption-line-height);
-}
-
-.story-quote-card {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-8);
-  max-width: 260px;
-  padding: var(--libitum-spacing-8);
-  border-radius: var(--libitum-radius-lg);
-  background-color: var(--libitum-color-gray-200);
-}
-
-.story-quote-image {
-  width: 52px;
-  height: 92px;
-  border-radius: var(--libitum-radius-md);
-}
-
-.story-quote-body {
-  flex-shrink: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--libitum-spacing-2);
-}
-
-.story-quote-line {
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-label-m-font-size);
-  line-height: var(--libitum-typography-label-m-line-height);
-}
-
-.story-quote-meta {
   color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-caption-font-family);
   font-size: var(--libitum-typography-caption-font-size);
@@ -481,4 +473,43 @@
 .story-quote-bar-icon {
   width: var(--libitum-spacing-20);
   height: var(--libitum-spacing-20);
+}
+
+/* 그림 층 — 큐브 면 안에서 화면을 채웁니다. */
+.story-viewer-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 큐브 면(D4 개정 ⟨큐브⟩, 시안 32번) — 인물마다 한 면. 변환 · 축은 인라인(쉬는 자리)과 메인 스레드(손가락 · 전환)가 정합니다.
+   Lynx의 perspective는 웹과 달리 변환하는 그 요소 자신에 겁니다(iOS m34 · Android cameraDistance) — 원근 거리 1000px은 시안 값(화면 지역 상수).
+   z-index 0은 면 안의 층(z-index 1 · 2)이 면과 함께 돌도록 쌓임 맥락을 묶습니다. */
+.story-face {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+/* 면 그늘 — 돌아 나갈수록 짙어집니다(불투명도는 인라인 · 메인 스레드). 맨 위에 있지만 손을 받지 않습니다. */
+.story-face-shade {
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--libitum-color-black);
+}
+
+/* 옆 인물 면의 머리 줄은 조작이 없어 보이는 순서(얼굴 · 이름 · 경과) 그대로 놓습니다. */
+.story-face-head {
+  flex-direction: row;
 }

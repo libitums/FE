@@ -266,3 +266,13 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   바이트코드 확인) — 답의 `productId`는 새 상품, `transactionId`는 옛 구독의 주문 id다. Order Complete는 엽전 팩만 보내 영향이 없다.
   실제 시트 · 웹훅 순서는 샌드박스로 확인한다(AP-E7). 구독을 살 때 고객 정보는 캐시가 아니라 지금 값(`FETCH_CURRENT`)으로 읽는다 —
   네트워크가 없으면 사지 않는다. `CHARGE_FULL_PRICE`는 남은 기간을 시간으로 얹는다(iOS는 남은 값을 환불) — 정산 방식은 미결정(설정 목록 D-4).
+
+## 적용 기록 ⟨2026-11-25 — Chat Plus 첫 구독 보너스(ADR-0196)⟩
+
+- **웹훅 정규화**: `_shared/revenuecat-event.ts`가 RevenueCat `period_type`을 `periodType`(없으면 null)으로 싣는다 — 체험과 유료 기간을 처음으로 가른다.
+  계약 `StoreEvent.periodType`. 옛 DB 함수는 모르는 키를 무시한다.
+- **`companion_apply_store_event`**(`20270107120000_chat_plus_first_bonus.sql`): 본문은 20261215판 그대로이고, 구독 갈래 끝에 「action activate · 요금제
+  chat_plus면 `companion.grant_chat_plus_first_bonus`」 한 덩어리만 더했다(INITIAL_PURCHASE · RENEWAL, periodType NORMAL · INTRO · PREPAID, `grant_once` ref = 사용자 id,
+  늦게 온 stale 이벤트도 판정). outcome 값은 그대로다.
+- **엽전**: grant 버킷 · 원장 reason `chat_plus_first_bonus`. 매달 엽전(`plan_coins`)과 따로 — 첫 달 Chat Plus는 300 + 100. 환불은 회수하지 않는다(엽전 팩 환불 회수와 다름).
+- **앱이 아는 방법**: 권한 응답은 그대로 두고 알림 표 + `companion_claim_subscription_bonus()`(ADR-0196 D3). 운영 적용은 함수 배포 → 마이그레이션 순서.

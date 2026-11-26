@@ -296,8 +296,8 @@ es · ja · id · vi 번역은 필요. 점수 항 구역을 앱에 낼지는 사
 | 요청 | `contract_version`(글자 `"1"`) · `conversation_id`(자기의 **열린 판** — active이고 끝나지 않음) · `audio`(16kHz mono 16-bit PCM WAV, ≤ 30초(+0.5초 여유) · ≤ 1 MiB) |
 | 200 | `MissionSttResponse` `{text, autoSend, reason, words[{text, start, end, confidence}], features{confMin, confMean, chars, hangulRatio, seconds}, latencyMs}` |
 | 오류 | `speech_empty` 422(빈 결과 · 0.2초 미만) · `speech_busy` 429 · `speech_unavailable` 503 · `voice_limit` 429 · `audio_too_long` 413 · `invalid_audio` 400 · `mission_not_found` 404 · `mission_closed` · `mission_ended` 409 · `voice_not_configured` 503 |
-| 벤더 | Scribe `scribe_v3` · `language_code=kor` · `tag_audio_events=false` · `timestamps_granularity=word` · `enable_logging=false`(무보존, env로 끔) · 화자 분리 없음. 제한 시간 12초, 연결 실패 · 5xx만 한 번 다시(429 · 시간 초과는 다시 하지 않음) |
-| 저장 | **녹음을 저장하지 않는다**(메모리에서 벤더로 넘기고 버림). 호출 기록 줄에는 길이 · 결과 · 벤더 시간만 |
+| 벤더 | Scribe `scribe_v3` · `language_code=kor` · `tag_audio_events=false` · `timestamps_granularity=word` · 무보존 `enable_logging=false`는 기본 끔(env `on`으로 켬 — 엔터프라이즈 계정 전용) · 화자 분리 없음. 제한 시간 12초, 연결 실패 · 5xx만 한 번 다시(429 · 시간 초과는 다시 하지 않음) |
+| 저장 | **우리 서버는 녹음 · 받아 적은 글을 저장하지 않는다**(메모리에서 벤더로 넘기고 버림). 호출 기록 줄에는 길이 · 결과 · 벤더 시간만. 벤더(ElevenLabs) 쪽 보존은 개인정보 처리방침에 적힌 범위에서 허용하고, 무보존 옵션은 엔터프라이즈 계정일 때 켤 수 있다(2026-11-26 사용자 결정). 사용자 음성 수집은 별도 트랙으로 보류 — 동의 화면 · 방침이 먼저 |
 
 **바로 보내기(`autoSend`)**: 순수 함수 `autosendDecision`(대시보드 `autosend_decision`과 같은 순서) — 빈 글 `empty` → 녹음 < 0.35초 `too_short` → 한글 비율 < 0.6 `not_korean` →
 확신도 없음 `no_confidence`(설정 `withoutConfidence`, 기본 확인) → 확신도 최소 < 0.85 또는 평균 < 0.93 `low_confidence` → `ok`. 문턱은 env `COMPANION_MISSION_AUTOSEND_*`.
@@ -320,7 +320,7 @@ es · ja · id · vi 번역은 필요. 점수 항 구역을 앱에 낼지는 사
 
 ### 6.7 진짜 호출로 확인할 것(키가 있는 곳에서)
 
-1. Scribe에 `enable_logging=false`를 실었을 때 계정이 받는가(엔터프라이즈 전용이라는 문서) — 거절하면 `COMPANION_MISSION_STT_ZERO_RETENTION=off`.
+1. (무보존을 켤 때만) Scribe에 `enable_logging=false`를 실었을 때 계정이 받는가(엔터프라이즈 전용이라는 문서) — 기본은 끔이라 보내지 않는다.
 2. 비스트리밍 `/v1/text-to-speech/<voice>`(1단계와 같은 주소)의 `eleven_v4_turbo` 지연이 실험실의 `/stream` 수치(첫 바이트 0.24초 · 전체 0.4초)와 비슷한가.
 3. Supabase Storage 서명 주소의 mp3를 앱 재생 모듈이 바로 재생하는가(내용 형식 `audio/mpeg`).
 4. 30초 녹음 · 1 MiB 본문이 Edge Function 앞단에서 막히지 않는가.
@@ -467,6 +467,13 @@ active(필수 전) ──그만두기 · 30분 방치 · 새 판 시작──▶
 5. **앱의 음성 인식은 서버 STT(Scribe)**, TTS는 `eleven_v4_turbo`.
 6. **받아 적은 글은 확신도로** — 높으면 바로 보내고 낮으면 입력 칸.
 7. 목표 순서 — 답이 스스로 `opens`를 적고 코드가 검사, 어긋나면 한 번 다시(조율자 추천 · 사용자 승인).
+
+⟨2026-11-26⟩
+
+8. **힌트 듣기는 `hint_no`** — 앱이 보낸 글은 합성하지 않는다. 힌트 응답의 `hintNo`로 저장된 예문을 읽는다(§6.6).
+9. **음성 한도 기본값 확정** — 판당 받아 적기 턴 상한 × 3 · 합성 (턴 상한 + 1 + 힌트 상한) × 3, 사용자 하루 받아 적기 1800초 · 합성 20000자(§6.6).
+10. **벤더 보존 허용 · 무보존 옵션 기본 끔** — ElevenLabs 보존은 개인정보 처리방침에 적힌 범위에서 허용(`COMPANION_MISSION_STT_ZERO_RETENTION` 기본 끔, 엔터프라이즈 계정이면 켤 수 있음). 우리 서버는 녹음 · 받아 적은 글을 저장하지 않고, 사용자 음성 수집은 별도 트랙으로 보류(동의 화면 · 방침이 먼저).
+11. **선톡 푸시는 미션 판을 메신저 방으로 세지 않는다** — 미션 마이그레이션이 `companion_proactive_push_gate`를 다시 정의(ADR-0193 「다시 정의한 기존 함수」).
 
 ### 11.2 아직 결정 필요
 

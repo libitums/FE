@@ -90,6 +90,20 @@
           },
           "previewPath": {
             "type": ["string", "null"]
+          },
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["preparing", "drawing"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stageAt": {
+            "type": ["string", "null"]
           }
         },
         "required": [

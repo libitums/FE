@@ -113,7 +113,8 @@ export const companionMessageSchema = z.object({
   id: z.uuid(),
   role: z.enum(["user", "assistant", "notice"]),
   /** `greeting`은 대화가 비었을 때 캐릭터가 먼저 건 첫 인사(`companion-greet`)입니다. */
-  origin: z.enum(["turn", "proactive", "crisis", "greeting"]),
+  /** `story_reaction`(20261228140000, ADR-0191 D2): 인물이 내 스토리에 단 반응 — `story` 인용이 함께 옵니다. */
+  origin: z.enum(["turn", "proactive", "crisis", "greeting", "story_reaction"]),
   status: z.enum(["complete", "blocked", "crisis", "failed"]),
   hidden: z.boolean(),
   text: z.nullable(z.string()),
@@ -126,17 +127,56 @@ export const companionMessageSchema = z.object({
   /** 캐릭터 메시지의 👍/👎(20261124). 평가가 없거나 유저 메시지면 null, 옛 서버는 칸이 없습니다. 고쳐서 숨긴 턴은 목록에 오지 않습니다. */
   rating: z.optional(z.nullable(messageRatingSchema)),
   /**
-   * 친구 스토리 답장의 인용(20261228, ADR-0178 D5). 유저 메시지가 `story_id`를 실어 보냈을 때만, 아니면 null. 옛 서버는 칸이 없습니다.
-   * `imagePath`는 버킷 상대 경로(앱이 아바타와 같은 해석기로 주소를 만듭니다).
+   * 스토리 인용(20261228, ADR-0178 D5 · ADR-0194 · ADR-0191 D2). 유저 메시지가 `story_id`를 실어 보냈을 때와, 인물이 내 스토리에 단
+   * 반응 메시지(origin `story_reaction` — `kind` mine, 스토리를 지우면 deleted)에만 있고 아니면 null. 옛 서버는 칸이 없습니다.
+   * - 친구 스토리(`kind` friend — 20261228120000 서버는 칸이 없음): `imagePath`는 버킷 상대 경로(앱이 아바타와 같은 해석기로 주소를 만듭니다).
+   * - 내 스토리(`kind` mine — 인물의 반응에 답함): `line`은 단어(한국어), 그림 없음.
+   * - 지운 내 스토리(`kind` deleted): 인물만 — 앱은 「Deleted story」.
    */
   story: z.optional(
     z.nullable(
+      z.union([
+        z.object({
+          kind: z.optional(z.literal("friend")),
+          id: z.uuid(),
+          characterId: z.string(),
+          line: z.string(),
+          imagePath: z.string(),
+          postedAt: z.iso.datetime({ offset: true }),
+        }),
+        z.object({
+          kind: z.literal("mine"),
+          id: z.uuid(),
+          characterId: z.string(),
+          line: z.string(),
+          imagePath: z.null(),
+          postedAt: z.iso.datetime({ offset: true }),
+        }),
+        z.object({ kind: z.literal("deleted"), characterId: z.string() }),
+      ]),
+    ),
+  ),
+  /**
+   * 공개 meta(20270108120000, ADR-0191 D14). 없으면 null, 옛 서버는 칸이 없습니다. 모르는 칸이 와도 무시합니다.
+   * - 내 스토리 반응(origin `story_reaction`): `angle` · `myStoryId`, 덕수쌤 퀴즈면 `quiz.freeAnswer`(지금 무료로 답할 수 있는가).
+   *   `angle`(20270110120000, ADR-0191 D16)은 인물이 실제로 한 것 — empathy · question · cheer · suggest · word · quiz · example
+   *   (모델이 알리지 않았으면 역할 react · follow · word · quiz, 옛 반응은 question · together도 있음). 화면 분기에 쓰지 않습니다.
+   * - 무료로 받은 퀴즈 답(유저 메시지): `quiz.free` · `attempt`(1 · 2) · `result`(correct · hint · revealed · skipped — 퀴즈와 상관없는 말이라 퀴즈를 닫음).
+   * 앱은 `freeAnswer` · `free`가 참일 때만 무료 표시 · 엽전 관문을 건너뜁니다. `angle`만 있으면 보통 메시지입니다.
+   */
+  meta: z.optional(
+    z.nullable(
       z.object({
-        id: z.uuid(),
-        characterId: z.string(),
-        line: z.string(),
-        imagePath: z.string(),
-        postedAt: z.iso.datetime({ offset: true }),
+        angle: z.optional(z.string()),
+        myStoryId: z.optional(z.uuid()),
+        quiz: z.optional(
+          z.object({
+            freeAnswer: z.optional(z.boolean()),
+            free: z.optional(z.boolean()),
+            attempt: z.optional(z.int()),
+            result: z.optional(z.enum(["correct", "hint", "revealed", "skipped"])),
+          }),
+        ),
       }),
     ),
   ),

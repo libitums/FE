@@ -71,6 +71,8 @@ final class ViewController: UIViewController {
       config.register(ChatStreamModule.self)
       // 위기 안내의 전화 · 웹 주소를 시스템에 넘긴다(ADR-0125). tel: 번호 · https만.
       config.register(ExternalLinkModule.self)
+      // 내 스토리 사진 — 고르기 · 찍기 · 줄이기 · 올리기(ADR-0199). 보관함은 PHPicker라 사진 권한을 묻지 않는다.
+      config.register(StoryPhotoModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
       // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
       if AirbridgeEvents.isStarted {
@@ -107,6 +109,7 @@ final class ViewController: UIViewController {
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
     observeContentSizeCategory()
     observeOpenedPushNotification()
+    observeReceivedPushNotification()
     observeOpenedDeeplink()
     observeReduceMotion()
     startContentSyncSignal()
@@ -284,6 +287,24 @@ final class ViewController: UIViewController {
 
   @objc private func pushNotificationOpened() {
     lynxView?.sendGlobalEvent("pushNotificationOpened", withParams: [])
+  }
+
+  /// 앱이 앞에 있을 때 온 인물의 채팅 메시지 푸시(배너 없음) — 인물 id만 싣는다. JS가 그 방 기록을 다시 읽고 토스트를
+  /// 띄울지 정한다(ADR-0200 개정).
+  private func observeReceivedPushNotification() {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(pushNotificationReceived(_:)),
+      name: PushNotificationHub.receivedNotification,
+      object: nil
+    )
+  }
+
+  @objc private func pushNotificationReceived(_ notification: Notification) {
+    guard let characterId = notification.userInfo?["characterId"] as? String else { return }
+    DispatchQueue.main.async { [weak self] in
+      self?.lynxView?.sendGlobalEvent("pushNotificationReceived", withParams: [characterId])
+    }
   }
 
   /// 켜진 앱에 Airbridge 딥링크가 오면 JS에 알린다. 링크는 싣지 않는다 — JS가 `takeOpenedDeeplink`로 꺼낸다(ADR-0080).

@@ -51,16 +51,81 @@
   5. 「Find friends」 동그라미 — 친구 찾기(ADR-0162 R5). 예전 「See all」 자리를 옮긴 것이다.
 - 「+」(내 스토리 만들기)는 PR 2가 더한다.
 - 「Watch all」 = 내 친구 스토리를 1번 순서대로 이어 보기(안 본 것이 있으면 그것부터).
-- 채팅 목록 줄: 그 인물에 **안 본 스토리가 있고 안 읽은 메시지가 없으면** 아바타 주황 고리 + 미리보기 「New story · <한 줄>」(brand-strong).
-  그 줄을 누르면 대화방이 아니라 스토리를 연다. 본 뒤에는 보통 줄로 돌아온다.
+- ~~채팅 목록 줄: 그 인물에 **안 본 스토리가 있고 안 읽은 메시지가 없으면** 아바타 주황 고리 + 미리보기 「New story · <한 줄>」(brand-strong).
+  그 줄을 누르면 대화방이 아니라 스토리를 연다. 본 뒤에는 보통 줄로 돌아온다.~~ → 없앰(아래 「D3 개정 2」, 2026-11-26).
 - 본 것 표시는 **기기 저장**(키 하나 `libitum.friendStories.seen` 안에 계정마다 `{ 스토리 id: 만료 시각 }`, 그 계정 칸에 쓸 때 지난 것은 지움 — 다른 계정 칸은 그 계정이 쓸 때 정리). 서버에 쓰지 않는다
   (보는 것마다 RPC를 늘리지 않고, 푸시 판정은 「답했는가」만 본다).
+
+#### D3 개정 — 스토리 있는 인물을 최신 순으로 한 줄에 ⟨2026-11-25⟩
+
+사용자 말(2026-11-25): 「캐릭터 리스트도 스토리가 있는 걸 제일 좌측으로 하고, 있는 것끼리는 업로드 시간이 최근인 게 더 좌측으로」. 위 순서의 1 ~ 3을 바꾼다.
+
+- 줄 순서: **스토리가 있는 인물**(내 친구 · 안 만난 친구를 한 묶음으로) → 그 밖의 추천 친구(스토리 없음, 기존 추천 순서) → 「Find friends」.
+- 스토리 있는 인물끼리는 **그 인물의 최신 스토리 `postedAt` 내림차순**, 같은 시각이면 인물 id 오름차순(입력 · 방 순서와 무관하게 늘 같음).
+- 본 것 / 안 본 것은 **고리 색 · 「Seen」으로만** 보이고 순서에 쓰지 않는다. 안 만난 친구 칸은 섞여 서도 점선 고리 · 「New」 그대로.
+- **세로 구분 선(위 2번)은 없앤다**(사용자 결정 2026-11-25, A안) — 친구 / 안 만난 친구는 고리 모양(주황 · 회색 / 점선 주황 + 「New」)으로만 가른다.
+- 순서 판정은 순수 함수 하나 `storyOrderOf(row)`(`story-order.ts`, 비교는 `byLatestStory`)가 하고, 줄(`FriendStoriesRow`)과 보기(`viewerItemsOf`)가 함께 쓴다 —
+  「Watch all」은 그대로 내 친구 스토리만(기본값) — 순서만 새 시간순을 따른다. 「Watch all」~~ · 줄의 친구 칸~~을 눌러 연 보기의 다음 인물은 줄 순서에서 친구 칸만 고른 순서다(안 본 것부터가 아니다).
+  줄의 칸을 눌러 연 보기는 아래 ⟨잠긴 인물⟩ 개정.
+- ~~안 만난 친구 칸을 누르면 지금처럼 그 인물 한 장(추가 흐름) — 이어 보기 목록에는 섞지 않는다.~~ → 아래 ⟨잠긴 인물⟩ 개정(2026-11-26).
+- 「+」(내 스토리)는 아직 없다 — 더해지면 순서와 무관하게 맨 앞이다.
+
+#### D3 개정 ⟨잠긴 인물⟩ — 줄 칸에서 연 보기는 안 만난 인물도 줄 순서대로 ⟨2026-11-26⟩
+
+사용자 보고(2026-11-26, 아이폰 1.4.0 (30) Release): 「왼쪽부터 스토리 넘길 때 해금 안 된 캐릭터가 다음이면 스토리가 안 넘어가는 것 같은데」.
+
+- **원인.** 줄은 친구 · 안 만난 친구를 한 줄로 섞어 세우는데(위 D3 개정), 줄의 친구 칸에서 연 보기의 장 목록(`viewerItemsOf`)은 친구 칸만 골랐고, 안 만난 친구 칸에서 연 보기는
+  그 인물 묶음 하나였다. 그래서 다음 칸이 안 만난(잠긴 · 추가 가능) 인물이면 그 인물로 들어가지 않았다 — 뒤에 친구가 없으면 6초 넘김 · 탭은 닫히고 가로로 밀면 옆 면이 없어
+  살짝 돌고 되돌아왔다(큐브 ⟨옆 인물이 없으면⟩). 안 만난 칸에서 시작하면 그 인물에서 끝났다. 진행 타이머 · 탭 자리 · 소개 카드는 원인이 아니다(멈춤 조건에 안 만난 인물이 없고,
+  `catchtap`은 「Add friend and reply」 감싸개만).
+- **고침.** 줄의 칸(친구 · 안 만난 친구 모두)을 눌러 연 보기의 장 목록은 **줄 순서(`storyOrderOf`) 그대로 전체**이고, 시작은 누른 인물의 안 본 첫 장이다. 안 만난 인물 장은
+  지금처럼 소개 카드(추가 가능이면 「Add friend and reply」) · 칩 · 답장 칸 없음이고, 거기서도 6초 넘김 · 탭 · 가로 넘김으로 다음 인물로 간다. 마지막이면 닫힌다(`viewerStep` · `viewerJump` 그대로).
+- 「Watch all」은 그대로 내 친구만(위 D3 개정의 기본값), 알림은 그 인물 묶음 하나.
+- 이벤트: `friend_story_viewed`의 `met` · `index` · `total`은 그대로 장 단위 — 줄 칸에서 연 보기의 `total`은 이제 안 만난 인물 장을 포함한다. 이름 수(AN1 · AB3)는 바뀌지 않는다.
+- 확인: unit FS-U35(`story-row-viewer.unit.test.ts`) · FS-U10 · U22 개정, ui FS-UI7 개정 · 더함(줄 순서 daeun · mina에서 mina를 연 보기 = 2장 중 2번째, 안 만난 칸 → 탭 → 다음 인물 → 닫힘, 친구 칸 → 이전 = 안 만난 인물), e2e FS-E4f(기기).
+
+#### D3 개정 2 — 채팅 목록 줄에는 스토리를 띄우지 않는다 ⟨2026-11-26⟩
+
+사용자 말(2026-11-26): 「채팅방 리스트에 new story는 안 띄웠으면 좋겠는데」. 위 D3의 「채팅 목록 줄」 항목을 없앤다.
+
+- 채팅 목록 줄은 그 인물에 안 본 스토리가 있어도 **늘 평소 미리보기**(마지막 메시지 · 입력 중 · 첫 인사 등)와 평소 아바타다. 주황 고리 · 「New story · <한 줄>」 · brand 톤이 없다.
+- 줄을 누르면 늘 **대화방**이다. 스토리는 목록 위 스토리 줄(아바타 고리 · 「Watch all」)과 알림으로만 연다 — 스토리 줄은 그대로다.
+- 그래서 보기를 여는 곳(`ViewerOpen`)에서 `list`를 빼고, `friend_story_viewed`의 `from`은 `row | watch_all | push`다(이름 · 개수는 그대로라 AN1 · AB3는 바뀌지 않는다).
+  문구 키 `stories.listPreview` · `stories.listRowLabel`(8개 언어)과 순수 함수 `listStoryOf`, 목록 줄의 `story` · `onOpenStory`도 지웠다.
+- 확인: ui FS-UI7(「안 본 스토리가 있어도 목록 줄은 평소 미리보기 · 누르면 그 방」) · integration FSI2(목록 줄에 「New story」 없음).
+
+#### D3 개정 ⟨점선⟩ — 다 본 스토리 고리는 회색 점선 ⟨2026-11-26⟩
+
+사용자 말(2026-11-26): 「unlock된 친구 스토리 봤으면 회색 점선으로」. 위 D3 · D3 개정의 「본 것 = 회색 고리」를 바꾼다. 고리 두께 3 · 틈 2는 그대로다.
+
+| 칸 | 안 본 것 있음 | 다 봄 |
+| --- | --- | --- |
+| 친구(열린 방) | brand 실선 | **회색(gray-500) 점선** · 「Seen」 |
+| 안 만난 친구 | brand 점선 · 「New」 | **회색 점선** · 「New」 그대로 |
+| 내 스토리(ADR-0194) | brand 실선 | 회색 실선 그대로 |
+
+- 「다 봄」 = 그 인물의 살아 있는 스토리를 모두 봄(`storyRowOf`, 기기 저장 본 것). 안 만난 친구 칸도 `UnmetStoryEntry.seen`을 받고, 다 봤으면 칸 상태(`data-state`)가 `seen`이다.
+  안 만난 친구는 친구가 되기 전까지 「New」 · 낭독 「<이름>'s story, new friend」 그대로다 — 친구 / 안 만난 친구는 회색이 된 뒤에는 둘째 줄(「Seen」 / 「New」)로 가른다.
+- 낭독은 바뀌지 않는다(친구 「…, seen」).
+- 범위는 스토리 줄 고리만. 내 스토리 고리는 실선으로 남긴다(「이번 창을 썼음」 동그라미가 이미 회색 점선이라 겹치지 않게, `.my-story-faces .story-ring-seen`). 보기 머리 아바타에는 고리가 없다.
+- 확인: unit FS-U35(안 만난 친구의 본 것) · FS-CSS1(`friend-stories.css.unit.test.ts`, 고리 선언), ui FS-UI48(고리 클래스 · 낭독), 기기에서 둥근 점선(iOS · Android).
+
+#### D3 개정 ⟨내 스토리 구분 선⟩ — 내 스토리 | 다른 인물 사이 세로 선 ⟨2026-11-26⟩
+
+사용자 말(2026-11-26): 「내 스토리랑 다른 스토리 사이에 구분선」.
+
+- 위 D3의 옛 세로 구분 선(내 친구 | 안 만난 친구)은 D3 개정(2026-11-25, A안)에서 없앴고 그대로 없다. 이 선은 **다른 규칙**이다 — 내 것 | 남의 것을 가른다.
+- 자리: 줄 맨 앞 내 스토리 칸(「+」 · 「Next story」 · 「Your story」) 바로 뒤, 다른 인물(스토리 있는 인물 · 추천 친구)의 첫 칸 앞. 줄 순서 · 가로 스크롤은 바뀌지 않는다.
+- 모양: 폭 1 · 높이 38(아바타 64의 약 60%) · 고리(74) 세로 가운데, 색 `color-border-default`, 양옆 간격은 줄의 `gap` 그대로.
+- 꾸밈이라 낭독하지 않는다(`accessibility-element={false}`).
+- 숨김: 내 스토리 칸이 없을 때(손님 등), 내 스토리 말고 인물 칸이 없을 때(Find friends만 남을 때).
+- 확인: ui FS-UI49(`FriendStoriesRow.mine-divider.ui.test.tsx`, test-id `my-stories-row-divider`), 기기 캡처(iOS · Android).
 
 ### D4. 보기 화면
 
 - 목록 위 전체 화면 층(친구 찾기와 같은 floating 층, 시스템 뒤로 = 닫기). 진행 막대(이어 보기의 칸 수) · 아바타 · 이름 · 경과 시간 · 멈춤 · 닫기,
   그림 가득, 한국어 한 줄 카드(한 줄 · 로마자(로마자 설정을 따름) · 뜻), 단어 알약 「<단어> · <뜻> — Save word」, 답장 칩 · 답장 칸.
-- 6초 뒤 다음 스토리, 마지막이면 닫힘. 왼쪽 1/3 탭 = 이전, 나머지 = 다음. 멈춤 단추 · 답장 칸을 누르면 멈춘다. 모션 줄이기(ADR-0053)면 진행 막대는 움직이지 않고
+- 6초 뒤 다음 스토리, 마지막이면 닫힘. ~~왼쪽 1/3 탭 = 이전, 나머지 = 다음~~ → 화면 가운데 경계, 왼쪽 절반 = 이전 · 오른쪽 절반 = 다음(D4 개정 ⟨탭 자리⟩, 2026-11-26). 멈춤 단추 · 답장 칸을 누르면 멈춘다. 모션 줄이기(ADR-0053)면 진행 막대는 움직이지 않고
   다음으로 넘어가지 않는다(멈춘 상태로 시작 — 사용자가 넘긴다).
 - 단어: 카탈로그(UI 언어)에 그 에피소드 · 단어가 있을 때만 알약이 선다. 「Save word」 = 단어장에 넣고 별표(`withStarred`) — 이미 있으면 「Saved」.
 - **첫 답장 무료 표시**: 그 스토리에 아직 무료 답장을 쓰지 않았으면 칩 위에 「First reply is free」 한 줄. 서버 판정(D6)이 정본이고 이 줄은 안내다.
@@ -115,7 +180,7 @@
 - `friend_story_row_viewed { count, unseen }` — **줄 단위.** 스토리 줄이 실제로 그려졌을 때 목록 마운트당 한 번. 판정은 목록 화면 한 곳
   (`use-row-impressions.ts`): 첫 입장 안내로 줄 자리가 숨으면 내지 않고, 스토리 첫 읽기가 끝나기 전에는 추천 줄 노출(`suggested_friend_viewed`)도
   세지 않는다(곧 스토리 줄로 바뀔 수 있어서). 스토리 줄이 추천 줄을 대신하면 `suggested_friend_viewed`는 나지 않는다.
-- `friend_story_viewed { characterId, met: boolean, from: row | list | watch_all | push, index, total }` — **장 단위.** 보기에서 한 장이 설 때마다
+- `friend_story_viewed { characterId, met: boolean, from: row | watch_all | push | chat, index, total }` ⟨2026-11-26 D3 개정 2 — `list` 없앰 · D5 개정 ⟨판⟩ — `chat` 더함⟩ — **장 단위.** 보기에서 한 장이 설 때마다
   (`index` = 몇째 장, 1부터 · `total` = 그 보기의 장 수, 10진 문자열).
 - `friend_story_closed { shown, total, skipped, reason: completed | closed | back | replied }` — 보기가 닫힐 때 한 번. `shown` = 선 장 수,
   `skipped` = 다음 장으로 넘긴 탭 수(마지막 장에서 끝내는 탭은 세지 않음), `reason` = 끝까지 넘김 · 닫기 단추 · 시스템 뒤로 · 칩/답장 칸/Add friend and reply로 대화방.
@@ -153,23 +218,244 @@
 - 낭독 순서는 닫기 · 멈춤 → 이름(「<이름>'s story, Story i of n」 — 열 때 초점이 감) → 사진 · 한 줄 · 단어 → 답장 → 이전/다음(맨 뒤, 층은 아래). 장이 바뀌면 알린다.
 - 멈춤은 안 만난 친구에도 선다(자동 넘김을 멈출 길, WCAG 2.2.1). **남은 것**: 스크린리더가 켜졌을 때 자동 넘김을 끄려면 호스트가 그 값을 넘겨야 한다 — 레포에 길이 없어 후속.
 - 흰 글 대비: 위 그늘을 머리 줄 아래까지 검정 60%로 고르게 · 무료 안내는 어두운 알약 · 단어 알약 · NEW FRIEND 바탕은 `brand-strong`(흰 글 약 5.5:1) · 칩 터치 높이 44.
-- 한 줄 카드 · 단어 알약은 답장 묶음 위 흐름에 둬 큰 글자에서도 겹치지 않는다. 저장한 단어 알약은 버튼이 아니다. 목록 줄 낭독에 「Opens the story」.
+- 한 줄 카드 · 단어 알약은 답장 묶음 위 흐름에 둬 큰 글자에서도 겹치지 않는다. 저장한 단어 알약은 버튼이 아니다. ~~목록 줄 낭독에 「Opens the story」.~~(D3 개정 2로 없앰)
+
+## 다시 읽기 ⟨2026-11-25⟩
+
+테스터 확인: 목록을 연 뒤 올라온 스토리가 앱을 다시 켜기 전까지 보이지 않았다(D2는 목록 마운트마다 한 번만 읽음). 이제 목록은 이때 다시 읽는다.
+
+- **채팅 탭으로 돌아올 때 · 방에서 목록으로 돌아올 때** — 탭 루트 전환이면 목록 화면이 다시 마운트돼 D2의 마운트 읽기가 그대로 맡는다(새 코드 없음, 통합 테스트 FSI7로 고정).
+- **앱이 앞으로 올 때** — 열린 방을 다시 읽는 호스트 신호(`contentSyncOpportunity`, ADR-0138)를 같이 쓴다. 화면(`screens/`)이 `app/`을 가져오지 않게
+  포트에 선택 `subscribeReload(listener) => off`를 두고, 결선(`friend-stories-wiring`)이 리스너 집합을 들고 `use-messenger-refresh`가 알린다.
+- **목록이 서 있는 동안 5분마다**(`STORY_RELOAD_MS`) — 목록이 내려가면(방 · 다른 탭) 타이머도 멈춘다.
+- **보기가 열려 있으면** 받은 목록을 갈아 끼우지 않고 보류했다가 보기를 닫은 뒤 반영한다(보고 있는 줄 · 장 목록이 바뀌지 않게). 알림으로 다시 읽는 길(D7)은 예전처럼 곧바로 반영한다.
+- **못 읽으면**(null · 던짐) 있던 목록을 지킨다(`storiesAfterLoad`). 첫 읽기 실패는 예전처럼 스토리 없음(추천 줄).
+- 새 문구 · 새 분석 이벤트 없음. 다시 읽기 횟수만큼 `companion_friend_stories()` 호출이 는다(5분에 한 번 + 앞으로 올 때 한 번 — 목록이 서 있을 때만).
+- 스스로 정한 기본값: 5분 타이머는 보기가 열려 있어도 돌고(결과는 보류), 목록이 서 있는 동안만 돈다. 보류 중에 또 읽으면 마지막 결과만 남긴다.
+- 확인: unit `friend-stories-reload.unit.test.ts`(FS-U15) · `friend-stories-wiring.unit.test.ts`(FS-U16) · ui `MessengerListScreen.stories-reload.ui.test.tsx`(FS-UI14 ~ UI17) ·
+  `use-messenger-refresh.ui.test.tsx`(FS-UI18) · integration `App.friend-stories.integration.test.tsx`(FSI7 · FSI8) · e2e FS-E13 ~ E15.
+
+## D5 개정 — 보기에서 바로 답장 ⟨2026-11-25⟩
+
+사용자 요청(「답장하기 누르면 채팅방으로 가는 게 아니라 input에 입력되어야지」)으로 D5의 답장 칸 · 칩을 바꾼다(인스타 방식). 서버 · 무료 판정(D6)은 그대로다.
+
+- 답장 칸 = **진짜 입력 칸**(`StoryReplyInput`). 누르면 키보드가 오르고 보기가 멈춘다(진행 막대 정지). 칸은 대화방 입력 줄과 같은 키보드 높이 규칙
+  (`keyboardheightchange` → `phoneKeyboardHeightOf`, 없으면 기기에 남은 값 · 화면 표 — `usePhoneKeyboardHeight`, 같은 기기 저장)으로 키보드 윗변 + 8 위에 선다.
+  입력 중엔 무료 안내 · 칩을 숨긴다.
+- 보내기(단추 · 키보드 return) · 칩: **보기를 떠나지 않고** 그 인물의 방으로 인용과 함께 보낸다(`ChatSource.sendText(…, { story })` — 방이 쓰던 길). 관문은 대화방 입력 줄과
+  같은 판정(`storyReplyGateOf` — 첫 답장 무료면 체험 · 엽전을 보지 않음, 아니면 `turnPlanFor` → `sendGateFor`), 서버 방은 답을 기다리는 동안 보내지 않는다.
+  서버가 글을 받았는지는 대화 출처 스냅숏(`storyReplyStatusOf` — 서버 id로 바뀜 = 보냄, Not sent · 실패 줄 · 입력 막힘 = 실패)으로 본다.
+- 보내면 칸을 비우고 키보드를 내리고 「Sent · Open chat」 알림을 3초(목록 안내 줄과 같은 시간) 띄운다 — 그동안 보기는 멈추고, 걷히면 이어 간다. Open chat = 보기를 닫고 그 방.
+  - ⟨개정 2026-11-26, 사용자 결정⟩ 보낸 뒤 알림 동안은 **멈추지 않는다**(인스타 방식 — 「살짝 멈췄다가 진행되는 것 같다」). 멈춤은 쓰는 중 · 보내는 중만. 알림은 보기 단위라 장 · 인물을 넘겨도 같은 자리에 3초 남고, Open chat = 보낸 그 인물의 방.
+  보낸 스토리의 「First reply is free」는 걷힌다(이번 실행 기억, 정본은 서버).
+- 실패하면 글을 칸에 남기고 짧은 안내(「Couldn't send. Try again.」). 엽전이 모자라면(앱 관문 · 서버 `no-credits`) 「Not enough coins」 + 목록의 엽전 상점(`chat_coins_short`).
+- 키보드가 내려가거나 칸 밖(탭 자리)을 누르면 키보드만 내리고 이어 간다. Android 뒤로 = 키보드 먼저, 그다음 닫기. 덮던 시트가 닫히면 다음 프레임에 입력 초점을 내린다
+  (Android가 남은 입력 칸으로 초점을 옮겨 키보드를 올리지 않게).
+- 시트(엽전 상점 등)가 덮으면 키보드를 먼저 내린다(Android에서 상점 위에 키보드가 남았다). 실패 안내는 글이 실제로 바뀔 때만 걷는다
+  (Android는 키보드가 내려가며 같은 글로 input을 한 번 더 보낸다). 자리표시는 흰 86%(기본 회색은 어두운 그늘 위 대비가 모자랐다) — 기기 확인 2026-11-25.
+- ~~안 만난 친구(`StoryMeet`)는 그대로 — 추가 뒤 방의 인용 띠. 그래서 보기 → 방 넘김(`story-reply-handoff`)은 그 길에만 남는다.~~ → 추가 뒤에도 보기에 남아 답장 칸(아래 ⟨보기에서 추가⟩ 개정, 2026-11-26).
+
+### D5 개정 ⟨보기에서 추가⟩ — 안 만난 친구를 추가하면 방으로 가지 않고 그 자리에 답장 칸 ⟨2026-11-26⟩
+
+사용자 요청(2026-11-26): 「스토리에서 일반 캐릭터 추가하면 채팅방으로 이동하지 말고 기존 친구 스토리처럼 입력창으로 전환되게」, 「새 친구는 채팅방 목록에 떠야 해」.
+사용자 확인: 입력창으로 전환 = 그 자리에 기존 친구 스토리와 같은 답장 칸이 서는 것이고, 키보드는 자동으로 열지 않는다(입력 칸을 누를 때만).
+
+- **추가가 성공하면**(「Add friend and reply」 · 프로필 시트의 Start chatting · 먼저 만나기 열림 · 이미 친구였음) 보기를 닫지 않고 방으로 넘기지 않는다(`story-reply-handoff`를 쓰지 않음).
+  보기의 장 목록에서 그 인물의 장을 친구 장(`unmet: null`)으로 바꿔, 소개 카드 · 「Add friend and reply」 · NEW FRIEND 자리에 기존 친구와 같은 답장 묶음(무료 안내 · 칩 · 답장 칸 · 단어 알약)이 선다.
+  진행 · 6초 넘김 · 첫 답장 무료(`freeReply`, 서버가 정본) 규칙은 친구 스토리와 같다. 키보드는 열지 않으므로 진행도 멈추지 않는다.
+- 먼저 만나기(엽전)는 기존 시트 · 결제 길 그대로이고 열리면 같은 끝, 엽전이 모자라면 기존 상점 길 그대로다. 프로필 시트의 Start chatting(추가 가능)도 시트가 닫히며 같은 끝이다(`openFriend(…, onAdded)`).
+- **새 친구의 방은 바로 목록에 선다.** 추가는 기존 길(`addSuggestedFriend` → 출처 `unlockCharacter` · 해금 기록)이 그대로 하며, 출처 스냅숏이 바뀌어 보기 뒤 목록에 그 방이 서고(NEW),
+  보기에서 보낸 답장은 그 방의 마지막 말이 된다. 서버 변경은 없다 — 서버 모드에서도 같은 출처의 보내기(`chat-send`)이고, 친구 여부를 따로 보지 않는다.
+- **해금 선톡과 순서.** 서버 모드에서는 추가할 때 해금 선톡(ADR-0152 `greet unlock`)을 청한다. 방을 열면 그 답을 기다린 뒤 기록을 읽지만, 보기에서는 방을 열지 않고 곧바로 답장할 수 있다.
+  내 글이 먼저 서버에 닿으면 서버가 인사를 건너뛴다(`has_messages`). 그래서 청하는 중이면 그 답이 온 뒤에 턴을 연다(`greeting.after`, 글은 바로 로그에 섬).
+- 이벤트: `suggested_friend_added`는 그대로. 추가로 보기가 닫히지 않으므로 그때의 `friend_story_closed { reason: replied }`는 더 나지 않는다(닫을 때 한 번 — 닫은 까닭 그대로). 이름 수(AN1 · AB3)는 바뀌지 않는다.
+- 확인: ui FS-UI49(`MessengerListScreen.story-add.ui.test.tsx` — 답장 칸 · 방 안 엶 · 진행 이어 감 · 목록에 방 · 답장이 마지막 말) · FS-UI7 · SE-UI1 · SE-UI2 개정, integration SS-I13
+  (`chat-fixture-remote.unlock-send.integration.test.ts`) · FSI3 · SEI1 개정(App — 보기에 남아 답장, 닫으면 목록에 그 방 · 마지막 말), e2e FS-E9 개정 · FS-E9b(기기).
+- 이벤트: 새 이벤트 없이 `friend_story_replied`에 `where: viewer | room`을 더했다. 보기에서 보낸 무료 · 유료 답장도 `chat_message_sent`(무료면 `storyFree`)를 낸다.
+- 문구 6개(Send · Sent · Sent to <이름> · Open chat · 실패 · 엽전 부족) 8개 언어.
+
+## D4 개정 — 인물 기준 진행 막대 · 가로 넘김 ⟨2026-11-25⟩
+
+사용자 요청(「인당 여러 개일 수도 있으니 상단 타이머 라인은 한 캐릭터 기준으로, 인스타처럼 옆으로 넘어가게」).
+
+- 서버가 한 인물에 여러 줄을 주면 인물마다 모아 **올린 시각 순**으로 둔다(`storyRowOf`의 `stories`). 줄 칸은 가장 새 것, 고리가 회색(본 것)이
+  되는 것은 그 인물의 스토리를 **다 봤을 때**. 인물 순서는 줄의 규칙 그대로.
+- 보기의 장 목록은 인물 묶음을 이어 붙인다. 시작은 그 인물의 **안 본 첫 장**(다 봤으면 처음). 알림 · 안 만난 친구는 그 인물 묶음 하나.
+- 위 진행 막대 · 「Story i of n」은 **지금 인물의 스토리 수만큼**(`viewerGroupOf`). 다른 인물 스토리는 넣지 않는다.
+- 탭: 오른쪽 = 다음 장(인물의 마지막이면 다음 인물), ~~왼쪽 1/3~~ 왼쪽 절반(아래 ⟨탭 자리⟩ 개정) = 이전 장(인물의 첫 장이면 이전 인물의 마지막). 6초 넘김 · 멈춤 · 답장 입력 중 멈춤은 그대로.
+- **가로로 밀면 인물을 넘긴다**(`viewerJump` — 왼쪽으로 밀면 다음 인물의 첫 장, 마지막 인물이면 닫힘 / 오른쪽이면 이전 인물의 첫 장). 48px 이상 가로로 움직인 것만 넘김으로 보고, 그 손가락의 탭은 넘기지 않는다.
+- ~~인물이 바뀌면 그림 층이 옆으로 미끄러져 들어온다(page 길이 · enter 가속 토큰). 모션 줄이기면 전환 없이 바뀐다. 큐브 전환은 하지 않는다.~~ → 큐브(아래 ⟨큐브⟩ 개정, 2026-11-26).
+
+## D4 개정 ⟨큐브⟩ — 인물 넘김을 3D 큐브로 ⟨2026-11-26⟩
+
+사용자 결정(2026-11-25 「3d 큐브로 진행」, 시안 32번 Y2Swipe). 위 D4 개정의 슬라이드를 바꾼다. 막대 · 탭 · 장 이동 규칙(`viewerStep` · `viewerJump`)은 그대로다.
+
+- **면 셋.** 지금 인물 면(보기 전체 — 그림 · 머리 줄 · 카드 · 답장 칸 · 탭 자리)과 옆 인물 면 둘(미리보기 — 그림 · 얼굴 · 이름 · 카드, 조작 · 낭독 없음. 경과 · 진행 막대 · 답장 칸 모양은 번들 천장 때문에 뺐다)을
+  겹쳐 둔다. 옆 면은 맞닿은 모서리 밖에서 90° 돌아 있어 보이지 않는다. 면의 key는 인물(`face-<묶음 시작>`)이라 넘어가면 들어온 면이 그대로 지금 면이 된다.
+- **손가락을 따라 돈다.** 가로로 잡히면(8px · 가로 우세) 왼쪽으로 민 몫 `|dx| / 화면 폭`만큼 지금 면은 오른쪽 모서리 축으로 0 → −90°, 다음 면은 왼쪽 모서리 축으로 90° → 0으로
+  돌고, 맞닿은 모서리가 손가락을 따라 옮겨 간다(`cubeFacesOf`). 오른쪽은 거울 반대. 돈 만큼 나가는 면이 어두워진다(검정 그늘 0 → 50 %). 끄는 동안 진행 막대 · 6초 넘김은 멈춘다.
+- **매 프레임 변환은 메인 스레드**(`use-story-cube`, `main-thread:bindtouch*` · `setStyleProperties`). 값은 순수 함수(`story-cube.ts`)를 `with { runtime: "shared" }`로 가져다 쓴다.
+- **놓으면**(`cubeReleaseOf`): 48px 미만 · 세로 우세면 되돌아옴. **반 넘게 밀었거나 같은 방향으로 빠르게(0.5px/ms 이상) 밀었으면 넘어가고**, 아니면 되돌아온다. 남은 몫을
+  page 길이 비례(ease-out)로 마저 돌고, 백그라운드가 같은 길이 뒤에 넘김을 반영한다. 쉬는 자리(`cubeFaceStylesOf`)가 다 돈 끝 값과 같아 반영할 때 튀지 않는다.
+- **옆 인물이 없으면**(첫 인물의 이전 · 마지막 인물의 다음) 손가락의 1/4만 따라 살짝 돌고 되돌아온 뒤, 넘김 판정이면 #611 규칙대로 닫힘 · 그 인물의 처음.
+- **탭 · 6초 넘김으로 인물이 바뀌어도 한 번 돈다**(page 길이). 접혀 나가는 면에는 방금 보던 장을 그린다(`cubeNeighborsOf`). 도는 동안 · 다 돌기 전 새 손가락은 받지 않는다.
+- **모션 줄이기(ADR-0053)면 큐브 없이 바로 바뀐다** — 끌어도 면이 돌지 않고, 놓을 때 같은 판정으로 바로 넘긴다. 탭으로 인물이 바뀌어도 돌지 않는다.
+- **Lynx 지원(2026-11-26 확인).** `rotateY` · `transform-origin` 지원, `perspective`는 「부분 지원」 — Lynx는 웹과 달리 **변환하는 그 요소 자신**에 건다(iOS `CATransform3D.m34`,
+  Android `View.setCameraDistance`, 설치된 Lynx 4.0.1 소스 · 바이트코드). 그래서 `perspective: 1000px`을 각 면에 둔다. `backface-visibility`는 없지만 면은 90°를 넘지 않아 필요 없다.
+  메인 스레드 `requestAnimationFrame` · `setStyleProperties`는 맵 스크롤(ADR-0022)과 같은 경로다.
+- **기기 확인(2026-11-26, 탐침).** iOS 시뮬레이터 · Android 에뮬레이터(assembleBundled) 둘 다 원근 있는 큐브가 보였고, 덜 밀면 되돌아오고 · 반 넘게 · 빠르게 밀면 넘어가고 ·
+  탭 전환이 한 번 돌고 · 동작 줄이기면 바로 바뀌었다. iOS에서 같은 인물의 다음 장 그림이 뜨기 전 두 프레임 동안 **쉬는 다음 면이 지금 면 뒤로 비쳐**, 다 돌아 옆에 간 면(90°)은
+  불투명도 0으로 둔다(`CubeFaceStyle.opacity`).
+- **번들(ADR-0149).** #612 위에서 6,126,711 B → 6,141,943 B(+15,232)로 앞 천장 6,140,000 B를 1,943 B 넘었다. 먼저 줄인 것: 칸 이동 함수 `"background only"`(−621 B),
+  미리보기 면의 경과 · 진행 막대 · 답장 칸 모양 뺌(−1,441 B). 사용자가 천장을 6,170,000 B로 정했고(2026-11-26, #616이 반영) 이 PR은 천장을 바꾸지 않는다.
+  origin/main `a991f40f` 6,146,633 B → 합친 뒤 6,162,272 B(+15,639).
+- **손가락은 지금 면 전체에서 받는다(2026-11-26 실기 지적 반영).** 처음에는 손가락 처리를 탭 자리(`story-viewer-taps`, 층 z-index 0)에 두었는데, 그 위 층
+  (z-index 1)의 아래 묶음(`story-viewer-bottom` — 한 줄 카드 · 단어 알약 · 칩 · 답장 칸)과 머리 줄이 터치를 먼저 받아, 탭 자리는 그 요소들의 **형제**라 터치가 올라오지
+  않았다 — 아무것도 없는 위쪽에서만 돌았다. 처리를 그 요소들의 **조상**인 면 껍데기로 옮겨 어디서 시작한 터치든 올라오게 했다. 짧은 탭은 그 요소의 `bindtap`이 그대로
+  받는다(Lynx iOS 탭 허용 거리 45pt < 넘김 문턱 48px). **답장을 쓰는 중(키보드)에는 끌어도 돌지 않고 넘기지 않는다.**
+- 버린 대안: rotateY 없이 scale + translate로 흉내(원근이 없어 큐브로 보이지 않음 — Lynx가 지원하므로 쓰지 않음), CSS keyframe만으로 전환(손가락을 따르지 못함).
+- 확인: unit FS-U26 ~ U32(`story-cube.unit.test.ts`), ui FS-UI34 ~ UI41(`StoryViewer.cube.ui.test.tsx`) · FS-UI30 · UI31 개정, e2e FS-E4c(기기).
+
+## D4 개정 ⟨탭 자리⟩ — 화면 어디를 눌러도 넘김, 경계는 가운데 ⟨2026-11-26⟩
+
+사용자 보고(2026-11-26, 기기 `a64de9e9`: 「가운데 경계선 기준으로 스토리 여러 개일 때 전후로 터치하면 넘어가는 것도 상단만 되네」).
+
+- **원인.** 탭 자리(`story-viewer-taps`, 층 z-index 0)는 위 묶음(`story-viewer-top`)과 아래 묶음(`story-viewer-bottom` — 사진 이름 · 한 줄 카드 · 단어 알약 · 무료 안내 · 칩 · 답장 칸,
+  z-index 1)의 **형제**다. Lynx는 손가락 아래 가장 깊은 요소가 탭을 받고 **조상으로만** 올리므로, 두 묶음이 덮은 자리(머리 줄 띠, 카드부터 화면 아래까지)의 탭은 누를 것이
+  없는 빈 자리 · 글 위여도 탭 자리에 닿지 않았다. 둘 사이 띠(사진 위쪽 가운데)만 넘어갔다. 위 ⟨큐브⟩ 개정의 손가락(스와이프)과 같은 구조의 문제다.
+- **고침.** 탭도 손가락처럼 **조상인 지금 면 껍데기**(`StoryFaceShell`의 `bindtap`)가 받는다. 누른 x를 `storyTapOf(x, 창 폭)`이 가른다 — **x가 화면 가운데보다 왼쪽이면 이전,
+  가운데부터 오른쪽은 다음**(x를 모르면 다음). 실제로 누를 수 있는 요소는 `catchtap`으로 바꿔 탭이 면까지 올라가지 않는다: 닫기 · 멈춤, 이름 · 아바타(프로필 시트), 단어 알약,
+  답장 칩, 답장 칸 묶음(`story-reply` — 입력 · 보내기, 꺼진 보내기 포함), 「Add friend and reply」 감싸개. 「Sent · Open chat」은 면 밖 보기 단위 층이라 원래 면에 닿지 않는다.
+  한 줄 카드 · 무료 안내 · 소개 카드 · 사진 · 빈 자리는 넘김이다.
+- 가로로 민 손가락의 탭은 넘기지 않고, 답장을 쓰는 중 밖을 누르면 키보드만 내리는 규칙(D5 개정)은 같은 `tap` 경로라 그대로다. 길게 눌러 멈춤은 지금 없다(멈춤 단추).
+- **낭독용 이전 · 다음 자리**(`story-viewer-tap-prev` · `-next`)는 맨 아래 층에 남기고 너비를 **반반**으로 맞췄다(1/3 : 2/3 → 1 : 1). 스크린리더의 두 단추 동작은 그대로이고, 두 묶음이
+  덮지 않은 자리에서 손가락에 직접 닿아도 `catchtap`이라 면 판정과 겹치지 않는다.
+- 버린 대안: 장식 · 글 층에 `user-interaction-enabled={false}` — Lynx에서는 **그 요소와 자식 전체**가 터치를 받지 않아(`@lynx-js/types` 정의), 칩 · 답장 칸을 품은 아래 묶음에 쓸 수 없다.
+  메인 스레드 제스처(`touchend`)에서 탭을 가르기 — 누를 수 있는 요소의 탭과 구분할 길이 없어(터치 이벤트는 catch로 막히지 않음) 그 요소를 누를 때마다 넘어간다.
+- 번들(ADR-0149): 천장 6,170,000 B 아래 6,169,156 B(천장은 바꾸지 않음).
+- 시험 도우미: 시험 라이브러리는 `bindtap` · `catchtap`을 서로 다른 이벤트로 퍼뜨려 catch가 번짐을 막지 못한다. `tapId`(`chat-ui.test-support`)는 이제 Lynx처럼 눌린 요소부터
+  조상으로 bindtap을 부르다 catchtap에서 멈춘다(`tapEl`).
+- 확인: unit FS-U33(`story-tap.unit.test.ts`), ui FS-UI44 ~ UI46(`StoryViewer.taps.ui.test.tsx`), e2e FS-E4d(기기).
+
+## D5 개정 ⟨키보드 탭⟩ — 키보드가 열린 채 누른 탭은 키보드만 내림 ⟨2026-11-26⟩
+
+사용자 승인(2026-11-26 「응 고쳐줘」). #623 기기 확인에서 답장 키보드가 열린 채 스토리 빈 자리를 누르면 iOS · Android 모두 키보드가 내려가면서 장도 넘어갔다.
+D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」이 지켜지지 않았다.
+
+- **원인.** 밖을 누르면 입력 칸이 **손가락이 닿을 때** 초점을 잃어 `bindblur`가 먼저 오고, 탭은 손가락을 뗄 때 온다. blur가 `setTyping(false)`로 「입력 중」을 먼저 꺼서
+  탭을 처리할 때 `dismissKeyboard()`가 이미 닫힌 상태로 보고 false를 돌려주었고, 넘김이 실행됐다. 기기 확인(2026-11-26, 탐침): iOS 시뮬레이터에서 고치기 전 번들은
+  누르자마자 다음 장, 0.8초 누른 탭은 고친 뒤에도 넘어갔다(창 밖) — blur가 누르는 순간 온다는 증거다. 시험(jsdom)은 blur를 따로 쏘지 않아 놓쳤다.
+- **고침.** 입력 칸이 스스로 초점을 잃은 시각을 기억하고(`setTyping(false)`가 입력 중에서 꺼질 때만), 탭은 `tapDismissesKeyboard(입력 중, 내려간 시각, 지금)`으로 가른다 —
+  입력 중이거나 **내려간 지 `KEYBOARD_TAP_GRACE_MS`(500 ms) 안**이면 그 탭은 키보드를 내린 탭이라 넘기지 않는다. 기록은 한 번만 쓴다(그다음 탭은 넘김).
+  탭이 blur보다 먼저 오는 순서도 같다 — 입력 중이라 키보드를 내리고, 이때 「입력 중」을 먼저 꺼서 뒤따른 blur가 다시 기록하지 않는다.
+- **창 500 ms 근거.** blur는 손가락이 닿을 때, 탭은 뗄 때라 창은 **누르고 있는 시간**을 덮어야 한다. 보통 탭은 0.1 ~ 0.2초, 천천히 눌러도 0.5초 안이다(기기에서 0.45초 누름은
+  삼킴, 0.8초 누름은 넘김). 더 길면 키보드 숨김 단추 등 다른 까닭으로 내려간 뒤 일부러 누른 첫 탭까지 삼킬 수 있다.
+- 창은 **탭에만** 쓴다(`dismissForTap`). 뒤로 · 시트가 덮을 때는 지금 입력 중일 때만 키보드를 내린다(`dismissKeyboard` — 키보드가 내려간 뒤 뒤로 = 닫기 그대로).
+- 쓰던 답장 글은 그대로 남는다(칸은 그 장에 그대로). 가로 넘김 · 칩 · 아바타 · 멈춤 · 「Sent」 알림은 바뀌지 않는다.
+- 버린 대안: 탭 대신 손가락이 닿을 때(`touchstart`) 입력 중을 보기 — 큐브 손가락 처리가 메인 스레드라 배경 스레드 상태와 순서를 맞추기 어렵고 diff가 크다.
+  blur에서 바로 넘김을 막는 깃발(시간 없음) — 키보드 숨김 단추로 내린 뒤 한참 뒤의 첫 탭까지 삼킨다.
+- 번들(ADR-0149): origin/main `be96eca9` 6,166,133 B → 6,166,445 B(+312), 천장 6,170,000 B는 바꾸지 않음.
+- 확인: unit FS-U34(`story-keyboard-tap.unit.test.ts`), ui FS-UI47(`StoryViewer.taps.ui.test.tsx` — blur → 탭 · 탭 → blur · 글 남음 · 창 뒤 탭), e2e FS-E4e(기기).
+
+## 보기 위 아바타 → 인물 프로필 시트 ⟨2026-11-25⟩
+
+사용자 요청(「기존에 있던 캐릭터 성격 정보나 채팅하기 버튼이 있는 바텀시트는 캐릭터 프로필 아바타 눌렀을 때 올라오게」).
+
+- 보기 머리 줄의 **아바타 · 이름을 누르면** 추천 친구 프로필 시트(`SuggestedFriendSheet` — 소개 · 태그 · 첫 말 · Start chatting)가 선다. 새 시트는 만들지 않았다.
+  - 안 만난 친구: 추천 친구 상태의 `openFriend(friend, "story_viewer")` 그대로 — 추가 · 잠김(만날 회차 · 먼저 만나기) 길도 그대로.
+  - 이미 친구(열린 방): 시트 모델에 `status: "added"`를 더했다(`modelOfMetFriend` — 카탈로그 인물이면 소개 · 태그 · 첫 말, 없으면 이름 · 얼굴만, NEW 배지 없음).
+    「Start chatting」 = 보기를 닫고 그 방(추가 없음). 상태는 `use-story-profile.tsx`가 지고 `use-suggested-friends.tsx`는 바꾸지 않았다.
+- 시트가 떠 있는 동안 보기는 `covered`(멈춤 · 낭독에서 가림), 닫으면 이어 간다.
+- **옮긴 진입**: 잠긴 안 만난 친구의 「See how to meet」(→ 같은 프로필 시트)을 없앴다 — 그 길은 아바타가 연다. 소개 카드는 남고, 추가 가능 친구의 「Add friend and reply」(시트 없이 추가 + 답장)는 다른 동작이라 그대로.
+- 접근성: 아바타는 버튼 「<이름>'s profile」(8개 언어 `viewer.profile`, flatten false). 이름은 열 때 초점을 받는 「<이름>'s story, Story i of n」을 그대로 두고 손가락 탭만 같은 시트를 연다.
+  낭독 순서 = 닫기 · 멈춤 → 이름 → 프로필 → … .
+- 이벤트: `friend_story_closed.reason`에 `profile`(프로필 시트의 Start chatting으로 닫힘)을 더했다. 이미 친구의 시트는 `suggested_friend_opened`를 내지 않는다(추천이 아님).
+
+### 개정 ⟨소개 카드⟩ — 안 만난 친구의 아래 소개 카드도 같은 시트 ⟨2026-11-26⟩
+
+사용자 요청(2026-11-26, 「잠긴 캐릭터 스토리에서 하단 캐릭터 정보 UI 눌러도 캐릭터 프로필 바텀시트 똑같이 올라오게」).
+
+- 안 만난 친구(잠김 · 추가 가능) 장의 **아래 소개 카드**(`story-meet-card` — 얼굴 · 이름 · 소개)를 누르면 위 아바타와 **같은 길**(`onProfile(그 장)` → `use-story-profile` → 추천 친구 시트
+  `SuggestedFriendSheet`, Hear voice · 로마자 그대로)이 선다. 시트의 아래 단추(Start chatting · Chat now · 먼저 만나기)도 그대로다.
+- 카드는 `catchtap`이라 그 탭은 면의 넘김(⟨탭 자리⟩)으로 올라가지 않는다. 「Add friend and reply」는 카드 밖 형제라 제 동작(추가 + 답장) 그대로다.
+- 시트가 떠 있는 동안 진행은 멈추고(`covered`), 닫으면 이어 간다 — 아바타 길과 같다.
+- 접근성: 낭독의 시트 단추는 위 아바타 「<이름>'s profile」 하나로 둔다. 카드는 같은 이름 단추를 하나 더 세우지 않고(중복 낭독) 손가락 길만 더한다. 카드 글은 지금처럼 읽힌다.
+- 이벤트: 아바타와 같다(`suggested_friend_opened` from `story_viewer`). 이름 수(AN1 · AB3)는 바뀌지 않는다.
+- 확인: ui FS-UI48(`StoryViewer.ui.test.tsx` — 잠김 · 추가 가능 둘 다 onProfile · 넘기지 않음 · Add friend 그대로, `MessengerListScreen.stories.ui.test.tsx` — 시트 · Start chatting · 멈춤 · Not now 뒤 이어 감), e2e FS-E17b(기기).
+
+## 개정 ⟨대화방⟩ — 대화방 안 아바타 → 같은 프로필 시트, 행동 단추 없음 ⟨2026-11-26⟩
+
+사용자 요청(「대화 안에서 프로필 아바타 클릭할 때도 프로필 바텀시트 떠야 해. 채팅하기 버튼은 숨겨도 될 것 같아」, 추가로 「대화방에서 열 때만 숨기고
+다른 진입은 지금처럼」).
+
+- 대화방에서 **상대 말 줄의 아바타 · 머리의 상대 이름**을 누르면 위 ⟨보기 위 아바타⟩와 같은 시트(`SuggestedFriendSheet`, `modelOfMetFriend` — 이미 친구 ·
+  제안 없음)가 선다. 카탈로그(앱 인물 표)에 없는 인물이면 이름 · 얼굴만. 결선은 `ChatProfileContext`(`chatProfilePort` — 앱 인물 표 · 목소리 견본 주소 ·
+  로마자 스위치, 서버 RPC 0)로 내리고, 견본 주소 · 로마자는 다른 자리와 같은 `sheetViewOf`(ADR-0198, #627)로 시트에 넘긴다.
+- 이미 그 인물과 대화 중이라 시트에 `actions="close"`를 준다 — Start chatting · Chat now(잠김 제안)를 두지 않고, 「Not now」 자리의 닫기 단추를
+  「Close」로 둔다(「Not now」는 추가를 미루는 말이라서, 문구는 스토리 보기의 `viewer.close` 8개 언어를 다시 씀). 막 탭 · 끌어내림 · 뒤로도 닫기.
+  **다른 진입(스토리 보기 · 추천 줄 · 친구 찾기)은 기본 `offer` 그대로** Start chatting · Chat now · Not now가 선다.
+- 열고 닫는 상태는 방의 겹침 `{ kind: "profile" }`(`chat-room-state`)이다. 열 때 사진 보기처럼 키보드 자리 · 깔개를 접고 휴대폰 입력 칸을 먼저 blur한다
+  (`useChatRoom` dispatch). 닫힌 다음 프레임에 숨은 입력 칸을 다시 blur하는 기존 길(Android 초점 이동)을 그대로 탄다. 닫힌 뒤 초점은 플랫폼에 맡긴다
+  (같은 test-id 아바타가 여럿). 시트는 방 화면이 그린다(「…」 메뉴처럼 `ChatRoomOverlays`는 아무것도 그리지 않음).
+- 비회원(ADR-0166): 프로필 보기는 계정 동작이 아니라 로그인 권유 없이 연다(`guestGateOf` → null).
+- 접근성: 아바타가 버튼 「<이름>'s profile」(스토리 보기와 같은 `viewer.profile`, 새 문구 없음) · flatten false · 보이는 32 + hit-slop 6 = 44.
+  머리 이름은 낭독 역할(header)을 그대로 두고 손가락 탭만 같은 시트를 연다. 시트가 떠 있는 동안 방은 낭독에서 숨는다(기존 `overlayOpen`).
+- 이벤트: 없음 — 스토리 보기의 이미 친구 시트처럼 `suggested_friend_opened`를 내지 않는다(추천이 아님). AN1 · AB3 수 그대로.
+- 확인: unit CP-U1 ~ U7(`chat-profile.unit.test.ts`) · SW-U8(`suggested-friends-wiring.unit.test.ts`), ui CP-UI1 ~ UI3(`SuggestedFriendSheet.actions.ui.test.tsx` —
+  대화방 close · 그 밖 offer 두 쪽) · CP-UI4 · UI5(`ChatMessageRow.profile.ui.test.tsx`), integration CP-I1 ~ I7
+  (`MessengerChatScreen.profile.integration.test.tsx` · `.profile-voice.integration.test.tsx`), e2e FS-E18(기기).
+
+## D4 개정 ⟨내 스토리⟩ — 같은 보기에 내 스토리 장 ⟨2026-11-26⟩
+
+- `StoryViewer`가 내 스토리 장(`StoryViewerItem.mine`)도 그린다([ADR-0194](0194-my-stories.md) 개정 ⟨보기⟩). `mine` props가 있고 장이 내 스토리면 답장 칩 ·
+  칸 · 단어 알약 대신 아래 바 · 새 답 줄(`MyStoryViewerBottom`), 머리 줄에 ⋯ 메뉴, 위로 밀기 · 「Seen by」 → 답 목록 시트. 시트 · 메뉴가 열린 동안
+  멈춤 조건에 든다. 친구 스토리 장은 그대로다(`mine`을 받아도 친구 장에는 바가 서지 않는다).
+- 진행 막대 · 탭 · 6초 넘김 · 가로 넘김 · 큐브 · 탭 자리 코드는 바꾸지 않았다. 내 스토리 장의 인물 id는 `"me"`라 한 묶음으로 센다.
+- 탭 자리(D4 개정 ⟨탭 자리⟩, #623)와 맞춤: 바의 단추 · 새 답 줄 · 「Seen by」 자리 · ⋯ 메뉴 줄은 `catchtap`이라 넘기지 않고, 바의 빈 자리 · 안내 줄 ·
+  화면 가득 글 · 사진은 면으로 올라가 넘긴다. 내 장의 이름 · 아바타도 `catchtap`(아무것도 열지 않음)이다.
+
+## D5 개정 ⟨판⟩ — 대화방 인용을 올린 그대로 9:16 작은 판으로, 누르면 그 스토리 ⟨2026-11-26⟩
+
+사용자 보고(2026-11-26 「캐릭터가 나에게 문자 줄 때 Replied to your story에 이미지 없이 거기에 넣은 text만 떠 있어」 · 앞서 요청 「올린 이미지 그대로 메시지에 넣고,
+누르면 그 스토리로 가면 좋겠는데」) → 시안 37 · 38 · 39 · 40a(Q1ReplyThumb · Q2ReplyThumbText · Q3ReplyThumbGone · P0ChatExpired).
+
+- **판**: 가로 카드(작은 그림 + 한 줄 + Story · 경과)를 **세로 9:16 판**으로 바꾼다 — 인물의 반응 위(「Replied to your story」) 118 × 210, 내 답 위(「You replied to
+  …'s story」) 96 × 171. 캡션은 기존 문구 그대로다. 한 줄 · 경과는 판에 그리지 않고 낭독에만 남는다.
+  - **내 스토리**([ADR-0194](0194-my-stories.md) 개정 ⟨판⟩): 전체 화면 보기와 **같은 카드**(`MyPhotoStoryCard` · `MyTextStoryCard`)를 기준 바탕 390 × 694에 그리고
+    가운데 기준 `scale`로 줄인다 — 사진 · 바탕색 · 얹은 글 상자 · 단어 스티커가 비율 자리 그대로. 새 그리기 코드는 판 틀 · 크기뿐이다.
+  - **친구 스토리**: 그 스토리 그림(`imagePath`, 콘텐츠 버킷)을 판 가득.
+  - **24시간 지난 친구 스토리**(시안 40a): 판은 그대로 보이고 어두운 막(35%) + 왼쪽 아래 「Ended」 표(시계). 누르면 작은 안내 시트 「This story has ended」 ·
+    OK만 — 시안 40번의 「See past stories」 단추는 **넣지 않았다**(유료 지난 스토리 미결정).
+  - **지운 스토리**(시안 39): 회색 판 · × · 「Deleted story」, 누름 없음.
+- **누르면**(결선 `ChatStoryHost` — 대화방 화면 · 행 코드는 바꾸지 않고 `render-messenger-chat`이 방을 감쌈, 층은 화면 고정이라 방 뒤 형제):
+  - 친구 스토리 24시간 안 → 스토리 보기(`StoryViewer`, 그 인물의 살아 있는 스토리 · 그 장부터). 답장 · 단어 저장은 목록의 보기와 같고, 엽전이 모자라면 보기를 닫아 방으로
+    돌아간다(방의 입력 줄이 상점을 엶 — 스스로 정한 것). 「Sent · Open chat」은 같은 방이면 보기만 닫고, 다른 인물이면 그 방으로.
+  - 친구 스토리가 지남(인용의 올린 시각 + 24시간, 받은 목록에 있으면 그 만료, 목록을 받았는데 없으면 지남) → 안내 시트.
+  - 내 스토리 → [ADR-0194](0194-my-stories.md) 개정 ⟨판⟩.
+- **목록 받기**: 판이 처음 설 때 그 종류의 목록을 방마다 **한 번** 받는다(친구 스토리 `companion_friend_stories` · 내 스토리 `companion_my_stories`). 인용이 없는 방 ·
+  손님 · 접근 불가는 서버 요청 0이고 판은 인용만으로 그리며 누를 수 없다. 친구 목록을 아직 못 받았고 24시간 안이면 누름은 아무것도 열지 않는다.
+- **접근성**: 판(캡션 포함)이 하나의 낭독 요소 — 「캡션: 한 줄, Story · 경과, Open story」(캡션이 누구의 스토리인지 말함, 지난 것은 「…, Ended」), 누를 수 있으면 버튼(118 · 96 폭, 44 이상).
+  지운 판은 「Reply to a deleted story」이고 버튼이 아니다. 새 문구 `myStories.quote.openStory` · `ended` · `endedTitle`(8개 언어), OK · 닫기는 기존 `window.ok` · `window.close`.
+- **이벤트**: 새 이벤트 없음 — `friend_story_viewed.from`에 `chat`을 더하고(장 단위 그대로, `met` true) 판에서 연 보기도 닫힐 때 `friend_story_closed`를 낸다
+  (AN1 · AB3 개수 그대로).
+- 확인: unit CT-U1 ~ U8(`chat-story-thumb.unit.test.ts`), ui CT-UI1 ~ UI8(`StoryQuote.thumb.ui.test.tsx`) · FS-UI8 갱신, integration CT-I1 ~ I5
+  (`ChatStoryHost.integration.test.tsx`), e2e FS-E18(기기). 번들 천장은 사용자 결정으로 6,180,000 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 7).
 
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 
 - 스토리 데이터 = 서버 표(D1) · 하루 한 번 UTC 01 ~ 10시(인물마다 고정) · 24시간 만료 · 가장 적게 올린 줄부터 · 본 것 = 기기 저장(D3).
-- 줄 순서(D3) · 추천 친구는 스토리 줄 뒤에 그대로 · 「See all」 → 줄 끝 「Find friends」 · 목록 줄의 New story는 안 읽은 메시지가 없을 때만.
-- 답장 칸 = 대화방 입력 줄 위 인용 띠(보기 안에 키보드를 띄우지 않음) · 하트 없음 · 「First reply is free」 안내 · 6초 넘김 · 모션 줄이기면 자동 넘김 없음(D4 · D5).
+- 줄 순서(D3, 2026-11-25 개정 — 같은 시각은 인물 id 순 · 구분 선 없음 · Watch all은 내 친구만 · ~~안 만난 친구는 이어 보기에 섞지 않음~~ 줄 칸에서 연 보기는 안 만난 인물도 줄 순서대로 — ⟨잠긴 인물⟩ 개정) · 추천 친구는 스토리 줄 뒤에 그대로 · 「See all」 → 줄 끝 「Find friends」 · ~~목록 줄의 New story는 안 읽은 메시지가 없을 때만~~(D3 개정 2 — 목록 줄에는 띄우지 않음).
+- ~~답장 칸 = 대화방 입력 줄 위 인용 띠(보기 안에 키보드를 띄우지 않음)~~ → 보기 안 입력 칸(D5 개정 2026-11-25) · 하트 없음 · 「First reply is free」 안내 · 6초 넘김 · 모션 줄이기면 자동 넘김 없음(D4 · D5).
 - 무료 판정의 범위(D6) · 알림 대상과 셈 범위(D7) · 이벤트 넷(D8).
 
 ## 확인
 
-- unit: `friend-stories.unit.test.ts`(FS-U1 ~ U7 · U10) · `friend-stories-parse.unit.test.ts`(FS-U8) · `friend-stories-content.unit.test.ts`(FS-U9) ·
+- unit: `friend-stories.unit.test.ts`(FS-U1 ~ U7 · U10) · `story-order.unit.test.ts`(FS-U17, D3 개정) · `friend-stories-parse.unit.test.ts`(FS-U8) · `friend-stories-content.unit.test.ts`(FS-U9) ·
   `friend-story-seen-store.unit.test.ts`(FS-U12) · `ui-copy-chat-stories.unit.test.ts`(FS-U13) · `friend-story-push.unit.test.ts`(FS-U14) ·
   `companion-api.stories.unit.test.ts`(SA-S1 · S2) · `companion-parse.story.unit.test.ts`(SS-S1) · `friend-stories-wiring.unit.test.ts`(SW-S1 ~ S5) ·
   분석 이름 수(AN1 104 · AB3 77/74).
 - ui: `FriendStoriesRow` · `StoryViewer` · `StoryQuote` · `MessengerListScreen.stories` · `MessengerChatScreen.story`(FS-UI1 ~ UI9).
-- integration: `App.friend-stories.integration.test.tsx`(FSI1 · FSI2 · FSI3 · FSI6) · `chat-fixture-remote.story.integration.test.ts`(FSI-R1 · R2).
+- integration: `App.friend-stories.integration.test.tsx`(FSI1 · FSI2 · FSI3 · FSI6 · FSI9) · `chat-fixture-remote.story.integration.test.ts`(FSI-R1 · R2).
 - 서버: SQL `friend-stories.integration.test.ts`(FS1 ~ FS19) · `friend-stories-pool.integration.test.ts`(FSP1 · FSP2) · `companion-proactive-push`(PG1 `pushedToday` · PP9) ·
   chat-send(CSS1 ~ CSS3) · `companion-stories-handler`(SH1 ~ SH4) · send-push(SP1) · 계약 패키지(CS3e).
 - e2e: [docs/e2e/friend-stories.md](../e2e/friend-stories.md)(기기 절차). 계약 · 테스트 계획: [docs/specs/friend-stories.md](../specs/friend-stories.md).

@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 
 import {
-  listStoryOf,
   liveStoriesOf,
   seenRecordsWith,
   storyAgeOf,
@@ -9,11 +8,12 @@ import {
   viewerItemsOf,
   viewerStep,
 } from "./friend-stories";
+import { storyOrderOf } from "./story-order";
 import { HOUR_MS, STORY_NOW, story } from "./friend-stories.test-support";
 import { suggestedFriendsOf } from "./suggested-friends";
 import { catalogOf, friend, general, room } from "./suggested-friends.test-support";
 
-// `unit` 계층(FS-U1 ~ U7 · U10): 친구 스토리 판정(ADR-0178 D2 · D3 · D4).
+// `unit` 계층(FS-U1 ~ U7 · U10): 친구 스토리 판정(ADR-0178 D2 · D3 · D4). 인물 순서는 FS-U17(`story-order.unit.test.ts`).
 
 const NOW = STORY_NOW;
 const MIN = 60_000;
@@ -58,7 +58,7 @@ describe("FS-U2 스토리 줄", () => {
     expect(row.others.map((f) => f.character.id)).toEqual(["h"]);
   });
 
-  test("안 본 것 먼저, 각 묶음 안은 최근 순", () => {
+  test("본 것과 상관없이 최근 순(D3 개정) — 본 것은 표시만", () => {
     const row = storyRowOf(
       input({
         stories: [
@@ -70,10 +70,26 @@ describe("FS-U2 스토리 줄", () => {
       }),
     );
     expect(row.friends.map((e) => [e.story.characterId, e.seen])).toEqual([
+      ["b", true],
       ["c", false],
       ["a", false],
-      ["b", true],
     ]);
+  });
+
+  test("안 만난 친구도 추천 순서가 아니라 최근 순", () => {
+    const catalog = catalogOf([general("g"), general("h")]);
+    const rooms = [room("g", false), room("h", false)];
+    const row = storyRowOf({
+      stories: [
+        story("g", { postedAt: NOW - 3 * HOUR_MS }),
+        story("h", { postedAt: NOW - HOUR_MS }),
+      ],
+      rooms,
+      suggested: suggestedFriendsOf({ catalog, rooms, earlyAccess: false, now: NOW }),
+      seen: new Set(),
+      now: NOW,
+    });
+    expect(row.unmet.map((e) => e.story.characterId)).toEqual(["h", "g"]);
   });
 
   test("방이 없는 인물 · 만료된 스토리는 줄에 없다", () => {
@@ -93,8 +109,21 @@ describe("FS-U2 스토리 줄", () => {
   });
 });
 
-describe("FS-U3 한 인물에 둘이면 최신 하나", () => {
-  test("올린 시각이 늦은 것", () => {
+describe("FS-U35 안 만난 친구의 본 것(ADR-0178 D3 개정 ⟨점선⟩)", () => {
+  test("그 인물의 살아 있는 스토리를 다 봤을 때만 본 것", () => {
+    const two = [
+      story("g", { id: "s-g1", postedAt: NOW - 2 * HOUR_MS }),
+      story("g", { id: "s-g2", postedAt: NOW - HOUR_MS }),
+    ];
+    const half = storyRowOf(input({ stories: two, seen: new Set(["s-g1"]) }));
+    expect(half.unmet.map((e) => [e.story.characterId, e.seen])).toEqual([["g", false]]);
+    const all = storyRowOf(input({ stories: two, seen: new Set(["s-g1", "s-g2"]) }));
+    expect(all.unmet.map((e) => [e.story.characterId, e.seen])).toEqual([["g", true]]);
+  });
+});
+
+describe("FS-U3 한 인물에 둘이면 줄 칸은 최신 것(묶음은 FS-U21)", () => {
+  test("올린 시각이 늦은 것이 줄 칸, 둘 다 묶음에", () => {
     const row = storyRowOf(
       input({
         stories: [
@@ -104,6 +133,7 @@ describe("FS-U3 한 인물에 둘이면 최신 하나", () => {
       }),
     );
     expect(row.friends.map((e) => e.story.id)).toEqual(["new"]);
+    expect(row.friends[0]?.stories.map((e) => e.id)).toEqual(["old", "new"]);
   });
 });
 
@@ -117,16 +147,6 @@ describe("FS-U4 경과 시간", () => {
     [-5_000, { unit: "now" }],
   ])("%d ms → %o", (ago, expected) => {
     expect(storyAgeOf(NOW - ago, NOW)).toEqual(expected);
-  });
-});
-
-describe("FS-U5 채팅 목록 줄의 New story", () => {
-  test("안 본 친구 스토리만, 본 것 · 안 만난 친구는 null", () => {
-    const row = storyRowOf(input({ seen: new Set(["s-b"]) }));
-    expect(listStoryOf(row, "a")?.id).toBe("s-a");
-    expect(listStoryOf(row, "b")).toBeNull();
-    expect(listStoryOf(row, "g")).toBeNull();
-    expect(listStoryOf(row, "nobody")).toBeNull();
   });
 });
 
@@ -161,12 +181,12 @@ describe("FS-U7 본 것 표시", () => {
 describe("FS-U10 보기의 장 목록", () => {
   const row = storyRowOf(input({ seen: new Set(["s-a"]) }));
 
-  test("줄의 친구를 누르면 친구 스토리 전체 중 그 칸부터", () => {
-    // 친구 순서: 안 본 b · c(같은 시각 — 입력 순서) → 본 a
+  test("줄의 친구를 누르면 줄 전체(안 만난 친구 포함) 중 그 칸부터", () => {
+    // 같은 시각 — 인물 id 순 a · b · c · g(본 a도 제자리, D3 개정 · ⟨잠긴 인물⟩)
     const opened = viewerItemsOf(row, { from: "friend", characterId: "c" }, url);
-    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["b", "c", "a"]);
-    expect(opened?.start).toBe(1);
-    expect(opened?.items[0]).toMatchObject({
+    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["a", "b", "c", "g"]);
+    expect(opened?.start).toBe(2);
+    expect(opened?.items[1]).toMatchObject({
       name: "b",
       avatarUrl: "https://img/b.webp",
       imageUrl: "https://cdn/content/images/b.webp",
@@ -174,11 +194,36 @@ describe("FS-U10 보기의 장 목록", () => {
     });
   });
 
-  test("안 만난 친구는 그 한 장, 추천 친구를 싣는다", () => {
+  test("이어 보기는 줄 순서에서 친구만, 친구 열기는 줄 순서 그대로(storyOrderOf) — 안 만난 친구도 든다", () => {
+    const timed = storyRowOf(
+      input({
+        stories: [
+          story("a", { postedAt: NOW - 5 * HOUR_MS }),
+          story("b", { postedAt: NOW - 1 * HOUR_MS }),
+          story("c", { postedAt: NOW - 3 * HOUR_MS }),
+          story("g", { postedAt: NOW - HOUR_MS / 2 }),
+        ],
+        seen: new Set(["s-b"]),
+      }),
+    );
+    const rowOrder = storyOrderOf(timed)
+      .filter((each) => each.kind === "friend")
+      .map((each) => each.entry.story.characterId);
+    expect(rowOrder).toEqual(["b", "c", "a"]);
+    const all = viewerItemsOf(timed, { from: "watch_all" }, url);
+    expect(all?.items.map((i) => i.story.characterId)).toEqual(rowOrder);
+    const fromC = viewerItemsOf(timed, { from: "friend", characterId: "c" }, url);
+    const fullOrder = storyOrderOf(timed).map((each) => each.entry.story.characterId);
+    expect(fullOrder).toEqual(["g", "b", "c", "a"]);
+    expect(fromC?.items.map((i) => i.story.characterId)).toEqual(fullOrder);
+    expect(fromC?.start).toBe(2);
+  });
+
+  test("안 만난 친구 칸도 줄 전체 중 그 칸부터, 그 장은 추천 친구를 싣는다", () => {
     const opened = viewerItemsOf(row, { from: "unmet", characterId: "g" }, url);
-    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["g"]);
-    expect(opened?.items[0]?.unmet?.character.id).toBe("g");
-    expect(opened?.start).toBe(0);
+    expect(opened?.items.map((i) => i.story.characterId)).toEqual(["a", "b", "c", "g"]);
+    expect(opened?.items[3]?.unmet?.character.id).toBe("g");
+    expect(opened?.start).toBe(3);
   });
 
   test("이어 보기는 친구 스토리를 처음부터, 친구 스토리가 없으면 null", () => {
@@ -187,9 +232,9 @@ describe("FS-U10 보기의 장 목록", () => {
     expect(viewerItemsOf(empty, { from: "watch_all" }, url)).toBeNull();
   });
 
-  test("목록 줄 · 알림은 그 인물 한 장(안 만난 친구도), 없으면 null", () => {
+  test("알림은 그 인물 한 장(친구 · 안 만난 친구 모두), 없으면 null", () => {
     expect(
-      viewerItemsOf(row, { from: "list", characterId: "b" }, url)?.items.map((i) => i.story.id),
+      viewerItemsOf(row, { from: "push", characterId: "b" }, url)?.items.map((i) => i.story.id),
     ).toEqual(["s-b"]);
     expect(
       viewerItemsOf(row, { from: "push", characterId: "g" }, url)?.items.map((i) => i.story.id),

@@ -6,7 +6,12 @@ import { useEffect, useState } from "@lynx-js/react";
 import { sessionNeedsRefresh } from "../lib/account-deletion";
 import { loadAuthSession } from "../lib/auth-session";
 import { emitCompanionEvent } from "../lib/companion-events";
-import { setPlanAccess, subscriptionUnlimitedPass } from "../lib/plan-access";
+import {
+  setPlanAccess,
+  subscriptionStateOf,
+  subscriptionUnlimitedPass,
+  type SubscriptionState,
+} from "../lib/plan-access";
 import { plansFeatureEnabled } from "../lib/plans-flag";
 import {
   plansClient,
@@ -66,6 +71,8 @@ export type PlansWiring = {
   readonly messengerOffer: PlanOfferWiring | undefined;
   /** 티켓 무제한 구독이면 머리 칩의 무제한 모달 구독 판(ADR-0115 · ADR-0144). 아니면 undefined. */
   readonly unlimitedPass: UnlimitedPass | undefined;
+  /** 활성 구독이 있나(요금제 종류 무관) — 권한을 아직 못 읽었으면 unknown. 첫날 무제한(ADR-0186 개정 2)이 읽습니다. */
+  readonly subscription: SubscriptionState;
   /** 지금 요금제(서버 권한에서 등급 높은 것, ADR-0160) — 머리 칩 · 상점 칩 · 바꿈의 기준. */
   readonly current: CurrentPlan | null;
   /** 상점 Plans 탭의 결선(`ShopPlansContext`). */
@@ -268,6 +275,7 @@ export function usePlans(
     unlimitedPass: bridge.available
       ? subscriptionUnlimitedPass(entitlements, (plan) => plansCopy.en.names[plan])
       : undefined,
+    subscription: subscriptionStateOf(bridge.available, entitlements),
     current,
     shop: {
       catalog,

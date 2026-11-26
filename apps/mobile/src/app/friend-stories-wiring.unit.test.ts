@@ -5,7 +5,11 @@ import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract"
 import { story } from "../screens/messenger-chat/friend-stories.test-support";
 import { setEarlyAccessRemote } from "./suggested-friends-wiring";
 import { catalogWordOf } from "./wordbook-entries";
-import { friendStoriesPort, setFriendStoriesStoresForTests } from "./friend-stories-wiring";
+import {
+  friendStoriesPort,
+  notifyFriendStoriesReload,
+  setFriendStoriesStoresForTests,
+} from "./friend-stories-wiring";
 
 // `unit` 계층(SW-S1 ~ S4, state-data): 친구 스토리 결선(ADR-0178 D2 · D4) — 서버 포트가 없으면 null(스토리 없음), 있으면 RPC,
 // 같은 설정이면 같은 포트 객체(효과가 렌더마다 다시 돌지 않게), 단어는 UI 언어 카탈로그에서 찾고 저장은 별표 단어장.
@@ -87,4 +91,15 @@ test("SW-S5 catalogWordOf — 준비되지 않은 에피소드 · 없는 단어�
     ),
   ).toBeNull();
   expect(catalogWordOf([water], "u02", "voca:a1")).toBeNull();
+});
+
+test("FS-U16 앱이 앞으로 오면(notify) 건 리스너가 불리고, 뗀 뒤로는 불리지 않는다(ADR-0178 「다시 읽기」)", () => {
+  const port = friendStoriesPort({ imageUrlOf, catalog: () => [] });
+  const listener = vi.fn();
+  const off = port.subscribeReload?.(listener);
+  notifyFriendStoriesReload();
+  expect(listener).toHaveBeenCalledTimes(1);
+  off?.();
+  notifyFriendStoriesReload();
+  expect(listener).toHaveBeenCalledTimes(1);
 });

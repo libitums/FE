@@ -6,12 +6,14 @@ import { messengerChatMediaZhTw } from "./ui-copy-zh-tw-chat-media";
 import { messengerChatAlbumZhTw } from "./ui-copy-zh-tw-chat-album";
 import { messengerChatSuggestedZhTw } from "./ui-copy-zh-tw-chat-suggested";
 import { messengerChatStoriesZhTw } from "./ui-copy-zh-tw-chat-stories";
+import { myStoriesZhTw } from "./ui-copy-zh-tw-my-stories";
 
 export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
   media: messengerChatMediaZhTw,
   album: messengerChatAlbumZhTw,
   suggested: messengerChatSuggestedZhTw,
   stories: messengerChatStoriesZhTw,
+  myStories: myStoriesZhTw,
   access: {
     signInTitle: "傳訊息給你遇見的人",
     signInBody: "建立免費帳號，就能用韓文和故事裡的人物聊天。你目前的進度都會保留。",
@@ -22,6 +24,35 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     promptKeepBody: "建立免費帳號，保留你的 Yeopjeon 和票券。",
   },
   pushNotice: { chatUnavailable: "這個聊天目前無法使用。" },
+  newMessages: {
+    label: ({ count, latest }) =>
+      latest === "photo"
+        ? count === 1
+          ? "傳了一張照片"
+          : `傳了一張照片 · ${count} 則新訊息`
+        : latest === "voice"
+          ? count === 1
+            ? "傳了一則語音訊息"
+            : `傳了一則語音訊息 · ${count} 則新訊息`
+          : count === 1
+            ? "新訊息"
+            : `${count} 則新訊息`,
+    jump: "跳到新訊息",
+    latest: "捲動到最新訊息",
+  },
+  replyToast: {
+    dismiss: "關閉",
+    more: (count) => `+${count}`,
+    spoken: (name, preview, more) =>
+      `${name} 傳來新訊息：${preview}` + (more > 0 ? `。還有 ${more} 則` : ""),
+  },
+  pushAsk: {
+    title: (name) => `${name} 傳訊息給你時，要通知你嗎？`,
+    body: "我有時會先傳訊息給你 — 大約一天一次，在傍晚。",
+    turnOn: "開啟",
+    notNow: "稍後再說",
+    on: (name) => `通知已開啟 — ${name} 傳訊息時會通知你。`,
+  },
   chatSettings: {
     entryTitle: "聊天",
     entryDescription: "回覆建議、角色傳來的訊息、記憶",
