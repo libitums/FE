@@ -17,8 +17,7 @@ import { spokenOf } from "./friend-stories";
 import { myStoriesTestIds as ids, type MyStory } from "./my-stories.contract";
 import { isSwipeUp, myStoryBarOf } from "./my-story-viewer";
 import type { MyStoryViewerMine } from "./my-story-viewer.contract";
-import { MyPhotoStoryCard } from "./MyPhotoStoryCard";
-import { MyTextStoryCard, SeenBy } from "./MyStoryReactions";
+import { SeenBy } from "./MyStoryReactions";
 import { MyStoryReplyList } from "./MyStoryReplyList";
 import { IconButton } from "./StoryViewerParts";
 
@@ -250,35 +249,6 @@ export function MyStoryRepliesSheet({
         </scroll-view>
       </AppBottomSheet>
     </view>
-  );
-}
-
-/** 글 · 사진 스토리를 화면 가득 — 얹은 것은 편집 때 비율 자리 그대로(편집도 화면 가득), 위아래 그늘은 친구 스토리와 같음. */
-export function MyStoryFace({
-  story,
-  insetTop,
-  photoUrl,
-}: {
-  readonly story: MyStory;
-  readonly insetTop: number;
-  readonly photoUrl: ((imagePath: string) => Promise<string | null>) | undefined;
-}): ReactNode {
-  return (
-    <>
-      <view className="my-story-face">
-        {story.kind === "photo" ? (
-          <MyPhotoStoryCard story={story} {...(photoUrl === undefined ? {} : { photoUrl })} />
-        ) : (
-          <MyTextStoryCard story={story} />
-        )}
-      </view>
-      <view
-        className="story-viewer-shade-top"
-        style={{ height: `${insetTop + 150}px` }}
-        accessibility-elements-hidden={true}
-      />
-      <view className="story-viewer-shade-bottom" accessibility-elements-hidden={true} />
-    </>
   );
 }
 

@@ -10,12 +10,8 @@ import { restoreAccessibilityFocus } from "./chat-input-focus";
 import { spokenOf, viewerGroupOf } from "./friend-stories";
 import { friendStoriesTestIds as ids, type StoryViewerProps } from "./friend-stories.contract";
 import { sideFace, StoryFaceBackdrop, StoryFaceShell, StoryLineCard } from "./StoryCubeFace";
-import {
-  MyStoryFace,
-  MyStoryMenu,
-  MyStoryRepliesSheet,
-  MyStoryViewerBottom,
-} from "./MyStoryViewerBar";
+import { MyStoryFace } from "./MyStoryFace";
+import { MyStoryMenu, MyStoryRepliesSheet, MyStoryViewerBottom } from "./MyStoryViewerBar";
 import { StoryMeet, StoryProgress, useAdvanceTimer, WordPill } from "./StoryViewerParts";
 import { StoryViewerHead } from "./StoryViewerHead";
 import { StoryReplyArea, StoryViewerSent } from "./StoryReplyArea";
