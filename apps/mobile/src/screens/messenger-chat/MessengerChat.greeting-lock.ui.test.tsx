@@ -70,6 +70,8 @@ describe("첫 인사 잠금 — 입력 줄", () => {
     expect(attr(ids.ideasButton, "data-disabled")).toBe("true");
     expect(attr(ids.display, "accessibility-label")).toBe("덕수쌤 is saying hi…");
     expect(screen.getByTestId(ids.display).textContent).toContain("덕수쌤 is saying hi…");
+    // Android는 꺼진 칸도 누르면 초점을 받았다(기기 확인) — 입력 자체가 꺼져 있다.
+    expect(attr(ids.input, "disabled")).toBe("true");
     act(() => {
       fireEvent.tap(screen.getByTestId(ids.field), {});
     });
@@ -84,6 +86,7 @@ describe("첫 인사 잠금 — 입력 줄", () => {
     act(() => env.greet(GREETING));
     await flush();
     expect(attr(ids.field, "data-locked")).toBe("false");
+    expect(attr(ids.input, "disabled")).not.toBe("true");
     expect(attr(ids.ideasButton, "data-disabled")).toBe("false");
     expect(attr(ids.display, "accessibility-label")).not.toBe("덕수쌤 is saying hi…");
   });

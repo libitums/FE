@@ -212,6 +212,8 @@ export function ComposerField({
         accessibility-label={copy.placeholder}
         accessibility-elements-hidden={phoneActive ? undefined : true}
         user-interaction-enabled={phoneActive}
+        // Android는 꺼진 칸도 누르면 초점을 받아 휴대폰 키보드를 띄웠습니다(기기 확인) — 잠긴 동안은 입력 자체를 끕니다.
+        disabled={locked !== null}
         bindinput={(event: NativeInputEvent) => {
           "background only";
           onPhoneInput(event.detail.value);
