@@ -82,6 +82,7 @@ export function SpeechMic({
           className={`speech-mic-button speech-mic-button-${state}`}
           data-testid={`${testId}-button`}
           accessibility-element={pressable}
+          flatten={false}
           accessibility-traits={pressable ? "button" : undefined}
           accessibility-label={pressable ? label : undefined}
           bindtap={pressable ? handleTap : undefined}

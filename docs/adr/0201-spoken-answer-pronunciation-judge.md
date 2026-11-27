@@ -240,6 +240,26 @@ D3의 「앞뒤 낱말 공짜」를 고친다. 마디마다 맞춘 구간의 시
 - 스스로 정한 기본값: 셸 아래 주 버튼(Speak · Stop speaking)은 남겼다(큰 마이크와 같은 동작, 접근성 이름이 있는 큰 단추). 권한 · 실패
   화면은 `feat/mic-permission-flow`의 몫이라 건드리지 않았다.
 
+## D6 적용 2 ⟨롤플레이 화면⟩(2026-11-27, 브랜치 `feat/roleplay-speak-ui`)
+
+시안 R1 ~ R5(사용자 승인 2026-11-27). 근거: 롤플레이 완료 48%, 마친 판에서도 턴 66% 건너뜀, Hint 사용 약 3%, 밝은 장면에서 흰 글자가
+안 읽힘, 오답 때 내 말이 크고 정답이 회색 작은 글자.
+
+- **아래 흰 패널**: 말하기 묶음을 흰 카드 면에 둔다 — 그림 위 흰 글자 없음, 글자는 흰 면 위 4.5:1을 넘는 색만. 맨 위 「Your line」과
+  내 문장의 **뜻**(늘 보임) → 공용 마이크(PR `feat/speak-word-ui`의 `SpeechMic`) → 작은 Hint · Can't speak now.
+- **Hint 단계**: 뜻은 늘 패널 맨 위(스스로 정한 기본값 — 시안 R1은 한국어까지 늘 보였지만 그러면 R5의 「Show Korean」이 뜻이 없다) →
+  Hint를 누르면 「Hear it」(내 문장 소리, 있으면) · 「Show Korean」(한국어 · 로마자). 쓴 힌트는 `hintUsed`(show가 listen보다 앞섬).
+  로마자는 콘텐츠에 없어 `romanizeKorean`(ADR-0188)으로 만든다.
+- **판정은 결말 콜백에서** `judgeSpokenAnswer`로 재어 상태에 등급 · 모범 문장을 담는다(렌더에서 채점하지 않음).
+- **정답**: 내 말풍선(모범 문장) 뒤로 상대가 대본 다음 줄로 곧장 반응하고, 패널은 ✓ Great + Next. **2초 뒤 다음 턴**(누르면 바로).
+- **오답**: 정답 문장이 주인공(크게 · 로마자 · 소리 단추 · 다른 낱말 밑줄 `wordDiff`), 「You said」는 작게(다른 낱말 밑줄), Try again(주) ·
+  Next(보조, 오답으로 기록). 시안의 「Skip」 대신 Next로 적었다 — 이 단추는 판정을 기록하고 넘기며, 판정 없는 건너뜀은 Can't speak now다.
+- **진행**: 「Line 1 / 2」 대신 칸 막대(낭독 이름은 그대로 「Line 1 / 2」). 머리 「Episode N.」의 끝 마침표를 뗀다(`roleplayHeaderLabel`).
+- **「Can't speak now」 잘림**: 링크 줄은 줄바꿈을 막지 않는다(기기 캡처로 확인).
+- **측정**: 새 이벤트 `roleplay_story_turn_answered` { episodeId · turn · result(correct · incorrect · skipped) · grade? · hintUsed? } —
+  턴을 넘기거나 건너뛸 때 한 번. 들은 문장 · 대사는 싣지 않는다. PostHog만(AN1 131 → 132, AB3 101 · 93 → 102 · 94).
+- #646(마이크 권한 흐름, ADR-0206) 위에 얹었다 — 권한 시트 · 인식 실패 다시 말하기(`roleplayRetryable`)는 그대로.
+
 ## 대가 · 알려진 한계
 
 - **뒤에 덧붙은 낱말은 공짜다**: 정답 뒤로 아무 낱말이나 붙여도 감점이 없다(전 앱 규칙도 뒤 낱말은 무시했다). 앞 낱말은 E2.

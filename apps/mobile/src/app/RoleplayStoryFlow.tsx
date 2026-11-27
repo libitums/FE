@@ -23,6 +23,7 @@ import { speechReadinessOf } from "../screens/roleplay-story/roleplay-story";
 import type {
   RoleplaySpeechNotice,
   RoleplaySpeechNoticeAction,
+  RoleplayTurnReport,
 } from "../screens/roleplay-story/roleplay-story.contract";
 import type { RoleplayStoryModel } from "./roleplay-story-model";
 
@@ -39,6 +40,8 @@ export type RoleplayStoryFlowProps = {
   readonly onRomanizationChange?: (next: ChoiceRomanization) => void;
   /** 마이크 권한 안내의 맥락(ADR-0206) — 이벤트 받는 곳. 없으면 이벤트가 없습니다. */
   readonly mic?: MicPermissionContext;
+  /** 턴 하나를 넘기거나 건너뛸 때(측정). */
+  readonly onTurnAnswered?: (report: RoleplayTurnReport) => void;
 };
 
 export function RoleplayStoryFlow({
@@ -49,6 +52,7 @@ export function RoleplayStoryFlow({
   romanization = "hidden",
   onRomanizationChange,
   mic,
+  onTurnAnswered,
 }: RoleplayStoryFlowProps): ReactNode {
   const [stage, setStage] = useState<Stage>("preview");
   const [notice, setNotice] = useState<RoleplaySpeechNotice | null>(null);
@@ -139,6 +143,7 @@ export function RoleplayStoryFlow({
       onFinish={onFinish}
       onExit={onExit}
       mic={mic}
+      onTurnAnswered={onTurnAnswered}
     />
   );
 }

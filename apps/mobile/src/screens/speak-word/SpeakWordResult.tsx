@@ -117,6 +117,7 @@ export function SpeakWordResult({ view, onHear }: SpeakWordResultProps): ReactNo
               className="speak-word-result-play"
               data-testid="speak-word-result-play"
               accessibility-element={true}
+              flatten={false}
               accessibility-traits="button"
               accessibility-label={copy.speakWord.result.hearAnswer}
               bindtap={handleHear}

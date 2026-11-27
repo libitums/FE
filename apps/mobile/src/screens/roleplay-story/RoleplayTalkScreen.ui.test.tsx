@@ -37,7 +37,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function mount(wildcards: readonly string[] = []) {
+function mount(
+  wildcards: readonly string[] = [],
+  extra: { readonly onTurnAnswered?: (report: unknown) => void } = {},
+) {
   const onFinish = vi.fn<Finish>();
   const onExit = vi.fn();
   render(
@@ -49,6 +52,7 @@ function mount(wildcards: readonly string[] = []) {
       wildcards={wildcards}
       onFinish={onFinish}
       onExit={onExit}
+      onTurnAnswered={extra.onTurnAnswered}
     />,
   );
   return { onFinish, onExit };
@@ -59,13 +63,18 @@ const maybe = (testId: string) => screen.queryByTestId(testId);
 const tapButton = (testId: string) =>
   fireEvent.tap(within(id(testId)).getByTestId("ui-lynx-button"), {});
 
-test("[RT1] 첫 화면 — 상대 대사 다이얼로그 · Line 1 / 2 · 마이크 Speak · 힌트 · 건너뛰기, 판정은 없다", () => {
+test("[RT1] 첫 화면 — 상대 대사 · 칸 막대(Line 1 / 2) · 흰 패널(Your line · 뜻) · 마이크 Speak · 힌트 · 건너뛰기, 판정은 없다", () => {
   stubSpeechHost();
   mount();
   expect(id("roleplay-talk-line")).toHaveTextContent("봉투 드릴까요?");
   expect(id("roleplay-talk-line")).toHaveTextContent("점원");
-  expect(id("roleplay-talk-progress")).toHaveTextContent("Line 1 / 2");
-  expect(id("roleplay-talk-mic")).toHaveAttribute("accessibility-label", "Speak");
+  expect(id("roleplay-talk-progress")).toHaveAttribute("accessibility-label", "Line 1 / 2");
+  expect(id("roleplay-talk-progress").children).toHaveLength(2);
+  expect(id("roleplay-talk-panel")).toHaveTextContent("Your line");
+  expect(id("roleplay-talk-meaning")).toHaveTextContent("No, I'm fine.");
+  expect(maybe("roleplay-talk-korean")).not.toBeInTheDocument();
+  expect(screen.getByText("Episode 1")).toBeInTheDocument();
+  expect(id("roleplay-mic-button")).toHaveAttribute("accessibility-label", "Speak");
   expect(id("roleplay-talk-show-hint")).toHaveTextContent("Show hint");
   expect(id("roleplay-talk-skip")).toHaveTextContent("Can't speak now");
   expect(maybe("roleplay-talk-reply")).not.toBeInTheDocument();
@@ -74,18 +83,34 @@ test("[RT1] 첫 화면 — 상대 대사 다이얼로그 · Line 1 / 2 · 마이
 test("[RT2] 마이크 → 듣는 중(Stop) → 맞게 들으면 Me 다이얼로그 · Great · Next", () => {
   const host = stubSpeechHost();
   mount();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(host.calls.start).toBe(1);
   expect(id("roleplay-talk-screen")).toHaveAttribute("data-phase", "listening");
-  expect(id("roleplay-talk-mic")).toHaveAttribute("accessibility-label", "Stop");
+  expect(id("roleplay-mic-button")).toHaveAttribute("accessibility-label", "Stop");
   act(() => {
     host.pending[0]?.({ status: "recognized", text: "아니요 괜찮아요", isFinal: true });
   });
   expect(id("roleplay-talk-verdict")).toHaveTextContent("Great");
   expect(id("roleplay-talk-reply")).toHaveTextContent("Me");
   expect(id("roleplay-talk-reply")).toHaveTextContent("아니요, 괜찮아요.");
+  // 상대가 대본 다음 줄로 곧장 반응한다(시안 R3)
+  expect(id("roleplay-talk-reaction")).toHaveTextContent("삼천 원입니다.");
   expect(maybe("roleplay-talk-retry")).not.toBeInTheDocument();
   expect(id("roleplay-talk-next")).toHaveTextContent("Next");
+});
+
+test("[RT2b] 맞힌 뒤 2초면 다음 턴으로 저절로 넘어간다", () => {
+  vi.useFakeTimers();
+  const host = stubSpeechHost({ result: () => recognized("아니요 괜찮아요") });
+  mount();
+  fireEvent.tap(id("roleplay-mic-button"), {});
+  expect(host.calls.start).toBe(1);
+  expect(id("roleplay-talk-progress")).toHaveAttribute("accessibility-label", "Line 1 / 2");
+  act(() => {
+    vi.advanceTimersByTime(2000);
+  });
+  expect(id("roleplay-talk-progress")).toHaveAttribute("accessibility-label", "Line 2 / 2");
+  vi.useRealTimers();
 });
 
 test("[RT3] 틀리면 들은 말과 정답을 보이고 Try again으로 다시 말할 수 있다", () => {
@@ -93,25 +118,40 @@ test("[RT3] 틀리면 들은 말과 정답을 보이고 Try again으로 다시 �
     result: (attempt) => recognized(attempt === 0 ? "네 괜찮아요" : "아니요 괜찮아요"),
   });
   mount();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-verdict")).toHaveTextContent("Not quite");
-  expect(id("roleplay-talk-reply")).toHaveTextContent("네 괜찮아요");
-  expect(id("roleplay-talk-reply")).toHaveTextContent("Answer: 아니요, 괜찮아요.");
+  // 정답 문장이 주인공 — 다른 낱말에 밑줄, 들은 말은 작게(시안 R4)
+  expect(id("roleplay-talk-answer-ko")).toHaveTextContent("아니요, 괜찮아요.");
+  expect(id("roleplay-talk-answer-ko").querySelector('[data-differs="true"]')).toHaveTextContent(
+    "아니요,",
+  );
+  expect(id("roleplay-talk-heard")).toHaveTextContent("You said");
+  expect(id("roleplay-talk-heard-text")).toHaveTextContent("네 괜찮아요");
   tapButton("roleplay-talk-retry");
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-verdict")).toHaveTextContent("Great");
 });
 
-test("[RT4] 힌트는 내가 할 말의 뜻을 펼치고, 다음 턴에서 접힌다", () => {
+test("[RT4] 힌트는 Show Korean으로 한국어 · 로마자를 펼치고(턴 보고에 show), 다음 턴에서 접힌다", () => {
   stubSpeechHost({ result: () => recognized("아니요 괜찮아요") });
-  mount();
+  const onTurnAnswered = vi.fn<(report: unknown) => void>();
+  mount([], { onTurnAnswered });
   fireEvent.tap(id("roleplay-talk-show-hint"), {});
-  expect(id("roleplay-talk-hint")).toHaveTextContent("Say: No, I'm fine.");
   expect(maybe("roleplay-talk-show-hint")).not.toBeInTheDocument();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  expect(id("roleplay-talk-hint")).toHaveTextContent("Show Korean");
+  tapButton("roleplay-talk-show-korean");
+  expect(id("roleplay-talk-korean")).toHaveTextContent("아니요, 괜찮아요.");
+  fireEvent.tap(id("roleplay-mic-button"), {});
   tapButton("roleplay-talk-next");
-  expect(id("roleplay-talk-progress")).toHaveTextContent("Line 2 / 2");
+  expect(onTurnAnswered).toHaveBeenCalledWith({
+    turn: 1,
+    result: "correct",
+    grade: "perfect",
+    hintUsed: "show",
+  });
+  expect(id("roleplay-talk-progress")).toHaveAttribute("accessibility-label", "Line 2 / 2");
   expect(maybe("roleplay-talk-hint")).not.toBeInTheDocument();
+  expect(maybe("roleplay-talk-korean")).not.toBeInTheDocument();
 });
 
 test("[RT5] 인식 불가는 안내를 띄우고, 건너뛰기는 판정 없이 넘겨 끝에 한 번 결과를 올린다", () => {
@@ -119,14 +159,14 @@ test("[RT5] 인식 불가는 안내를 띄우고, 건너뛰기는 판정 없이 
     result: (attempt) => (attempt === 0 ? audioFailed : recognized("카드로 할게요")),
   });
   const { onFinish } = mount();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "failed");
   // 마이크 입력 실패는 거부와 다른 문구로 다시 말하기를 권합니다(ADR-0206 D5 — ADR-0181 D4 개정).
   expect(id("roleplay-talk-unavailable")).toHaveTextContent(
     "Something went wrong while listening. Try again.",
   );
   fireEvent.tap(id("roleplay-talk-skip"), {});
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-next")).toHaveTextContent("See results");
   tapButton("roleplay-talk-next");
   expect(onFinish).toHaveBeenCalledTimes(1);
@@ -146,14 +186,14 @@ test("[RT6] 이름이 든 대답은 이름이 달리 들려도 맞다", () => {
       onExit={() => {}}
     />,
   );
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-verdict")).toHaveTextContent("Great");
 });
 
 test("[RT7] 나가기는 듣던 것을 멈추고 onExit를 부른다", () => {
   const host = stubSpeechHost();
   const { onExit } = mount();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   fireEvent.tap(within(id("roleplay-talk-back")).getByTestId("ui-lynx-round-button"), {});
   expect(host.calls.stop).toBeGreaterThan(0);
   expect(onExit).toHaveBeenCalledTimes(1);
@@ -190,13 +230,13 @@ test("[RP1] 미리보기 — 에피소드 · Roleplay · 제목, 상대 · 대�
 test("[RT8] 듣지 못한 까닭마다 안내가 다르다 — 받아쓰기 꺼짐 · 권한 거부", () => {
   stubSpeechHost({ result: () => dictationOff });
   mount();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "dictation-off");
   expect(id("roleplay-talk-unavailable")).toHaveTextContent("Enable Dictation");
   cleanup();
   stubSpeechHost({ microphone: "denied" });
   mount();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
+  fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "blocked");
   expect(id("roleplay-talk-unavailable")).toHaveTextContent(
     "Allow Microphone and Speech Recognition",
@@ -232,8 +272,9 @@ test("[RT-FIT] 긴 대사 · 판정 뒤에도 대사는 아래 묶음의 스크�
   mount();
   const scrollOf = (el: Element) => el.closest("scroll-view");
   expect(scrollOf(id("roleplay-talk-line"))).not.toBeNull();
-  expect(scrollOf(id("roleplay-talk-mic"))).toBeNull();
-  fireEvent.tap(id("roleplay-talk-mic"), {});
-  expect(scrollOf(id("roleplay-talk-reply"))).not.toBeNull();
+  expect(scrollOf(id("roleplay-mic-button"))).toBeNull();
+  fireEvent.tap(id("roleplay-mic-button"), {});
+  // 틀리면 대사는 그대로 스크롤 안, 정답 패널은 스크롤 밖이다
+  expect(scrollOf(id("roleplay-talk-line"))).not.toBeNull();
   expect(scrollOf(id("roleplay-talk-actions"))).toBeNull();
 });

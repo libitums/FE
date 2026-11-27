@@ -78,6 +78,38 @@ function piecesOf(chars: readonly string[], shared: ReadonlySet<number>): DiffPi
   return pieces;
 }
 
+/** 낱말 단위 차이 — 롤플레이 오답 패널(시안 R4)이 다른 낱말을 통째로 표시합니다. */
+export function wordDiff(heard: string, expected: string): SyllableDiff {
+  const bare = (word: string) => word.replace(/[.,!?~…"'“”‘’]/g, "");
+  const wordsOf = (text: string) => text.split(/\s+/).filter((word) => word !== "");
+  const heardWords = wordsOf(heard);
+  const expectedWords = wordsOf(expected);
+  const heardSet = new Set(heardWords.map(bare));
+  const expectedSet = new Set(expectedWords.map(bare));
+  // 한 번에 훑습니다 — 다른 낱말은 낱말만 표시하고 앞 띄어쓰기는 표시 없는 조각에 붙여, 이웃한 같은 표시는 묶습니다.
+  const piecesOfWords = (words: readonly string[], other: ReadonlySet<string>): DiffPiece[] => {
+    const pieces: DiffPiece[] = [];
+    const push = (text: string, differs: boolean): void => {
+      const last = pieces[pieces.length - 1];
+      if (last !== undefined && last.differs === differs) {
+        pieces[pieces.length - 1] = { text: last.text + text, differs };
+      } else {
+        pieces.push({ text, differs });
+      }
+    };
+    words.forEach((word, index) => {
+      const differs = bare(word) !== "" && !other.has(bare(word));
+      if (index > 0) push(" ", differs && pieces[pieces.length - 1]?.differs === true);
+      push(word, differs);
+    });
+    return pieces;
+  };
+  return {
+    heard: piecesOfWords(heardWords, expectedSet),
+    expected: piecesOfWords(expectedWords, heardSet),
+  };
+}
+
 /** 들은 말과 정답을 음절로 맞춰 양쪽의 다른 글자를 표시합니다. 빈 글은 빈 조각 열입니다. */
 export function syllableDiff(heard: string, expected: string): SyllableDiff {
   const heardChars = Array.from(heard);
