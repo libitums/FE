@@ -26,6 +26,7 @@ import {
 import { MyStoryAddSheet } from "./MyStoryComposer";
 import { MyStoryEditorFooter } from "./MyStoryEditorFooter";
 import { MyStoryTool as Tool } from "./MyStoryTool";
+import { CanvasGrip, canvasTouchHandlers, type GripHub } from "./use-placed-grip";
 import { MyStorySticker, type CanvasSize } from "./MyStorySticker";
 import { MyStoryTextBox, useEditorText } from "./MyStoryTextBox";
 import { MyStoryTextEntry } from "./MyStoryTextEntry";
@@ -78,6 +79,8 @@ export function MyStoryEditor({
   const [cover, setCover] = useState({ top: 0, bottom: 0 });
   // 위 줄은 안전 영역 아래에 섭니다(층의 paddingTop) — 안전 영역은 그릴 때 더해 값이 바뀌어도 맞습니다.
   const canvas: CanvasSize = { ...screenSize, top: insets.top + cover.top, bottom: cover.bottom };
+  // 지금 잡힌 것 — 둘째 손가락이 바탕 어디에 닿아도 그것에 붙습니다(ADR-0194 개정 ⟨두 손가락 회전⟩).
+  const grip = useRef<GripHub>({ current: null });
   const stickerIds = useRef(0); // 스티커 id — 이 편집 안에서만 씁니다(서버 clientId와 따로)
   useLayerBack(onClose);
 
@@ -132,6 +135,7 @@ export function MyStoryEditor({
         <view
           className="my-story-canvas"
           data-testid={ids.stickers}
+          {...canvasTouchHandlers(grip.current)}
           bindlayoutchange={(event: { detail: { width: number; height: number } }) => {
             "background only";
             setScreenSize({ width: event.detail.width, height: event.detail.height });
@@ -141,30 +145,32 @@ export function MyStoryEditor({
             setSelected(null);
           }}
         >
-          {text === null || writing ? null : (
-            <MyStoryTextBox
-              text={text}
-              canvas={canvas}
-              selected={selected === "text"}
-              onSelect={() => setSelected("text")}
-              onChange={typing.update}
-              onRemove={typing.remove}
-              onEdit={typing.start}
-            />
-          )}
-          {stickers.map((sticker) => (
-            <MyStorySticker
-              key={sticker.id}
-              sticker={sticker}
-              canvas={canvas}
-              selected={selected === sticker.id}
-              onSelect={() => setSelected(sticker.id)}
-              onChange={update}
-              onRemove={() =>
-                changed(() => setStickers((now) => now.filter((each) => each.id !== sticker.id)))
-              }
-            />
-          ))}
+          <CanvasGrip.Provider value={grip.current}>
+            {text === null || writing ? null : (
+              <MyStoryTextBox
+                text={text}
+                canvas={canvas}
+                selected={selected === "text"}
+                onSelect={() => setSelected("text")}
+                onChange={typing.update}
+                onRemove={typing.remove}
+                onEdit={typing.start}
+              />
+            )}
+            {stickers.map((sticker) => (
+              <MyStorySticker
+                key={sticker.id}
+                sticker={sticker}
+                canvas={canvas}
+                selected={selected === sticker.id}
+                onSelect={() => setSelected(sticker.id)}
+                onChange={update}
+                onRemove={() =>
+                  changed(() => setStickers((now) => now.filter((each) => each.id !== sticker.id)))
+                }
+              />
+            ))}
+          </CanvasGrip.Provider>
         </view>
         <view
           className={`my-story-editor-top${writing ? " my-story-under-typing" : ""}`}
