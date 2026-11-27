@@ -161,7 +161,7 @@ export const myStoryRequestSchema = z.discriminatedUnion("action", [
     overlays: z.optional(z.array(myStoryOverlaySchema).check(z.maxLength(MY_STORY_OVERLAY_MAX))),
     lang: z.string(),
     tz_offset_min: z.optional(z.nullable(z.int())),
-    /** 기기 지역(ISO 3166-1 alpha-2) — 위기 신호일 때 그 지역의 상담 연락처를 고릅니다. 없으면 국제 목록. */
+    /** 기기 지역(ISO 3166-1 alpha-2, 스토어 나라) — 위기 신호일 때 그 지역의 상담 연락처를 고르고, 기기 시차가 0 · 없을 때 올리기 창의 시간대가 됩니다(ADR-0211). 없으면 국제 목록 · UTC. */
     client_region: z.optional(z.nullable(z.string())),
   }),
   z.object({
