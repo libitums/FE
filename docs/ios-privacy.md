@@ -119,7 +119,9 @@ App Store 응답의 「기기 ID — 개발자 광고 · 추적 예」 범위 �
 - **App Store Connect에서 바뀌는 칸**(아직 고치지 않았다 — 사용자): 진단 › **충돌 데이터** · **성능 데이터** 추가, 사용자와 연결 **예**, 추적 아니오, 목적 앱 기능.
 - **SDK manifest**: Sentry pod이 자기 `PrivacyInfo.xcprivacy`를 싣는다 — 손대지 않는다(SDWebImage · Airbridge와 같은 원칙).
 - ⚠ **세션의 `did`에는 Sentry SDK가 만든 설치 id(무작위 UUID, IDFA · IDFV 아님)가 실린다** — Cocoa SDK에 끄는 옵션이 없다(ADR-0207 D4). Android는 끈다.
-- **처리방침**: 랜딩 `privacy-*-providers.ts`의 Sentry 행이 「Error reports on Android」 · 사용자 ID 없음으로 적혀 있다 — iOS와 사용자 ID를 더해야 한다(사용자 확인).
+- **처리방침**: ~~랜딩 `privacy-*-providers.ts`의 Sentry 행이 「Error reports on Android」 · 사용자 ID 없음으로 적혀 있다 — iOS와 사용자 ID를 더해야 한다(사용자 확인).~~
+  ⟨2026-11-27⟩ 반영했다 — en · ko의 Sentry 행(「Android와 iOS 오류 · 비정상 종료 보고」 · 로그인한 경우 내부 사용자 ID · 이름 · 이메일 · IP 없음)과 「오류 보고」 절(iOS 세션의 무작위 설치 ID 포함), 시행일 2026-11-27.
+- **설치 ID와 App Store 「기기 ID」**: 세션 `did`의 설치 ID는 기기 ID 성격이다. 기기 ID 행은 이미 App Functionality(+ Developer Advertising)로 신고돼 있어 **칸을 새로 만들지 않는다** — 목적 앱 기능 안이다 [추론].
 
 ### 공개 개인정보처리방침에 반영할 문안
 

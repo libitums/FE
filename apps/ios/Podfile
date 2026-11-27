@@ -33,6 +33,9 @@ target 'Host' do
   # Sentry는 9.19.1 뒤로 CocoaPods에 새 판을 올리지 않는다 — 더 새 판이 필요하면 SPM으로 옮긴다(ADR-0207 D2).
   pod 'Sentry', '9.19.1'
 
+  # 「Out of tickets」의 광고 보고 1장 — AdMob 보상형(ADR-0209). 정확 버전이다(ADR-0012 D4). 값이 없으면 시작하지 않는다.
+  pod 'Google-Mobile-Ads-SDK', '13.12.0'
+
   target 'HostTests' do
     inherit! :search_paths
   end

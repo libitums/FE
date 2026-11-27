@@ -29,6 +29,7 @@ import {
   placeMediaLine,
   withPendingStage,
 } from "./chat-media-rules";
+import { withoutMovedCopies } from "./chat-media-relocate";
 import type { ChatRemote } from "./chat-remote.contract";
 import type { ChatMediaKind, ChatMessage } from "./chat-source.contract";
 
@@ -91,7 +92,10 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     room.pendingVoices = room.messages.filter((m) => m.kind === "voice-pending").length;
   };
   const put = (room: RoomState, line: ChatMessage) => {
-    room.messages = collapseMediaResults(placeMediaLine(room.messages, line));
+    // 같은 매체가 다른 대상 아래에 있으면 빼고 놓습니다 — 매체 하나는 한 줄(가이드 예시 두 장).
+    room.messages = collapseMediaResults(
+      placeMediaLine(withoutMovedCopies(room.messages, line), line),
+    );
     recount(room);
   };
   /** 자리표시자(`~req`)를 서버 줄로 — 같은 서버 줄이 이미 섰으면(resume) 자리표시자를 뺍니다. */

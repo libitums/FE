@@ -28,6 +28,8 @@ export type RemoteHistory = {
   readonly ideasOrigin?: ChatIdeasOrigin | null;
   /** 첫 인사(서버 `origin` greeting) 메시지 id — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩). 없거나 모르면 null · 없음. */
   readonly greetingId?: string | null;
+  /** 이 쪽보다 오래된 기록이 서버에 더 있음(`hasMore`) — 첫 인사가 로그 밖일 수 있습니다(무료 예시 대상). 없으면 다 읽은 것. */
+  readonly hasMore?: boolean;
 };
 
 /** 첫 인사 — 서버가 인사를 만들지 않았으면(이미 메시지가 있음 · 대화 불가) null. */

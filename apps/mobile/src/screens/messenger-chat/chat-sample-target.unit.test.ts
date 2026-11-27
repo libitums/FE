@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { mediaLineId, mediaTargetOf } from "./chat-media-rules";
 import {
   isSampleLine,
+  placedSampleTarget,
   samplePrefixOf,
   sampleLineOf,
   sampleRevealAction,
@@ -70,6 +71,19 @@ describe("sampleTargetOf", () => {
     expect(sampleTargetOf(replied, "photo", null)?.messageId).toBe(G);
     const gone = replied.filter((m) => !m.id.startsWith(G));
     expect(sampleTargetOf([say(`${P}#0`, "선톡"), ...gone], "voice", G)?.messageId).toBe(P);
+  });
+
+  test("GA-U1 기록의 앞부분을 읽지 않은 방(첫 쪽 30개 밖) — 첫 인사가 로그에 없으면 null, 첫 캐릭터 메시지로 대신하지 않는다", () => {
+    // 재현(점검 3): 첫 쪽에 첫 인사가 없으면 대상이 「불러온 범위의 첫 캐릭터 말」이 되고, 서버는 첫 인사에 붙여 다시 열면 사라졌다.
+    const cut = [say(`${R}#0`, "앞부분이 잘린 로그의 첫 캐릭터 말"), mine("u9")];
+    for (const media of ["photo", "voice"] as const) {
+      expect(sampleTargetOf(cut, media, null, true), media).toBeNull();
+      expect(sampleTargetOf(cut, media, G, true), media).toBeNull();
+    }
+    // 첫 인사가 첫 쪽 안에 있으면 지금과 같다.
+    expect(sampleTargetOf(replied, "photo", G, true)?.messageId).toBe(G);
+    // 앞부분까지 다 읽은 방은 예전처럼 첫 캐릭터 메시지.
+    expect(sampleTargetOf(cut, "photo", null, false)?.messageId).toBe(R);
   });
 
   test("GS-U4 캐릭터 메시지가 없으면 null, 음성은 말 조각이 없으면 null(예시 단계가 서지 않음)", () => {
@@ -141,5 +155,28 @@ describe("예시 줄", () => {
     expect(sampleRevealAction({ nearEnd: false, parked: true, pending: false })).toBe("scroll");
     expect(sampleRevealAction({ nearEnd: false, parked: false, pending: false })).toBe("pill");
     expect(sampleRevealAction({ nearEnd: false, parked: false, pending: true })).toBe("none");
+  });
+});
+
+describe("placedSampleTarget (가이드 예시 두 장)", () => {
+  test("GD-U5 서버가 붙인 곳(첫 인사)이 로그에 있고 앱이 고른 대상과 다르면 그 메시지 — 자막도 그 메시지 글", () => {
+    const requested = mediaTargetOf(replied, "photo");
+    if (requested === null) throw new Error("대상 없음");
+    expect(requested.messageId).toBe(R);
+    const placed = placedSampleTarget(replied, requested, G, "voice");
+    expect(placed).toEqual({
+      messageId: G,
+      text: { ko: "안녕하세요! 저는 덕수예요.", en: "Hi! I'm Duksu." },
+    });
+  });
+
+  test("GD-U6 같거나 · 로그에 없거나 · 음성인데 말 조각이 없으면 앱이 고른 대상 그대로", () => {
+    const requested = sampleTargetOf(replied, "photo", G);
+    if (requested === null) throw new Error("대상 없음");
+    expect(placedSampleTarget(replied, requested, G, "photo")).toBe(requested);
+    expect(placedSampleTarget(replied, requested, P, "photo")).toBe(requested);
+    const onlyAction = [action(`${P}#0`, "*손을 흔든다*"), ...replied];
+    expect(placedSampleTarget(onlyAction, requested, P, "voice")).toBe(requested);
+    expect(placedSampleTarget(onlyAction, requested, P, "photo").messageId).toBe(P);
   });
 });

@@ -24,6 +24,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       PurchasesAttribution.linkAirbridgeDevice()
     }
 
+    // AdMob 보상형 광고(ADR-0209 D10). 앱 ID만 읽어 둔다 — SDK는 서버가 광고 단위를 준 첫 불러오기 때 시작한다.
+    if let config = RewardedAdConfig.fromBundle() {
+      RewardedAdSDK.configure(config)
+    }
+
     // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.
     // 등록이 없으면 `<image>`가 WebP를 받아 캐시까지 해 놓고 **아무것도 그리지 않는다** —
     // 오류 이벤트도 없다. Explorer는 이 등록을 스스로 하므로 개발 루프에서는 드러나지 않는다.

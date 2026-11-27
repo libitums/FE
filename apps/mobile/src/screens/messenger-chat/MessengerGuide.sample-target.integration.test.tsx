@@ -55,15 +55,21 @@ const sampleRow = (id: string, kind: "snapshot" | "voice", messageId: string): R
 
 let invoked: { readonly selector: string; readonly method: string }[] = [];
 
-function serverRoom(history: RemoteHistory, offer = { snapshot: true, voice: true }) {
+function serverRoom(
+  history: RemoteHistory,
+  offer = { snapshot: true, voice: true },
+  // 서버가 실제로 붙인 메시지(받기 응답 `media.messageId`)와 방을 열 때마다 돌려줄 사진 · 음성 행 — 없으면 받은 메시지 · 빈 목록.
+  server: { readonly placedAt?: string; readonly loads?: RemoteMedia[][] } = {},
+) {
   const timers = fakeTimers();
   const turns: RemoteTurnHandlers[] = [];
+  const loads = [...(server.loads ?? [])];
   const claim = vi.fn(async (messageId: string, kind: string): Promise<MediaRequestResult> => ({
     kind: "accepted",
     media:
       kind === "voice"
-        ? sampleRow(VOICE, "voice", messageId)
-        : sampleRow(PHOTO, "snapshot", messageId),
+        ? sampleRow(VOICE, "voice", server.placedAt ?? messageId)
+        : sampleRow(PHOTO, "snapshot", server.placedAt ?? messageId),
     cached: false,
   }));
   const request = vi.fn(async (..._args: unknown[]): Promise<MediaRequestResult> => ({
@@ -71,7 +77,7 @@ function serverRoom(history: RemoteHistory, offer = { snapshot: true, voice: tru
   }));
   const media: ChatMediaRemote = {
     request,
-    load: async () => [],
+    load: async () => loads.shift() ?? [],
     sign: async (path) => `https://signed/${path}`,
     balance: async () => 100,
     sample: { offer: vi.fn(async () => offer), claim },
@@ -228,6 +234,105 @@ describe("가이드 → 답 → 예시 받기", () => {
       snapshot: true,
       voice: false,
     });
+  });
+
+  // 가이드 예시 두 장(#648 뒤): 앱이 놓은 줄의 대상과 서버 행의 `messageId`가 다르면 방을 다시 열 때 같은 사진이 두 장 섰다.
+  const photosShown = () => screen.queryAllByTestId(ids.photoOpen).length;
+  const reenter = async (env: ReturnType<typeof serverRoom>) => {
+    cleanup(); // 화면을 떠나면 방을 닫는다
+    mountChat({ source: env.source, roomId: "duksu", guideStore: memoryStore(["list", "room"]) });
+    await flush();
+  };
+
+  test("GD-I1 받기 응답이 첫 인사에 붙였다고 하면(앱은 선톡을 보냄) 사진은 곧바로 첫 인사 아래 한 장, 다시 열어도 한 장", async () => {
+    const P = "77777777-7777-4777-8777-777777777777";
+    const history: RemoteHistory = {
+      messages: [
+        { id: `${P}#0`, at: 0, kind: "text", from: "them", text: { ko: "선톡", en: "" } },
+        ...greetingBubbles,
+      ],
+      corrections: {},
+      ideas: null,
+    };
+    const env = serverRoom(history, undefined, {
+      placedAt: G,
+      loads: [[], [sampleRow(PHOTO, "snapshot", G)]],
+    });
+    env_messages = () => env.source.thread("duksu")?.messages ?? [];
+    mountChat({
+      source: env.source,
+      roomId: "duksu",
+      guideStore: memoryStore(["list", "room", "keyboard"]),
+    });
+    await flush();
+    fireEvent.tap(screen.getByTestId(ids.snapshot), {});
+    await flush();
+    expect(env.claim).toHaveBeenLastCalledWith(P, "snapshot");
+    act(() => env.timers.advance(1500));
+    await flush();
+    expect(photosShown()).toBe(1);
+    expect(ids_().indexOf(`${G}~snapshot~${PHOTO}`)).toBe(ids_().indexOf(`${G}#1`) + 1);
+    await reenter(env);
+    expect(photosShown()).toBe(1);
+  });
+
+  test("GD-I2 응답 아래 섰던 예시 행이 운영 정리로 첫 인사에 옮겨진 뒤 다시 열면 첫 인사 아래 한 장", async () => {
+    const history: RemoteHistory = {
+      messages: [
+        ...greetingBubbles,
+        { id: U, at: 2, kind: "text", from: "me", text: { ko: "네", en: "" } },
+        { id: `${R}#0`, at: 3, kind: "text", from: "them", text: { ko: "응답", en: "" } },
+      ],
+      corrections: {},
+      ideas: null,
+      greetingId: G,
+    };
+    const env = serverRoom(history, undefined, {
+      loads: [[sampleRow(PHOTO, "snapshot", R)], [sampleRow(PHOTO, "snapshot", G)]],
+    });
+    env_messages = () => env.source.thread("duksu")?.messages ?? [];
+    mountChat({ source: env.source, roomId: "duksu", guideStore: memoryStore(["list", "room"]) });
+    await flush();
+    expect(photosShown()).toBe(1);
+    await reenter(env);
+    expect(photosShown()).toBe(1);
+    expect(ids_().indexOf(`${G}~snapshot~${PHOTO}`)).toBe(ids_().indexOf(`${G}#1`) + 1);
+  });
+
+  test("GA-I1 대화가 30개를 넘어 첫 쪽에 첫 인사가 없는 방 — 예시 단계가 서지 않고 받기를 부르지 않는다, 알약은 보통 가격(점검 3)", async () => {
+    // 재현: 예전에는 불러온 범위의 첫 캐릭터 말(R)에 예시를 놓고, 서버는 첫 인사(G)에 붙여 다시 열면 대화에서 사라졌다.
+    const lines: ChatMessage[] = [];
+    for (let turn = 0; turn < 15; turn += 1) {
+      const them = `9${String(turn).padStart(7, "0")}-0000-4000-8000-000000000000`;
+      lines.push({
+        id: `${them}#0`,
+        at: 10 + turn * 2,
+        kind: "text",
+        from: "them",
+        text: { ko: `말 ${turn}`, en: "" },
+      });
+      lines.push({
+        id: `u${turn}`,
+        at: 11 + turn * 2,
+        kind: "text",
+        from: "me",
+        text: { ko: "네", en: "" },
+      });
+    }
+    const env = serverRoom(
+      { messages: lines, corrections: {}, ideas: null, hasMore: true },
+      undefined,
+      { placedAt: G },
+    );
+    mountChat({
+      source: env.source,
+      roomId: "duksu",
+      guideStore: memoryStore(["list", "room", "keyboard"]),
+    });
+    await flush();
+    expect(screen.queryByTestId(ids.guideCoach)?.getAttribute("data-step") ?? null).toBeNull();
+    expect(screen.getByTestId(ids.snapshot).textContent).toContain("35");
+    expect(env.claim).not.toHaveBeenCalled();
   });
 
   test("GS-I4 유료 사진은 지금처럼 가장 최근 메시지(응답)가 대상이다", async () => {

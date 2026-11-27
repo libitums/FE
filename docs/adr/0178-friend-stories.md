@@ -165,7 +165,7 @@
   testers 단계도 묶음 「스토리 시험」으로 기록한다(대조군 없음) — 기록이 없으면 매시 다시 보내 하루 한 번을 지킬 수 없다.
 - 대상: 푸시 기기가 있고, 그 인물의 방이 기기에 있다고 볼 수 있고(ADR-0127 `hasRoom` 규칙), 선톡 설정이 off가 아니며, 그 스토리에 답하지 않았고,
   스토리가 올린 지 6시간 안이고, 현지 시각(프로필 · 지역 · 학습 나라 시간대, 모르면 보내지 않음)이 09 ~ 21시인 사람. 사람마다 가장 새 스토리 하나.
-- **하루 한 번 합산**: 스토리 알림은 현지 하루 시작 뒤 **어떤 묶음이든**(자동 캠페인 포함) 보낸(`group = 'sent'`) 줄이 있으면 보내지 않는다. 선톡 푸시는
+- **하루 한 번 합산**: 스토리 알림은 현지 하루 시작 뒤 **어떤 묶음이든**(자동 캠페인 포함) 보낸(`group = 'sent'`) 줄이 있으면 보내지 않는다. **→ 아래 「D7 개정 ⟨학습 캠페인⟩」(2026-11-27): 학습 자동 캠페인(「자동 · 」 · 「빈도 · 」 묶음)은 세지 않는다.** 선톡 푸시는
   `companion_proactive_push_gate`가 더 돌려주는 `pushedToday`(묶음 「선톡」 · 「스토리」 · 「스토리 시험」)가 참이면 `daily_cap`으로 건너뛴다 — 선톡의 기존 동작을
   덜 바꾸려고 셈 범위를 그 셋으로 좁혔다. 현지 시간대를 모르면(스토리 알림은 이때 보내지 않음) 선톡 쪽은 UTC 하루로 센다.
 - **대조군도 그날 선톡 푸시를 막는다**(검수 A2): 스토리 묶음(「스토리」 · 「스토리 시험」)은 대조군(`control`) 줄도 「오늘 이미 받음」으로 센다
@@ -447,6 +447,30 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
 - 확인: unit CT-U1 ~ U8(`chat-story-thumb.unit.test.ts`), ui CT-UI1 ~ UI8(`StoryQuote.thumb.ui.test.tsx`) · FS-UI8 갱신, integration CT-I1 ~ I5
   (`ChatStoryHost.integration.test.tsx`), e2e FS-E18(기기). 번들 천장은 사용자 결정으로 6,180,000 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 7).
 
+## D7 개정 ⟨학습 캠페인⟩ — 스토리 알림의 하루 한 번은 학습 자동 캠페인을 세지 않는다 ⟨2026-11-27⟩
+
+- **사용자 결정 A** (2026-11-27). 마이그레이션 `20270115120000_story_push_ignore_learning_campaigns.sql`. 운영 미적용.
+- 까닭: [ADR-0208](0208-push-frequency-experiment.md)은 자동 학습 푸시를 칸 셋으로 나눈다(안 보냄 · 하루 1번 · 하루 2번).
+  D7대로 「어떤 묶음이든」 세면 스토리 알림(현지 09 ~ 20시)이 칸마다 다르게 막힌다. 「하루 2번」은 12시 뒤, 「하루 1번」은 20시 뒤에 막히고, 대조군은 막히지 않는다.
+  그러면 빈도 실험의 결과에 스토리 알림 노출 차이가 섞이고, 스토리 알림의 대조군 비교에도 학습 캠페인 칸이 섞인다.
+- 바꾼 것: 알림 후보 `companion_story_push_candidates`가 `companion.pushed_today(…, null)` 대신 새 `companion.story_pushed_today`를 쓴다.
+  셈은 같되, 묶음 이름이 「자동 · 」(앞선 자동 캠페인, ADR-0130 D12) 또는 「빈도 · 」(빈도 실험, ADR-0208 D1)로 시작하는 줄은 뺀다
+  (`companion.is_learning_campaign_series`). 이름은 Edge Function의 `seriesOf` · `frequencySeriesOf`와 같아야 한다. 통합 테스트가 그 함수로 줄을 만든다.
+- 그대로인 것:
+  - 선톡 · 스토리 · 스토리 시험 · 스토리 반응을 받은 날은 그대로 막힌다. 스토리 묶음의 대조군 줄도 그대로 센다.
+  - `companion.pushed_today` 자체와 선톡 푸시 문(`companion_proactive_push_gate` — 원래 캠페인을 세지 않음)은 바꾸지 않았다.
+  - 반응 푸시 문(하루 판정 없음)도 바꾸지 않았다. 전체 하루 상한은 새로 두지 않았다.
+- **콘솔 캠페인(ADR-0130 · 0175)**: 기본안은 「사람이 보내는 캠페인은 계속 센다」이다. 빼는 목록을 학습 자동 캠페인 접두 둘로만 좁혔고, 그 밖의 묶음은 모두 센다.
+  다만 콘솔은 발송을 `push_campaign_sends`에 남기지 않는다. 기록은 로컬 파일이고, 보상 캠페인은 `push_campaign_reward_recipients`에 남긴다.
+  그래서 콘솔 캠페인은 이 개정 전에도 스토리 알림의 셈에 잡히지 않았고, 지금도 잡히지 않는다. 2026-11-27 운영 표에도 콘솔 묶음 줄은 없다.
+  콘솔 발송을 세려면 콘솔이 이 표에 기록하거나 보상 수신자 표를 셈에 더해야 한다. 이 개정의 범위 밖이므로 따로 결정한다.
+- 대가: 같은 날 학습 알림(최대 2통)과 스토리 알림(1통)을 함께 받는 사람이 생긴다. 하루 최대 3통이고, 반응 푸시는 따로다.
+  ADR-0208 D3에 따라 학습 캠페인은 다른 알림이 6시간 안에 배정됐으면 건너뛴다. 그래서 같은 몇 시간 안에 겹쳐 오지는 않는다.
+- 운영 적용 순서: 이 마이그레이션 → `push-campaigns` 배포(ADR-0208). 둘 다 사용자 승인 뒤 진행한다.
+  마이그레이션을 먼저 넣으면 지금 운영 중인 「자동 · 」 캠페인(현지 20시)도 20시대 스토리 알림을 막지 않는다.
+- 확인: SQL `friend-stories.integration.test.ts` FS18d(캠페인만 받은 날 나감 · 선톡/스토리/반응을 받은 날 막힘 · 그 밖의 묶음은 셈) ·
+  FS18e(선톡 푸시 문 · 반응 푸시 문 · `pushed_today`는 그대로).
+
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 
 - 스토리 데이터 = 서버 표(D1) · 하루 한 번 UTC 01 ~ 10시(인물마다 고정) · 24시간 만료 · 가장 적게 올린 줄부터 · 본 것 = 기기 저장(D3).
@@ -462,6 +486,6 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
   분석 이름 수(AN1 104 · AB3 77/74).
 - ui: `FriendStoriesRow` · `StoryViewer` · `StoryQuote` · `MessengerListScreen.stories` · `MessengerChatScreen.story`(FS-UI1 ~ UI9).
 - integration: `App.friend-stories.integration.test.tsx`(FSI1 · FSI2 · FSI3 · FSI6 · FSI9) · `chat-fixture-remote.story.integration.test.ts`(FSI-R1 · R2).
-- 서버: SQL `friend-stories.integration.test.ts`(FS1 ~ FS19) · `friend-stories-pool.integration.test.ts`(FSP1 · FSP2) · `companion-proactive-push`(PG1 `pushedToday` · PP9) ·
+- 서버: SQL `friend-stories.integration.test.ts`(FS1 ~ FS20 · FS18d · FS18e) · `friend-stories-pool.integration.test.ts`(FSP1 · FSP2) · `companion-proactive-push`(PG1 `pushedToday` · PP9) ·
   chat-send(CSS1 ~ CSS3) · `companion-stories-handler`(SH1 ~ SH4) · send-push(SP1) · 계약 패키지(CS3e).
 - e2e: [docs/e2e/friend-stories.md](../e2e/friend-stories.md)(기기 절차). 계약 · 테스트 계획: [docs/specs/friend-stories.md](../specs/friend-stories.md).

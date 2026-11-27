@@ -1,7 +1,6 @@
 package com.libitum.host;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -11,7 +10,6 @@ import android.os.Looper;
 import android.util.Log;
 import com.lynx.react.bridge.Callback;
 import java.io.File;
-import java.io.IOException;
 
 /** Owns the Android player for one Lynx host activity. */
 final class AudioPlaybackController {
@@ -22,12 +20,16 @@ final class AudioPlaybackController {
   private final AudioPlayerReleaser releaser = new AudioPlayerReleaser(
       AudioPlayerReleaser.backgroundExecutor(),
       error -> Log.w(TAG, "Cannot release audio player", error));
+  private final AudioPrepareQueue<MediaPlayer> preparer;
+  private final AudioSourceOpener.Step opener;
   private final AudioManager audioManager;
   private final AudioAttributes audioAttributes;
   private final AudioFocusRequest focusRequest;
   private long currentGeneration;
   private float currentRate = AudioPlaybackRate.NORMAL;
   private MediaPlayer player;
+  /** The player whose source is still opening on the AudioPrepare thread; main must not touch it. */
+  private MediaPlayer opening;
   private boolean prepared;
   private boolean paused;
   private boolean foreground = true;
@@ -36,7 +38,13 @@ final class AudioPlaybackController {
   private boolean resumeAfterFocusGain;
 
   AudioPlaybackController(Context context) {
+    this(context, null);
+  }
+
+  /** {@code opener} null means the real one; instrumentation tests pass a slow or recording one. */
+  AudioPlaybackController(Context context, AudioSourceOpener.Step opener) {
     this.context = context.getApplicationContext();
+    preparer = new AudioPrepareQueue<>(AudioPrepareQueue.backgroundExecutor(), mainHandler::post);
     audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
     audioAttributes = new AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -47,6 +55,7 @@ final class AudioPlaybackController {
         .setWillPauseWhenDucked(true)
         .setOnAudioFocusChangeListener(this::onAudioFocusChange, mainHandler)
         .build();
+    this.opener = opener != null ? opener : AudioSourceOpener.forContext(this.context, audioAttributes);
   }
 
   void play(String source, Callback done) {
@@ -82,34 +91,45 @@ final class AudioPlaybackController {
         session.finish(generation);
         return;
       }
-      player = next;
-      try {
-        next.setAudioAttributes(audioAttributes);
-        if (remote != null) next.setDataSource(remote);
-        else if (local != null) next.setDataSource(local.getPath());
-        else attachAsset(next, path);
-        next.setOnPreparedListener(ready -> {
-          if (!session.isCurrent(generation) || player != ready) return;
-          prepared = true;
-          if (!paused && !(resumeAfterFocusGain && !focusHeld)) startOrFinish(ready, generation);
-        });
-        next.setOnCompletionListener(finished -> finish(generation, finished));
-        next.setOnErrorListener((failed, what, extra) -> {
-          Log.w(TAG, "Audio playback error " + what + "/" + extra);
-          finish(generation, failed);
-          return true;
-        });
-        next.prepareAsync();
-      } catch (IOException | RuntimeException error) {
-        Log.w(TAG, "Cannot open audio source", error);
-        finish(generation, next);
-      }
+      // setDataSource는 미디어 서버가 소스를 받을 때까지 JNI에서 기다린다 — 메인에서 부르면 ANR
+      // (Sentry DURU-ANDROID-17). 준비 스레드에서 열고, 결과만 메인으로 돌아온다.
+      opening = next;
+      preparer.attach(preparer.begin(), next,
+          target -> opener.open(target, remote, local, path),
+          opened -> onSourceOpened(opened, generation),
+          (failed, error) -> {
+            Log.w(TAG, "Cannot open audio source", error);
+            if (opening == failed) opening = null;
+            releaser.release(failed::release);
+            session.finish(generation);
+          },
+          stale -> releaser.release(stale::release));
     });
   }
 
-  private void attachAsset(MediaPlayer target, String path) throws IOException {
-    try (AssetFileDescriptor asset = context.getAssets().openFd(path)) {
-      target.setDataSource(asset.getFileDescriptor(), asset.getStartOffset(), asset.getLength());
+  private void onSourceOpened(MediaPlayer next, long generation) {
+    if (opening == next) opening = null;
+    if (!session.isCurrent(generation)) {
+      releaser.release(next::release);
+      return;
+    }
+    player = next;
+    try {
+      next.setOnPreparedListener(ready -> {
+        if (!session.isCurrent(generation) || player != ready) return;
+        prepared = true;
+        if (!paused && !(resumeAfterFocusGain && !focusHeld)) startOrFinish(ready, generation);
+      });
+      next.setOnCompletionListener(finished -> finish(generation, finished));
+      next.setOnErrorListener((failed, what, extra) -> {
+        Log.w(TAG, "Audio playback error " + what + "/" + extra);
+        finish(generation, failed);
+        return true;
+      });
+      next.prepareAsync();
+    } catch (RuntimeException error) {
+      Log.w(TAG, "Cannot open audio source", error);
+      finish(generation, next);
     }
   }
 
@@ -122,19 +142,19 @@ final class AudioPlaybackController {
 
   void pause() {
     onMain(() -> {
-      if (player == null) return;
+      if (player == null && opening == null) return;
       paused = true;
       resumeAfterFocusGain = false;
-      if (prepared && player.isPlaying()) player.pause();
+      if (player != null && prepared && player.isPlaying()) player.pause();
     });
   }
 
   void resume() {
     onMain(() -> {
-      if (player == null) return;
+      if (player == null && opening == null) return;
       paused = false;
       resumeAfterFocusGain = false;
-      if (prepared && !player.isPlaying()) startOrFinish(player, currentGeneration);
+      if (player != null && prepared && !player.isPlaying()) startOrFinish(player, currentGeneration);
     });
   }
 
@@ -143,7 +163,12 @@ final class AudioPlaybackController {
     onMain(() -> {
       foreground = false;
       MediaPlayer active = player;
-      if (active != null) finishCurrent(active);
+      if (active != null) {
+        finishCurrent(active);
+      } else if (opening != null) {
+        releasePlayer();
+        session.finish(currentGeneration);
+      }
     });
   }
 
@@ -231,6 +256,9 @@ final class AudioPlaybackController {
   }
 
   private void releasePlayer() {
+    // 아직 열리는 중인 소스는 늦게 돌아와도 버려지고, 그때 해제 스레드로 간다.
+    preparer.cancel();
+    opening = null;
     MediaPlayer previous = player;
     boolean wasPrepared = prepared;
     player = null;

@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { micPermissionEs } from "./ui-copy-mic-permission";
+import { adTicketEs } from "./ui-copy-ad-ticket";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
 import { signupRewardCopy } from "./ui-copy-signup-reward";
@@ -85,6 +86,7 @@ export const uiCopyEs: UiCopy = {
   assembledHint: assembledHintEs,
   speaking: speakingEs,
   micPermission: micPermissionEs,
+  adTicket: adTicketEs,
   learningItemGuide: learningItemGuideEs,
   assessment: assessmentEs,
   lessonComplete: lessonCompleteEs,

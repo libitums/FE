@@ -182,7 +182,7 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
       media:
         "También puedes pedirme una foto o un mensaje de voz con los botones sobre el teclado.",
       sample:
-        "¿Quieres ver qué estoy haciendo? Toca Snapshot y te envío una foto. La primera va por mi cuenta.",
+        "¿Quieres ver qué estoy haciendo? Toca Instantánea y te envío una foto. La primera va por mi cuenta.",
       voice:
         "¿Quieres oírlo con mi voz? Toca Nota de voz y te leo ese mensaje. El primero también va por mi cuenta.",
     },
