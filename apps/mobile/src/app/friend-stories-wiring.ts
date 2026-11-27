@@ -13,7 +13,7 @@ import type {
 import { deviceKeyboardHeightStore } from "../screens/messenger-chat/chat-local-stores";
 import { deviceStorySeenStore } from "../screens/messenger-chat/friend-story-seen-store";
 import { loadCurrentWordbook, todayLocal, updateCurrentWordbook } from "./learning-trail-port";
-import { sourceKey } from "./messenger-chat-wiring";
+import { currentMessengerChatSource, sourceKey } from "./messenger-chat-wiring";
 import { companionServerRemote } from "./suggested-friends-wiring";
 import { myStoriesPortOf } from "./my-stories-wiring";
 import { catalogWordOf } from "./wordbook-entries";
@@ -121,6 +121,7 @@ export function friendStoriesPort(args: FriendStoriesWiringArgs): FriendStoriesP
       catalog: () => latest?.catalog() ?? [],
       accountKey: sourceKey,
       seen: seenStore,
+      onReplies: () => currentMessengerChatSource()?.server?.syncRooms(),
     }),
     replyPlan: () => latest?.replyPlan ?? null,
     keyboardHeightStore: deviceKeyboardHeightStore,

@@ -28,30 +28,37 @@ export type RemotePullDeps = {
 export const theirLines = (messages: readonly ChatMessage[]) =>
   messages.filter((m) => (m.kind === "text" && m.from === "them") || m.kind === "action").length;
 
-export function remotePull(deps: RemotePullDeps): (roomId: string) => void {
+/** 방 하나를 다시 읽습니다 — 합쳤으면 true(목록 맞추기가 그 값을 맞춘 것으로 둡니다), 읽지 않았거나 못 읽었으면 false. */
+export type RemoteRoomPull = (roomId: string) => Promise<boolean>;
+
+export function remotePull(deps: RemotePullDeps): RemoteRoomPull {
   const { remote, live, changed, isOpen, busy } = deps;
-  const attempt = (roomId: string, room: RoomState, retry: boolean) => {
-    void (async () => {
-      // 포트가 던져도(네트워크 오류) 못 읽은 것과 같이 다룹니다 — 다시 시도로 가고, 던짐이 밖으로 새지 않게.
-      const history = await remote.loadHistory(room.seed.counterpart.id).catch(() => null);
-      if (live(roomId) !== room || busy(room)) return;
-      if (history === null) {
-        if (retry) deps.schedule(room, PULL_RETRY_MS, () => attempt(roomId, room, false));
-        return;
-      }
-      const before = theirLines(room.messages);
-      // 아직 열지 않은 방은 목록 미리보기처럼 로그만 합칩니다 — 첫 인사 · 생각 칩은 방을 열 때(`loadRoom`) 받습니다.
-      if (room.remoteHistory === "loaded") deps.applyHistory(room, history);
-      else room.messages = mergeLog(room.messages, history.messages);
-      if (theirLines(room.messages) > before && !isOpen(roomId)) room.unread += 1;
-      changed(room);
-    })();
+  const attempt = async (roomId: string, room: RoomState, retry: boolean): Promise<boolean> => {
+    // 포트가 던져도(네트워크 오류) 못 읽은 것과 같이 다룹니다 — 다시 시도로 가고, 던짐이 밖으로 새지 않게.
+    const history = await remote.loadHistory(room.seed.counterpart.id).catch(() => null);
+    if (live(roomId) !== room || busy(room)) return false;
+    if (history === null) {
+      if (!retry) return false;
+      return new Promise<boolean>((resolve) => {
+        deps.schedule(room, PULL_RETRY_MS, () => void attempt(roomId, room, false).then(resolve));
+      });
+    }
+    const before = theirLines(room.messages);
+    // 아직 열지 않은 방은 목록 미리보기처럼 로그만 합칩니다 — 첫 인사 · 생각 칩은 방을 열 때(`loadRoom`) 받습니다.
+    if (room.remoteHistory === "loaded") deps.applyHistory(room, history);
+    else room.messages = mergeLog(room.messages, history.messages);
+    if (theirLines(room.messages) > before && !isOpen(roomId)) room.unread += 1;
+    changed(room);
+    return true;
   };
   return (roomId) => {
     const room = live(roomId);
-    if (room === null || room.access.kind !== "open") return;
-    if (isOpen(roomId)) return deps.refresh(room);
-    if (busy(room)) return;
-    attempt(roomId, room, true);
+    if (room === null || room.access.kind !== "open") return Promise.resolve(false);
+    if (isOpen(roomId)) {
+      deps.refresh(room);
+      return Promise.resolve(true);
+    }
+    if (busy(room)) return Promise.resolve(false);
+    return attempt(roomId, room, true);
   };
 }

@@ -5,14 +5,15 @@ import { pushReceivedEventName } from "./foreground-push";
 import { contentSyncEventName } from "./use-episode-content-refresh";
 import { useMessengerRefresh } from "./use-messenger-refresh";
 
-// `ui` 계층(ES-UI6 · FS-UI18): 앱이 앞으로 오거나 연결이 돌아오면(호스트 신호) 메신저의 열린 방을 다시 읽고(ADR-0138),
+// `ui` 계층(ES-UI6 · FS-UI18 · LS-UI3): 앱이 앞으로 오거나 연결이 돌아오면(호스트 신호) 메신저 목록을 맞추고(열린 방 + 바뀐 닫힌 방),
 // 서 있는 친구 스토리 목록에도 다시 읽기를 알린다(ADR-0178 「다시 읽기」). 앱이 앞에 있을 때 온 인물의 채팅 푸시(FP-UI1, ADR-0200
 // 개정)는 그 인물의 방만 다시 읽는다.
 
 const refreshOpenRoom = vi.fn<() => void>();
 const pullRoom = vi.fn<(roomId: string) => void>();
+const syncRooms = vi.fn<() => void>();
 vi.mock("./messenger-chat-wiring", () => ({
-  currentMessengerChatSource: () => ({ server: { refreshOpenRoom, pullRoom } }),
+  currentMessengerChatSource: () => ({ server: { refreshOpenRoom, pullRoom, syncRooms } }),
 }));
 vi.mock("./foreground-push", () => ({
   pushReceivedEventName: "pushNotificationReceived",
@@ -30,14 +31,14 @@ function Probe() {
   return <view />;
 }
 
-test("ES-UI6 · FS-UI18 contentSyncOpportunity가 오면 열린 방을 다시 읽고 스토리 목록에 알린다", () => {
+test("ES-UI6 · FS-UI18 · LS-UI3 contentSyncOpportunity가 오면 목록을 맞추고(열린 방 + 바뀐 닫힌 방) 스토리 목록에 알린다", () => {
   render(<Probe />);
-  expect(refreshOpenRoom).not.toHaveBeenCalled();
+  expect(syncRooms).not.toHaveBeenCalled();
   expect(notifyFriendStoriesReload).not.toHaveBeenCalled();
   act(() => {
     lynx.getJSModule("GlobalEventEmitter").emit(contentSyncEventName, []);
   });
-  expect(refreshOpenRoom).toHaveBeenCalledTimes(1);
+  expect(syncRooms).toHaveBeenCalledTimes(1);
   expect(notifyFriendStoriesReload).toHaveBeenCalledTimes(1);
 });
 

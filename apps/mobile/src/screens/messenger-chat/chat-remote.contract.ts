@@ -53,6 +53,11 @@ export type RemoteTurnHandlers = {
 export type ChatRemote = {
   readonly loadHistory: (characterId: string) => Promise<RemoteHistory | null>;
   /**
+   * 목록 요약 `companion_list_characters` — 인물 id → 그 대화의 서버 `lastMessageAt`(대화가 없으면 null). 목록 맞추기가 바뀐 방만
+   * 다시 읽는 데 씁니다. 못 읽으면 null. 없으면(옛 테스트 원격) 목록 맞추기는 열린 방만 다시 읽습니다.
+   */
+  readonly lastMessages?: () => Promise<ReadonlyMap<string, string | null> | null>;
+  /**
    * 첫 인사. `unlock`이면 해금 선톡입니다 — 서버가 모델로 만들지 않고 그 인물의 정해진 말(해금 장면에 이어지는 말)을 저장합니다.
    * 어느 쪽이든 대화에 메시지가 이미 있으면 서버는 아무것도 만들지 않습니다.
    */

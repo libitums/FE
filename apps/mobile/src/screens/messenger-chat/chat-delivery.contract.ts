@@ -26,4 +26,9 @@ export type ChatServerControls = {
    * 답을 기다리는 중이면 읽지 않습니다. 못 읽으면 잠시 뒤 한 번 더.
    */
   readonly pullRoom: (roomId: string) => void;
+  /**
+   * 목록 맞추기 — 앱이 앞으로 옴 · 목록에 들어옴. 열린 방은 `refreshOpenRoom`처럼 바로, 닫힌 방은 목록 요약을 한 번 읽어 서버의
+   * 마지막 메시지 시각이 마지막으로 맞춘 값과 다른 방만 `pullRoom`처럼 다시 읽습니다(푸시 없이 온 선톡 · 스토리 반응). 폴링은 없습니다.
+   */
+  readonly syncRooms: () => void;
 };
