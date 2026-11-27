@@ -3,7 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerBirthYearIfShown, passLearnerSignup } from "./test-helpers/learner-signup";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type { StorageModuleDouble } from "./test-helpers/signed-in-app";
 import type { AnalyticsConfig, AnalyticsTransport } from "../lib/analytics.contract";
@@ -346,6 +346,7 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 �
     within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),
     {},
   );
+  passLearnerBirthYearIfShown();
   fireEvent.tap(
     within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button"),
     {},
