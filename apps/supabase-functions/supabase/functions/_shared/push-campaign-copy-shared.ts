@@ -1,65 +1,66 @@
 // 빈도 실험 문구(ADR-0208) — 단계와 상관없이 쓰는 두 가지: 복귀 문구 하나, 매일 알림을 멈춘다는 마지막 알림.
+// 말투는 듀오링고처럼 「기다리다 풀이 죽은 Duru」(사용자 결정 2026-11-27).
 
 import type { Copy } from "./push-campaign-types.ts";
 
 export const winbackAnyCopy: Copy = {
   en: {
-    title: "Still thinking about Korean? 🇰🇷",
-    body: "{name}, your place is saved. One short lesson gets you back in.",
+    title: "Is this goodbye? 😢",
+    body: "{name}, Duru hopes not. One short lesson and you're back.",
   },
   vi: {
-    title: "Vẫn nghĩ về tiếng Hàn chứ? 🇰🇷",
-    body: "{name}, chỗ của bạn vẫn được lưu. Một bài ngắn là bắt nhịp lại ngay.",
+    title: "Đây là lời tạm biệt sao? 😢",
+    body: "{name}, Duru mong là không. Chỉ một bài ngắn là bạn trở lại rồi.",
   },
   id: {
-    title: "Masih kepikiran bahasa Korea? 🇰🇷",
-    body: "{name}, posisimu tersimpan. Satu pelajaran singkat dan kamu kembali lagi.",
+    title: "Apa ini perpisahan? 😢",
+    body: "{name}, semoga bukan. Satu pelajaran singkat dan kamu kembali lagi.",
   },
   ms: {
-    title: "Masih teringat bahasa Korea? 🇰🇷",
-    body: "{name}, tempat anda disimpan. Satu pelajaran pendek dan anda kembali semula.",
+    title: "Adakah ini selamat tinggal? 😢",
+    body: "{name}, Duru harap tidak. Satu pelajaran pendek dan anda kembali semula.",
   },
   es: {
-    title: "¿Sigues pensando en el coreano? 🇰🇷",
-    body: "{name}, tu lugar está guardado. Con una lección corta vuelves al ritmo.",
+    title: "¿Esto es un adiós? 😢",
+    body: "{name}, Duru espera que no. Una lección corta y estás de vuelta.",
   },
   ja: {
-    title: "韓国語、まだ気になりますか？🇰🇷",
-    body: "{name}さん、続きは保存されています。短いレッスン1つで戻れます。",
+    title: "これでお別れですか？😢",
+    body: "{name}さん、Duruはそうでないことを願っています。短いレッスン1つで戻れます。",
   },
   "zh-TW": {
-    title: "還惦記著韓語嗎？🇰🇷",
-    body: "{name}，你的進度還留著。一堂短短的課就能回到軌道。",
+    title: "這是道別嗎？😢",
+    body: "{name}，Duru 希望不是。一堂短短的課，你就回來了。",
   },
 };
 
 export const lastCopy: Copy = {
   en: {
-    title: "We'll pause the daily reminders",
-    body: "{name}, they don't seem to be helping, so we'll go quiet for now. Your Korean story stays saved on the map.",
+    title: "Duru will stop bothering you 😢",
+    body: "{name}, these reminders don't seem to be working, so Duru will go quiet for now. Your Korean story stays saved on the map.",
   },
   vi: {
-    title: "Chúng tôi sẽ tạm dừng nhắc hằng ngày",
-    body: "{name}, có vẻ lời nhắc chưa giúp được bạn nên chúng tôi sẽ tạm im lặng. Câu chuyện tiếng Hàn của bạn vẫn được lưu trên bản đồ.",
+    title: "Duru sẽ không làm phiền bạn nữa 😢",
+    body: "{name}, có vẻ lời nhắc không giúp được gì nên Duru sẽ tạm im lặng. Câu chuyện tiếng Hàn của bạn vẫn được lưu trên bản đồ.",
   },
   id: {
-    title: "Pengingat harian kami jeda dulu",
-    body: "{name}, sepertinya pengingat ini kurang membantu, jadi kami diam dulu. Cerita Koreamu tetap tersimpan di peta.",
+    title: "Duru tidak akan mengganggumu lagi 😢",
+    body: "{name}, sepertinya pengingat ini tidak membantu, jadi Duru diam dulu. Cerita Koreamu tetap tersimpan di peta.",
   },
   ms: {
-    title: "Peringatan harian akan dihentikan seketika",
-    body: "{name}, nampaknya peringatan ini tidak membantu, jadi kami akan senyap dahulu. Cerita Korea anda kekal disimpan di peta.",
+    title: "Duru tidak akan ganggu anda lagi 😢",
+    body: "{name}, nampaknya peringatan ini tidak membantu, jadi Duru akan senyap dahulu. Cerita Korea anda kekal disimpan di peta.",
   },
   es: {
-    title: "Pausamos los recordatorios diarios",
-    body: "{name}, parece que no están ayudando, así que guardaremos silencio por ahora. Tu historia en coreano sigue guardada en el mapa.",
+    title: "Duru dejará de molestarte 😢",
+    body: "{name}, parece que estos recordatorios no funcionan, así que Duru guardará silencio por ahora. Tu historia en coreano sigue guardada en el mapa.",
   },
   ja: {
-    title: "毎日のお知らせをお休みします",
-    body: "{name}さん、お知らせがお役に立てていないようなので、しばらく控えます。韓国語のストーリーはマップに保存されています。",
+    title: "Duruはもうお邪魔しません 😢",
+    body: "{name}さん、お知らせがお役に立てていないようなので、Duruはしばらく静かにします。韓国語のストーリーはマップに保存されています。",
   },
   "zh-TW": {
-    title: "每日提醒先暫停",
-    body: "{name}，提醒似乎沒有幫上忙，我們先安靜一陣子。你的韓語故事會一直保存在地圖上。",
+    title: "Duru 不再打擾你了 😢",
+    body: "{name}，提醒似乎沒有用，Duru 先安靜一陣子。你的韓語故事會一直保存在地圖上。",
   },
 };
