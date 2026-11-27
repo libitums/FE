@@ -125,3 +125,26 @@ test("RT-UI3. 안내 — 얹은 것이 있으면 끌기 · 두 손가락 크기 
     "Drag to move. Pinch to resize or rotate.",
   );
 });
+
+test("RT-UI4. 단어 스티커(Words)도 같은 두 손가락 — 둘째 손가락이 바탕에 닿아도 돌고, −4°에서 94° 돌리면 90°에 붙음", () => {
+  const { canvas, haptics } = mount();
+  tapId(ids.toolWords);
+  tapId(ids.choice("w1"));
+  const word = () => screen.getByTestId(ids.sticker("s1"));
+  act(() => {
+    fireEvent.touchstart(word(), {
+      touches: [touch(0, 200, 300)],
+      changedTouches: [touch(0, 200, 300)],
+    });
+    fireEvent.touchstart(canvas, {
+      touches: [touch(0, 200, 300), around(0)],
+      changedTouches: [around(0)],
+    });
+    fireEvent.touchmove(canvas, {
+      touches: [touch(0, 200, 300), around(94)],
+      changedTouches: [around(94)],
+    });
+  });
+  expect(word().getAttribute("style")).toContain("rotate(90deg)");
+  expect(haptics).toEqual(["key"]);
+});
