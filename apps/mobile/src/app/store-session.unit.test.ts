@@ -106,3 +106,48 @@ test("SS1. analyticsUser가 없어도 던지지 않는다", () => {
   expect(() => storeSignedInSession(sessionFor("u1"), withoutAnalytics)).not.toThrow();
   expect(log).toContain("state:signed-in");
 });
+
+// 오류 수집의 사용자(ADR-0207 D3) — 분석과 같은 ID를, 분석 클라이언트가 없어도 넘긴다.
+const crashUserId = "3f2a9c1e-7b4d-4e8a-9c0f-1a2b3c4d5e6f";
+
+function stubCrashHost(): string[] {
+  const calls: string[] = [];
+  const modules = (globalThis as { NativeModules?: Record<string, unknown> }).NativeModules ?? {};
+  vi.stubGlobal("NativeModules", {
+    ...modules,
+    CrashReportingModule: {
+      setUser: (userId: string) => calls.push(`setUser:${userId}`),
+      clearUser: () => calls.push("clearUser"),
+    },
+  });
+  return calls;
+}
+
+test("SS2. 세션을 저장하면 오류 수집에 같은 사용자 ID를 넘긴다 — 분석 클라이언트가 없어도", () => {
+  const calls = stubCrashHost();
+
+  storeSignedInSession(sessionFor(crashUserId), { ...deps(), analyticsUser: null });
+
+  expect(calls).toEqual([`setUser:${crashUserId}`]);
+});
+
+test("SS2. 식별이 던져도 오류 수집에는 넘긴다", () => {
+  const calls = stubCrashHost();
+
+  storeSignedInSession(
+    sessionFor(crashUserId),
+    deps(() => {
+      throw new Error("analytics down");
+    }),
+  );
+
+  expect(calls).toEqual([`setUser:${crashUserId}`]);
+});
+
+test("SS2. 토큰에 sub가 없으면 오류 수집도 부르지 않는다", () => {
+  const calls = stubCrashHost();
+
+  storeSignedInSession(sessionFor(null), deps());
+
+  expect(calls).toEqual([]);
+});

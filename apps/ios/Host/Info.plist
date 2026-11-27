@@ -15,6 +15,12 @@
 	     비어 있으면 SDK를 시작하지 않고 구매 모듈도 등록하지 않는다. -->
 	<key>RevenueCatAPIKey</key>
 	<string>$(REVENUECAT_API_KEY)</string>
+	<!-- Sentry 오류 수집(ADR-0207). DSN · environment는 Config/Sentry.xcconfig에서 들어온다. 호스트 코드(CrashReportConfig)가 읽고,
+	     DSN이 비거나 꼴이 틀리면 SDK를 시작하지 않는다. -->
+	<key>SentryDSN</key>
+	<string>$(SENTRY_DSN)</string>
+	<key>SentryEnvironment</key>
+	<string>$(SENTRY_ENVIRONMENT)</string>
 	<!-- 추적 허용(ATT) 대화상자의 문구(ADR-0079 D4 — 사용자 결정 2026-10-22). 가입을 마친 뒤 여정 맵에 들어설 때
 	     아직 정하지 않았으면 한 번 묻는다. 앱 언어가 영어라 영어 한 줄이다. -->
 	<!-- Airbridge 딥링크의 앱 scheme(ADR-0080). `duru://journey` · `duru://roleplay` · `duru://settings`를 JS가 탭으로 옮긴다.
