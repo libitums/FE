@@ -6,6 +6,7 @@ import { clearLessonSpeakingSkip } from "../../lib/lesson-speaking-skip";
 import type { MicPermissionEvent } from "../../lib/mic-permission-event.contract";
 import { audioFailed, stubSpeechHost } from "../../lib/speech-host.test-support";
 import type { SpeechHostOptions, SpeechHostResult } from "../../lib/speech-host.test-support";
+import { expectMicControl, tapSpeakWordPrimary } from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
@@ -63,7 +64,8 @@ const tapSheet = (action: string) =>
     within(id(`ui-lynx-bottom-sheet-action-${action}`)).getByTestId("ui-lynx-button"),
     {},
   );
-const tapAction = () => fireEvent.tap(id("learning-shell-action"), {});
+// 주 조작 — 판정 전에는 마이크 하나, 판정 뒤에는 셸 버튼입니다.
+const tapAction = tapSpeakWordPrimary;
 const foreground = () =>
   act(() => {
     lynx.getJSModule("GlobalEventEmitter").emit("contentSyncOpportunity", []);
@@ -206,7 +208,7 @@ test("USW-P9. 문항 중 시스템 창에서 거부하면 거부 시트가 서�
   foreground();
   expect(maybe("mic-permission-sheet")).not.toBeInTheDocument();
   expect(id("speak-word-content")).toHaveAttribute("data-phase", "ready");
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Speak");
+  expectMicControl("Speak");
 });
 
 test("USW-P10. 인식 실패는 거부와 다른 문구 · Try again(주) · Skip(보조)이고, 두 번 실패하면 Hear it이 선다", () => {
@@ -217,7 +219,7 @@ test("USW-P10. 인식 실패는 거부와 다른 문구 · Try again(주) · Ski
   expect(id("speak-word-hint")).toHaveTextContent(
     "Something went wrong while listening. Try again.",
   );
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  expectMicControl("Try again");
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
   expect(maybe("speak-word-hear-it")).not.toBeInTheDocument();
 

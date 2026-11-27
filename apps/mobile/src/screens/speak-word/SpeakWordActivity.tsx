@@ -191,10 +191,13 @@ export function SpeakWordActivity({
       />
     );
 
+  // 마이크가 하는 일(말하기 · 멈춤 · 판정 전 다시 말하기)은 버튼으로 다시 두지 않습니다 — 마이크 하나가 이름(Speak · Stop speaking ·
+  // Try again)으로 낭독됩니다(2026-11-27 사용자 지시, ADR-0201 D6 적용 1 개정). 버튼 행에는 판정 뒤 · 건너뛰기만 섭니다.
+  const micDoes = primary === "speak" || primary === "stop" || (primary === "retry" && !judged);
   const action: { label: string; run: () => void } | undefined =
     question == null
       ? { label: copy.common.seeResults, run: () => finish(state.heard) }
-      : primary === null
+      : primary === null || micDoes
         ? undefined
         : { label: labelOf(primary, true), run: () => run(primary) };
 
@@ -225,6 +228,7 @@ export function SpeakWordActivity({
               phase={phase}
               judgement={judgement}
               micState={speakWordMicStateOf(phase, picture.state, stopping)}
+              retry={primary === "retry" && !judged}
               onMic={handleMic}
               onExpire={handleExpire}
               onHear={handleHear}

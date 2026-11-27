@@ -15,6 +15,8 @@ export type SpeakWordWorkspaceProps = {
   readonly phase: SpeechAttemptPhase;
   readonly judgement: SpokenAnswerJudgement | null;
   readonly micState: SpeechMicState;
+  /** 못 알아들음 · 인식 실패 뒤 — 마이크의 이름 · 아래 문구가 「Try again」입니다(같은 동작의 버튼을 따로 두지 않음). */
+  readonly retry?: boolean;
   /** 마이크를 누르면 — 대기면 듣기, 듣는 중이면 멈춤. */
   readonly onMic: () => void;
   /** 듣는 중 최대 시간이 지나면. */
@@ -33,6 +35,7 @@ export function SpeakWordWorkspace({
   phase,
   judgement,
   micState,
+  retry,
   onMic,
   onExpire,
   onHear,
@@ -50,19 +53,28 @@ export function SpeakWordWorkspace({
       </view>
     );
   }
+  const retrying = retry === true && micState === "idle";
   const status =
     micState === "listening"
       ? copy.speaking.listening
       : micState === "checking"
         ? copy.speaking.checking
-        : null;
+        : retrying
+          ? copy.speaking.tryAgain
+          : null;
+  const label =
+    micState === "listening"
+      ? copy.speaking.stopSpeaking
+      : retrying
+        ? copy.speaking.tryAgain
+        : copy.speaking.speak;
   return (
     <>
       <view className="speak-word-activity-waves-slot">
         <SpeechMic
           testId="speak-word-mic"
           state={micState}
-          label={micState === "listening" ? copy.speaking.stopSpeaking : copy.speaking.speak}
+          label={label}
           status={status}
           hint={micState === "listening" ? copy.speaking.tapToStop : null}
           onTap={onMic}

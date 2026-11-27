@@ -12,6 +12,11 @@ import type { SpeechHostOptions } from "../../lib/speech-host.test-support";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import type { LessonPosition } from "../learning/activity-finish";
+import {
+  expectMicControl,
+  tapSpeakWordControl,
+  tapSpeakWordPrimary,
+} from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { ItemAnswerReport } from "../../lib/item-answer";
 import type { SpeakWordQuestion } from "./speak-word.contract";
@@ -61,11 +66,8 @@ const id = (testId: string) => screen.getByTestId(testId);
 const maybe = (testId: string) => screen.queryByTestId(testId);
 const hintText = () => maybe("speak-word-hint")?.textContent ?? "";
 
-function tapAction(label: string): void {
-  const action = id("learning-shell-action");
-  expect(action).toHaveAttribute("accessibility-label", label);
-  fireEvent.tap(action, {});
-}
+// 마이크가 맡는 이름(Speak · Stop speaking · 판정 전 Try again)은 마이크를, 그 밖은 셸 버튼을 누릅니다.
+const tapAction = tapSpeakWordControl;
 
 function tapSecondary(control: string, label: string): void {
   const slot = id("speak-word-secondary");
@@ -102,7 +104,7 @@ test("USW1. 첫 화면은 빈 틀 · 보조 Skip만 서고(정답 로마자는 �
   loadPicture();
 
   expect(id("speak-word-picture-frame")).toHaveAttribute("accessibility-label", "Picture: card");
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Speak");
+  expectMicControl("Speak");
   expect(id("speak-word-mic")).toHaveAttribute("data-state", "idle");
 });
 
@@ -120,7 +122,7 @@ test("USW2. 정답이면 듣는 중에는 낭독이 없고, 판정 뒤 초록 �
 
   tapAction("Speak");
 
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Stop speaking");
+  expectMicControl("Stop speaking");
   expect(id("speak-word-mic")).toHaveAttribute("data-state", "listening");
   expect(id("speak-word-mic-status")).toHaveTextContent("Listening…");
   expect(speech.announced.builtin).toEqual([]);
@@ -261,7 +263,7 @@ test("USW5a. 그림이 실패하면 뜻 글자와 안내 글자가 서고 뜻 �
   );
   expect(speech.announced.builtin).toEqual(["Picture unavailable. Meaning: card"]);
   expect(maybe("speak-word-meaning")).not.toBeInTheDocument();
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Speak");
+  expectMicControl("Speak");
 });
 
 test("USW5b. 6000ms 안에 그림이 끝나지 않으면 같은 실패 상태가 된다", () => {
@@ -349,7 +351,7 @@ test("USW8b. 일반 인식 실패는 Try again(주) · Skip(보조)이고 잠기
 
   tapAction("Speak");
   expect(id("speak-word-content")).toHaveAttribute("data-reason", "failed");
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  expectMicControl("Try again");
   tapSecondary("skip", "Skip");
 
   expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "1");
@@ -374,9 +376,9 @@ test("USW9. 문구는 모두 문구표에서 온다", () => {
     "accessibility-label",
     "⟦wordChoicePicture.picture⟧(card)",
   );
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "⟦speaking.speak⟧");
+  expectMicControl("⟦speaking.speak⟧");
 
-  fireEvent.tap(id("learning-shell-action"), {});
+  tapSpeakWordPrimary();
 
   expect(id("speak-word-result-title")).toHaveTextContent("⟦speakWord.result.perfect⟧");
   expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "⟦common.continue⟧");

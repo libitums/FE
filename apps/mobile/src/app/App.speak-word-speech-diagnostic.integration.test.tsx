@@ -47,7 +47,7 @@ test("ISD1. 온디바이스 한국어 팩이 없어 실패한 낱말 말하기�
   plan.activities.slice(0, target).forEach((activity) => solveActivity(activity, true, false));
 
   fireEvent(screen.getByTestId("speak-word-picture-image"), new window.Event("bindEvent:load"));
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
   expect(screen.getByTestId("speak-word-content")).toHaveAttribute("data-reason", "failed");
   tapId("learning-shell-action");
 
@@ -94,7 +94,7 @@ test("ISD2. 네트워크로 되돌아가 들은 정답은 pack-missing · availa
   const target = plan.activities.indexOf(activity);
   plan.activities.slice(0, target).forEach((before) => solveActivity(before, true, false));
   fireEvent(screen.getByTestId("speak-word-picture-image"), new window.Event("bindEvent:load"));
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   const spoken = events.filter(
     (event) => event.name === "episode_item_answered" && event.itemType === "SPEAK_WORD",

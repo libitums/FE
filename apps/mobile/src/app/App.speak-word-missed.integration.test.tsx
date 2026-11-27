@@ -57,15 +57,17 @@ test("ISM1. no-match 뒤 Try again으로 맞히면 판정 이벤트는 정답 �
   );
   openSpeakWord(plan, plan.activities.indexOf(activity));
 
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
   expect(screen.getByTestId("speak-word-content")).toHaveAttribute("data-phase", "missed");
-  expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
+  // 다시 말하기는 마이크 하나가 「Try again」으로 맡습니다 — 같은 동작의 셸 버튼은 없습니다(2026-11-27 사용자 결정).
+  expect(screen.getByTestId("speak-word-mic-button")).toHaveAttribute(
     "accessibility-label",
     "Try again",
   );
+  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   expect(spokenEvents(events)).toHaveLength(0);
 
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   const spoken = spokenEvents(events);
   expect(spoken).toHaveLength(1);
@@ -80,8 +82,8 @@ test("ISM2. no-match 뒤 Skip은 missed:no-match와 오류 코드 7을 한 번 �
   );
   openSpeakWord(plan, plan.activities.indexOf(activity));
 
-  tapId("learning-shell-action");
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
+  tapId("speak-word-mic-button");
   expect(screen.getByTestId("speak-word-content")).toHaveAttribute("data-phase", "missed");
   expect(spokenEvents(events)).toHaveLength(0);
 

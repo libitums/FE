@@ -103,6 +103,12 @@ describe("SR3 마이크 국면", () => {
       "idle",
     );
   });
+
+  it("인식 실패(다시 말할 수 있음)는 마이크가 눌린다 — 다시 말하기를 마이크 하나가 맡는다(2026-11-27 사용자 결정)", () => {
+    expect(speakWordMicStateOf({ kind: "unavailable", reason: "failed" }, "loaded", false)).toBe(
+      "idle",
+    );
+  });
 });
 
 describe("SR4 결과 알림(live region 대신 announce)", () => {
