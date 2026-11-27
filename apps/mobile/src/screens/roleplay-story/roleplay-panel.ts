@@ -24,6 +24,29 @@ export function roleplayTurnReportOf(
   };
 }
 
+/** 맞힌 뒤 저절로 넘김을 가르는 조건입니다(ADR-0201 D6 적용 2 개정). */
+export type RoleplayAutoAdvanceGate = {
+  /** 맞힌 국면인가. */
+  readonly correct: boolean;
+  /** 맞힌 뒤 최소 시간(`ROLEPLAY_CORRECT_ADVANCE_MS`)이 지났는가. */
+  readonly minElapsed: boolean;
+  /** 내 문장 소리가 끝났는가(실패 · 상한 시간 포함). */
+  readonly replyEnded: boolean;
+  /** 내 문장 소리가 있어 그 끝을 기다리는가. */
+  readonly waitsForReply: boolean;
+  /** 이 턴에 앱이 뒤로 갔는가 — 그러면 저절로 넘기지 않고 누르기를 기다립니다. */
+  readonly away: boolean;
+};
+
+/**
+ * 한 번에 한 목소리 — 내 문장 소리가 끝나기 전에 다음 턴(상대의 다음 줄 소리)으로 넘기지 않습니다. 소리가 없으면 최소 시간만
+ * 봅니다. 누르면(Next) 이 조건과 상관없이 바로 넘어갑니다(앞 소리는 화면이 멈춤).
+ */
+export function roleplayAutoAdvanceReady(gate: RoleplayAutoAdvanceGate): boolean {
+  if (!gate.correct || gate.away || !gate.minElapsed) return false;
+  return !gate.waitsForReply || gate.replyEnded;
+}
+
 /** 대사 상자 아래 줄 — `VisualNovelDialog`의 `romanization` · `translation`에 그대로 넘깁니다. */
 export type RoleplayDialogLines = {
   readonly romanization: string | undefined;

@@ -4,6 +4,7 @@ import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import { wordDiff } from "../../lib/syllable-diff";
 import { initialRoleplayTalkState, roleplayTalkReducer } from "./roleplay-story";
 import {
+  roleplayAutoAdvanceReady,
   roleplayDialogLinesOf,
   roleplayHeaderLabel,
   roleplayProgressSegments,
@@ -121,6 +122,33 @@ describe("RP5 머리 · 진행 칸", () => {
     expect(roleplayProgressSegments(1, 3, false)).toEqual(["done", "current", "todo"]);
     expect(roleplayProgressSegments(1, 3, true)).toEqual(["done", "done", "todo"]);
     expect(roleplayProgressSegments(3, 3, false)).toEqual(["done", "done", "done"]);
+  });
+});
+
+describe("RP7 맞힌 뒤 저절로 넘김 — 한 번에 한 목소리(2026-11-27 제보)", () => {
+  const gate = {
+    correct: true,
+    minElapsed: true,
+    replyEnded: true,
+    waitsForReply: true,
+    away: false,
+  };
+
+  it("최소 시간이 지나고 내 문장 소리가 끝나야 넘긴다", () => {
+    expect(roleplayAutoAdvanceReady(gate)).toBe(true);
+    expect(roleplayAutoAdvanceReady({ ...gate, replyEnded: false })).toBe(false);
+    expect(roleplayAutoAdvanceReady({ ...gate, minElapsed: false })).toBe(false);
+  });
+
+  it("내 문장 소리가 없으면 최소 시간만 본다", () => {
+    expect(roleplayAutoAdvanceReady({ ...gate, waitsForReply: false, replyEnded: false })).toBe(
+      true,
+    );
+  });
+
+  it("맞힌 국면이 아니거나 앱이 뒤로 간 뒤에는 넘기지 않는다(누르면 넘어감)", () => {
+    expect(roleplayAutoAdvanceReady({ ...gate, correct: false })).toBe(false);
+    expect(roleplayAutoAdvanceReady({ ...gate, away: true })).toBe(false);
   });
 });
 
