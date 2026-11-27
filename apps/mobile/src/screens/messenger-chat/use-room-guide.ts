@@ -111,7 +111,10 @@ export function useRoomGuide(
       })
     : [];
   const ready = !asks || answered;
-  const shown = !ended && ready && steps.length > 0 && !covered && server && greeted;
+  // 입력이 막히면(나이 · 일시 차단 · 이용 시간, ADR-0125) 숨깁니다 — 가리킬 알약이 사라지고, 안내가 뒤로가기를 삼켜 방에 갇혔습니다
+  // (점검 1). 풀리면 같은 단계로 돌아옵니다.
+  const blocked = thread !== null && thread.inputBlock !== null;
+  const shown = !ended && ready && steps.length > 0 && !covered && !blocked && server && greeted;
   const step = shown ? (steps[index] ?? null) : null;
   const taken = useRef<GuideStep | null>(null);
   const keyboardEvent = (
@@ -185,10 +188,11 @@ export function useRoomGuide(
       if (!isSampleStep(step) || sample === undefined || taken.current === step) return;
       taken.current = step;
       advance();
-      // 받은 뒤에야 본 것으로 적습니다 — 받지 못하면 다음에 방에 올 때 다시 권합니다.
+      // 받았거나 서버가 주지 않기로 했으면 본 것으로 적습니다 — 거절을 적지 않으면 방에 올 때마다 같은 단계 · 회색 줄이 다시 섰습니다
+      // (점검 2). 못 물었으면(연결) 다음에 방에 올 때 다시 권합니다.
       const part = step === "sample" ? "snapshot" : "voice";
-      void sample.claim(roomId, step === "sample" ? "photo" : "voice").then((received) => {
-        if (received) store.markSeen(part);
+      void sample.claim(roomId, step === "sample" ? "photo" : "voice").then((outcome) => {
+        if (outcome !== "failed") store.markSeen(part);
       });
     },
   };

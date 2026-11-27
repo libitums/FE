@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
+import { frequencySeriesOf, seriesOf } from "../functions/_shared/push-campaign-text.ts";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
 // 20261228(ADR-0178): 친구 스토리 — 묶음 · 날마다 올림 · 앱 읽기 · 스토리마다 첫 답장 무료(금액 0 예약) · 인용 · 알림 후보(선톡과 합쳐 하루 한 번).
@@ -630,7 +631,7 @@ test("FS17. 알림 후보에서 빠지는 사람 — 기기 없음 · 기기 뒤
   expect(await candidates()).toEqual([]); // 6시간 넘음
 });
 
-test("FS18. 하루 한 번 합산 — 오늘(현지) 선톡 · 스토리 · 다른 캠페인이 나갔으면 빠지고, 어제 것 · 선톡 대조군은 세지 않는다", async () => {
+test("FS18. 하루 한 번 합산 — 오늘(현지) 선톡 · 스토리 · 학습 자동 캠페인 밖의 다른 묶음이 나갔으면 빠지고, 어제 것 · 선톡 대조군은 세지 않는다", async () => {
   await settings("story_push = 'on'");
   await pool("mina-01", "mina");
   await live("mina", "mina-01", "2 hours");
@@ -643,6 +644,62 @@ test("FS18. 하루 한 번 합산 — 오늘(현지) 선톡 · 스토리 · 다�
   await db.admin.query("delete from public.push_campaign_sends");
   await sent(member, "tutorial-rest", "now() - interval '1 minute'");
   expect(await candidates()).toEqual([]);
+});
+
+test("FS18d. 학습 자동 캠페인(자동 · 빈도 묶음)만 받은 날에도 스토리 알림이 나간다 — 빈도 실험(ADR-0208) 칸마다 스토리 노출이 달라지지 않게", async () => {
+  await settings("story_push = 'on'");
+  await pool("mina-01", "mina");
+  await live("mina", "mina-01", "2 hours");
+  await pushReady(member);
+  // 빈도 실험 「하루 2번」 칸 — 같은 날 두 통 · 옛 자동 캠페인 한 통.
+  await sent(member, frequencySeriesOf("next"), "now() - interval '2 minutes'");
+  await sent(member, frequencySeriesOf("next"), "now() - interval '1 minute'");
+  await sent(member, seriesOf("tutorial-lesson1"), "now() - interval '1 minute'");
+  expect((await candidates()).map((c) => c.userId)).toEqual([member]);
+
+  // 선톡 · 스토리 · 스토리 반응을 받은 날은 그대로 막힌다.
+  for (const series of ["선톡", "스토리", "스토리 시험", "스토리 반응"]) {
+    await sent(member, series, "now() - interval '1 minute'");
+    expect(await candidates(), series).toEqual([]);
+    await db.admin.query(
+      "delete from public.push_campaign_sends where user_id = $1 and series = $2",
+      [member, series],
+    );
+  }
+  // 학습 자동 캠페인 밖의 묶음(사람이 보내는 캠페인 등)은 계속 센다 — 이름이 비슷해도 접두가 다르면 뺀다고 보지 않는다.
+  for (const series of ["콘솔 · lesson1", "자동", "빈도", "tutorial-rest"]) {
+    await sent(member, series, "now() - interval '1 minute'");
+    expect(await candidates(), series).toEqual([]);
+    await db.admin.query(
+      "delete from public.push_campaign_sends where user_id = $1 and series = $2",
+      [member, series],
+    );
+  }
+  expect((await candidates()).map((c) => c.userId)).toEqual([member]);
+});
+
+test("FS18e. 학습 자동 캠페인을 빼는 것은 스토리 알림뿐 — 선톡 푸시 문 · 반응 푸시 문 · pushed_today는 그대로", async () => {
+  await spoke(member, "mina");
+  await device(member, "2000-01-01T00:00:00Z");
+  const proactive = async () =>
+    (await server.query("select public.companion_proactive_push_gate($1, 'mina') as g", [member]))
+      .rows[0].g as Record<string, unknown>;
+  const reaction = async () =>
+    (
+      await server.query("select public.companion_story_reaction_push_gate($1, 'mina') as g", [
+        member,
+      ])
+    ).rows[0].g as Record<string, unknown>;
+  const pushedToday = async () =>
+    (await db.admin.query("select companion.pushed_today($1, now()) as p", [member])).rows[0]
+      .p as boolean;
+  const beforeReaction = await reaction();
+  expect(beforeReaction).not.toHaveProperty("pushedToday");
+  await sent(member, frequencySeriesOf("next"), "now() - interval '1 minute'");
+  // 선톡 문은 예전처럼 캠페인을 세지 않고, 반응 문은 하루 판정이 없으며, 묶음을 정하지 않은 pushed_today는 예전처럼 캠페인도 센다.
+  expect((await proactive()).pushedToday).toBe(false);
+  expect(await reaction()).toEqual(beforeReaction);
+  expect(await pushedToday()).toBe(true);
 });
 
 test("FS18b. 스토리 대조군도 하루 한 줄 — 오늘(현지) 스토리 · 스토리 시험 줄이 있으면 후보(group 무관)에서 빠진다", async () => {

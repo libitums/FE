@@ -116,7 +116,7 @@ describe("GD 가이드 예시가 두 장으로 서지 않는다", () => {
     await flush();
     expect(env.claim).toHaveBeenCalledWith(P, "snapshot");
     await env.advance(1_500);
-    expect(await done).toBe(true);
+    expect(await done).toBe("received");
     expect(env.photos()).toEqual([`${G}~snapshot~${M}`]);
     const ids = env.lines().map((m) => m.id);
     expect(ids.indexOf(`${G}~snapshot~${M}`)).toBe(ids.indexOf(`${G}#0`) + 1);
@@ -145,5 +145,40 @@ describe("GD 가이드 예시가 두 장으로 서지 않는다", () => {
       .map((m) => m.kind);
     expect(kinds).toEqual(["photo", "voice"]);
     expect(env.photos()).toEqual([`${G}~snapshot~${M}`]);
+  });
+});
+
+describe("GA 첫 인사가 첫 쪽 밖인 방(점검 3)", () => {
+  // 대화 30개가 넘으면 첫 쪽에 첫 인사가 없다. 예전에는 불러온 범위의 첫 캐릭터 말에 놓았고, 서버는 첫 인사에 붙여 다시 열면 사라졌다.
+  const cut: RemoteHistory = {
+    messages: [
+      say(R, 3, "반가워요!"),
+      { id: U, at: 4, kind: "text", from: "me", text: { ko: "네", en: "" } },
+    ],
+    corrections: {},
+    ideas: null,
+    hasMore: true,
+  };
+
+  test("GA-U4 서버가 제안해도 앱은 사진 · 음성 예시를 세우지 않고, 받기도 부르지 않는다", async () => {
+    const env = room(cut, [[]], row(G));
+    env.source.openRoom("duksu");
+    await flush();
+    expect(await env.source.sampleSnapshot?.offered("duksu")).toEqual({
+      snapshot: false,
+      voice: false,
+    });
+    expect(await env.source.sampleSnapshot?.claim("duksu")).toBe("failed");
+    expect(env.claim).not.toHaveBeenCalled();
+  });
+
+  test("GA-U5 앞부분까지 다 읽은 방(hasMore 없음)은 지금처럼 첫 캐릭터 메시지로 제안한다", async () => {
+    const env = room({ ...cut, hasMore: false }, [[]], row(G));
+    env.source.openRoom("duksu");
+    await flush();
+    expect(await env.source.sampleSnapshot?.offered("duksu")).toEqual({
+      snapshot: true,
+      voice: true,
+    });
   });
 });

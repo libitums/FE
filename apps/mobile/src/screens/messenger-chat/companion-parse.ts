@@ -207,10 +207,8 @@ function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
   return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin, ...greeting };
 }
 
-/**
- * `companion_load_profile` 본문 → 생년 · 추천 답변 설정 · 성인 확인 동의(ADR-0164, 칸이 없으면 false). 행이 없으면 JSON null(생년
- * 없음), 못 읽거나 틀린 본문이면 null.
- */
+// `companion_load_profile` 본문 → 생년 · 추천 답변 설정 · 성인 확인 동의(ADR-0164, 칸이 없으면 false). 행이 없으면 JSON null(생년
+// 없음), 못 읽거나 틀린 본문이면 null.
 export function profileFrom(bodyText: string | null): {
   readonly birthYear: number | null;
   readonly replySuggestions: boolean | null;
@@ -251,7 +249,9 @@ export function historyFrom(bodyText: string | null): RemoteHistory | null {
   const raw = recordOf(parse(bodyText));
   if (raw === null || !Array.isArray(raw.messages)) return null;
   const chatWords = historyChatWordsOf(raw.messages); // 채팅 단어가 있는 기록만 칸을 둡니다(ADR-0170)
-  return Object.keys(chatWords).length === 0 ? messagesOf(raw) : { ...messagesOf(raw), chatWords };
+  const words = Object.keys(chatWords).length === 0 ? {} : { chatWords };
+  // 더 오래된 쪽이 있으면 첫 인사가 로그 밖일 수 있습니다(ADR-0146 개정 ⟨가이드 점검⟩ 3).
+  return { ...messagesOf(raw), ...(raw.hasMore === true ? { hasMore: true } : {}), ...words };
 }
 
 export function greetingFrom(bodyText: string | null, now: number): RemoteGreeting | null {
