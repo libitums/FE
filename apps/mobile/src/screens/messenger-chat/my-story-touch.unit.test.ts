@@ -35,7 +35,7 @@ test("ST-U2. 남은 손가락이 섞여도 잡은 손가락만 — 한 손가락
   ]);
 });
 
-test("ST-U3. 둘째 손가락 — 둘까지 잡고, 하나를 떼면 남은 하나로 계속, 모르는 손가락만 떼면 모두 놓음", () => {
+test("ST-U3. 둘째 손가락 — 둘까지 잡고, 하나를 떼면 남은 하나로 계속, 다른 손가락을 떼면 그대로, 옛 환경은 모두 놓음", () => {
   let held = holdFingers([], fingersOf([t(0, 0, 0)]));
   held = holdFingers(held, fingersOf([t(1, 100, 0)]));
   held = holdFingers(held, fingersOf([t(2, 50, 50)]));
@@ -44,9 +44,15 @@ test("ST-U3. 둘째 손가락 — 둘까지 잡고, 하나를 떼면 남은 하�
     { x: 0, y: 10 },
     { x: 120, y: 0 },
   ]);
-  expect(liftFingers(held, fingersOf([t(0, 0, 10)]))).toEqual([1]);
-  // 옛 환경 — id가 이벤트마다 달라 아는 손가락이 없으면 모두 놓는다(끌기가 끝나지 않는 일 없음)
-  expect(liftFingers([7], fingersOf([t(9, 0, 0)]))).toEqual([]);
+  expect(
+    liftFingers(held, fingersOf([t(0, 0, 10)]), fingersOf([t(0, 0, 10), t(1, 120, 0)])),
+  ).toEqual([1]);
+  // 다른 곳의 셋째 손가락을 뗌 — 잡은 둘은 그대로(touchend의 touches에 잡은 손가락이 있음)
+  expect(
+    liftFingers(held, fingersOf([t(5, 9, 9)]), fingersOf([t(0, 0, 10), t(1, 120, 0), t(5, 9, 9)])),
+  ).toEqual([0, 1]);
+  // 옛 환경 — id가 이벤트마다 달라 잡은 손가락이 하나도 안 보이면 모두 놓는다(끌기가 끝나지 않는 일 없음)
+  expect(liftFingers([7], fingersOf([t(9, 0, 0)]), fingersOf([t(9, 0, 0)]))).toEqual([]);
 });
 
 test("ST-U4. 옛 환경(한 손가락 모드) — 잡은 id를 못 찾아도 손가락이 하나뿐이면 그 하나, 여럿이면 없음", () => {

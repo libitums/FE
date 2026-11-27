@@ -36,11 +36,19 @@ export function holdFingers(held: readonly number[], landed: readonly Finger[]):
   return next;
 }
 
-/** 뗀 손가락을 놓습니다. 아는 손가락이 하나도 없으면(id가 이벤트마다 바뀌는 옛 환경) 모두 놓습니다. */
-export function liftFingers(held: readonly number[], lifted: readonly Finger[]): number[] {
+/**
+ * 뗀 손가락을 놓습니다. 뗀 것이 잡은 손가락이 아니면(다른 곳의 손가락) 그대로 — 다만 잡은 손가락이 이벤트의 `touches`에 하나도 없으면
+ * (id가 이벤트마다 바뀌는 옛 한 손가락 환경) 모두 놓습니다. 여러 손가락 환경의 touchend `touches`는 막 뗀 손가락까지 담습니다.
+ */
+export function liftFingers(
+  held: readonly number[],
+  lifted: readonly Finger[],
+  touches: readonly Finger[],
+): number[] {
   const gone = new Set(lifted.map((finger) => finger.id));
   const next = held.filter((id) => !gone.has(id));
-  return next.length === held.length ? [] : next;
+  if (next.length !== held.length) return next;
+  return held.some((id) => touches.some((finger) => finger.id === id)) ? [...held] : [];
 }
 
 /** 잡은 손가락의 지금 자리(잡은 순서). 하나도 못 찾았고 손가락이 하나뿐이면 그 하나(옛 환경). */

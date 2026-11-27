@@ -76,7 +76,8 @@ export function MyStoryEditor({
   // 바탕 = 화면 전체(보기와 같은 좌표, 2026-11-27) — 위 줄 · 아래 줄은 그 위에 겹쳐 서고, 가리는 높이만 끝단에 넘깁니다.
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
   const [cover, setCover] = useState({ top: 0, bottom: 0 });
-  const canvas: CanvasSize = { ...screenSize, ...cover };
+  // 위 줄은 안전 영역 아래에 섭니다(층의 paddingTop) — 안전 영역은 그릴 때 더해 값이 바뀌어도 맞습니다.
+  const canvas: CanvasSize = { ...screenSize, top: insets.top + cover.top, bottom: cover.bottom };
   const stickerIds = useRef(0); // 스티커 id — 이 편집 안에서만 씁니다(서버 clientId와 따로)
   useLayerBack(onClose);
 
@@ -170,8 +171,7 @@ export function MyStoryEditor({
           data-testid={ids.editorTop}
           bindlayoutchange={(event: { detail: { height: number } }) => {
             "background only";
-            // 위 줄은 안전 영역 아래에 섭니다(층의 paddingTop).
-            setCover((now) => ({ ...now, top: insets.top + event.detail.height }));
+            setCover((now) => ({ ...now, top: event.detail.height }));
           }}
         >
           <view

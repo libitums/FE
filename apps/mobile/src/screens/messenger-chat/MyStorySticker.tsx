@@ -142,7 +142,7 @@ export function MyStoryPlaced<T extends Placement>({
   };
   const end = (event: TouchLists) => {
     "background only";
-    const held = liftFingers(start.current?.held ?? [], changedOf(event));
+    const held = liftFingers(start.current?.held ?? [], changedOf(event), fingersOf(event.touches));
     // 두 손가락에서 하나를 뗌 — 남은 손가락 자리부터 이어 끕니다.
     restart(held, event);
     if (held.length === 0) settle();
