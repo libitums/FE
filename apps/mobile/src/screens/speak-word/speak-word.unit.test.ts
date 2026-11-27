@@ -14,6 +14,7 @@ import {
   speakWordControlsOf,
   speakWordHintOf,
   speakWordInstructionOf,
+  speakWordJudgementOf,
   speakWordMeaningShown,
   speakWordPictureLabel,
   speakWordResultAt,
@@ -34,6 +35,13 @@ const heard = (text: string): SpeechAttemptPhase => ({ kind: "heard", text });
 const blocked: SpeechAttemptPhase = { kind: "unavailable", reason: "blocked" };
 const dictationOff: SpeechAttemptPhase = { kind: "unavailable", reason: "dictation-off" };
 const failed: SpeechAttemptPhase = { kind: "unavailable", reason: "failed" };
+
+const CARD_PERFECT = {
+  result: "correct",
+  grade: "perfect",
+  expected: "카드",
+  similarity: 1,
+} as const;
 
 const stateOf = (overrides: Partial<SpeakWordSessionState>): SpeakWordSessionState => ({
   ...initialSpeakWordSessionState,
@@ -77,16 +85,31 @@ describe("speakWordSessionReducer — outcome", () => {
     const next = speakWordSessionReducer(stateOf({ phase: listening }), {
       type: "outcome",
       outcome: { kind: "heard", text: "카드" },
+      judgement: CARD_PERFECT,
     });
 
     expect(next.phase).toEqual(heard("카드"));
     expect(next.heard).toEqual(["카드"]);
+    expect(next.judgement).toEqual(CARD_PERFECT);
+  });
+
+  it("SW2. 판정은 결말과 함께 온 값을 담는다 — 렌더 중에 채점하지 않는다(ADR-0201 개정 ⟨렌더 밖 판정⟩)", () => {
+    const close = { ...CARD_PERFECT, grade: "close" as const, similarity: 0.9 };
+    const next = speakWordSessionReducer(stateOf({ phase: listening }), {
+      type: "outcome",
+      outcome: { kind: "heard", text: "카드" },
+      judgement: close,
+    });
+
+    expect(next.judgement).toBe(close);
+    expect(speakWordResultAt(next)).toBe("correct");
   });
 
   it("SW2. blocked 결말은 불가 국면 · 가용성 blocked이고 목록은 그대로다", () => {
     const next = speakWordSessionReducer(stateOf({ phase: listening, heard: ["카드"] }), {
       type: "outcome",
       outcome: { kind: "unavailable", reason: "blocked" },
+      judgement: null,
     });
 
     expect(next.phase).toEqual(blocked);
@@ -98,6 +121,7 @@ describe("speakWordSessionReducer — outcome", () => {
     const next = speakWordSessionReducer(stateOf({ phase: listening }), {
       type: "outcome",
       outcome: { kind: "unavailable", reason: "failed" },
+      judgement: null,
     });
 
     expect(next.phase).toEqual(failed);
@@ -112,6 +136,7 @@ describe("speakWordSessionReducer — outcome", () => {
         speakWordSessionReducer(state, {
           type: "outcome",
           outcome: { kind: "heard", text: "늦게 온 글자" },
+          judgement: CARD_PERFECT,
         }),
       ).toBe(state);
     }
@@ -137,15 +162,17 @@ describe("speakWordSessionReducer — skip · next", () => {
   });
 
   it("SW3. next는 들음에서만 다음 문항으로 가고 목록은 그대로다", () => {
-    const next = speakWordSessionReducer(stateOf({ phase: heard("카드"), heard: ["카드"] }), {
-      type: "next",
-    });
+    const next = speakWordSessionReducer(
+      stateOf({ phase: heard("카드"), heard: ["카드"], judgement: CARD_PERFECT }),
+      { type: "next" },
+    );
 
     expect(next).toEqual({
       questionIndex: 1,
       phase: ready,
       availability: "open",
       heard: ["카드"],
+      judgement: null,
     });
     for (const phase of [ready, listening, blocked, failed, dictationOff]) {
       const state = stateOf({ phase });
@@ -167,6 +194,7 @@ describe("speakWordSessionReducer — 잠금", () => {
     state = speakWordSessionReducer(state, {
       type: "outcome",
       outcome: { kind: "unavailable", reason: "blocked" },
+      judgement: null,
     });
     state = speakWordSessionReducer(state, { type: "skip" });
 
@@ -186,6 +214,7 @@ describe("speakWordSessionReducer — 잠금", () => {
     state = speakWordSessionReducer(state, {
       type: "outcome",
       outcome: { kind: "unavailable", reason: "failed" },
+      judgement: null,
     });
     state = speakWordSessionReducer(state, { type: "skip" });
 
@@ -194,17 +223,22 @@ describe("speakWordSessionReducer — 잠금", () => {
 });
 
 describe("judgeSpokenWord", () => {
-  it("SW5. 정답 낱말로 시작하는 말은 부호 · 뒤 낱말과 상관없이 정답이다", () => {
-    for (const text of ["카드", "카드.", "카드 주세요"]) {
+  it("SW5. 정답 낱말을 말하면 부호 · 앞뒤 덧붙은 낱말 · 군말과 상관없이 정답이다", () => {
+    for (const text of ["카드", "카드.", "카드 주세요", "음 카드"]) {
       expect(judgeSpokenWord(answers("카드"), text)).toBe("correct");
     }
   });
 
-  it("SW5. 다른 글자 · 어미 · 붙여 쓴 낱말 · 빈 글자는 오답이다", () => {
+  it("SW5. 띄어쓰기 · 받침 표기만 다르면 정답이다(ADR-0201 발음 기준)", () => {
+    expect(judgeSpokenWord(answers("비밀번호"), "비밀 번호")).toBe("correct");
+    expect(judgeSpokenWord(answers("괜찮아요"), "괜찬아요")).toBe("correct");
+  });
+
+  it("SW5. 짧은 낱말은 자모 하나만 달라도 · 붙은 어미 · 빈 글자는 오답이다", () => {
     for (const text of ["카드요", "카트", ""]) {
       expect(judgeSpokenWord(answers("카드"), text)).toBe("incorrect");
     }
-    expect(judgeSpokenWord(answers("비밀번호"), "비밀 번호")).toBe("incorrect");
+    expect(judgeSpokenWord(answers("고기"), "거기")).toBe("incorrect");
   });
 
   it("SW5. 정답이 여럿이면 하나만 맞아도 정답이다", () => {
@@ -246,12 +280,26 @@ describe("결과 · 건너뜀 수", () => {
     expect(speakWordSessionResults(mixed, ["카드", "카드"])).toEqual(["correct", "incorrect"]);
   });
 
-  it("SW6. speakWordResultAt은 들음 국면에서만 판정을 낸다", () => {
-    expect(speakWordResultAt(question(), stateOf({ phase: heard("카드") }))).toBe("correct");
-    expect(speakWordResultAt(question(), stateOf({ phase: heard("카트") }))).toBe("incorrect");
+  it("SW6. speakWordResultAt은 들음 국면에서 담아 둔 판정만 낸다", () => {
+    const wrong = speakWordJudgementOf(question(), { kind: "heard", text: "카트" });
+    expect(speakWordResultAt(stateOf({ phase: heard("카드"), judgement: CARD_PERFECT }))).toBe(
+      "correct",
+    );
+    expect(speakWordResultAt(stateOf({ phase: heard("카트"), judgement: wrong }))).toBe(
+      "incorrect",
+    );
     for (const phase of [ready, listening, blocked, failed, dictationOff]) {
-      expect(speakWordResultAt(question(), stateOf({ phase }))).toBeNull();
+      expect(speakWordResultAt(stateOf({ phase, judgement: CARD_PERFECT }))).toBeNull();
     }
+  });
+
+  it("SW6. speakWordJudgementOf는 들린 결말만 채점한다(결말 콜백 — 배경 스레드에서 부른다)", () => {
+    expect(speakWordJudgementOf(question(), { kind: "heard", text: "카드" })).toEqual(CARD_PERFECT);
+    expect(speakWordJudgementOf(question(), { kind: "heard", text: "안 카드" })?.grade).toBe(
+      "incorrect",
+    );
+    expect(speakWordJudgementOf(question(), { kind: "unavailable", reason: "failed" })).toBeNull();
+    expect(speakWordJudgementOf(question(), { kind: "missed", reason: "no-match" })).toBeNull();
   });
 
   it("SW6. 문항을 다 지나면 세션이 끝난 것이다", () => {

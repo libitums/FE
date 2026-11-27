@@ -2,6 +2,7 @@
 
 import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
+import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
 import type { PictureLoadState } from "../../lib/picture-load";
@@ -27,19 +28,31 @@ export type SpeakWordQuestion = {
   readonly audio?: AnswerEchoAudio;
 };
 
-/** 판정을 적지 않습니다 — 지나간 문항마다 들은 글자(건너뜀은 null)만 적고 결과는 파생입니다. */
+/**
+ * 지나간 문항마다 들은 글자(건너뜀은 null)를 적고, 지금 문항의 판정은 결말과 함께 받아 둡니다 — 렌더 중에는 채점하지
+ * 않습니다(채점 함수는 배경 스레드 전용, ADR-0201 개정 ⟨렌더 밖 판정⟩). 세션 결과는 끝낼 때(탭 핸들러) 다시 잽니다.
+ */
 export type SpeakWordSessionState = {
   readonly questionIndex: number;
   readonly phase: SpeechAttemptPhase;
   readonly availability: SpeechAvailability;
   readonly heard: readonly (string | null)[];
+  /** 국면이 heard일 때의 판정입니다. 그 밖에는 null. */
+  readonly judgement: SpokenAnswerJudgement | null;
 };
 
 export type SpeakWordSessionAction =
   /** ready · unavailable(dictation-off) → listening. */
   | { readonly type: "start" }
-  /** listening일 때만 — heard면 heard 목록에 글자를 더하고 국면 heard, 불가면 국면 unavailable + availability 갱신. */
-  | { readonly type: "outcome"; readonly outcome: SpeechAttemptOutcome }
+  /**
+   * listening일 때만 — heard면 heard 목록에 글자를 더하고 국면 heard · 판정 `judgement`, 불가면 국면 unavailable +
+   * availability 갱신. `judgement`는 결말 콜백이 `speakWordJudgementOf`로 잽니다(heard가 아니면 null).
+   */
+  | {
+      readonly type: "outcome";
+      readonly outcome: SpeechAttemptOutcome;
+      readonly judgement: SpokenAnswerJudgement | null;
+    }
   /** ready · unavailable → heard 목록에 null, 다음 문항. */
   | { readonly type: "skip" }
   /** heard → 다음 문항. */

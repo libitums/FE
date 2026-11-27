@@ -10,7 +10,8 @@ import {
 } from "./index";
 
 // `unit` 계층: 발음 기준의 너그러운 말하기 판정. 사례 표는 u00 롤플레이 세 턴의 정답으로 만들었고,
-// 기준값(0.75 · 마디 하한 0.5)은 이 표가 정한다. 앱 채점(judgeSpeaking · judgeRoleplayReply)은 그대로다.
+// 기준값(긴 정답 0.75 · 마디 하한 0.5)은 이 표가 정한다. ADR-0201부터 앱의 말하기 · 롤플레이도 이 잣대로 채점한다
+// (`judgeSpokenAnswer`) — 허용 오차는 정답 길이로 정하고, 들은 말은 낱말 단위로만 건너뛴다.
 
 const T1 = "안녕하세요! 네, 처음이에요!";
 const T2 = "진짜요? 감사합니다!";
@@ -125,18 +126,18 @@ describe("SP2 사례 표", () => {
   test.each([
     [P, "처음이예요", 0.857, 0.857],
     [T1, "안녕하세요 네 처음이예요", 0.947, 0.857],
-    [T1, "안녕하세요 처음이에요", 0.947, 0.5],
+    [T1, "안녕하세요 처음이에요", 0.895, 1],
     [T1, "안녕하세여 네 처음이에여", 0.895, 0.857],
     [T2, "감사함니다 진짜요", 1, 1],
     [T2, "진짜 감사합니다", 0.944, 0.833],
     [T3, "지굼부터요", 0.9, 0.9],
-    [T1, "안녕하세요", 0.684, 0.286],
-    [T1, "처음이에요", 0.526, 0.2],
-    [T2, "진짜요", 0.444, 0.167],
-    [T2, "감사합니다", 0.778, 0.333],
+    [T1, "안녕하세요", 0.526, 0],
+    [T1, "처음이에요", 0.474, 0.2],
+    [T2, "진짜요", 0.389, 0.083],
+    [T2, "감사합니다", 0.667, 0],
     [T3, "지금", 0.5, 0.5],
-    [T1, "안녕히 가세요", 0.579, 0.286],
-    [T3, "언제부터요", 0.6, 0.6],
+    [T1, "안녕히 가세요", 0.526, 0.286],
+    [T3, "언제부터요", 0.5, 0.5],
     [T3, "hello", 0, 0],
   ])("일치도 %s ← 「%s」 = %s / 마디 %s", (expected, heard, similarity, weakest) => {
     const result = spokenSimilarity(expected, heard);
@@ -150,8 +151,8 @@ describe("SP2 사례 표", () => {
     expect(judgeSpokenLenient([T1], [""]).similarity).toBe(0);
   });
 
-  test("알려진 한계 — 뜻이 반대인 삽입도 발음이 가까우면 통과한다(문서에 둔다)", () => {
-    expect(judgeSpokenLenient([T1], ["안녕하세요 네 처음이 아니에요"]).outcome).toBe("lenient");
+  test("뜻이 반대인 삽입은 발음이 가까워도 오답이다(옛 「알려진 한계」, ADR-0201 개정 ⟨부정어⟩)", () => {
+    expect(judgeSpokenLenient([T1], ["안녕하세요 네 처음이 아니에요"]).outcome).toBe("incorrect");
   });
 });
 
@@ -188,7 +189,7 @@ describe("SP3 판정 묶음", () => {
     expect(result.outcome).toBe("incorrect");
     expect(result.heard).toBe("감사합니다");
     expect(result.expected).toBe(T2);
-    expect(result.similarity).toBe(0.778);
+    expect(result.similarity).toBe(0.667);
   });
 
   test('대안이 없으면 incorrect · heard "" · similarity 0 · expected 첫 정답', () => {

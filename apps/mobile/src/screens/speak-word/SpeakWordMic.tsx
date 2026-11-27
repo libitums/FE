@@ -21,6 +21,7 @@ import {
 } from "../../lib/speech-attempt";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
+  speakWordJudgementOf,
   speakWordSessionResults,
   speakWordSkippedCount,
   speakWordSkippedIndexes,
@@ -90,7 +91,13 @@ export function useSpeakWordMic(args: SpeakWordMicArgs): SpeakWordMic {
         finish(speakWordSkipRest(now.state, total));
       },
     },
-    (outcome) => dispatch({ type: "outcome", outcome }),
+    // 판정은 결말 콜백(배경 스레드)에서 잽니다 — 렌더는 담아 둔 값만 읽습니다(ADR-0201 개정 ⟨렌더 밖 판정⟩).
+    (outcome) => {
+      const now = latest.current;
+      const question = now.questions[now.state.questionIndex];
+      const judgement = question === undefined ? null : speakWordJudgementOf(question, outcome);
+      dispatch({ type: "outcome", outcome, judgement });
+    },
   );
 
   // 같은 문항에서 다시 말할 수 있는 실패가 몇 번 쌓였는가 — 문항이 바뀌면 처음부터 셉니다.

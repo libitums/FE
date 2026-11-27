@@ -82,7 +82,7 @@ export function isRoleplayTalkDone(state: RoleplayTalkState, turnCount: number):
   return state.turnIndex >= turnCount;
 }
 
-// 말하기 답 판정은 `@libitums/episode-core/judge`가 정본입니다(랜딩 체험판과 같은 규칙).
+// 말하기 답 판정은 `@libitums/episode-core/judge`가 정본입니다 — 발음 기준, 랜딩 체험판과 같은 잣대(ADR-0201).
 export { judgeRoleplayReply } from "@libitums/episode-core/judge";
 
 /**

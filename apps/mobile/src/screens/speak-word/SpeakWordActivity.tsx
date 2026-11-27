@@ -60,7 +60,7 @@ export function SpeakWordActivity({
   const question = complete ? null : questions[state.questionIndex];
   const picture = useSpeakWordPicture(state.questionIndex, question?.meaning ?? null);
   const { phase } = state;
-  const result = question == null ? null : speakWordResultAt(question, state);
+  const result = question == null ? null : speakWordResultAt(state);
   const counter = lessonCounter(
     lesson,
     question == null ? Math.max(0, questions.length - 1) : state.questionIndex,

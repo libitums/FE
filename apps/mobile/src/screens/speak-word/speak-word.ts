@@ -3,7 +3,8 @@
 import type { AnswerResult } from "../../lib/answer-result";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { PictureLoadState } from "../../lib/picture-load";
-import { judgeSpeaking } from "../../lib/speaking-judge";
+import { judgeSpokenAnswer } from "../../lib/speaking-judge";
+import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import {
   speechAvailabilityAfter,
   speechMissedHintOf,
@@ -11,7 +12,11 @@ import {
   speechReopened,
   speechRetryable,
 } from "../../lib/speech-attempt";
-import type { SpeechAttemptPhase, SpeechControls } from "../../lib/speech-attempt";
+import type {
+  SpeechAttemptOutcome,
+  SpeechAttemptPhase,
+  SpeechControls,
+} from "../../lib/speech-attempt";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   SpeakWordQuestion,
@@ -24,6 +29,7 @@ export const initialSpeakWordSessionState: SpeakWordSessionState = {
   phase: { kind: "ready" },
   availability: "open",
   heard: [],
+  judgement: null,
 };
 
 function nextQuestion(
@@ -35,6 +41,7 @@ function nextQuestion(
     phase: speechPhaseFor(state.availability),
     availability: state.availability,
     heard,
+    judgement: null,
   };
 }
 
@@ -61,6 +68,7 @@ export function speakWordSessionReducer(
         phase: outcome,
         availability: speechAvailabilityAfter(state.availability, outcome),
         heard: outcome.kind === "heard" ? [...state.heard, outcome.text] : state.heard,
+        judgement: outcome.kind === "heard" ? action.judgement : null,
       };
     }
     case "skip":
@@ -83,18 +91,28 @@ export function speakWordSkipRest(
   return [...state.heard, ...new Array<null>(rest).fill(null)];
 }
 
-/** 정답 중 하나라도 맞게 말했으면 정답입니다(앞 낱말 일치 — 부호 · 뒤 낱말은 무시). */
+/**
+ * 정답 중 하나라도 발음 기준으로 맞게 말했으면 정답입니다(ADR-0201) — 띄어쓰기 · 연음 · 받침 표기 · 군말 · 뒤에 덧붙은
+ * 낱말은 무시하고, 긴 정답은 자모 몇 개의 오차까지 받습니다. 「통과(close)」 등급과 모범 정답은 `judgeSpokenAnswer`가 냅니다.
+ */
 export function judgeSpokenWord(answers: NonEmpty<string>, heard: string): AnswerResult {
-  return answers.some((answer) => judgeSpeaking(answer, heard) === "correct")
-    ? "correct"
-    : "incorrect";
+  return judgeSpokenAnswer(answers, heard).result;
 }
 
-export function speakWordResultAt(
+/**
+ * 결말 하나의 판정입니다 — 들린 결말만 채점하고 그 밖은 null. 인식 결말 콜백(배경 스레드)에서 불러 `outcome` 동작에
+ * 싣습니다. 렌더에서 부르지 않습니다(ADR-0201 개정 ⟨렌더 밖 판정⟩).
+ */
+export function speakWordJudgementOf(
   question: SpeakWordQuestion,
-  state: SpeakWordSessionState,
-): AnswerResult | null {
-  return state.phase.kind === "heard" ? judgeSpokenWord(question.answers, state.phase.text) : null;
+  outcome: SpeechAttemptOutcome,
+): SpokenAnswerJudgement | null {
+  return outcome.kind === "heard" ? judgeSpokenAnswer(question.answers, outcome.text) : null;
+}
+
+/** 지금 문항의 판정 — 들음 국면에서 받아 둔 값만 읽습니다(렌더에서 채점하지 않습니다). */
+export function speakWordResultAt(state: SpeakWordSessionState): AnswerResult | null {
+  return state.phase.kind === "heard" ? (state.judgement?.result ?? null) : null;
 }
 
 export function speakWordSessionResults(
