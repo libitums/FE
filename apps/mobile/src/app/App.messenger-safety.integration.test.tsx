@@ -56,18 +56,26 @@ test("SU-I1 처음 연 방에서 생년을 묻고, 답한 뒤에는 다른 방�
   ).toBe("Birth year, 1998");
 });
 
-test("SU-I2 건너뛰어도 다시 묻지 않는다", async () => {
+test("SU-I2 Skip이 없다 — 시트를 닫으면 방을 나가고, 다시 열면 또 묻고, 연도를 골라 Continue하면 입력 줄로 대화를 시작한다", async () => {
   // 1.5(ADR-0117 D3)부터 미나 방은 해금 전 잠겨 있어, 이미 해금한 설치로 시작합니다.
   await resetMessengerChatSource({ birthYear: "unasked", unlocked: ["mina"] });
   await bootToList();
   openRoom("mina");
-  act(() => {
-    tapButtonIn("ui-lynx-bottom-sheet-action-skip");
-  });
-  leaveRoom();
+  expect(screen.queryByTestId("ui-lynx-bottom-sheet-action-skip")).toBeNull();
+  tapId("ui-lynx-bottom-sheet-close");
+  expect(screen.queryByTestId("messenger-chat-screen")).toBeNull();
+  expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
+  expect((await appChatSource())?.snapshot().birthYear).toEqual({ kind: "unasked" });
+
   openRoom("mina");
+  expect(screen.getByTestId("messenger-chat-birth-year-sheet")).toBeInTheDocument();
+  tapId("messenger-chat-birth-year-1990");
+  act(() => {
+    tapButtonIn("ui-lynx-bottom-sheet-action-continue");
+  });
   expect(screen.queryByTestId("messenger-chat-birth-year-sheet")).toBeNull();
-  expect((await appChatSource())?.snapshot().birthYear).toEqual({ kind: "skipped" });
+  expect(screen.getByTestId("messenger-chat-field")).toBeInTheDocument();
+  expect((await appChatSource())?.snapshot().birthYear).toEqual({ kind: "set", year: 1990 });
 });
 
 test("SU-I3 위기 카드의 Call은 호스트 ExternalLinkModule.open에 tel: 주소를 넘긴다", async () => {

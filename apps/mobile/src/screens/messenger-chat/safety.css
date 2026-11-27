@@ -284,11 +284,3 @@
   line-height: var(--libitum-typography-body-m-line-height);
   color: var(--libitum-color-fg-neutral-muted);
 }
-
-.chat-birth-year-note {
-  font-family: var(--libitum-typography-caption-font-family);
-  font-size: 12px;
-  line-height: 17px;
-  color: var(--libitum-color-fg-neutral-muted);
-  text-align: center;
-}

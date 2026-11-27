@@ -74,7 +74,7 @@ test("SU-U13 입력 막힘은 지금부터 몇 분 뒤 시각으로, 없으면 n
   expect(blocked.thread("d")?.inputBlock).toBeNull();
 });
 
-test("SU-U14 생년은 씨앗 값(없으면 unasked)에서 시작하고 setBirthYear로 set · skipped가 되며 알린다", () => {
+test("SU-U14 생년은 씨앗 값(없으면 unasked)에서 시작하고 setBirthYear로 set이 되며 알린다", () => {
   const source = make({ rooms: [room()] });
   expect(source.snapshot().birthYear).toEqual({ kind: "unasked" });
   const listener = vi.fn();
@@ -82,8 +82,6 @@ test("SU-U14 생년은 씨앗 값(없으면 unasked)에서 시작하고 setBirth
   source.setBirthYear(2001);
   expect(source.snapshot().birthYear).toEqual({ kind: "set", year: 2001 });
   expect(listener).toHaveBeenCalledTimes(1);
-  source.setBirthYear(null);
-  expect(source.snapshot().birthYear).toEqual({ kind: "skipped" });
   const seeded = make({ rooms: [room()], birthYear: { kind: "set", year: 1990 } });
   expect(seeded.snapshot().birthYear).toEqual({ kind: "set", year: 1990 });
 });
