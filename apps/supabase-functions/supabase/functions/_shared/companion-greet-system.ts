@@ -24,6 +24,7 @@ export function greetingSystem(
 ): string {
   const prompt = companionSystemPrompt({
     persona,
+    characterId,
     speechLevel: context.speechLevel,
     ageBand: context.ageBand,
     romanceTier: context.romanceTier,

@@ -276,10 +276,10 @@ export function offerDirective(offer: LearningOffer): string {
   return [
     "Learned expressions you may weave into this reply (optional, at most one):",
     ...lines,
-    "Pick one only if it fits what you are already talking about. If none fits naturally, use none: skipping is fine, and never bend the conversation or change the topic just to use one.",
+    "Pick one only if it fits what you are already talking about. If none fits naturally, use none: skipping is fine, and never bend the conversation or change the topic just to use one (no sudden drink offers, payment talk or advice just to fit a word in).",
     "To say it: use it once in your own line (you may conjugate it or fill its blank). To ask: end with one easy question the learner can naturally answer using it; do not use it yourself, do not mention it, and never quiz or test them.",
     ...(offer.nudge
-      ? ["It has been a while since the last one: if one fits even reasonably, use it."]
+      ? ["It has been a while since the last one: use one if it fits what the learner just said — but never offer food, drinks or payment out of nowhere just to use it."]
       : []),
     'In @state set "learned" to the id you used (e.g. "e1") and "learned_how" to "say" or "ask"; if you used none, set "learned" to null.',
   ].join("\n");

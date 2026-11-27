@@ -11,8 +11,10 @@ import type {
   HistoryEntry,
   LlmStep,
   LlmUsage,
+  ReplyEffort,
   ReplyRequest,
 } from "./chat-send.contract.ts";
+import { replyEfforts } from "./chat-send.contract.ts";
 import { judgementFrom, replyJudgeContent, replyJudgeSystem } from "./companion-eval-judge.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import {
@@ -56,6 +58,15 @@ export function serverFallbackOptions(
 ): { betas: ["server-side-fallback-2026-07-01"]; fallbacks: "default" } | Record<never, never> {
   if (model.startsWith("claude-haiku")) return {};
   return { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" };
+}
+
+/** 답변의 생각 설정. `off`는 생각을 끄고 effort low(Haiku 5.5는 disabled를 high 이하에서만 받는다). */
+export function replyThinking(effort: ReplyEffort): {
+  output_config: { effort: "low" | "medium" | "high" };
+  thinking?: { type: "disabled" };
+} {
+  if (effort === "off") return { output_config: { effort: "low" }, thinking: { type: "disabled" } };
+  return { output_config: { effort } };
 }
 
 /**
@@ -149,28 +160,46 @@ export function anthropicCompanionLlm(
     model: config.model,
     async *reply(request: ReplyRequest) {
       const [stable, dynamic = ""] = request.system.split(systemSplit);
-      const stream = client.beta.messages.stream(
-        {
-          model: config.model,
-          max_tokens: 2000,
-          // 채팅은 짧고 빨라야 합니다 — 생각 깊이를 낮춥니다(`COMPANION_REPLY_EFFORT`, 기본 low).
-          output_config: { effort: config.replyEffort ?? "low" },
-          ...serverFallbackOptions(config.model),
-          system: [
-            { type: "text", text: stable ?? "", cache_control: { type: "ephemeral" } },
-            { type: "text", text: dynamic },
-          ],
-          messages: historyMessages(request.history, request.userText, request.directive ?? null),
-        },
-        { signal: request.signal },
-      );
+      const run = (model: string) =>
+        client.beta.messages.stream(
+          {
+            model,
+            max_tokens: 2000,
+            // 채팅은 짧고 빨라야 합니다 — 생각 깊이를 낮춥니다(`COMPANION_REPLY_EFFORT`, 기본 low). off는 생각을 끈다(Haiku만).
+            ...replyThinking(model === config.model ? (config.replyEffort ?? "low") : "low"),
+            ...serverFallbackOptions(model),
+            system: [
+              { type: "text", text: stable ?? "", cache_control: { type: "ephemeral" } },
+              { type: "text", text: dynamic },
+            ],
+            messages: historyMessages(request.history, request.userText, request.directive ?? null),
+          },
+          { signal: request.signal },
+        );
+      let yielded = false;
+      const stream = run(config.model);
       for await (const event of stream) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta")
+        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+          yielded = true;
           yield event.delta.text;
+        }
       }
       const final = await stream.finalMessage();
       record(usageOf("reply", config.model, final.usage));
-      if (final.stop_reason === "refusal") throw new Error("refusal");
+      if (final.stop_reason !== "refusal") return;
+      // refusal(2026-11-28): 이미 글을 보냈으면 보낸 데까지로 조용히 끝낸다(반쯤 나온 말풍선은 남는다). 아무것도 보내지 않았으면
+      // 대체 모델로 한 번 다시 부른다 — Haiku 5.5는 서버 쪽 대체가 없다. 대체 모델도 거절하거나 대체가 없으면 지금처럼 오류.
+      console.warn(`reply refusal model=${config.model} category=${final.stop_details?.category ?? "null"} yielded=${yielded}`);
+      if (yielded) return;
+      const fallback = config.replyFallbackModel;
+      if (fallback === undefined || fallback === config.model) throw new Error("refusal");
+      const retry = run(fallback);
+      for await (const event of retry) {
+        if (event.type === "content_block_delta" && event.delta.type === "text_delta") yield event.delta.text;
+      }
+      const second = await retry.finalMessage();
+      record(usageOf("reply", fallback, second.usage));
+      if (second.stop_reason === "refusal") throw new Error("refusal");
     },
     async moderate(request) {
       const label =
@@ -283,13 +312,15 @@ export function companionLlmFor(env: ChatSendEnv): CompanionLlm {
   return env.llm.kind === "fake" ? fakeCompanionLlm() : anthropicCompanionLlm(env.llm);
 }
 
-/** 모든 단계를 한 모델로(`companion-eval`). `…@medium`이면 답변만 그 생각 깊이로. fake는 모델과 상관없이 가짜입니다. */
+/** 모든 단계를 한 모델로(`companion-eval`). `…@medium`(· `@high` · `@off`)이면 답변만 그 생각 깊이로. fake는 모델과 상관없이 가짜입니다. */
 export function companionLlmWithModel(env: ChatSendEnv, choice: string): CompanionLlm {
   if (env.llm.kind === "fake") return fakeCompanionLlm();
   const [model = choice, effort] = choice.split("@");
   return anthropicCompanionLlm({
     ...env.llm,
-    ...(effort === "low" || effort === "medium" ? { replyEffort: effort } : {}),
+    ...((replyEfforts as readonly (string | undefined)[]).includes(effort)
+      ? { replyEffort: effort as ReplyEffort }
+      : {}),
     model,
     moderationModel: model,
     feedbackModel: model,

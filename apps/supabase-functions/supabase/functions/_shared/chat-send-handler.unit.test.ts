@@ -230,6 +230,12 @@ const llmWith = (
   };
 };
 
+/** 매 턴 인물 상기문(`personaAnchor`, i8)을 뺀 이번 턴 지시 — 화제 · 퀴즈 · 스토리 지시만 견준다. */
+const withoutAnchor = (directive: string | null | undefined): string | null => {
+  const rest = (directive ?? "").split("\n\n").filter((part) => !part.startsWith("Reply as "));
+  return rest.length === 0 || rest.join("") === "" ? null : rest.join("\n\n");
+};
+
 describe("스트림 전 판정", () => {
   test("CS1. 메서드 · 설정 · 토큰 · 본문", async () => {
     const { handler } = setup();
@@ -1648,7 +1654,7 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     const llm: CompanionLlm = {
       ...fake,
       reply(request) {
-        directives.push(request.directive ?? null);
+        directives.push(withoutAnchor(request.directive));
         return fake.reply(request);
       },
     };
@@ -2086,7 +2092,7 @@ describe("덕수쌤 퀴즈의 답(ADR-0191 D14)", () => {
     const llm: CompanionLlm = {
       ...fake,
       reply(request) {
-        directives.push(request.directive ?? null);
+        directives.push(withoutAnchor(request.directive));
         return fake.reply(request);
       },
     };
@@ -2182,7 +2188,7 @@ describe("친구 스토리 답장(ADR-0178 D5 · D6)", () => {
     const llm: CompanionLlm = {
       ...fake,
       reply(request) {
-        directives.push(request.directive ?? null);
+        directives.push(withoutAnchor(request.directive));
         return fake.reply(request);
       },
     };

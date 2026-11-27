@@ -159,8 +159,9 @@ test("RQ7. 판정 원칙(ADR-0203) — 뜻으로 보기 · 목적어 · 이중 �
 
 test("RQ8. 답 프롬프트 — 학습자에게 적극적으로 묻고, 연락처 · 정확한 위치만 묻지 않으며, AI라고 먼저 말하지 않는다", () => {
   for (const persona of [geonwoo, duksu, mina]) {
-    const { stable } = prompt(persona, "unknown", "polite");
-    expect(stable).toContain("Get to know the learner like a new friend would");
+    const { stable, dynamic } = prompt(persona, "unknown", "polite");
+    // 기억이 비면 이번 대화 지시(dynamic)에 「알아 가기」 줄이 들어간다(i10 — 기억이 차면 빠진다).
+    expect(dynamic).toContain("# Getting to know them");
     expect(stable).toContain("Never ask for the learner's contact details or exact whereabouts");
     expect(stable).not.toContain("Do not ask for personal information");
     expect(stable).toContain("never bring up being an AI yourself");

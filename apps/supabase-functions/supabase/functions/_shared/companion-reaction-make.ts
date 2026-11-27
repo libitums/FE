@@ -92,6 +92,7 @@ export async function makeReaction(
   );
   const prompt = companionSystemPrompt({
     persona: context.persona,
+    characterId: claim.characterId,
     speechLevel: context.speechLevel,
     ageBand: context.ageBand,
     romanceTier: context.romanceTier,

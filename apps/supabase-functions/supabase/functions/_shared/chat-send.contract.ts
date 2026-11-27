@@ -41,10 +41,15 @@ export type ChatSendEnvName =
   | "COMPANION_TRANSLATION"
   | "COMPANION_TRANSLATION_MODEL"
   | "COMPANION_SUGGEST_MODEL"
-  | "COMPANION_REPLY_EFFORT";
+  | "COMPANION_REPLY_EFFORT"
+  | "COMPANION_REPLY_FALLBACK_MODEL";
 
-/** 답변의 생각 깊이(`output_config.effort`). 채팅은 짧고 빨라야 해서 low가 기본입니다. */
-export type ReplyEffort = "low" | "medium";
+/**
+ * 답변의 생각 깊이(`output_config.effort`). 채팅은 짧고 빨라야 해서 low가 기본입니다. `off`는 생각을 끄고(`thinking: disabled`) effort low —
+ * Haiku 5.5만 받는다(Sonnet 5.5 · Opus 5.5는 400).
+ */
+export type ReplyEffort = "low" | "medium" | "high" | "off";
+export const replyEfforts: readonly ReplyEffort[] = ["low", "medium", "high", "off"];
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -67,6 +72,7 @@ export type ChatSendEnv = {
         readonly translationModel: string;
         readonly suggestModel?: string; // 추천 답변 칩. 없으면 검사 모델.
         readonly replyEffort?: ReplyEffort; // 답변의 생각 깊이. 없으면 low.
+        readonly replyFallbackModel?: string; // 답변이 refusal로 끝나고 아직 아무것도 보내지 않았을 때 한 번 다시 부를 모델(Haiku는 서버 대체가 없다). 없으면 대체 없음.
       }
     | { readonly kind: "fake" };
   /** 캐릭터 답을 학습자 언어로 번역하는가(PRD O9 — 매 메시지 · 탭할 때 중 미정). `every`는 턴마다 SSE `translation`을 보내고 저장, `off`는 번역하지 않는다. */
@@ -111,6 +117,15 @@ export type PersonaCard = FriendPersonaFields & {
   readonly romance?: string;
   /** 번역 표기 메모(한국어 → 학습자 언어에서 쓸 표기, 예: 「쌤」 → "teacher (casual)"). 운영자가 채운다(20261123). */
   readonly glossary?: Readonly<Record<string, string>>;
+  /** 대화 예시(목소리 · 길이 · 수준의 본보기). 있으면 코드 표(`companion-persona-examples.ts`)보다 먼저 쓴다. */
+  readonly examples?: readonly PersonaExample[];
+};
+
+/** 페르소나 대화 예시 한 개 — 앞선 대화(있으면) · 학습자 말 · 캐릭터 답(태그 줄). */
+export type PersonaExample = {
+  readonly history?: readonly (readonly ["user" | "assistant", string])[];
+  readonly learner: string;
+  readonly reply: readonly string[];
 };
 
 export type ReplyRequest = {

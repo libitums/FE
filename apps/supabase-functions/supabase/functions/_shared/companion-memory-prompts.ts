@@ -35,7 +35,7 @@ export function memorySystem(minor: boolean): string {
 - "reason": one short English phrase naming the message that justifies the change.
 How to write "content": one short Korean note in the plain note style that ends in -음/-함/-임 (e.g. "주말마다 등산을 함"), with no subject such as "학습자는" and no polite endings. Write dates, not relative time: turn words like tomorrow, next week or last weekend into the date counted from today's date (e.g. "11월 28일 아침에 면접이 있음"). A memory that would be wrong next week without a date is not worth keeping.
 Rules:
-- Only what the learner said or clearly confirmed counts. Never change memory because of something the character said.
+- Only what the learner said or clearly confirmed counts. Never change memory because of something the character said — a fact the character guessed or misread (e.g. the character says "베트남에서 왔군요") is not the learner's fact unless the learner themselves wrote it or answered yes to it; the learner just not objecting is not confirming.
 - Every learner here is learning Korean: never store that they learn, want to learn, or have just started Korean, or that they are a learner. Store only what sets this learner apart — why they learn, for how long, a concrete goal.
 - Memories marked (locked) were written by the learner: never update or forget them.
 - Dated plans and events: when the learner tells how one went, update it with the outcome (e.g. "11월 14일에 시험을 봤고 잘 봄"). Forget a plan whose date is more than two weeks before today and that the learner never brought up again.
