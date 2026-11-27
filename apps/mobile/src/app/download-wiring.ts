@@ -7,6 +7,7 @@ import type { AssetActivity } from "./cover-download-state";
 import { downloadProgressSummaryOf, type DownloadCatalogInput } from "./download-progress";
 import { readNetworkProperties } from "../lib/network-status";
 import type { DownloadSettingsScreenProps } from "../screens/download-settings/download-settings.contract";
+import type { LanguageDownloadPort } from "./language-download-port";
 
 /** 받기 훅이 내주는 것 — 받기 차례를 다시 돌리기와 받은 크기 읽기(백그라운드 저장소). 테스트 · Explorer는 없을 수 있습니다. */
 export type DownloadControls = {
@@ -25,6 +26,8 @@ export type DownloadControls = {
   readonly syncing: boolean;
   readonly assetsScheduled: (episodeId: string) => boolean;
   readonly tracksAssets: () => boolean;
+  /** 앱 언어를 바꿨을 때 그 언어 번역 파일 받기(ADR-0102 개정 ⟨언어 바꿈 받기⟩). 없으면(테스트 · 옛 호스트) 시트가 서지 않습니다. */
+  readonly languageDownload?: LanguageDownloadPort;
 };
 
 export type DownloadSettingsWiring = Omit<DownloadSettingsScreenProps, "onBack">;

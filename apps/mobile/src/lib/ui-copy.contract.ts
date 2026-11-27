@@ -9,6 +9,7 @@ import type { AssembledHintCopy } from "./ui-copy-assembled-hint";
 import type { MicPermissionCopy } from "./ui-copy-mic-permission";
 import type { AdTicketCopy } from "./ui-copy-ad-ticket";
 import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
+import type { LanguageDownloadCopy } from "./ui-copy-language-download";
 import type { AuthFailureCopy } from "./auth-failure";
 import type { EntryLanguage } from "./entry-language";
 import type {
@@ -102,6 +103,7 @@ export type UiCopy = {
   readonly notifications: NotificationsCopy;
   readonly settings: SettingsCopy;
   readonly downloadSheet: DownloadSheetCopy;
+  readonly languageDownload: LanguageDownloadCopy;
   readonly profile: ProfileCopy;
   readonly feedback: FeedbackCopy;
   readonly coinShop: CoinShopCopy;

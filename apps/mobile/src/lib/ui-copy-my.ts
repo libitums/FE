@@ -3,6 +3,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { micPermissionMy } from "./ui-copy-mic-permission";
+import { languageDownloadMy } from "./ui-copy-language-download";
 import { adTicketMy } from "./ui-copy-ad-ticket";
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
@@ -98,6 +99,7 @@ export const uiCopyMy: UiCopy = {
   notifications: notificationsMy,
   settings: settingsMy,
   downloadSheet: downloadSheetMy,
+  languageDownload: languageDownloadMy,
   profile: profileMy,
   feedback: feedbackMy,
   coinShop: coinShopMy,

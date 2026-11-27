@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { micPermissionJa } from "./ui-copy-mic-permission";
+import { languageDownloadJa } from "./ui-copy-language-download";
 import { adTicketJa } from "./ui-copy-ad-ticket";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
@@ -97,6 +98,7 @@ export const uiCopyJa: UiCopy = {
   notifications: notificationsJa,
   settings: settingsJa,
   downloadSheet: downloadSheetJa,
+  languageDownload: languageDownloadJa,
   profile: profileJa,
   feedback: feedbackJa,
   coinShop: coinShopJa,

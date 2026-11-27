@@ -32,6 +32,7 @@ import {
 import { allClearedNoticeStep, type AllClearedNoticeState } from "./all-cleared-notice";
 import type { DownloadControls } from "./download-wiring";
 import type { ScreenWiring } from "./screen-wiring";
+import { useLanguageDownload } from "./use-language-download";
 
 /** 에피소드를 열기 전 받기 판정 — `open`이 `null`이면 열 수 없는 편(받는 중인 「준비 중」 카드)입니다. */
 export type DownloadGuard = (target: DownloadGateTarget, open: (() => void) | null) => void;
@@ -197,7 +198,20 @@ export function useDownloadGate(
       <DownloadGateLayer sheet={sheet} controls={controls} nav={nav} close={() => setSheet(null)} />
     );
   const openAllCleared = useCallback(() => setSheet({ kind: "all-cleared" }), []);
-  return { guard, layer, freshness, openAllCleared, coverDownloads };
+  // 앱 언어를 바꾼 뒤 그 언어의 번역 받기 시트도 이 층에 겹칩니다(ADR-0102 개정 ⟨언어 바꿈 받기⟩).
+  const languageLayer = useLanguageDownload(controls?.languageDownload);
+  return {
+    guard,
+    layer: (
+      <>
+        {layer}
+        {languageLayer}
+      </>
+    ),
+    freshness,
+    openAllCleared,
+    coverDownloads,
+  };
 }
 
 // 화면 결선의 카탈로그 시작에 받기 문지기를 겹칩니다. 티켓 문지기 바깥에 둡니다 — 받지 않기로 하면 티켓을 쓰지 않습니다.

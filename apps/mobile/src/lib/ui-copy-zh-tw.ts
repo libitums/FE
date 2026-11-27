@@ -3,6 +3,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { micPermissionZhTw } from "./ui-copy-mic-permission";
+import { languageDownloadZhTw } from "./ui-copy-language-download";
 import { adTicketZhTw } from "./ui-copy-ad-ticket";
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
@@ -98,6 +99,7 @@ export const uiCopyZhTw: UiCopy = {
   notifications: notificationsZhTw,
   settings: settingsZhTw,
   downloadSheet: downloadSheetZhTw,
+  languageDownload: languageDownloadZhTw,
   profile: profileZhTw,
   feedback: feedbackZhTw,
   coinShop: coinShopZhTw,

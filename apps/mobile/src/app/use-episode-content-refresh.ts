@@ -16,13 +16,7 @@ import {
   episodeAssetsBytes,
   episodeAssetsCompleteFor,
 } from "../lib/download-usage";
-import type { AssetDecision, AssetTarget } from "../lib/download-policy";
-import {
-  assetDownloadDecision,
-  isDownloadAllowed,
-  loadAllowedEpisodes,
-  loadMobileDataPolicy,
-} from "../lib/download-policy";
+import { isDownloadAllowed, loadAllowedEpisodes } from "../lib/download-policy";
 import { prefetchWindowOf } from "../lib/prefetch-window";
 import { changesAudioTiming, refreshAudioManifest } from "../lib/audio-manifest-refresh";
 import { hostContentStore } from "../lib/episode-cache";
@@ -33,11 +27,10 @@ import { fetchContentText } from "../lib/episode-remote";
 import { readNetworkProperties } from "../lib/network-status";
 import { MANIFEST_CHECKED_AT_KEY, manifestCheckedAtFrom } from "../lib/manifest-check";
 import { safeGet, trySet } from "../lib/episode-cache";
-import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
-import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
-import type { ContentLanguage } from "../lib/episode-content";
+import { onUiLanguageSaved } from "../lib/ui-language";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { SplashUpdatePort } from "../screens/splash/splash.contract";
+import { assetPolicyForRound, translationLanguageForRound } from "./content-round-inputs";
 import { createSyncRunner } from "./content-sync-runner";
 import { createDeferredRecheck } from "./deferred-recheck";
 import type { SyncRunner } from "./content-sync-runner";
@@ -50,44 +43,21 @@ import {
 import type { EpisodeContent } from "./episode-content";
 import type { DownloadControls } from "./download-wiring";
 import { hostAssetDeps, loadEpisodeContent } from "./episode-content-loader";
+import { hostLanguageDownloadPort, type LanguageDownloadPort } from "./language-download-port";
 import { createSplashUpdateController } from "./splash-update-controller";
 import { useAssetActivity } from "./use-asset-activity";
 
 /** 호스트가 받기 좋은 때(끊겼던 연결이 돌아옴 · 앱이 포그라운드로 돌아옴)를 알리는 전역 이벤트입니다(ADR-0071). */
 export const contentSyncEventName = "contentSyncOpportunity";
 
+// 포트를 아직 만들지 않았을 때(effect 전) 언어 바꿈 받기의 결과입니다.
+const noReport = { stored: [], failed: 0, total: 0 };
+
 /**
  * 받기 정책으로 건너뛴 편이 있을 때 연결을 다시 보는 간격입니다(ADR-0095 D5). 호스트 신호는 모바일 데이터 → Wi-Fi
  * 전환에는 오지 않아(끊김 → 연결만), 앱이 켜져 있는 동안 이 간격으로 요금 없는 연결이 됐는지 봅니다.
  */
 export const deferredRecheckIntervalMs = 60_000;
-
-/**
- * 받기 차례마다 한 번 읽는 정책 — 연결 종류 · 저장된 설정 · 허락한 편 · 미리 받기 창(ADR-0157). 차례 안에서는 같은 값을
- * 씁니다. 진행을 아직 모르면 창은 내장 매니페스트 순서의 앞 편(새 사용자 창)입니다.
- */
-function assetPolicyForRound(): (id: string, target: AssetTarget) => AssetDecision {
-  const network = readNetworkProperties();
-  const policy = loadMobileDataPolicy();
-  const allowed = loadAllowedEpisodes();
-  const window = prefetchWindowOf(bundledCatalogInput.manifest.episodes.map((entry) => entry.id));
-  return (episodeId, target) =>
-    assetDownloadDecision({
-      network,
-      policy,
-      allowed,
-      episodeId,
-      tutorialId: TUTORIAL_EPISODE_ID,
-      target,
-      window,
-    });
-}
-
-/** 받기 차례마다 지금 UI 언어를 읽습니다 — 영어(원문)면 번역 파일을 받지 않습니다(ADR-0102 D3). */
-function translationLanguageForRound(): ContentLanguage | null {
-  const language = loadUiLanguage();
-  return language === "en" ? null : language;
-}
 
 /**
  * 내장 + 기기 캐시에서 카탈로그를 읽고, 서버의 매니페스트로 새 에피소드를 **하나씩**(본문 → 그림 · 음성) 받아
@@ -137,6 +107,8 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
 
   // 실행기는 effect 안에서 만듭니다 — 렌더에서 만들면 그 안의 백그라운드 전용 모듈이 메인 스레드 번들로 끌려옵니다.
   const runner = useRef<SyncRunner | null>(null);
+  // 언어 바꿈 받기 포트 — effect(배경 스레드)가 `reload`와 함께 만듭니다. 렌더에서 만들면 저장소 모듈이 메인 스레드로 끌려옵니다.
+  const languagePort = useRef<LanguageDownloadPort | null>(null);
 
   useEffect(() => {
     const reload = () => {
@@ -148,6 +120,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         ),
       }));
     };
+    languagePort.current = hostLanguageDownloadPort(reload);
     // 내장본이 없는 편은 본문만으로 열리므로(ADR-0165) 그 편의 자산을 받기 시작할 때 한 번 다시 읽어 맵에 세웁니다.
     const bundledIds = new Set(bundledCatalogInput.manifest.episodes.map((entry) => entry.id));
     const shown = new Set<string>();
@@ -291,6 +264,20 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       tracksAssets: () => {
         "background only";
         return hostAssetDeps() !== undefined;
+      },
+      languageDownload: {
+        plan: (language) => {
+          "background only";
+          return languagePort.current?.plan(language) ?? null;
+        },
+        run: (language, onProgress) => {
+          "background only";
+          return languagePort.current?.run(language, onProgress) ?? Promise.resolve(noReport);
+        },
+        offline: () => {
+          "background only";
+          return languagePort.current?.offline() ?? false;
+        },
       },
     }),
     [manifestCheckedAt, activity, syncing],
