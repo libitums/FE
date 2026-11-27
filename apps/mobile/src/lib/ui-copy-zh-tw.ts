@@ -3,6 +3,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { micPermissionZhTw } from "./ui-copy-mic-permission";
+import { adTicketZhTw } from "./ui-copy-ad-ticket";
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
@@ -86,6 +87,7 @@ export const uiCopyZhTw: UiCopy = {
   assembledHint: assembledHintZhTw,
   speaking: speakingZhTw,
   micPermission: micPermissionZhTw,
+  adTicket: adTicketZhTw,
   learningItemGuide: learningItemGuideZhTw,
   assessment: assessmentZhTw,
   lessonComplete: lessonCompleteZhTw,

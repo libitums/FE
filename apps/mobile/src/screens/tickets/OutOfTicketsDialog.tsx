@@ -13,6 +13,8 @@ import { TicketMoreAction } from "./TicketMoreAction";
 import { ticketRingSvg } from "./ticket-ring";
 import type { TicketMoreResult } from "./tickets.contract";
 import type { PlanOfferWiring } from "../plans/plans.contract";
+import type { AdTicketWiring } from "../../lib/ad-ticket.contract";
+import { AdTicketGranted, AdTicketOption } from "./AdTicketOption";
 import { TicketsPlanOffer } from "../plans/PlanOffer";
 
 import "./tickets.css";
@@ -29,6 +31,8 @@ export type OutOfTicketsDialogProps = {
   readonly onClose: () => void;
   /** 무제한 티켓 카드(ADR-0144) — 기능 플래그가 꺼졌으면 없음, 대화상자는 지금 그대로. */
   readonly offer?: PlanOfferWiring;
+  /** 광고 보고 티켓 1장(ADR-0208) — 플래그 · 모듈 · 서버가 허락하지 않으면 없음(지금 그대로). */
+  readonly adTicket?: AdTicketWiring;
 };
 
 export function OutOfTicketsDialog({
@@ -38,8 +42,12 @@ export function OutOfTicketsDialog({
   onStartLesson,
   onClose,
   offer,
+  adTicket,
 }: OutOfTicketsDialogProps): ReactNode {
-  const copy = useUiCopy().tickets;
+  const allCopy = useUiCopy();
+  const copy = allCopy.tickets;
+  // A3 — 광고로 받은 직후(ADR-0208): 제목 · 링 아래 글자 · 안내가 받음으로 바뀌고 Start lesson이 주 버튼입니다.
+  const adGranted = adTicket?.state.kind === "granted" ? adTicket.state : null;
   const canStart = status.available > 0;
   const charging = status.slots.find((slot) => slot.kind === "charging");
   const clock = ticketClock(status.nextInMs ?? 0, false);
@@ -60,7 +68,7 @@ export function OutOfTicketsDialog({
       <Overlay scope="screen" surface="dialog" dismiss="none" />
       <view className="ticket-dialog-container" accessibility-role-description="dialog">
         <text className="ticket-dialog-title" accessibility-traits="header">
-          {copy.outOfTickets.title}
+          {adGranted === null ? copy.outOfTickets.title : allCopy.adTicket.grantedTitle}
         </text>
         <view
           className="ticket-ring"
@@ -85,11 +93,21 @@ export function OutOfTicketsDialog({
               content={ticketIcon}
               current-color={color.brand.primary}
             />
-            <text className="ticket-ring-clock">{clock}</text>
-            <text className="ticket-ring-caption">{copy.outOfTickets.untilNext}</text>
+            <text className="ticket-ring-clock">
+              {adGranted === null ? clock : String(status.available)}
+            </text>
+            <text className="ticket-ring-caption">
+              {adGranted === null ? copy.outOfTickets.untilNext : allCopy.adTicket.grantedCaption}
+            </text>
           </view>
         </view>
-        <text className="ticket-dialog-message">{copy.outOfTickets.message}</text>
+        {adGranted === null ? (
+          <text className="ticket-dialog-message">{copy.outOfTickets.message}</text>
+        ) : (
+          <AdTicketGranted left={adGranted.left} />
+        )}
+        {/* 광고 보고 1장(ADR-0208, 시안 A1) — 선택지 맨 위. 결선이 없으면 지금 대화상자 그대로. */}
+        {adTicket === undefined ? null : <AdTicketOption wiring={adTicket} />}
         {/* 무제한 티켓 카드(ADR-0144, 시안 ①) — 결선이 있으면 「Go unlimited」가 첫 동작입니다. */}
         {offer === undefined ? null : <TicketsPlanOffer offer={offer} />}
         <view className="ticket-dialog-actions">

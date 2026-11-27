@@ -10,6 +10,7 @@ import { friendStoryEventNames } from "./friend-story-events.test-support";
 import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
 import { chatNoticeEventExamples, chatNoticeEventNames } from "./chat-push-ask-events.test-support";
 import { micEventExamples, micEventNames } from "./mic-permission-events.test-support";
+import { adTicketEventExamples, adTicketEventNames } from "./ad-ticket-events.test-support";
 import {
   messengerGuideEventExamples,
   messengerGuideEventNames,
@@ -87,6 +88,7 @@ export const allEventNames = [
   ...friendStoryEventNames,
   ...chatNoticeEventNames,
   ...micEventNames,
+  ...adTicketEventNames,
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
@@ -202,6 +204,7 @@ export const unmappedEvents = [
   ...messengerGuideEventExamples,
   ...chatNoticeEventExamples,
   ...micEventExamples,
+  ...adTicketEventExamples,
   {
     name: "companion_unlocked",
     surface: "learning",
@@ -262,7 +265,6 @@ export const unmappedEvents = [
   ...planEventExamples.filter((event) => event.name === "shop_tab_switched"),
   ...suggestedFriendEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
-
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;
 export const episodeFinalPassed = {
   name: "episode_final_passed",
@@ -289,7 +291,6 @@ export const retiredSpecialUnitEvents = [
     entrySource: "roleplay",
   },
 ] as unknown as readonly AnalyticsEvent[];
-
 /** 분석 sink 넷이 모두 비어 있는 묶음입니다. */
 export const nullSinks = {
   entryEventSink: null,

@@ -239,10 +239,20 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0199⟩ 내 스토리 사진 `my_story_photo_picked` · `my_story_review_requested`가 더해져 126이다(PostHog만).
   // ⟨ADR-0200⟩ 답장 도착 토스트 `chat_reply_toast_shown` · `chat_reply_toast_opened`가 더해져 128이다(PostHog만).
   // ⟨ADR-0206⟩ 마이크 권한 안내 `mic_permission_sheet_shown` · `mic_permission_answered` · `mic_permission_settings_opened`가 더해져 131이다(PostHog만).
-  test("AN1. 이벤트 이름은 131개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0208⟩ 광고 보고 티켓 `ad_ticket_offer_shown` · `ad_ticket_started` · `ad_ticket_completed` · `ad_ticket_failed` · `ad_ticket_granted`가 더해져 136이다(PostHog만).
+  test("AN1. 이벤트 이름은 136개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(131);
+    expect(names).toHaveLength(136);
+    for (const name of [
+      "ad_ticket_offer_shown",
+      "ad_ticket_started",
+      "ad_ticket_completed",
+      "ad_ticket_failed",
+      "ad_ticket_granted",
+    ]) {
+      expect(names).toContain(name);
+    }
     expect(names).toContain("mic_permission_sheet_shown");
     expect(names).toContain("mic_permission_answered");
     expect(names).toContain("mic_permission_settings_opened");

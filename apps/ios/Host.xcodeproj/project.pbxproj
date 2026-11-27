@@ -51,6 +51,7 @@
 		7C1D0A862E1000010086AB03 /* NetworkStatusModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A862E1000010086AB04 /* NetworkStatusModuleTests.swift */; };
 		7C1D0A872E1000010087AB03 /* ChatStreamModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A872E1000010087AB04 /* ChatStreamModuleTests.swift */; };
 		7C1D0A892E1000010089AB01 /* StoryPhotoModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A892E1000010089AB02 /* StoryPhotoModule.swift */; };
+		AD7E0A1A2F0000010000B001 /* RewardedAdModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E0A1A2F0000010000B002 /* RewardedAdModule.swift */; };
 		7C1D0A892E1000010089AB05 /* StoryPhotoFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A892E1000010089AB06 /* StoryPhotoFiles.swift */; };
 		7C1D0A892E1000010089AB03 /* StoryPhotoModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A892E1000010089AB04 /* StoryPhotoModuleTests.swift */; };
 		7C1D0A882E1000010088AB03 /* ExternalLinkModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1D0A882E1000010088AB04 /* ExternalLinkModuleTests.swift */; };
@@ -136,6 +137,7 @@
 		7C1D0A862E1000010086AB02 /* NetworkStatusModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkStatusModule.swift; sourceTree = "<group>"; };
 		7C1D0A872E1000010087AB02 /* ChatStreamModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStreamModule.swift; sourceTree = "<group>"; };
 		7C1D0A892E1000010089AB02 /* StoryPhotoModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryPhotoModule.swift; sourceTree = "<group>"; };
+		AD7E0A1A2F0000010000B002 /* RewardedAdModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdModule.swift; sourceTree = "<group>"; };
 		7C1D0A892E1000010089AB06 /* StoryPhotoFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryPhotoFiles.swift; sourceTree = "<group>"; };
 		7C1D0A882E1000010088AB02 /* ExternalLinkModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalLinkModule.swift; sourceTree = "<group>"; };
 		7C1D0A862E1000010086AA02 /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 		9E5C0A1A2F0000010000B004 /* PurchasesAttributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAttributionTests.swift; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A003 /* Host.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Host.xcconfig; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A004 /* RevenueCat.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RevenueCat.xcconfig; sourceTree = "<group>"; };
+		AD7E0A1A2F0000010000B003 /* AdMob.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = AdMob.xcconfig; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A005 /* RevenueCat.local.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = RevenueCat.local.xcconfig.example; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -211,6 +214,7 @@
 				4C1D0C5E0A1F2B3C4DBE0006 /* Airbridge.local.xcconfig.example */,
 				9E5C0A1A2F0000010000A003 /* Host.xcconfig */,
 				9E5C0A1A2F0000010000A004 /* RevenueCat.xcconfig */,
+				AD7E0A1A2F0000010000B003 /* AdMob.xcconfig */,
 				9E5C0A1A2F0000010000A005 /* RevenueCat.local.xcconfig.example */,
 			);
 			path = Config;
@@ -282,6 +286,7 @@
 				7C1D0A872E1000010087AB02 /* ChatStreamModule.swift */,
 				7C1D0A882E1000010088AB02 /* ExternalLinkModule.swift */,
 				7C1D0A892E1000010089AB02 /* StoryPhotoModule.swift */,
+				AD7E0A1A2F0000010000B002 /* RewardedAdModule.swift */,
 				7C1D0A892E1000010089AB06 /* StoryPhotoFiles.swift */,
 				9E5C0A1A2F0000010000A002 /* PurchasesModule.swift */,
 				9E5C0A1A2F0000010000B002 /* PurchasesAttribution.swift */,
@@ -574,6 +579,7 @@
 				7C1D0A872E1000010087AB01 /* ChatStreamModule.swift in Sources */,
 				7C1D0A882E1000010088AB01 /* ExternalLinkModule.swift in Sources */,
 				7C1D0A892E1000010089AB01 /* StoryPhotoModule.swift in Sources */,
+				AD7E0A1A2F0000010000B001 /* RewardedAdModule.swift in Sources */,
 				7C1D0A892E1000010089AB05 /* StoryPhotoFiles.swift in Sources */,
 				9E5C0A1A2F0000010000A001 /* PurchasesModule.swift in Sources */,
 				9E5C0A1A2F0000010000B001 /* PurchasesAttribution.swift in Sources */,

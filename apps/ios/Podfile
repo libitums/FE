@@ -29,6 +29,9 @@ target 'Host' do
   # 스토어 결제 · 영수증 · 구독 상태는 RevenueCat(ADR-0144 D1). 정확 버전이다(ADR-0012 D4). 키가 없으면 시작하지 않는다.
   pod 'RevenueCat', '5.99.2'
 
+  # 「Out of tickets」의 광고 보고 1장 — AdMob 보상형(ADR-0208). 정확 버전이다(ADR-0012 D4). 값이 없으면 시작하지 않는다.
+  pod 'Google-Mobile-Ads-SDK', '13.12.0'
+
   target 'HostTests' do
     inherit! :search_paths
   end

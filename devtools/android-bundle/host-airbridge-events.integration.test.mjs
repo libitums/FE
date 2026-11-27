@@ -91,7 +91,12 @@ test("I-S2. Gradle: Airbridge 정확 버전 한 줄 · Meta 의존 없음 · bui
   for (const key of ["AIRBRIDGE_APP_NAME", "AIRBRIDGE_SDK_TOKEN"]) {
     assert.match(build, new RegExp(`buildConfigField\\s+['"]String['"]\\s*,\\s*['"]${key}['"]`));
   }
-  assert.ok(!build.includes("manifestPlaceholders"), "값을 매니페스트에 싣지 않는다");
+  // ⟨ADR-0208⟩ 매니페스트 자리표시자는 AdMob 앱 ID 하나뿐이다 — Airbridge 값은 여전히 매니페스트에 싣지 않는다.
+  const placeholders = build.split("\n").filter((line) => line.includes("manifestPlaceholders"));
+  assert.ok(
+    placeholders.every((line) => /manifestPlaceholders\s*=\s*\[admobAppId:/.test(line)),
+    "Airbridge 값을 매니페스트에 싣지 않는다",
+  );
 
   const settings = stripCodeComments(read(join(root, "apps/android/settings.gradle")));
   const url = "sdk-download.airbridge.io/maven";
@@ -155,7 +160,7 @@ test("I-S3. Android 호스트: 호출 각 1회 · SDK 직접 참조는 Airbridge
   }
 });
 
-test("I-S4. iOS: 추적 문구는 Info.plist에 정확히 1건(ADR-0079) · SKAdNetworkItems · Facebook 접두 키 0건", () => {
+test("I-S4. iOS: 추적 문구 · SKAdNetworkItems(AdMob, ADR-0208)는 Info.plist에 정확히 1건(ADR-0079) · Facebook 접두 키 0건", () => {
   const info = plist();
   const project = read(join(iosDir, "Host.xcodeproj/project.pbxproj"));
   assert.ok(info.length > 0, "Info.plist를 읽을 수 있다");
@@ -171,7 +176,12 @@ test("I-S4. iOS: 추적 문구는 Info.plist에 정확히 1건(ADR-0079) · SKAd
       expected,
       `${name}: 추적 문구`,
     );
-    assert.equal(count(text, /SKAdNetworkItems/g), 0, `${name}: SKAdNetworkItems`);
+    // ⟨ADR-0208⟩ SKAdNetworkItems는 AdMob 보상형 광고 몫으로 Info.plist에만 한 번 — Airbridge가 요구하는 키가 아니다.
+    assert.equal(
+      count(text, /<key>SKAdNetworkItems<\/key>|INFOPLIST_KEY_SKAdNetwork/g),
+      expected,
+      `${name}: SKAdNetworkItems`,
+    );
     assert.equal(count(text, /<key>Facebook|INFOPLIST_KEY_Facebook/g), 0, `${name}: Facebook 키`);
   }
 });

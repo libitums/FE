@@ -1,5 +1,6 @@
 // 학습 티켓 화면들(머리 칩 모달 · 티켓 없음 대화상자 · 말풍선 태그 · 결과 줄)의 어휘입니다. 타입만 둡니다.
 
+import type { AdTicketEvent } from "../../lib/ad-ticket.contract";
 import type { CalendarDate } from "../../lib/unlimited-pass";
 
 /** 「Get more tickets」를 누른 자리입니다. */
@@ -87,6 +88,8 @@ export type TicketsCopy = {
 
 export type TicketEvent =
   | { readonly name: "tickets_ran_out" }
+  /** 광고 보고 티켓(ADR-0208 D9) — PostHog만. */
+  | AdTicketEvent
   | {
       readonly name: "ticket_more_tapped";
       readonly surface: TicketSurface;

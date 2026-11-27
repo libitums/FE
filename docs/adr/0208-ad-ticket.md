@@ -1,6 +1,6 @@
 # ADR-0208: 광고 보고 티켓 1장 — 「Out of tickets」에만 · 서버 검증(SSV) 뒤 지급 · 하루 2회 · 실험 플래그
 
-- 상태: **채택 — 서버 파일(PR `feat/ad-ticket-server`), 운영 미적용 · 함수 미배포**. 앱은 다음 PR(`feat/ad-ticket-app`) — 이 ADR의 D7 ~ D9가 앱 몫이다.
+- 상태: **채택 — 서버 파일(PR `feat/ad-ticket-server`) · 앱(PR `feat/ad-ticket-app`, 서버 PR 위), 운영 미적용 · 함수 미배포 · 실제 AdMob ID 없음(테스트 ID만)**.
 - 날짜: 2026-11-27
 - **사용자 결정(2026-11-27)**: 시안 「광고 보고 티켓 시안」 A1 ~ A5를 보고 「1단계 티켓 추가만 시안 화면 만들고 진행」. 규칙은 시안 메모 「rules」의 분석 권고 기본값 그대로.
 - 이어받는 결정: [ADR-0075](0075-learning-tickets.md)(티켓 원장은 앱 · 엽전으로 1장 · 「Out of tickets」 E6m) ·
@@ -110,3 +110,30 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 4. AdMob 콘솔의 「확인」 테스트 콜백이 400(쿼리 모양) 또는 200이 아닌지 로그 확인 → 테스트 계정으로 끝까지 본 광고 1번이 `granted`인지 확인.
 5. 앱 PR 배포 뒤 PostHog 플래그 `ad-ticket` 50/50 → `update companion.settings set ad_ticket_enabled = true;`.
 6. 멈춤: `update companion.settings set ad_ticket_enabled = false;`.
+
+## 적용 기록 ⟨2026-11-27 — 앱 (`feat/ad-ticket-app`)⟩
+
+- **상태 기계(순수)** `lib/ad-ticket.ts` `adTicketStep(state, input)` — A1 offer · A2 busy(starting · loading · showing · confirming) · A3 granted · A4 limit ·
+  A5 no-fill. 전이와 함께 낼 이벤트와 「원장에 1장」 여부를 돌려준다. 늦게 온 결과(다른 단계)는 무시한다. 광고 불러오기 8초 · A5 뒤 1분 · 지급 확인 간격
+  1 · 1.5 · 2 · 3 · 4 · 5 · 5초(합 21.5초, 다하면 실패 안내).
+- **결선** `app/use-ad-ticket.ts` — 「Out of tickets」가 설 때 호스트 모듈이 있고 로그인했으면 서버 상태와 플래그를 함께 읽는다. 대상이면 노출 이벤트(실험군 ·
+  대조군), 실험군만 줄을 그린다. 누르면 `ad_ticket_start` → 호스트 광고 불러오기 → 앱 오디오 멈춤(`stopAudio`) → 보여 주기(SSV `user_id` = Supabase
+  사용자 id, `custom_data` = 요청 id) → 끝까지 봤으면 `ad_ticket_status(요청 id)`를 다시 읽어 `granted`면 `addBoughtTicket`. 대화상자가 닫히면 세대를 올려
+  늦은 응답을 버린다. `use-learning-tickets`가 결선을 「Out of tickets」 결선에 싣는다(AppSession은 그대로).
+- **플래그** `lib/ad-ticket-flag.ts` — PostHog `/flags/?v=2`(프로젝트 키 · distinct id), 켜졌고 변형이 없거나 `test`면 실험군. 설정 · 전송이 없거나 실패면 대조군.
+- **화면** `screens/tickets/AdTicketOption.tsx` — 테두리 줄(주황 채움은 Start lesson만), 엽전 버튼 위 · 요금제 카드 위. A3는 대화상자 제목 · 링(남은 장수 ·
+  「ticket ready」) · 안내가 바뀐다. 문구 여덟 언어 `lib/ui-copy-ad-ticket.ts`.
+- **호스트** — iOS `RewardedAdModule.swift`(Google-Mobile-Ads-SDK 13.12.0) · Android `RewardedAdModule.java`(play-services-ads 25.5.0). `loadRewarded` →
+  `{status: loaded | no_fill | failed}`, `showRewarded(userId, customData)` → `{status: earned | dismissed | failed}`. 비개인화(`npa=1`), 새 ATT 요청 없음,
+  측정 초기화는 SDK를 시작할 때까지 미룸(`GADDelayAppMeasurementInit` · `DELAY_APP_MEASUREMENT_INIT`). 광고를 닫으면 iOS는 학습 음원 오디오 세션을 되돌린다.
+  - 값: iOS `Config/AdMob.xcconfig` ← `AdMob.local.xcconfig`, Android `app/admob.properties`(둘 다 gitignore, `.example`은 Google 테스트 ID).
+    **광고 단위가 비면 SDK를 시작하지 않고 모듈도 등록하지 않는다 → JS는 줄을 그리지 않는다.**
+  - **앱 ID는 비울 수 없다** — iOS 시뮬레이터에서 `GADApplicationIdentifier`가 빈 빌드가 뜨자마자 죽었다(GADInvalidInitializationException, SDK를 시작하지
+    않아도). 그래서 값이 없을 때 두 플랫폼 모두 Google **샘플** 앱 ID로 채운다. 스토어 빌드에 샘플 ID가 들어가지 않게 /release-build 검사에 「테스트 ID 0건」을 둔다.
+  - iOS `SKAdNetworkItems` 50개(AdMob 권장 목록). Airbridge 정책 테스트(I-S4)는 「Info.plist에 정확히 한 번」으로 바꿨다.
+  - Android: `play-services-ads`가 끌어오는 `appcompat-resources` 1.4.1이 Lynx xelement의 appcompat 1.0.0과 클래스가 겹쳐(`checkBundledDuplicateClasses`)
+    뺐다. 에뮬레이터에서 테스트 광고 불러오기 · 보여 주기 · 보상까지 확인했다.
+- **크기**: JS 번들 5,794,961 bytes(천장 6,180,000). Android 다운로드 +약 1.8 MB, iOS 링크된 코드 +약 2.9 MB(다운로드 추정 +0.8 ~ 1.2 MB) —
+  `docs/performance/reports/ad-ticket-01.md`.
+- **알려진 한계**: 지급 확인이 21.5초 안에 오지 않으면 실패 안내가 서고, 그 뒤 서버가 지급해도 앱은 그 요청을 다시 묻지 않는다(그 횟수는 오늘 상한에 세어진다).
+- 검사: unit AT-U1 ~ U5 · AT-A1 ~ A4 · AN1(136) · AB3(106 · 98), ui UAT1 ~ UAT7, integration IAT1 ~ IAT7, Android `RewardedAdConfigTest`, 수동 `docs/e2e/ad-ticket.md`.
