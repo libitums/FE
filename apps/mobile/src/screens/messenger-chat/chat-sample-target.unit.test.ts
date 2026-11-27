@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { mediaLineId, mediaTargetOf } from "./chat-media-rules";
 import {
   isSampleLine,
+  placedSampleTarget,
   samplePrefixOf,
   sampleLineOf,
   sampleRevealAction,
@@ -141,5 +142,28 @@ describe("예시 줄", () => {
     expect(sampleRevealAction({ nearEnd: false, parked: true, pending: false })).toBe("scroll");
     expect(sampleRevealAction({ nearEnd: false, parked: false, pending: false })).toBe("pill");
     expect(sampleRevealAction({ nearEnd: false, parked: false, pending: true })).toBe("none");
+  });
+});
+
+describe("placedSampleTarget (가이드 예시 두 장)", () => {
+  test("GD-U5 서버가 붙인 곳(첫 인사)이 로그에 있고 앱이 고른 대상과 다르면 그 메시지 — 자막도 그 메시지 글", () => {
+    const requested = mediaTargetOf(replied, "photo");
+    if (requested === null) throw new Error("대상 없음");
+    expect(requested.messageId).toBe(R);
+    const placed = placedSampleTarget(replied, requested, G, "voice");
+    expect(placed).toEqual({
+      messageId: G,
+      text: { ko: "안녕하세요! 저는 덕수예요.", en: "Hi! I'm Duksu." },
+    });
+  });
+
+  test("GD-U6 같거나 · 로그에 없거나 · 음성인데 말 조각이 없으면 앱이 고른 대상 그대로", () => {
+    const requested = sampleTargetOf(replied, "photo", G);
+    if (requested === null) throw new Error("대상 없음");
+    expect(placedSampleTarget(replied, requested, G, "photo")).toBe(requested);
+    expect(placedSampleTarget(replied, requested, P, "photo")).toBe(requested);
+    const onlyAction = [action(`${P}#0`, "*손을 흔든다*"), ...replied];
+    expect(placedSampleTarget(onlyAction, requested, P, "voice")).toBe(requested);
+    expect(placedSampleTarget(onlyAction, requested, P, "photo").messageId).toBe(P);
   });
 });
