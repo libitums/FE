@@ -40,6 +40,8 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
             : `${count} tin nhắn mới`,
     jump: "Đi tới tin nhắn mới",
     latest: "Cuộn xuống tin mới nhất",
+    above: (media) =>
+      media === "photo" ? "Ảnh đã đến ở phía trên" : "Tin nhắn thoại đã đến ở phía trên",
   },
   replyToast: {
     dismiss: "Đóng",

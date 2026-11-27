@@ -179,6 +179,7 @@ function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
   const messages: ChatMessage[] = [];
   const corrections: Record<string, ChatCorrection> = {};
   let last: Json | null = null; // 마지막 캐릭터 메시지 — 추천 답변과 그 출처(ADR-0195)
+  let greetingId: string | null = null; // 첫 인사 — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩)
   for (const item of [...(raw.messages as unknown[])].reverse()) {
     const record = recordOf(item);
     const id = stringOf(record?.id);
@@ -195,13 +196,15 @@ function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
     } else if (record.role === "assistant") {
       messages.push(...reactionLinesOf(bubblesOf(id, at, segmentsOf(record.segments)), record)); // 반응 인용 · 퀴즈(ADR-0191)
       last = record;
+      if (greetingId === null && record.origin === "greeting") greetingId = id;
     } else if (record.role === "notice") {
       const notice = noticeKindOf(recordOf(record.notice)?.kind);
       if (notice !== null) messages.push({ id, at, kind: "notice", notice });
     }
   }
   const ideasOrigin = suggestionOriginOf(last?.origin);
-  return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin };
+  const greeting = greetingId === null ? {} : { greetingId };
+  return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin, ...greeting };
 }
 
 /**

@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E27C0DE2F00000100000002 /* CrashScrub.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E27C0DE2F00000100000001 /* CrashScrub.swift */; };
+		5E27C0DE2F00000100000004 /* CrashReportPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E27C0DE2F00000100000003 /* CrashReportPayload.swift */; };
+		5E27C0DE2F00000100000006 /* CrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E27C0DE2F00000100000005 /* CrashReporting.swift */; };
+		5E27C0DE2F00000100000008 /* CrashReportingModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E27C0DE2F00000100000007 /* CrashReportingModule.swift */; };
+		5E27C0DE2F0000010000000A /* CrashReportingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E27C0DE2F00000100000009 /* CrashReportingTests.swift */; };
 		1A10C0DE0000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1A10C0DE0000000000000002 /* InfoPlist.strings */; };
 		D0A5C0F1000000000000000B /* ContentSyncSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */; };
 		D0A5C0F10000000000000009 /* ContentFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */; };
@@ -90,6 +95,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5E27C0DE2F00000100000001 /* CrashScrub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashScrub.swift; sourceTree = "<group>"; };
+		5E27C0DE2F00000100000003 /* CrashReportPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportPayload.swift; sourceTree = "<group>"; };
+		5E27C0DE2F00000100000005 /* CrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporting.swift; sourceTree = "<group>"; };
+		5E27C0DE2F00000100000007 /* CrashReportingModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingModule.swift; sourceTree = "<group>"; };
+		5E27C0DE2F00000100000009 /* CrashReportingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingTests.swift; sourceTree = "<group>"; };
+		5E27C0DE2F0000010000000B /* Sentry.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Sentry.xcconfig; sourceTree = "<group>"; };
+		5E27C0DE2F0000010000000C /* Sentry.local.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Sentry.local.xcconfig.example; sourceTree = "<group>"; };
 		1A10C0DE0000000000000003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000004 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A10C0DE0000000000000005 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -211,6 +223,8 @@
 				4C1D0C5E0A1F2B3C4DBE0006 /* Airbridge.local.xcconfig.example */,
 				9E5C0A1A2F0000010000A003 /* Host.xcconfig */,
 				9E5C0A1A2F0000010000A004 /* RevenueCat.xcconfig */,
+				5E27C0DE2F0000010000000B /* Sentry.xcconfig */,
+				5E27C0DE2F0000010000000C /* Sentry.local.xcconfig.example */,
 				9E5C0A1A2F0000010000A005 /* RevenueCat.local.xcconfig.example */,
 			);
 			path = Config;
@@ -286,6 +300,10 @@
 				9E5C0A1A2F0000010000A002 /* PurchasesModule.swift */,
 				9E5C0A1A2F0000010000B002 /* PurchasesAttribution.swift */,
 				7C1D0A862E1000010086AA02 /* AppVersion.swift */,
+				5E27C0DE2F00000100000001 /* CrashScrub.swift */,
+				5E27C0DE2F00000100000003 /* CrashReportPayload.swift */,
+				5E27C0DE2F00000100000005 /* CrashReporting.swift */,
+				5E27C0DE2F00000100000007 /* CrashReportingModule.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
 			path = Host;
@@ -308,6 +326,7 @@
 				7C1D0A882E1000010088AB04 /* ExternalLinkModuleTests.swift */,
 				7C1D0A892E1000010089AB04 /* StoryPhotoModuleTests.swift */,
 				7C1D0A862E1000010086AA06 /* AppVersionTests.swift */,
+				5E27C0DE2F00000100000009 /* CrashReportingTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0001 /* AirbridgeEventsTests.swift */,
 				9E5C0A1A2F0000010000B004 /* PurchasesAttributionTests.swift */,
@@ -578,6 +597,10 @@
 				9E5C0A1A2F0000010000A001 /* PurchasesModule.swift in Sources */,
 				9E5C0A1A2F0000010000B001 /* PurchasesAttribution.swift in Sources */,
 				7C1D0A862E1000010086AA01 /* AppVersion.swift in Sources */,
+				5E27C0DE2F00000100000002 /* CrashScrub.swift in Sources */,
+				5E27C0DE2F00000100000004 /* CrashReportPayload.swift in Sources */,
+				5E27C0DE2F00000100000006 /* CrashReporting.swift in Sources */,
+				5E27C0DE2F00000100000008 /* CrashReportingModule.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
 				2B94A3CB2D6613730060892C /* SceneDelegate.swift in Sources */,
@@ -597,6 +620,7 @@
 				7C1D0A882E1000010088AB03 /* ExternalLinkModuleTests.swift in Sources */,
 				7C1D0A892E1000010089AB03 /* StoryPhotoModuleTests.swift in Sources */,
 				7C1D0A862E1000010086AA05 /* AppVersionTests.swift in Sources */,
+				5E27C0DE2F0000010000000A /* CrashReportingTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0001 /* AirbridgeEventsTests.swift in Sources */,
 				9E5C0A1A2F0000010000B003 /* PurchasesAttributionTests.swift in Sources */,

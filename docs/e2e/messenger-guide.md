@@ -14,6 +14,7 @@
 | MG-E10 | 키보드 단계 중 안내 안 토글을 직접 누름 · 뒤로가기 | 토글이 바뀌고 말풍선이 그 칸을 따라감. 뒤로가기는 아무것도 안 함(안내 · 키보드 그대로) |
 | MG-E12 | Phone keyboard 화면에서 Android 시스템 뒤로가기(ADR-0190 개정 2026-11-24) | 시스템 키보드가 내려가고 **같은 단계의 Hangul keys 화면** — 토글 Hangul keys, 같은 높이에 Hangul keys 키보드(흰 빈칸 없음), 막이 키보드까지, 꼬리 Hangul keys 칸, 같은 번호. 한 번 더 뒤로가기는 아무것도 안 함. Next → 전구 단계 |
 | MG-E11 | 업데이트 전에 안내를 본 계정 | 덕수쌤 방에 들어가면 키보드 단계만 「New」로 한 번 → Got it → 다시 안 뜸. 입력 칸 안내 글 「Korean or English」(vi 「Tiếng Hàn hoặc tiếng Việt」) |
+| MG-E13 | 가이드 도중 답이 이어진 덕수쌤 방(첫 인사가 화면 밖)에서 예시 사진 → 음성(ADR-0146 개정 ⟨예시 대상⟩) | 끝을 보던 중: 대기 줄 · 사진 · 「이번 것은 무료」 줄이 **첫 인사 바로 아래**에 서고 화면이 그 줄로 부드럽게 옮겨 감(끝으로 내리지 않음). 이어 받은 음성도 사진 아래, 자막은 첫 인사 글. 위로 읽는 중: 결과가 오면 「Photo/Voice message arrived above ↑」 알약, 누르면 그 줄로 옮기고 사라짐 |
 
 ## 실행 기록
 - 미실행 — 아이폰 연결 대기.
@@ -26,3 +27,7 @@
 - MG-E12 2026-11-24(ADR-0190 개정) — **흉내 출처**: 로그인 없이 임시 진입점(커밋 안 함)으로 덕수쌤 서버 방을 가짜 원격(첫 인사만)으로 세움. 진입점이 `AppSession`을 거치지 않아 시스템 뒤로가기 결선(`useSystemBack`과 같은 처리)을 탐침에 따로 넣음. 실서버 · 실계정 아님.
   - Android(Pixel 8 AVD 읽기 전용, `assembleBundled`, 이 인스턴스에서만 `show_ime_with_hard_keyboard=1`): Phone keyboard 화면(Gboard) → 뒤로가기 → 키보드가 내려가고 **Hangul keys 화면**(토글 Hangul keys, 같은 높이에 Hangul keys 키보드 · 막이 키보드까지, 꼬리 Hangul keys 칸, 「1 of 2」), 흰 빈칸 없음. 한 번 더 뒤로가기 → 그대로. 안내 안 토글로 Phone keyboard → 뒤로가기(Gboard 안내 띠가 먼저 닫혀 한 번 더) → 다시 Hangul keys. Next → 전구 「2 of 2」 · 입력 칸 「Korean or English」. logcat에 JS 오류 · FATAL 없음.
   - iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5): 헤드리스 시뮬레이터가 하드웨어 키보드 상태라 시스템 키보드가 올라오지 않음 → 「한 번 올라온 뒤」 조건이 서지 않아 Phone keyboard 화면 그대로(의도). Next → Hangul keys(같은 번호) → Next → 전구로 기존 흐름 회귀 없음. 로그에 JS 오류 없음(네이티브 레이아웃 경고만). iOS의 키보드 내려감 자체는 실기기 미확인.
+- MG-E13 2026-11-27(ADR-0146 개정 ⟨예시 대상⟩) — **흉내 출처**: 로그인 없이 임시 진입점(커밋 안 함)으로 덕수쌤 서버 방을 가짜 원격(첫 인사 2말풍선 + 학습자 질문 · 응답 6쌍, `greetingId` = 첫 인사, 예시 사진 · 음성 제안 · 받기 성공, 사진은 번들 그림)으로 세움. 실서버 · 실계정 아님.
+  - iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5, 전용 기기): 끝을 보던 중 Snapshot FREE → 대기 줄이 첫 인사 바로 아래에 서고 그 줄이 가운데로 옴 → 1.5초 뒤 사진 · 「이번 것은 무료」 줄, 자리 그대로. Snap voice FREE → 처음엔 사진이 그려지며 온 자리 알림 때문에 「Voice message arrived above」 알약이 보이는 자리인데 섬(기기에서 찾음) → 「옮겨 둔 채」를 자리 알림으로 지우지 않게 고친 뒤(GS-UI8) 음성 줄로 옮겨 감, 자막 = 첫 인사 글. 안내 막이 로그 끌기를 받아 「위로 읽는 중」은 iOS에서 만들지 못함.
+  - Android(Pixel 8 AVD 읽기 전용 · 소리 끔, `assembleBundled`): 같은 흐름 확인(받기 대상 로그 `target=` 첫 인사 id 두 번). 위로 끈 뒤 예시를 받으면 끌어가지 않고 음성 결과에 「Voice message arrived above ↑」 알약 → 누르면 그 줄로 옮기고 사라짐. logcat에 JS 오류 · FATAL 없음.
+  - 실기기 미실행.

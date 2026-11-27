@@ -79,4 +79,17 @@ describe("jumpKeyOf", () => {
     const sent = [...log, mine("local-a")];
     expect(jumpKeyOf([...sent, them(`${SERVER}#1`, "좋아요")])).toBe(jumpKeyOf(sent));
   });
+
+  test("JK-U7. 건너뛰라는 줄(안내의 무료 예시 — 첫 인사 아래에 섬)은 세지 않는다 — 끝으로 끌어내리지 않는다", () => {
+    const sent = [...log, mine("local-a"), them(`${SERVER}#1`)];
+    const sample = `${SERVER}~snapshot~`;
+    const skip = (id: string) => id.startsWith(sample);
+    const withSample = [
+      log[0] as ChatMessage,
+      { id: `${sample}req`, at: 3, kind: "photo-pending", startedAt: 3 } as ChatMessage,
+      ...sent.slice(1),
+    ];
+    expect(jumpKeyOf(withSample, skip)).toBe(jumpKeyOf(sent, skip));
+    expect(jumpKeyOf(withSample)).not.toBe(jumpKeyOf(sent));
+  });
 });
