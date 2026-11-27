@@ -278,6 +278,20 @@ D3의 「앞뒤 낱말 공짜」를 고친다. 마디마다 맞춘 구간의 시
   거른다(`lib/audio.ts`) — 이전 턴의 늦은 완료가 다음 턴의 넘김을 앞당기지 않게 완료는 그 소리를 낸 턴 번호로만 받는다.
 - 확인: unit `roleplay-panel` RP7 / ui `RoleplayTalkScreen.audio.ui` RT-A1 ~ RT-A5 / integration `App.roleplay-audio` IRA1.
 
+### 적용 2 개정 ⟨close — 모범 정답⟩(2026-11-27, 브랜치 `feat/roleplay-close-model-answer`)
+
+- 사용자 말: 「롤플레이에서 완벽한 정답이 아닐 경우 답 보여지게」. 전에는 close(허용 오차 안의 맞음)도 perfect와 똑같이 ✓ Great만 서고 2초 뒤
+  넘어갔다 — 이 ADR 머리의 사용자 결정 「통과는 맞았다는 표시와 함께 모범 정답을 보인다」가 롤플레이에는 닿지 않았다.
+- **같은 규칙 · 같은 문구 키**(적용 1 말하기 퀴즈 close): ✓ Great 옆에 「Almost perfect」 알약, 「Model answer」 정답 상자(한국어 표시 없음 ·
+  로마자 · 뜻 · 소리 단추), 「You said」 들은 말(다른 음절 주황 밑줄, `syllableDiff`). 새 문구 키 없음 — `speakWord.result.almostPerfect` ·
+  `modelAnswer` · `youSaid` · `hearAnswer`(여덟 언어 있음). 오답 패널(#649)은 그대로 정답이 주인공이다.
+- 정답 로마자는 D1(ADR-0188)의 「정답 공개는 스위치와 상관없이 선다」를 따른다.
+- **close는 저절로 넘기지 않는다** — 읽을 것이 생겼으므로 Next를 기다린다(말하기 퀴즈의 Continue와 같은 결). 내 문장 소리는 맞힌 때처럼 한 번
+  나고(모범 정답 소리), 대사 자리에는 내 말풍선(모범 문장) · 상대 반응이 그대로 선다. perfect는 바로 위 「한 번에 한 목소리」대로 소리 끝 뒤 넘어간다.
+- 알림: 서는 순간 한 번 「Great, Almost perfect. Model answer: 아니요, 괜찮아요.」.
+- 측정: `roleplay_story_turn_answered`의 `grade: close`는 이미 실린다 — 이벤트 변화 없음.
+- 확인: unit `roleplay-panel` RP8 / ui `RoleplayTalkScreen.close.ui` RT-C1 ~ RT-C5.
+
 ## 대가 · 알려진 한계
 
 - **뒤에 덧붙은 낱말은 공짜다**: 정답 뒤로 아무 낱말이나 붙여도 감점이 없다(전 앱 규칙도 뒤 낱말은 무시했다). 앞 낱말은 E2.

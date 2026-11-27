@@ -346,6 +346,26 @@
   color: var(--libitum-color-feedback-correct-text);
 }
 
+/* close(맞음 · 완벽하지 않음)의 「Almost perfect」 알약과 모범 정답 묶음 — 말하기 퀴즈 close와 같은 꼴(ADR-0201 D6 적용 2 개정). */
+.roleplay-story-result-chip {
+  padding-left: var(--libitum-spacing-8);
+  padding-right: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-2);
+  padding-bottom: var(--libitum-spacing-2);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-correct-surface);
+  color: var(--libitum-color-feedback-correct-text);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+}
+
+.roleplay-story-close {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
 .roleplay-story-result-title-incorrect {
   color: var(--libitum-color-feedback-incorrect-text);
 }

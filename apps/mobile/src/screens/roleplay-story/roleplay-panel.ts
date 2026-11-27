@@ -1,6 +1,8 @@
 // 롤플레이 아래 패널의 순수 계산입니다(시안 R1 ~ R5). UI를 import하지 않습니다.
 
 import { readingOf } from "../../lib/romanization-display";
+import type { DiffPiece } from "../../lib/syllable-diff";
+import { syllableDiff } from "../../lib/syllable-diff";
 import type { ChoiceRomanization } from "../../lib/session-options";
 import type { RoleplayTalkState, RoleplayTurnReport } from "./roleplay-story.contract";
 
@@ -22,6 +24,28 @@ export function roleplayTurnReportOf(
     ...(state.judgement === null ? {} : { grade: state.judgement.grade }),
     ...hint,
   };
+}
+
+/** close 판정(허용 오차 안의 맞음)의 모범 정답 패널입니다. */
+export type RoleplayClose = {
+  /** 모범 정답 — 표시 없이 그대로(말하기 퀴즈 close와 같음). */
+  readonly expected: string;
+  /** 들은 말 — 모범 정답과 다른 음절만 표시합니다. 들은 글자가 비면 빈 열. */
+  readonly heard: readonly DiffPiece[];
+};
+
+/**
+ * 맞았지만 완벽하지 않으면(close) 모범 정답을 보입니다 — 말하기 퀴즈 close(ADR-0201 D6 적용 1)와 같은 규칙: 정답은 표시 없이, 들은
+ * 말은 다른 음절에 밑줄(`syllableDiff`). perfect · 오답 · 판정 전에는 `null`(오답은 이미 정답이 주인공인 패널).
+ */
+export function roleplayCloseOf(state: RoleplayTalkState): RoleplayClose | null {
+  const judgement = state.judgement;
+  if (state.phase !== "heard" || state.verdict !== "correct" || judgement?.grade !== "close") {
+    return null;
+  }
+  const heard =
+    state.heard.trim() === "" ? [] : syllableDiff(state.heard, judgement.expected).heard;
+  return { expected: judgement.expected, heard };
 }
 
 /** 맞힌 뒤 저절로 넘김을 가르는 조건입니다(ADR-0201 D6 적용 2 개정). */

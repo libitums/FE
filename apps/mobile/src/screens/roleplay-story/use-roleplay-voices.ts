@@ -17,6 +17,8 @@ export function useRoleplayVoices(input: {
   readonly turnIndex: number;
   readonly turn: CatalogRoleplayTurn;
   readonly correct: boolean;
+  /** 맞힌 뒤 저절로 넘기는가 — close(모범 정답을 읽을 차례)면 `false`라 Next를 기다립니다. */
+  readonly autoAdvance: boolean;
   readonly done: boolean;
   /** 상대 줄 다시 듣기를 누른 수 — 바뀌면 상대 줄을 처음부터 다시 틉니다. */
   readonly replays: number;
@@ -41,7 +43,7 @@ export function useRoleplayVoices(input: {
     stopAudio();
   };
   const autoAdvance = useRoleplayAutoAdvance({
-    correct,
+    correct: correct && input.autoAdvance,
     turn: turnIndex,
     waitsForReply: turn.replyAudioSource !== undefined,
     advance: input.advance,

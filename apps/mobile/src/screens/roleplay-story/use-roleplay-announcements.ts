@@ -21,10 +21,17 @@ export function useRoleplayAnnouncements(state: RoleplayTalkState): void {
   }, [state.turnIndex, state.unavailableReason]);
 
   useEffect(() => {
-    if (state.verdict !== null) {
-      announce(
-        state.verdict === "correct" ? copy.roleplayStory.great : copy.roleplayStory.notQuite,
-      );
+    if (state.verdict === null) return;
+    if (state.verdict === "incorrect") {
+      announce(copy.roleplayStory.notQuite);
+      return;
     }
-  }, [state.turnIndex, state.verdict]);
+    // close는 모범 정답까지 한 번에 알립니다(말하기 퀴즈 close의 「…, Model answer: 카드」와 같은 꼴).
+    const judgement = state.judgement;
+    announce(
+      judgement?.grade === "close"
+        ? `${copy.roleplayStory.great}, ${copy.speakWord.result.almostPerfect}. ${copy.speakWord.result.modelAnswer}: ${judgement.expected}`
+        : copy.roleplayStory.great,
+    );
+  }, [state.turnIndex, state.verdict, state.judgement, copy]);
 }

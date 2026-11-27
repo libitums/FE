@@ -5,6 +5,7 @@ import { wordDiff } from "../../lib/syllable-diff";
 import { initialRoleplayTalkState, roleplayTalkReducer } from "./roleplay-story";
 import {
   roleplayAutoAdvanceReady,
+  roleplayCloseOf,
   roleplayDialogLinesOf,
   roleplayHeaderLabel,
   roleplayProgressSegments,
@@ -122,6 +123,33 @@ describe("RP5 머리 · 진행 칸", () => {
     expect(roleplayProgressSegments(1, 3, false)).toEqual(["done", "current", "todo"]);
     expect(roleplayProgressSegments(1, 3, true)).toEqual(["done", "done", "todo"]);
     expect(roleplayProgressSegments(3, 3, false)).toEqual(["done", "done", "done"]);
+  });
+});
+
+describe("RP8 close — 맞음이지만 모범 정답을 보인다(ADR-0201 D6 · 말하기 퀴즈와 같은 규칙)", () => {
+  const heardState = (grade: SpokenAnswerJudgement["grade"], heard: string) =>
+    stateOf({
+      phase: "heard",
+      heard,
+      verdict: grade === "incorrect" ? "incorrect" : "correct",
+      judgement: judged(grade),
+    });
+
+  it("close면 모범 정답(표시 없음)과 들은 말(다른 음절 표시)을 낸다", () => {
+    const close = roleplayCloseOf(heardState("close", "카드로 할께요"));
+    expect(close?.expected).toBe("카드로 할게요.");
+    expect(close?.heard.some((piece) => piece.differs && piece.text.includes("께"))).toBe(true);
+    expect(close?.heard.map((piece) => piece.text).join("")).toBe("카드로 할께요");
+  });
+
+  it("perfect · 오답 · 판정 전에는 없다", () => {
+    expect(roleplayCloseOf(heardState("perfect", "카드로 할게요"))).toBeNull();
+    expect(roleplayCloseOf(heardState("incorrect", "현금으로 할게요"))).toBeNull();
+    expect(roleplayCloseOf(initialRoleplayTalkState)).toBeNull();
+  });
+
+  it("들은 글자가 비면 들은 말 조각이 비어 있다", () => {
+    expect(roleplayCloseOf(heardState("close", " "))?.heard).toEqual([]);
   });
 });
 
