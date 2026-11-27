@@ -19,7 +19,7 @@ import {
   type LearningTarget,
   offerDirective,
 } from "./companion-learning.ts";
-import { companionSystemPrompt } from "./companion-prompt.ts";
+import { companionSystemPrompt, joinDirectives, personaAnchor } from "./companion-prompt.ts";
 import {
   reactionDirective,
   reactionUserText,
@@ -134,6 +134,7 @@ export async function evalReply(input: {
       : storyCardFor(item.characterId, item.episodes);
   const prompt = companionSystemPrompt({
     persona,
+    ...(item.characterId === undefined ? {} : { characterId: item.characterId }),
     speechLevel,
     ageBand,
     romanceTier: item.romanceTier ?? "standard",
@@ -169,7 +170,10 @@ export async function evalReply(input: {
     system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     history,
     userText,
-    directive: offer === null ? null : offerDirective(offer),
+    directive: joinDirectives(
+      offer === null ? null : offerDirective(offer),
+      reaction === null ? personaAnchor(persona, speechLevel) : null,
+    ),
     signal,
   })) {
     deltas.push(...splitter.push(chunk));

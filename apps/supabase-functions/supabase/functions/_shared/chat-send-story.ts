@@ -9,6 +9,9 @@ import { STORY_TEXT_IS_DATA, storyText } from "./companion-reaction-prompt.ts";
 import { storyTexts, storyWords } from "./companion-story-compose.ts";
 import { callRpc, type RpcEnv } from "./companion-rpc.ts";
 import type { Outbound } from "./delete-account.contract.ts";
+import type { PersonaCard } from "./chat-send.contract.ts";
+import type { SpeechLevel } from "./companion-contract/index.ts";
+import { joinDirectives, personaAnchor } from "./companion-prompt-anchor.ts";
 
 export type StoryClaimResult =
   | "none"
@@ -211,3 +214,12 @@ export function withStoryDirective(
   if (directive !== null) parts.push(directive);
   return parts.length === 0 ? null : parts.join("\n");
 }
+
+/** 답 턴의 이번 턴 지시 — 스토리 지시(위) 뒤에 매 턴 인물 상기문(`personaAnchor`)을 붙인다. */
+export const turnDirective = (
+  story: TurnStory | null | undefined,
+  directive: string | null,
+  persona: PersonaCard,
+  speechLevel: SpeechLevel,
+): string | null =>
+  joinDirectives(withStoryDirective(story ?? null, directive), personaAnchor(persona, speechLevel));
