@@ -10,13 +10,16 @@ struct RewardedAdConfig: Equatable {
   let unitId: String
 
   static func from(appId: Any?, unitId: Any?) -> RewardedAdConfig? {
-    func value(_ raw: Any?) -> String? {
+    // Android `RewardedAdConfig`와 같은 모양 — 앱 ID는 `~`, 광고 단위는 `/`(바꿔 넣으면 받지 않는다, 리뷰 #657).
+    func value(_ raw: Any?, pattern: String) -> String? {
       guard let text = (raw as? String)?.trimmingCharacters(in: .whitespacesAndNewlines),
-        text.hasPrefix("ca-app-pub-"), !text.contains(where: { $0.isWhitespace })
+        text.range(of: pattern, options: .regularExpression) != nil
       else { return nil }
       return text
     }
-    guard let app = value(appId), let unit = value(unitId) else { return nil }
+    guard let app = value(appId, pattern: #"^ca-app-pub-\d+~\d+$"#),
+      let unit = value(unitId, pattern: #"^ca-app-pub-\d+/\d+$"#)
+    else { return nil }
     return RewardedAdConfig(appId: app, unitId: unit)
   }
 

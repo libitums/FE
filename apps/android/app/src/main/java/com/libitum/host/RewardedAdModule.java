@@ -40,12 +40,17 @@ public final class RewardedAdModule extends LynxModule {
 
   @LynxMethod public void loadRewarded(Callback callback) {
     RewardedAdConfig config = RewardedAdSdk.config();
-    Activity activity = activityRef.get();
-    if (config == null || activity == null) {
+    if (config == null) {
       reply(callback, "failed");
       return;
     }
     mainHandler.post(() -> {
+      // 메인 스레드에서 지금의 Activity를 읽는다 — 그 사이 끝났거나 파괴됐으면 불러오지 않는다(리뷰 #657).
+      Activity activity = activityRef.get();
+      if (!active(activity)) {
+        reply(callback, "failed");
+        return;
+      }
       try {
         Bundle extras = new Bundle();
         extras.putString("npa", "1");
@@ -72,7 +77,7 @@ public final class RewardedAdModule extends LynxModule {
     mainHandler.post(() -> {
       Activity activity = activityRef.get();
       RewardedAd current = ad;
-      if (current == null || activity == null || activity.isFinishing()) {
+      if (current == null || !active(activity)) {
         reply(callback, "failed");
         return;
       }
@@ -105,6 +110,10 @@ public final class RewardedAdModule extends LynxModule {
         reply(callback, "failed");
       }
     });
+  }
+
+  private static boolean active(Activity activity) {
+    return activity != null && !activity.isFinishing() && !activity.isDestroyed();
   }
 
   private static void reply(Callback callback, String status) {
