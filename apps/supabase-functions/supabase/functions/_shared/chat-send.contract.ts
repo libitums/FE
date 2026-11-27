@@ -5,6 +5,7 @@
 // 결정: docs/specs/ai-companion-api.md §2.1 · §4, ADR-0132 · 0133.
 
 import type { Outbound } from "./delete-account.contract.ts";
+import type { PersonaExample, ReplyEffort, ReplyRequest } from "./companion-reply.contract.ts";
 import type { NoticeKind, SegmentKind, SpeechLevel } from "./companion-contract/index.ts";
 import type {
   BanmalFeedback,
@@ -25,6 +26,13 @@ import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contra
 import type { FriendPersonaFields, RomanceTier } from "./companion-friends.contract.ts";
 import type { RomanceLine } from "./companion-friends.contract.ts";
 
+export {
+  type PersonaExample,
+  type ReplyEffort,
+  type ReplyRequest,
+  replyEfforts,
+} from "./companion-reply.contract.ts";
+
 export type { RomanceLine, RomanceTier } from "./companion-friends.contract.ts";
 
 // ------------------------------------------------------------------ 환경
@@ -43,13 +51,6 @@ export type ChatSendEnvName =
   | "COMPANION_SUGGEST_MODEL"
   | "COMPANION_REPLY_EFFORT"
   | "COMPANION_REPLY_FALLBACK_MODEL";
-
-/**
- * 답변의 생각 깊이(`output_config.effort`). 채팅은 짧고 빨라야 해서 low가 기본입니다. `off`는 생각을 끄고(`thinking: disabled`) effort low —
- * Haiku 5.5만 받는다(Sonnet 5.5 · Opus 5.5는 400).
- */
-export type ReplyEffort = "low" | "medium" | "high" | "off";
-export const replyEfforts: readonly ReplyEffort[] = ["low", "medium", "high", "off"];
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -117,27 +118,7 @@ export type PersonaCard = FriendPersonaFields & {
   readonly romance?: string;
   /** 번역 표기 메모(한국어 → 학습자 언어에서 쓸 표기, 예: 「쌤」 → "teacher (casual)"). 운영자가 채운다(20261123). */
   readonly glossary?: Readonly<Record<string, string>>;
-  /** 대화 예시(목소리 · 길이 · 수준의 본보기). 있으면 코드 표(`companion-persona-examples.ts`)보다 먼저 쓴다. */
-  readonly examples?: readonly PersonaExample[];
-};
-
-/** 페르소나 대화 예시 한 개 — 앞선 대화(있으면) · 학습자 말 · 캐릭터 답(태그 줄). */
-export type PersonaExample = {
-  readonly history?: readonly (readonly ["user" | "assistant", string])[];
-  readonly learner: string;
-  readonly reply: readonly string[];
-};
-
-export type ReplyRequest = {
-  readonly system: string;
-  readonly history: readonly HistoryEntry[];
-  readonly userText: string;
-  /**
-   * 서버가 고른 이번 턴 지시(화제 전환 · 학습 표현 삽입). 시스템 프롬프트가 아니라 유저 말 뒤의 system 메시지로 실어
-   * 앞부분(시스템 · 지난 대화)의 캐시를 깨지 않는다. 없으면 null · 생략.
-   */
-  readonly directive?: string | null;
-  readonly signal: AbortSignal;
+  readonly examples?: readonly PersonaExample[]; // 대화 예시. 있으면 코드 표(`companion-persona-examples.ts`)보다 먼저.
 };
 
 export type ModerationLayer = "input" | "output_sync" | "output_async";

@@ -17,6 +17,8 @@ import { commonRequests, warmthLine } from "./companion-prompt-requests.ts";
 import { examplesFor, examplesSection } from "./companion-persona-examples.ts";
 import { kitSection } from "./companion-persona-kits.ts";
 
+export { joinDirectives, personaAnchor } from "./companion-prompt-anchor.ts";
+
 export { warmthBand, warmthBands } from "./companion-prompt-requests.ts";
 
 export const speechLevelRule: Record<SpeechLevel, string> = {
@@ -107,26 +109,6 @@ export const greetingDirective =
   "This is the very first message of a new conversation: the learner just opened the chat and has not said anything yet. Greet them first, in character, the way you would on first meeting them in your scene (if you remember things about them, greet them as someone you know). 1–3 short bubbles, at most one action. Let your situation show who you are, and end with one easy question a beginner can answer. Keep the Korean very simple.";
 export const greetingUserText =
   "(앱 안내: 학습자가 대화방을 처음 열었다. 아직 아무 말도 하지 않았다. 캐릭터가 먼저 인사를 건넨다.)";
-
-/**
- * 매 턴 상기문(post-history instruction) — 학습자 말 뒤의 이번 턴 지시에 늘 붙인다. 긴 대화에서 작은 모델이 인물을 잃고 기본 말투로 돌아가는 것을
- * 막는다(2026-11-28 Haiku 평가 루프 i8). 짧고 긍정형으로.
- */
-export function personaAnchor(persona: PersonaCard, speechLevel: SpeechLevel): string {
-  const level = speechLevel === "polite" ? "polite 해요체" : "반말";
-  const style = persona.speech
-    ? ` ${persona.speech.replace(/\s+$/, "").replace(/[.。]?$/, ".")}`
-    : "";
-  return `Reply as ${persona.name}, in your own voice.${style} Keep it to 1 or 2 short chat bubbles in ${level} with easy everyday words, react first to what they just said, and ask at most one question.`;
-}
-
-/** 이번 턴 지시 여러 개를 한 system 메시지로. 빈 것은 뺀다. */
-export const joinDirectives = (...parts: readonly (string | null | undefined)[]): string | null => {
-  const kept = parts.filter(
-    (part): part is string => typeof part === "string" && part.trim() !== "",
-  );
-  return kept.length === 0 ? null : kept.join("\n\n");
-};
 
 export type PromptInput = {
   readonly persona: PersonaCard;
