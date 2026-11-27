@@ -5,6 +5,8 @@ import { defineConfig, type Config } from "@lynx-js/rspeedy";
 import { pluginQRCode } from "@lynx-js/qrcode-rsbuild-plugin";
 import { pluginReactLynx } from "@lynx-js/react-rsbuild-plugin";
 
+import { pluginPageConfig } from "./lynx-page-config.ts";
+
 const uiLynxRoot = path.resolve(import.meta.dirname, "../../packages/ui-lynx");
 
 // ui-lynx의 공개 export(`./dist/...`)를 같은 자리의 src로 1:1 대응시킨 정확 일치 alias.
@@ -65,6 +67,8 @@ export default defineConfig(({ command }): Config => {
       // 정의하고, 런타임 main-thread `processData`가 읽는 `__EXTRACT_STR_IDENT_FLAG__`는 어떤 플러그인도
       // 정의하지 않아 실행마다 ReferenceError가 났습니다. 문자열을 실제로 뽑는 단계도 오픈소스 빌드에는 없습니다.
       pluginReactLynx({ globalPropsMode: "event" }),
+      // 여러 손가락 터치를 켭니다 — 꺼져 있으면 두 엄지로 빠르게 칠 때 겹친 둘째 키가 JS에 오지 않습니다(ADR-0112 개정 ⟨여러 손가락⟩).
+      pluginPageConfig(),
     ],
     tools: {
       // `extractStr`가 번들을 약 103 kB 줄이던 몫은 이 한 가지였습니다: `.json`을 `JSON.parse('…')` 문자열이

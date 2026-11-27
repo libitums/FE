@@ -132,6 +132,13 @@ export const readAloudEn: ReadAloudCopy = {
 export const speakWordEn: SpeakWordCopy = {
   instruction: "Say the word for the picture.",
   recognitionUnavailable: "Speech recognition isn't available right now. Tap Skip to continue.",
+  result: {
+    perfect: "Perfect!",
+    almostPerfect: "Almost perfect",
+    modelAnswer: "Model answer",
+    youSaid: "You said",
+    hearAnswer: "Hear the answer",
+  },
 };
 
 export const pairMatchEn: PairMatchCopy = {

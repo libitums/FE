@@ -74,6 +74,8 @@ export type SpeechStatus = {
   /** `0...1` 입력 레벨입니다. iOS는 PCM RMS 원값, Android는 인식 서비스의 dB 알림을 변환한 근사치입니다. */
   readonly level: number;
   readonly peakLevel: number;
+  /** Android만: 듣는 동안 마지막 dB 원값(`onRmsChanged`). 화면 미터가 씁니다 — `level`은 0 ~ 1로 잘려 말소리에서 늘 1입니다. */
+  readonly levelDb?: number;
 };
 
 /**

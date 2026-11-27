@@ -1,10 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import mic from "@libitums/icons/lynx/mic";
-import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 
 import type { MicPermissionOptions } from "../../components/mic-permission/use-mic-permission";
+import { SpeechMic } from "../../components/speech-mic/SpeechMic";
 import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
 import type { SpeechMissReason, SpeechUnavailableReason } from "../../lib/speech-attempt";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -18,18 +17,23 @@ export type RoleplaySpeakControlsProps = {
   readonly missedReason: SpeechMissReason | null;
   /** 못 알아들은 뒤 다시 듣는 중이면 Try again 자리가 Stop으로 남습니다. */
   readonly retrying: boolean;
-  /** 펼친 힌트(내가 할 말의 뜻). 접혀 있으면 `null`입니다. */
-  readonly hint: string | null;
-  readonly canShowHint: boolean;
+  /** 내가 말할 문장의 뜻 — 패널 맨 위에 늘 섭니다(시안 R1). 없으면 `null`. */
+  readonly meaning: string | null;
+  /** 「Show Korean」을 고른 뒤의 한국어 · 로마자. 아니면 `null`. */
+  readonly korean: { readonly ko: string; readonly roman: string } | null;
+  /** 힌트 줄(Hear it · Show Korean)을 펼쳤는가. */
+  readonly hintOpen: boolean;
+  /** 내 문장 소리가 있으면 Hear it이 섭니다. */
+  readonly canHear: boolean;
   readonly onMic: () => void;
+  /** 듣는 중 최대 시간이 지나면. */
+  readonly onExpire: () => void;
   readonly onHint: () => void;
+  readonly onHear: () => void;
+  readonly onShowKorean: () => void;
   readonly onSkip: () => void;
 };
 
-/**
- * 말하기 묶음입니다 — 바탕 면 없이 장면 위에 바로 섭니다(시안 「진행 1」). 마이크는 누르면 듣고, 듣는 중에
- * 다시 누르면 멈춥니다. 「Can't speak now」는 판정 없이 이 턴을 넘깁니다(듣는 중에는 받지 않습니다).
- */
 /** 듣지 못한 까닭마다 다른 안내 — 받아쓰기 꺼짐은 설정 경로, 권한 · 인식기는 허용 안내, 그 밖 실패는 불가 안내. */
 export function unavailableMessage(reason: SpeechUnavailableReason | null, copy: UiCopy): string {
   switch (reason) {
@@ -66,27 +70,76 @@ export function roleplayMissedMessage(reason: SpeechMissReason, copy: UiCopy): s
   return reason === "network" ? copy.speaking.networkRetry : copy.roleplayStory.retryHeard;
 }
 
+/**
+ * 말하기 패널입니다(시안 R1 · R2 · R5) — 흰 카드 면 위에 내 문장(뜻, 고르면 한국어 · 로마자) → 공용 마이크 → 작은 Hint ·
+ * Can't speak 단추. 그림 위에 흰 글자를 두지 않습니다(대비 4.5:1). 「Can't speak now」는 판정 없이 이 턴을 넘깁니다.
+ */
 export function RoleplaySpeakControls({
   phase,
   unavailableReason,
   missedReason,
   retrying,
-  hint,
-  canShowHint,
+  meaning,
+  korean,
+  hintOpen,
+  canHear,
   onMic,
+  onExpire,
   onHint,
+  onHear,
+  onShowKorean,
   onSkip,
 }: RoleplaySpeakControlsProps): ReactNode {
   const copy = useUiCopy();
   const listening = phase === "listening";
-  const micLabel = listening ? copy.roleplayStory.stop : copy.roleplayStory.speak;
+  const retryable = roleplayRetryable(phase, unavailableReason);
+  const micState = listening
+    ? "listening"
+    : phase === "unavailable" && !retryable
+      ? "disabled"
+      : "idle";
   return (
-    <view className="roleplay-story-speak">
-      {hint === null ? null : (
-        <text className="roleplay-story-hint" data-testid="roleplay-talk-hint">
-          {copy.roleplayStory.hint(hint)}
-        </text>
-      )}
+    <view className="roleplay-story-speak roleplay-story-panel" data-testid="roleplay-talk-panel">
+      <view className="roleplay-story-panel-line">
+        <text className="roleplay-story-panel-label">{copy.roleplayStory.yourLine}</text>
+        {korean === null ? null : (
+          <view className="roleplay-story-panel-korean" data-testid="roleplay-talk-korean">
+            <text className="roleplay-story-panel-ko">{korean.ko}</text>
+            <text className="roleplay-story-panel-roman">{korean.roman}</text>
+          </view>
+        )}
+        {meaning === null ? null : (
+          <text className="roleplay-story-panel-meaning" data-testid="roleplay-talk-meaning">
+            {meaning}
+          </text>
+        )}
+      </view>
+      {hintOpen && !listening ? (
+        <view className="roleplay-story-hint-row" data-testid="roleplay-talk-hint">
+          {canHear ? (
+            <view className="roleplay-story-hint-button" data-testid="roleplay-talk-hear">
+              <Button
+                label={copy.roleplayStory.hearIt}
+                variant="neutral"
+                size="m"
+                width="fill"
+                bindtap={onHear}
+              />
+            </view>
+          ) : null}
+          {korean === null ? (
+            <view className="roleplay-story-hint-button" data-testid="roleplay-talk-show-korean">
+              <Button
+                label={copy.roleplayStory.showKorean}
+                variant="neutral"
+                size="m"
+                width="fill"
+                bindtap={onShowKorean}
+              />
+            </view>
+          ) : null}
+        </view>
+      ) : null}
       {phase === "unavailable" ? (
         <text
           className="roleplay-story-hint"
@@ -105,23 +158,19 @@ export function RoleplaySpeakControls({
           {roleplayMissedMessage(missedReason, copy)}
         </text>
       ) : null}
-      <view
-        className={`roleplay-story-mic roleplay-story-mic-${phase}`}
-        data-testid="roleplay-talk-mic"
-        accessibility-element={true}
-        accessibility-traits="button"
-        accessibility-label={micLabel}
-        bindtap={onMic}
-      >
-        <svg className="roleplay-story-mic-icon" content={mic} current-color={color.white} />
+      <view className="roleplay-story-panel-mic-row" data-testid="roleplay-talk-mic">
+        <SpeechMic
+          testId="roleplay-mic"
+          state={micState}
+          label={listening ? copy.roleplayStory.stop : copy.roleplayStory.speak}
+          status={listening ? copy.speaking.listening : null}
+          onTap={onMic}
+          onExpire={onExpire}
+        />
       </view>
-      <text className="roleplay-story-mic-label" accessibility-elements-hidden={true}>
-        {listening ? copy.roleplayStory.listening : micLabel}
-      </text>
-      {/* 못 알아들은 뒤의 Try again — 마이크와 같은 동작(같은 턴을 다시 듣기)을 이름 있는 버튼으로도 둡니다. */}
-      {/* 누르면 듣는 중이 되어도 같은 자리가 Stop으로 남습니다 — 스크린리더 포커스가 사라져 마이크가 켜진 채 다른 요소를
-        낭독하지 않게 합니다. */}
-      {roleplayRetryable(phase, unavailableReason) || (listening && retrying) ? (
+      {/* 못 알아들은 뒤의 Try again — 마이크와 같은 동작을 이름 있는 버튼으로도 둡니다. 다시 듣는 동안 같은 자리가 Stop으로
+        남아 스크린리더 포커스가 사라지지 않습니다. */}
+      {retryable || (listening && retrying) ? (
         <view className="roleplay-story-missed-retry" data-testid="roleplay-talk-missed-retry">
           <Button
             label={listening ? copy.roleplayStory.stop : copy.speaking.tryAgain}
@@ -133,7 +182,7 @@ export function RoleplaySpeakControls({
         </view>
       ) : null}
       <view className="roleplay-story-links">
-        {canShowHint ? (
+        {!hintOpen && !listening ? (
           <text
             className="roleplay-story-link roleplay-story-link-hint"
             data-testid="roleplay-talk-show-hint"

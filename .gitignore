@@ -62,6 +62,8 @@ apps/android/app/airbridge.properties
 # RevenueCat 공개 SDK 키 파일 — 값은 추적하지 않는다(docs/adr/0144-subscriptions-revenuecat.md 2단계)
 apps/ios/Config/RevenueCat.local.xcconfig
 apps/android/app/revenuecat.properties
+# Sentry iOS DSN 파일 — 값은 추적하지 않는다(docs/adr/0207-sentry-ios-and-user-id.md)
+apps/ios/Config/Sentry.local.xcconfig
 # AdMob 앱 ID · 광고 단위 값 파일 — 값은 추적하지 않는다(docs/adr/0208-ad-ticket.md D8)
 apps/ios/Config/AdMob.local.xcconfig
 apps/android/app/admob.properties

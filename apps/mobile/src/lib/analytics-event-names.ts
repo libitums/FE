@@ -64,6 +64,7 @@ export type AnalyticsEventName =
   | "episode_story_exited"
   | "episode_story_completed"
   | "roleplay_story_completed"
+  | "roleplay_story_turn_answered"
   | "launch_coins_shown"
   | "launch_coins_closed"
   | "launch_chat_shown"

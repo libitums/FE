@@ -88,10 +88,12 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0199⟩ 내 스토리 사진 이벤트 둘이 더해져 96 · 88이다(PostHog만).
   // ⟨ADR-0200⟩ 답장 도착 토스트 `chat_reply_toast_shown` · `chat_reply_toast_opened`가 더해져 98 · 90이다(PostHog만).
   // ⟨ADR-0206⟩ 마이크 권한 안내 이벤트 셋이 더해져 101 · 93이다(PostHog만).
-  test("AB3. 이름 106개는 표의 98개와 매핑되는 여덟로 나뉜다", () => {
+  // ⟨ADR-0201 D6 적용 2⟩ 롤플레이 턴 결과 `roleplay_story_turn_answered`가 더해져 102 · 94다(PostHog만).
+  // ⟨ADR-0208⟩ 광고 보고 티켓 다섯이 더해져 107 · 99다(PostHog만).
+  test("AB3. 이름 107개는 표의 99개와 매핑되는 여덟로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(98);
-    expect(allEventNames).toHaveLength(106);
+    expect(tableNames.size).toBe(99);
+    expect(allEventNames).toHaveLength(107);
     expect([...tableNames, ...mappedNames].sort()).toEqual([...allEventNames].sort());
   });
 

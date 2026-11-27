@@ -119,6 +119,8 @@ public final class MainActivity extends Activity {
     pushNotifications = new PushNotificationController(this);
     builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
     builder.registerModule("SystemBackModule", SystemBackModule.class, this);
+    // 오류 수집에 로그인한 사용자의 내부 id 하나를 싣는다(ADR-0207). 이메일 · 이름 · IP는 받지 않는다.
+    builder.registerModule("CrashReportingModule", CrashReportingModule.class);
     DebugSupport.configure(builder);
     AirbridgeEvents.configure(builder);
     // 스토어 상품 · 구매 · 복원(ADR-0144 2단계) — SDK 키가 있어 시작된 빌드에서만 등록한다.

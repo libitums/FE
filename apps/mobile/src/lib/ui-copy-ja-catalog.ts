@@ -133,6 +133,13 @@ export const readAloudJa: ReadAloudCopy = {
 export const speakWordJa: SpeakWordCopy = {
   instruction: "絵に合う単語を言いましょう。",
   recognitionUnavailable: "今は音声認識を使えません。「スキップ」をタップして続けてください。",
+  result: {
+    perfect: "完璧！",
+    almostPerfect: "ほぼ完璧",
+    modelAnswer: "お手本",
+    youSaid: "あなたの発音",
+    hearAnswer: "答えを聞く",
+  },
 };
 
 export const pairMatchJa: PairMatchCopy = {

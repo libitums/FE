@@ -39,6 +39,10 @@ describe("AS-U1 쿼리 읽기", () => {
 
   test("서명 · key_id가 끝 둘이 아니거나 필수 값이 비면 null", () => {
     expect(parseAdmobSsvQuery("")).toBeNull();
+    // signature 뒤에 다른 값이 끼어들면(순서가 어긋남) 받지 않는다.
+    expect(
+      parseAdmobSsvQuery("ad_unit=1&transaction_id=t&custom_data=c&user_id=u&signature=A&x=1"),
+    ).toBeNull();
     expect(parseAdmobSsvQuery("ad_unit=1&transaction_id=t&custom_data=c&user_id=u")).toBeNull();
     expect(
       parseAdmobSsvQuery("ad_unit=1&transaction_id=t&custom_data=c&user_id=u&key_id=1&signature=A"),

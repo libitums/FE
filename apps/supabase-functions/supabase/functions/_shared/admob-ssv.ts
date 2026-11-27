@@ -25,7 +25,9 @@ export const parseAdmobSsvQuery: ParseAdmobSsvQuery = (rawQuery) => {
   const cut = rawQuery.indexOf("&signature=");
   if (cut <= 0) return null;
   const tail = rawQuery.slice(cut + 1).split("&");
-  if (tail.length !== 2 || !tail[1]!.startsWith("key_id=")) return null;
+  if (tail.length !== 2 || !tail[0]!.startsWith("signature=") || !tail[1]!.startsWith("key_id=")) {
+    return null;
+  }
   const signature = tail[0]!.slice("signature=".length);
   const keyId = decodeValue(tail[1]!.slice("key_id=".length));
   const signedContent = rawQuery.slice(0, cut);

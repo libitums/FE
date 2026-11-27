@@ -54,7 +54,7 @@ function mount(host: SpeechHostOptions, results: readonly (SpeechHostResult | nu
 
 const id = (testId: string) => screen.getByTestId(testId);
 const maybe = (testId: string) => screen.queryByTestId(testId);
-const tapMic = () => fireEvent.tap(id("roleplay-talk-mic"), {});
+const tapMic = () => fireEvent.tap(id("roleplay-mic-button"), {});
 
 test("RT-P1. 인식 실패는 거부와 다른 문구와 Try again 버튼이고, 누르면 같은 턴을 다시 듣는다", () => {
   const { speech } = mount({}, [audioFailed, null]);

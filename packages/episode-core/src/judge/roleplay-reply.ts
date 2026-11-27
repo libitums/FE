@@ -1,4 +1,5 @@
-// 롤플레이 말하기 답의 판정입니다 — 앱의 에피소드 롤플레이와 랜딩 체험판이 같은 규칙을 씁니다(순수).
+// 롤플레이 말하기 답의 **글자 그대로** 판정입니다(순수). 앱 화면의 정오답은 이 규칙에 발음 기준 통과를 더한
+// `judgeRoleplayReply`(spoken-answer.ts)가 냅니다 — 여기 규칙은 「완벽」을 가르는 엄격 기준으로 남습니다.
 
 import type { AnswerResult } from "./answer-result";
 import type { NonEmpty } from "./non-empty";
@@ -25,10 +26,10 @@ function matchesWithWildcards(sentence: string, heard: string, wildcards: readon
 }
 
 /**
- * 들은 문장을 받아들이는 정답들과 맞춥니다. 이름 · 나라가 없는 정답은 말하기 학습형과 같은 규칙
+ * 들은 문장을 받아들이는 정답들과 낱말 그대로 맞춥니다. 이름 · 나라가 없는 정답은 말하기 학습형과 같은 규칙
  * (`judgeSpeaking`)이고, 들어 있는 정답은 그 낱말만 빼고 봅니다.
  */
-export function judgeRoleplayReply(
+export function judgeRoleplayReplyExact(
   accepted: NonEmpty<string>,
   heard: string,
   wildcards: readonly string[],

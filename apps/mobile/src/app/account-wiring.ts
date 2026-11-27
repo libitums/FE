@@ -3,6 +3,7 @@
 
 import { clearWordbook } from "../lib/wordbook";
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { setCrashUser } from "../lib/crash-user";
 import { clearGuestSession, loadGuestSession } from "../lib/guest-session";
 import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
 import { forgetDeviceUnlocks, serverAccountKey } from "../screens/messenger-chat/chat-local-stores";
@@ -48,6 +49,7 @@ export function accountWiring({
     } catch {
       // 분석 실패는 뒤처리를 멈추지 않습니다.
     }
+    setCrashUser(null); // 오류 수집의 사용자도 지웁니다(ADR-0207 D3). 던지지 않습니다.
     entryEventSink?.(entryScreenViewedEvent("login"));
     leaveApp(exit);
   };

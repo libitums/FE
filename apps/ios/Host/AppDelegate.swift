@@ -13,6 +13,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       AirbridgeEvents.start(config)
     }
 
+    // 오류 수집(ADR-0207). Airbridge가 실행 끝 처리의 맨 위를 요구해 그 바로 뒤다 — 뒤 SDK들의 시작 크래시도 잡힌다.
+    // DSN이 없거나 Debug 구성이면 SDK를 한 줄도 부르지 않는다.
+    CrashReporting.start(CrashReportConfig.fromBundle())
+
     // RevenueCat 구매 SDK(ADR-0144 2단계). 키가 없으면 한 줄도 부르지 않는다. 사용자 id는 로그인 뒤 JS가 맞춘다.
     if let config = PurchasesConfig.fromBundle() {
       PurchasesSDK.start(config)

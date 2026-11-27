@@ -55,7 +55,7 @@ test("IMP1. 미요청이면 첫 말하기 직전 사전 안내 → Allow → 허
 
   fireEvent(screen.getByTestId("speak-word-picture-image"), new window.Event("bindEvent:load"));
   tapId("learning-shell-action");
-  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(screen.getByTestId("speak-word-result")).toHaveAttribute("data-grade", "perfect");
   expect(micEvents(events)).toEqual([
     { name: "mic_permission_sheet_shown", surface: "speak-word", sheet: "prime" },
     { name: "mic_permission_answered", surface: "speak-word", result: "allowed", source: "prompt" },
