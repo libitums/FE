@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import {
@@ -61,9 +61,10 @@ function mount(results: readonly (SpeechHostResult | null)[]) {
 
 const id = (testId: string) => screen.getByTestId(testId);
 const maybe = (testId: string) => screen.queryByTestId(testId);
-const retryButton = () => within(id("roleplay-talk-missed-retry")).getByTestId("ui-lynx-button");
+// 다시 말하기는 마이크 하나가 맡습니다 — 같은 동작의 「Try again」 버튼을 따로 두지 않습니다(2026-11-27 사용자 지시).
+const retryButton = () => id("roleplay-mic-button");
 
-test("[RT-M1] no-match는 안내 한 번 · Try again 버튼 · 건너뛰기가 서고 판정은 없다", () => {
+test("[RT-M1] no-match는 안내 한 번 · 마이크 하나가 Try again(이름 · 문구) · 건너뛰기가 서고 판정은 없다", () => {
   const { speech } = mount([androidNoMatch]);
 
   fireEvent.tap(id("roleplay-mic-button"), {});
@@ -73,6 +74,9 @@ test("[RT-M1] no-match는 안내 한 번 · Try again 버튼 · 건너뛰기가 
   expect(id("roleplay-talk-missed")).toHaveTextContent(notCaughtText);
   expect(speech.announced.builtin).toEqual([notCaughtText]);
   expect(retryButton()).toHaveAttribute("accessibility-label", "Try again");
+  expect(id("roleplay-mic-status")).toHaveTextContent("Try again");
+  expect(screen.getAllByTestId("roleplay-mic-button")).toHaveLength(1);
+  expect(maybe("roleplay-talk-missed-retry")).not.toBeInTheDocument();
   expect(id("roleplay-talk-skip")).toHaveTextContent("Can't speak now");
   expect(maybe("roleplay-talk-unavailable")).not.toBeInTheDocument();
   expect(maybe("roleplay-talk-reply")).not.toBeInTheDocument();
@@ -87,6 +91,7 @@ test("[RT-M2] Try again은 같은 턴을 다시 듣고, 맞히면 판정이 선�
   expect(speech.calls.start).toBe(2);
   expect(id("roleplay-talk-screen")).toHaveAttribute("data-phase", "listening");
   expect(retryButton()).toHaveAttribute("accessibility-label", "Stop");
+  expect(maybe("roleplay-talk-missed-retry")).not.toBeInTheDocument();
   expect(id("roleplay-talk-progress")).toHaveAttribute("accessibility-label", "Line 1 / 2");
 
   act(() => speech.pending[0]?.({ ...recognized("아니요, 괜찮아요"), isFinal: true }));
@@ -120,7 +125,7 @@ test("[RT-M5] 권한 거부에는 Try again 버튼이 없다(마이크 입력 �
   mount([audioFailed]);
   fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "failed");
-  expect(id("roleplay-talk-missed-retry")).toBeInTheDocument();
+  expect(retryButton()).toHaveAttribute("accessibility-label", "Try again");
   cleanup();
 
   stubSpeechHost({ microphone: "denied" });
@@ -137,10 +142,11 @@ test("[RT-M5] 권한 거부에는 Try again 버튼이 없다(마이크 입력 �
   );
   fireEvent.tap(id("roleplay-mic-button"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "blocked");
-  expect(maybe("roleplay-talk-missed-retry")).not.toBeInTheDocument();
+  expect(maybe("roleplay-mic-status")).not.toBeInTheDocument();
+  expect(retryButton()).not.toHaveAttribute("accessibility-label", "Try again");
 });
 
-test("[RT-M6] Try again을 누른 뒤에도 같은 버튼 자리가 남아 Stop이 된다 — 포커스가 사라지지 않는다", () => {
+test("[RT-M6] 마이크(Try again)를 누르면 같은 마이크가 Stop이 된다 — Stop은 한 곳에만 선다", () => {
   const { speech } = mount([androidNoMatch, null]);
 
   fireEvent.tap(id("roleplay-mic-button"), {});
@@ -148,6 +154,7 @@ test("[RT-M6] Try again을 누른 뒤에도 같은 버튼 자리가 남아 Stop�
 
   expect(id("roleplay-talk-screen")).toHaveAttribute("data-phase", "listening");
   expect(retryButton()).toHaveAttribute("accessibility-label", "Stop");
+  expect(maybe("roleplay-talk-missed-retry")).not.toBeInTheDocument();
   fireEvent.tap(retryButton(), {});
   expect(speech.calls.stop).toBe(1);
 });

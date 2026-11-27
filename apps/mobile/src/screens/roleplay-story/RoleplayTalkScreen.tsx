@@ -263,7 +263,6 @@ export function RoleplayTalkScreen({
               phase={state.phase}
               unavailableReason={state.unavailableReason}
               missedReason={state.missedReason}
-              retrying={state.retrying}
               meaning={turn.replyTranslation}
               korean={
                 state.hintUsed === "show"

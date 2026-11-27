@@ -208,11 +208,6 @@
   line-height: var(--libitum-typography-label-m-line-height);
 }
 
-/* 못 알아들은 뒤의 Try again — 판정 뒤 다시 하기와 같은 꼴(가득 찬 브랜드 버튼)입니다. */
-.roleplay-story-missed-retry {
-  align-self: stretch;
-}
-
 .roleplay-story-links {
   align-self: stretch;
   display: flex;

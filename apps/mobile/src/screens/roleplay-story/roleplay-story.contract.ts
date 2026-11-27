@@ -32,7 +32,7 @@ export type RoleplayTalkState = {
   readonly unavailableReason: SpeechUnavailableReason | null;
   /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0181). */
   readonly missedReason: SpeechMissReason | null;
-  /** 못 알아들은 뒤 다시 듣는 중인가 — 그 동안 Try again 자리가 Stop으로 남습니다(포커스를 잃지 않게). */
+  /** 못 알아들은 뒤 다시 듣는 중인가(기록용) — 화면은 마이크 하나가 Try again → Stop으로 이름만 바뀝니다(ADR-0206 D5 개정). */
   readonly retrying: boolean;
   /** 넘긴 턴의 판정입니다. 건너뛴 턴은 싣지 않습니다(인식 불가 · 말할 수 없음을 오답으로 접지 않습니다). */
   readonly results: readonly AnswerResult[];

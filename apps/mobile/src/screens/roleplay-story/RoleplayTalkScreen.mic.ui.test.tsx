@@ -64,13 +64,15 @@ test("RT-P1. 인식 실패는 거부와 다른 문구와 Try again 버튼이고,
   expect(id("roleplay-talk-unavailable")).toHaveTextContent(
     "Something went wrong while listening. Try again.",
   );
-  const retry = id("roleplay-talk-missed-retry");
-  expect(retry).toHaveTextContent("Try again");
+  // 다시 말하기는 마이크 하나 — 이름 · 아래 문구가 Try again입니다(같은 동작의 버튼을 따로 두지 않음).
+  const retry = id("roleplay-mic-button");
+  expect(retry).toHaveAttribute("accessibility-label", "Try again");
+  expect(maybe("roleplay-talk-missed-retry")).not.toBeInTheDocument();
 
-  fireEvent.tap(within(retry).getByTestId("ui-lynx-button"), {});
+  fireEvent.tap(retry, {});
   expect(speech.calls.start).toBe(2);
   expect(id("roleplay-talk-screen")).toHaveAttribute("data-phase", "listening");
-  expect(id("roleplay-talk-missed-retry")).toHaveTextContent("Stop");
+  expect(id("roleplay-mic-button")).toHaveAttribute("accessibility-label", "Stop");
 });
 
 test("RT-P2. 대화 중 시스템 창에서 거부하면 거부 시트가 서고, Continue without speaking 뒤에는 다시 띄우지 않는다", () => {

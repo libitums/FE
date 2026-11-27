@@ -87,6 +87,15 @@
 - **같은 문항에서 두 번 실패하면 「Hear it」(정답 듣기)을 함께 보인다** — 낱말 말하기, 정답 소리가 있을 때. 누르면 힌트의 「정답 듣기」와 같은
   기록(`hintUsed: listen`)으로 소리를 한 번 낸다. 들으면(판정) · 문항이 바뀌면 다시 센다. 따라 읽기는 문장 듣기 줄이 늘 있어 더하지 않았다.
 - 롤플레이: 인식 실패도 같은 문구 + Try again 버튼(못 알아들음의 버튼 자리 · 누르면 Stop으로 남는 규칙 그대로).
+- **개정 ⟨2026-11-27, 롤플레이 — 마이크 하나⟩**(브랜치 `fix/roleplay-duplicate-mic-button`, 사용자 지시): 롤플레이의 「Try again / Stop」 버튼
+  (`roleplay-talk-missed-retry`)은 바로 위 공용 마이크와 같은 일을 해 중복이었다 — 「Stop」이 두 곳에 동시에 서기도 했다. 버튼을 걷고 **마이크 하나**가
+  다시 말하기를 맡는다: 못 알아들음 · 인식 실패 뒤 마이크의 낭독 이름과 아래 상태 문구가 「Try again」(`speaking.tryAgain`), 듣는 중에는 「Stop」.
+  스크린리더는 마이크를 그 이름으로 찾는다 — 버튼을 둔 까닭이던 「이름 있는 다시 말하기 · 포커스가 사라지지 않음」은 같은 마이크 요소가 이름만 바뀌며
+  지킨다(`roleplayMicLabels`). 권한 거부(진짜 불가)는 그대로 마이크가 꺼지고 「Try again」이 없다.
+  - 말하기 퀴즈(`SpeakWordActivity`)에도 같은 꼴이 있다 — 셸 아래 주 버튼(Speak · Stop speaking · 판정 전 Try again)이 큰 마이크와 같은 동작이다
+    (ADR-0201 D6 적용 1의 「스스로 정한 기본값 — 남겼다」). 이 개정에서는 바꾸지 않았다: 셸 버튼 행이 비며 Skip이 작업 영역으로 옮겨 가는 화면
+    변경이고, 흐름 테스트 12개 파일 49곳이 그 버튼을 누른다 — 따로 정한다.
+  - 확인: ui `RoleplayTalkScreen.missed.ui` RT-M1 ~ RT-M6 · `RoleplayTalkScreen.mic.ui` RT-P1(마이크 하나 · 이름 Try again · 누르면 다시 듣기, red → green).
 
 ### D6. 이벤트(PostHog만, Airbridge 매핑 없음)
 

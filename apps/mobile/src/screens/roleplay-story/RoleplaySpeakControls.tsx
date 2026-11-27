@@ -2,8 +2,8 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
 
-import type { MicPermissionOptions } from "../../components/mic-permission/use-mic-permission";
 import { SpeechMic } from "../../components/speech-mic/SpeechMic";
+import type { MicPermissionOptions } from "../../components/mic-permission/use-mic-permission";
 import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
 import type { SpeechMissReason, SpeechUnavailableReason } from "../../lib/speech-attempt";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -15,8 +15,6 @@ export type RoleplaySpeakControlsProps = {
   readonly unavailableReason: SpeechUnavailableReason | null;
   /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0181). */
   readonly missedReason: SpeechMissReason | null;
-  /** 못 알아들은 뒤 다시 듣는 중이면 Try again 자리가 Stop으로 남습니다. */
-  readonly retrying: boolean;
   /** 내가 말할 문장의 뜻 — 패널 맨 위에 늘 섭니다(시안 R1). 없으면 `null`. */
   readonly meaning: string | null;
   /** 「Show Korean」을 고른 뒤의 한국어 · 로마자. 아니면 `null`. */
@@ -49,6 +47,23 @@ export function unavailableMessage(reason: SpeechUnavailableReason | null, copy:
   }
 }
 
+/**
+ * 마이크의 낭독 이름과 아래 상태 문구 — 듣는 중 「Stop」, 못 알아들음 · 인식 실패 뒤 「Try again」, 그 밖 「Speak」(이름) · 없음(문구).
+ * 마이크 하나가 다시 말하기를 맡습니다 — 같은 동작의 버튼을 따로 두지 않습니다(2026-11-27 사용자 지시, ADR-0206 D5 개정).
+ */
+export function roleplayMicLabels(
+  phase: RoleplayTalkPhase,
+  reason: SpeechUnavailableReason | null,
+  copy: UiCopy,
+): { readonly label: string; readonly status: string | null } {
+  if (phase === "listening")
+    return { label: copy.roleplayStory.stop, status: copy.speaking.listening };
+  if (roleplayRetryable(phase, reason)) {
+    return { label: copy.speaking.tryAgain, status: copy.speaking.tryAgain };
+  }
+  return { label: copy.roleplayStory.speak, status: null };
+}
+
 /** 같은 턴을 곧바로 다시 말할 수 있는 국면인가 — 못 알아들음 · 인식 실패(ADR-0206 D5). */
 export function roleplayRetryable(
   phase: RoleplayTalkPhase,
@@ -78,7 +93,6 @@ export function RoleplaySpeakControls({
   phase,
   unavailableReason,
   missedReason,
-  retrying,
   meaning,
   korean,
   hintOpen,
@@ -93,6 +107,7 @@ export function RoleplaySpeakControls({
   const copy = useUiCopy();
   const listening = phase === "listening";
   const retryable = roleplayRetryable(phase, unavailableReason);
+  const mic = roleplayMicLabels(phase, unavailableReason, copy);
   const micState = listening
     ? "listening"
     : phase === "unavailable" && !retryable
@@ -162,25 +177,12 @@ export function RoleplaySpeakControls({
         <SpeechMic
           testId="roleplay-mic"
           state={micState}
-          label={listening ? copy.roleplayStory.stop : copy.roleplayStory.speak}
-          status={listening ? copy.speaking.listening : null}
+          label={mic.label}
+          status={mic.status}
           onTap={onMic}
           onExpire={onExpire}
         />
       </view>
-      {/* 못 알아들은 뒤의 Try again — 마이크와 같은 동작을 이름 있는 버튼으로도 둡니다. 다시 듣는 동안 같은 자리가 Stop으로
-        남아 스크린리더 포커스가 사라지지 않습니다. */}
-      {retryable || (listening && retrying) ? (
-        <view className="roleplay-story-missed-retry" data-testid="roleplay-talk-missed-retry">
-          <Button
-            label={listening ? copy.roleplayStory.stop : copy.speaking.tryAgain}
-            variant="brand"
-            size="xl"
-            width="fill"
-            bindtap={onMic}
-          />
-        </view>
-      ) : null}
       <view className="roleplay-story-links">
         {!hintOpen && !listening ? (
           <text
