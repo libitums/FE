@@ -55,6 +55,8 @@ export type RoomGuide = {
   readonly phoneKeyboardHeight: (height: number) => void;
   /** 안내 전 첫 인사를 기다리는 중 — 입력 줄 보내기 · 답장 보기를 잠급니다(ADR-0139 개정 2026-11-27, 상한 시간 뒤 풂). */
   readonly waitingGreeting: boolean;
+  /** 안내가 섰거나 설 차례(끝나지 않았고 단계가 있음) — 그동안 답장 보기 판을 저절로 열지 않습니다(ADR-0137 · 0190 개정 2026-11-28). */
+  readonly holding: boolean;
 };
 
 export function useRoomGuide(
@@ -163,6 +165,7 @@ export function useRoomGuide(
     step,
     sampleOnly: roomSeen,
     waitingGreeting,
+    holding: !ended && steps.length > 0,
     keyboardStage,
     next: () => {
       // 예시 단계는 그 알약을 눌러야 끝납니다.
