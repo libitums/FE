@@ -78,6 +78,43 @@ function piecesOf(chars: readonly string[], shared: ReadonlySet<number>): DiffPi
   return pieces;
 }
 
+/** 낱말 단위 차이 — 롤플레이 오답 패널(시안 R4)이 다른 낱말을 통째로 표시합니다. */
+export function wordDiff(heard: string, expected: string): SyllableDiff {
+  const bare = (word: string) => word.replace(/[.,!?~…"'“”‘’]/g, "");
+  const wordsOf = (text: string) => text.split(/\s+/).filter((word) => word !== "");
+  const heardWords = wordsOf(heard);
+  const expectedWords = wordsOf(expected);
+  const heardSet = new Set(heardWords.map(bare));
+  const expectedSet = new Set(expectedWords.map(bare));
+  const piecesOfWords = (words: readonly string[], other: ReadonlySet<string>): DiffPiece[] => {
+    const pieces: DiffPiece[] = [];
+    words.forEach((word, index) => {
+      const text = index === 0 ? word : ` ${word}`;
+      const differs = bare(word) !== "" && !other.has(bare(word));
+      const last = pieces[pieces.length - 1];
+      // 다른 낱말 사이의 띄어쓰기는 앞 조각(같은 표시)에 붙여, 밑줄이 낱말 단위로 이어지게 합니다.
+      if (last !== undefined && last.differs === differs) {
+        pieces[pieces.length - 1] = { text: last.text + text, differs };
+      } else if (differs && index > 0) {
+        pieces.push({ text: " ", differs: false }, { text: word, differs });
+      } else {
+        pieces.push({ text, differs });
+      }
+    });
+    return pieces.reduce<DiffPiece[]>((merged, piece) => {
+      const last = merged[merged.length - 1];
+      if (last !== undefined && last.differs === piece.differs) {
+        merged[merged.length - 1] = { text: last.text + piece.text, differs: piece.differs };
+      } else merged.push(piece);
+      return merged;
+    }, []);
+  };
+  return {
+    heard: piecesOfWords(heardWords, expectedSet),
+    expected: piecesOfWords(expectedWords, heardSet),
+  };
+}
+
 /** 들은 말과 정답을 음절로 맞춰 양쪽의 다른 글자를 표시합니다. 빈 글은 빈 조각 열입니다. */
 export function syllableDiff(heard: string, expected: string): SyllableDiff {
   const heardChars = Array.from(heard);
