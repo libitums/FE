@@ -72,7 +72,10 @@ export async function makeReaction(
       p_now: now,
     },
   );
-  if (context === null || !context.allowed) return { ok: false, outcome: "not_allowed" };
+  // 반응 허용(20270119): 성인, 또는 나라를 알고 US가 아닌 미성년 · 나이 모름(사용자 결정 2026-11-27). 선톡의 `allowed`와 달리
+  // 나이 모름도 받는다 — 나이 모름은 아래에서 ageBand 그대로 미성년 규칙(로맨스 없음 · 동기 출력 검사)을 탄다. 옛 DB는 `allowed`.
+  if (context === null || !(context.reactionAllowed ?? context.allowed))
+    return { ok: false, outcome: "not_allowed" };
   if (!context.hasConversation) return { ok: false, outcome: "no_conversation" };
   const history = context.history.flatMap((entry): HistoryEntry[] =>
     entry.role === "user"

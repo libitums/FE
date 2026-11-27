@@ -79,3 +79,7 @@ FAIL → 반영: **C1** 새 탭 요소 네 곳에 `accessibility-enable-tap`이 
   - 대가: 대충 누르면 이제 1976 근처(50세)가 찍힌다 — 막히지는 않지만 실제 나이도 아니다. 운영에서 1974 ~ 1978 줄이 튀는지 보면 같은 흔적을 다시 셀 수 있다.
   - 이미 찍힌 사용자: 운영 데이터는 바꾸지 않았다. 막힌 줄의 「Change birth year」와 방 사이드바 · 설정의 Birth year 줄로 스스로 고칠 수 있고, 서버(`companion_save_profile`)는 덮어쓰기를 받는다. 다시 묻기(예: 생년이 올해 ~ 4년 전이면 한 번 더 시트를 띄움)는 제안으로만 남겼다.
   - 테스트: unit SU-U9 · U10(`safety-rules.unit.test.ts`), ui SU-UI13 · UI14(`MessengerChatScreen.birth-year.ui.test.tsx`) — red(함수 없음 · 속성 null) → green. 기기: iOS 시뮬레이터(Host Debug + 시트만 그린 임시 번들)와 Android `assembleBundled`(Pixel 8 에뮬레이터)에서 고치기 전 2026 ~ 2022, 고친 뒤 1978 ~ 1974가 보이고 고른 줄 없음 · Continue 꺼짐, 위로 밀면 새 연도로 올라감을 확인했다.
+- ⟨2026-11-27, fix/companion-region-learner-country⟩ **나이 모름 = 18세 미만 설정은 그대로, 스토리 반응만 받는다**(사용자 결정 2026-11-27).
+  나이 모름은 로맨스 없음 · 동기 출력 검사 등 미성년 규칙을 그대로 받는다. 다만 스토리 반응(내 스토리에 인물이 다는 답)은 미성년과 같은 기준
+  (나라 앎 · US 아님)으로 받는다 — 선톡은 지금처럼 막힌다. 나라는 기기 지역 → 온보딩 나라([ADR-0127](0127-companion-push-target.md) 개정 2026-11-27,
+  [ADR-0191](0191-my-stories-reactions-as-chat.md) 정정 기록 2026-11-27).
