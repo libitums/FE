@@ -84,7 +84,8 @@ create function companion.my_story_window(
 returns jsonb language plpgsql stable as $$
 declare
   v_offset integer := case when p_tz_offset_min between -720 and 840 and p_tz_offset_min <> 0 then p_tz_offset_min end;
-  v_tz text := (select p.timezone from companion.profiles p where p.user_id = p_user_id);
+  v_tz text;
+  v_last_region text;
   v_morning integer := companion.my_story_rule('morningStart', 4)::integer;
   v_day integer := companion.my_story_rule('dayStart', 12)::integer;
   v_night integer := companion.my_story_rule('nightStart', 18)::integer;
@@ -94,10 +95,12 @@ declare
   v_slot_day date;
   v_next timestamp;
 begin
+  -- 프로필은 한 번만 읽는다(저장된 시간대 · 스토어 나라).
+  select p.timezone, p.last_region into v_tz, v_last_region from companion.profiles p where p.user_id = p_user_id;
   if v_tz is null and v_offset is null then
     v_tz := coalesce(
       companion.story_country_timezone(p_region),
-      companion.story_country_timezone((select p.last_region from companion.profiles p where p.user_id = p_user_id)),
+      companion.story_country_timezone(v_last_region),
       companion.country_timezone((select lp.country_code from public.learner_profiles lp where lp.user_id = p_user_id))
     );
   end if;
