@@ -787,7 +787,7 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 - 표(`ops`, RPC로만 — `service_role`도 직접 못 읽는다): `ops.guardrail_revs`(리비전에 사람이 붙인 이름 · 메모) · `ops.moderation_reviews`(판정 하나에 검토 하나 —
   `correct` · `false_positive` · `missed` · `unsure`, 판정이 지워지면 같이 지워진다).
 - 새 RPC 6개:
-  - `ops_moderation_summary(p_actor, p_from, p_to, p_stage, p_age, p_line, p_character)` — 기간(≤ 90일, 날은 UTC) 판정 현황.
+  - `ops_moderation_summary(p_actor, p_from, p_to, p_stage, p_age, p_line, p_character)` — 기간(≤ 90일, `daily`의 날은 한국 시각 날짜) 판정 현황.
     `{inputs, cells[{category, stage, blocks, per1k}], daily[{day, category, blocks}], tracked[{line, characterId, category, count}], revs[…], unrevisioned, strikes[…]}`.
     `blocks`는 allow가 아닌 판정(block · crisis · hide), `per1k`는 같은 거르기(단계 빼고)의 입력 검사 1천 건당. `tracked`는 허용했지만 기록하는
     로맨스 · 성적 긴장(ADR-0168 D3). `revs`는 기간 안에 보인 리비전 — 처음 · 마지막 본 때는 기간 밖까지, 나머지 수는 기간 · 거르기 안. 리비전 없는 옛 줄은
@@ -808,7 +808,7 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
   (SQL 편집기에서 직접 부르면 걸리지 않는다).
 - 오류: `invalid_range`(기간 거꾸로 · 90일 초과) · `invalid_stage` · `invalid_action` · `invalid_review` · `invalid_verdict` · `invalid_rev` · `invalid_label` ·
   `invalid_note` · `invalid_expected_category` · `invalid_limit` · `not_found`. 분류 · 캐릭터 · 연령대 · 선은 검사하지 않는다(맞는 줄이 없을 뿐).
-- 테스트: `migrations/ops-admin-insights.integration.test.ts`(OI-1 ~ OI-14) · `_shared/companion-guardrail-rev.unit.test.ts`(GV1 ~ GV3).
+- 테스트: `migrations/ops-admin-insights.integration.test.ts`(OI-1 ~ OI-15) · `_shared/companion-guardrail-rev.unit.test.ts`(GV1 ~ GV3).
 
 **배포 순서**: 이 마이그레이션(20261213 **뒤**, 다시 적용해도 같다) → `chat-send` · `companion-eval`. 어느 쪽이 먼저여도 턴은 저장된다 — 마이그레이션이 먼저면
 옛 `chat-send`가 `rev`를 보내지 않아 그동안의 판정이 null이고, 함수가 먼저면 옛 저장 함수가 `rev`를 버려 역시 null이다. 둘 다 올라간 뒤의 판정부터 리비전이 남는다.

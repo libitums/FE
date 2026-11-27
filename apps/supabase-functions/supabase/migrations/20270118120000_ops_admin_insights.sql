@@ -238,7 +238,7 @@ revoke all on all functions in schema ops from public, anon, authenticated;
 
 -- ------------------------------------------------------------------ 읽기 RPC (service_role, 열람 기록)
 
--- 판정 현황. 기간은 [p_from, p_to), 90일까지. 날은 UTC다.
+-- 판정 현황. 기간은 [p_from, p_to), 90일까지. daily의 날은 한국 시각(Asia/Seoul) 날짜다 — 운영 도구가 기간 · 날을 한국 날짜로 읽고 보인다.
 --   · inputs = 같은 거르기(연령대 · 선 · 캐릭터)의 입력 검사 수 — 단계 거르기와 상관없이 센다(`per1k`의 분모).
 --   · cells · daily의 blocks = allow가 아닌 판정(block · crisis · hide). 판정 목록의 기본 거르기와 같아 칸의 수와 목록의 줄 수가 맞는다.
 --   · tracked = 허용했지만 기록하는 로맨스 · 성적 긴장(allow + romance · sexual, ADR-0168 D3).
@@ -310,7 +310,7 @@ begin
     'daily', coalesce((
       select jsonb_agg(jsonb_build_object('day', x.day, 'category', x.category, 'blocks', x.blocks) order by x.day, x.category)
       from (
-        select (created_at at time zone 'utc')::date as day, category, count(*) as blocks
+        select (created_at at time zone 'Asia/Seoul')::date as day, category, count(*) as blocks
         from hit where action <> 'allow' group by 1, category
       ) x
     ), '[]'::jsonb),

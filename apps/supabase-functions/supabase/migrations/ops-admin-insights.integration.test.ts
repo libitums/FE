@@ -286,7 +286,7 @@ describe("운영 도구 판정 · 기억 · 스토리 조회", () => {
         { category: "self_harm", stage: "input", blocks: 1, per1k: 166.67 },
       ]),
     );
-    // 날은 UTC 날짜 글자입니다. 시드가 자정에 걸칠 수 있어 날마다의 수는 합으로만 봅니다.
+    // 날은 날짜 글자입니다. 시드가 자정에 걸칠 수 있어 날마다의 수는 합으로만 봅니다(어느 날짜인지는 OI-15).
     expect(all.daily.reduce((sum: number, d: Json) => sum + d.blocks, 0)).toBe(4);
     expect(all.daily.every((d: Json) => /^\d{4}-\d{2}-\d{2}$/.test(d.day))).toBe(true);
     // 기록용 허용은 거르기가 없어도 그 턴의 선 · 캐릭터를 읽습니다.
@@ -802,8 +802,8 @@ describe("운영 도구 판정 · 기억 · 스토리 조회", () => {
       `insert into companion.my_stories (user_id, client_id, kind, ko, roman, meaning, lang, posted_at, expires_at,
          image_path, overlays, scene, line_original)
        values ($1, gen_random_uuid(), 'photo', '바다에 왔어요', 'badae wasseoyo', 'I came to the sea', 'en',
-         now() - interval '1 hour', now() + interval '23 hours', $2, '[{"kind": "text", "text": "여름"}]',
-         '{"summary": "A beach at noon."}', '바다에 왔어') returning id`,
+         now() - interval '1 hour', now() + interval '23 hours', $2, '[{"kind": "text", "ko": "여름", "x": 0.5, "y": 0.5, "scale": 1, "rotation": 0}]',
+         '{"description": "A beach at noon.", "hooks": ["Did you swim?"], "crisis": false}', '바다에 왔어') returning id`,
       [real, `${real}/photo-1.jpg`],
     );
     const word = await one(
@@ -911,8 +911,8 @@ describe("운영 도구 판정 · 기억 · 스토리 조회", () => {
       roman: "badae wasseoyo",
       meaning: "I came to the sea",
       lineOriginal: "바다에 왔어",
-      overlays: [{ kind: "text", text: "여름" }],
-      scene: { summary: "A beach at noon." },
+      overlays: [{ kind: "text", ko: "여름", x: 0.5, y: 0.5, scale: 1, rotation: 0 }],
+      scene: { description: "A beach at noon.", hooks: ["Did you swim?"], crisis: false },
       imagePath: `${real}/photo-1.jpg`,
       seen: 2,
       replies: 0,
@@ -1185,6 +1185,24 @@ describe("운영 도구 판정 · 기억 · 스토리 조회", () => {
       )
     ).rows;
     expect(finish).toEqual([{ service: true, auth: false }]);
+  });
+
+  // OI-15 — 운영 도구는 기간 · 날을 한국 날짜로 읽고 보입니다. UTC로 묶으면 한국 새벽 · 오전의 판정이 전날 칸에 들어갑니다.
+  test("OI-15 일별의 날은 한국 시각 날짜다", async () => {
+    // 이틀 전 UTC 20:30 = 한국 시각으로 다음 날 05:30.
+    const utcDay = ago(60 * 24 * 2).slice(0, 10);
+    const kstDay = new Date(Date.parse(`${utcDay}T00:00:00Z`) + 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    await db.admin.query(
+      `insert into companion.moderation_events (user_id, layer, category, action, created_at)
+       values ($1, 'input', 'hate', 'block', $2)`,
+      [real, `${utcDay}T20:30:00Z`],
+    );
+    const summary = await named(server, "ops_moderation_summary", { p_actor: ACTOR, ...range });
+    expect(summary.daily.filter((d: Json) => d.category === "hate")).toEqual([
+      { day: kstDay, category: "hate", blocks: 1 },
+    ]);
   });
 
   test("OI-14 다시 적용해도 같다 — 이름 · 검토 · 리비전이 남는다", async () => {
