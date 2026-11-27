@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { keyboardDockBodyStyle, type KeyboardDockEdges } from "../../lib/keyboard-dock";
+import { useUiCopy } from "../../lib/ui-copy";
 import { MessengerKeyboard } from "../messenger/MessengerKeyboard";
 import { CHAT_COIN_PRICES } from "./chat-coins";
 import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
@@ -45,6 +46,8 @@ export type ChatRoomDockProps = {
   readonly onTakeVoiceSample?: () => void;
   /** 비회원(ADR-0166) — 보기가 없어도 전구를 켜 두고 누르면 관문(send 권유)으로 갑니다(2026-11-20). */
   readonly guest?: boolean;
+  /** 안내 전 첫 인사를 기다리는 중(ADR-0139 개정 2026-11-27) — 입력 칸 · 보내기 · 전구를 잠급니다. */
+  readonly waitingGreeting?: boolean;
 };
 
 /** 상대의 마지막 텍스트 글(한국어)입니다. 없으면 null — 보기 판의 인용이 됩니다. */
@@ -72,7 +75,9 @@ export function ChatRoomDock({
   onTakeSample,
   onTakeVoiceSample,
   guest = false,
+  waitingGreeting = false,
 }: ChatRoomDockProps): ReactNode {
+  const guideCopy = useUiCopy().messengerChat.guide;
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
     slot: state.slot,
@@ -154,8 +159,9 @@ export function ChatRoomDock({
         {aboveComposer}
         <ComposerRow
           state={state}
-          ideasDisabled={!guest && thread.ideas.length === 0}
-          sendEnabled={canSend(state.text)}
+          ideasDisabled={waitingGreeting || (!guest && thread.ideas.length === 0)}
+          sendEnabled={canSend(state.text) && !waitingGreeting}
+          locked={waitingGreeting ? guideCopy.greeting(thread.counterpart.name) : null}
           sendCost={sendCost}
           onIdeas={() => dispatch({ type: ideasOpen ? "type-myself" : "open-ideas" })}
           onSend={() => onSend()}

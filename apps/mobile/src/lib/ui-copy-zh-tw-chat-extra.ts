@@ -184,6 +184,7 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     stepOf: (step, total) => `第${step}步，共${total}步`,
     newTag: "新",
     free: "免費",
+    greeting: (name) => `${name} 正在打招呼…`,
   },
   launch: {
     newTag: "新",

@@ -108,7 +108,6 @@ export function MessengerChatScreen({
   const server = thread !== null && thread.server !== null;
   // 답 · 첫 인사를 기다리는 중 — 이때 온 말만 「새로 도착」으로 봅니다(방을 열며 읽은 기록은 아님, 리뷰 W2 · W4).
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
-  serverBusy.current = server && busy;
   const tools = useBubbleTools({ roomId, source, thread, announce });
   const guide = useRoomGuide(
     roomId,
@@ -118,6 +117,7 @@ export function MessengerChatScreen({
     source.sampleSnapshot,
     plan.toggle === "shown",
   );
+  serverBusy.current = server && (busy || guide.waitingGreeting); // 안내 전 첫 인사 · 기록 읽기 중도(ADR-0139 개정)
   // 키보드 단계가 입력 줄 키보드를 맞추고 휴대폰 키보드가 내려간 것을 봄(ADR-0190)
   const measurePhoneKeyboard = useGuideKeyboard(guide, state, dispatch, room.measureKeyboard);
   useAutoIdeas({
@@ -270,7 +270,7 @@ export function MessengerChatScreen({
             guideClass={guideTargetClass(guide.step)}
             {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}
             {...(guide.step === "voice" ? { onTakeVoiceSample: guide.takeSample } : {})}
-            guest={guest.active}
+            {...{ guest: guest.active, waitingGreeting: guide.waitingGreeting }}
             aboveComposer={
               <>
                 {story.bar(thread.counterpart.name)}

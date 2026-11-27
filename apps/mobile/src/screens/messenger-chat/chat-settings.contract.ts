@@ -149,6 +149,8 @@ export type MessengerGuideCopy = {
   readonly newTag: string;
   /** 예시 단계 동안 사진 알약의 가격 자리에 서는 글. */
   readonly free: string;
+  /** 첫 인사를 기다리는 동안 잠긴 입력 칸의 글 · 낭독(ADR-0139 개정 2026-11-27). */
+  readonly greeting: (name: string) => string;
 };
 
 export type ChatSettingsCopy = {

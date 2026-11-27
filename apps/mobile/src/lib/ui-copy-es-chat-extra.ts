@@ -196,6 +196,7 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step} de ${total}`,
     newTag: "Nuevo",
     free: "GRATIS",
+    greeting: (name) => `${name} te está saludando…`,
   },
   launch: {
     newTag: "NUEVO",

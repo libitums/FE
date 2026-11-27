@@ -184,6 +184,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step}/${total}`,
     newTag: "ใหม่",
     free: "ฟรี",
+    greeting: (name) => `${name} กำลังทักทาย…`,
   },
   launch: {
     newTag: "ใหม่",
