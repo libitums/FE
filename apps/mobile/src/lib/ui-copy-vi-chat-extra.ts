@@ -191,6 +191,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step}/${total}`,
     newTag: "Mới",
     free: "MIỄN PHÍ",
+    greeting: (name) => `${name} đang chào bạn…`,
   },
   launch: {
     newTag: "MỚI",

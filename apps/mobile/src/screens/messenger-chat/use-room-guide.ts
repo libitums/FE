@@ -14,6 +14,7 @@ import { useChatEvents } from "./chat-events";
 import type { SampleOffer } from "./chat-media.contract";
 import type { SampleSnapshotMethods } from "./chat-remote-sample";
 import type { ChatThread } from "./chat-source.contract";
+import { useGreetingLock } from "./use-greeting-lock";
 import {
   finishedRoomPart,
   GUIDE_ROOM_ID,
@@ -52,6 +53,8 @@ export type RoomGuide = {
   readonly selectKeyboard: (mode: ComposerKeyboard) => void;
   /** 입력 칸이 알린 휴대폰 키보드 높이(pt/dp, 내려가면 0) — 휴대폰 키보드 화면에서 키보드가 내려가면 Hangul keys 화면으로 넘깁니다. */
   readonly phoneKeyboardHeight: (height: number) => void;
+  /** 안내 전 첫 인사를 기다리는 중 — 입력 줄 보내기 · 답장 보기를 잠급니다(ADR-0139 개정 2026-11-27, 상한 시간 뒤 풂). */
+  readonly waitingGreeting: boolean;
 };
 
 export function useRoomGuide(
@@ -80,6 +83,7 @@ export function useRoomGuide(
     !thread.typing &&
     thread.messages.some((m) => m.kind === "text" && m.from === "them");
   const server = thread !== null && thread.server !== null;
+  const waitingGreeting = useGreetingLock(guideRoom, !roomSeen, thread);
 
   // 예시를 줄 수 있는지는 서버가 정합니다 — 첫 인사가 온 뒤 한 번 묻고, 답이 올 때까지 안내를 세우지 않습니다(도중에 단계 수가
   // 바뀌지 않게).
@@ -158,6 +162,7 @@ export function useRoomGuide(
     index,
     step,
     sampleOnly: roomSeen,
+    waitingGreeting,
     keyboardStage,
     next: () => {
       // 예시 단계는 그 알약을 눌러야 끝납니다.

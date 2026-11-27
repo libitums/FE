@@ -190,6 +190,7 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step} / ${total}`,
     newTag: "新機能",
     free: "無料",
+    greeting: (name) => `${name}があいさつ中…`,
   },
   launch: {
     newTag: "NEW",

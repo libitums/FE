@@ -34,6 +34,8 @@ export type ComposerFieldProps = {
   readonly onOpenKeyboard: () => void;
   /** 휴대폰 키보드가 올라오거나 높이가 바뀌면 그 높이(pt/dp)를 알립니다. 내려가면 0입니다. */
   readonly onPhoneKeyboardHeight?: (height: number) => void;
+  /** 첫 인사를 기다리는 동안 잠긴 칸의 글(ADR-0139 개정 2026-11-27) — 있으면 키보드를 열지 않고 이 글을 보이고 읽습니다. */
+  readonly locked?: string | null;
 };
 export type ComposerRowProps = ComposerFieldProps & {
   readonly ideasDisabled: boolean;
@@ -59,6 +61,7 @@ export function ComposerRow({
   onConfirm,
   onOpenKeyboard,
   onPhoneKeyboardHeight,
+  locked = null,
 }: ComposerRowProps): ReactNode {
   const phoneFocused = state.keyboard === "phone" && state.phoneFocus === "focused";
   return (
@@ -83,6 +86,7 @@ export function ComposerRow({
           onConfirm={onConfirm}
           onOpenKeyboard={onOpenKeyboard}
           onPhoneKeyboardHeight={onPhoneKeyboardHeight}
+          locked={locked}
         />
       </view>
       {sendCost.kind === "coin" ? (
@@ -143,10 +147,12 @@ export function ComposerField({
   onConfirm,
   onOpenKeyboard,
   onPhoneKeyboardHeight,
+  locked = null,
 }: ComposerFieldProps): ReactNode {
   const copy = useUiCopy().messengerChat.composer;
   const phoneActive = state.keyboard === "phone" && state.slot.kind === "keyboard";
   const empty = state.text === "";
+  const hint = locked ?? copy.placeholder;
   const caret = <view className="messenger-chat-caret" accessibility-elements-hidden={true} />;
   // 실제 키보드 높이(툴바 · 추천 줄 포함)로 자리를 맞춥니다. `keyboardheightchange`는 @lynx-js/types의 input 속성에 없어
   // ui-lynx TextField처럼 펼침으로 겁니다.
@@ -165,8 +171,9 @@ export function ComposerField({
       className="messenger-chat-field"
       data-testid={ids.field}
       data-keyboard={state.keyboard}
+      data-locked={locked === null ? "false" : "true"}
       bindtap={
-        state.slot.kind === "closed"
+        state.slot.kind === "closed" && locked === null
           ? () => {
               "background only";
               onOpenKeyboard();
@@ -178,15 +185,16 @@ export function ComposerField({
         className={`messenger-chat-display${phoneActive ? " messenger-chat-display-off" : ""}`}
         data-testid={ids.display}
         accessibility-element={!phoneActive}
-        accessibility-label={copy.placeholder}
+        accessibility-label={hint}
+        accessibility-traits={locked === null ? undefined : "disabled"}
         accessibility-value={empty ? undefined : state.text}
       >
-        {empty ? caret : null}
+        {empty && locked === null ? caret : null}
         <text
           className={`messenger-chat-display-text${empty ? " messenger-chat-display-placeholder" : ""}`}
           accessibility-element={false}
         >
-          {empty ? copy.placeholder : state.text}
+          {empty ? hint : state.text}
         </text>
         {empty ? null : caret}
       </view>
