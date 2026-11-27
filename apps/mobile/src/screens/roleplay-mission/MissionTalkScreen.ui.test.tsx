@@ -122,9 +122,12 @@ test("MT-UI4 이룬 목표는 체크되고 낭독이 done, 교정 카드는 내 
     "Say for here or to go, optional, done",
   );
   expect(id("roleplay-mission-turns-left")).toHaveTextContent("9 turns left");
-  expect(id("messenger-chat-fix-card")).toHaveAttribute("data-kind", "better");
-  expect(id("roleplay-mission-better-card")).toContainElement(id("messenger-chat-fix-card"));
-  expect(id("messenger-chat-fix-card")).toHaveTextContent("MORE NATURAL");
+  // 더 나은 표현 — 대본형 close와 같은 말(✓ · 초록 제목 · 점선 정답 상자), 제목 낱말은 메신저 교정과 같은 「MORE NATURAL」.
+  expect(id("roleplay-mission-better-card")).toHaveAttribute("data-kind", "better");
+  expect(id("roleplay-mission-better-card-title")).toHaveTextContent("MORE NATURAL");
+  expect(id("roleplay-mission-better-card-answer-ko")).toHaveTextContent("포장이요");
+  expect(id("roleplay-mission-better-card-answer-meaning")).toHaveTextContent("To go, please.");
+  expect(maybe("roleplay-mission-fix-card")).not.toBeInTheDocument();
   expect(id("roleplay-mission-log")).toHaveTextContent("네, 포장해 드릴게요.");
 });
 
@@ -289,29 +292,4 @@ test("MT-UI14 끝내기로 닫히면 끝 줄이 Mission complete!", () => {
   expect(id("roleplay-mission-talk")).toHaveAttribute("data-phase", "ended");
   expect(id("roleplay-mission-status")).toHaveTextContent("Mission complete!");
   expect(maybe("roleplay-mission-success-card")).not.toBeInTheDocument();
-});
-
-test("MT-UI15 고치기 카드는 지금 모양(FIX) — 더 나은 표현 틀이 없다", () => {
-  mount(
-    sessionAfter([
-      ...startedActions,
-      { type: "send", text: "카드으로 할게요", inputMode: "text" },
-      event("start", { userMessageId: U1, assistantMessageId: A1 }),
-      event("delta", { segment: 0, kind: "speech", text: "네." }),
-      event("correction", {
-        userMessageId: U1,
-        status: "ok",
-        kind: "correction",
-        original: "카드으로 할게요",
-        corrected: "카드로 할게요",
-        items: [{ original: "카드으로", corrected: "카드로", reason: "Use 로 after a vowel." }],
-        better: null,
-        meaning: null,
-      }),
-      event("done", { assistantMessageId: A1, creditsSpent: 0, balance: null }),
-    ]),
-  );
-  expect(id("messenger-chat-fix-card")).toHaveAttribute("data-kind", "correction");
-  expect(id("messenger-chat-fix-card")).toHaveTextContent("FIX");
-  expect(maybe("roleplay-mission-better-card")).not.toBeInTheDocument();
 });

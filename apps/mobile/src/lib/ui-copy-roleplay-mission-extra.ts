@@ -17,7 +17,6 @@ export type MissionExtraCopy = {
     readonly transcribing: string;
     readonly heardCheck: string;
     readonly heardNotKorean: string;
-    readonly sayAgain: string;
     readonly tooShort: string;
     readonly notHeard: string;
     readonly busy: string;
@@ -25,7 +24,6 @@ export type MissionExtraCopy = {
     readonly micDenied: string;
     readonly maxLength: string;
     readonly replay: string;
-    readonly hintListen: string;
     /** 위 띠의 자동 재생 토글 — 낭독은 「Auto-play, On / Off」(켬 · 끔 낱말은 설정 화면의 것). */
     readonly autoPlay: string;
   };
@@ -60,7 +58,6 @@ export const missionExtraEn: MissionExtraCopy = {
     transcribing: "Transcribing…",
     heardCheck: "Did I hear that right?",
     heardNotKorean: "That didn't sound like Korean. Try again?",
-    sayAgain: "Say it again",
     tooShort: "Hold on a bit longer and try again.",
     notHeard: "We couldn't hear you. Try again or type.",
     busy: "Too many requests right now. Try again in a moment.",
@@ -68,7 +65,6 @@ export const missionExtraEn: MissionExtraCopy = {
     micDenied: "Allow microphone access in Settings to speak.",
     maxLength: "Recording stops after 30 seconds.",
     replay: "Play again",
-    hintListen: "Listen",
     autoPlay: "Auto-play",
   },
   report: {
@@ -102,7 +98,6 @@ export const missionExtraEs: MissionExtraCopy = {
     transcribing: "Transcribiendo…",
     heardCheck: "¿Te entendí bien?",
     heardNotKorean: "No sonó a coreano. ¿Lo intentas otra vez?",
-    sayAgain: "Decirlo otra vez",
     tooShort: "Habla un poco más y vuelve a intentarlo.",
     notHeard: "No pudimos oírte. Inténtalo de nuevo o escribe.",
     busy: "Hay demasiadas solicitudes ahora. Inténtalo en un momento.",
@@ -110,7 +105,6 @@ export const missionExtraEs: MissionExtraCopy = {
     micDenied: "Permite el acceso al micrófono en Ajustes para hablar.",
     maxLength: "La grabación se detiene a los 30 segundos.",
     replay: "Escuchar otra vez",
-    hintListen: "Escuchar",
     autoPlay: "Reproducción automática",
   },
   report: {
@@ -144,7 +138,6 @@ export const missionExtraJa: MissionExtraCopy = {
     transcribing: "文字に起こしています…",
     heardCheck: "聞き取りは合っていますか?",
     heardNotKorean: "韓国語に聞こえませんでした。もう一度話しますか?",
-    sayAgain: "もう一度話す",
     tooShort: "もう少し長く話して、もう一度試してください。",
     notHeard: "声が聞き取れませんでした。もう一度話すか、入力してください。",
     busy: "ただいま混み合っています。少し待ってからもう一度試してください。",
@@ -152,7 +145,6 @@ export const missionExtraJa: MissionExtraCopy = {
     micDenied: "話すには、設定でマイクへのアクセスを許可してください。",
     maxLength: "録音は30秒で止まります。",
     replay: "もう一度聞く",
-    hintListen: "聞く",
     autoPlay: "自動再生",
   },
   report: {

@@ -4,13 +4,16 @@ import type { ReactNode } from "@lynx-js/react";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 
 import { ChatLog } from "../../components/chat/ChatLog";
+import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
 import { ChatIncomingRow, ChatTextBubble } from "../../components/chat/ChatMessageRow";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import type { RoleplayMissionCopy } from "../../lib/ui-copy-roleplay-mission";
 import { useScreenBack } from "../../lib/use-back-handler";
+import { missionMicMode, missionMicUsable } from "./mission-mic";
 import { canAskHint, canFinishMission, canSendMission } from "./mission-session";
 import { missionTestIds as ids } from "./mission-test-ids";
 import { recordClock } from "./mission-voice";
@@ -21,19 +24,24 @@ import { MissionTalkLine } from "./MissionTalkLine";
 import { MissionTopBar } from "./MissionTopBar";
 import type { MissionTalkScreenProps } from "./roleplay-mission.contract";
 import { loadMissionAutoPlay, saveMissionAutoPlay } from "./mission-autoplay-storage";
-import { useMissionVoice } from "./use-mission-voice";
+import { useMissionMic } from "./use-mission-mic";
 
 import "./roleplay-mission-talk.css";
 
-/** 입력 줄 위 안내 — 녹음 중(시간) · 받아 적는 중 · 받아 적기 실패. */
-function voiceNote(voice: MissionVoiceState, copy: RoleplayMissionCopy): string | null {
-  if (voice.rec === "recording") return `${copy.listening} ${recordClock(voice.seconds)}`;
+/**
+ * 입력 줄 위 안내 — 녹음 중(시간) · 받아 적는 중 · 받아 적기 실패. 「Listening…」 · 기기 쪽 실패는 대본형 롤플레이와 같은 문구
+ * (`speaking.listening` · ADR-0206의 `micPermission.listenFailed`)이고, 서버 받아 적기의 갈래는 미션 문구(파이프라인 문서 §6.5)입니다.
+ */
+function voiceNote(voice: MissionVoiceState, copy: RoleplayMissionCopy, ui: UiCopy): string | null {
+  if (voice.rec === "recording") return `${ui.speaking.listening} ${recordClock(voice.seconds)}`;
   if (voice.rec === "transcribing") return copy.extra.voice.transcribing;
   switch (voice.notice) {
     case null:
       return null;
     case "unavailable":
       return copy.speechUnavailable;
+    case "failed":
+      return ui.micPermission.listenFailed;
     default:
       return copy.extra.voice[voice.notice];
   }
@@ -66,11 +74,12 @@ export function MissionTalkScreen({
   // 상대역 말 자동 재생(기기에 기억) — 꺼도 다시 듣기 · 힌트 예문 듣기는 됩니다.
   const [autoPlay, setAutoPlay] = useState(loadMissionAutoPlay);
   const enabled = canSendMission(state);
-  const voice = useMissionVoice(ports, state.conversationId);
+  const mic = useMissionMic(ports, state.conversationId);
+  const { voice } = mic;
 
   const tapMic = () => {
     "background only";
-    voice.tapMic((decision) => {
+    mic.tap((decision) => {
       if (decision.kind === "send") {
         setHeardPending(false);
         onSend(decision.text, "voice");
@@ -113,13 +122,9 @@ export function MissionTalkScreen({
   const check =
     voice.state.check === null || voice.state.rec !== "idle"
       ? null
-      : {
-          text:
-            voice.state.check === "notKorean"
-              ? mission.extra.voice.heardNotKorean
-              : mission.extra.voice.heardCheck,
-          again: mission.extra.voice.sayAgain,
-        };
+      : voice.state.check === "notKorean"
+        ? mission.extra.voice.heardNotKorean
+        : mission.extra.voice.heardCheck;
   const dialog = state.requiredDone
     ? { ...mission.extra.quitSuccess }
     : { title: mission.quitTitle, body: mission.quitBody, confirm: mission.quitConfirm };
@@ -215,11 +220,12 @@ export function MissionTalkScreen({
         ) : null}
         <MissionComposer
           enabled={enabled}
-          recording={voice.state.rec === "recording"}
+          micMode={missionMicMode(voice.state)}
           transcribing={voice.state.rec === "transcribing"}
+          micUsable={missionMicUsable(voice.state)}
           hintsLeft={state.hintsLeft}
           canHint={canAskHint(state)}
-          note={voiceNote(voice.state, mission)}
+          note={voiceNote(voice.state, mission, copy)}
           check={check}
           onFinish={canFinish && state.successPrompt === "dismissed" ? onFinish : null}
           prefill={prefill}
@@ -233,6 +239,7 @@ export function MissionTalkScreen({
           onHint={onHint}
         />
       </view>
+      <MicPermissionSheet mic={mic.permission} />
       {confirming ? (
         <view data-testid={ids.quitDialog}>
           <Dialog

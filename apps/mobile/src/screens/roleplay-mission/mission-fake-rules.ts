@@ -1,17 +1,12 @@
-// 가짜 출처의 규칙 — 6화 「커피 주문」의 낱말 판정 · 상대역 대사 · 교정(고치기 / 더 나은 표현) · 받아 적기 · 리포트 계산입니다.
+// 가짜 출처의 규칙 — 미션 대본(`mission-fake-scripts.ts`)마다의 낱말 판정 · 상대역 대사 · 교정(고치기 / 더 나은 표현) · 받아 적기 · 리포트 계산입니다.
 // 서버(상태 줄 · 채점 모델 · Scribe)의 흉내일 뿐 앱의 판정이 아닙니다 — 서버 구현이 붙으면 이 파일은 개발 미리보기 · 테스트에서만 돕니다.
 
-import { missionHintExamples, missionReportFixture, missionStartFixture } from "./mission-fixture";
+import { missionReportFixture } from "./mission-fixture";
+import type { FakeFix, FakeMissionScript } from "./mission-fake-scripts";
 import type { MissionAutoSendReason, MissionTranscript } from "./mission-voice.contract";
 import type { MissionEndReason, MissionReport } from "./roleplay-mission.contract";
 
 type FakeLine = { readonly ko: string; readonly en: string };
-type FakeFix = {
-  readonly kind: "correction" | "better";
-  readonly from: string;
-  readonly to: string;
-  readonly reason: string;
-};
 
 /**
  * 6화의 가짜 대본 — 한국어는 학습 내용(상대역 대사 · 판정 낱말 · 교정 · 받아 적은 말)이라 문구표가 아니라 이 한 선언에 모읍니다
@@ -93,25 +88,27 @@ export function fakeHeard(
   };
 }
 
-export function goalsReachedBy(text: string): readonly string[] {
-  return missionStartFixture.goals
+export function goalsReachedBy(script: FakeMissionScript, text: string): readonly string[] {
+  return script.start.goals
     .map((goal) => goal.id)
-    .filter((id) => (FAKE_CAFE_SCRIPT.goalWords[id] ?? []).some((word) => text.includes(word)));
+    .filter((id) => (script.goalWords[id] ?? []).some((word) => text.includes(word)));
 }
 
 /** 이 글에 붙을 턴 교정 — 대본의 표현이 들었으면 그것, 아니면 없음. */
-export function fakeFixOf(text: string): FakeFix | null {
-  return FAKE_CAFE_SCRIPT.fixes.find((fix) => text.includes(fix.from)) ?? null;
+export function fakeFixOf(script: FakeMissionScript, text: string): FakeFix | null {
+  return script.fixes.find((fix) => text.includes(fix.from)) ?? null;
 }
 
 /** 상대역의 답 — 끝이면 마무리 대사, 아니면 방금 이룬 목표에 맞춘 말, 아무것도 못 이뤘으면 되돌리는 말. */
-export function fakeReplyOf(reached: readonly string[], ended: MissionEndReason | null): FakeLine {
-  if (ended === "goals") return FAKE_CAFE_SCRIPT.closing;
-  if (ended === "turn_limit") return FAKE_CAFE_SCRIPT.timeUp;
+export function fakeReplyOf(
+  script: FakeMissionScript,
+  reached: readonly string[],
+  ended: MissionEndReason | null,
+): FakeLine {
+  if (ended === "goals") return script.closing;
+  if (ended === "turn_limit") return script.timeUp;
   const last = reached[reached.length - 1];
-  return (
-    (last === undefined ? undefined : FAKE_CAFE_SCRIPT.replies[last]) ?? FAKE_CAFE_SCRIPT.nudge
-  );
+  return (last === undefined ? undefined : script.replies[last]) ?? script.nudge;
 }
 
 const tenth = (value: number): number => Math.round(value * 10) / 10;
@@ -152,10 +149,15 @@ export type FakePlayRecord = {
 
 const ACCURACY = 85;
 
-export function buildFakeReport(play: FakePlayRecord, best: number | null): MissionReport {
-  const goals = missionStartFixture.goals.map((goal) => {
+export function buildFakeReport(
+  script: FakeMissionScript,
+  play: FakePlayRecord,
+  best: number | null,
+): MissionReport {
+  const { base } = script.report;
+  const goals = script.start.goals.map((goal) => {
     const done = play.done.has(goal.id);
-    const example = missionHintExamples[goal.id];
+    const example = script.hintExamples[goal.id];
     return {
       id: goal.id,
       required: goal.required,
@@ -165,10 +167,10 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
       tip: done || example === undefined ? null : { ko: example.ko, meaning: example.meaning },
     };
   });
-  const expressions = missionReportFixture.expressions.map((entry) => ({
+  const expressions = script.report.expressions.map((entry) => ({
     ...entry,
     used: play.utterances.some((text) =>
-      text.includes(FAKE_CAFE_SCRIPT.expressionWords[entry.id] ?? "\u0000"),
+      text.includes(script.expressionWords[entry.id] ?? "\u0000"),
     ),
   }));
   const task = (100 * goals.filter((goal) => goal.done).length) / goals.length;
@@ -176,20 +178,18 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
     expressions.length === 0
       ? 100
       : (100 * expressions.filter((entry) => entry.used).length) / expressions.length;
-  const { weights } = missionReportFixture;
+  const { weights } = base;
   const total = fakeTotalScore(task, ACCURACY, expression, play.hintsUsed);
   const success = goals.every((goal) => !goal.required || goal.done);
   const retry = expressions
     .filter((entry) => !entry.used)
-    .map((entry) =>
-      entry.id === "patt:fbe5e354" ? missionReportFixture.retry[0] : FAKE_CAFE_SCRIPT.orderRetry,
-    )
+    .map((entry) => script.report.retryFor[entry.id])
     .filter((entry) => entry !== undefined)
     .slice(0, 3);
   const fixes = play.corrections.filter((entry) => entry.kind === "correction");
-  const strength = play.done.get("order");
+  const strength = play.done.get(script.report.strengthGoal);
   return {
-    ...missionReportFixture,
+    ...base,
     conversationId: play.conversationId,
     outcome: success ? "success" : "fail",
     endReason: play.endReason,
@@ -204,9 +204,7 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
       expression: tenth(weights.expression * expression),
       hintPenalty: weights.hintPenalty * play.hintsUsed,
     },
-    headline: success
-      ? missionReportFixture.headline
-      : "You got started — the order isn't finished yet.",
+    headline: success ? script.report.headline.success : script.report.headline.fail,
     goals,
     expressions,
     corrections: play.corrections.map((entry) => ({ ...entry, items: [...entry.items] })),
@@ -216,21 +214,14 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
         : [
             {
               examples: fixes.map(({ original, corrected }) => ({ original, corrected })),
-              reason: FAKE_CAFE_SCRIPT.focusReason,
+              reason: script.focusReason,
             },
           ],
     strengths:
-      strength === undefined
-        ? []
-        : (missionReportFixture.strengths ?? []).map((entry) => ({
-            ...entry,
-            quote: strength,
-          })),
+      strength === undefined ? [] : [{ quote: strength, note: script.report.strengthNote }],
     retry,
-    summary: success
-      ? missionReportFixture.summary
-      : "You got part of the way. Try paying before the time runs out.",
-    nextStep: missionReportFixture.nextStep,
+    summary: success ? script.report.summary.success : script.report.summary.fail,
+    nextStep: script.report.nextStep,
     bestScore: best === null ? total : Math.max(best, total),
   };
 }

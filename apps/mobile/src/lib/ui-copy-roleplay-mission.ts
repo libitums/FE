@@ -37,9 +37,6 @@ export type RoleplayMissionCopy = RoleplayMissionListCopy & {
   readonly goalSpoken: (label: string, required: boolean, done: boolean) => string;
   readonly placeholder: string;
   readonly send: string;
-  readonly speak: string;
-  readonly stop: string;
-  readonly listening: string;
   readonly speechUnavailable: string;
   readonly hint: (left: number) => string;
   readonly hintTitle: string;
@@ -112,9 +109,6 @@ export const roleplayMissionEn: RoleplayMissionCopy = {
     `${label}, ${required ? "required" : "optional"}, ${done ? "done" : "not done"}`,
   placeholder: "Reply in Korean",
   send: "Send",
-  speak: "Speak",
-  stop: "Stop",
-  listening: "Listening…",
   speechUnavailable: "Speaking isn't available right now. You can type instead.",
   hint: (left) => `Hint · ${String(left)} left`,
   hintTitle: "Try saying",

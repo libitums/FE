@@ -166,7 +166,7 @@ test("[MI2] 목록 → 미리보기 → 대화 세 턴 → 성공 카드 → 끝
   expect(id("roleplay-mission-goal-order")).toHaveAttribute("data-done", "true");
   expect(id("roleplay-mission-turns-left")).toHaveTextContent("9 turns left");
   await say("가지고 가요.");
-  expect(id("messenger-chat-fix-card")).toHaveAttribute("data-kind", "better");
+  expect(id("roleplay-mission-better-card")).toHaveAttribute("data-kind", "better");
   await say("카드로 할게요.");
   expect(id("roleplay-mission-success-card")).toHaveTextContent("Mission success!");
   expect(id("roleplay-mission-turns-left")).toHaveTextContent("7 turns left · Mission success");

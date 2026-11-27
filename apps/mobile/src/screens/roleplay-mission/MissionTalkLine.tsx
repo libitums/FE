@@ -11,8 +11,8 @@ import {
 import { useUiCopy } from "../../lib/ui-copy";
 import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { UnsentMessage } from "../messenger-chat/ChatDelivery";
-import { CorrectionCard } from "../messenger-chat/CorrectionCard";
 import { missionTestIds as ids } from "./mission-test-ids";
+import { MissionFeedbackCard } from "./MissionFeedbackCard";
 import type { MissionPlayback } from "./mission-voice.contract";
 import type { MissionInputMode, MissionLine } from "./roleplay-mission.contract";
 
@@ -32,7 +32,7 @@ const isAction = (ko: string): boolean => ko.startsWith("*") && ko.endsWith("*")
 
 /**
  * 대화 줄 하나 — 상대역 말풍선(+ 다시 듣기) 또는 내 글(+ 교정 카드). 교정은 둘로 갈립니다(ADR-0177): 고치기(`correction` ·
- * `l1_to_ko`)는 메신저 연필 카드 그대로, 더 나은 표현(`better`)은 같은 카드를 다른 바탕 · 점선 테두리로 감쌉니다.
+ * `l1_to_ko`)와 더 나은 표현(`better`) — 대본형 롤플레이의 판정 패널과 같은 말의 카드(`MissionFeedbackCard`)입니다.
  */
 export function MissionTalkLine({
   line,
@@ -77,10 +77,6 @@ export function MissionTalkLine({
       </ChatIncomingRow>
     );
   }
-  const card =
-    line.correction === null ? null : (
-      <CorrectionCard correction={line.correction} onResend={null} />
-    );
   return (
     <ChatOutgoingRow testId={ids.line(line.id)}>
       <view className="mission-talk-mine">
@@ -98,12 +94,8 @@ export function MissionTalkLine({
             translation={null}
           />
         )}
-        {line.correction?.kind === "better" ? (
-          <view className="mission-better" data-testid={ids.betterCard}>
-            {card}
-          </view>
-        ) : (
-          card
+        {line.correction === null ? null : (
+          <MissionFeedbackCard original={line.ko} correction={line.correction} />
         )}
       </view>
     </ChatOutgoingRow>

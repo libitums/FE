@@ -19,7 +19,6 @@ export const missionExtraId: MissionExtraCopy = {
     transcribing: "Menuliskan ucapanmu…",
     heardCheck: "Apakah aku mendengarnya dengan benar?",
     heardNotKorean: "Itu tidak terdengar seperti bahasa Korea. Coba lagi?",
-    sayAgain: "Ucapkan lagi",
     tooShort: "Bicara sedikit lebih lama lalu coba lagi.",
     notHeard: "Kami tidak bisa mendengarmu. Coba lagi atau ketik.",
     busy: "Terlalu banyak permintaan saat ini. Coba lagi sebentar lagi.",
@@ -27,7 +26,6 @@ export const missionExtraId: MissionExtraCopy = {
     micDenied: "Izinkan akses mikrofon di Pengaturan untuk berbicara.",
     maxLength: "Rekaman berhenti setelah 30 detik.",
     replay: "Putar lagi",
-    hintListen: "Dengarkan",
     autoPlay: "Putar otomatis",
   },
   report: {
@@ -61,7 +59,6 @@ export const missionExtraVi: MissionExtraCopy = {
     transcribing: "Đang chuyển thành chữ…",
     heardCheck: "Mình nghe đúng chưa?",
     heardNotKorean: "Nghe không giống tiếng Hàn. Thử lại nhé?",
-    sayAgain: "Nói lại",
     tooShort: "Hãy nói lâu hơn một chút rồi thử lại.",
     notHeard: "Chúng tôi không nghe thấy bạn. Hãy thử lại hoặc gõ chữ.",
     busy: "Hiện có quá nhiều yêu cầu. Hãy thử lại sau giây lát.",
@@ -69,7 +66,6 @@ export const missionExtraVi: MissionExtraCopy = {
     micDenied: "Hãy cho phép truy cập micrô trong Cài đặt để nói.",
     maxLength: "Ghi âm sẽ dừng sau 30 giây.",
     replay: "Nghe lại",
-    hintListen: "Nghe",
     autoPlay: "Tự động phát",
   },
   report: {
@@ -103,7 +99,6 @@ export const missionExtraTh: MissionExtraCopy = {
     transcribing: "กำลังถอดเป็นข้อความ…",
     heardCheck: "ฟังถูกไหม?",
     heardNotKorean: "ฟังไม่เหมือนภาษาเกาหลี ลองอีกครั้งไหม?",
-    sayAgain: "พูดอีกครั้ง",
     tooShort: "พูดให้นานขึ้นอีกนิดแล้วลองใหม่",
     notHeard: "เราไม่ได้ยินเสียงของคุณ ลองอีกครั้งหรือพิมพ์แทน",
     busy: "ตอนนี้มีคำขอมากเกินไป ลองใหม่อีกสักครู่",
@@ -111,7 +106,6 @@ export const missionExtraTh: MissionExtraCopy = {
     micDenied: "อนุญาตการเข้าถึงไมโครโฟนในการตั้งค่าเพื่อพูด",
     maxLength: "การบันทึกจะหยุดหลัง 30 วินาที",
     replay: "ฟังอีกครั้ง",
-    hintListen: "ฟัง",
     autoPlay: "เล่นอัตโนมัติ",
   },
   report: {
@@ -145,7 +139,6 @@ export const missionExtraMy: MissionExtraCopy = {
     transcribing: "စာအဖြစ် ပြောင်းနေသည်…",
     heardCheck: "မှန်မှန် ကြားခဲ့လား?",
     heardNotKorean: "ကိုရီးယားစကားလို မကြားရပါ။ ထပ်ကြိုးစားမလား?",
-    sayAgain: "ထပ်ပြောရန်",
     tooShort: "နည်းနည်း ပိုကြာကြာ ပြောပြီး ထပ်ကြိုးစားပါ။",
     notHeard: "အသံ မကြားရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် စာရိုက်ပါ။",
     busy: "ယခု တောင်းဆိုမှု များနေပါသည်။ ခဏနေမှ ထပ်ကြိုးစားပါ။",
@@ -153,7 +146,6 @@ export const missionExtraMy: MissionExtraCopy = {
     micDenied: "စကားပြောရန် ဆက်တင်များတွင် မိုက်ခရိုဖုန်းကို ခွင့်ပြုပါ။",
     maxLength: "အသံဖမ်းခြင်းသည် စက္ကန့် 30 ပြည့်လျှင် ရပ်ပါမယ်။",
     replay: "ထပ်နားထောင်ရန်",
-    hintListen: "နားထောင်ရန်",
     autoPlay: "အလိုအလျောက်ဖွင့်",
   },
   report: {

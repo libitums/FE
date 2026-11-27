@@ -1,5 +1,6 @@
 // 미션 화면 셋의 test id입니다. 스펙(`docs/specs/roleplay-mission-screens.md` §5)과 같은 목록입니다.
-// 교정 카드 · 보내지 못한 글 · 입력 중 줄은 메신저 부품을 그대로 써서 그쪽 id(`messenger-chat-…`)가 붙습니다.
+// 보내지 못한 글 · 입력 중 줄은 메신저 부품을 그대로 써서 그쪽 id(`messenger-chat-…`)가 붙습니다. 마이크 권한 시트는 main의
+// 공용 시트라 그쪽 id(`mic-permission-sheet` · 단추 `ui-lynx-bottom-sheet-action-allow` · `-not-now` · `-settings` · `-continue`)입니다.
 
 const id = (suffix: string): string => `roleplay-mission-${suffix}`;
 
@@ -23,6 +24,7 @@ export const missionTestIds = {
   typing: id("typing"),
   status: id("status"),
   hintCard: id("hint-card"),
+  hintAnswer: id("hint-answer"),
   hintUse: id("hint-use"),
   hintClose: id("hint-close"),
   hintListen: id("hint-listen"),
@@ -33,7 +35,8 @@ export const missionTestIds = {
   finishButton: id("finish-button"),
   replay: (lineId: string): string => id(`replay-${lineId}`),
   heardCheck: id("heard-check"),
-  sayAgain: id("say-again"),
+  /** 고치기(correction · l1_to_ko) 카드 · 더 나은 표현(better) 카드 — 그 안 정답 상자는 `-answer`가 붙습니다. */
+  fixCard: id("fix-card"),
   betterCard: id("better-card"),
   composer: id("composer"),
   composerNote: id("composer-note"),

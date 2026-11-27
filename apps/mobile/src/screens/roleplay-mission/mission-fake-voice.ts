@@ -6,8 +6,8 @@ import type { MissionAudioClip, MissionAudioDevice } from "./mission-voice.contr
 export type FakeAudioOptions = {
   /** 녹음 시작의 결과 — 권한 거부 · 모듈 없음 가지. */
   readonly mic?: "ok" | "denied" | "unavailable";
-  /** 멈춘 녹음의 길이(초). 0.4 미만이면 화면이 「짧음」으로 버립니다. */
-  readonly seconds?: number;
+  /** 멈춘 녹음의 길이(초). 0.4 미만이면 화면이 「짧음」으로 버립니다. `elapsed`면 실제로 녹음한 시간(개발 미리보기). */
+  readonly seconds?: number | "elapsed";
   /** 재생 — 모듈 없음 가지. */
   readonly playback?: "ok" | "unavailable";
   readonly schedule?: (task: () => void) => void;
@@ -35,6 +35,7 @@ export function createFakeAudioDevice(options: FakeAudioOptions = {}): FakeAudio
   let stops = 0;
   let playToken = 0;
   let onLimit: (() => void) | null = null;
+  let startedAt = 0;
   return {
     played,
     stops: () => stops,
@@ -44,6 +45,7 @@ export function createFakeAudioDevice(options: FakeAudioOptions = {}): FakeAudio
       const mic = options.mic ?? "ok";
       if (mic !== "ok") return Promise.resolve(mic);
       recording = true;
+      startedAt = Date.now();
       onLimit = listener.onLimit;
       schedule(() => {
         if (recording) listener.onTick(1, 0.5);
@@ -57,7 +59,10 @@ export function createFakeAudioDevice(options: FakeAudioOptions = {}): FakeAudio
       clips += 1;
       const clip: MissionAudioClip = {
         uri: `fake://clip-${String(clips)}.wav`,
-        seconds: options.seconds ?? 1.6,
+        seconds:
+          options.seconds === "elapsed"
+            ? (Date.now() - startedAt) / 1000
+            : (options.seconds ?? 1.6),
       };
       return Promise.resolve(clip);
     },

@@ -67,14 +67,17 @@ test("MV-UI1 확신이 낮으면 받아 적은 글을 입력 칸에 넣고 확�
   await speakOnce();
   expect(onSend).not.toHaveBeenCalled();
   expect(id("roleplay-mission-heard-check")).toHaveTextContent("Did I hear that right?");
-  expect(id("roleplay-mission-say-again")).toHaveTextContent("Say it again");
+  // 마이크 하나가 다시 말하기를 맡습니다(ADR-0206 D5 개정) — 따로 된 「Say it again」 글 단추가 없습니다.
+  expect(maybe("roleplay-mission-say-again")).not.toBeInTheDocument();
+  expect(id("roleplay-mission-mic")).toHaveAttribute("accessibility-label", "Try again");
+  expect(id("roleplay-mission-mic")).toHaveAttribute("data-mode", "tryAgain");
   expect(id("roleplay-mission-send")).toHaveAttribute("data-enabled", "true");
   fireEvent.tap(id("roleplay-mission-send"), {});
   expect(onSend).toHaveBeenCalledWith("가지고 가요.", "voice");
   expect(maybe("roleplay-mission-heard-check")).not.toBeInTheDocument();
 });
 
-test("MV-UI2 한국어로 들리지 않으면 다른 안내 — 다시 말하기는 녹음을 다시 연다", async () => {
+test("MV-UI2 한국어로 들리지 않으면 다른 안내 — 마이크(Try again)를 누르면 녹음을 다시 연다", async () => {
   const voice = voicePorts({
     source: {
       heard: [fakeHeard("I will pay by card", false, "not_korean")],
@@ -85,9 +88,10 @@ test("MV-UI2 한국어로 들리지 않으면 다른 안내 — 다시 말하기
   expect(id("roleplay-mission-heard-check")).toHaveTextContent(
     "That didn't sound like Korean. Try again?",
   );
-  fireEvent.tap(id("roleplay-mission-say-again"), {});
+  fireEvent.tap(id("roleplay-mission-mic"), {});
   await settle();
   expect(id("roleplay-mission-mic")).toHaveAttribute("data-listening", "true");
+  expect(id("roleplay-mission-mic")).toHaveAttribute("accessibility-label", "Stop");
   expect(maybe("roleplay-mission-heard-check")).not.toBeInTheDocument();
 });
 
@@ -206,9 +210,10 @@ test("MV-UI7 힌트 예문 듣기 — 힌트 번호로 합성해 재생한다, �
     voice,
   );
   await settle();
-  fireEvent.tap(id("roleplay-mission-hint-listen"), {});
+  tapButton("roleplay-mission-hint-listen");
   await settle();
-  expect(id("roleplay-mission-hint-listen")).toHaveTextContent("Listen");
+  // 대본형 Hint 단계와 같은 단추 · 같은 문구(`roleplayStory.hearIt`).
+  expect(id("roleplay-mission-hint-listen")).toHaveTextContent("Hear it");
   expect(voice.device.played.at(-1)).toBe("fake://tts/hint-1");
   expect(id("roleplay-mission-hint-listen")).toHaveAttribute("data-play", "true");
   tapButton("roleplay-mission-hint-close");

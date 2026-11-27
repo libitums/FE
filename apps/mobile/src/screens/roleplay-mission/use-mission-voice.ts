@@ -1,8 +1,9 @@
 // 미션 음성의 결선입니다(파이프라인 문서 §6.1) — 마이크는 눌러 시작 · 눌러 끝, 받아 적기는 서버(`transcribe`), 받아 적은 글은
-// 서버 판단(`autoSend`)으로 바로 보내거나 입력 칸에서 확인. 상대역 말은 서버 합성(`speak`) → 기기 재생, 자동 재생은 자리마다 한 번,
-// 마이크를 누르면 재생을 멈춥니다(끊고 말하기). 화면이 떠 있는 동안에만 결과를 올리고, 떠나면 녹음을 버리고 재생을 멈춥니다.
+// 서버 판단(`autoSend`)으로 바로 보내거나 입력 칸에서 확인. 상대역 말은 서버 합성(`speak`) → 기기 재생, 자동 재생은 자리마다 한 번.
+// 한 번에 한 목소리(대본형 롤플레이와 같은 원칙, ADR-0201 D6 적용 2 개정): 새 재생은 앞 재생을 멈추고, 녹음 중에는 재생하지 않으며,
+// 마이크를 누르면 재생을 멈춥니다(끊고 말하기). 앱이 뒤로 가거나 화면을 떠나면 녹음을 버리고 재생을 멈춥니다.
 
-import { useEffect, useReducer, useRef } from "@lynx-js/react";
+import { useEffect, useLynxGlobalEventListener, useReducer, useRef } from "@lynx-js/react";
 
 import {
   initialMissionVoice,
@@ -15,6 +16,7 @@ import type {
   MissionAudioClip,
   MissionSpeakRequest,
   MissionVoiceAction,
+  MissionVoiceNotice,
   MissionVoiceState,
 } from "./mission-voice.contract";
 import type { MissionVoicePorts } from "./roleplay-mission.contract";
@@ -34,11 +36,17 @@ export type MissionVoiceControl = {
   readonly autoPlay: (key: string, request: MissionSpeakRequest) => void;
   readonly stopPlayback: () => void;
   readonly clearCheck: () => void;
+  /** 녹음을 시작하지 않고 안내만 세웁니다 — 권한이 거부된 채 마이크를 눌렀을 때(`micDenied`). */
+  readonly refuse: (notice: MissionVoiceNotice) => void;
 };
 
+/**
+ * @param onDenied 녹음 시작이 권한 거부로 막혔을 때 — 화면이 거부 시트(ADR-0206 D2)를 띄웁니다.
+ */
 export function useMissionVoice(
   ports: MissionVoicePorts,
   conversationId: string | null,
+  onDenied?: () => void,
 ): MissionVoiceControl {
   const [state, dispatch] = useReducer(missionVoiceReducer, initialMissionVoice);
   const mounted = useRef(true);
@@ -47,8 +55,8 @@ export function useMissionVoice(
   const spoken = useRef(new Set<string>());
   const onHeard = useRef<((decision: HeardDecision) => void) | null>(null);
   const recording = useRef(false);
-  const live = useRef({ ports, conversationId });
-  live.current = { ports, conversationId };
+  const live = useRef({ ports, conversationId, onDenied });
+  live.current = { ports, conversationId, onDenied };
 
   useEffect(() => {
     mounted.current = true;
@@ -65,11 +73,23 @@ export function useMissionVoice(
     if (mounted.current) dispatch(action);
   };
 
+  // 앱이 뒤로 가면 녹음을 버리고 재생을 멈춥니다 — 돌아와서 다시 누르면 됩니다(대본형 롤플레이와 같은 규칙).
+  useLynxGlobalEventListener("appDidEnterBackground", () => {
+    "background only";
+    attempt.current += 1;
+    playToken.current += 1;
+    if (recording.current) live.current.ports.device.cancelRecording();
+    recording.current = false;
+    live.current.ports.device.stopPlayback();
+    safe({ type: "record-cancelled" });
+    safe({ type: "play-stopped" });
+  });
+
   const transcribe = (mine: number, clip: MissionAudioClip | null) => {
     const { ports: current, conversationId: id } = live.current;
     if (attempt.current !== mine) return;
     if (clip === null || id === null) {
-      safe({ type: "record-failed", notice: "unavailable" });
+      safe({ type: "record-failed", notice: "failed" });
       return;
     }
     if (clip.seconds < MISSION_MIN_RECORD_SECONDS) {
@@ -104,7 +124,7 @@ export function useMissionVoice(
     live.current.ports.device.stopRecording().then(
       (clip) => transcribe(mine, clip),
       () => {
-        if (attempt.current === mine) safe({ type: "record-failed", notice: "unavailable" });
+        if (attempt.current === mine) safe({ type: "record-failed", notice: "failed" });
       },
     );
   };
@@ -172,11 +192,12 @@ export function useMissionVoice(
               type: "record-failed",
               notice: result === "denied" ? "micDenied" : "unavailable",
             });
+            if (result === "denied") live.current.onDenied?.();
           },
           () => {
             if (attempt.current !== mine) return;
             recording.current = false;
-            safe({ type: "record-failed", notice: "unavailable" });
+            safe({ type: "record-failed", notice: "failed" });
           },
         );
     },
@@ -204,6 +225,10 @@ export function useMissionVoice(
     clearCheck: () => {
       "background only";
       safe({ type: "check-cleared" });
+    },
+    refuse: (notice) => {
+      "background only";
+      safe({ type: "record-failed", notice });
     },
   };
 }

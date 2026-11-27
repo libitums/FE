@@ -16,7 +16,7 @@ import {
 const appDir = __dirname;
 const srcDir = join(appDir, "..");
 const FAKE_MODULES =
-  /from "[^"]*\/(mission-fake-source|mission-fake-voice|mission-fake-rules|mission-fake-turn|mission-fixture)"/;
+  /from "[^"]*\/(mission-fake-source|mission-fake-voice|mission-fake-rules|mission-fake-turn|mission-fake-scripts|mission-fixture)"/;
 
 function productFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

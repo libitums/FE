@@ -3,11 +3,13 @@
 
 import { fakeFixOf, fakeReplyOf, goalsReachedBy } from "./mission-fake-rules";
 import type { FakeCorrection } from "./mission-fake-rules";
-import { missionStartFixture } from "./mission-fixture";
+import type { FakeMissionScript } from "./mission-fake-scripts";
 import type { MissionEndReason } from "./roleplay-mission.contract";
 
 export type FakePlay = {
   readonly id: string;
+  /** 이 판이 돌리는 미션 대본. */
+  readonly script: FakeMissionScript;
   readonly done: Map<string, string>;
   readonly utterances: string[];
   readonly corrections: FakeCorrection[];
@@ -22,10 +24,8 @@ export type FakePlay = {
 
 export type FakeTurnEvent = readonly [string, unknown];
 
-const goalOrder = missionStartFixture.goals;
-
 export const requiredDoneOf = (play: FakePlay): boolean =>
-  goalOrder.every((goal) => !goal.required || play.done.has(goal.id));
+  play.script.start.goals.every((goal) => !goal.required || play.done.has(goal.id));
 
 export const messageIdOf = (play: FakePlay, turn: number, who: "u" | "a"): string =>
   `${play.id.slice(0, 24)}${(turn * 2 + (who === "u" ? 0 : 1)).toString(16).padStart(12, "0")}`;
@@ -35,7 +35,8 @@ export function fakeTurn(play: FakePlay, text: string, balance: number | null): 
   play.turnsLeft -= 1;
   play.utterances.push(text);
   const turn = play.utterances.length;
-  const reached = goalsReachedBy(text).filter((id) => !play.done.has(id));
+  const goalOrder = play.script.start.goals;
+  const reached = goalsReachedBy(play.script, text).filter((id) => !play.done.has(id));
   for (const id of reached) play.done.set(id, text);
   const allDone = goalOrder.every((goal) => play.done.has(goal.id));
   const ended: MissionEndReason | null = allDone
@@ -47,10 +48,10 @@ export function fakeTurn(play: FakePlay, text: string, balance: number | null): 
     play.ended = ended;
     play.closed = true;
   }
-  const reply = fakeReplyOf(reached, ended);
+  const reply = fakeReplyOf(play.script, reached, ended);
   const userMessageId = messageIdOf(play, turn, "u");
   const assistantMessageId = messageIdOf(play, turn, "a");
-  const fix = fakeFixOf(text);
+  const fix = fakeFixOf(play.script, text);
   const corrected = fix === null ? null : text.replace(fix.from, fix.to);
   if (fix !== null && corrected !== null) {
     play.corrections.push({

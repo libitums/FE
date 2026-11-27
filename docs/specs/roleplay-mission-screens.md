@@ -58,14 +58,14 @@ preview ─start-requested→ starting ─started→ talking ─send→ awaiting
 
 ## 5. 화면 · test id
 
-test id 정본은 `screens/roleplay-mission/mission-test-ids.ts`(접두 `roleplay-mission-`). 메신저 부품을 그대로 쓴 곳은 그쪽 id가 붙는다 — 교정 카드 `messenger-chat-fix-card`, 보내지 못한 글 `messenger-chat-unsent` · `messenger-chat-unsent-retry`.
+test id 정본은 `screens/roleplay-mission/mission-test-ids.ts`(접두 `roleplay-mission-`). 메신저 부품을 그대로 쓴 곳은 그쪽 id가 붙는다 — 보내지 못한 글 `messenger-chat-unsent` · `messenger-chat-unsent-retry`. 교정 카드는 §12부터 미션 부품(`-fix-card` · `-better-card`), 마이크 권한 시트는 공용(`mic-permission-sheet`).
 
 | 화면 | 구성 | 주요 test id |
 |---|---|---|
 | 목록 항목 | 대본형 카드와 같은 `RoleplayCard`. 둘째 줄 `Mission · 4 goals · Best 73`(기록이 없으면 끝 생략). 잠김은 구획이 집니다(그 에피소드를 끝내면 열림) | `roleplay-list-item-mission-<missionId>` · `-form-` · `-lock-` |
 | 미리보기 | 롤플레이 미리보기의 틀(장면 · 머리 · 알약 · 다이얼로그 · 주 버튼) + 목표 판 · 값 줄 · 거절 안내. 목표 판만 스크롤해 시작 버튼은 늘 화면 안 | `-preview` · `-preview-back` · `-preview-title` · `-preview-chips` · `-preview-goals` · `-preview-price` · `-preview-error`(`data-code`) · `-preview-start` |
 | 대화 위 띠 | 장면 그림(그늘 아래) · 그만두기 · 제목 · 남은 턴 · 목표 체크리스트(필수/선택 알약, 큰 글자에서는 스크롤) | `-talk`(`data-phase`) · `-talk-quit` · `-talk-title` · `-turns-left` · `-goal-<id>`(`data-done`, 낭독 「글, required/optional, done/not done」) |
-| 대화 가운데 | `ChatLog` · `ChatIncomingRow` · `ChatTextBubble` · `ChatTypingRow` · `CorrectionCard` · `UnsentMessage`. 받는 중인 말풍선은 흐르는 대로. 끝 · 채점 중 줄 | `-log` · `-line-<id>` · `-typing` · `-status` |
+| 대화 가운데 | `ChatLog` · `ChatIncomingRow` · `ChatTextBubble` · `ChatTypingRow` · `MissionFeedbackCard`(§12) · `UnsentMessage`. 받는 중인 말풍선은 흐르는 대로. 끝 · 채점 중 줄 | `-log` · `-line-<id>` · `-typing` · `-status` |
 | 힌트 카드 | 한국어 · 로마자 · 뜻 · 감점 안내, `Use this`(입력 칸을 채움) · `Close hint` | `-hint-card` · `-hint-use` · `-hint-close` |
 | 입력 줄 | 위: 힌트 단추(`Hint · n left`) · 안내(듣는 중 · 말하기 불가). 아래: 마이크 · 글 칸 · 보내기. 마이크가 받아 적은 글은 그대로 보낸다(`input_mode: voice`) | `-composer` · `-hint-button`(`data-enabled`) · `-composer-note` · `-mic`(`data-listening`) · `-input` · `-send`(`data-enabled`) |
 | 그만두기 확인 | ui-lynx `Dialog` — `Quit` · `Keep going`. 리포트 없이 목록으로, 값은 돌려주지 않는다(PRD §3.6) | `-quit-dialog` · `ui-lynx-dialog-action-quit` · `-cancel` |
@@ -128,9 +128,9 @@ PRD §9 M10이 FE에 맡긴 것. 스위치 뒤 초안이라 **결선하지 않�
 - **계속하기 / 끝내기** — `mission` 이벤트의 `requiredDone`이 참이고 `ended`가 null이면 「Mission success!」 카드(Keep going / Finish, 한 판에 한 번 — `successPrompt`), 카드를 닫으면 입력 줄 위 힌트 옆에 Finish 글 단추, 위 띠의 남은 턴 뒤에 「· Mission success」. 끝내기 = 국면 `ended` · 끝 이유 `finish` → 결선이 `mission-finish`(`abandon` 없이).
 - **성공 뒤 그만두기 = 끝내기** — 대화상자 문구가 「Finish this mission?」으로 바뀌고 확인하면 채점 → 리포트. 필수 전이면 지금처럼 리포트 없이 나감.
 - **채점 대기 판** — 목록의 `pendingReports`에 이 미션의 판이 있으면 route를 열 때 미리보기 대신 곧장 `mission-finish` → 채점 중 → 리포트(`pending-opened`). 목록 카드의 「Report ready」 표시는 미션 쪽 부품까지 만들었다 — 규칙 `mission-report-ready.ts`(`missionReportBadgeOf`), 부품 `MissionReportReadyBadge.tsx`(준비됨 · 채점 중). 롤플레이 목록 화면(`screens/roleplay-list/`)은 다른 화면이라 붙이지 않았다 — 붙일 자리: `MissionRoleplayItem`에 표시 칸, `app/roleplay-sections.ts`의 `withMissionItems`에서 채움, `RoleplayCard.tsx`의 둘째 줄 아래에 부품, 카드 접근성 이름에 `missionReportBadgeText` 덧붙임. 개발 미리보기의 가짜 출처는 대기 판 하나를 둔다.
-- **교정 카드 둘** — 고치기(`correction` · `l1_to_ko`)는 메신저 연필 카드 그대로, 더 나은 표현(`better`)은 같은 카드를 `.mission-better`로 감싸 다른 바탕 · 점선 테두리 · 흐린 제목.
+- **교정 카드 둘** — 고치기(`correction` · `l1_to_ko`)는 메신저 연필 카드 그대로, 더 나은 표현(`better`)은 같은 카드를 `.mission-better`로 감싸 다른 바탕 · 점선 테두리 · 흐린 제목. → §12에서 대본형 판정 패널 모양의 미션 카드로 바뀜.
 - **리포트 순서** — 히어로(+ 결과 한 줄) → 목표 → You could have said → 목표 표현 → 정확도 · 힌트 → How your score adds up → What went well → Key corrections → Sounds more natural → 고친 문장(고치기 중 Key corrections에 없는 것) → 다시 해 볼 표현 → 총평 → Next challenge. (선택) 칸이 없으면(옛 결과 행) 그 구역을 그리지 않는다(`MissionReportExtras.tsx`).
-- **음성** — 기기 음성 인식(`useSpeechAttempt`)을 쓰지 않는다. 포트 둘: 기기 `MissionAudioDevice`(녹음 16kHz WAV · 30초 상한 · 레벨, 주소 재생 · 멈춤 — **호스트 모듈 자리, 지금은 가짜** `mission-fake-voice.ts`)와 서버 `MissionSource.transcribe` · `speak`(제안 엔드포인트 `mission-stt` · `mission-tts`). 마이크는 눌러 시작 · 눌러 끝, 0.4초 미만은 버림, 받아 적은 글은 서버 `autoSend`가 참이면 바로 보내고 아니면 입력 칸 + 「Did I hear that right?」(한국어가 아니면 다른 안내) · 「Say it again」. 상대역 말(진입 대사 포함)은 새 메시지마다 한 번 자동 재생, 말풍선마다 다시 듣기, 마이크를 누르면 재생을 멈춤, 힌트 카드에 예문 듣기. 판이 끝나거나 그만두기 확인을 띄우면 녹음을 버린다. 순수 규칙 `mission-voice.ts`, 결선 `use-mission-voice.ts`.
+- **음성** — 기기 음성 인식(`useSpeechAttempt`)을 쓰지 않는다. 포트 둘: 기기 `MissionAudioDevice`(녹음 16kHz WAV · 30초 상한 · 레벨, 주소 재생 · 멈춤 — **호스트 모듈 자리, 지금은 가짜** `mission-fake-voice.ts`)와 서버 `MissionSource.transcribe` · `speak`(제안 엔드포인트 `mission-stt` · `mission-tts`). 마이크는 눌러 시작 · 눌러 끝, 0.4초 미만은 버림, 받아 적은 글은 서버 `autoSend`가 참이면 바로 보내고 아니면 입력 칸 + 「Did I hear that right?」(한국어가 아니면 다른 안내) · 「Say it again」. 상대역 말(진입 대사 포함)은 새 메시지마다 한 번 자동 재생, 말풍선마다 다시 듣기, 마이크를 누르면 재생을 멈춤, 힌트 카드에 예문 듣기. 판이 끝나거나 그만두기 확인을 띄우면 녹음을 버린다. 순수 규칙 `mission-voice.ts`, 결선 `use-mission-voice.ts`. → §12에서 「Say it again」을 걷고 마이크 하나 · 공용 권한 시트로 바뀜.
 - **문구** — 새 칸은 `RoleplayMissionCopy.extra`(`ui-copy-roleplay-mission-extra*.ts`). 영어는 문서의 확정 문구(`voice.transcribing` 「Transcribing…」만 새로 씀), es · ja · id · vi · th · my는 번역 초안(원어민 검수 필요). 합치며 비어 있던 th · my의 미션 문구 전체도 초안으로 채웠다.
 - **아직 없음** — 실제 녹음 · 재생 호스트 모듈과 서버 출처 · 음성 엔드포인트, 앱이 백그라운드로 갈 때 재생 멈춤(호스트 이벤트 없음), 자동 재생 끄기 설정, 첫 말 조각에서 합성 시작(지금은 턴이 닫힐 때 — 서버가 답을 한꺼번에 보내 차이가 작다).
 
@@ -148,4 +148,45 @@ PRD §9 M10이 FE에 맡긴 것. 스위치 뒤 초안이라 **결선하지 않�
 - **리포트 `focus`**는 서버가 고치기만 담는다 — 앱은 그대로 그린다(fixture도 계약과 같게).
 - **번들**: 스위치가 꺼진 release에서는 미션 코드가 번들에 없다 — `__ROLEPLAY_MISSION_IN_BUNDLE__`(`lynx.config.ts` `defineDCE`, dev이거나 스위치가 켜졌을 때 true)와 입구 둘(`app/roleplay-mission-entry.ts` · `roleplay-mission-list-entry.ts`, 부수 효과 없음 표시). 미션 문구는 문구표(`UiCopy`)에 두지 않고 `useMissionCopy()`(`lib/ui-copy-roleplay-mission-tables.ts`)로 고른다 — 목록 카드 낱말까지. 늘 번들에 드는 파일이 미션 모듈을 직접 import하면 가지치기가 깨진다(`roleplay-mission-entry.unit.test.ts` ME-S1). [성능 기록 04](../performance/reports/roleplay-mission-draft-04.md).
 - **대만 중국어(zh-TW)** 미션 문구 초안을 더했다(원어민 검수 필요).
+
+## 12. v4 — 대본형 롤플레이 화면과 맞춤(main #646 · #649 · #687 · #690 · #693)
+
+같은 앱 안에 「말로 하는 롤플레이」가 두 종류(대본형 · 미션)가 되므로, **권한 · 단추 · 문구 · 모양 계층은 같게, 그 아래(자유 입력 · 서버 음성 · 목표 · 리포트)만 다르게** 했다.
+대본형의 결정: [ADR-0206](../adr/0206-mic-permission-flow.md)(D1 · D2 · D5 개정 ⟨마이크 하나⟩), [ADR-0201](../adr/0201-spoken-answer-pronunciation-judge.md) D6 적용 2와 개정 둘(⟨한 번에 한 목소리⟩ · ⟨close — 모범 정답⟩).
+main의 대본형 화면 코드는 고치지 않았다 — 가져다 쓰기만 한다.
+
+| 축 | 대본형(main) | 미션 | 분류 · 까닭 |
+|---|---|---|---|
+| 마이크 권한 | 사전 안내 → 시스템 창 → 거부 시트(Open Settings · 앱이 돌아오면 다시 확인) | 같은 훅 · 시트(`useMicPermission` · `MicPermissionSheet`, surface `roleplay`) | 공통 |
+| 사전 안내가 서는 때 | 미리보기 Start | **처음 마이크를 누를 때** | 차이 — 미션은 글로도 하고, Start는 값을 받는 단추라 그 앞에 시트를 끼우지 않음 |
+| 거부 뒤 Continue without speaking | 시트만 닫음(턴마다 Can't speak now), 다시 띄우지 않음 | 시트만 닫음(글 입력), 다시 띄우지 않음, 누르면 안내 「Allow microphone access in Settings to speak.」 | 공통(아래만 다름) |
+| 마이크 단추 | 하나가 Speak · Stop · Try again | 같은 셋 · 같은 문구 키(`roleplayStory.speak` · `stop`, `speaking.tryAgain`). 「Say it again」 글 단추를 걷음 | 공통 |
+| 마이크 모양 | 88pt `SpeechMic`(음량 막대 · 남은 시간 링, 8초 상한) | 입력 줄의 48 마이크 — 같은 주색 면 · 흰 아이콘 · 옅은 주색 고리(녹음 중 진하게) | 차이 — 입력 줄 안에 큰 마이크가 들어가지 않고, 녹음 상한이 30초(서버) |
+| 듣는 중 표시 | 「Listening…」(`speaking.listening`) | 같은 문구 + 녹음 시간(「Listening… 0:07」) | 공통 + 시간 |
+| 인식 실패(기기) | 「Something went wrong while listening. Try again.」 + 마이크 Try again | 같은 문구(`micPermission.listenFailed`) + 마이크 Try again(새 안내 `failed`) | 공통 |
+| 못 알아들음 | 「I didn't catch that. Tap the mic and try again.」 | 「We couldn't hear you. Try again or type.」 + 마이크 Try again | 차이 — 글 대안이 있고, 파이프라인 문서 §6.5의 확정 문구 |
+| 서버 받아 적기 갈래(붐빔 · 무응답 · 짧음 · 30초 · 장치 없음) | 없음 | 미션 문구 그대로, 장치 없음은 마이크를 끔 | 차이 — 서버 STT |
+| 받아 적은 글 확인 | 없음(판정) | 입력 칸 + 「Did I hear that right?」 · 한국어 아님 안내, 다시 말하기는 마이크 | 차이 — 자유 입력 |
+| 한 번에 한 목소리 | 새 소리는 앞 소리를 멈춤, 마이크 · 나가기가 소리를 멈춤, 앱이 뒤로 가면 멈춤 | 같은 규칙 + 녹음 중에는 재생하지 않음, 앱이 뒤로 가면 녹음도 버림 | 공통 |
+| 자동 넘김 | 맞힌 뒤 내 문장 소리가 끝나야 다음 턴 | 없음 — 상대역 새 말 자동 재생(위 띠 스위치로 끔) | 차이 — 턴이 대본이 아님 |
+| 아래 패널 면 | 흰 패널(`radius-xl` · 안쪽 16) | 힌트 · 성공 · 교정 카드가 같은 면 + 옅은 회색 테 | 공통(테는 미션 바탕도 흰 면이라) |
+| Hint 단계 | Hint → Hear it · Show Korean | Hint → 카드: 「Try saying」 머리표 · 정답 상자(한국어 · 로마자 · 뜻) · 감점 안내 · Hear it · Use this / Close hint | 모양 공통, 내용 차이 — 감점 · 입력 칸 채우기 |
+| 정답 상자 | `RoleplayAnswerBox`(중립 흰 면 · 회색 테 · 바뀐 낱말 주황 밑줄) | 같은 부품 | 공통 |
+| 판정 머리 | ✓ Great · ✕ Not quite | 고치기 ✕ FIX / IN KOREAN(빨간 제목), 더 나은 표현 ✓ MORE NATURAL(초록 제목 · 점선 상자), 성공 ✓ Mission success! | 모양 공통, 제목 낱말 차이 — 대화가 이어지는 교정이라 판정 말이 아니고, 제목은 파이프라인 문서 §10.3 1의 결정 |
+| 오답 · close 화면의 주인공 | 모범 문장(크게) · 「You said」 작게 | 고친 문장(크게, 바뀐 낱말 밑줄) · 고친 곳 한 줄 | 공통 + 차이 — 내 말풍선이 바로 위에 있어 「You said」를 두지 않음 |
+| Next · Try again(판정 뒤) | 있음(close는 Next를 기다림) | 없음 | 차이 — 대화가 이어짐, 다시 말하기는 마이크 |
+| 정답 상자의 소리 단추 | 있음 | 교정 카드에는 없음, 힌트는 Hear it 단추 | 차이 — 서버는 앱이 보낸 글을 합성하지 않음(힌트는 `hint_no`) |
+| 입력 · 목표 · 끝내기 · 리포트 · 음성 엔진 | 말만 · 대본 턴 · 기기 인식 · 번들 소리 | 글과 말 · 목표 띠 · 계속하기/끝내기 · 리포트 · 서버 STT/TTS | 차이 — 미션의 본질 |
+
+- **가져다 쓴 것(복사 없음)**: `components/mic-permission/use-mic-permission.ts`(`useMicPermission`) · `MicPermissionSheet.tsx` · `lib/mic-permission.ts`(`micGateOf` · `micPrimerSeenKey`) ·
+  `lib/speech-recognition.ts`(`getSpeechStatus`) · `screens/roleplay-story/RoleplayAnswerBox.tsx`(`RoleplayAnswerBox`) · `roleplay-story-screen.css`의 패널 · 결과 머리 · 정답 상자 · Hint 줄 클래스 ·
+  `lib/syllable-diff.ts`(`wordDiff`) · `lib/korean-romanize.ts`(`romanizeKorean`) · 문구 `micPermission.*` · `roleplayStory.speak` · `stop` · `hearIt` · `speaking.listening` · `tryAgain` ·
+  `messengerChat.feedback.titles` · `correctionSpoken`. 미션 문구에서 겹치던 `speak` · `stop` · `listening` · `extra.voice.sayAgain` · `hintListen`을 지웠다.
+- **공용으로 빼면 좋을 것(대본형 쪽 담당 몫)**: ① `useMicPermission`이 권한 조회 · 요청을 `speech-recognition`에 묶어 둠 — 미션은 마이크만 필요한데 iOS에서 음성 인식 권한까지 묻고,
+  음성 인식만 거부돼도 거부로 본다(포트를 주입받게). ② `RoleplayAnswerBox`의 소리 단추 낭독 이름이 「Hear the answer」로 고정(힌트 예문에는 맞지 않아 상자 밖 Hear it 단추를 둠).
+  ③ `SpeechMic`가 88pt 하나뿐 — 입력 줄 크기 변형이 있으면 막대 · 링까지 같게 쓸 수 있다. ④ 패널 · 결과 머리 · 정답 상자 CSS가 `roleplay-story-screen.css`(대본형 화면 파일) 안에 있다 —
+  `components/`로 옮기면 미션이 대본형 화면 CSS 전체를 import하지 않아도 된다. ⑤ `MicSurface`에 미션 값이 없어 `roleplay`로 보낸다(이벤트를 붙일 때 `roleplay-mission`).
+- **개발 미리보기 가짜**: 편의점(u01-water)도 끝까지 돈다(`mission-fake-scripts.ts` · `mission-fake-store.json` — 봉투 · 결제 · 영수증 · 다른 물건), 잠긴 미션 예시는 2화 항목 하나, QA 낱말
+  `#fail`(보내기 한 번 실패) · `#gradefail`(첫 채점 실패), 녹음 길이는 실제로 누른 시간. 절차는 [QA 시나리오](../e2e/roleplay-mission.md).
+- **확인**: unit `mission-mic` MMIC-U1 ~ U3 · `mission-fake-store` MF-S1 ~ S6 / ui `MissionTalkMic.ui` MM-UI1 ~ UI6 · `MissionFeedbackCard.ui` MT-UI15 ~ UI16 · `MissionTalkVoice.ui` MV-UI1 · UI2 · UI7(개정).
 
