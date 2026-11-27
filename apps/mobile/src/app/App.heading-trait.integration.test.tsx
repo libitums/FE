@@ -5,7 +5,11 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { chooseLearnerCountry, continueLearnerName } from "./test-helpers/learner-signup";
+import {
+  chooseLearnerCountry,
+  continueLearnerName,
+  passLearnerBirthYear,
+} from "./test-helpers/learner-signup";
 // `authTokenStorageKey`는 토큰 스텁의 유일한 키입니다. `entrySplashDurationMs`는
 // 스플래시 전이 시각입니다.
 import { entrySplashDurationMs } from "../lib/entry-flow";
@@ -264,7 +268,7 @@ async function submitVerificationCode(value: string): Promise<void> {
 // HT-E1 개정(test-plan §4.2) — 전화번호 경로가 네트워크를 타므로 번호 입력 +
 // `stubSupabase`를 거쳐야 코드 화면 · 언어 선택에 닿습니다. 제목 축 기대 목록
 // 자체는 그대로입니다(경로만 바뀝니다).
-test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여덟 각각에서 계약이 고정한 목록과 정확히 같다", async () => {
+test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 아홉 각각에서 계약이 고정한 목록과 정확히 같다", async () => {
   emptyStorageStub();
   stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -321,6 +325,11 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여덟 각각에서 계�
     within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),
     {},
   );
+
+  // 상태 learner-birth-year(ADR-0059 개정 2026-11-27)
+  expect(screen.getByTestId("learner-birth-year-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["learner-birth-year-screen-title"]);
+  passLearnerBirthYear();
 
   // 상태 journey-entry
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();

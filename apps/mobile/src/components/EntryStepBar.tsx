@@ -10,7 +10,7 @@ export type EntryStepBarProps = {
   readonly label?: string;
 };
 
-// 가입 직후 세 화면(이름 → 나라 → 언어)과 입장 전 기초 세 화면(ADR-0176)의 진행 막대입니다. 칸마다 지난 · 지금 칸은
+// 가입 직후 네 화면(이름 → 나라 → 언어 → 출생 연도, 2026-11-27)과 입장 전 기초 세 화면(ADR-0176)의 진행 막대입니다. 칸마다 지난 · 지금 칸은
 // 주황, 남은 칸은 회색이고, 막대 전체가 「Step 2 of 3」 하나로 읽힙니다.
 export function EntryStepBar({ current, total, label }: EntryStepBarProps): ReactNode {
   return (

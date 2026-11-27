@@ -3,7 +3,7 @@ import { cleanup, render, screen, within } from "@lynx-js/react/testing-library"
 
 import { App } from "./App";
 import { returningLearnerWaitMs } from "./returning-learner";
-import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerBirthYearIfShown, passLearnerSignup } from "./test-helpers/learner-signup";
 import { resetPushWiringForTests } from "./push-wiring";
 import {
   accessTokenWithSub,
@@ -110,6 +110,7 @@ test.each(["google", "phone"] as const)(
     passLearnerSignup();
     expect(present("language-select-screen-title")).toBe(true);
     tapButtonIn("language-select-screen-next");
+    passLearnerBirthYearIfShown();
     tapButtonIn("journey-entry-screen-story");
     await settle();
 
