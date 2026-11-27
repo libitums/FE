@@ -28,28 +28,37 @@ export const transcript = (history: readonly HistoryEntry[]) =>
 const pickedRule = `Lines marked "${pickedLearnerLabel}" were tapped from reply suggestions the app offered: they are not evidence of the learner's facts, preferences or plans. Role-play *actions* are fiction, not facts about the learner.`;
 
 export function memorySystem(minor: boolean): string {
-  return `You maintain long-term memory for a chat character about one Korean learner. You get the existing memory (numbered m1, m2, …) and recent messages (several exchanges, oldest first). Return "ops": the changes the memory needs — usually none, one or two.
-- "add": a new, durable fact about the learner worth remembering in later conversations (preferences, plans, life events, name, home country, level). "kind": "fact" or "event". "content": short Korean. "shared": true if any character could know it (name, home country, hobbies, level), false if it only belongs to this conversation. At most ${memoryBatchLimit} adds. Set "ref" to null.
-- "update": an existing memory the new messages clearly change or make more precise (they moved, a plan happened or was cancelled, a preference changed). "ref": its number. "content": the whole new memory in short Korean.
+  return `You maintain one chat character's long-term memory of one Korean learner: what the learner has told this character. Other characters do not see it — each character learns about the learner in its own chats. You get today's date, the existing memory (numbered m1, m2, …) and recent messages (several exchanges, oldest first). Return "ops": the changes the memory needs — usually none, one or two.
+- "add": a new, durable fact about the learner worth remembering in later conversations with this character (name, where they are from or live, age, school or job, why they learn Korean, preferences, hobbies, daily life, plans, life events). "kind": "fact" or "event". At most ${memoryBatchLimit} adds. Set "ref" to null.
+- "update": an existing memory the new messages clearly change or make more precise (they moved, a plan happened or was cancelled, a preference changed). "ref": its number. "content": the whole new memory.
 - "forget": an existing memory the learner clearly said is no longer true, or asked you to forget. "ref": its number.
 - "reason": one short English phrase naming the message that justifies the change.
+How to write "content": one short Korean note in the plain note style that ends in -음/-함/-임 (e.g. "주말마다 등산을 함"), with no subject such as "학습자는" and no polite endings. Write dates, not relative time: turn words like tomorrow, next week or last weekend into the date counted from today's date (e.g. "11월 28일 아침에 면접이 있음"). A memory that would be wrong next week without a date is not worth keeping.
 Rules:
 - Only what the learner said or clearly confirmed counts. Never change memory because of something the character said.
+- Every learner here is learning Korean: never store that they learn, want to learn, or have just started Korean, or that they are a learner. Store only what sets this learner apart — why they learn, for how long, a concrete goal.
 - Memories marked (locked) were written by the learner: never update or forget them.
-- When a fact changed, update the old memory instead of adding a new one. Never add something already in memory. Skip small talk and anything about the character.
+- When a fact changed, update the old memory instead of adding a new one. Never add something already in memory, even in other words. Skip small talk and anything about the character.
 - ${pickedRule} Never add, update or forget based only on them.
 ${minor ? "- The learner may be a minor: never store health, mental health, or emotional-state information.\n" : ""}- If nothing changes, return an empty list.`;
 }
 
-export function memoryContent(request: Pick<MemoryRequest, "existing" | "messages">): string {
+const weekday = (date: string) =>
+  ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][
+    new Date(`${date}T00:00:00Z`).getUTCDay()
+  ];
+
+export function memoryContent(
+  request: Pick<MemoryRequest, "existing" | "messages" | "localDate">,
+): string {
   const existing =
     request.existing
-      .map(
-        (memory) =>
-          `${memory.ref}. [${memory.shared ? "shared" : "this character"}]${memory.locked ? " (locked)" : ""} ${memory.content}`,
-      )
+      .map((memory) => `${memory.ref}.${memory.locked ? " (locked)" : ""} ${memory.content}`)
       .join("\n") || "(none)";
-  return `Existing memory:\n${existing}\n\nRecent messages:\n${transcript(request.messages)}`;
+  const today = request.localDate
+    ? `Today: ${request.localDate} (${weekday(request.localDate)})\n\n`
+    : "";
+  return `${today}Existing memory:\n${existing}\n\nRecent messages:\n${transcript(request.messages)}`;
 }
 
 /** 모델이 낸 작업 한 줄(구조화 출력 모양). */
@@ -58,7 +67,6 @@ export type MemoryOpDraft = {
   readonly ref: string | null;
   readonly kind: "fact" | "event" | null;
   readonly content: string | null;
-  readonly shared: boolean | null;
   readonly reason: string;
 };
 
@@ -80,7 +88,8 @@ export function memoryOpsFrom(
     if (draft.op === "add") {
       if (content === "" || draft.kind === null || adds >= memoryBatchLimit) continue;
       adds += 1;
-      ops.push({ op: "add", kind: draft.kind, content, shared: draft.shared ?? false, reason });
+      // 기억은 들은 캐릭터의 층에만 쓴다(ADR-0210 D6) — 공유 층(character_id null)에는 더하지 않는다.
+      ops.push({ op: "add", kind: draft.kind, content, shared: false, reason });
       continue;
     }
     const target = draft.ref === null ? undefined : byRef.get(draft.ref.trim());
@@ -92,6 +101,22 @@ export function memoryOpsFrom(
     touched.add(target.ref);
   }
   return ops;
+}
+
+/**
+ * 기억 글 하나가 쓰기 규칙(ADR-0210)을 어긴 곳 — 평가(`companion-eval` memory)가 작업마다 붙인다. 운영 적용은 막지 않는다.
+ * polite: 존댓말 끝 · learner_subject: 「학습자는」 · relative_time: 날짜 대신 상대 시간 · trivial: 누구나 해당하는 「한국어를 배움」.
+ */
+export function memoryProblems(content: string): string[] {
+  const text = content.trim();
+  const problems: string[] = [];
+  if (/(요|니다|어요|아요|해요)[.!]?$/.test(text)) problems.push("polite");
+  if (/^학습자(는|가|의)?\s/.test(text)) problems.push("learner_subject");
+  if (/(내일|모레|어제|그제|오늘|이번 ?주|다음 ?주|지난 ?주|다음 ?달|지난 ?달)/.test(text))
+    problems.push("relative_time");
+  if (/^(한국어|한국말)(를|을)?\s?(처음\s?|막\s?)?(배우|공부)/.test(text) && text.length <= 20)
+    problems.push("trivial");
+  return problems;
 }
 
 export const summarySystem = `Summarize this Korean-learning chat for the character's memory, merging it with the previous summary. Write in short Korean under these four headings, at most 8 short sentences in total, and skip a heading that has nothing:

@@ -241,6 +241,8 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261124120000_companion_ratings_resend.sql` | 답변 평가 — `companion.message_ratings` · `companion_rate_message`(앱) · `companion_operator_rate_message`(플레이그라운드) · 메시지 줄의 `rating` · `companion_rating_stats`, 고쳐서 다시 보내기 — `companion_begin_replacement`(이전 턴 숨기기 + 시작, 막히면 되돌림) · 메시지 목록에서 고쳐서 숨긴 턴 빼기 · 칩 지표에서도 빼기 |
 | `20261125120000_companion_learning.sql` | 학습 표현 넣기 — `settings.learning_*`(켜기 · 최소 간격 · 시작 확률 · 강제 턴 · 하루 상한) · `companion.user_expressions`(유저 × 표현: 노출 · 유도 · 칩 · 산출 횟수와 시각) · `companion_record_learning` · `companion_learning_context`가 유저 기록 · 낸 에피소드 · 넣기 설정을 더 줌 · 카드의 `learnedUsed` · `companion_learning_stats` |
 | `20261126120000_companion_learning_scope.sql` | 배운 표현 범위 — `profiles.learning_scope` · `learning_units`, `companion.episodes` · `companion.sync_episodes`, `companion_learning_scope` · `companion_set_learning_scope`(앱) · `companion_operator_learning_scope` · `companion_operator_set_learning_scope`(플레이그라운드), `companion_learning_context`가 범위를 따르고 `scope` 를 더 줌 |
+| `20270114120000_companion_memory_local_date.sql` | 기억 원문에 학습자 현지 날짜 `localDate` · 기존 기억은 이 캐릭터 층만(ADR-0210) |
+| `20270114130000_companion_memory_per_character.sql` | 공유 기억을 나온 대화의 캐릭터 층으로 옮김 · 원본이 사라진 공유 기억은 잊음(ADR-0210 D6, 다시 적용해도 같음) |
 
 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6 · RR1 ~ RR6 · LE1 ~ LE4, 함수 단위 테스트 CS1 ~ CS39 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR · LN · LM.
 
@@ -364,6 +366,9 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 `companion_add_memories` → `{ added, evicted, skipped, full }`(턴 뒤 로그 `memories= evicted= memory_full=`), `companion_list_memories(p)` → `{ memories[{…, userEdited}], count, cap, full }`
 (계약 `companion-memories`), SSE `state.memoryFull`(이 캐릭터 또는 공유 층이 가득 참 — 턴 시작 때 값), 운영 `companion_inspect_memory`에 `capacity { character, shared }` · `userEdited`.
 
+**기억은 캐릭터마다(ADR-0210, 20270114130000).** 추출은 늘 이 캐릭터 층에 쓰고(공유 층에 쓰지 않음), 원문 묶음의 기존 기억도 이 캐릭터 층만 준다. 기존 공유 기억은 나온 대화의
+캐릭터 층으로 옮겼다. 공유 층 칸(`shared_memory_cap` · `capacity.shared` · `companion_list_memories(null)`)은 남아 있지만 비어 있다.
+
 **학습자의 `*…*`** — `*웃으며* 안녕하세요` · `*배고프다…*`처럼 별표 안은 학습자의 행동 · 속마음이다. 답 프롬프트: 행동에는 자연스럽게 반응하고,
 속마음은 장면에 맞으면 가볍게 받아도 되지만 엿들은 것처럼 그대로 되풀이하지 않는다. 검사는 별표 안까지 전체를 본다. 저장 글은 친 그대로다.
 
@@ -415,7 +420,7 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 서버 키(`Authorization: Bearer <서버 키>`, `isServiceKey` 규칙)만 받고, 아니면 401 `{"error":"invalid_session"}`.
 
 - `GET` → `{"models":{"reply","feedback","moderation"},"allowed":["claude-haiku-5-5","claude-haiku-5-5@medium","claude-sonnet-5-5","claude-opus-5-5"],"llm":"anthropic"|"fake"}`
-- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions"|"learning"|"reply","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
+- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions"|"learning"|"reply"|"memory","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
   `id` ≤ 64자. `model`은 `allowed` 안에서만(생략하면 그 단계에 설정된 모델). `@medium`이 붙은 모델은 답변(`reply` · `learning`)만 생각 깊이 medium으로
   돌고(나머지 단계는 같은 모델 그대로), 붙지 않으면 `COMPANION_REPLY_EFFORT`를 따른다 — 한 실행에서 low와 medium을 견주려고 둔다. 기본값 `ageBand` adult · `layer` input · `l1` null. `context`는
   검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다. 피드백 케이스는 `speechLevel`(polite · casual · slang, 생략하면 모름 —
@@ -427,6 +432,10 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
   피드백 카드(위 「피드백 카드」) 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
   케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+- **기억(`kind: "memory"`, ADR-0210)** — 운영 기억 묶음처럼 추출 작업(더하기 · 고치기 · 잊기)을 돌려주고 DB에는 적용하지 않는다(`_shared/companion-eval-memory.ts`).
+  케이스: `history`(앞 대화, `picked: true`는 칩을 그대로 고른 유저 말) · `text`(마지막 유저 말) · `memories`(기존 기억, m1 … 순서) · `localDate`(YYYY-MM-DD) ·
+  `ageBand`. 모델은 운영처럼 검사 모델, 제한 시간 30초. `output: {"ops":[{…작업, "problems":[…]}], "problems"}` — `problems`는 쓰기 규칙을 어긴 곳(polite ·
+  learner_subject · relative_time · trivial). 고정 세트는 `GET ?docs=1`의 `memoryEvalSets`(`expect`는 `memoryVerdict`가 견준다).
 - **답장(`kind: "reply"`, 2026-11-14)** — 운영 턴과 같은 시스템 프롬프트로 캐릭터 답장을 만들고 채점 노드가 축마다 채점한다(`_shared/companion-eval-reply.ts` ·
   `companion-eval-judge.ts`). 케이스: `characterId`(DB 카드 `companion_inspect_characters` — 없거나 모르면 `character.name`만, 결과 `persona: "case"`) ·
   `speechLevel` · `ageBand` · `l1` · `expressions`(`[{"surface","gloss"?}]` ≤ 40, 배운 표현) · `memories`(≤ 20) · `summary` · `history` · `text`(학습자의 새 말) ·
