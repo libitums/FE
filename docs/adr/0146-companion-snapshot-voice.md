@@ -322,3 +322,19 @@
 - **테스트**: `ui-copy-chat-guide-names.unit.test.ts` GA-C1, `chat-sample-target.unit.test.ts` GA-U1, `companion-parse.unit.test.ts` GA-U2,
   `chat-remote-media.unit.test.ts` CM-U31 ~ U34(GA-U3, 결과 셋), `chat-remote-sample.moved.unit.test.ts` GA-U4 · U5, `MessengerGuide.audit.ui.test.tsx` GA-UI1 ~ UI3,
   `MessengerGuide.sample-target.integration.test.tsx` GA-I1. 기기: `docs/e2e/messenger-guide.md` MG-E15 ~ E17.
+
+## 개정 (2026-11-27) — 가이드 점검 2: 예시 제안은 받을 수 있는 사람에게만 (서버) [사용자 「진행」]
+
+- **문제**: 제안 RPC `companion_sample_snapshot_offer`는 「예시가 켜져 있고 그 종류를 만든 적이 없음」만 봤고, 받기 RPC(20270113 판)는 14세 미만 · 일시 차단이면
+  `not_offered`, 그 대화에 쓸 수 있는 첫 인사가 없으면 `not_eligible`로 거절했다. 받을 수 없는 사람에게 안내가 「무료 예시」 단계를 세우고, 누르면 회색
+  「지금은 쓸 수 없음」 줄이 섰다. 배포된 빌드는 거절을 「본 것」으로 적지 않아 방에 올 때마다 같은 단계가 다시 섰다(앱 쪽 수정은 별도 앱 PR).
+  운영 기준(2026-11-27 SELECT): 지금 사진 예시를 제안받는 덕수쌤 대화 2,081명 가운데 14세 미만 105명 · 쓸 수 있는 첫 인사 없음 6명 · 일시 차단 0명.
+- **결정**(마이그레이션 `20270116120000_companion_sample_offer_eligible.sql`, 제안 함수 하나만 바꿈 · 인자와 돌려주는 모양 `{ available, voice }` 그대로):
+  - 받기와 같은 막음 — 14세 미만 · 일시 차단 중이면 둘 다 false(풀리면 다시 제안).
+  - 그 인물과의 대화(kind companion)의 첫 인사(origin greeting 가운데 가장 먼저 만든 것)가 있고 `media_eligible`일 때만 제안 — 받기가 붙일 곳과 같다.
+    대화가 없거나 첫 인사가 숨김 · 실패면 둘 다 false. 앞 개정(⟨예시의 자리는 첫 인사⟩)의 「제안은 남는다」를 이 판이 바꾼다.
+  - 그 밖은 전과 같다(예시가 켜져 있고 그 종류의 행이 없을 때). 요금제 · 잔액은 보지 않는다. 받기 RPC는 그대로(제안과 받기 사이에 막힐 수 있으므로 확인을 남김).
+- **옛 빌드**: 같은 함수를 부르므로 적용하는 순간부터 받을 수 없는 사람에게 예시 단계가 서지 않는다 — 반복도 멈춘다. 앱과 순서 무관.
+- **운영 적용**: 머지 뒤 사용자 승인으로 `20270116120000` 적용(함수 교체만, 표 변경 없음).
+- **테스트**: 서버 `companion-media-sample.integration.test.ts` MS18 ~ MS21(첫 인사 없음 · 숨김 · 실패 · 다른 인물, 14세 미만 · 14세 이상 미성년 · 일시 차단과 풀림,
+  제안이 true면 받기도 ok, 생년 없음 · 프로필 없음은 막지 않음). MS1 · MS9는 첫 인사를 먼저 만들고, MS15의 마지막 기대는 「제안도 꺼짐」으로 바뀌었다.
