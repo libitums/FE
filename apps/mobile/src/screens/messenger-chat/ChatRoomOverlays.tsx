@@ -42,6 +42,8 @@ export type ChatRoomOverlaysProps = {
   readonly onOpenAlbum?: (roomId: string, name: string) => void;
   /** 사이드바 My profile — 설정 탭의 User profile로 갑니다(ADR-0156, 없으면 무동작). */
   readonly onOpenMyProfile?: () => void;
+  /** 방 나가기 — 입장 생년 시트를 닫을 때(ADR-0125 개정 2026-11-27). */
+  readonly onExit: () => void;
 };
 
 // `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이, 프로필 시트는 방 화면이 그리므로 여기서는 아무것도 그리지 않습니다.
@@ -59,6 +61,7 @@ export function ChatRoomOverlays({
   onOpenMemories,
   onOpenAlbum,
   onOpenMyProfile,
+  onExit,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
@@ -265,18 +268,14 @@ export function ChatRoomOverlays({
         <BirthYearSheet
           years={birthYearOptions(Date.now())}
           selected={overlay.selected}
-          dismissible={overlay.from !== "room"}
           onSelect={(year) => dispatch({ type: "select-birth-year", year })}
           onContinue={() => {
             if (overlay.selected === null) return;
             source.setBirthYear(overlay.selected);
             dispatch({ type: "close-overlay" });
           }}
-          onSkip={() => {
-            source.setBirthYear(null);
-            dispatch({ type: "close-overlay" });
-          }}
-          onClose={close}
+          // 방을 열자마자 뜬 시트를 닫으면(X · 바깥 탭) 답하지 않은 채 방을 나갑니다 — 뒤로가기와 같습니다(ADR-0125 개정).
+          onClose={overlay.from === "room" ? onExit : close}
         />
       );
     case "feedback-mode":
