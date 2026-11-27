@@ -450,3 +450,16 @@ test("MS20. 제안이 true면 받기도 ok다 — 제안과 받기의 조건이 
   expect((await placed(chat.reply, "voice")).result).toBe("ok");
   expect(await offer()).toEqual({ available: false, voice: false });
 });
+
+test("MS21. 생년을 모르거나(null) 프로필 행이 없어도 오류 없이 제안한다 — 받기와 같이 14세 미만으로 보지 않는다(리뷰)", async () => {
+  await message(learner);
+  await db.admin.query(
+    "update companion.profiles set birth_year = null, age_source = null where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toMatchObject({ available: true });
+  await db.admin.query("delete from companion.profiles where user_id = $1", [learner]);
+  expect(await offer()).toMatchObject({ available: true });
+  const id = await message(learner);
+  expect((await claim(id)).result).toBe("ok");
+});
