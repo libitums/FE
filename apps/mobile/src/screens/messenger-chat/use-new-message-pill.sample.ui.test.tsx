@@ -203,6 +203,28 @@ test("GS-UI6 음성 예시면 알약 문구가 음성이다", () => {
   expect(screen.getByTestId(ids.above).textContent).toContain("Voice message arrived above");
 });
 
+test("GS-UI8 사진 예시로 옮겨 둔 뒤 내용 변화로 자리 알림이 늦게 와도, 이어 받은 음성 예시는 알약이 아니라 그 줄로 옮긴다(기기 iOS)", () => {
+  const { rerender } = mount();
+  const both = [...SAMPLES, samplePrefixOf(G, "voice")];
+  rerender(<Harness thread={threadOf([greeting, photoLine, mine, reply], SAMPLES)} />);
+  tick(16);
+  // 사진이 그려지며 내용 높이가 바뀌어 2초 뒤 자리 알림이 한 번 더 온다(학습자는 손대지 않음).
+  tick(2000);
+  fire("scroll", { scrollTop: 100, scrollHeight: 1400, deltaY: -100 });
+  tick(1500);
+  invoked = [];
+  const voicePending: ChatMessage = {
+    id: mediaLineId(G, "voice", "req"),
+    at: 5,
+    kind: "voice-pending",
+    startedAt: 5,
+  };
+  rerender(<Harness thread={threadOf([greeting, photoLine, voicePending, mine, reply], both)} />);
+  tick(16);
+  expect(intoViews()).toEqual([`#${chatLineElementId(voicePending.id)}`]);
+  expect(screen.queryByTestId(ids.above)).toBeNull();
+});
+
 test("GS-UI7 예시가 아닌 매체 줄(유료 — 가장 최근 메시지)은 지금처럼 끝으로 내린다", () => {
   const { rerender } = mount();
   const paid: ChatMessage = {

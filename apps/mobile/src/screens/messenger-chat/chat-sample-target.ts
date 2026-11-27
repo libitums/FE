@@ -8,8 +8,6 @@ import type { ChatMediaTarget } from "./chat-media.contract";
 import { bubbleOwner, mediaLineId, mediaLineKey, targetOfOwner } from "./chat-media-rules";
 import type { ChatMediaKind, ChatMessage } from "./chat-source.contract";
 
-/** 우리가 예시 줄로 옮긴 뒤 이만큼(ms) 안의 자리 알림은 우리 스크롤의 것입니다 — 그 뒤 알림이 오면 학습자가 옮긴 것으로 봅니다. */
-export const SAMPLE_REVEAL_SETTLE_MS = 1_000;
 /** 앞 예시가 옮겨 둔 자리를 이만큼(ms)까지만 「옮겨 둔 채」로 봅니다(사진 예시는 1.5초 뒤 도착, 이어지는 음성 예시 포함). */
 export const SAMPLE_PARK_MS = 10_000;
 

@@ -14,7 +14,6 @@ import { jumpKeyOf } from "./chat-jump-key";
 import {
   isSampleLine,
   SAMPLE_PARK_MS,
-  SAMPLE_REVEAL_SETTLE_MS,
   sampleLineOf,
   sampleRevealAction,
 } from "./chat-sample-target";
@@ -57,7 +56,8 @@ export function useNewMessagePill(roomId: string, thread: ChatThread | null): Ne
   const messages = useRef(counted);
   messages.current = counted;
 
-  // 앞 예시가 학습자를 그 줄로 옮겨 둔 때 — 그 뒤 학습자가 자리를 바꾸면(우리 스크롤이 자리 잡은 뒤의 알림) 지웁니다.
+  // 앞 예시가 학습자를 그 줄로 옮겨 둔 때 — `SAMPLE_PARK_MS` 동안은 「옮겨 둔 채」입니다. 자리 알림으로 지우지 않습니다: 사진이 그려지며
+  // 내용 높이가 바뀌어도 알림이 와서, 이어 받은 음성 예시가 보이는 자리인데 알약으로 섰습니다(기기 iOS).
   const parkedAt = useRef<number | null>(null);
   const last = useRef<ChatLogPosition>(AT_END);
   // ref · 상태 설정 함수만 쓰므로 한 번 만든 것을 그대로 씁니다(로그의 효과가 매 렌더 다시 돌지 않게).
@@ -65,8 +65,6 @@ export function useNewMessagePill(roomId: string, thread: ChatThread | null): Ne
     "background only";
     if (last.current.nearEnd && !next.nearEnd) setSeen(arrivalIds(messages.current));
     if (next.nearEnd) setSeen(null);
-    const parked = parkedAt.current;
-    if (parked !== null && Date.now() - parked > SAMPLE_REVEAL_SETTLE_MS) parkedAt.current = null;
     last.current = next;
     setPosition(next);
   }, []);
