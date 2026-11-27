@@ -25,4 +25,15 @@
 
 ## 실행 기록
 
-(아래에 기기 · 날짜 · 결과를 적는다.)
+### 2026-11-27 — iOS 시뮬레이터 · Android 에뮬레이터, 임시 탐침(낱말 말하기 단독)
+
+- **흉내**: 로그인 없이 임시 탐침(커밋 안 함, 확인 뒤 진입점을 되돌리고 파일 · 탐침 번들을 지움)으로 낱말 말하기 두 문항을 레슨 맥락(`mic`)과 함께 세웠다.
+  시트 · 결선 · 호스트 `getStatus` · `requestPermissions` · `openSettings` · 시스템 창은 실제다. 이벤트는 콘솔로 확인했다.
+- iOS 26.5 시뮬레이터(전용 iPhone 17 Pro, 새 설치): MP-E1 · E2(마이크 창 → 허용 안 함, 이어서 음성 인식 창) · E3 · E4(설정 앱이 열림) 통과.
+  설정에서 권한을 바꾸자(`simctl privacy grant`) 앱이 끝나고 다시 떴다 — 다시 열면 시트 없이 준비 국면(E5 iOS 쪽 = ADR-0206 한계 그대로).
+  말하기 → 멈춤에서 인식 실패 → 「Something went wrong while listening. Try again.」 · Skip · Try again(E7) 통과.
+- Android 에뮬레이터(Pixel 8, 읽기 전용 · `-no-audio`, `assembleBundled`, 새 설치): MP-E1 · E2(「Allow Duru to record audio?」 → Don't allow) · E3 · E4(앱 정보 설정) 통과.
+  설정에 있는 동안 `pm grant` 뒤 뒤로 → **시트가 닫히고 준비 국면**(E5). 이벤트 `sheet_shown(prime)` → `answered(denied, prompt)` → `sheet_shown(denied)` →
+  `settings_opened` → `answered(allowed, settings)` 순서로 났다. 제품 코드의 JS 오류 없음(탐침의 효과음 끄기 대입이 Android에서 막힌 오류 하나 — 탐침 전용).
+- 실행하지 않음: E6(Continue without speaking — UI · integration이 봄) · 「Hear it」(탐침 문항에 정답 소리 없음 — UI USW-P10이 봄) · E8 롤플레이(integration IR5 · IR5c) · 실기기.
+- 캡처: 사용자 보고에 경로를 적는다(저장소에 넣지 않음).
