@@ -37,6 +37,21 @@ export function sampleTargetOf(
   return first === null ? null : targetOfOwner(messages, first, media);
 }
 
+/**
+ * 받은 예시가 실제로 붙은 대상 — 서버가 돌려준 `messageId`(첫 인사)가 로그에 있고 앱이 고른 대상과 다르면 그 메시지, 아니면 앱이 고른 대상.
+ * 결과 줄은 이 대상 아래에 섭니다 — 다시 읽을 때 서버 행이 서는 자리와 같아 두 줄이 되지 않습니다.
+ */
+export function placedSampleTarget(
+  messages: readonly ChatMessage[],
+  requested: ChatMediaTarget,
+  placedId: string,
+  media: ChatMediaKind,
+): ChatMediaTarget {
+  if (placedId === requested.messageId) return requested;
+  if (!messages.some((message) => bubbleOwner(message) === placedId)) return requested;
+  return targetOfOwner(messages, placedId, media) ?? requested;
+}
+
 /** 예시 줄 id의 앞부분(`<대상>~<snapshot|voice>~`) — 대기 · 결과 · 회색 줄이 모두 이것으로 시작합니다. */
 export function samplePrefixOf(targetId: string, media: ChatMediaKind): string {
   return mediaLineId(targetId, media, "");
