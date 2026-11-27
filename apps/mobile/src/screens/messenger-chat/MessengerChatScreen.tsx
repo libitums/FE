@@ -286,7 +286,7 @@ export function MessengerChatScreen({
       />
       <ChatRoomOverlays
         {...{ state, dispatch, thread, source, learnerName, wallet, coinBalance, birthYear }}
-        {...{ preferences, onOpenMemories, onOpenAlbum, onOpenMyProfile }}
+        {...{ preferences, onOpenMemories, onOpenAlbum, onOpenMyProfile, onExit }}
       />
       {state.overlay.kind === "profile" ? (
         <ChatProfileSheet

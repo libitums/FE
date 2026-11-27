@@ -8,8 +8,10 @@ export type LanguageSelectScreenProps = {
   readonly onContinue: () => void;
   /** 좌상단 뒤로가기(2026-09-21 디자인 반영)입니다. 없으면 뒤로가기를 그리지 않습니다. */
   readonly onBack?: () => void;
-  /** 가입 흐름의 단계 진행 막대(3/3)를 그릴지입니다. 설정 › Language에서 열 때는 `false`(ADR-0093 D6). 기본 `true`. */
+  /** 가입 흐름의 단계 진행 막대(3/4 · 비회원 3/3)를 그릴지입니다. 설정 › Language에서 열 때는 `false`(ADR-0093 D6). 기본 `true`. */
   readonly showSteps?: boolean;
+  /** 가입 흐름 단계 수 — 회원은 넷(④ 출생 연도까지), 비회원은 셋(ADR-0059 개정 2026-11-27). 기본 4. */
+  readonly stepCount?: number;
 };
 
 /** 언어 선택 화면의 UI 문구 구획입니다(`UiCopy.languageSelect`). 언어 이름은 `entryLanguageLabel`이 집니다. */

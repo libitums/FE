@@ -50,6 +50,11 @@ export const learnerProfileVi: LearnerProfileCopy = {
       jumpTo: (letter) => `Đến chữ ${letter}`,
       jumpBar: "Chuyển đến chữ cái",
     },
+    birthYear: {
+      title: "Bạn sinh năm nào?",
+      caption:
+        "Chúng tôi dùng thông tin này để ứng dụng phù hợp với độ tuổi của bạn. Không ai thấy được.",
+    },
   },
   settings: {
     title: "Tên và quốc gia",
