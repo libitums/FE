@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
 Supabase Edge Function 앱이다. 함수는 `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 아래) · `admob-ssv`(광고 보고 티켓, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -1126,3 +1126,16 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 표 `companion.past_story_opens`(RLS 본인 읽기, 쓰기는 함수만). 테스트: `migrations/past-stories.integration.test.ts`(PX1 ~ PX14).
 
 **적용 순서** — `20270110120000` 뒤에 `20270111120000_past_stories.sql`. Edge Function 배포 없음. 켜기: `update companion.settings set past_stories = 'testers';`.
+
+## 광고 보고 티켓 — admob-ssv (20270114120000, ADR-0208)
+
+- AdMob 보상형 광고의 서버 측 확인(SSV) 콜백. Google이 `GET`으로 부르고, 인증은 Supabase JWT가 아니라 Google 공개키 서명이다(`config.toml` `verify_jwt = false`).
+  처리기 `_shared/admob-ssv-handler.ts`(400 · 401 · 403 · 405 · 500 재시도 · 200 outcome), 서명 · 키 캐시 · 환경 `_shared/admob-ssv.ts`.
+- 앱 RPC: `ad_ticket_status(offset, request_id?)` · `ad_ticket_start(offset)` — 앱이 받은 `requestId`를 SSV `custom_data`에, Supabase 사용자 id를 `user_id`에 싣는다.
+  지급 판정은 `ad_ticket_grant`(service_role만): 스위치 · 대상(회원 · 계정 24시간 뒤 · 구독 없음) · 하루 상한(`ad_ticket_daily_cap`, 기본 2) · 거래 id 멱등.
+- 티켓 원장은 앱에 있다 — 앱이 `granted`를 읽고 1장을 더한다. 테스트: `migrations/ad-ticket.integration.test.ts`(AT1 ~ AT9) ·
+  `_shared/admob-ssv*.test.ts`(AS-U · AS-H · AS-I).
+- 비밀: `ADMOB_AD_UNIT_IDS`(선택, 쉼표 — 콜백 `ad_unit` 값). 없으면 광고 단위를 가리지 않는다.
+
+**적용 순서** — `20270112120000` 뒤에 `20270114120000_ad_ticket.sql`(`20270113120000`은 열린 PR #651). 함수 `supabase functions deploy admob-ssv`.
+켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.
