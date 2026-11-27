@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20270118120000(ADR-0211): 내 스토리 올리기 창의 시간대 — 저장된 시간대 → 기기 시차(0이 아닌 값) → 스토어 나라 → 학습 프로필 나라 → UTC.
+// 20270119120000(ADR-0211): 내 스토리 올리기 창의 시간대 — 저장된 시간대 → 기기 시차(0이 아닌 값) → 스토어 나라 → 학습 프로필 나라 → UTC.
 // 운영 2026-11-27: 학습 프로필 나라가 기기 시차(+540)를 이겨 16:30 KST가 아침 창으로 잡혔다.
 const member = "00000000-0000-4000-8000-000000000021";
 

@@ -774,6 +774,29 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
 번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
 
+### 판정 · 기억 · 스토리 조회 1차 (20270118)
+
+`migrations/20270118120000_ops_admin_insights.sql`. 기획은 ops-dashboard `docs/admin-insights.md`, 계약은 `docs/admin-contract.md` G-A절.
+
+- **리비전**: `companion.moderation_events.rev`(8자리 16진수, 옛 줄 null). 함수가 RPC 요청 헤더 `x-guardrail-rev`로 싣고(`_shared/guardrail-rev.ts` —
+  검사 지시문 전부 + 답 프롬프트 앞부분 대표 셋의 FNV-1a, `companion-rpc.ts`가 모든 RPC에 붙인다), 칸 기본값 `companion.request_guardrail_rev()`가
+  PostgREST `request.headers`에서 읽는다. 턴 저장 RPC는 다시 정의하지 않았다. 헤더가 없거나 모양이 틀리면 null(저장은 막지 않는다).
+  `companion-eval` 응답에도 같은 `rev`가 실린다.
+- 표(`ops`, RPC로만): `ops.guardrail_revs`(리비전 이름 · 메모) · `ops.moderation_reviews`(판정 하나에 검토 하나 — 맞음 · 오탐 · 놓침 · 애매).
+- 새 RPC 여섯(모두 `service_role`만, 열람은 `view` · 쓰기는 `write` 기록):
+  `ops_moderation_summary`(분류 × 단계 · 입력 1천 건당 · 일별 · 기록용 허용 · 리비전 · 스트라이크, 90일까지) ·
+  `ops_moderation_feed`(앞 캐릭터 말 · 학습자 메시지 · 거절 답 · 걸린 초안 · 검토, 거르기 · 쪽 넘김 §F와 같은 규칙) ·
+  `ops_review_moderation` · `ops_set_guardrail_rev` · `ops_user_memories`(캐릭터 가리지 않은 전체 기억 · 출처 메시지 · 칩 여부) ·
+  `ops_user_stories`(내 스토리 · 반응 · Seen · 퀴즈 · 거절 사진(분류만, 격리 경로 없음) · 친구 스토리 답장 · 지난 스토리 열람).
+- 연령대 · 로맨스 선은 판정 줄이 아니라 그 턴 캐릭터 답의 meta(`ageBand` · `romanceLine`)에서 읽는다 — 답이 없는 판정(두 번 걸려 실패 등)은 null이라
+  그 거르기에서 빠진다.
+- 테스트: `migrations/ops-admin-insights.integration.test.ts`, `_shared/guardrail-rev.unit.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261212 뒤라면 어디든 된다(`ops` 도우미 · `companion.memories` · 내 스토리 표에 기댄다). 파일 하나만
+`supabase db query --linked -f supabase/migrations/20270118120000_ops_admin_insights.sql`(`db push` 금지). 다시 적용해도 같다.
+그 뒤 함수(`chat-send` · `companion-greet` · `companion-proactive` · `companion-eval` 등 RPC를 부르는 것)를 배포하면 새 판정에 `rev`가 찬다 —
+함수를 먼저 올려도 헤더는 무시되고, 마이그레이션만 먼저여도 `rev`가 null일 뿐이다.
+
 ## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 
 `migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
@@ -972,7 +995,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   예: `update companion.settings set my_story_rules = my_story_rules || '{"secondMaxSec": 1800}';`
 - 올리기(ADR-0191 D8): 현지 **아침 · 낮 · 밤 창마다 하나**(`my_story_slots` — 지워도 돌아오지 않음) + 24시간 안 `my_story_daily` + 1(기본 4)개 — 바르게 쓰는
   사람은 어느 24시간에도 창 셋 + 하나를 넘지 않는다(`companion.my_story_day_full`).
-  시간대(20270118120000, ADR-0211)는 저장된 `profiles.timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`, 0은 모름) → 스토어 나라(`p_region` · 없으면
+  시간대(20270119120000, ADR-0211)는 저장된 `profiles.timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`, 0은 모름) → 스토어 나라(`p_region` · 없으면
   `last_region`, `companion.story_country_timezone`) → 학습 프로필 나라 → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
 - 반응 상한: `story_reaction_user_daily`(사람 하루, 기본 6) · `story_reaction_global_daily`(전체 하루, 기본 1000 — 버그 · 악용에 대한 퓨즈).
   **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘으면 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차) 올린 지 24시간이 지나면 `skipped`.
@@ -1158,7 +1181,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 **적용 순서** — `20270117120000_ad_ticket.sql`(main의 #661 `20270114…` 뒤 · 열린 #664 `20270115120000` · #667 `20270116120000` 뒤). 함수 `supabase functions deploy admob-ssv`.
 켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.
 
-## 내 스토리 올리기 창의 시간대 (20270118120000, ADR-0211)
+## 내 스토리 올리기 창의 시간대 (20270119120000, ADR-0211)
 
 - `companion.my_story_window(user, offset, now, p_region?)` — 저장된 `profiles.timezone` → 기기 시차(0이 아닌 값) → 스토어 나라(`p_region`, 없으면
   `last_region`) → 학습 프로필 나라 → UTC. 학습 프로필 나라가 기기 시차를 이겨 16:30 KST가 아침 창이 되던 것을 고친다.
@@ -1168,5 +1191,5 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `companion_save_my_photo_story` · `companion_my_text_gate` · `companion_save_my_text_story`(Edge — 요청의 `client_region`). 옛 호출은 그대로.
 - 테스트: `migrations/my-story-slot-timezone.integration.test.ts`(TZ1 ~ TZ7) · `_shared/companion-my-story-handler.unit.test.ts`(MH9).
 
-**적용 순서** — `20270118120000_my_story_slot_timezone.sql`(`20270117120000` 뒤) → `supabase functions deploy companion-my-story`.
+**적용 순서** — `20270119120000_my_story_slot_timezone.sql`(`20270118120000_ops_admin_insights` 뒤) → `supabase functions deploy companion-my-story`.
 마이그레이션이 먼저다 — 새 Edge가 옛 함수에 `p_region`을 넘기면 함수를 찾지 못한다. 앱이 `p_region`을 싣는 판은 마이그레이션 적용 뒤에 낸다.
