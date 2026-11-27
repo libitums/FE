@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { startTestDatabase } from "./postgres.test-support";
 
 // ADR-0210: 기억 원문의 학습자 현지 날짜(20270114120000, D3 — 프로필 시간대 → 접속 지역 → 학습 프로필의 나라 → UTC)와
-// 공유 기억을 나온 대화의 캐릭터 층으로 옮기기(20270114130000, D6).
+// 공유 기억을 나온 대화의 캐릭터 층으로 옮기기(20270114130000, D6) · 넣는 기억 수(20270114140000, D8).
 const perCharacter = new URL(
   "./20270114130000_companion_memory_per_character.sql",
   import.meta.url,
@@ -140,4 +140,11 @@ test("PC1. 공유 기억은 나온 대화의 캐릭터 층으로 — 같은 글�
     "select count(*)::int as n from companion.memories where character_id is null and deleted_at is null",
   );
   expect(left.rows[0].n).toBe(0);
+});
+
+test("PL1. 답 프롬프트에 넣는 기억 수는 캐릭터 층 상한과 같은 50(ADR-0210 D8)", async () => {
+  const settings = await db.admin.query(
+    "select memory_prompt_limit, memory_cap from companion.settings",
+  );
+  expect(settings.rows[0]).toEqual({ memory_prompt_limit: 50, memory_cap: 50 });
 });

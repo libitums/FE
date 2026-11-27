@@ -243,6 +243,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261126120000_companion_learning_scope.sql` | 배운 표현 범위 — `profiles.learning_scope` · `learning_units`, `companion.episodes` · `companion.sync_episodes`, `companion_learning_scope` · `companion_set_learning_scope`(앱) · `companion_operator_learning_scope` · `companion_operator_set_learning_scope`(플레이그라운드), `companion_learning_context`가 범위를 따르고 `scope` 를 더 줌 |
 | `20270114120000_companion_memory_local_date.sql` | 기억 원문에 학습자 현지 날짜 `localDate` · 기존 기억은 이 캐릭터 층만(ADR-0210) |
 | `20270114130000_companion_memory_per_character.sql` | 공유 기억을 나온 대화의 캐릭터 층으로 옮김 · 원본이 사라진 공유 기억은 잊음(ADR-0210 D6, 다시 적용해도 같음) |
+| `20270114140000_companion_memory_prompt_window.sql` | 답 프롬프트 기억 — 지난 대화 창 안 원본의 기억은 빼고(캐시 유지) · `memory_prompt_limit` 50(ADR-0210 D7 · D8) |
 
 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6 · RR1 ~ RR6 · LE1 ~ LE4, 함수 단위 테스트 CS1 ~ CS39 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR · LN · LM.
 
@@ -367,7 +368,8 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 (계약 `companion-memories`), SSE `state.memoryFull`(이 캐릭터 또는 공유 층이 가득 참 — 턴 시작 때 값), 운영 `companion_inspect_memory`에 `capacity { character, shared }` · `userEdited`.
 
 **기억은 캐릭터마다(ADR-0210, 20270114130000).** 추출은 늘 이 캐릭터 층에 쓰고(공유 층에 쓰지 않음), 원문 묶음의 기존 기억도 이 캐릭터 층만 준다. 기존 공유 기억은 나온 대화의
-캐릭터 층으로 옮겼다. 공유 층 칸(`shared_memory_cap` · `capacity.shared` · `companion_list_memories(null)`)은 남아 있지만 비어 있다.
+캐릭터 층으로 옮겼다. 답 프롬프트에는 이 캐릭터 층에서 최신 50개를 넣되, 원본 메시지가 아직 지난 대화 창 안에 있는 기억은 뺀다(원문이 창에 있고,
+넣으면 기억 묶음마다 캐시가 깨진다 — 20270114140000). 공유 층 칸(`shared_memory_cap` · `capacity.shared` · `companion_list_memories(null)`)은 남아 있지만 비어 있다.
 
 **학습자의 `*…*`** — `*웃으며* 안녕하세요` · `*배고프다…*`처럼 별표 안은 학습자의 행동 · 속마음이다. 답 프롬프트: 행동에는 자연스럽게 반응하고,
 속마음은 장면에 맞으면 가볍게 받아도 되지만 엿들은 것처럼 그대로 되풀이하지 않는다. 검사는 별표 안까지 전체를 본다. 저장 글은 친 그대로다.

@@ -38,6 +38,7 @@ Rules:
 - Only what the learner said or clearly confirmed counts. Never change memory because of something the character said.
 - Every learner here is learning Korean: never store that they learn, want to learn, or have just started Korean, or that they are a learner. Store only what sets this learner apart — why they learn, for how long, a concrete goal.
 - Memories marked (locked) were written by the learner: never update or forget them.
+- Dated plans and events: when the learner tells how one went, update it with the outcome (e.g. "11월 14일에 시험을 봤고 잘 봄"). Forget a plan whose date is more than two weeks before today and that the learner never brought up again.
 - When a fact changed, update the old memory instead of adding a new one. Never add something already in memory, even in other words. Skip small talk and anything about the character.
 - ${pickedRule} Never add, update or forget based only on them.
 ${minor ? "- The learner may be a minor: never store health, mental health, or emotional-state information.\n" : ""}- If nothing changes, return an empty list.`;

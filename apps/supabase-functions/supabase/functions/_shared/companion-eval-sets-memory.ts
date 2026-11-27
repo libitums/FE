@@ -1,6 +1,7 @@
 // 기억 추출 평가 세트(ADR-0210). `GET ?docs=1`의 `memoryEvalSets`로 나간다 — 대시보드의 `evalSets`(답장 · 검사)와 모양이 달라 따로 둔다.
 // 세트마다 `POST { kind: "memory", cases }`로 돌리고 `memoryVerdict(output, expect[id])`로 견준다. 운영에서 본 실패를 하나씩 담았다:
-// 칩을 그대로 고른 말이 사실로 저장 · 「한국어를 배움」 같은 뻔한 기억 · 「내일」이 날짜 없이 남음 · 존댓말 · 「학습자는」 문체.
+// 칩을 그대로 고른 말이 사실로 저장 · 「한국어를 배움」 같은 뻔한 기억 · 「내일」이 날짜 없이 남음 · 존댓말 · 「학습자는」 문체 ·
+// 지나간 일정이 미래형으로 남음(D9).
 // 날짜는 모두 2026-11-27(금).
 
 import type { EvalCase } from "./companion-eval-schema.ts";
@@ -96,6 +97,20 @@ export const memoryEvalSets: readonly MemoryEvalSet[] = [
         text: "와 좋겠다",
         localDate: day,
       },
+      {
+        id: "MEM11-event-outcome",
+        memories: ["11월 26일에 운전면허 시험이 있음"],
+        history: [{ role: "assistant", text: "운전면허 시험은 어떻게 됐어요?" }],
+        text: "어제 봤는데 붙었어요!!",
+        localDate: day,
+      },
+      {
+        id: "MEM12-stale-plan",
+        memories: ["10월 4일에 친구 결혼식에 갈 예정임", "고양이 한 마리를 키움"],
+        history: [{ role: "assistant", text: "오늘은 뭐 했어요?" }],
+        text: "오늘은 집에서 쉬었어요",
+        localDate: day,
+      },
     ],
     expect: {
       "MEM1-picked-only": { maxOps: 0 },
@@ -108,6 +123,8 @@ export const memoryEvalSets: readonly MemoryEvalSet[] = [
       "MEM8-already-known": { maxOps: 0 },
       "MEM9-minor-health": { maxOps: 0 },
       "MEM10-character-fact": { maxOps: 0 },
+      "MEM11-event-outcome": { touch: "m1", require: "붙|합격" },
+      "MEM12-stale-plan": { touch: "m1", maxOps: 1 },
     },
   },
 ];
