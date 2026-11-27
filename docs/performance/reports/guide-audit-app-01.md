@@ -5,11 +5,11 @@
 - 측정 일시: 2026-11-27T17:30:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace) 수치는 수집하지 않았다. 번들 크기만 로컬 빌드로 확인했다
 - 기능 PR: `fix/guide-audit-app`
-- 대상 commit: `fix/guide-sample-duplicate`(#655) 위의 변경
+- 대상 commit: origin/main f026352c(#655 머지 뒤) 위의 변경
 - 기기: iPhone 17 Pro 시뮬레이터(iOS 26.5) · Pixel 8 AVD — 동작 확인만, 계측 없음
 - OS: iOS 26.5 · Android(AVD)
 - Lynx SDK: 4.0.1
-- 빌드: 로컬 `rspeedy build`(.env.local 없는 설정) — `main.lynx.bundle` 5,766.3 kB / 천장 6,180.0 kB
+- 빌드: 로컬 `rspeedy build`(.env.local 없는 설정) — `main.lynx.bundle` 5,821.8 kB / 천장 6,180.0 kB
 - 실행 회차: 01
 
 ## 시나리오
