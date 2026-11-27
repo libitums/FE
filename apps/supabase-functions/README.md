@@ -995,7 +995,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   예: `update companion.settings set my_story_rules = my_story_rules || '{"secondMaxSec": 1800}';`
 - 올리기(ADR-0191 D8): 현지 **아침 · 낮 · 밤 창마다 하나**(`my_story_slots` — 지워도 돌아오지 않음) + 24시간 안 `my_story_daily` + 1(기본 4)개 — 바르게 쓰는
   사람은 어느 24시간에도 창 셋 + 하나를 넘지 않는다(`companion.my_story_day_full`).
-  시간대(20270119120000, ADR-0211)는 저장된 `profiles.timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`, 0은 모름) → 스토어 나라(`p_region` · 없으면
+  시간대(20270118130000, ADR-0211)는 저장된 `profiles.timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`, 0은 모름) → 스토어 나라(`p_region` · 없으면
   `last_region`, `companion.story_country_timezone`) → 학습 프로필 나라 → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
 - 반응 상한: `story_reaction_user_daily`(사람 하루, 기본 6) · `story_reaction_global_daily`(전체 하루, 기본 1000 — 버그 · 악용에 대한 퓨즈).
   **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘으면 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차) 올린 지 24시간이 지나면 `skipped`.
@@ -1181,15 +1181,15 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 **적용 순서** — `20270117120000_ad_ticket.sql`(main의 #661 `20270114…` 뒤 · 열린 #664 `20270115120000` · #667 `20270116120000` 뒤). 함수 `supabase functions deploy admob-ssv`.
 켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.
 
-## 내 스토리 올리기 창의 시간대 (20270119120000, ADR-0211)
+## 내 스토리 올리기 창의 시간대 (20270118130000, ADR-0211)
 
-- `companion.my_story_window(user, offset, now, p_region?)` — 저장된 `profiles.timezone` → 기기 시차(0이 아닌 값) → 스토어 나라(`p_region`, 없으면
-  `last_region`) → 학습 프로필 나라 → UTC. 학습 프로필 나라가 기기 시차를 이겨 16:30 KST가 아침 창이 되던 것을 고친다.
+- `companion.my_story_window(user, offset, now, p_region?)` — 저장된 `profiles.timezone` → 기기 시차(0이 아닌 값) → 스토어 나라(`p_region`) → coalesce(
+  `last_region`, 온보딩 나라) → UTC. 온보딩 나라가 기기 시차를 이겨 16:30 KST가 아침 창이 되던 것을 고친다.
 - 스토어 나라 표 `companion.story_country_timezone` = `country_timezone` + 내 스토리 전용 보충(스페인어권 · MO 등). `user_timezone` ·
   `country_timezone`은 그대로(스토리 알림 · 선톡 대상이 바뀌지 않게).
 - RPC 여섯에 `p_region text default null`: `companion_my_stories` · `companion_post_my_story`(앱) · `companion_my_photo_gate` ·
   `companion_save_my_photo_story` · `companion_my_text_gate` · `companion_save_my_text_story`(Edge — 요청의 `client_region`). 옛 호출은 그대로.
 - 테스트: `migrations/my-story-slot-timezone.integration.test.ts`(TZ1 ~ TZ7) · `_shared/companion-my-story-handler.unit.test.ts`(MH9).
 
-**적용 순서** — `20270119120000_my_story_slot_timezone.sql`(`20270118120000_ops_admin_insights` 뒤) → `supabase functions deploy companion-my-story`.
+**적용 순서** — `20270118130000_my_story_slot_timezone.sql`(`20270118120000_ops_admin_insights` 뒤) → `supabase functions deploy companion-my-story`.
 마이그레이션이 먼저다 — 새 Edge가 옛 함수에 `p_region`을 넘기면 함수를 찾지 못한다. 앱이 `p_region`을 싣는 판은 마이그레이션 적용 뒤에 낸다.

@@ -7,9 +7,10 @@
 --   1. 저장된 IANA 시간대(`companion.profiles.timezone`)
 --   2. 기기 시차(분) — 0이 아니고 -720 ~ 840일 때만. 0은 「모름」으로 본다(기기가 못 읽었을 때와 UTC+0 나라를 가릴 수 없다 —
 --      UTC+0 나라는 3의 나라 시간대가 같은 답을 낸다).
---   3. 스토어 나라의 대표 시간대 — 요청의 `p_region`(앱 · Edge가 보낸 스토어 계정 나라), 없으면 저장된 `last_region`
---   4. 학습 프로필 나라의 대표 시간대
---   5. UTC
+--   3. 나라의 대표 시간대 — 요청의 `p_region`(Edge가 보낸 스토어 계정 나라) → 저장된 `last_region` → 온보딩(학습 프로필) 나라
+--      (뒤의 둘 = `coalesce(last_region, learner_profiles.country_code)`, 채팅 사용자 거의 전원이 온보딩 나라를 가짐)
+--   4. UTC
+-- 온보딩 나라는 기기 시차보다 뒤다 — 이번 버그가 그것이 맞는 기기 시차를 이긴 것이었다.
 --
 -- `companion.user_timezone`과 `companion.country_timezone`은 바꾸지 않는다 — 스토리 알림 · 선톡 대상이 그것으로 정해진다.
 -- 스토어 나라 표는 `country_timezone`에 내 스토리 전용 보충(스페인어권 · 마카오 등)을 더한 것이다.
@@ -98,10 +99,12 @@ begin
   -- 프로필은 한 번만 읽는다(저장된 시간대 · 스토어 나라).
   select p.timezone, p.last_region into v_tz, v_last_region from companion.profiles p where p.user_id = p_user_id;
   if v_tz is null and v_offset is null then
+    -- 요청의 스토어 나라 → 서버가 아는 나라 = coalesce(last_region, 온보딩 나라). 뒤의 둘은 `companion.user_region`(별도 PR
+    -- `fix/companion-region-learner-country`)과 같은 식이다 — 그 함수가 들어오면 그것을 부르도록 바꾼다.
     v_tz := coalesce(
       companion.story_country_timezone(p_region),
       companion.story_country_timezone(v_last_region),
-      companion.country_timezone((select lp.country_code from public.learner_profiles lp where lp.user_id = p_user_id))
+      companion.story_country_timezone((select lp.country_code from public.learner_profiles lp where lp.user_id = p_user_id))
     );
   end if;
   v_offset := coalesce(v_offset, 0);
