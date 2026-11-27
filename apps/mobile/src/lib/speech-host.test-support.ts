@@ -25,10 +25,24 @@ export type SpeechHostOptions = {
    * (`pending`에 쌓입니다). 주지 않으면 늘 보관합니다.
    */
   readonly result?: (attempt: number) => SpeechHostResult | null;
+  /** 참이면 `getStatus`가 지금 권한으로 답합니다(ADR-0206 — 화면이 열릴 때 확인). 거짓이면 예전처럼 답하지 않습니다. */
+  readonly answerStatus?: boolean;
+  /** `requestPermissions`가 미요청 권한에 내릴 답입니다(시스템 창). 주지 않으면 미요청은 그대로 남습니다. */
+  readonly onAsk?: "granted" | "denied";
+  /** 있으면 `StorageModule`을 이 표로 세웁니다(사전 안내를 봤는가 기록). */
+  readonly storage?: Map<string, string>;
 };
 
 export type SpeechHost = {
-  readonly calls: { request: number; start: number; stop: number };
+  readonly calls: {
+    request: number;
+    start: number;
+    stop: number;
+    status: number;
+    openSettings: number;
+  };
+  /** 지금 권한 — 테스트가 바꾸면 다음 조회 · 요청이 그 값으로 답합니다(설정에서 켜고 돌아옴 흉내). */
+  readonly permissions: { microphone: string; speechRecognition: string };
   /** 보관한 `start` 콜백입니다 — 테스트가 부르면 그 시도의 결과가 옵니다. */
   readonly pending: ((payload: unknown) => void)[];
   /** 채점 · 안내 낭독(builtin)과 완료 낭독(completion)이 받은 글자입니다. */
@@ -37,19 +51,35 @@ export type SpeechHost = {
 
 export function stubSpeechHost(options: SpeechHostOptions = {}): SpeechHost {
   const host: SpeechHost = {
-    calls: { request: 0, start: 0, stop: 0 },
+    calls: { request: 0, start: 0, stop: 0, status: 0, openSettings: 0 },
+    permissions: {
+      microphone: options.microphone ?? "granted",
+      speechRecognition: options.speechRecognition ?? "granted",
+    },
     pending: [],
     announced: { builtin: [], completion: [] },
   };
+  const statusPayload = () => ({
+    ...host.permissions,
+    recognizerAvailable: options.recognizerAvailable ?? true,
+  });
   const speechModule = {
-    getStatus: () => {},
+    getStatus: (callback: (payload: unknown) => void) => {
+      host.calls.status += 1;
+      if (options.answerStatus === true) callback(statusPayload());
+    },
     requestPermissions: (callback: (payload: unknown) => void) => {
       host.calls.request += 1;
-      callback({
-        microphone: options.microphone ?? "granted",
-        speechRecognition: options.speechRecognition ?? "granted",
-        recognizerAvailable: options.recognizerAvailable ?? true,
-      });
+      const answer = options.onAsk;
+      if (answer !== undefined) {
+        for (const key of ["microphone", "speechRecognition"] as const) {
+          if (host.permissions[key] === "not-determined") host.permissions[key] = answer;
+        }
+      }
+      callback(statusPayload());
+    },
+    openSettings: () => {
+      host.calls.openSettings += 1;
     },
     start: (_args: unknown, callback: (payload: unknown) => void) => {
       const attempt = host.calls.start;
@@ -64,6 +94,7 @@ export function stubSpeechHost(options: SpeechHostOptions = {}): SpeechHost {
   };
   vi.stubGlobal("NativeModules", {
     ...(options.module === false ? {} : { SpeechRecognitionModule: speechModule }),
+    ...(options.storage === undefined ? {} : { StorageModule: storageModule(options.storage) }),
     LynxAccessibilityModule: {
       accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
         host.announced.builtin.push(args.content);
@@ -118,3 +149,15 @@ export const iosNoSpeech: SpeechHostResult = {
   errorDomain: "kAFAssistantErrorDomain",
   errorCode: 1110,
 };
+
+function storageModule(table: Map<string, string>) {
+  return {
+    get: (key: string) => table.get(key) ?? null,
+    set: (key: string, value: string) => {
+      table.set(key, value);
+    },
+    remove: (key: string) => {
+      table.delete(key);
+    },
+  };
+}

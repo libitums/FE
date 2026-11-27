@@ -18,6 +18,15 @@ final class SpeechRecognitionModuleTests: XCTestCase {
     XCTAssertTrue(Self.permissionStates.contains(speech ?? ""))
   }
 
+  // 메서드 표가 JS 접점(`lib/speech-recognition.ts`)과 같다 — 거부 시트의 Open Settings(ADR-0206 D2)가
+  // `openSettings`에 기대므로 빠지면 설정으로 가는 길이 조용히 사라진다.
+  func testMethodLookupExposesOpenSettingsForDeniedSheet() {
+    XCTAssertEqual(
+      Set(SpeechRecognitionModule.methodLookup.keys),
+      ["getStatus", "requestPermissions", "start", "stop", "openSettings"]
+    )
+  }
+
   // 상태 조회는 소리 유입을 화면이 그릴 수 있는 값으로 답해야 한다.
   func testStatusReportsCaptureObservables() {
     let payload = waitForPayload("상태 조회") { SpeechRecognitionModule().getStatus($0) }

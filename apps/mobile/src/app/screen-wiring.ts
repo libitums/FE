@@ -21,6 +21,7 @@ import { accountWiring } from "./account-wiring";
 import { catalogWiring } from "./catalog-wiring";
 import { learnerProfileWiring, type LearnerProfileWiring } from "./learner-profile-wiring";
 import type { LearnerProfileControls } from "./use-learner-profile";
+import type { MicPermissionEventSink } from "../lib/mic-permission-event.contract";
 import type { CatalogWiring, CatalogWiringArgs } from "./catalog-wiring";
 import type { AccountWiring } from "./leave-app.contract";
 
@@ -158,6 +159,8 @@ export type ScreenWiring = {
   learningTrail: LearningTrail;
   /** 주간 순위(ADR-0170) — 서버 포트 · 순위 탭 열기. */
   ranking: RankingWiring;
+  /** 마이크 권한 안내 이벤트(ADR-0206) — 말하기 화면이 냅니다. 없으면 보내지 않습니다. */
+  onMicPermissionEvent?: MicPermissionEventSink;
 } & GuestWiring &
   EntryPathWiring &
   AccountWiring &
@@ -257,5 +260,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...learnerProfileWiring(args),
     more: moreWiring(args),
     learningTrail: args.learningTrail,
+    onMicPermissionEvent: (event) => args.episodeIntroEventSink?.(event),
   };
 }

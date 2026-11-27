@@ -429,10 +429,10 @@ final class SpeechRecognitionController {
   }
 
   private String microphoneState() {
-    if (activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
-        == PackageManager.PERMISSION_GRANTED) return "granted";
-    return activity.getPreferences(Activity.MODE_PRIVATE).getBoolean(PERMISSION_PREF, false)
-        ? "denied" : "not-determined";
+    return SpeechPermissionState.microphone(
+        activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+            == PackageManager.PERMISSION_GRANTED,
+        activity.getPreferences(Activity.MODE_PRIVATE).getBoolean(PERMISSION_PREF, false));
   }
 
   private boolean recognizerAvailable() {

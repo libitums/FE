@@ -34,16 +34,16 @@ const minaQuestion: ReadAloudQuestion = {
 };
 
 describe("readAloudSessionReducer — start", () => {
-  it("RA1. 준비 · 들음 · 받아쓰기 꺼짐에서는 듣는 중이 된다", () => {
-    for (const phase of [ready, heard("카드"), dictationOff]) {
+  it("RA1. 준비 · 들음 · 받아쓰기 꺼짐 · 인식 실패(ADR-0206 D5)에서는 듣는 중이 된다", () => {
+    for (const phase of [ready, heard("카드"), dictationOff, failed]) {
       const next = readAloudSessionReducer(stateOf({ phase }), { type: "start" });
 
       expect(next.phase).toEqual(listening);
     }
   });
 
-  it("RA1. 듣는 중 · blocked · failed에서는 같은 참조다", () => {
-    for (const phase of [listening, blocked, failed]) {
+  it("RA1. 듣는 중 · blocked에서는 같은 참조다", () => {
+    for (const phase of [listening, blocked]) {
       const state = stateOf({ phase });
 
       expect(readAloudSessionReducer(state, { type: "start" })).toBe(state);
@@ -207,7 +207,7 @@ describe("readAloudControlsOf", () => {
     expect(readAloudControlsOf(heard("카드"))).toEqual({ primary: "next", secondary: "retry" });
     expect(readAloudControlsOf(dictationOff)).toEqual({ primary: "skip", secondary: "retry" });
     expect(readAloudControlsOf(blocked)).toEqual({ primary: "skip", secondary: null });
-    expect(readAloudControlsOf(failed)).toEqual({ primary: "skip", secondary: null });
+    expect(readAloudControlsOf(failed)).toEqual({ primary: "retry", secondary: "skip" });
   });
 });
 
@@ -232,12 +232,12 @@ describe("readAloudHintOf · readAloudInstructionOf", () => {
     );
   });
 
-  it("RA8. blocked · failed는 인식 불가 안내를 낸다", () => {
+  it("RA8. blocked는 인식 불가 안내, failed는 다른 문구(ADR-0206 D5)를 낸다", () => {
     expect(readAloudHintOf(minaQuestion, blocked, markedUiCopy)).toBe(
       "⟦speaking.recognitionUnavailable⟧",
     );
     expect(readAloudHintOf(minaQuestion, failed, markedUiCopy)).toBe(
-      "⟦speaking.recognitionUnavailable⟧",
+      "⟦micPermission.listenFailed⟧",
     );
   });
 

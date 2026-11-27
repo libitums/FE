@@ -1,6 +1,7 @@
 // 인도네시아어 문구표입니다(ADR-0093). 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 // 번역 초안 — 원어민 검수 필요.
 
+import { micPermissionId } from "./ui-copy-mic-permission";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
 import { signupRewardCopy } from "./ui-copy-signup-reward";
@@ -83,6 +84,7 @@ export const uiCopyId: UiCopy = {
   sentenceOrder: sentenceOrderId,
   assembledHint: assembledHintId,
   speaking: speakingId,
+  micPermission: micPermissionId,
   learningItemGuide: learningItemGuideId,
   assessment: assessmentId,
   lessonComplete: lessonCompleteId,
