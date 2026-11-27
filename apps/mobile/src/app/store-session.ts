@@ -5,6 +5,7 @@ import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import { saveAuthSession } from "../lib/auth-session";
 import type { AuthSession } from "../lib/auth-session.contract";
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { setCrashUser } from "../lib/crash-user";
 import { clearGuestSession } from "../lib/guest-session";
 import type { AccountState } from "../lib/guest-session";
 
@@ -28,6 +29,8 @@ export function storeSignedInSession(session: AuthSession, deps: StoreSessionDep
   if (userId === null) {
     return null;
   }
+  // 오류 수집에도 같은 ID 하나만 넘깁니다(ADR-0207 D3) — 분석 클라이언트 · 시험 계정 거름과 무관합니다.
+  setCrashUser(userId);
   try {
     deps.analyticsUser?.identify(userId);
   } catch {

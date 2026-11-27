@@ -80,7 +80,14 @@ export function speechStatus(payload: unknown): SpeechStatus {
     bufferCount: numberField(payload, "bufferCount"),
     level: numberField(payload, "level"),
     peakLevel: numberField(payload, "peakLevel"),
+    ...levelDbField(payload),
   };
+}
+
+/** Android가 듣는 동안 올리는 인식 서비스 dB 원값입니다(화면 미터용). 없거나 수가 아니면 키가 없습니다. */
+function levelDbField(payload: unknown): { readonly levelDb?: number } {
+  const value = field(payload, "levelDb");
+  return typeof value === "number" && Number.isFinite(value) ? { levelDb: value } : {};
 }
 
 /**

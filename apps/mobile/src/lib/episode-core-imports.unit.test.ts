@@ -127,6 +127,7 @@ describe("@libitums/episode-core importer", () => {
       ["speakingWords", speakingJudge.speakingWords, judge.speakingWords],
       ["matchedWordCount", speakingJudge.matchedWordCount, judge.matchedWordCount],
       ["judgeSpeaking", speakingJudge.judgeSpeaking, judge.judgeSpeaking],
+      ["judgeSpokenAnswer", speakingJudge.judgeSpokenAnswer, judge.judgeSpokenAnswer],
       ["speakingChunks", speakingJudge.speakingChunks, judge.speakingChunks],
       ["judgeRoleplayReply", roleplayStory.judgeRoleplayReply, judge.judgeRoleplayReply],
       ["isTypedAnswerCorrect", hangulKeyboard.isTypedAnswerCorrect, judge.isTypedAnswerCorrect],

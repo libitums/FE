@@ -307,7 +307,7 @@ describe("롤플레이 — 발음 기준 판정(r3)", () => {
     expect(wrong.roleplay.turn).toMatchObject({
       verdict: "incorrect",
       heard: "안녕하세요",
-      spoken: { outcome: "incorrect", similarity: 0.684, heard: "안녕하세요" },
+      spoken: { outcome: "incorrect", similarity: 0.526, heard: "안녕하세요" },
     });
   });
 

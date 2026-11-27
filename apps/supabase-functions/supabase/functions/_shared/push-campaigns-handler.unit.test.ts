@@ -14,15 +14,20 @@ const KEY = "service-key";
 const NOW = Date.UTC(2026, 10, 16, 12, 5); // 마닐라 20:05
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
+const entry = { en: { title: "Korean time", body: "{name}, try again." } };
 const config: CampaignConfig = {
-  localHour: 20,
-  cooldownHours: 72,
-  rules: {
-    "tutorial-lesson2": { holdoutPercent: 30, minIdleHours: 20, maxIdleHours: 999, story: true },
-  },
+  localHours: { noon: 12, evening: 20 },
+  minIdleHours: 12,
+  minGapHours: 6,
+  dailyDays: 7,
+  winbackDays: [10],
+  stages: { "tutorial-lesson2": "tutorial" },
   copy: {
-    "tutorial-lesson2": { en: { title: "{character}: 괜찮아요", body: "{name}, try again." } },
+    tutorial: { noon: [entry], evening: [entry], winback: [entry] },
+    next: { noon: [], evening: [], winback: [] },
+    mid: { noon: [], evening: [], winback: [] },
   },
+  lastCopy: entry,
 };
 
 const content: Record<string, unknown> = {

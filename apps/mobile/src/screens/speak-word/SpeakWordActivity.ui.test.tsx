@@ -17,8 +17,8 @@ import type { ItemAnswerReport } from "../../lib/item-answer";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
-// `ui` 계층: 낱말 말하기 활동 — 그림 로딩 · 실패 · 뜻 줄 · 말하기 · 판정 배지 · 정답 상자 · 자동 넘김 · 건너뜀 ·
-// 잠금 · 완료 · 넘김을 실제 컴포넌트로 본다. 문항은 손으로 세웠다(매핑은 unit이 진다).
+// `ui` 계층: 낱말 말하기 활동 — 그림 로딩 · 실패 · 뜻 줄 · 공용 마이크 · 결과 시트(perfect · close · 오답) · 다시 말하기
+// 한 번 · Continue(자동 넘김 없음) · 건너뜀 · 잠금 · 완료를 실제 컴포넌트로 본다(시안 S1 ~ S4). 문항은 손으로 세웠다.
 
 const cardQuestion: SpeakWordQuestion = {
   pictureUrl: "https://cdn/card.jpg",
@@ -95,7 +95,7 @@ test("USW1. 첫 화면은 빈 틀 · 보조 Skip만 서고(정답 로마자는 �
   expect(maybe("learning-shell-action")).not.toBeInTheDocument();
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
   expect(id("speak-word-secondary")).toHaveTextContent("Skip");
-  expect(id("speak-word-waves")).toHaveAttribute("data-state", "off");
+  expect(id("speak-word-mic")).toHaveAttribute("data-state", "disabled");
   expect(id("learning-shell-instruction")).toHaveTextContent("Say the word for the picture.");
   expect(id("learning-shell-form")).toHaveTextContent("Speaking");
 
@@ -103,7 +103,7 @@ test("USW1. 첫 화면은 빈 틀 · 보조 Skip만 서고(정답 로마자는 �
 
   expect(id("speak-word-picture-frame")).toHaveAttribute("accessibility-label", "Picture: card");
   expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Speak");
-  expect(id("speak-word-waves")).toHaveAttribute("data-state", "idle");
+  expect(id("speak-word-mic")).toHaveAttribute("data-state", "idle");
 });
 
 test("USW1b. 문항의 지시문이 있으면 기본 지시문 대신 선다", () => {
@@ -113,7 +113,7 @@ test("USW1b. 문항의 지시문이 있으면 기본 지시문 대신 선다", (
   expect(id("learning-shell-instruction")).toHaveTextContent("Say what you see.");
 });
 
-test("USW2. 정답이면 듣는 중에는 낭독이 없고, 판정 뒤 정답 배지 · 정답 상자 · 안내 · 낭독이 서며 넘김으로 다음 문항이 된다", () => {
+test("USW2. 정답이면 듣는 중에는 낭독이 없고, 판정 뒤 초록 결과 시트(Perfect!) · 정답 상자 · 낭독이 서며 Continue로 다음 문항이 된다", () => {
   const speech = host();
   mount([cardQuestion, passport]);
   loadPicture();
@@ -121,27 +121,34 @@ test("USW2. 정답이면 듣는 중에는 낭독이 없고, 판정 뒤 정답 �
   tapAction("Speak");
 
   expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Stop speaking");
-  expect(id("speak-word-waves")).toHaveAttribute("data-state", "listening");
+  expect(id("speak-word-mic")).toHaveAttribute("data-state", "listening");
+  expect(id("speak-word-mic-status")).toHaveTextContent("Listening…");
   expect(speech.announced.builtin).toEqual([]);
+
+  tapAction("Stop speaking");
+  expect(id("speak-word-mic")).toHaveAttribute("data-state", "checking");
+  expect(id("speak-word-mic-status")).toHaveTextContent("Checking…");
 
   act(() => speech.pending[0]?.({ status: "recognized", text: "카드", isFinal: true }));
 
-  expect(id("answer-verdict")).toHaveAttribute("data-result", "correct");
-  expect(within(id("learning-shell-verdict")).getByTestId("answer-verdict")).toBeInTheDocument();
+  expect(id("speak-word-result")).toHaveAttribute("data-grade", "perfect");
+  expect(id("speak-word-result-title")).toHaveTextContent("Perfect!");
+  expect(maybe("answer-verdict")).not.toBeInTheDocument();
   expect(speech.announced.builtin).toEqual(["Result, correct"]);
-  expect(id("speak-word-reveal")).toHaveTextContent("Answer: 카드 · kadeu");
-  expect(hintText()).toBe("Tap the screen to continue");
-  expect(id("learning-shell-advance")).toHaveAttribute("accessibility-label", "Continue");
-  expect(maybe("learning-shell-action")).not.toBeInTheDocument();
+  expect(id("speak-word-reveal")).toHaveTextContent("카드");
+  expect(id("speak-word-reveal")).toHaveTextContent("kadeu");
+  expect(maybe("speak-word-result-heard")).not.toBeInTheDocument();
+  expect(hintText()).toBe("");
+  expect(maybe("learning-shell-advance")).not.toBeInTheDocument();
 
-  fireEvent.tap(id("learning-shell-advance"), {});
+  tapAction("Continue");
 
   expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "1");
   expect(id("speak-word-picture")).toHaveAttribute("data-loadState", "loading");
-  expect(maybe("answer-verdict")).not.toBeInTheDocument();
+  expect(maybe("speak-word-result")).not.toBeInTheDocument();
 });
 
-test("USW2b. 판정 2.5초 뒤 스스로 다음 문항으로 넘어간다", () => {
+test("USW2b. 판정 뒤 시간이 지나도 스스로 넘어가지 않는다 — 오답을 읽을 시간(시안 S2)", () => {
   vi.useFakeTimers();
   host({ result: () => recognized("카드") });
   mount([cardQuestion, passport]);
@@ -151,25 +158,60 @@ test("USW2b. 판정 2.5초 뒤 스스로 다음 문항으로 넘어간다", () =
   expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "0");
 
   act(() => {
-    vi.advanceTimersByTime(2500);
+    vi.advanceTimersByTime(10000);
   });
 
-  expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "1");
+  expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "0");
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Continue");
 });
 
-test("USW3. 오답이면 오답 배지와 정답 상자가 서고 재시도 버튼도 들은 글자도 없다", () => {
-  const speech = host({ result: () => recognized("카트") });
+test("USW3. 오답이면 You said ↔ Answer(다른 음절 표시)와 Try again · Next가 서고, 두 번째 오답이면 Continue 하나다", () => {
+  const speech = host({ result: () => recognized("카페") });
   mount([cardQuestion, passport]);
   loadPicture();
 
   tapAction("Speak");
 
-  expect(id("answer-verdict")).toHaveAttribute("data-result", "incorrect");
-  expect(speech.announced.builtin).toEqual(["Result, incorrect, Answer: 카드 · kadeu"]);
-  expect(id("speak-word-reveal")).toHaveTextContent("Answer: 카드 · kadeu");
+  expect(id("speak-word-result")).toHaveAttribute("data-grade", "incorrect");
+  expect(id("speak-word-result-title")).toHaveTextContent("Not quite");
+  expect(speech.announced.builtin).toEqual([
+    "Result, incorrect, You said: 카페, Answer: 카드 · kadeu",
+  ]);
+  expect(id("speak-word-result-heard")).toHaveTextContent("카페");
+  expect(id("speak-word-result-heard").querySelector('[data-differs="true"]')).toHaveTextContent(
+    "페",
+  );
+  expect(id("speak-word-result-answer").querySelector('[data-differs="true"]')).toHaveTextContent(
+    "드",
+  );
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  expect(id("speak-word-secondary")).toHaveAttribute("data-control", "next");
+
+  tapAction("Try again");
+
+  expect(speech.calls.start).toBe(2);
+  expect(id("speak-word-content")).toHaveAttribute("data-phase", "heard");
+  expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "0");
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Continue");
   expect(maybe("speak-word-secondary")).not.toBeInTheDocument();
-  expect(id("learning-shell").textContent).not.toContain("카트");
-  expect(id("learning-shell").textContent).not.toContain("Try again");
+});
+
+test("USW3b. close는 맞음(Correct · Almost perfect) · Model answer · 들은 말이 선다", () => {
+  const speech = host({ result: () => recognized("카드로 할께여") });
+  mount([{ ...cardQuestion, answers: ["카드로 할게요."], romanization: "kadeuro halgeyo." }]);
+  loadPicture();
+
+  tapAction("Speak");
+
+  expect(id("speak-word-result")).toHaveAttribute("data-grade", "close");
+  expect(id("speak-word-result-title")).toHaveTextContent("Correct");
+  expect(id("speak-word-result-chip")).toHaveTextContent("Almost perfect");
+  expect(id("speak-word-result-answer-label")).toHaveTextContent("Model answer");
+  expect(id("speak-word-result-heard")).toHaveTextContent("카드로 할께여");
+  expect(speech.announced.builtin).toEqual([
+    "Result, correct, Model answer: 카드로 할게요. · kadeuro halgeyo.",
+  ]);
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Continue");
 });
 
 test("USW4. 권한 거부는 안내 한 번과 Skip만 서고 다음 문항도 곧장 불가이며, 완료 카드 뒤 건너뜀 수를 올린다", () => {
@@ -242,7 +284,7 @@ test("USW6. 준비 국면의 Skip은 결과에 싣지 않고 건너뜀 수에 �
   loadPicture();
 
   tapAction("Speak");
-  fireEvent.tap(id("learning-shell-advance"), {});
+  tapAction("Continue");
   tapSecondary("skip", "Skip");
 
   expect(id("speak-word-complete")).toBeInTheDocument();
@@ -252,13 +294,13 @@ test("USW6. 준비 국면의 Skip은 결과에 싣지 않고 건너뜀 수에 �
   expect(onFinish).toHaveBeenCalledWith(["correct"], 1, [1]);
 });
 
-test("USW7a. 레슨 중간 활동은 판정 뒤 넘김이 완료 카드 없이 결과를 한 번 올린다", () => {
+test("USW7a. 레슨 중간 활동은 판정 뒤 Next가 완료 카드 없이 결과를 한 번 올린다", () => {
   host({ result: () => recognized("카트") });
   const { onFinish } = mount([cardQuestion], { offset: 0, total: 5, last: false });
   loadPicture();
 
   tapAction("Speak");
-  fireEvent.tap(id("learning-shell-advance"), {});
+  tapSecondary("next", "Next");
 
   expect(maybe("speak-word-complete")).not.toBeInTheDocument();
   expect(onFinish).toHaveBeenCalledTimes(1);
@@ -336,8 +378,8 @@ test("USW9. 문구는 모두 문구표에서 온다", () => {
 
   fireEvent.tap(id("learning-shell-action"), {});
 
-  expect(id("speak-word-reveal")).toHaveTextContent("⟦typing.answerReveal⟧(카드 · kadeu)");
-  expect(hintText()).toBe("⟦speaking.tapToContinue⟧");
+  expect(id("speak-word-result-title")).toHaveTextContent("⟦speakWord.result.perfect⟧");
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "⟦common.continue⟧");
 });
 
 // ACS-SW — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
@@ -348,7 +390,7 @@ test("[ACS-SW] 완료 때 무대가 완료 장면이고 내용 상자의 유일�
   expectQuestionScene();
 
   tapAction("Speak");
-  fireEvent.tap(id("learning-shell-advance"), {});
+  tapAction("Continue");
   tapSecondary("skip", "Skip");
 
   expectCompleteScene("speak-word-content", "speak-word-complete");
@@ -365,8 +407,8 @@ test("SW1. 판정 전 카드는 그림뿐이고 로마자 · 뜻 줄이 없으�
   expect(within(stage).getByTestId("speak-word-picture")).toBeInTheDocument();
   expect(within(stage).queryByTestId("speak-word-romanization")).not.toBeInTheDocument();
   expect(within(stage).queryByTestId("speak-word-meaning")).not.toBeInTheDocument();
-  expect(within(stage).queryByTestId("speak-word-waves")).not.toBeInTheDocument();
-  expect(id("speak-word-waves")).toBeInTheDocument();
+  expect(within(stage).queryByTestId("speak-word-mic")).not.toBeInTheDocument();
+  expect(id("speak-word-mic")).toBeInTheDocument();
 });
 
 test("SW1. 로마자가 없는 문항은 로마자 줄이 없다", () => {
@@ -377,7 +419,7 @@ test("SW1. 로마자가 없는 문항은 로마자 줄이 없다", () => {
   expect(maybe("speak-word-meaning")).not.toBeInTheDocument();
 });
 
-test("SW1. 판정 뒤 그림 아래 정답 상자(낱말 · 로마자)가 서고 판정 배지는 카드 안이 아니라 셸에 선다", () => {
+test("SW1. 판정 뒤 결과 시트는 무대(카드) 밖 작업 영역에 서고 셸 배지는 없다", () => {
   host({ result: () => recognized("카트") });
   mount([cardQuestion]);
   loadPicture();
@@ -386,13 +428,9 @@ test("SW1. 판정 뒤 그림 아래 정답 상자(낱말 · 로마자)가 서고
 
   expect(maybe("speak-word-romanization")).not.toBeInTheDocument();
   const stage = id("learning-shell-stage");
-  expect(within(stage).getByTestId("speak-word-reveal")).toHaveTextContent("Answer: 카드 · kadeu");
-  expect(within(stage).queryByTestId("answer-verdict")).not.toBeInTheDocument();
-  expect(within(id("learning-shell-verdict")).getByTestId("answer-verdict")).toHaveAttribute(
-    "data-result",
-    "incorrect",
-  );
-  expect(document.querySelector(".speak-word-activity-verdict-slot")).toBeNull();
+  expect(within(stage).queryByTestId("speak-word-result")).not.toBeInTheDocument();
+  expect(id("speak-word-reveal")).toHaveTextContent("카드");
+  expect(maybe("answer-verdict")).not.toBeInTheDocument();
 });
 
 test("EV5. 판정은 문항당 한 번 보고되고 outcome · density가 실린다", () => {
@@ -415,6 +453,7 @@ test("EV5. 판정은 문항당 한 번 보고되고 outcome · density가 실린
     questionIndex: 0,
     outcome: "correct",
     density: "regular",
+    grade: "perfect",
     // 인식기가 결과를 올렸으므로 진단이 실립니다 — 이 대역은 팩 · 되돌아감 키가 없는 호스트(iOS 모양)입니다.
     speech: { errorCode: 0, fallback: "none", koreanPack: "unknown" },
   });

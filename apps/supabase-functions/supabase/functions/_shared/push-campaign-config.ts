@@ -1,146 +1,47 @@
-// 자동 캠페인 설정(ADR-0130 D12) — 사용자 결정 2026-11-16: 승자 = 캐릭터 톤(모든 세그먼트), 다음 A/B = 캐릭터 톤 vs 단계별 예고,
-// 매일(매시 돌며 현지 20시) · 같은 사람은 72시간에 한 번. 문구 A는 2026-11-13 추천의 캐릭터 톤(없는 세그먼트는 콘솔 DEFAULT_COPY_B).
+// 자동 캠페인 설정(ADR-0208, 사용자 결정 2026-11-27) — 빈도 실험입니다. 앞선 실험(보냄 / 안 보냄 · 문구 A/B, 72시간에 한 번)은
+// 어느 칸도 차이가 나지 않아 걷었습니다(2026-11-27 집계: 가장 큰 차이가 episode-mid 3.5% vs 2.7%).
+// - 칸 셋(사람마다 고정, 1/3씩): 안 보냄 · 하루 1번(현지 20시) · 하루 2번(현지 12시 + 20시).
+// - 쉰 지 7일까지 매일, 7일째 저녁은 「매일 알림을 멈춘다」. 그 뒤는 10 · 14 · 21 · 30 · 45 · 60일째 저녁에 복귀 알림(보내는 두 칸 모두).
+// - 문구는 진도 단계 셋(튜토리얼 · 다음 에피소드 · 에피소드 중간)마다 따로, 날마다 돌려 써 같은 말이 연달아 가지 않습니다.
 
-import type { CampaignConfig } from "./push-campaign-plan.ts";
+import { midCopy } from "./push-campaign-copy-mid.ts";
+import { nextCopy } from "./push-campaign-copy-next.ts";
+import { lastCopy, winbackAnyCopy } from "./push-campaign-copy-shared.ts";
+import { tutorialCopy } from "./push-campaign-copy-tutorial.ts";
+import type { CampaignConfig, Copy, StageCopy } from "./push-campaign-types.ts";
+
+const withShared = (copy: StageCopy): StageCopy => ({
+  ...copy,
+  winback: [...copy.winback, winbackAnyCopy],
+});
 
 export const pushCampaignConfig: CampaignConfig = {
-  localHour: 20,
-  cooldownHours: 72,
-  rules: {
-    // tutorial-cover는 끔(사용자 결정 2026-11-20): 보낸 쪽 72h 앱 열기 4.6% < 대조 8.8%(263 / 113명). 새 문구를 정할 때까지 규칙을 두지 않아 "no-rule"로 건너뜁니다.
-    "tutorial-lesson1": {
-      holdoutPercent: 50,
-      minIdleHours: 20,
-      maxIdleHours: 24 * 14,
-      story: false,
-    },
-    "tutorial-lesson2": {
-      holdoutPercent: 50,
-      minIdleHours: 20,
-      maxIdleHours: 24 * 14,
-      story: true,
-    },
-    "tutorial-rest": { holdoutPercent: 30, minIdleHours: 20, maxIdleHours: 24 * 14, story: true },
-    "episode-next": { holdoutPercent: 30, minIdleHours: 20, maxIdleHours: 24 * 21, story: true },
-    "episode-mid": { holdoutPercent: 30, minIdleHours: 20, maxIdleHours: 24 * 21, story: true },
+  localHours: { noon: 12, evening: 20 },
+  minIdleHours: 12,
+  minGapHours: 6,
+  dailyDays: 7,
+  winbackDays: [10, 14, 21, 30, 45, 60],
+  stages: {
+    "tutorial-cover": "tutorial",
+    "tutorial-lesson1": "tutorial",
+    "tutorial-lesson2": "tutorial",
+    "tutorial-rest": "tutorial",
+    "episode-next": "next",
+    "episode-mid": "mid",
   },
   copy: {
-    "tutorial-cover": {
-      en: {
-        title: "{character}: 안녕하세요! 👋",
-        body: "{name}, your Korean story starts with one hello. Say it back?",
-      },
-    },
-    "tutorial-lesson1": {
-      en: {
-        title: "{character}: 어서 오세요 ✈️",
-        body: '{name}, "어서 오세요" means "Welcome." Your first Korean words are in lesson 1. Tap it on the map.',
-      },
-      vi: {
-        title: "{character}: 어서 오세요 ✈️",
-        body: '{name}, "어서 오세요" nghĩa là "Chào mừng". Những từ tiếng Hàn đầu tiên ở bài 1. Chọn bài 1 trên bản đồ nhé.',
-      },
-      ms: {
-        title: "{character}: 어서 오세요 ✈️",
-        body: '{name}, "어서 오세요" bermaksud "Selamat datang". Perkataan Korea pertama anda ada dalam pelajaran 1. Tekan di peta.',
-      },
-      es: {
-        title: "{character}: 어서 오세요 ✈️",
-        body: "{name}, «어서 오세요» significa «Bienvenido». Tus primeras palabras en coreano están en la lección 1. Tócala en el mapa.",
-      },
-      ja: {
-        title: "{character}: 어서 오세요 ✈️",
-        body: "{name}さん、「어서 오세요」は「ようこそ」という意味です。最初の韓国語はレッスン1にあります。マップでタップしてください。",
-      },
-      "zh-TW": {
-        title: "{character}: 어서 오세요 ✈️",
-        body: "{name}，「어서 오세요」是「歡迎光臨」的意思。你的第一批韓語單字就在第1課，在地圖上點一下吧。",
-      },
-    },
-    "tutorial-lesson2": {
-      en: {
-        title: "{character}: 괜찮아요 🙂",
-        body: '{name}, "괜찮아요" means "It\'s okay." Lesson 2 is hard for almost everyone at first. Tap lesson 2 on the map and try again.',
-      },
-      vi: {
-        title: "{character}: 괜찮아요 🙂",
-        body: '{name}, "괜찮아요" nghĩa là "Không sao đâu". Bài 2 lúc đầu khó với hầu hết mọi người. Chọn bài 2 trên bản đồ và thử lại nhé.',
-      },
-      ms: {
-        title: "{character}: 괜찮아요 🙂",
-        body: '{name}, "괜찮아요" bermaksud "Tak apa". Pelajaran 2 sukar bagi hampir semua orang pada mulanya. Tekan pelajaran 2 di peta dan cuba lagi.',
-      },
-      es: {
-        title: "{character}: 괜찮아요 🙂",
-        body: "{name}, «괜찮아요» significa «Está bien». La lección 2 cuesta a casi todos al principio. Toca la lección 2 en el mapa y vuelve a intentarlo.",
-      },
-      ja: {
-        title: "{character}: 괜찮아요 🙂",
-        body: "{name}さん、「괜찮아요」は「大丈夫」という意味です。レッスン2は最初はほとんどの人が難しく感じます。マップでレッスン2をもう一度どうぞ。",
-      },
-      "zh-TW": {
-        title: "{character}: 괜찮아요 🙂",
-        body: "{name}，「괜찮아요」是「沒關係」的意思。第2課一開始幾乎每個人都覺得難。在地圖上點第2課，再試一次吧。",
-      },
-    },
-    "tutorial-rest": {
-      en: {
-        title: "{character}: 거의 다 왔어요 🎉",
-        body: "{name}, just a few steps left in the tutorial.",
-      },
-    },
-    "episode-next": {
-      en: {
-        title: "{character}: 수고했어요 👏",
-        body: '{name}, "수고했어요" means "You did great." Your next story, {episode}, is ready on the map.',
-      },
-      vi: {
-        title: "{character}: 수고했어요 👏",
-        body: '{name}, "수고했어요" nghĩa là "Bạn đã làm tốt lắm". Câu chuyện tiếp theo, {episode}, đã có trên bản đồ.',
-      },
-      ms: {
-        title: "{character}: 수고했어요 👏",
-        body: '{name}, "수고했어요" bermaksud "Anda sudah buat dengan baik". Cerita seterusnya, {episode}, sudah ada di peta.',
-      },
-      es: {
-        title: "{character}: 수고했어요 👏",
-        body: "{name}, «수고했어요» significa «Lo hiciste muy bien». Tu próxima historia, {episode}, ya está en el mapa.",
-      },
-      // ja는 2026-11-24 언어 검증에서 빠진 것을 찾아 더했습니다(ADR-0185) — 그 전에는 일본 학습자에게 영어가 갔습니다.
-      ja: {
-        title: "{character}: 수고했어요 👏",
-        body: "{name}さん、「수고했어요」は「よく頑張りました」という意味です。次のストーリー「{episode}」がマップで待っています。",
-      },
-      "zh-TW": {
-        title: "{character}: 수고했어요 👏",
-        body: "{name}，「수고했어요」是「你辛苦了，做得很好」的意思。下一個故事「{episode}」已經在地圖上等你了。",
-      },
-    },
-    "episode-mid": {
-      en: {
-        title: "{character}: 같이 가요 😊",
-        body: '{name}, "같이 가요" means "Let\'s go together." Your story is waiting on the map. One lesson tonight?',
-      },
-      vi: {
-        title: "{character}: 같이 가요 😊",
-        body: '{name}, "같이 가요" nghĩa là "Cùng đi nào". Câu chuyện đang chờ bạn trên bản đồ. Tối nay học 1 bài nhé?',
-      },
-      ms: {
-        title: "{character}: 같이 가요 😊",
-        body: '{name}, "같이 가요" bermaksud "Jom pergi bersama". Cerita anda menunggu di peta. 1 pelajaran malam ini?',
-      },
-      es: {
-        title: "{character}: 같이 가요 😊",
-        body: "{name}, «같이 가요» significa «Vamos juntos». Tu historia te espera en el mapa. ¿Una lección esta noche?",
-      },
-      ja: {
-        title: "{character}: 같이 가요 😊",
-        body: "{name}さん、「같이 가요」は「一緒に行こう」という意味です。マップでストーリーが待っています。今夜レッスンを1つどうですか。",
-      },
-      "zh-TW": {
-        title: "{character}: 같이 가요 😊",
-        body: "{name}，「같이 가요」是「一起走吧」的意思。你的故事正在地圖上等你。今晚來上一課吧？",
-      },
-    },
+    tutorial: withShared(tutorialCopy),
+    next: withShared(nextCopy),
+    mid: withShared(midCopy),
   },
+  lastCopy,
 };
+
+/** 설정의 모든 문구 — 「단계:자리:번호」 이름과 함께(언어 검증 테스트용). */
+export function allCampaignCopy(config: CampaignConfig): [string, Copy][] {
+  const out: [string, Copy][] = [["last", config.lastCopy]];
+  for (const [stage, copy] of Object.entries(config.copy))
+    for (const kind of ["noon", "evening", "winback"] as const)
+      copy[kind].forEach((entry, index) => out.push([`${stage}:${kind}:${index}`, entry]));
+  return out;
+}
