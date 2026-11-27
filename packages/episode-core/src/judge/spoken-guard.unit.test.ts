@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
 
-import { addsNegation, judgeSpokenAnswer, judgeSpokenLenient, type SpokenGrade } from "./index";
+import { negationMismatch, judgeSpokenAnswer, judgeSpokenLenient, type SpokenGrade } from "./index";
 
 // `unit` 계층: 발음은 가깝지만 뜻이 반대인 답을 막는 규칙(ADR-0201 개정 ⟨부정어 · 앞 낱말 · 어간⟩).
 // 검토 보고의 오정답 사례와 #628 PR 본문의 사례 표를 함께 둡니다.
 
 type Case = readonly [accepted: string, heard: string, grade: SpokenGrade];
 
-describe("SG1 부정어 — 들은 말에만 있으면 오답", () => {
+describe("SG1 부정어 — 한쪽에만 있으면 오답", () => {
   test.each<Case>([
     ["좋아요", "안 좋아요", "incorrect"],
     ["괜찮아요", "안 괜찮아요", "incorrect"],
@@ -23,6 +23,13 @@ describe("SG1 부정어 — 들은 말에만 있으면 오답", () => {
     ["지금 가요", "지금 못 가요", "incorrect"],
     ["여기 앉으세요", "여기 앉지 마세요", "incorrect"],
     ["알아요", "몰라요", "incorrect"],
+    // 붙여 적은 금지형(리뷰 지적)
+    ["여기 앉으세요", "여기 앉지마세요", "incorrect"],
+    ["가요", "가지마", "incorrect"],
+    // 정답의 부정어를 빠뜨려도 뜻이 반대다(양방향, 리뷰 지적)
+    ["오늘은 안 가요", "오늘은 가요", "incorrect"],
+    ["저는 학생이 아니에요", "저는 학생이에요", "incorrect"],
+    ["시간이 없어요", "시간이 있어요", "incorrect"],
   ])("「%s」 ← 「%s」 → %s", (accepted, heard, grade) => {
     expect(judgeSpokenAnswer([accepted], heard).grade).toBe(grade);
   });
@@ -40,15 +47,17 @@ describe("SG1 부정어 — 들은 말에만 있으면 오답", () => {
     expect(judgeSpokenAnswer([accepted], heard).grade).toBe(grade);
   });
 
-  test("addsNegation — 정답 쪽 부정어는 세지 않는다", () => {
-    expect(addsNegation("좋아요", "안 좋아요")).toBe(true);
-    expect(addsNegation("안 좋아요", "안 좋아요")).toBe(false);
-    expect(addsNegation("있어요", "없어요")).toBe(true);
-    expect(addsNegation("가세요", "가지 마세요")).toBe(true);
-    expect(addsNegation("가지 마세요", "가지 마세요")).toBe(false);
-    expect(addsNegation("안녕하세요", "안녕하세요")).toBe(false);
-    expect(addsNegation("마세요", "마세요")).toBe(false);
-    expect(addsNegation("좋아요", "")).toBe(false);
+  test("negationMismatch — 정답 쪽 부정어는 세지 않는다", () => {
+    expect(negationMismatch("좋아요", "안 좋아요")).toBe(true);
+    expect(negationMismatch("안 좋아요", "안 좋아요")).toBe(false);
+    expect(negationMismatch("있어요", "없어요")).toBe(true);
+    expect(negationMismatch("가세요", "가지 마세요")).toBe(true);
+    expect(negationMismatch("가지 마세요", "가지 마세요")).toBe(false);
+    expect(negationMismatch("안녕하세요", "안녕하세요")).toBe(false);
+    expect(negationMismatch("마세요", "마세요")).toBe(false);
+    expect(negationMismatch("좋아요", "")).toBe(false);
+    expect(negationMismatch("안 좋아요", "좋아요")).toBe(true);
+    expect(negationMismatch("가세요", "가지마세요")).toBe(true);
   });
 });
 

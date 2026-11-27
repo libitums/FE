@@ -10,7 +10,7 @@ import type { AnswerResult } from "./answer-result";
 import type { NonEmpty } from "./non-empty";
 import { judgeRoleplayReplyExact } from "./roleplay-reply";
 import { spokenPasses, spokenSimilarity } from "./spoken-lenient";
-import { addsNegation } from "./spoken-negation";
+import { negationMismatch } from "./spoken-negation";
 
 export type SpokenGrade = "perfect" | "close" | "incorrect";
 
@@ -42,7 +42,7 @@ export function judgeSpokenAnswer(
     const score = spokenSimilarity(sentence, heard, wildcards);
     const exact = judgeRoleplayReplyExact([sentence], heard, wildcards) === "correct";
     // 들은 말에만 있는 부정어는 발음이 같아도 뜻이 반대입니다(ADR-0201 개정 ⟨부정어⟩).
-    const grade: SpokenGrade = addsNegation(sentence, heard)
+    const grade: SpokenGrade = negationMismatch(sentence, heard)
       ? "incorrect"
       : exact || (score.length > 0 && score.distance === 0)
         ? "perfect"

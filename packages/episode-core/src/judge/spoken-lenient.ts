@@ -6,7 +6,7 @@
 // 이름 · 나라(와일드카드)가 든 낱말은 마디를 끊는 자리로만 쓰고 비교에서 뺍니다.
 //
 // 뜻이 반대인 답은 길이 허용 오차로 넘어가지 않습니다(ADR-0201 개정 ⟨부정어 · 앞 낱말 · 어간⟩).
-//   - 들은 말에만 있는 부정 낱말(안 · 못 · 아니 · 없 · 않 · 싫 · 모르 · -지 마)이 있으면 오답(`addsNegation`).
+//   - 들은 말에만 있는 부정 낱말(안 · 못 · 아니 · 없 · 않 · 싫 · 모르 · -지 마)이 있으면 오답(`negationMismatch`).
 //   - 들은 말 **앞**에 덧붙은 낱말은 군말만 공짜이고 나머지는 거리로 셉니다(「이거 사과」 ≠ 「사과」).
 //   - 낱말 첫 음절의 자모가 다른 자모로 바뀌면 오답입니다(「가세요」 ≠ 「계세요」).
 //
@@ -18,7 +18,7 @@ import type { SpokenTrack } from "./hangul-pronunciation";
 import type { NonEmpty } from "./non-empty";
 import { judgeRoleplayReplyExact } from "./roleplay-reply";
 import { alignWindow, stemPositions } from "./spoken-align";
-import { addsNegation } from "./spoken-negation";
+import { negationMismatch } from "./spoken-negation";
 import { speakingWords } from "./speaking-judge";
 
 /** 긴 정답(자모 12개 이상)에서 일치도가 이 값 이상이면 발음 기준 정답입니다. */
@@ -160,7 +160,7 @@ export function judgeSpokenLenient(
   const strict = alternatives.find((heard) =>
     accepted.some(
       (sentence) =>
-        !addsNegation(sentence, heard) &&
+        !negationMismatch(sentence, heard) &&
         judgeRoleplayReplyExact([sentence], heard, []) === "correct",
     ),
   );
@@ -171,7 +171,7 @@ export function judgeSpokenLenient(
   for (const heard of alternatives) {
     for (const sentence of accepted) {
       const score = spokenSimilarity(sentence, heard);
-      const pass = spokenPasses(score) && !addsNegation(sentence, heard);
+      const pass = spokenPasses(score) && !negationMismatch(sentence, heard);
       const better = pass === best.pass ? score.similarity > best.similarity : pass;
       if (better) best = { heard, sentence, similarity: score.similarity, pass };
     }
