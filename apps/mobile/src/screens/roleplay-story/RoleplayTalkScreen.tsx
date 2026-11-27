@@ -26,6 +26,7 @@ import {
 } from "./roleplay-story";
 import type { RoleplayTalkScreenProps } from "./roleplay-story.contract";
 import {
+  roleplayDialogLinesOf,
   roleplayHeaderLabel,
   roleplayProgressSegments,
   roleplayTurnReportOf,
@@ -54,6 +55,7 @@ export function RoleplayTalkScreen({
   onExit,
   onTurnAnswered,
   mic,
+  romanization = "hidden",
 }: RoleplayTalkScreenProps): ReactNode {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
@@ -218,6 +220,7 @@ export function RoleplayTalkScreen({
                 translation={turn.replyTranslation}
                 counterpartName={counterpartName}
                 reaction={reaction}
+                romanization={romanization}
                 reducedMotion={reducedMotion}
               />
             ) : (
@@ -225,7 +228,7 @@ export function RoleplayTalkScreen({
                 <VisualNovelDialog
                   speakerName={counterpartName}
                   line={turn.line.ko}
-                  translation={turn.line.en ?? turn.line.roman ?? undefined}
+                  {...roleplayDialogLinesOf(turn.line, romanization)}
                   reveal="instant"
                   continueIndicator="off"
                   surface="opaque"
@@ -257,6 +260,7 @@ export function RoleplayTalkScreen({
                 correct={correct}
                 expected={expected}
                 roman={romanizeKorean(expected)}
+                meaning={turn.replyTranslation}
                 heard={state.heard}
                 isLast={isLast}
                 onHear={turn.replyAudioSource === undefined ? undefined : hear}
