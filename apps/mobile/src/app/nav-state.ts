@@ -123,6 +123,8 @@ export type Screen =
   | { name: "learner-name"; initialName: string }
   | { name: "learner-country"; learnerName: string }
   | { name: "language-select" }
+  // 가입 직후 ④ 출생 연도(ADR-0059 · ADR-0125 개정 2026-11-27) — 언어 선택 다음, 여정 입구 앞.
+  | { name: "learner-birth-year" }
   | { name: "journey-entry" }
   // 입장 전 기초 세 걸음입니다(ADR-0176) — 여정 입장 위에 쌓이고, 끝나거나 건너뛰면 `enterApp`입니다.
   | { name: "entry-basics-letters" }

@@ -55,11 +55,16 @@ import type { ChoiceRomanization, SessionOptionKey, SessionOptions } from "../li
 import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
+import { entryBirthYearWiring, type EntryBirthYearWiring } from "./entry-birth-year-wiring";
 import { entryPathWiring, type EntryPathWiring } from "./entry-path-wiring";
 import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
-import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-wiring";
+import {
+  messengerChatSource,
+  messengerChatWiring,
+  type MessengerChatWiring,
+} from "./messenger-chat-wiring";
 import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
 import type { PlansWiring } from "./use-plans";
@@ -168,6 +173,7 @@ export type ScreenWiring = {
   StatBumpWiring &
   CatalogWiring &
   LearnerSignupWiring &
+  EntryBirthYearWiring &
   LearnerProfileWiring;
 
 export type ScreenWiringArgs = {
@@ -208,8 +214,16 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
   });
 
+  // ④ 출생 연도(ADR-0059 개정 2026-11-27) — 누를 때의 대화 출처(로그인한 계정)에 적습니다.
+  const birthYear = entryBirthYearWiring({
+    entryEventSink: args.entryEventSink,
+    dispatch: args.dispatch,
+    saveBirthYear: (year) => messengerChatSource(args.episodeContent.imageUrlOf).setBirthYear(year),
+  });
+
   return {
     ...journey,
+    ...birthYear,
     // 누른 서버 푸시의 목적지입니다(ADR-0034) — 이동 규칙은 `push-routing.ts`, 선톡 방은 대화 출처로 찾습니다(ADR-0127).
     onOpenPushTarget: pushTargetOpener({
       dispatch: args.dispatch,
