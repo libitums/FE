@@ -7,7 +7,7 @@ import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
 import { remotePull, theirLines } from "./chat-remote-pull";
-import { previewRemoteRooms } from "./chat-remote-preview";
+import { remoteRoomSync } from "./chat-remote-sync";
 import { remoteWalletSync } from "./chat-remote-wallet";
 import { suggestionTagOf, type ChatSuggestionTag } from "./chat-suggestion-ref";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
@@ -38,6 +38,7 @@ export type RemoteRoomDeps = {
   readonly uuid: () => string;
   readonly mediaHooks?: ChatMediaHooks; // 사진 · 음성(ADR-0146)
   readonly preview?: readonly string[]; // 만들 때 기록을 미리 읽을 방(다시 켠 뒤 목록 미리보기)
+  readonly roomIds?: () => readonly string[]; // 목록 맞추기가 볼 방 — 없으면 미리 읽을 방
 };
 export { uuidV4 } from "./chat-remote-notes";
 export function remoteRoomMethods(deps: RemoteRoomDeps) {
@@ -80,7 +81,6 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
   };
 
   const greeting = remoteGreetingMethods({ remote, live, changed, isOpen });
-  previewRemoteRooms({ remote, live, changed }, deps.preview ?? []);
   const wallet = remoteWalletSync(remote, deps.mediaHooks); // 엽전은 서버 지갑(ADR-0155)
 
   /** 방을 열 때 — 서버 기록을 읽고, 비어 있으면 첫 인사를 받습니다. 못 받으면 failed(다시 시도 안내). */
@@ -257,6 +257,8 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     })();
   };
 
+  const pull = remotePull({ remote, live, changed, isOpen, schedule, busy, refresh, applyHistory });
+  const sync = { remote, live, changed, openRoomId: deps.openRoomId, refresh, pull };
   const controls: ChatServerControls = {
     resend: (roomId) => {
       const room = live(roomId);
@@ -280,12 +282,8 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       if (room.recovery === "stalled" && isDone !== undefined) recover(room, isDone);
       else refresh(room);
     },
-    refreshOpenRoom: () => {
-      const id = deps.openRoomId();
-      const room = id === null ? null : live(id);
-      if (room !== null && room.access.kind === "open") refresh(room);
-    },
-    pullRoom: remotePull({ remote, live, changed, isOpen, schedule, busy, refresh, applyHistory }),
+    pullRoom: pull,
+    ...remoteRoomSync(sync, deps.preview ?? [], deps.roomIds), // refreshOpenRoom · syncRooms
   };
   return {
     loadRoom,
