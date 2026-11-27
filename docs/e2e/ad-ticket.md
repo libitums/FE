@@ -4,8 +4,9 @@
 
 ## 준비
 
-- 값 파일(gitignore): iOS `apps/ios/Config/AdMob.local.xcconfig`, Android `apps/android/app/admob.properties` — 각 `.example`을 복사하면 Google 공식
-  **테스트 ID**다. 실제 ID는 운영 빌드에서만.
+- 값 파일(gitignore)은 **앱 ID 하나뿐**: iOS `apps/ios/Config/AdMob.local.xcconfig`, Android `apps/android/app/admob.properties` — `.example`은 Google
+  샘플 앱 ID(iOS Debug · Android release 아닌 빌드에서만 모듈이 열림). 광고 단위 ID는 서버 상태 응답이 내린다(ADR-0209 D10) — 탐침은 흉내 서버가
+  Google 테스트 단위 ID를 내린다.
 - 시작 전 기기 · 시뮬레이터의 소리를 끈다. 끝나면 시뮬레이터 · 에뮬레이터를 끈다.
 - 로그인 · 티켓 0장 · 실험군이 필요하다. 개발 중에는 서버 · 플래그를 흉내 내는 탐침 진입(커밋하지 않음)으로 대화상자만 띄워도 된다 —
   `useAdTicket`의 `client` · `flag` · `userId`만 바꾸고 광고 불러오기 · 보여 주기는 호스트 실제 모듈을 쓴다.
@@ -20,7 +21,7 @@
 | AT-E4 | 오늘 2번 다 씀 | 흐린 줄 「Used 2 of 2 today · back tomorrow」, 누르지 않음(A4) |
 | AT-E5 | 광고 없음(네트워크 끊기 · no fill) | 줄 대신 「No ad is available right now…」(A5), 횟수 그대로, 1분 뒤 줄 다시 |
 | AT-E6 | 광고 일찍 닫기 | 지급 확인 없이 줄 다시(실패 안내 없음) |
-| AT-E7 | 값 파일 없이 빌드 | 앱이 정상으로 뜨고(샘플 앱 ID) 광고 줄이 없다, 요청 0건 |
+| AT-E7 | 값 파일 없이 빌드 · 서버가 단위 ID를 주지 않음 | 앱이 정상으로 뜨고(샘플 앱 ID) 광고 줄이 없다 · SDK를 시작하지 않는다 |
 | AT-E8 | 대조군 · 서버 스위치 off · 구독자 · 가입 24시간 안 · 비회원 | 광고 줄 없음 |
 | AT-E9 | (운영 적용 뒤) 실제 광고 단위 + SSV URL | Supabase 로그 `admob_ssv` 200 `granted` 한 줄 |
 

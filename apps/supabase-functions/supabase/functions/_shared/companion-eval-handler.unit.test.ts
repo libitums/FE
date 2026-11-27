@@ -9,6 +9,9 @@ import { suggestionSystem } from "./companion-suggest-prompts.ts";
 import { companionSystemPrompt, proactiveDirective, stateLine } from "./companion-prompt.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
+import type { MemoryEvalOutput } from "./companion-eval-memory.ts";
+import { memoryEvalSets, memoryVerdict } from "./companion-eval-sets-memory.ts";
+import { memoryProblems } from "./companion-memory-prompts.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
 
 const fakeEnv: ChatSendEnv = {
@@ -227,7 +230,8 @@ test("EV6. 본문이 틀리면 400 invalid_request", async () => {
   const one = { id: "a", text: "안녕" };
   for (const body of [
     "{not json",
-    { kind: "memory", cases: [one] },
+    { kind: "summary", cases: [one] },
+    { kind: "memory", cases: [{ ...one, localDate: "11/27" }] },
     { kind: "reply", judgeModel: "gpt-6", cases: [one] },
     { kind: "reply", cases: [{ ...one, spoilerNote: "가".repeat(1001) }] },
     { kind: "moderation", cases: [] },
@@ -816,4 +820,84 @@ test("EV17. 채점 글 — 카드 · 말투 규칙 · 스포일러 메모 · 지
   expect(replyJudgeContent({ ...request, story: "# What happened\n- 길을 알려 줬다" })).toContain(
     "- 길을 알려 줬다",
   );
+});
+
+test("EV-MEM. 기억(memory) — 칩 표시 · 기존 기억 · 날짜를 그대로 넘기고, 작업마다 쓰기 규칙을 어긴 곳을 붙인다(ADR-0210)", async () => {
+  const seen: unknown[] = [];
+  const models: string[] = [];
+  const base = fakeCompanionLlm();
+  const { call } = setup({
+    env: anthropicEnv,
+    llmFor: (model) => {
+      models.push(model);
+      return {
+        ...base,
+        async extractMemories(request) {
+          seen.push({
+            messages: request.messages,
+            existing: request.existing,
+            localDate: request.localDate,
+            minor: request.minor,
+          });
+          return [
+            {
+              op: "add",
+              kind: "fact",
+              content: "학습자는 내일 시험이 있어요",
+              shared: false,
+              reason: "r",
+            },
+            { op: "update", ref: "m1", content: "부산에 삶", reason: "r" },
+          ];
+        },
+      };
+    },
+  });
+  const response = await call("POST", {
+    kind: "memory",
+    cases: [
+      {
+        id: "a",
+        history: [{ role: "user", text: "저는 떡볶이를 좋아해요", picked: true }],
+        text: "부산으로 이사했어요",
+        memories: ["서울에 삶"],
+        localDate: "2026-11-27",
+      },
+    ],
+  });
+  expect(response.status).toBe(200);
+  // 운영처럼 검사 모델로 돈다.
+  expect(models).toEqual(["claude-haiku-5-5"]);
+  expect(seen).toEqual([
+    {
+      messages: [
+        { role: "user", text: "저는 떡볶이를 좋아해요", picked: true },
+        { role: "user", text: "부산으로 이사했어요" },
+      ],
+      existing: [{ ref: "m1", content: "서울에 삶", shared: false, locked: false }],
+      localDate: "2026-11-27",
+      minor: false,
+    },
+  ]);
+  const [result] = response.body["results"] as { output: MemoryEvalOutput }[];
+  expect(result!.output.problems).toBe(1);
+  expect(result!.output.ops.map((op) => op.problems)).toEqual([
+    ["polite", "learner_subject", "relative_time"],
+    [],
+  ]);
+  expect(memoryVerdict(result!.output, { touch: "m1", maxOps: 2 })).toEqual({
+    pass: false,
+    reasons: ["학습자는 내일 시험이 있어요: polite,learner_subject,relative_time"],
+  });
+});
+
+test("EV-MEM2. 기억 쓰기 규칙 — 뻔한 「한국어를 배움」만 잡고, 까닭이 붙은 글 · 날짜는 통과", () => {
+  expect(memoryProblems("한국어를 배우고 있다")).toEqual(["trivial"]);
+  expect(memoryProblems("한국어 공부를 막 시작함")).toEqual(["trivial"]);
+  expect(memoryProblems("한국 드라마를 좋아해서 한국어를 배우고 있음")).toEqual([]);
+  expect(memoryProblems("11월 28일 아침에 비자 인터뷰가 있음")).toEqual([]);
+  expect(memoryProblems("다음 주에 이사함")).toEqual(["relative_time"]);
+  // 세트의 기대는 케이스 id와 맞는다.
+  for (const set of memoryEvalSets)
+    expect(Object.keys(set.expect).sort()).toEqual(set.cases.map((item) => item.id).sort());
 });

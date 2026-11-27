@@ -11,7 +11,7 @@ export const privacyKo: LegalDocument = {
   title: "Duru 개인정보 처리방침",
   description: "한국어 학습 앱 Duru가 개인정보를 수집 · 이용 · 제공 · 보관하는 방법입니다.",
   effectiveLabel: "시행일",
-  effectiveDate: "2026년 11월 21일",
+  effectiveDate: "2026년 11월 27일",
   effectiveIso: privacyEffectiveIso,
   translationNote:
     "이 문서는 영문 개인정보 처리방침의 번역본입니다. 두 문서의 내용이 다르면 영문본이 우선합니다.",

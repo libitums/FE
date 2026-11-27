@@ -41,7 +41,7 @@
 
 ### D5. 서버 계약
 
-마이그레이션 `20270114120000_ad_ticket.sql`, Edge Function `admob-ssv`.
+마이그레이션 `20270117120000_ad_ticket.sql`, Edge Function `admob-ssv`.
 
 | 이름 | 누가 | 하는 일 |
 |---|---|---|
@@ -122,7 +122,7 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 1. AdMob 계정 · 앱(iOS · Android) 둘 → **앱 ID 둘**을 값 파일(iOS `apps/ios/Config/AdMob.local.xcconfig` `ADMOB_APP_ID` · Android
    `apps/android/app/admob.properties` `ADMOB_APP_ID`)에 넣고 다음 스토어 빌드에 싣는다(/release-build가 샘플 앱 ID 0건을 확인).
 2. 보상형 광고 단위 둘 → 각 단위의 「서버 측 확인」 URL = `https://<project>.supabase.co/functions/v1/admob-ssv`.
-3. `20270114120000_ad_ticket.sql` 적용(직전 버전 뒤 · 중복 없음 확인).
+3. `20270117120000_ad_ticket.sql` 적용(열린 PR #661 `20270114…` · #664 `20270115120000` · #667 `20270116120000` 뒤 — 적용 전 운영 버전과 중복 없음 확인).
 4. `supabase functions deploy admob-ssv` · 비밀(**필수**) `ADMOB_AD_UNIT_IDS`(쉼표, 두 단위의 `/` 뒤 숫자).
 5. 광고 단위 ID 둘을 서버 설정에:
    `update companion.settings set ad_ticket_unit_ios = 'ca-app-pub-…/…', ad_ticket_unit_android = 'ca-app-pub-…/…';`
@@ -135,24 +135,27 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 - **상태 기계(순수)** `lib/ad-ticket.ts` `adTicketStep(state, input)` — A1 offer · A2 busy(starting · loading · showing · confirming) · A3 granted · A4 limit ·
   A5 no-fill. 전이와 함께 낼 이벤트와 「원장에 1장」 여부를 돌려준다. 늦게 온 결과(다른 단계)는 무시한다. 광고 불러오기 8초 · A5 뒤 1분 · 지급 확인 간격
   1 · 1.5 · 2 · 3 · 4 · 5 · 5초(합 21.5초, 다하면 실패 안내).
-- **결선** `app/use-ad-ticket.ts` — 「Out of tickets」가 설 때 호스트 모듈이 있고 로그인했으면 서버 상태와 플래그를 함께 읽는다. 대상이면 노출 이벤트(실험군 ·
-  대조군), 실험군만 줄을 그린다. 누르면 `ad_ticket_start` → 호스트 광고 불러오기 → 앱 오디오 멈춤(`stopAudio`) → 보여 주기(SSV `user_id` = Supabase
+- **결선** `app/use-ad-ticket.ts` — 「Out of tickets」가 설 때 호스트 모듈이 있고 로그인했으면 서버 상태(플랫폼 실어)와 플래그를 함께 읽는다. 대상이고
+  **서버가 꼴이 맞는 광고 단위 ID를 줬으면**(D10) 노출 이벤트(실험군 · 대조군), 실험군만 줄을 그린다. 누르면 `ad_ticket_start` → 호스트 광고 불러오기(서버가 준 단위) → 앱 오디오 멈춤(`stopAudio`) → 보여 주기(SSV `user_id` = Supabase
   사용자 id, `custom_data` = 요청 id) → 끝까지 봤으면 `ad_ticket_status(요청 id)`를 다시 읽어 `granted`면 `addBoughtTicket`. 대화상자가 닫히면 세대를 올려
   늦은 응답을 버린다. `use-learning-tickets`가 결선을 「Out of tickets」 결선에 싣는다(AppSession은 그대로).
 - **플래그** `lib/ad-ticket-flag.ts` — PostHog `/flags/?v=2`(프로젝트 키 · distinct id), 켜졌고 변형이 없거나 `test`면 실험군. 설정 · 전송이 없거나 실패면 대조군.
 - **화면** `screens/tickets/AdTicketOption.tsx` — 테두리 줄(주황 채움은 Start lesson만), 엽전 버튼 위 · 요금제 카드 위. A3는 대화상자 제목 · 링(남은 장수 ·
   「ticket ready」) · 안내가 바뀐다. 문구 여덟 언어 `lib/ui-copy-ad-ticket.ts`.
-- **호스트** — iOS `RewardedAdModule.swift`(Google-Mobile-Ads-SDK 13.12.0) · Android `RewardedAdModule.java`(play-services-ads 25.5.0). `loadRewarded` →
+- **호스트** — iOS `RewardedAdModule.swift`(Google-Mobile-Ads-SDK 13.12.0) · Android `RewardedAdModule.java`(play-services-ads 25.5.0). `loadRewarded(unitId)`(꼴 검사, 처음이면 여기서 SDK 시작) →
   `{status: loaded | no_fill | failed}`, `showRewarded(userId, customData)` → `{status: earned | dismissed | failed}`. 비개인화(`npa=1`), 새 ATT 요청 없음,
   측정 초기화는 SDK를 시작할 때까지 미룸(`GADDelayAppMeasurementInit` · `DELAY_APP_MEASUREMENT_INIT`). 광고를 닫으면 iOS는 학습 음원 오디오 세션을 되돌린다.
-  - 값: iOS `Config/AdMob.xcconfig` ← `AdMob.local.xcconfig`, Android `app/admob.properties`(둘 다 gitignore, `.example`은 Google 테스트 ID).
-    **광고 단위가 비면 SDK를 시작하지 않고 모듈도 등록하지 않는다 → JS는 줄을 그리지 않는다.**
+  - 값: **앱 ID 하나뿐** — iOS `Config/AdMob.xcconfig` ← `AdMob.local.xcconfig` `ADMOB_APP_ID`, Android `app/admob.properties` `ADMOB_APP_ID`
+    (둘 다 gitignore, `.example`은 Google 샘플 앱 ID). 광고 단위 ID는 앱에 없다(D10, 개발용 덮어쓰기도 두지 않음 — 기기 확인은 흉내 서버가 테스트 단위를 내린다).
+  - **모듈 등록 = 앱 ID가 있음**(샘플 앱 ID는 iOS Debug · Android release 아닌 빌드에서만). **SDK 시작 = 서버가 단위를 준 첫 불러오기** — 쓰지 않을 SDK를
+    미리 띄우지 않는다.
   - **앱 ID는 비울 수 없다** — iOS 시뮬레이터에서 `GADApplicationIdentifier`가 빈 빌드가 뜨자마자 죽었다(GADInvalidInitializationException, SDK를 시작하지
-    않아도). 그래서 값이 없을 때 두 플랫폼 모두 Google **샘플** 앱 ID로 채운다. 스토어 빌드에 샘플 ID가 들어가지 않게 /release-build 검사에 「테스트 ID 0건」을 둔다.
+    않아도). 그래서 값이 없을 때 두 플랫폼 모두 Google **샘플** 앱 ID로 채운다. 스토어 빌드에 샘플 ID가 들어가지 않게 /release-build 검사에 「샘플 앱 ID 0건」을 둔다
+    (스토어 빌드 필수 AdMob 값은 앱 ID 둘뿐).
   - iOS `SKAdNetworkItems` 50개(AdMob 권장 목록). Airbridge 정책 테스트(I-S4)는 「Info.plist에 정확히 한 번」으로 바꿨다.
   - Android: `play-services-ads`가 끌어오는 `appcompat-resources` 1.4.1이 Lynx xelement의 appcompat 1.0.0과 클래스가 겹쳐(`checkBundledDuplicateClasses`)
     뺐다. 에뮬레이터에서 테스트 광고 불러오기 · 보여 주기 · 보상까지 확인했다.
 - **크기**: JS 번들 5,794,961 bytes(천장 6,180,000). Android 다운로드 +약 1.8 MB, iOS 링크된 코드 +약 2.9 MB(다운로드 추정 +0.8 ~ 1.2 MB) —
   `docs/performance/reports/ad-ticket-01.md`.
 - **알려진 한계**: 지급 확인이 21.5초 안에 오지 않으면 실패 안내가 서고, 그 뒤 서버가 지급해도 앱은 그 요청을 다시 묻지 않는다(그 횟수는 오늘 상한에 세어진다).
-- 검사: unit AT-U1 ~ U5 · AT-A1 ~ A4 · AN1(136) · AB3(106 · 98), ui UAT1 ~ UAT7, integration IAT1 ~ IAT7, Android `RewardedAdConfigTest`, 수동 `docs/e2e/ad-ticket.md`.
+- 검사: unit AT-U1 ~ U6 · AT-A1 ~ A4 · AN1 · AB3, ui UAT1 ~ UAT7, integration IAT1 ~ IAT8(단위 없음 → 줄 없음), Android `RewardedAdConfigTest`, 수동 `docs/e2e/ad-ticket.md`.
