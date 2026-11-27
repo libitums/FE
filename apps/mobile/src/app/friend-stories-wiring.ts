@@ -12,6 +12,7 @@ import type {
 } from "../screens/messenger-chat/friend-stories.contract";
 import { deviceKeyboardHeightStore } from "../screens/messenger-chat/chat-local-stores";
 import { deviceStorySeenStore } from "../screens/messenger-chat/friend-story-seen-store";
+import { accountMemory } from "../screens/messenger-chat/story-row-memory";
 import { loadCurrentWordbook, todayLocal, updateCurrentWordbook } from "./learning-trail-port";
 import { currentMessengerChatSource, sourceKey } from "./messenger-chat-wiring";
 import { companionServerRemote } from "./suggested-friends-wiring";
@@ -125,6 +126,8 @@ export function friendStoriesPort(args: FriendStoriesWiringArgs): FriendStoriesP
     }),
     replyPlan: () => latest?.replyPlan ?? null,
     keyboardHeightStore: deviceKeyboardHeightStore,
+    // 마지막으로 보인 줄(계정마다, 실행 동안) — 탭을 다시 열면 첫 프레임에 그립니다.
+    memory: accountMemory(sourceKey),
   };
   return cachedPort;
 }
