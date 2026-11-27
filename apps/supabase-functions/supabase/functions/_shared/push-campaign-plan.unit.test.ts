@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  armOf,
   batchesOf,
   type CampaignConfig,
   type CampaignLearner,
@@ -13,7 +14,7 @@ import {
   renderCopy,
   storyPlaceOf,
 } from "./push-campaign-plan.ts";
-import { pushCampaignConfig } from "./push-campaign-config.ts";
+import { allCampaignCopy, pushCampaignConfig } from "./push-campaign-config.ts";
 
 const HOUR = 3600_000;
 // 2026-11-16 12:05 UTC = 마닐라 20:05.
@@ -23,46 +24,32 @@ const catalog: CatalogEpisode[] = [
   { id: "u00-tutorial", steps: ["S1", "S2", "S3", "RP"], title: "Tutorial", character: "승무원" },
   { id: "u01-water", steps: ["S1", "S2", "RP"], title: "Buying Water", character: "편의점 점원" },
 ];
-const storyUnits = {
-  "u00-tutorial": {
-    title_en: "Tutorial",
-    after: {
-      S1: [{ hook_name: "dare", text: { en: "after S1", id: "setelah S1" } }],
-      RP: [{ hook_name: "half_line", text: { en: "tutorial done" } }],
-    },
-  },
-  "u01-water": {
-    title_en: "Buying Water",
-    after: { S1: [{ hook_name: "secret", text: { en: "water S1" } }] },
-  },
-};
+const one = (title: string, body: string) => ({ en: { title, body } });
 const config: CampaignConfig = {
-  localHour: 20,
-  cooldownHours: 72,
-  rules: {
-    "tutorial-lesson1": {
-      holdoutPercent: 50,
-      minIdleHours: 20,
-      maxIdleHours: 24 * 14,
-      story: false,
-    },
-    "tutorial-lesson2": {
-      holdoutPercent: 30,
-      minIdleHours: 20,
-      maxIdleHours: 24 * 14,
-      story: true,
-    },
-    "episode-next": { holdoutPercent: 30, minIdleHours: 20, maxIdleHours: 24 * 21, story: true },
+  localHours: { noon: 12, evening: 20 },
+  minIdleHours: 12,
+  minGapHours: 6,
+  dailyDays: 7,
+  winbackDays: [10, 14],
+  stages: {
+    "tutorial-lesson1": "tutorial",
+    "tutorial-lesson2": "tutorial",
+    "episode-next": "next",
   },
   copy: {
-    "tutorial-lesson1": {
-      en: { title: "{character}: 어서 오세요", body: "{name}, lesson 1 waits." },
+    tutorial: {
+      noon: [one("noon 0", "{name}, lunch."), one("noon 1", "{name}, lunch again.")],
+      evening: [one("evening 0", "{name}, tonight."), one("evening 1", "{name}, tonight again.")],
+      winback: [one("winback 0", "{name}, come back.")],
     },
-    "tutorial-lesson2": { en: { title: "{character}: 괜찮아요", body: "{name}, try lesson 2." } },
-    "episode-next": {
-      en: { title: "{character}: 수고했어요", body: "{name}, {episode} is ready." },
+    next: {
+      noon: [one("next noon", "{name}, {episode} is ready.")],
+      evening: [one("next evening", "{name}, {episode} tonight.")],
+      winback: [one("next winback", "{name}, {episode} waits.")],
     },
+    mid: { noon: [], evening: [], winback: [] },
   },
+  lastCopy: one("last", "{name}, we will go quiet."),
 };
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const learner = (n: number, over: Partial<CampaignLearner> = {}): CampaignLearner => ({
@@ -75,7 +62,7 @@ const learner = (n: number, over: Partial<CampaignLearner> = {}): CampaignLearne
   ...over,
 });
 const plan = (learners: CampaignLearner[], nowMs = NOW) =>
-  planCampaign({ learners, catalog, storyCatalog: catalog, storyUnits, config, nowMs });
+  planCampaign({ learners, catalog, config, nowMs });
 
 describe("PCA1 판정 — 콘솔과 같은 규칙", () => {
   test("세그먼트 · 예고 자리", () => {
@@ -115,100 +102,138 @@ describe("PCA1 판정 — 콘솔과 같은 규칙", () => {
   });
 });
 
-describe("PCA2 계획 — 현지 20시 · 쉰 시간 · 겹침 · 72시간", () => {
+// 마닐라 12:05(= 04:05 UTC) — 점심 회차.
+const NOON = Date.UTC(2026, 10, 16, 4, 5);
+const many = (count: number, over: Partial<CampaignLearner> = {}) =>
+  Array.from({ length: count }, (_, n) => learner(n, over));
+const idle = (nowMs: number, hours: number) => ({ lastActiveMs: nowMs - hours * HOUR });
+
+describe("PCA2 계획 — 빈도 칸 · 점심/저녁 · 매일/복귀 단계", () => {
   test("빠지는 이유를 센다", () => {
     const { rows, skipped } = plan([
       learner(1),
       learner(2, { country: "US" }), // 뉴욕 07시
       learner(3, { country: null }),
-      learner(4, { lastActiveMs: NOW - 2 * HOUR }),
-      learner(5, { lastCampaignMs: NOW - 48 * HOUR }),
-      learner(6, { catalogProgress: { "u00-tutorial": ["intro", "S1", "S2"] } }), // tutorial-rest — 규칙 없음
+      learner(4, { lastActiveMs: NOW - 2 * HOUR }), // 오늘 이미 씀
+      learner(5, { lastCampaignMs: NOW - 3 * HOUR }), // 방금 다른 알림
+      learner(6, { catalogProgress: { "u00-tutorial": ["intro", "S1", "S2"] } }), // tutorial-rest — 단계 없음
+      learner(7, idle(NOW, 8 * 24 + 1)), // 매일 단계가 끝났고 복귀 날도 아님
     ]);
     expect(rows.map((row) => row.userId)).toEqual([uuid(1)]);
     expect(skipped).toMatchObject({
       "local-hour": 1,
       "no-time-zone": 1,
-      idle: 1,
-      cooldown: 1,
+      idle: 2,
+      gap: 1,
       "no-rule": 1,
     });
   });
 
-  test("예고가 있는 세그먼트는 받는 사람을 A 캐릭터 톤 · B 예고로 나누고, 대조군은 변형이 없다", () => {
-    const learners = Array.from({ length: 80 }, (_, n) => learner(n));
-    const { rows } = plan(learners);
-    expect(rows).toHaveLength(80);
-    const sent = rows.filter((row) => row.group === "sent");
-    const control = rows.filter((row) => row.group === "control");
-    expect(control.every((row) => row.variant === null)).toBe(true);
-    const a = sent.filter((row) => row.variant === "a");
-    const b = sent.filter((row) => row.variant === "b");
-    expect(a.length).toBeGreaterThan(10);
-    expect(b.length).toBeGreaterThan(10);
-    expect(a[0]).toMatchObject({
-      title: "승무원: 괜찮아요",
-      body: "Ana, try lesson 2.",
-      storyStep: null,
-    });
-    expect(b[0]).toMatchObject({
-      title: "Tutorial",
-      body: "after S1",
-      storyStep: "u00-tutorial:S1:dare",
-      series: "자동 · tutorial-lesson2",
-    });
-  });
-
-  test("예고 규칙이 없는 세그먼트는 모두 A, 파이널 뒤 예고 제목은 다음 에피소드", () => {
-    const lesson1 = plan([learner(1, { catalogProgress: { "u00-tutorial": ["intro"] } })]).rows;
-    expect(lesson1.every((row) => row.variant !== "b")).toBe(true);
-    const next = plan(
-      Array.from({ length: 40 }, (_, n) =>
-        learner(n, { catalogProgress: { "u00-tutorial": ["intro", "S1", "S2", "S3", "RP"] } }),
-      ),
-    ).rows;
-    const b = next.find((row) => row.variant === "b");
-    expect(b).toMatchObject({ title: "Buying Water", body: "tutorial done" });
-    const a = next.find((row) => row.variant === "a");
-    expect(a?.title).toBe("편의점 점원: 수고했어요");
-    expect(a?.body).toBe("Ana, Buying Water is ready.");
-  });
-
-  test("같은 사람은 회차가 달라도 같은 대조군 · 변형", () => {
+  test("칸은 셋으로 고르게 나뉘고, 진도 · 회차가 달라도 같은 사람은 같은 칸", () => {
+    const arms = Array.from({ length: 300 }, (_, n) => armOf(uuid(n)));
+    for (const arm of ["control", "once", "twice"] as const)
+      expect(arms.filter((value) => value === arm).length, arm).toBeGreaterThan(70);
     const first = plan([learner(7)]).rows[0];
     const later = NOW + 24 * HOUR;
-    const again = plan([learner(7, { lastActiveMs: later - 30 * HOUR })], later).rows[0];
+    const again = plan(
+      [learner(7, { ...idle(later, 30), catalogProgress: { "u00-tutorial": ["intro"] } })],
+      later,
+    ).rows[0];
     expect(first).toBeDefined();
     expect(again?.group).toBe(first?.group);
     expect(again?.variant).toBe(first?.variant);
   });
 
+  test("저녁 회차 — 세 칸 모두 줄이 생기고 대조군은 변형이 없다(a 하루 1번 · b 하루 2번)", () => {
+    const { rows } = plan(many(90));
+    expect(rows).toHaveLength(90);
+    for (const row of rows) {
+      const arm = armOf(row.userId);
+      expect(row.group).toBe(arm === "control" ? "control" : "sent");
+      expect(row.variant).toBe(arm === "control" ? null : arm === "once" ? "a" : "b");
+      expect(row.series).toBe("빈도 · tutorial");
+      expect(row.storyStep).toMatch(/^daily:evening:[01]$/);
+      expect(row.title).toMatch(/^evening [01]$/);
+    }
+  });
+
+  test("점심 회차 — 「하루 2번」 칸만 받고 나머지는 줄이 없다", () => {
+    const { rows, skipped } = plan(many(90, idle(NOON, 30)), NOON);
+    expect(rows.length).toBeGreaterThan(15);
+    expect(rows.every((row) => armOf(row.userId) === "twice" && row.variant === "b")).toBe(true);
+    expect(rows.every((row) => /^daily:noon:[01]$/.test(row.storyStep ?? ""))).toBe(true);
+    expect(skipped["arm"]).toBe(90 - rows.length);
+  });
+
+  test("문구는 날마다 돌아 같은 사람에게 이틀 연속 같은 말이 가지 않는다", () => {
+    const today = plan([learner(1)]).rows[0];
+    const tomorrow = NOW + 24 * HOUR;
+    const next = plan([learner(1, idle(tomorrow, 30))], tomorrow).rows[0];
+    expect(today?.title).not.toBe(next?.title);
+  });
+
+  test("매일 단계의 마지막 날 저녁은 「멈춘다」 알림, 점심은 평소 문구", () => {
+    const evening = plan(many(30, idle(NOW, 6 * 24 + 5))).rows;
+    expect(evening).toHaveLength(30);
+    expect(evening.every((row) => row.storyStep === "daily:last" && row.title === "last")).toBe(
+      true,
+    );
+    const noon = plan(many(30, idle(NOON, 6 * 24 + 5)), NOON).rows;
+    expect(noon.every((row) => row.storyStep?.startsWith("daily:noon:"))).toBe(true);
+  });
+
+  test("복귀 단계 — 정한 날 저녁에만, 보내는 두 칸 모두. 점심에는 가지 않는다", () => {
+    const evening = plan(many(60, idle(NOW, 10 * 24 + 5))).rows;
+    expect(evening).toHaveLength(60);
+    expect(evening.every((row) => row.storyStep === "winback:0")).toBe(true);
+    expect(evening.some((row) => row.variant === "a")).toBe(true);
+    expect(evening.some((row) => row.variant === "b")).toBe(true);
+    expect(plan(many(60, idle(NOON, 10 * 24 + 5)), NOON).rows).toHaveLength(0);
+    expect(plan(many(60, idle(NOW, 11 * 24 + 5))).rows).toHaveLength(0);
+    expect(plan(many(60, idle(NOW, 61 * 24))).rows).toHaveLength(0);
+  });
+
+  test("진도마다 그 단계 문구 — 다음 에피소드는 에피소드 이름을 싣는다", () => {
+    const next = plan([
+      learner(1, { catalogProgress: { "u00-tutorial": ["intro", "S1", "S2", "S3", "RP"] } }),
+    ]).rows[0];
+    expect(next).toMatchObject({
+      series: "빈도 · next",
+      segment: "episode-next",
+      title: "next evening",
+      body: "Ana, Buying Water tonight.",
+    });
+  });
+
   test("묶음 — 받는 사람만, 같은 문구끼리", () => {
-    const { rows } = plan(Array.from({ length: 30 }, (_, n) => learner(n, { name: "" })));
-    const batches = batchesOf(rows);
-    const users = batches.flatMap((batch) => batch.userIds);
+    const { rows } = plan(many(30, { name: "" }));
+    const users = batchesOf(rows).flatMap((batch) => batch.userIds);
     expect(users.length).toBe(rows.filter((row) => row.group === "sent").length);
   });
 });
 
-describe("PCA3 설정 — 결정대로", () => {
-  test("현지 20시 · 72시간 · 예고 A/B는 레슨 2 이후 세그먼트, 문구는 모두 캐릭터 톤 + 영어", () => {
-    expect(pushCampaignConfig.localHour).toBe(20);
-    expect(pushCampaignConfig.cooldownHours).toBe(72);
-    const storySegments = Object.entries(pushCampaignConfig.rules)
-      .filter(([, rule]) => rule?.story)
-      .map(([segment]) => segment)
-      .sort();
-    expect(storySegments).toEqual([
+describe("PCA3 설정 — 결정대로(ADR-0208)", () => {
+  test("현지 12시 · 20시, 7일 매일 뒤 복귀 날, 튜토리얼 표지부터 에피소드 중간까지 모두 대상", () => {
+    expect(pushCampaignConfig.localHours).toEqual({ noon: 12, evening: 20 });
+    expect(pushCampaignConfig.dailyDays).toBe(7);
+    expect(pushCampaignConfig.winbackDays).toEqual([10, 14, 21, 30, 45, 60]);
+    expect(Object.keys(pushCampaignConfig.stages).sort()).toEqual([
       "episode-mid",
       "episode-next",
+      "tutorial-cover",
+      "tutorial-lesson1",
       "tutorial-lesson2",
       "tutorial-rest",
     ]);
-    for (const segment of Object.keys(pushCampaignConfig.rules)) {
-      const copy = pushCampaignConfig.copy[segment as keyof typeof pushCampaignConfig.copy];
-      expect(copy?.en?.title, segment).toMatch(/^\{character\}: /);
-      expect(copy?.en?.body, segment).toBeTruthy();
+  });
+
+  test("단계마다 점심 · 저녁 문구가 둘 이상(이틀 연속 같은 말이 가지 않게), 모든 문구는 일곱 언어", () => {
+    for (const [stage, copy] of Object.entries(pushCampaignConfig.copy)) {
+      expect(copy.noon.length, stage).toBeGreaterThanOrEqual(2);
+      expect(copy.evening.length, stage).toBeGreaterThanOrEqual(2);
+      expect(copy.winback.length, stage).toBeGreaterThanOrEqual(2);
     }
+    for (const [id, copy] of allCampaignCopy(pushCampaignConfig))
+      expect(Object.keys(copy).sort(), id).toEqual(["en", "es", "id", "ja", "ms", "vi", "zh-TW"]);
   });
 });
