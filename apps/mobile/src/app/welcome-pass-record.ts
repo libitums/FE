@@ -23,16 +23,17 @@ export function welcomePassShownFrom(raw: string | null): number | null {
 }
 
 /**
- * 가입 보상 창이 아직 앞에 있나 — 받은 보상의 창을 아직 안 봤으면 참. 지급을 아직 모르면(묻기 전 · 묻기 실패) 튜토리얼 중일
- * 때만 참입니다(그 동안은 티켓을 쓰지 않음). 튜토리얼을 끝냈는데 지급을 모르면 창보다 먼저 레슨이 티켓을 쓸 수 있어 계정 생성
- * 기준으로 둡니다. 순수.
+ * 가입 보상 창이 아직 앞에 있나 — 창은 튜토리얼(u00) 뒤에 서므로 튜토리얼을 끝내기 전에는 지급 결과와 상관없이 참입니다(그 동안은
+ * 티켓을 쓰지 않음). 지급 물음은 튜토리얼 중에도 끝나므로, 지급 0(탈퇴 뒤 같은 신원의 재가입 `identity_used` · 기존 회원 · 꺼짐)이
+ * 튜토리얼 중에 와도 창 전입니다(2026-11-27 기기 회귀). 튜토리얼을 끝냈으면 받은 보상의 창을 아직 안 봤을 때만 참이고, 지급 0 ·
+ * 이미 봄 · 지급을 모름(물음 실패 — 창보다 먼저 레슨이 티켓을 쓸 수 있음)은 계정 생성 기준으로 둡니다. 순수.
  */
 export function signupWindowAhead(
   record: SignupRewardRecord | null,
   tutorialDone: boolean,
 ): boolean {
-  if (record === null) return !tutorialDone;
-  return !record.shown && record.amount > 0;
+  if (!tutorialDone) return true;
+  return record !== null && !record.shown && record.amount > 0;
 }
 
 export type WelcomePassStore = {
