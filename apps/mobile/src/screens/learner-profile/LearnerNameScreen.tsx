@@ -27,7 +27,6 @@ export function LearnerNameScreen({
   port,
   onContinue,
   onBack,
-  stepCount = 4,
 }: LearnerNameScreenProps): ReactNode {
   const copy = useUiCopy().learnerProfile;
   const [name, setName] = useState(initialName);
@@ -71,7 +70,7 @@ export function LearnerNameScreen({
             bindtap={onBack}
           />
         </view>
-        <EntryStepBar current={1} total={stepCount} />
+        <EntryStepBar current={1} total={3} />
       </view>
 
       <scroll-view

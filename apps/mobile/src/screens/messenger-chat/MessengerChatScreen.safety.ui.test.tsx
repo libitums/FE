@@ -51,6 +51,15 @@ test("SU-UI2 연도를 고르고 Continue → 출처에 저장되고 시트가 �
   expect(screen.queryByTestId(ids.birthYearSheet)).toBeNull();
 });
 
+test("SU-UI3 Skip → skipped로 저장되고 시트가 닫힌다. 이미 답했으면 시트가 뜨지 않는다", () => {
+  const { source } = mountChat({ seed: unasked(seedOf(fixtureRoom("mina"))) });
+  act(() => {
+    tapButtonIn("ui-lynx-bottom-sheet-action-skip");
+  });
+  expect(source.snapshot().birthYear).toEqual({ kind: "skipped" });
+  expect(screen.queryByTestId(ids.birthYearSheet)).toBeNull();
+});
+
 test("SU-UI4 방을 열자마자 뜬 시트에서 시스템 뒤로 → 답하지 않은 채 방을 나간다", () => {
   const { source, onExit } = mountChat({ seed: unasked(seedOf(fixtureRoom("mina"))) });
   act(() => {
@@ -218,6 +227,14 @@ test("SU-UI9 사이드바 생년 줄은 지금 값을 보이고, 누르면 그 �
   });
   expect(screen.queryByTestId(ids.birthYearSheet)).toBeNull();
   expect(screen.getByTestId(ids.sidebar)).toBeTruthy();
+});
+
+test("SU-UI10 건너뛴 생년은 사이드바에 Not set으로 보인다", () => {
+  mountChat({ seed: { ...seedOf(fixtureRoom("mina")), birthYear: { kind: "skipped" } } });
+  tap(ids.settings);
+  expect(screen.getByTestId(ids.sidebarBirthYear).getAttribute("accessibility-label")).toBe(
+    "Birth year, Not set",
+  );
 });
 
 test("SU-UI13 방 도중에 막히면 열린 키보드를 접고, 다음 뒤로가기는 바로 방을 나간다", () => {

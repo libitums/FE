@@ -204,6 +204,8 @@ export const messengerChatJa: MessengerChatCopy = {
       title: "何年生まれですか？",
       body: "年齢に合ったチャットにするために使います。誰にも表示されず、あとでチャット設定から変更できます。",
       continue: "続ける",
+      skip: "今はスキップ",
+      skipNote: "スキップすると、18歳未満向けの設定でチャットします。",
       sidebar: "生まれた年",
       notSet: "未設定",
     },

@@ -56,7 +56,6 @@ export function LearnerCountryScreen({
   port,
   onContinue,
   onBack,
-  stepCount = 4,
 }: LearnerCountryScreenProps): ReactNode {
   const copy = useUiCopy().learnerProfile;
   const [query, setQuery] = useState("");
@@ -114,7 +113,7 @@ export function LearnerCountryScreen({
             bindtap={onBack}
           />
         </view>
-        <EntryStepBar current={2} total={stepCount} />
+        <EntryStepBar current={2} total={3} />
       </view>
 
       <view className="learner-profile-heading">

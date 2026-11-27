@@ -14,7 +14,7 @@ export const UNLOCKED_KEY = "libitum.messenger.unlocked";
 export const UNLOCKED_BY_ACCOUNT_KEY = "libitum.messenger.unlocked-by-account";
 /** 사진 속 내 모습(ADR-0150) — `{ <출처 키>: female | male | hidden }`(계정마다). */
 export const SNAPSHOT_SELF_KEY = "libitum.messenger.snapshot-self";
-/** 생년(ADR-0125) — `{ <출처 키>: { kind: "set", year } }`(계정마다). 옛 앱의 `{ kind: "skipped" }`는 적힌 것 없음으로 읽습니다. */
+/** 생년(ADR-0125) — `{ <출처 키>: { kind: "set", year } | { kind: "skipped" } }`(계정마다). */
 export const BIRTH_YEAR_KEY = "libitum.messenger.birth-year";
 
 export type UnlockStore = {
@@ -151,13 +151,11 @@ export function deviceSnapshotSelfStore(accountKey: string): SnapshotSelfStore {
   };
 }
 
-/**
- * 기기에 적힌 생년 하나 — set(정수 연도)만 읽고, 틀린 값은 적힌 것 없음(null)으로. 옛 앱의 건너뜀(skipped)도 null이라 다음에 방에
- * 들어오면 다시 묻습니다(ADR-0125 개정 2026-11-27 — 건너뛴 사람은 반응 · 선톡이 오지 않았습니다).
- */
+/** 기기에 적힌 생년 하나 — set(정수 연도) · skipped만 읽고, 틀린 값은 적힌 것 없음(null)으로. */
 export function parseBirthYear(raw: unknown): ChatBirthYear | null {
   if (typeof raw !== "object" || raw === null) return null;
   const value = raw as { kind?: unknown; year?: unknown };
+  if (value.kind === "skipped") return { kind: "skipped" };
   return value.kind === "set" && typeof value.year === "number" && Number.isInteger(value.year)
     ? { kind: "set", year: value.year }
     : null;

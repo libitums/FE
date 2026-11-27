@@ -49,10 +49,6 @@ export const learnerProfileJa: LearnerProfileCopy = {
       jumpTo: (letter) => `${letter}へ移動`,
       jumpBar: "頭文字で移動",
     },
-    birthYear: {
-      title: "何年生まれですか？",
-      caption: "年齢に合ったアプリにするために使います。誰にも表示されません。",
-    },
   },
   settings: {
     title: "名前と国",

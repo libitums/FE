@@ -208,6 +208,8 @@ export const messengerChatEs: MessengerChatCopy = {
       title: "¿En qué año naciste?",
       body: "Lo usamos para adaptar los chats a tu edad. Nunca se muestra a nadie y puedes cambiarlo luego en los ajustes del chat.",
       continue: "Continuar",
+      skip: "Omitir por ahora",
+      skipNote: "Si lo omites, los chats usan la configuración para menores de 18.",
       sidebar: "Año de nacimiento",
       notSet: "Sin indicar",
     },

@@ -10,7 +10,7 @@ import { lettersStorageKey } from "../lib/letters-recommend";
 import { systemBackEventName } from "../lib/system-back";
 import { resetPushWiringForTests } from "./push-wiring";
 import { PUSH_PROMPT_DELAY_MS, pushPromptStorageKey } from "./push-prompt";
-import { passLearnerBirthYearIfShown, passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerSignup } from "./test-helpers/learner-signup";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import {
   advance,
@@ -72,7 +72,6 @@ async function reachEntry(
   }
   passLearnerSignup();
   tapButtonIn("language-select-screen-next");
-  passLearnerBirthYearIfShown();
   return { host, server, events };
 }
 

@@ -50,10 +50,6 @@ export const learnerProfileTh: LearnerProfileCopy = {
       jumpTo: (letter) => `ไปที่ตัวอักษร ${letter}`,
       jumpBar: "ข้ามไปยังตัวอักษร",
     },
-    birthYear: {
-      title: "คุณเกิดปีไหน",
-      caption: "เราใช้ข้อมูลนี้เพื่อให้แอปเหมาะกับอายุของคุณ ไม่มีใครเห็นข้อมูลนี้",
-    },
   },
   settings: {
     title: "ชื่อและประเทศ",

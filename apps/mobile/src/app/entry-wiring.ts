@@ -283,15 +283,13 @@ export function entryWiring({
       setEntryLanguage(language);
     },
     onChangeUiLanguage: (language: EntryLanguage) => changeUiLanguage(language, setEntryLanguage),
-    // 언어 선택의 `다음`입니다 — 회원은 ④ 출생 연도 열람 → push(ADR-0059 개정 2026-11-27), 그다음이 여정 입장입니다.
-    // 비회원(세션 없음)은 서버에 적을 곳이 없어 ④ 없이 여정 입장으로 갑니다 — 메신저는 로그인 뒤 방에서 묻습니다.
+    // 언어 선택의 `다음`입니다 — 여정 입장 열람 → push.
     // 확정할 때 UI 언어를 저장합니다 — 재실행 · 재방문에도 남습니다. 고를 때가 아닌 이유: 이미 선택된
     // 항목을 다시 누르면 OptionSelector가 onChange를 내지 않아, 기본 선택(영어)은 저장될 길이 없다.
     onContinueLanguageSelect: () => {
       saveUiLanguage(entryLanguage);
-      const next = loadAuthSession() === null ? "journey-entry" : "learner-birth-year";
-      entryEventSink?.(entryScreenViewedEvent(next));
-      dispatch({ type: "push", screen: { name: next } });
+      entryEventSink?.(entryScreenViewedEvent("journey-entry"));
+      dispatch({ type: "push", screen: { name: "journey-entry" } });
     },
     // 여정 입장의 두 길 · 완주는 `entry-path-wiring.ts`가 집니다(ADR-0176).
   };

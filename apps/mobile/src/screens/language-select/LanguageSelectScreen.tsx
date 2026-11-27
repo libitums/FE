@@ -43,7 +43,6 @@ export function LanguageSelectScreen({
   onContinue,
   onBack,
   showSteps = true,
-  stepCount = 4,
 }: LanguageSelectScreenProps): ReactNode {
   // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(버튼이 없으면 등록하지 않습니다).
   useScreenBack(onBack);
@@ -61,8 +60,8 @@ export function LanguageSelectScreen({
             bindtap={onBack}
           />
         ) : null}
-        {/* 가입 직후 네 화면(이름 → 나라 → 언어 → 출생 연도)의 셋째 칸입니다. 설정에서 열면 단계가 없어 그리지 않습니다. */}
-        {showSteps ? <EntryStepBar current={3} total={stepCount} /> : null}
+        {/* 가입 직후 세 화면(이름 → 나라 → 언어)의 마지막 칸입니다. 설정에서 열면 단계가 없어 그리지 않습니다. */}
+        {showSteps ? <EntryStepBar current={3} total={3} /> : null}
       </view>
 
       <scroll-view

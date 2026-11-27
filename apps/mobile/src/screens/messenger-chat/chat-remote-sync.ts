@@ -4,6 +4,7 @@
 // 폴링은 없습니다(ADR-0200). 처음 켤 때는 요약으로 대화가 있는 방만 미리 읽고(`previewRemoteRooms`), 그 값을 기준으로 둡니다.
 
 import type { RoomState } from "./chat-fixture-room";
+import type { UnreadSeen } from "./chat-last-seen";
 import type { RemoteRoomPull } from "./chat-remote-pull";
 import { previewRemoteRooms } from "./chat-remote-preview";
 import type { ChatRemote } from "./chat-remote.contract";
@@ -16,6 +17,8 @@ export type RemoteSyncDeps = {
   /** 열린 방의 조용한 다시 읽기(답을 기다리는 중이면 읽지 않음). */
   readonly refresh: (room: RoomState) => void;
   readonly pull: RemoteRoomPull;
+  /** 본 마지막 인물 메시지(ADR-0213 개정) — 미리 읽은 방의 안 읽음 · 대화가 없는 인물의 기준. */
+  readonly seen: UnreadSeen | null;
 };
 
 type Summary = ReadonlyMap<string, string | null>;
@@ -54,7 +57,10 @@ export function remoteRoomSync(
     preview.length > 0 &&
     readSummary((summary) => {
       if (summary === null) return previewRemoteRooms(deps, preview);
-      summary.forEach((at, characterId) => synced.set(characterId, at));
+      summary.forEach((at, characterId) => {
+        synced.set(characterId, at);
+        if (at === null) deps.seen?.noConversation(characterId); // 그 뒤 온 선톡은 새것
+      });
       const talked = preview.filter((roomId) => summary.get(characterOf(roomId)) !== null);
       previewRemoteRooms(deps, talked);
     });

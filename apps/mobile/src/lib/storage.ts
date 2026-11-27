@@ -31,6 +31,8 @@
 // - `libitum.messenger.unlocked-by-account` — 해금한 메신저 인물 id 목록, 계정마다(ADR-0117 D7 개정 2026-11-17)
 // - `libitum.analytics.first-open-day` · `libitum.analytics.milestones` — 기기 첫 실행일 · 낸 첫 경험 마일스톤(ADR-0029 「D3 목적 구분」)
 // - `libitum.letters` — Letters를 연 기록 · Letters 추천을 본 횟수 · 마지막 본 날 · Keep going 횟수(ADR-0169 D5)
+// 메신저 방마다 본 마지막 인물 메시지(ADR-0213 개정)는 `libitum.messenger.last-seen`에 계정마다 — 서버로 가지 않고 로그아웃 ·
+// 계정 삭제에 그 계정 것만 지웁니다.
 // 단어장(ADR-0169 D4)은 계정마다 `libitum.wordbook.<userId>`, 비회원은 `libitum.wordbook.guest`(로그인 때 계정 칸으로 합치며 지움) —
 // 서버로 가지 않고 로그아웃에 남으며 계정 삭제 성공에 지웁니다.
 

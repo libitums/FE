@@ -38,7 +38,8 @@ export function inputBlockOf(room: ChatFixtureRoom, now: number): ChatInputBlock
 }
 
 /** `setBirthYear`의 다음 값입니다. 바뀌지 않으면(같은 값 · 정수가 아닌 연도) 지금 값을 그대로 돌려줍니다. */
-export function nextBirthYear(current: ChatBirthYear, year: number): ChatBirthYear {
+export function nextBirthYear(current: ChatBirthYear, year: number | null): ChatBirthYear {
+  if (year === null) return current.kind === "skipped" ? current : { kind: "skipped" };
   if (!Number.isInteger(year)) return current;
   if (current.kind === "set" && current.year === year) return current;
   return { kind: "set", year };

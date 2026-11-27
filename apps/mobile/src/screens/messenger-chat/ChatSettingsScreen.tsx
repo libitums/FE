@@ -184,9 +184,14 @@ export function ChatSettingsScreen({ source, onBack }: ChatSettingsScreenProps):
         <BirthYearSheet
           years={birthYearOptions(Date.now())}
           selected={sheet.selected}
+          dismissible={true}
           onSelect={(year) => setSheet({ kind: "birth-year", selected: year })}
           onContinue={() => {
             if (sheet.selected !== null) source.setBirthYear(sheet.selected);
+            close();
+          }}
+          onSkip={() => {
+            source.setBirthYear(null);
             close();
           }}
           onClose={close}

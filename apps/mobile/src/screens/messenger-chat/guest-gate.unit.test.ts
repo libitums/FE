@@ -55,6 +55,7 @@ test("GG-U5 대화상자 문구는 누른 자리에 맞춘다 — 제목은 누�
 test("GG-U6 방 입장 생년 시트는 회원 · 아직 묻지 않음일 때만 — 비회원은 묻지 않는다", () => {
   expect(asksBirthYearOnEntry("unasked", false)).toBe(true);
   expect(asksBirthYearOnEntry("unasked", true)).toBe(false);
+  expect(asksBirthYearOnEntry("skipped", false)).toBe(false);
   expect(asksBirthYearOnEntry("set", false)).toBe(false);
   expect(asksBirthYearOnEntry("set", true)).toBe(false);
 });
