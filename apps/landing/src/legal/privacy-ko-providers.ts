@@ -90,7 +90,7 @@ export const privacyProvidersKo: LegalSection = {
         [
           "Functional Software, Inc. (Sentry)",
           "Android와 iOS 오류 · 비정상 종료 보고",
-          "오류 내용, 앱 버전, 기기 모델, 운영체제 버전, 로그인한 경우 사용자 ID(무작위로 만든 내부 ID). 이름, 이메일 주소, IP 주소는 포함하지 않음",
+          "오류 내용, 앱 버전, 기기 모델, 운영체제 버전, 무작위 설치 ID(iOS), 로그인한 경우 사용자 ID(무작위로 만든 내부 ID). 이름, 이메일 주소, IP 주소는 포함하지 않음",
           "미국",
           notice("https://sentry.io/privacy/"),
         ],
