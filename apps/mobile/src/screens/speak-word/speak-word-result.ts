@@ -31,7 +31,7 @@ export function speakWordResultView(
   heard: string,
 ): SpeakWordResultView {
   const { expected, grade } = judgement;
-  const romanization = expected === question.answers[0] ? question.romanization : null;
+  const romanization = expected === question.answers[0] ? (question.romanization ?? null) : null;
   const diff = syllableDiff(heard, expected);
   const heardPieces = heard.trim() === "" || grade === "perfect" ? null : diff.heard;
   switch (grade) {

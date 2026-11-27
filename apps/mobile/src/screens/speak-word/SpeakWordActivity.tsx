@@ -62,8 +62,13 @@ export function SpeakWordActivity({
   const picture = useSpeakWordPicture(state.questionIndex, question?.meaning ?? null);
   const { phase, judgement } = state;
   // 멈춤을 누른 뒤 결말이 오기까지는 「Checking…」입니다. 국면이 바뀌면 풀립니다.
+  // 렌더 중에 맞춥니다(효과로 풀면 한 번 더 그립니다).
   const [stopping, setStopping] = useState(false);
-  useEffect(() => setStopping(false), [phase]);
+  const [stoppingPhase, setStoppingPhase] = useState(phase);
+  if (stoppingPhase !== phase) {
+    setStoppingPhase(phase);
+    setStopping(false);
+  }
   const result = question == null ? null : speakWordResultAt(state);
   const counter = lessonCounter(
     lesson,

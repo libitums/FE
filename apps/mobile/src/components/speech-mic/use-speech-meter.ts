@@ -28,6 +28,8 @@ export function useSpeechMeter(
     setMeter(0);
     setElapsed(0);
     if (!active) return undefined;
+    // 정리된 뒤 늦게 온 상태 답은 버립니다.
+    let current = true;
     let startedAt: number | null = null;
     let expired = false;
     const poll = setInterval(() => {
@@ -40,11 +42,15 @@ export function useSpeechMeter(
         }
       }
       getSpeechStatus((status) => {
+        if (!current) return;
         if (status.listening && startedAt === null) startedAt = Date.now();
         if (!reduced) setMeter(speechMeterOf(status.level, status.levelDb ?? null));
       });
     }, SPEECH_MIC_POLL_MS);
-    return () => clearInterval(poll);
+    return () => {
+      current = false;
+      clearInterval(poll);
+    };
   }, [active, reduced]);
 
   return { meter, remaining: reduced ? 1 : speechMicRemaining(elapsed) };
