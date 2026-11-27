@@ -1,7 +1,9 @@
 // 메신저 첫 입장 안내(사용자 결정 2026-11-13) — 하단 탭 NEW 배지 · 덕수쌤 목록 카드 · 덕수쌤 방 코치마크의 판정과 기기 기록.
-// 판정은 순수, 기록은 기기 저장소(읽기 · 쓰기 실패는 조용히 — 본 것으로 치지 않습니다).
+// 판정은 순수, 기록은 기기 저장소의 계정별 칸(`lib/guide-records` — 사용자 결정 2026-11-27, 읽기 · 쓰기 실패는 조용히 — 본 것으로
+// 치지 않습니다).
 
-import { getItem, isStorageAvailable, removeItem, setItem } from "../../lib/storage";
+import { currentGuideOwner, readGuideRecord, writeGuideRecord } from "../../lib/guide-records";
+import { isStorageAvailable } from "../../lib/storage";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { ComposerKeyboard } from "./keyboard-plan";
 import type { MessengerAccess } from "./messenger-access";
@@ -21,6 +23,7 @@ export type KeyboardGuideStage = "phone" | "hangul";
 
 /** 안내를 맡는 인물 방입니다(서버 모드 인물 표의 덕수쌤). 없으면 안내가 서지 않습니다. */
 export const GUIDE_ROOM_ID = "duksu";
+/** 기록 키의 앞부분 — 실제 칸은 뒤에 `.<계정>`(로그인은 사용자 id, 비회원은 guest). 앞부분만 있는 키는 업데이트 전 기기 기록입니다. */
 export const messengerTabVisitedStorageKey = "libitum.messenger.tab-visited";
 export const messengerGuideSeenStorageKey = "libitum.messenger.guide-seen";
 export const messengerKeyboardGuideSeenStorageKey = "libitum.messenger.keyboard-guide-seen";
@@ -115,12 +118,19 @@ export function guideSeenFrom(raw: string | null): readonly GuidePart[] {
   return seen;
 }
 
-/** 이 안내를 띄울지 — 저장소를 못 쓰면 매번 뜨지 않게 띄우지 않습니다. 키보드 단계는 따로 둔 키(ADR-0190)를 봅니다. */
+/** 지금 주인 — 저장소를 못 쓰거나 주인이 없으면(로그인 전) null. */
+function ownerNow(): string | null {
+  return isStorageAvailable() ? currentGuideOwner() : null;
+}
+
+/** 이 안내를 띄울지 — 저장소를 못 쓰거나 주인이 없으면 매번 뜨지 않게 띄우지 않습니다. 키보드 단계는 따로 둔 키(ADR-0190)를 봅니다. */
 export function guideUnseen(part: GuidePart): boolean {
   try {
-    if (!isStorageAvailable()) return false;
-    if (part === "keyboard") return getItem(messengerKeyboardGuideSeenStorageKey) !== "1";
-    return !guideSeenFrom(getItem(messengerGuideSeenStorageKey)).includes(part);
+    const owner = ownerNow();
+    if (owner === null) return false;
+    if (part === "keyboard")
+      return readGuideRecord(messengerKeyboardGuideSeenStorageKey, owner) !== "1";
+    return !guideSeenFrom(readGuideRecord(messengerGuideSeenStorageKey, owner)).includes(part);
   } catch {
     return false;
   }
@@ -128,24 +138,27 @@ export function guideUnseen(part: GuidePart): boolean {
 
 export function markGuideSeen(part: GuidePart): void {
   try {
+    const owner = ownerNow();
+    if (owner === null) return;
     // 기존 배열에 넣지 않습니다 — 예전 빌드가 모르는 값을 버리고 다시 적어 기록이 사라지지 않게(ADR-0190).
     if (part === "keyboard") {
-      if (getItem(messengerKeyboardGuideSeenStorageKey) !== "1")
-        setItem(messengerKeyboardGuideSeenStorageKey, "1");
+      if (readGuideRecord(messengerKeyboardGuideSeenStorageKey, owner) !== "1")
+        writeGuideRecord(messengerKeyboardGuideSeenStorageKey, owner, "1");
       return;
     }
-    const seen = guideSeenFrom(getItem(messengerGuideSeenStorageKey));
+    const seen = guideSeenFrom(readGuideRecord(messengerGuideSeenStorageKey, owner));
     if (!seen.includes(part))
-      setItem(messengerGuideSeenStorageKey, JSON.stringify([...seen, part]));
+      writeGuideRecord(messengerGuideSeenStorageKey, owner, JSON.stringify([...seen, part]));
   } catch {
     // 저장 실패가 화면을 막지 않습니다.
   }
 }
 
-/** 메신저 탭에 들어간 적이 있나 — 못 읽으면 들어간 것으로(배지가 늘 붙어 있지 않게). */
+/** 메신저 탭에 들어간 적이 있나 — 못 읽거나 주인이 없으면 들어간 것으로(배지가 늘 붙어 있지 않게). */
 export function messengerTabVisited(): boolean {
   try {
-    return !isStorageAvailable() || getItem(messengerTabVisitedStorageKey) === "1";
+    const owner = ownerNow();
+    return owner === null || readGuideRecord(messengerTabVisitedStorageKey, owner) === "1";
   } catch {
     return true;
   }
@@ -153,28 +166,11 @@ export function messengerTabVisited(): boolean {
 
 export function markMessengerTabVisited(): void {
   try {
-    if (getItem(messengerTabVisitedStorageKey) !== "1") setItem(messengerTabVisitedStorageKey, "1");
+    const owner = ownerNow();
+    if (owner !== null && readGuideRecord(messengerTabVisitedStorageKey, owner) !== "1")
+      writeGuideRecord(messengerTabVisitedStorageKey, owner, "1");
   } catch {
     // 저장 실패가 화면을 막지 않습니다.
-  }
-}
-
-/**
- * 계정 삭제 뒤처리 — 기기의 안내 기록 셋(목록 · 방 · 예시, 키보드, 탭 NEW)을 지웁니다. 기록은 계정과 상관없이 기기에 남아, 지운 계정이
- * 본 기록 때문에 같은 기기에서 새로 가입한 계정에 안내 · 무료 예시 단계가 서지 않았습니다(2026-11-27 기기). 로그아웃은 남깁니다.
- */
-export function forgetMessengerGuide(): void {
-  const keys = [
-    messengerGuideSeenStorageKey,
-    messengerKeyboardGuideSeenStorageKey,
-    messengerTabVisitedStorageKey,
-  ];
-  for (const key of keys) {
-    try {
-      removeItem(key);
-    } catch {
-      // 지우지 못해도 뒤처리를 멈추지 않습니다 — 그 안내만 다음 계정에 서지 않습니다.
-    }
   }
 }
 

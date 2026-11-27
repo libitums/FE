@@ -1,4 +1,4 @@
-// 학습 문항 안내의 훅입니다. 화면이 설 때 한 번 판정하고, 닫을 때 그 종류를 기기 저장소에
+// 학습 문항 안내의 훅입니다. 화면이 설 때 한 번 판정하고, 닫을 때 그 종류를 기기 저장소(계정별 칸)에
 // 적습니다. 뒤에 입력이 바뀌어도 다시 판정하지 않습니다.
 
 import { useRef, useState } from "@lynx-js/react";
@@ -12,11 +12,11 @@ import type {
 import {
   activityGuideKindFor,
   learningItemGuideKindFor,
+  learningItemGuideRecordAvailable,
   loadSeenLearningItemGuides,
   markLearningItemGuideSeen,
   shouldShowLearningItemGuide,
 } from "../lib/learning-item-guide";
-import { isStorageAvailable } from "../lib/storage";
 
 /** 종류 하나를 받아 화면이 설 때 한 번 판정하고, 닫을 때 그 종류를 기록하는 공통 훅입니다. */
 function useGuideOnce(candidate: LearningItemGuideKind | null): LearningItemGuideState {
@@ -25,7 +25,7 @@ function useGuideOnce(candidate: LearningItemGuideKind | null): LearningItemGuid
     const show = shouldShowLearningItemGuide({
       kind: candidate,
       seen: loadSeenLearningItemGuides(),
-      storageAvailable: isStorageAvailable(),
+      storageAvailable: learningItemGuideRecordAvailable(),
     });
     return show ? candidate : null;
   });

@@ -77,3 +77,13 @@
 - **고침**: 계정 삭제 성공 뒤 세 키를 지운다(`forgetMessengerGuide`, [ADR-0032](0032-account-sign-out-and-deletion.md) 저장소 표). 로그아웃은
   남긴다 — 다른 계정으로 바꿔 들어온 사람은 여전히 안내를 보지 못한다(계정별 키는 기존 기록을 옮길 규칙이 필요해 이번에 하지 않음).
 - **테스트**: `messenger-guide.storage.unit.test.ts` MG-U15, `App.messenger-guide-new-account.integration.test.tsx` GA-I3 · I4.
+
+## 개정 ⟨2026-11-27⟩ — 안내 기록을 계정별 칸으로 [사용자]
+
+- **사용자 결정 2026-11-27** 「추천으로」 — 위 개정 뒤에도 로그아웃 뒤 같은 기기에서 다른 계정으로 들어오면 안내가 서지 않았다(기록이
+  기기에 하나). 세 키(`guide-seen` · `keyboard-guide-seen` · `tab-visited`)를 계정별 칸 `<키>.<owner>`(사용자 id, 비회원은 `guest`)로
+  바꾼다. 업데이트 뒤 처음 읽는 주인이 옛 기기 기록을 물려받고 옛 키를 지운다. 비회원도 목록 안내 · 탭 NEW를 보므로 비회원 칸이 있고,
+  로그인하면 그 계정 칸으로 합친다. 로그아웃은 남기고, 계정 삭제는 그 계정 칸만 지운다. 판정 · 화면은 그대로다.
+- 결정 · 이전 규칙 · 저장소 표는 [ADR-0032](0032-account-sign-out-and-deletion.md) 「계정별 칸」 개정, 구현은 `lib/guide-records.ts`.
+- **테스트**: `messenger-guide.storage.unit.test.ts` MG-U15(계정마다), `guide-records.unit.test.ts`,
+  `App.guide-records-per-account.integration.test.tsx` GR-I1 · I2.

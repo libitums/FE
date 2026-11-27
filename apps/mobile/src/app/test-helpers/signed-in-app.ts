@@ -61,6 +61,8 @@ export async function renderSignedInApp(
      * 안내 자체를 보는 테스트만 `"unseen"`을 씁니다. `storageModule`을 직접 넘기면 심지 않습니다.
      */
     readonly learningItemGuides?: "seen" | "unseen";
+    /** 부팅 때 저장소에 둔 세션의 액세스 토큰 — 기본은 사용자 id가 없는 `boot-access-token`. 계정별 기기 칸을 보는 테스트가 넘깁니다. */
+    readonly bootAccessToken?: string;
   } = {},
 ): Promise<ReturnType<typeof render>> {
   const refreshedSessionBody = refreshedSessionBodyFor(
@@ -68,7 +70,13 @@ export async function renderSignedInApp(
   );
   const previousNativeModules = (globalThis as { NativeModules?: unknown }).NativeModules;
   const store = new Map<string, string>();
-  store.set(authSessionStorageKey, serializeAuthSession(signedInBootSession));
+  store.set(
+    authSessionStorageKey,
+    serializeAuthSession({
+      ...signedInBootSession,
+      accessToken: options.bootAccessToken ?? signedInBootSession.accessToken,
+    }),
+  );
   if ((options.learningItemGuides ?? "seen") === "seen") {
     store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   }
