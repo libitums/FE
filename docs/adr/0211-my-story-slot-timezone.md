@@ -77,6 +77,6 @@
 - 통합(embedded Postgres): `migrations/my-story-slot-timezone.integration.test.ts` TZ1 ~ TZ7 — 시간대 없음 + 시차 0 + KR → 16:30 KST `day` ·
   학습 나라 GB + 시차 +540 → `day`(운영 재현) · 시차 0 + GB = UTC · 학습 나라 · UTC 차례 · 저장 시간대 먼저 · 표(주요 시장 · 이름이 Postgres에 있음) ·
   RPC 여섯 서명 · 목록과 올리기가 같은 창. 스캐폴드(인자만, 옛 판정)에서 TZ1 · TZ2 · TZ3 · TZ6 · TZ7 red 확인.
-- 앱(PR `fix/my-story-slot-timezone-app`): `lib/companion-api.my-stories.unit.test.ts` MS-S5(읽기 · 올리기에 `p_region`, 모르면 키 없음) ·
-  `app/my-stories-wiring.region.integration.test.ts` MSR1 · MSR2(결선이 요금제의 스토어 나라를 싣는다, 형식이 다르면 null) — red → green.
+- 앱(PR `fix/my-story-slot-timezone-app`): `apps/mobile/src/lib/companion-api.my-stories.unit.test.ts` MS-S5(읽기 · 올리기에 `p_region`, 모르면 키 없음) ·
+  `apps/mobile/src/app/my-stories-wiring.region.integration.test.ts` MSR1 · MSR2(결선이 요금제의 스토어 나라를 싣는다, 형식이 다르면 null) — red → green.
 - 기기: 탐침 번들 — Android `assembleBundled`(Pixel 8 에뮬레이터, Asia/Seoul) · iOS 시뮬레이터(iPhone 17 Pro). 위 「맥락」의 값.
