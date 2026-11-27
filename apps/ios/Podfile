@@ -29,6 +29,10 @@ target 'Host' do
   # 스토어 결제 · 영수증 · 구독 상태는 RevenueCat(ADR-0144 D1). 정확 버전이다(ADR-0012 D4). 키가 없으면 시작하지 않는다.
   pod 'RevenueCat', '5.99.2'
 
+  # 크래시 · 앱 멈춤 · Lynx JS 오류 수집(ADR-0207 · ADR-0061). 정확 버전이다(ADR-0012 D4). DSN이 없으면 시작하지 않는다.
+  # Sentry는 9.19.1 뒤로 CocoaPods에 새 판을 올리지 않는다 — 더 새 판이 필요하면 SPM으로 옮긴다(ADR-0207 D2).
+  pod 'Sentry', '9.19.1'
+
   target 'HostTests' do
     inherit! :search_paths
   end
