@@ -661,13 +661,19 @@ test("FS18d. 학습 자동 캠페인(자동 · 빈도 묶음)만 받은 날에�
   for (const series of ["선톡", "스토리", "스토리 시험", "스토리 반응"]) {
     await sent(member, series, "now() - interval '1 minute'");
     expect(await candidates(), series).toEqual([]);
-    await db.admin.query("delete from public.push_campaign_sends where series = $1", [series]);
+    await db.admin.query(
+      "delete from public.push_campaign_sends where user_id = $1 and series = $2",
+      [member, series],
+    );
   }
   // 학습 자동 캠페인 밖의 묶음(사람이 보내는 캠페인 등)은 계속 센다 — 이름이 비슷해도 접두가 다르면 뺀다고 보지 않는다.
   for (const series of ["콘솔 · lesson1", "자동", "빈도", "tutorial-rest"]) {
     await sent(member, series, "now() - interval '1 minute'");
     expect(await candidates(), series).toEqual([]);
-    await db.admin.query("delete from public.push_campaign_sends where series = $1", [series]);
+    await db.admin.query(
+      "delete from public.push_campaign_sends where user_id = $1 and series = $2",
+      [member, series],
+    );
   }
   expect((await candidates()).map((c) => c.userId)).toEqual([member]);
 });
