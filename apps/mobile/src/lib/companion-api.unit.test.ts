@@ -127,6 +127,25 @@ describe("턴", () => {
     expect(onEnd).toHaveBeenCalledTimes(1);
   });
 
+  test("SA-U4b 칩을 탭해 보낸 턴은 suggestion { message_id, index }를 싣는다(ADR-0210 D1)", async () => {
+    const { remote, stream } = setup();
+    const messageId = "22222222-2222-4222-8222-222222222222";
+    remote.openTurn(
+      {
+        characterId: "duksu",
+        text: "저도요",
+        clientMessageId: "c1",
+        suggestion: { messageId, index: 1 },
+      },
+      { onOpen: () => undefined, onEvent: () => undefined, onEnd: () => undefined },
+    );
+    await flush();
+    expect(JSON.parse(stream().request?.body ?? "")).toMatchObject({
+      text: "저도요",
+      suggestion: { message_id: messageId, index: 1 },
+    });
+  });
+
   test("SA-U5 로그인이 없으면 invalid_session으로 한 번 끝나고, 열기 전 취소는 cancelled", async () => {
     const onEnd = vi.fn<(reason: string, detail: string | null) => void>();
     setup({ token: async () => null }).remote.openTurn(

@@ -5,6 +5,7 @@ import type { EarlyAccessRemote } from "./early-access-parse";
 import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatIdeasOrigin, ChatMessage, ChatReplyIdea } from "./chat-source.contract";
+import type { ChatIdeasRef, ChatSuggestionTag } from "./chat-suggestion-ref";
 import type { VisibleFriend } from "./friend-catalog.contract";
 import type { FriendStory } from "./friend-stories.contract";
 import type { CompanionMyStoryPhotoRemote } from "./my-story-photo.contract";
@@ -26,6 +27,8 @@ export type RemoteHistory = {
   readonly ideas: readonly ChatReplyIdea[] | null;
   /** 그 마지막 캐릭터 메시지의 출처(ADR-0195) — 서버가 주지 않았으면 null · 없음. */
   readonly ideasOrigin?: ChatIdeasOrigin | null;
+  /** 추천 답변이 묶인 메시지와 보기마다의 서버 자리(ADR-0210 D1) — 모르면 없음. */
+  readonly ideasRef?: ChatIdeasRef | null;
   /** 첫 인사(서버 `origin` greeting) 메시지 id — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩). 없거나 모르면 null · 없음. */
   readonly greetingId?: string | null;
   /** 이 쪽보다 오래된 기록이 서버에 더 있음(`hasMore`) — 첫 인사가 로그 밖일 수 있습니다(무료 예시 대상). 없으면 다 읽은 것. */
@@ -36,6 +39,7 @@ export type RemoteHistory = {
 export type RemoteGreeting = {
   readonly messages: readonly ChatMessage[];
   readonly ideas: readonly ChatReplyIdea[] | null;
+  readonly ideasRef?: ChatIdeasRef | null;
 };
 
 /** 턴 스트림의 콜백입니다 — 호스트 SSE 모듈(ADR-0124)의 모양과 같습니다. */
@@ -61,6 +65,8 @@ export type ChatRemote = {
       readonly clientMessageId: string;
       /** 친구 스토리 답장(ADR-0178 D5) — 요청 몸 `story_id`. */
       readonly storyId?: string;
+      /** 칩을 탭해 보냄(ADR-0210 D1) — 요청 몸 `suggestion: { message_id, index }`. */
+      readonly suggestion?: ChatSuggestionTag;
     },
     handlers: RemoteTurnHandlers,
   ) => { readonly cancel: () => void };

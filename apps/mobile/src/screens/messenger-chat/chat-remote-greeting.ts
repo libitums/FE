@@ -28,7 +28,8 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
     // 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩) — 인사 말풍선의 메시지 id. 안내 줄뿐이면 그대로.
     const owner = greeting.messages.map(bubbleOwner).find((id) => id !== null);
     if (room.greetingId === null && owner !== undefined) room.greetingId = owner;
-    if (room.pendingReplies === 0) setRemoteIdeas(room, greeting.ideas, "greeting");
+    if (room.pendingReplies === 0)
+      setRemoteIdeas(room, greeting.ideas, "greeting", greeting.ideasRef);
   };
 
   return {
@@ -66,7 +67,7 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
         const bubbles = greeting.messages.filter((message) => message.kind !== "notice");
         if (bubbles.length === 0) return;
         const before = room.messages.length;
-        place(room, { messages: bubbles, ideas: greeting.ideas });
+        place(room, { ...greeting, messages: bubbles });
         if (room.messages.length > before && !deps.isOpen(roomId)) room.unread += 1;
         changed(room);
       })();

@@ -213,7 +213,14 @@ export function notesOf(thread: ChatThread, messageId: string): ChatMyNotes {
 }
 
 /** 보내기 선택 칸 — 친구 스토리 인용(ADR-0178). */
-export type ChatSendOptions = { readonly story?: ChatStoryQuote };
+/**
+ * `story` = 친구 스토리 인용(ADR-0178 D5). `suggestion` = 보기 판의 `index`번째 보기를 탭해 보냄 — 서버 방은 그 칩의 표시를 턴 요청에
+ * 싣습니다(ADR-0210 D1). 앱 안 방은 무시합니다.
+ */
+export type ChatSendOptions = {
+  readonly story?: ChatStoryQuote;
+  readonly suggestion?: { readonly index: number };
+};
 
 export type ChatReportReasonId = "rude" | "sexual" | "hateful" | "wrong-korean" | "other";
 
