@@ -143,6 +143,7 @@ test("MH2. 올리기 — 문 → 글 검수 → 사진 읽기 → live로 저장
     p_user_id: userId,
     p_client_id: clientId,
     p_tz_offset_min: 540,
+    p_region: null,
     p_now: "2026-11-24T03:00:00.000Z",
   });
   expect(t.args("companion_save_my_photo_story")).toMatchObject({
@@ -467,6 +468,38 @@ test("MH8. 글 스토리 — 바탕색이 오면 사진 없이: 문 → 글 검�
     expect(t.rpcs).toEqual([]);
   }
   expect((await setup().call(text({ background: "red" }))).status).toBe(400);
+});
+
+test("MH9. 스토어 나라 — 사진 · 글 올리기의 문과 저장에 `client_region`을 `p_region`으로 넘긴다(없으면 null). 시간대 창이 기기 시차가 0일 때 쓴다", async () => {
+  const photo = setup();
+  await photo.call(post({ tz_offset_min: 0, client_region: "KR" }));
+  expect(photo.args("companion_my_photo_gate")).toMatchObject({
+    p_tz_offset_min: 0,
+    p_region: "KR",
+  });
+  expect(photo.args("companion_save_my_photo_story")).toMatchObject({ p_region: "KR" });
+
+  const unknown = setup();
+  await unknown.call(post());
+  expect(unknown.args("companion_my_photo_gate")).toMatchObject({ p_region: null });
+  expect(unknown.args("companion_save_my_photo_story")).toMatchObject({ p_region: null });
+
+  const text = setup({
+    rpc: {
+      companion_my_text_gate: { result: "ok", ageBand: "adult" },
+      companion_save_my_text_story: { result: "ok", story: { id: "s9", kind: "text" } },
+    },
+  });
+  await text.call({
+    action: "post",
+    client_id: clientId,
+    background: "orange",
+    ko: "비가 와요",
+    lang: "en",
+    client_region: "MX",
+  });
+  expect(text.args("companion_my_text_gate")).toMatchObject({ p_region: "MX" });
+  expect(text.args("companion_save_my_text_story")).toMatchObject({ p_region: "MX" });
 });
 
 test("MU1. 뒷정리(파일) — 버킷별로 묶어 지우고, 지운 줄만 대기열에서 뺀다. 실패하면 남긴다", async () => {
