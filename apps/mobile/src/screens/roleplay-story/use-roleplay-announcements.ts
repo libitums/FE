@@ -33,5 +33,5 @@ export function useRoleplayAnnouncements(state: RoleplayTalkState): void {
         ? `${copy.roleplayStory.great}, ${copy.speakWord.result.almostPerfect}. ${copy.speakWord.result.modelAnswer}: ${judgement.expected}`
         : copy.roleplayStory.great,
     );
-  }, [state.turnIndex, state.verdict]);
+  }, [state.turnIndex, state.verdict, state.judgement, copy]);
 }
