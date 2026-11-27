@@ -16,6 +16,8 @@ export type RoleplayResultPanelProps = {
   readonly expected: string;
   /** 그 문장의 로마자. */
   readonly roman: string;
+  /** 그 문장의 뜻(앱 언어). 없으면 `null`. */
+  readonly meaning: string | null;
   /** 들은 문장(빈 글자면 「들은 말 없음」). */
   readonly heard: string;
   readonly isLast: boolean;
@@ -55,6 +57,7 @@ export function RoleplayResultPanel({
   correct,
   expected,
   roman,
+  meaning,
   heard,
   isLast,
   onHear,
@@ -141,6 +144,14 @@ export function RoleplayResultPanel({
             testId="roleplay-talk-answer-ko"
           />
           <text className="roleplay-story-panel-roman">{roman}</text>
+          {meaning === null ? null : (
+            <text
+              className="roleplay-story-panel-meaning"
+              data-testid="roleplay-talk-answer-meaning"
+            >
+              {meaning}
+            </text>
+          )}
         </view>
       </view>
       <view className="roleplay-story-heard" data-testid="roleplay-talk-heard">

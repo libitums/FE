@@ -2,8 +2,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
+import type { ChoiceRomanization } from "../../lib/session-options";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { CatalogRoleplayTurn } from "../catalog-final/catalog-final.contract";
+import { roleplayDialogLinesOf } from "./roleplay-panel";
 import type { RoleplayProgressSegment } from "./roleplay-panel";
 
 export type RoleplayReplyDialogueProps = {
@@ -13,6 +15,8 @@ export type RoleplayReplyDialogueProps = {
   readonly counterpartName: string;
   /** 상대가 곧장 이어 하는 대본 다음 줄 — 마지막 턴이면 없습니다. */
   readonly reaction: CatalogRoleplayTurn | undefined;
+  /** 로마자 스위치(ADR-0188) — 켜면 두 상자에 로마자 줄이 섭니다. */
+  readonly romanization: ChoiceRomanization;
   readonly reducedMotion: boolean;
 };
 
@@ -22,6 +26,7 @@ export function RoleplayReplyDialogue({
   translation,
   counterpartName,
   reaction,
+  romanization,
   reducedMotion,
 }: RoleplayReplyDialogueProps): ReactNode {
   const copy = useUiCopy();
@@ -31,7 +36,7 @@ export function RoleplayReplyDialogue({
         variant="thought"
         speakerName={copy.roleplayStory.me}
         line={line}
-        translation={translation ?? undefined}
+        {...roleplayDialogLinesOf({ ko: line, roman: null, en: translation }, romanization)}
         reveal="instant"
         continueIndicator="off"
         surface="opaque"
@@ -44,7 +49,7 @@ export function RoleplayReplyDialogue({
           <VisualNovelDialog
             speakerName={counterpartName}
             line={reaction.line.ko}
-            translation={reaction.line.en ?? reaction.line.roman ?? undefined}
+            {...roleplayDialogLinesOf(reaction.line, romanization)}
             reveal="instant"
             continueIndicator="off"
             surface="opaque"

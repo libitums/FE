@@ -4,6 +4,7 @@ import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import { wordDiff } from "../../lib/syllable-diff";
 import { initialRoleplayTalkState, roleplayTalkReducer } from "./roleplay-story";
 import {
+  roleplayDialogLinesOf,
   roleplayHeaderLabel,
   roleplayProgressSegments,
   roleplayTurnReportOf,
@@ -120,5 +121,33 @@ describe("RP5 머리 · 진행 칸", () => {
     expect(roleplayProgressSegments(1, 3, false)).toEqual(["done", "current", "todo"]);
     expect(roleplayProgressSegments(1, 3, true)).toEqual(["done", "done", "todo"]);
     expect(roleplayProgressSegments(3, 3, false)).toEqual(["done", "done", "done"]);
+  });
+});
+
+describe("RP6 대사 상자 아래 줄 — 로마자 스위치(ADR-0188) · 뜻", () => {
+  const line = { ko: "봉투 드릴까요?", roman: "bongtu deurilkkayo?", en: "需要塑膠袋嗎？" };
+
+  it("켬이면 로마자 줄과 뜻 줄이 함께 선다", () => {
+    expect(roleplayDialogLinesOf(line, "shown")).toEqual({
+      romanization: "bongtu deurilkkayo?",
+      translation: "需要塑膠袋嗎？",
+    });
+  });
+
+  it("끔이면 로마자 줄이 없고 뜻 줄만 — 뜻이 없어도 로마자로 떨어지지 않는다", () => {
+    expect(roleplayDialogLinesOf(line, "hidden")).toEqual({
+      romanization: undefined,
+      translation: "需要塑膠袋嗎？",
+    });
+    expect(roleplayDialogLinesOf({ ...line, en: null }, "hidden")).toEqual({
+      romanization: undefined,
+      translation: undefined,
+    });
+  });
+
+  it("콘텐츠 로마자가 없으면 한글을 변환한 읽기", () => {
+    expect(roleplayDialogLinesOf({ ko: "네", roman: null, en: null }, "shown").romanization).toBe(
+      "ne",
+    );
   });
 });

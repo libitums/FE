@@ -144,6 +144,7 @@ export function RoleplayStoryFlow({
       onExit={onExit}
       mic={mic}
       onTurnAnswered={onTurnAnswered}
+      romanization={romanization}
     />
   );
 }

@@ -6,7 +6,7 @@ import type { DecodeIssue, DecodeResult, Episode } from "./episode-content";
 import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { rememberedDecode, textDigestOf } from "./verified-text-cache";
-import { translationTablesOf } from "./episode-catalog-translations";
+import { missingTranslationTablesOf, translationTablesOf } from "./episode-catalog-translations";
 import { measureTask } from "./perf-probe";
 
 /**
@@ -192,18 +192,23 @@ function pendingEntry(entry: ManifestEntry): CatalogEntry {
   };
 }
 
-/** 원격이 이겼지만 쓸 수 없을 때 같은 id의 내장본이 있으면 그것으로 엽니다(이미 열리던 에피소드를 닫지 않음). */
+/**
+ * 원격이 이겼지만 쓸 수 없을 때 같은 id의 내장본이 있으면 그것으로 엽니다(이미 열리던 에피소드를 닫지 않음). 내장본에 없는
+ * 언어(zh-TW · th · my)는 원격 항목이 적은 저장 번역 파일로 채웁니다 — 없으면 그 언어 사용자는 뜻이 영어로 남습니다.
+ */
 function bundledFallback(
   input: CatalogInput,
   bundled: ManifestEntry | undefined,
+  winner: ManifestEntry,
 ): CatalogEntry | null {
   if (bundled === undefined || !SUPPORTED_EPISODE_SCHEMAS.includes(bundled.schema)) {
     return null;
   }
   const decoded = decodeEpisode(input.bundled.episodes[bundled.id]);
-  return decoded.ok
-    ? readyEntry(bundled, "bundled", decoded.episode, decoded.warnings, bundled.cover)
-    : null;
+  if (!decoded.ok) return null;
+  const stored = input.cache.translations?.[bundled.id];
+  const episode = missingTranslationTablesOf(winner, decoded.episode, stored);
+  return readyEntry(bundled, "bundled", episode, decoded.warnings, bundled.cover);
 }
 
 export function buildEpisodeCatalog(input: CatalogInput): CatalogEntry[] {
@@ -223,7 +228,7 @@ export function buildEpisodeCatalog(input: CatalogInput): CatalogEntry[] {
         remote?.minClientLevel,
       );
       if (fromRemote && resolved.status !== "ready") {
-        return bundledFallback(input, bundledById.get(entry.id)) ?? resolved;
+        return bundledFallback(input, bundledById.get(entry.id), entry) ?? resolved;
       }
       return resolved;
     },

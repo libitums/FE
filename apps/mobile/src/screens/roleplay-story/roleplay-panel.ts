@@ -1,5 +1,7 @@
 // 롤플레이 아래 패널의 순수 계산입니다(시안 R1 ~ R5). UI를 import하지 않습니다.
 
+import { readingOf } from "../../lib/romanization-display";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type { RoleplayTalkState, RoleplayTurnReport } from "./roleplay-story.contract";
 
 export type { RoleplayTurnReport } from "./roleplay-story.contract";
@@ -19,6 +21,26 @@ export function roleplayTurnReportOf(
     result: state.verdict,
     ...(state.judgement === null ? {} : { grade: state.judgement.grade }),
     ...hint,
+  };
+}
+
+/** 대사 상자 아래 줄 — `VisualNovelDialog`의 `romanization` · `translation`에 그대로 넘깁니다. */
+export type RoleplayDialogLines = {
+  readonly romanization: string | undefined;
+  readonly translation: string | undefined;
+};
+
+/**
+ * 롤플레이 대사 상자(상대 줄 · 내 말풍선 · 반응)의 아래 줄입니다 — 컷 대사(ADR-0188 개정 D7)와 같은 규칙. 로마자는 스위치가 켜졌을
+ * 때만(콘텐츠 로마자, 없으면 변환), 뜻은 사용자 언어 뜻만입니다. 뜻이 없다고 로마자로 떨어지지 않습니다(스위치를 끈 사람에게 로마자가 서지 않게).
+ */
+export function roleplayDialogLinesOf(
+  line: { readonly ko: string; readonly roman: string | null; readonly en: string | null },
+  display: ChoiceRomanization,
+): RoleplayDialogLines {
+  return {
+    romanization: display === "shown" ? (readingOf(line.ko, line.roman) ?? undefined) : undefined,
+    translation: line.en ?? undefined,
   };
 }
 
