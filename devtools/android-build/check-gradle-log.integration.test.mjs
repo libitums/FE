@@ -5,7 +5,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,7 +20,11 @@ function runCli(content) {
   const dir = mkdtempSync(join(tmpdir(), "gradle-log-"));
   const log = join(dir, "gradle.log");
   writeFileSync(log, content);
-  return spawnSync(process.execPath, [cli, log], { encoding: "utf8" });
+  try {
+    return spawnSync(process.execPath, [cli, log], { encoding: "utf8" });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 test("KG1. 불일치 줄이 있는 출력은 0이 아닌 코드로 끝나고 그 줄을 보여 준다", () => {
@@ -42,7 +46,9 @@ test("KG3. Android build 잡이 Gradle 출력을 파이프 실패와 함께 남�
   const end = rest.slice(1).search(/\n {2}[\w-]+:\n/);
   const job = end === -1 ? rest : rest.slice(0, end + 1);
 
-  const assemble = job.slice(job.indexOf("- name: Assemble bundled APK"));
+  const assembleAt = job.indexOf("- name: Assemble bundled APK");
+  assert.notEqual(assembleAt, -1, "Assemble bundled APK 단계를 찾을 수 없습니다");
+  const assemble = job.slice(assembleAt);
   // shell: bash는 GitHub에서 `-eo pipefail`이다. 없으면 tee가 gradlew의 실패를 삼킨다.
   assert.match(assemble, /shell: bash\n/);
   assert.match(assemble, /\.\/gradlew --no-daemon :app:assembleBundled 2>&1 \| tee (\S+)/);
