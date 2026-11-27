@@ -73,6 +73,19 @@ describe("sampleTargetOf", () => {
     expect(sampleTargetOf([say(`${P}#0`, "선톡"), ...gone], "voice", G)?.messageId).toBe(P);
   });
 
+  test("GA-U1 기록의 앞부분을 읽지 않은 방(첫 쪽 30개 밖) — 첫 인사가 로그에 없으면 null, 첫 캐릭터 메시지로 대신하지 않는다", () => {
+    // 재현(점검 3): 첫 쪽에 첫 인사가 없으면 대상이 「불러온 범위의 첫 캐릭터 말」이 되고, 서버는 첫 인사에 붙여 다시 열면 사라졌다.
+    const cut = [say(`${R}#0`, "앞부분이 잘린 로그의 첫 캐릭터 말"), mine("u9")];
+    for (const media of ["photo", "voice"] as const) {
+      expect(sampleTargetOf(cut, media, null, true), media).toBeNull();
+      expect(sampleTargetOf(cut, media, G, true), media).toBeNull();
+    }
+    // 첫 인사가 첫 쪽 안에 있으면 지금과 같다.
+    expect(sampleTargetOf(replied, "photo", G, true)?.messageId).toBe(G);
+    // 앞부분까지 다 읽은 방은 예전처럼 첫 캐릭터 메시지.
+    expect(sampleTargetOf(cut, "photo", null, false)?.messageId).toBe(R);
+  });
+
   test("GS-U4 캐릭터 메시지가 없으면 null, 음성은 말 조각이 없으면 null(예시 단계가 서지 않음)", () => {
     expect(sampleTargetOf([], "photo", null)).toBeNull();
     expect(sampleTargetOf([mine("u1")], "voice", G)).toBeNull();

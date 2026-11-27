@@ -30,6 +30,7 @@ export function emptyRoom(room: RoomState, opening: ChatMessage | null): void {
   room.remoteIdeas = null;
   room.remoteIdeasOrigin = null;
   room.greetingId = null;
+  room.olderHidden = false;
   room.samples = [];
   room.unsent = [];
   room.recovery = "none";

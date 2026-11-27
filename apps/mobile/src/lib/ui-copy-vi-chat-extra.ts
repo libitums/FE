@@ -174,7 +174,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       media:
         "Bạn cũng có thể nhờ mình gửi ảnh hoặc tin nhắn thoại bằng các nút phía trên bàn phím.",
       sample:
-        "Muốn xem mình đang làm gì không? Chạm Snapshot, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
+        "Muốn xem mình đang làm gì không? Chạm Ảnh chụp nhanh, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
       voice:
         "Muốn nghe giọng mình không? Chạm Giọng nói nhanh, mình sẽ đọc tin nhắn đó. Lần đầu mình cũng tặng.",
     },

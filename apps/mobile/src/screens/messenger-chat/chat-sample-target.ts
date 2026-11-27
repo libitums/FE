@@ -21,11 +21,16 @@ export type SampleLine = {
 /** 예시 줄이 서거나 바뀔 때 — 그 줄로 옮겨 보임 · 「위에 도착」 알약 · 아무것도. */
 export type SampleRevealAction = "scroll" | "pill" | "none";
 
-/** 무료 예시의 대상 — 첫 인사, 없으면 첫 캐릭터 메시지. 음성인데 그 메시지에 말 조각이 없으면 null(예시 단계가 서지 않음). */
+/**
+ * 무료 예시의 대상 — 첫 인사, 없으면 첫 캐릭터 메시지. 음성인데 그 메시지에 말 조각이 없으면 null(예시 단계가 서지 않음).
+ * 기록의 앞부분을 읽지 않은 방(`olderHidden`)에서 첫 인사가 로그에 없으면 null — 불러온 범위의 첫 캐릭터 말은 첫 인사가 아니고, 서버는
+ * 첫 인사에 붙여 다시 열면 줄이 사라집니다(ADR-0146 개정 ⟨가이드 점검⟩ 3).
+ */
 export function sampleTargetOf(
   messages: readonly ChatMessage[],
   media: ChatMediaKind,
   greetingId: string | null,
+  olderHidden = false,
 ): ChatMediaTarget | null {
   let first: string | null = null;
   for (const message of messages) {
@@ -34,7 +39,16 @@ export function sampleTargetOf(
     if (owner === greetingId) return targetOfOwner(messages, owner, media);
     if (first === null) first = owner;
   }
-  return first === null ? null : targetOfOwner(messages, first, media);
+  return first === null || olderHidden ? null : targetOfOwner(messages, first, media);
+}
+
+/** 서버 기록 한 쪽에서 무료 예시 대상의 단서를 방에 적습니다 — 첫 인사 id, 앞부분을 읽지 않았는지(방이 비워질 때까지 남음). */
+export function noteSampleHead(
+  room: { greetingId: string | null; olderHidden: boolean },
+  history: { readonly greetingId?: string | null; readonly hasMore?: boolean },
+): void {
+  room.greetingId = history.greetingId ?? room.greetingId;
+  if (history.hasMore === true) room.olderHidden = true;
 }
 
 /**
