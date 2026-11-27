@@ -47,6 +47,9 @@ export const speakingVi: SpeakingCopy = {
   instruction: "Đọc to câu này.",
   speak: "Nói",
   stopSpeaking: "Dừng nói",
+  listening: "Đang nghe…",
+  checking: "Đang kiểm tra…",
+  tapToStop: "Nói xong thì chạm để dừng",
   tryAgain: "Thử lại",
   dictationDisabled:
     "Siri hoặc Đọc chính tả đang tắt. Hãy bật trong Cài đặt > Cài đặt chung > Bàn phím > Bật Đọc chính tả, rồi thử lại.",

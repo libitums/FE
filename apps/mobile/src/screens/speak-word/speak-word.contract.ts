@@ -38,6 +38,8 @@ export type SpeakWordSessionState = {
   readonly heard: readonly (string | null)[];
   /** 국면이 heard일 때의 판정입니다. 그 밖에는 null. */
   readonly judgement: SpokenAnswerJudgement | null;
+  /** 이 문항에서 다시 말한 수(0 · 1) — 처음 오답 뒤 한 번만 다시 말합니다(시안 S4). 다음 문항에서 0. */
+  readonly attempt: number;
 };
 
 export type SpeakWordSessionAction =
@@ -84,6 +86,19 @@ export type SpeakWordCopy = {
   readonly instruction: string;
   /** 불가(blocked · failed) 안내 줄 — Skip으로 이어 가라고 말합니다(다음 자리를 말하지 않음). */
   readonly recognitionUnavailable: string;
+  /** 결과 시트(시안 S2 ~ S4). 「Correct」 · 「Not quite」 · 「Answer」는 공용 문구를 씁니다. */
+  readonly result: {
+    /** perfect 제목. */
+    readonly perfect: string;
+    /** close 표지(맞음 옆 작은 알약). */
+    readonly almostPerfect: string;
+    /** close의 정답 머리 줄. */
+    readonly modelAnswer: string;
+    /** 들은 말 머리 줄. */
+    readonly youSaid: string;
+    /** 정답 상자의 소리 단추 낭독 이름. */
+    readonly hearAnswer: string;
+  };
 };
 
 export type SpeakWordTestId =

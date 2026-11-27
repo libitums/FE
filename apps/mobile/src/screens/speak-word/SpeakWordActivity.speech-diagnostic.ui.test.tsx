@@ -83,6 +83,7 @@ test("USD2. 네트워크로 되돌아가 들은 판정도 진단을 싣는다", 
     questionIndex: 0,
     outcome: "correct",
     density: "regular",
+    grade: "perfect",
     speech: { errorCode: 0, fallback: "pack-missing", koreanPack: "available" },
   });
 });

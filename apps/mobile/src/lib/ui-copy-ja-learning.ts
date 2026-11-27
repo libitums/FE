@@ -48,6 +48,9 @@ export const speakingJa: SpeakingCopy = {
   instruction: "文を声に出して読みましょう。",
   speak: "話す",
   stopSpeaking: "話すのをやめる",
+  listening: "聞いています…",
+  checking: "確認しています…",
+  tapToStop: "言い終わったらタップして止めます",
   tryAgain: "もう一度",
   dictationDisabled:
     "Siriまたは音声入力がオフです。「設定」>「一般」>「キーボード」>「音声入力」をオンにしてから、もう一度お試しください。",

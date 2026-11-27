@@ -173,6 +173,7 @@ describe("speakWordSessionReducer — skip · next", () => {
       availability: "open",
       heard: ["카드"],
       judgement: null,
+      attempt: 0,
     });
     for (const phase of [ready, listening, blocked, failed, dictationOff]) {
       const state = stateOf({ phase });
@@ -344,8 +345,8 @@ describe("조작 표", () => {
 });
 
 describe("안내 · 지시문 · 문구", () => {
-  it("SW8. 판정 뒤에는 화면을 눌러 넘기라는 안내다", () => {
-    expect(speakWordHintOf(heard("카드"), markedUiCopy)).toBe("⟦speaking.tapToContinue⟧");
+  it("SW8. 판정 뒤에는 안내 줄이 없다 — 저절로 넘어가지 않고 결과 시트의 Continue로 넘긴다(시안 S2)", () => {
+    expect(speakWordHintOf(heard("카드"), markedUiCopy)).toBeNull();
   });
 
   it("SW8. blocked · failed는 낱말용 불가 안내이고 나머지는 안내 줄이 없다", () => {
@@ -374,14 +375,22 @@ describe("안내 · 지시문 · 문구", () => {
     );
   });
 
-  it("SW9b. 판정 알림은 맞으면 판정만, 틀리면 정답 문구를 싣는다", () => {
-    expect(speakWordResultAnnouncement(question(), "correct", uiCopyEn)).toBe("Result, correct");
-    expect(speakWordResultAnnouncement(question(), "incorrect", uiCopyEn)).toBe(
+  it("SW9b. 판정 알림은 맞으면 판정만, 틀리면 들은 말과 정답 문구를 싣는다", () => {
+    const wrong = {
+      result: "incorrect",
+      grade: "incorrect",
+      expected: "카드",
+      similarity: 0,
+    } as const;
+    expect(speakWordResultAnnouncement(question(), CARD_PERFECT, "카드", uiCopyEn)).toBe(
+      "Result, correct",
+    );
+    expect(speakWordResultAnnouncement(question(), wrong, "", uiCopyEn)).toBe(
       "Result, incorrect, Answer: 카드 · kadeu",
     );
     expect(
-      speakWordResultAnnouncement(question({ romanization: null }), "incorrect", uiCopyEn),
-    ).toBe("Result, incorrect, Answer: 카드");
+      speakWordResultAnnouncement(question({ romanization: null }), wrong, "카트", uiCopyEn),
+    ).toBe("Result, incorrect, You said: 카트, Answer: 카드");
   });
 
   it("SW10. 뜻 줄은 그림이 실패했을 때만 숨긴다", () => {

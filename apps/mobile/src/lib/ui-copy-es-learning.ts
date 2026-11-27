@@ -51,6 +51,9 @@ export const speakingEs: SpeakingCopy = {
   instruction: "Lee la oración en voz alta.",
   speak: "Hablar",
   stopSpeaking: "Dejar de hablar",
+  listening: "Escuchando…",
+  checking: "Comprobando…",
+  tapToStop: "Toca para parar cuando termines",
   tryAgain: "Reintentar",
   dictationDisabled:
     "Siri o Dictado está desactivado. Activa Ajustes > General > Teclado > Activar Dictado e inténtalo de nuevo.",

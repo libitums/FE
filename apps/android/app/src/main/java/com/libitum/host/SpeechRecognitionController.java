@@ -456,6 +456,10 @@ final class SpeechRecognitionController {
     payload.putInt("bufferCount", current == null ? 0 : current.session.bufferCount());
     payload.putDouble("level", current == null ? 0 : current.session.level());
     payload.putDouble("peakLevel", current == null ? 0 : current.session.peakLevel());
+    // The clamped level sits at 1 for normal speech; the screen meter needs the raw dB (absent until known).
+    if (current != null && !Double.isNaN(current.session.levelDb())) {
+      payload.putDouble("levelDb", current.session.levelDb());
+    }
     return payload;
   }
 

@@ -3,6 +3,7 @@
 import type { AnswerResult } from "./answer-result";
 import type { LearningItem } from "./episode-content";
 import type { LearningDensity } from "./learning-density";
+import type { SpokenGrade } from "./speaking-judge";
 import type {
   SpeechAttemptPhase,
   SpeechDiagnostic,
@@ -34,6 +35,8 @@ export type ItemAnswerReport = {
   readonly skipReason?: ItemSkipReason;
   /** 판정 전에 쓴 힌트 — 정답 보기가 정답 듣기보다 앞섭니다(ADR-0153). 안 썼으면 없습니다. */
   readonly hintUsed?: "listen" | "show";
+  /** 말하기 문항의 발음 등급(ADR-0201) — 판정이 났을 때만. 들은 글자 자체는 싣지 않습니다(사용자 입력 글). */
+  readonly grade?: SpokenGrade;
   /** 말하기 문항에서 인식기가 결과를 올렸을 때의 진단입니다. 결과 없이 판정 · 건너뛰었으면 없습니다. */
   readonly speech?: SpeechDiagnostic;
 };

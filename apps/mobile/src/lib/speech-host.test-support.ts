@@ -25,6 +25,8 @@ export type SpeechHostOptions = {
    * (`pending`에 쌓입니다). 주지 않으면 늘 보관합니다.
    */
   readonly result?: (attempt: number) => SpeechHostResult | null;
+  /** 주면 `getStatus`가 이 페이로드로 곧바로 답합니다(공용 마이크의 음량 읽기). 없으면 답하지 않습니다. */
+  readonly status?: unknown;
 };
 
 export type SpeechHost = {
@@ -42,7 +44,9 @@ export function stubSpeechHost(options: SpeechHostOptions = {}): SpeechHost {
     announced: { builtin: [], completion: [] },
   };
   const speechModule = {
-    getStatus: () => {},
+    getStatus: (callback: (payload: unknown) => void) => {
+      if (options.status !== undefined) callback(options.status);
+    },
     requestPermissions: (callback: (payload: unknown) => void) => {
       host.calls.request += 1;
       callback({
