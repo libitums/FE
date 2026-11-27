@@ -774,6 +774,29 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
 번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
 
+### 판정 · 기억 · 스토리 조회 1차 (20270118)
+
+`migrations/20270118120000_ops_admin_insights.sql`. 기획은 ops-dashboard `docs/admin-insights.md`, 계약은 `docs/admin-contract.md` G-A절.
+
+- **리비전**: `companion.moderation_events.rev`(8자리 16진수, 옛 줄 null). 함수가 RPC 요청 헤더 `x-guardrail-rev`로 싣고(`_shared/guardrail-rev.ts` —
+  검사 지시문 전부 + 답 프롬프트 앞부분 대표 셋의 FNV-1a, `companion-rpc.ts`가 모든 RPC에 붙인다), 칸 기본값 `companion.request_guardrail_rev()`가
+  PostgREST `request.headers`에서 읽는다. 턴 저장 RPC는 다시 정의하지 않았다. 헤더가 없거나 모양이 틀리면 null(저장은 막지 않는다).
+  `companion-eval` 응답에도 같은 `rev`가 실린다.
+- 표(`ops`, RPC로만): `ops.guardrail_revs`(리비전 이름 · 메모) · `ops.moderation_reviews`(판정 하나에 검토 하나 — 맞음 · 오탐 · 놓침 · 애매).
+- 새 RPC 여섯(모두 `service_role`만, 열람은 `view` · 쓰기는 `write` 기록):
+  `ops_moderation_summary`(분류 × 단계 · 입력 1천 건당 · 일별 · 기록용 허용 · 리비전 · 스트라이크, 90일까지) ·
+  `ops_moderation_feed`(앞 캐릭터 말 · 학습자 메시지 · 거절 답 · 걸린 초안 · 검토, 거르기 · 쪽 넘김 §F와 같은 규칙) ·
+  `ops_review_moderation` · `ops_set_guardrail_rev` · `ops_user_memories`(캐릭터 가리지 않은 전체 기억 · 출처 메시지 · 칩 여부) ·
+  `ops_user_stories`(내 스토리 · 반응 · Seen · 퀴즈 · 거절 사진(분류만, 격리 경로 없음) · 친구 스토리 답장 · 지난 스토리 열람).
+- 연령대 · 로맨스 선은 판정 줄이 아니라 그 턴 캐릭터 답의 meta(`ageBand` · `romanceLine`)에서 읽는다 — 답이 없는 판정(두 번 걸려 실패 등)은 null이라
+  그 거르기에서 빠진다.
+- 테스트: `migrations/ops-admin-insights.integration.test.ts`, `_shared/guardrail-rev.unit.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261212 뒤라면 어디든 된다(`ops` 도우미 · `companion.memories` · 내 스토리 표에 기댄다). 파일 하나만
+`supabase db query --linked -f supabase/migrations/20270118120000_ops_admin_insights.sql`(`db push` 금지). 다시 적용해도 같다.
+그 뒤 함수(`chat-send` · `companion-greet` · `companion-proactive` · `companion-eval` 등 RPC를 부르는 것)를 배포하면 새 판정에 `rev`가 찬다 —
+함수를 먼저 올려도 헤더는 무시되고, 마이그레이션만 먼저여도 `rev`가 null일 뿐이다.
+
 ## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 
 `migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
