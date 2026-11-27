@@ -46,7 +46,7 @@
 | 첫 글 120 ms, 간격 60 ms | 100 · 150 · 200 · 250 ms | `d2` · `d3` · `d4` · `d5` |
 | 글 하나 200 ms, 6px | 200 ms, 6px | `d4` · `enter`, `spacing-6` |
 
-`reveal-on-answer.css.unit.test.ts`가 전환 선언에 `calc(`가 없음을 지킨다. ⚠ `ranking-motion.css`의 `animation-delay: calc(...)`도 같은 이유로 기기에서 0일 수 있다 — 이 PR에서는 고치지 않았다(후속).
+`reveal-on-answer.css.unit.test.ts`가 전환 선언에 `calc(`가 없음을 지킨다. ~~⚠ `ranking-motion.css`의 `animation-delay: calc(...)`도 같은 이유로 기기에서 0일 수 있다 — 이 PR에서는 고치지 않았다(후속).~~ → 개정 1에서 확인하고 고쳤다.
 
 ### D3. 높이 재기 — 넉넉한 틀 안에서 한 번, 펼치는 동안 고정, 끝나면 auto
 
@@ -87,3 +87,44 @@ A안은 되풀이에서 0 %. 실화면에서 끊김이 없어 C안을 기본으�
 - ui: `RevealOnAnswer.ui.test.tsx`(닫힘 · 처음부터 열림 · 재는 중 → 펼침 → 열림 · 시간 초과 A안 · 0 답 · 줄이기 · 숨김 때 타이머 정리 · 다시 답함) · 화면별 `*.expand.ui.test.tsx` 넷.
 - integration: `App.answer-card-expand.integration.test.tsx`(앱 트리에서 듣기 답 → 펼침 → auto, 호스트 `reducedMotion` → 바로 열림).
 - 기기: iOS 시뮬레이터 iPhone 17 Pro · Android `R6_API30` `assembleBundled` 연속 캡처(표준 · 줄이기) — `docs/e2e/evidence/*answer-card-expand*`.
+
+## 개정 1 ⟨2026-11-27⟩ — 시간 값의 `calc()`를 저장소 전체(Lynx CSS)에서 걷는다
+
+D2의 후속이다. 같은 꼴(`calc(var(--libitum-motion-duration-d1) * N)`)이 순위 · 엽전 출시 · 채팅 새 기능 · 가입 보상에 남아 있었다.
+
+### 기기 측정
+
+임시 탐침(커밋하지 않음)으로 상자 여덟 개에 시간 값만 다르게 걸고 `animationstart` · `animationend` · `transitionstart` · `transitionend`가 마운트 뒤 몇 ms에 오는지 화면에 찍었다.
+iOS 시뮬레이터(iPhone 17 Pro, iOS 26.5) · Android `Pixel_8` 에뮬레이터 `assembleBundled`, Lynx 4.0.1.
+
+| 선언 | 기대 | iOS | Android |
+| --- | --- | --- | --- |
+| `animation-delay: var(d9)` | 1000 | 시작 1040 | 시작 672 · 끝 974(마운트 기준점이 약 330 ms 늦음 — 아래 c와 같은 차) |
+| `animation-delay: calc(var(d9) * 2)` | 2000 | **시작 2 · 끝 340 — 0** | **시작 3 · 끝 3 — 0(길이까지 0)** |
+| `animation-delay: 2000ms` | 2000 | 시작 2040 | 시작 1672 |
+| `animation-delay: calc(1000ms * 2)` | 2000 | 시작 2041 — 맞음 | 시작 1672 — 맞음 |
+| `animation: … calc(var(d9) * 2) …`(단축 길이) | 2000 동안 | **이벤트 없음 — 애니메이션이 서지 않음** | **이벤트 없음** |
+| `animation: … 2000ms …` | 2000 동안 | 끝 2041 | 끝 1672 |
+| `transition-delay: calc(var(d9) * 2)` | 2000 | **시작 53 — 0** | **시작 54 — 0** |
+| `transition-delay: 2000ms` | 2000 | 시작 2074 | 시작 2072 |
+
+- 두 플랫폼이 같다: **`calc()` 안에 `var()`가 있으면 시간이 0**이고, 단축 속성의 길이에 쓰면 선언째 버려진다. `var()` 없는 `calc(1000ms * 2)`는 맞게 읽힌다. 두 플랫폼이 같은 C++ 스타일 엔진을 쓰므로 `transition`과 `animation`도 같다.
+- 그래서 순위 줄 · 메달 · 내 줄 강조, 출시 모달 태그 · 줄 · 인물 · 막대가 **처음부터 한꺼번에** 섰고(차례 없음), 가입 카드 주머니의 「가끔 통 튐」(`animation: signup-hop calc(d9 * 3) …`)은 **한 번도 돌지 않았다.**
+- 고치기 전 · 후 연속 캡처(125 ms 간격 8장, 위가 전 · 아래가 후): `docs/e2e/evidence/{ios,android}-motion-calc-{ranking,coins,chat}-frames.png`, 측정 화면 `docs/e2e/evidence/{ios,android}-motion-calc-measure.png`.
+
+### 결정
+
+- 시간 값에 `calc()`를 쓰지 않는다. 원래 calc가 뜻한 값을 그대로 낸다 — **토큰과 같은 값이면 토큰**(d2 · d3 · d4 · d5 · d6 · d7 · d8 · d9), **토큰에 없는 값은 리터럴 ms**다.
+  - 순위: 350 · 700ms. 엽전 출시 · 채팅: 350 · 450 · 550 · 650 · 750 · 800ms. 가입 보상: 500 · 750 · 800 · 850 · 900 · 950ms, 통 튐 한 주기 3000ms.
+  - 지연 순서와 리듬(d1 = 50 ms 간격)은 그대로다.
+- **디자인 토큰에 stagger 단계 토큰을 더하지 않은 까닭**: `@libitums/design-tokens`는 다른 저장소(`design-system`)에서 GitHub Packages로 배포되는 패키지라 이 저장소에서 토큰을 늘리려면 그쪽 PR · 배포 · 버전 올림이 먼저다. 필요한 배수가 화면마다 제각각(×7 · ×9 · ×11 · ×13 · ×14 · ×15 · ×16 ~ ×19 · ×10 · d9 × 3)이라 「d1 × n」 토큰 열 몇 개를 새로 세우는 것은 토큰 체계(길이 단계 d0 ~ d9)를 흐린다. 차례 지연은 화면 연출 값으로 보고 리터럴로 둔다.
+- 리터럴은 `lint:motion` allowlist로 연다: `ranking-motion.css`(이미 있음, 사유 갱신) · `launch.css` · `signup-reward.css`(새로). 파일 단위 allowlist이므로 각 사유에 「이 파일 밖의 새 리터럴은 허용하지 않는다」를 적었다.
+- 움직임 줄이기 분기는 바꾸지 않았다 — 클래스가 붙지 않거나(`ranking-motion.ts`) `launch-still` · `signup-still`이 애니메이션을 끈다.
+- 랜딩(`apps/landing`)의 `calc()` 시간 값은 브라우저가 그려 맞게 읽히므로 범위 밖이다.
+
+### 재발 방지
+
+`apps/mobile/src/app/lynx-css-time-calc.unit.test.ts`
+- TC1: Lynx 뿌리 셋(`apps/mobile/src` · `packages/ui-lynx/src` · `apps/storybook-lynx/src` — `lint:motion`과 같다)의 모든 `.css`에서 `animation` · `animation-delay` · `animation-duration` · `transition` · `transition-delay` · `transition-duration` 선언에 `calc(`가 없다. 시간 밖의 calc(길이 등)는 허용한다.
+- TC2: 고친 세 파일의 선택자마다 지연(과 통 튐 한 주기)이 원래 calc 값(ms)과 같다 — 토큰은 `variables.css`에서 읽어 ms로 바꾼다.
+- 고치기 전 main에서 TC1 · TC2 34건이 실패했고(red), 고친 뒤 36건 통과(green).
