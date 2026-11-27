@@ -21,6 +21,7 @@ import { accountWiring } from "./account-wiring";
 import { catalogWiring } from "./catalog-wiring";
 import { learnerProfileWiring, type LearnerProfileWiring } from "./learner-profile-wiring";
 import type { LearnerProfileControls } from "./use-learner-profile";
+import type { MicPermissionEventSink } from "../lib/mic-permission-event.contract";
 import type { CatalogWiring, CatalogWiringArgs } from "./catalog-wiring";
 import type { AccountWiring } from "./leave-app.contract";
 
@@ -54,11 +55,16 @@ import type { ChoiceRomanization, SessionOptionKey, SessionOptions } from "../li
 import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
+import { entryBirthYearWiring, type EntryBirthYearWiring } from "./entry-birth-year-wiring";
 import { entryPathWiring, type EntryPathWiring } from "./entry-path-wiring";
 import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
-import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-wiring";
+import {
+  messengerChatSource,
+  messengerChatWiring,
+  type MessengerChatWiring,
+} from "./messenger-chat-wiring";
 import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
 import type { PlansWiring } from "./use-plans";
@@ -158,6 +164,8 @@ export type ScreenWiring = {
   learningTrail: LearningTrail;
   /** 주간 순위(ADR-0170) — 서버 포트 · 순위 탭 열기. */
   ranking: RankingWiring;
+  /** 마이크 권한 안내 이벤트(ADR-0206) — 말하기 화면이 냅니다. 없으면 보내지 않습니다. */
+  onMicPermissionEvent?: MicPermissionEventSink;
 } & GuestWiring &
   EntryPathWiring &
   AccountWiring &
@@ -165,6 +173,7 @@ export type ScreenWiring = {
   StatBumpWiring &
   CatalogWiring &
   LearnerSignupWiring &
+  EntryBirthYearWiring &
   LearnerProfileWiring;
 
 export type ScreenWiringArgs = {
@@ -205,8 +214,16 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
   });
 
+  // ④ 출생 연도(ADR-0059 개정 2026-11-27) — 누를 때의 대화 출처(로그인한 계정)에 적습니다.
+  const birthYear = entryBirthYearWiring({
+    entryEventSink: args.entryEventSink,
+    dispatch: args.dispatch,
+    saveBirthYear: (year) => messengerChatSource(args.episodeContent.imageUrlOf).setBirthYear(year),
+  });
+
   return {
     ...journey,
+    ...birthYear,
     // 누른 서버 푸시의 목적지입니다(ADR-0034) — 이동 규칙은 `push-routing.ts`, 선톡 방은 대화 출처로 찾습니다(ADR-0127).
     onOpenPushTarget: pushTargetOpener({
       dispatch: args.dispatch,
@@ -257,5 +274,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...learnerProfileWiring(args),
     more: moreWiring(args),
     learningTrail: args.learningTrail,
+    onMicPermissionEvent: (event) => args.episodeIntroEventSink?.(event),
   };
 }

@@ -12,6 +12,9 @@ import type {
 import type { ChatCrisisResource } from "./chat-source.contract";
 import type { FriendStoryWord } from "./friend-stories.contract";
 import type { MyStoryPhotoPort, MyStoryRejection } from "./my-story-photo.contract";
+import type { LastShown } from "./story-row-memory";
+
+export type { LastShown };
 
 /** 단어 · 카드 스토리의 종류 — 단어장 단어(`word`) · 레슨 카드(`card`). 사진 · 글 스토리는 `MyStory.kind`가 따로 갖습니다. */
 export type MyStoryKind = Exclude<WireStory["kind"], "photo">;
@@ -203,6 +206,8 @@ export type MyStoriesPort = {
   readonly knownEnabled?: () => boolean;
   /** 사진(ADR-0199) — 호스트 모듈(`StoryPhotoModule`)이 없으면 없음(Camera · 사진 선택지가 서지 않음). */
   readonly photo?: MyStoryPhotoPort;
+  /** 마지막으로 읽은 내 스토리 상태(계정마다, 실행 동안) — 탭을 다시 열면 「+」가 첫 프레임에 섭니다. 없으면 읽기를 기다립니다. */
+  readonly memory?: LastShown<MyStoriesState>;
 };
 
 /** 스토리 줄 맨 앞의 내 스토리 칸(ADR-0194) — 「+」(만들기)와, 살아 있는 내 스토리가 있으면 「Your story」. */

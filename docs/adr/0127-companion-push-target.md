@@ -84,6 +84,25 @@
 - **되돌리기**: 두 칸을 null로 되돌리면 창이 꺼진다(배포 없음).
 - **테스트**: `companion-proactive-prefs.integration.test.ts` PP10.
 
+## 서버 쪽 개정 ⟨2026-11-27⟩ — 나라는 기기 지역 → 온보딩 나라 [버그 수정]
+
+- **계기**: 선톡 · 스토리 반응의 허용 조건은 「성인, 또는 미성년 + 나라 앎 + US 아님」인데 나라를 `companion.profiles.last_region`만으로 봤다.
+  운영 2026-11-27: `last_region`이 7,304명 **전원 null** — 앱이 chat-send에 `client_region`을 보내지 않는다(`chat-send-handler.ts`
+  `body.client_region ?? null`). 그래서 미성년은 아무도 선톡 · 반응을 받지 못했다(11-27 일반 사용자의 첫 스토리 반응 2건이 `not_allowed`로 실패).
+  온보딩 ② 나라(`public.learner_profiles.country_code`)는 채팅한 미성년 297명 중 296명, 성인 2,114명 중 2,108명이 가지고 있다. 채팅한 미국 미성년은 0명.
+- **바꾼 것**(마이그레이션 `20270119120000_companion_user_region.sql`, 운영 미적용): 나라 판정 `companion.user_region(user)` =
+  `last_region` → `learner_profiles.country_code`. 이 함수를 같은 뜻의 판정에 쓴다.
+  - `companion_proactive_context`의 `allowed` · `companion_proactive_candidates`(선톡 후보) — 미성년 + 나라 앎 + US 아님.
+  - `companion_proactive_context`의 `localHour` — `companion.user_timezone`(선톡 빈도 판정 `proactive_skip_reason`과 같은 시간대).
+  - `companion.turn_gate_base`의 미국 판정(SB 1119 이용 시간 · 장기 기억 끔)과 응답 `region`(위기 연락처) — 요청 지역 → `user_region`.
+  - `companion_memory_flush_candidates`의 `memoryEnabled` — 관문과 같은 미국 판정.
+- **바꾸지 않은 것**: 시간대 함수(`user_timezone` · `proactive_skip_reason` · `memory_batch`)는 이미 온보딩 나라로 넘어간다. 운영 화면(`ops_*`)과
+  스토리 알림 언어(`country`)는 온보딩 나라를 먼저 보는 다른 뜻이다. 나이 모름의 선톡 규칙(늘 막힘 — 20261111 「나이 모름은 미성년자 기본값」)은 그대로다.
+- **대가**: 기기 지역이 아니라 사용자가 고른 나라를 믿는다 — 미국 미성년이 다른 나라를 고르면 미국 규칙을 비켜 간다(기기 지역을 보내도 VPN · 해외 기기는 같다).
+  반대로 온보딩 US인 나이 모름 · 미성년은 이제 SB 1119 이용 시간 상한 · 기억 끔이 걸린다(운영: 채팅한 사람 중 나이 모름 2명, 미성년 0명).
+- **후속(미정)**: 앱이 `client_region`(기기 지역)을 보내게 할지는 따로 정한다 — 보내면 기기 지역이 온보딩 나라보다 먼저다.
+- **테스트**: `companion-user-region.integration.test.ts` UR1 ~ UR8.
+
 ## 적용 기록 ⟨2026-11-25 — 채팅 첫 답장 뒤 알림 권한 카드⟩
 
 - [ADR-0197](0197-chat-push-ask-card.md): 선톡을 받은 사람의 48%가 푸시 기기가 없어(선톡 받은 678명 기준) 선톡 푸시가 닿지 않았다. 방에서 보낸 말에 인물이

@@ -103,6 +103,8 @@ export type SuggestedFriendsPort = {
   readonly allStory?: () => boolean;
   /** 서버의 켜진 제안 — 목록 화면이 한 번 읽어 카탈로그에 얹습니다. 없으면(가짜 출처 · 손님) 제안이 없습니다. */
   readonly offers?: (() => Promise<readonly EarlyAccessListing[]>) | null;
+  /** 이 실행 · 이 계정에서 마지막으로 읽은 제안(없으면 null) — 첫 프레임부터 이 값으로 그려 제안이 늦게 얹혀 줄 순서가 바뀌지 않게. */
+  readonly lastOffers?: () => readonly EarlyAccessListing[] | null;
   /**
    * 이 학습자에게 보이는 추천 친구(`companion_friends()`, ADR-0164 D2). 있으면 일반 인물은 이 목록에 있는 것만 섭니다 — 읽기 전 ·
    * 못 읽음(null)은 빈 목록과 같습니다. 없으면(가짜 출처 · 테스트) 카탈로그의 일반 인물이 그대로 섭니다.

@@ -49,6 +49,9 @@ export const speakingMy: SpeakingCopy = {
   instruction: "ဤဝါကျကို အသံထွက် ဖတ်ပါ။",
   speak: "ပြောရန်",
   stopSpeaking: "ပြောခြင်း ရပ်ရန်",
+  listening: "နားထောင်နေသည်…",
+  checking: "စစ်ဆေးနေသည်…",
+  tapToStop: "ပြောပြီးလျှင် ရပ်ရန် တို့ပါ",
   tryAgain: "ထပ်စမ်းရန်",
   dictationDisabled:
     "Siri သို့မဟုတ် Dictation ပိတ်ထားပါသည်။ Settings > General > Keyboard > Enable Dictation တွင် ဖွင့်ပြီး ထပ်စမ်းကြည့်ပါ။",

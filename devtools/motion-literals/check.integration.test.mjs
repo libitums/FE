@@ -40,6 +40,11 @@ const unlimitedShine = "apps/mobile/src/components/unlimited-ticket-chip-motion.
 // 주간 순위 화면의 등장 연출(사용자 결정 2026-11-22, ADR-0170 D12).
 const rankingMotion = "apps/mobile/src/screens/ranking/ranking-motion.css";
 const storyProgress = "apps/mobile/src/screens/messenger-chat/story-progress.css";
+// 시간 값의 calc(var(…))를 Lynx가 0으로 읽어 토큰에 없는 차례 지연을 리터럴로 옮긴 두 파일(ADR-0212 개정 1).
+const staggerLiteralFiles = [
+  "apps/mobile/src/screens/launch/launch.css",
+  "apps/mobile/src/screens/signup-reward/signup-reward.css",
+];
 
 function runCheck(scriptPath) {
   const result = spawnSync(process.execPath, [scriptPath], { encoding: "utf8" });
@@ -75,7 +80,7 @@ test("[LM1′] 저장소 전체(CSS + 소스, scale-literal 포함)에 lint:moti
   assert.equal(status, 0, output);
 });
 
-test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 · 문화 카드 뒤집기 · 등장 모션 두 파일 · 다시 풀기 배지 · 무제한 칩 빛 훑기 · 순위 모션 · 스토리 진행 막대이고 모두 실제로 존재한다", () => {
+test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 · 문화 카드 뒤집기 · 등장 모션 두 파일 · 다시 풀기 배지 · 무제한 칩 빛 훑기 · 순위 모션 · 스토리 진행 막대 · 차례 지연 리터럴 두 파일이고 모두 실제로 존재한다", () => {
   const allowlist = JSON.parse(readFileSync(path.join(here, "allowlist.json"), "utf8"));
   assert.deepEqual(
     allowlist.map((entry) => entry.path),
@@ -88,6 +93,7 @@ test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 ·
       unlimitedShine,
       rankingMotion,
       storyProgress,
+      ...staggerLiteralFiles,
     ],
   );
   for (const file of [
@@ -99,6 +105,7 @@ test("[LM1] allowlist는 narrative-background.css · 지표 모션 두 파일 ·
     unlimitedShine,
     rankingMotion,
     storyProgress,
+    ...staggerLiteralFiles,
   ]) {
     assert.ok(readFileSync(path.join(repoRoot, file), "utf8").length > 0, file);
   }
@@ -152,6 +159,10 @@ test("[LM3′] allowlist에서 narrative-background.css를 빼면 그 파일의 
     { path: unlimitedShine, reason: "무제한 칩 빛 훑기 주기(ADR-0115)" },
     { path: rankingMotion, reason: "순위 화면 등장 연출 값(ADR-0170 D12)" },
     { path: storyProgress, reason: "스토리 진행 막대 6초(ADR-0178 D4)" },
+    ...staggerLiteralFiles.map((file) => ({
+      path: file,
+      reason: "토큰에 없는 차례 지연(ADR-0212 개정 1)",
+    })),
   ]);
   try {
     for (const root of roots) {

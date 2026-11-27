@@ -50,6 +50,7 @@
     "push:console": "node devtools/push-console/server.mjs",
     "mission:bundle": "UPDATE_MISSION_LAB_BUNDLE=1 pnpm --filter @libitums/supabase-functions exec vitest run mission-bundle.unit.test && pnpm format",
     "size:check": "node devtools/bundle-size/check.mjs",
+    "size:snapshots": "node devtools/bundle-size/snapshot-coverage-cli.mjs",
     "performance:reports:check": "node devtools/performance-report-policy/check.mjs",
     "performance:reports:gate": "node devtools/performance-report-policy/gate.mjs",
     "lint": "oxlint && pnpm lint:tokens && pnpm cycle:check && pnpm lint:boundaries && pnpm lint:ui-copy && pnpm lint:motion && pnpm lint:scroll-bars",
@@ -62,7 +63,7 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt . '!**/*.md' '!apps/ios/**' '!apps/mobile/content/**' '!apps/landing/src/trial/content/**' '!apps/landing/public/naver*.html' '!apps/landing/public/google*.html'",
     "format:check": "oxfmt --check . '!**/*.md' '!apps/ios/**' '!apps/mobile/content/**' '!apps/landing/src/trial/content/**' '!apps/landing/public/naver*.html' '!apps/landing/public/google*.html'",
-    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm size:check && pnpm performance:reports:gate"
+    "verify": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm size:check && pnpm size:snapshots && pnpm performance:reports:gate"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.12",

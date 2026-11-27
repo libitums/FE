@@ -16,6 +16,7 @@ import {
   smoothToEnd,
   type ScrollPosition,
 } from "./chat-log-follow";
+import { scrollLineIntoView, scrollToEnd } from "./chat-log-scroll";
 
 import "./chat.css";
 
@@ -26,20 +27,6 @@ let logSequence = 0;
 function nextLogId(): string {
   logSequence += 1;
   return `chat-log-${logSequence}`;
-}
-
-// 대화 끝으로 내립니다(백그라운드). 못 옮기면 조용히 둡니다.
-function scrollToEnd(id: string, smooth: boolean): void {
-  "background only";
-  try {
-    lynx
-      .createSelectorQuery()
-      .select(`#${id}`)
-      .invoke({ method: "scrollTo", params: { offset: 1_000_000, smooth } })
-      .exec();
-  } catch {
-    // 테스트 환경 · 요소 없음 — 끝 맞춤은 부가 동작입니다.
-  }
 }
 
 type ScrollDetail = { readonly detail: ScrollPosition & { readonly deltaY?: number } };
@@ -60,6 +47,7 @@ export function ChatLog({
   holdKey,
   onPositionChange,
   onTap,
+  reveal,
   children,
 }: ChatLogProps): ReactNode {
   const [id] = useState(nextLogId);
@@ -187,6 +175,17 @@ export function ChatLog({
     const handle = setTimeout(() => goEnd(), 16);
     return () => clearTimeout(handle);
   }, [jumpKey, goEnd]);
+
+  // 로그 가운데의 줄을 보입니다 — 끝 따라가기를 멈춰 그 줄이 도착 · 내용 변화로 밀려나지 않게(ADR-0146 개정 ⟨예시 대상⟩).
+  const revealKey = reveal?.key;
+  const revealLine = reveal?.lineId;
+  useEffect(() => {
+    if (revealKey === undefined || revealLine === undefined) return;
+    nearEnd.current = following.current = queued.current = false;
+    report();
+    const handle = setTimeout(() => scrollLineIntoView(revealLine, motion), 16);
+    return () => clearTimeout(handle);
+  }, [revealKey, revealLine, motion, report]);
 
   useEffect(
     () => () => {

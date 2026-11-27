@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
 
 import { storyPushPlan } from "./companion-stories-handler.ts";
-import { pushCampaignConfig } from "./push-campaign-config.ts";
+import { allCampaignCopy, pushCampaignConfig } from "./push-campaign-config.ts";
 import { copyLanguageFor, storyLanguageFor } from "./push-campaign-locale.ts";
 import { renderCopy } from "./push-campaign-text.ts";
 
 test("SL-U5. 이름 없는 학습자에게도 모든 언어 문구가 쉼표(, ， 、)로 시작하지 않는다", () => {
   const vars = { name: "", episode: "Buying Water", character: "미나", steps: 2 };
-  for (const [segment, copy] of Object.entries(pushCampaignConfig.copy)) {
+  for (const [segment, copy] of allCampaignCopy(pushCampaignConfig)) {
     for (const [language, entry] of Object.entries(copy)) {
       for (const text of [renderCopy(entry.title, vars), renderCopy(entry.body, vars)]) {
         expect(text, `${segment} ${language}`).not.toMatch(/^[\s,，、]/u);
@@ -36,7 +36,7 @@ test("SL-U1. 나라 → 문구 언어: 대만 · 홍콩 · 마카오는 zh-TW, �
 });
 
 describe("SL-U2. 자동 캠페인 문구 — 영어 밖 언어가 있는 묶음은 zh-TW도 있고 자리표시자를 지킨다", () => {
-  const segments = Object.entries(pushCampaignConfig.copy).filter(
+  const segments = allCampaignCopy(pushCampaignConfig).filter(
     ([, copy]) => Object.keys(copy).length > 1,
   );
 

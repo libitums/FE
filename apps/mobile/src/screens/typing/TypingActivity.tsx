@@ -2,6 +2,7 @@ import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
+import { RevealOnAnswer } from "../../components/RevealOnAnswer";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { AudioUnavailableControl } from "../../components/AudioUnavailableControl";
 import { ItemListenControls } from "../../components/ItemListenControls";
@@ -202,12 +203,19 @@ export function TypingActivity({
                   </view>
 
                   {/* 맞아도 보입니다 — 문장 부호 · 띄어쓰기의 본보기를 한 번 더 봅니다. */}
-                  {state.phase === "checked" ? (
-                    <AnswerReveal
-                      testId="typing-activity-reveal"
-                      text={copy.typing.answerReveal(question.answers[0])}
-                    />
-                  ) : null}
+                  {/* 답하면 카드가 펼쳐지며 상자가 나타납니다(ADR-0212). */}
+                  <RevealOnAnswer
+                    shown={state.phase === "checked"}
+                    itemCount={1}
+                    testId="typing-activity-reveal-box"
+                  >
+                    <RevealOnAnswer.Item order={0}>
+                      <AnswerReveal
+                        testId="typing-activity-reveal"
+                        text={copy.typing.answerReveal(question.answers[0])}
+                      />
+                    </RevealOnAnswer.Item>
+                  </RevealOnAnswer>
                 </>
               )}
             </view>

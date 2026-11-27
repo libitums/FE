@@ -44,6 +44,8 @@
     방(저장)과 안내(판정) 둘 다에 건넨다.
   - iOS도 같은 신호면 같은 동작(뒤로가기는 없지만 키보드가 내려가는 경우 대비). Hangul keys 화면 · 다른 단계 · 안내 밖 채팅은 영향 없다.
   - 말풍선은 지금 그대로 흰색(기존 코치마크) — 사용자 확정.
+- ⟨개정 2026-11-28⟩ **안내 동안 답장 보기 판은 저절로 열리지 않는다** — 덕수쌤 첫 인사가 보기와 함께 와도 키보드 단계의 두 화면은
+  제 키보드(휴대폰 키보드 · Hangul keys)를 보이고, 보기는 안내가 끝난 뒤(키보드 접기 다음) 연다. 결정 · 까닭은 ADR-0137 「개정 (2026-11-28)」.
 
 ### D3. 겹침 — 토글 줄만 밝게, 위치를 재지 않음
 - 키보드 단계는 방 화면 전체에 겹치는 세 칸(`KeyboardGuideLayer`): **위**(머리 · 로그 · 기능 줄 · 입력 줄을 덮는 막 + 말풍선) ·
@@ -105,4 +107,5 @@
 - ui KG-UI1 ~ UI10(`MessengerGuide.keyboard.ui`, UI9 · UI10은 키보드가 내려감) · MG-UI3 · UI5(`MessengerGuide.ui`, 순서 바뀜) · MG-UI10 ~ UI16(`MessengerGuide.sample.ui`) ·
   EV-UI2(`chat-events.ui`) · D5 · M4(`MessengerChatScreen.device1.ui`, 입력 칸 안내 글) · LV-U1 ~ U3(언어 여덟)
 - integration KG-I1 ~ I3(`App.messenger-keyboard-guide`, I3은 키보드가 내려감) · CP-I4(안내를 끝낸 뒤 보내기)
+- 개정 2026-11-28(첫 인사 보기와 겹침): ui GA-UI1 ~ UI3(`MessengerGuide.auto-ideas.ui`) · integration GA-I1 ~ I2(`MessengerGuide.auto-ideas.integration`)
 - e2e [수동](../e2e/messenger-guide.md) MG-E8 ~ E11

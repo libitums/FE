@@ -5,6 +5,8 @@ import { defineConfig, type Config } from "@lynx-js/rspeedy";
 import { pluginQRCode } from "@lynx-js/qrcode-rsbuild-plugin";
 import { pluginReactLynx } from "@lynx-js/react-rsbuild-plugin";
 
+import { pluginPageConfig } from "./lynx-page-config.ts";
+
 const uiLynxRoot = path.resolve(import.meta.dirname, "../../packages/ui-lynx");
 
 // ui-lynx의 공개 export(`./dist/...`)를 같은 자리의 src로 1:1 대응시킨 정확 일치 alias.
@@ -82,6 +84,8 @@ export default defineConfig(({ command }): Config => {
       // 정의하고, 런타임 main-thread `processData`가 읽는 `__EXTRACT_STR_IDENT_FLAG__`는 어떤 플러그인도
       // 정의하지 않아 실행마다 ReferenceError가 났습니다. 문자열을 실제로 뽑는 단계도 오픈소스 빌드에는 없습니다.
       pluginReactLynx({ globalPropsMode: "event", defineDCE: missionDefineDCE }),
+      // 여러 손가락 터치를 켭니다 — 꺼져 있으면 두 엄지로 빠르게 칠 때 겹친 둘째 키가 JS에 오지 않습니다(ADR-0112 개정 ⟨여러 손가락⟩).
+      pluginPageConfig(),
     ],
     tools: {
       // `extractStr`가 번들을 약 103 kB 줄이던 몫은 이 한 가지였습니다: `.json`을 `JSON.parse('…')` 문자열이
@@ -104,6 +108,16 @@ export default defineConfig(({ command }): Config => {
             { test: /roleplay-mission-dev-fakes\.ts$/, sideEffects: false },
             // 스위치가 꺼진 release에서 미션 화면 · 문구 · CSS 전체를 뺍니다(`roleplay-mission-entry.ts`, ADR-0177).
             { test: /roleplay-mission(-list)?-entry\.ts$/, sideEffects: false },
+            // 메인 스레드는 첫 화면(스플래시)만 그려(`render-app-content.tsx`) 다른 화면만 쓰는 ui-lynx 컴포넌트의 import가
+            // 쓰이지 않게 됩니다. ui-lynx의 `sideEffects`는 CSS만 적어, 그대로 두면 그 모듈이 통째로 빠지면서 모듈 최상위의
+            // 그리기 틀(snapshot) 등록도 사라지고, background가 그 화면을 열 때 메인 스레드가 「Snapshot not found」로
+            // 멈춥니다. 메인 스레드 쪽에서만 부수 효과 있음으로 둡니다 — background에 걸면 쓰지 않는 컴포넌트까지 실립니다.
+            // 확인: `pnpm size:snapshots`(ADR-0149 「줄인 기록」 1).
+            {
+              test: /[\\/]ui-lynx[\\/]dist[\\/].*\.jsx?$/,
+              issuerLayer: "react:main-thread",
+              sideEffects: true,
+            },
             // 디자인 토큰 JS는 묶음마다 최상위 `deepFreeze(...)`를 불러, 앱이 쓰는 color · motion · opacity
             // 말고도 typography · font · elevation 등 열두 묶음이 두 스레드에 다 실립니다. 최상위 호출만
             // 순수로 표시해 쓰이지 않는 묶음을 버립니다 — release 번들 약 −14 kB.

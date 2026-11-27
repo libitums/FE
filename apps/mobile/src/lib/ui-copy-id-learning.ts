@@ -47,6 +47,9 @@ export const speakingId: SpeakingCopy = {
   instruction: "Bacakan kalimat dengan lantang.",
   speak: "Bicara",
   stopSpeaking: "Berhenti bicara",
+  listening: "Mendengarkan…",
+  checking: "Memeriksa…",
+  tapToStop: "Ketuk untuk berhenti kalau sudah selesai",
   tryAgain: "Coba lagi",
   dictationDisabled:
     "Siri atau Dikte sedang nonaktif. Aktifkan Pengaturan > Umum > Papan Ketik > Aktifkan Dikte, lalu coba lagi.",

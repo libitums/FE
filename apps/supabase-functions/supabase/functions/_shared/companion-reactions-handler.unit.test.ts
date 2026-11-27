@@ -292,6 +292,36 @@ test("RH5. 끝내기에 사용량 요약(모델 · 토큰)을 meta로 싣는다 
   });
 });
 
+test("RH12. 반응 허용은 `reactionAllowed`(20270119) — 나이 모름도 받되 미성년 규칙(로맨스 없음 · 출력 검사 · 13세 기준 프롬프트), 옛 DB는 `allowed`", async () => {
+  let moderated = 0;
+  const seen: { system: string; directive: string | null }[] = [];
+  const base = saying(["@speech 수고했어! 푹 쉬어"], seen);
+  const unknown = setup({
+    context: context({ ageBand: "unknown", allowed: false, reactionAllowed: true }),
+    llm: {
+      ...base,
+      moderate: async (request) => {
+        moderated += 1;
+        return base.moderate(request);
+      },
+    },
+  });
+  expect(await (await unknown.call()).json()).toMatchObject({ done: 1, failed: 0 });
+  expect(moderated).toBe(1);
+  expect(seen[0]!.system).toContain("may be a minor");
+  expect(unknown.finishes()[0]).toMatchObject({
+    p_ok: true,
+    p_meta: { romanceTier: "standard", romanceLine: "none" },
+  });
+  // 선톡 허용이 참이어도 반응 허용이 거짓이면 막는다(US 미성년 · 나이 모름).
+  const blocked = setup({ context: context({ allowed: true, reactionAllowed: false }) });
+  expect(await (await blocked.call()).json()).toMatchObject({ done: 0, failed: 1 });
+  expect(blocked.finishes()[0]).toMatchObject({ p_ok: false, p_meta: { outcome: "not_allowed" } });
+  // 칸이 없는 옛 DB — 선톡 허용을 따른다.
+  const old = setup({ context: context({ allowed: false }) });
+  expect(await (await old.call()).json()).toMatchObject({ done: 0, failed: 1 });
+});
+
 test("RH6. 한 번에 12개까지 고르고, 시간 예산을 넘으면 남은 줄은 모델을 부르지 않고 failed로 끝낸다", async () => {
   expect(REACTION_BATCH).toBeLessThanOrEqual(12);
   expect(REACTION_BUDGET_MS).toBeLessThan(60_000); // 매분 돈다 — 다음 회차 전에 시작 판정을 끝낸다

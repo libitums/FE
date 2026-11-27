@@ -40,6 +40,8 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
             : `新着メッセージ ${count}件`,
     jump: "新着メッセージへ移動",
     latest: "最新のメッセージへ",
+    above: (media) =>
+      media === "photo" ? "上に写真が届きました" : "上にボイスメッセージが届きました",
   },
   replyToast: {
     dismiss: "閉じる",
@@ -65,10 +67,8 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     sectionProactive: "キャラクターからのメッセージ",
     proactive: "相手から話しかける",
     sectionAbout: "あなたについて",
-    sharedMemories: "みんなが知っているあなたのこと",
-    sharedMemoriesSummary: (count) => `${count}件 · すべてのキャラクターと共有`,
     footnote:
-      "キャラクターはそれぞれ、あなたとのチャットの内容も覚えています。チャットを開いて ☰ をタップすると見られます。",
+      "キャラクターはそれぞれ、あなたが話したことを覚えています。チャットを開いて ☰ をタップすると見られます。",
     proactiveSheet: {
       title: "相手から話しかける",
       body: "しばらくやり取りがないと、キャラクターから話しかけることがあります。コインはかかりません。",
@@ -83,7 +83,6 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       close: "閉じる",
     },
     memories: {
-      titleShared: "みんなが知っているあなたのこと",
       titleCharacter: (name) => `${name}が覚えていること`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "記憶がいっぱいです",
@@ -171,7 +170,7 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       ideas: "何を言えばいいか迷ったら、入力欄の横の電球をタップすると返信のヒントが出ます。",
       media: "キーボードの上のボタンで、写真やボイスメッセージもお願いできます。",
       sample:
-        "今なにをしているか見てみますか？Snapshotをタップすると写真を送ります。最初の1枚はサービスです。",
+        "今なにをしているか見てみますか？スナップ写真をタップすると写真を送ります。最初の1枚はサービスです。",
       voice:
         "声でも聞いてみますか？スナップボイスをタップするとそのメッセージを読み上げます。最初の1回はこちらもサービスです。",
     },
@@ -191,6 +190,7 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step} / ${total}`,
     newTag: "新機能",
     free: "無料",
+    greeting: (name) => `${name}があいさつ中…`,
   },
   launch: {
     newTag: "NEW",

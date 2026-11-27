@@ -461,3 +461,13 @@ B4의 매핑 업로드는 `uploadSentryMappingBundled`를 손으로 돌린다(�
 - **Device 컨텍스트**(API 34 이벤트): Architectures · Brand · Family · Manufacturer · Memory Size · Model · Model Id · Processor Count · Processor Frequency · Screen Density · Screen DPI · Screen Height / Width Pixels · Simulator. `id` · `name` · `boot_time` 없음.
 - 네이티브 크래시 이슈의 제목은 크래시 스레드 맨 위 프레임 `__epoll_pwait`다 — 외부 신호로 죽여 대기 프레임이 맨 위였다. 앱 라이브러리 안에서 난 크래시가 어떻게 묶이는지는 미확인.
 - **이 확인이 보지 않은 것**: 서버가 붙이는 IP(프로젝트 설정 「IP 주소 저장 안 함」을 켰는지 사용자 확인 없음) · M2 · M3 쿼리(B7) · 매핑으로 풀린 스택 · release 빌드 · ANR · API 31 ~ 33 · 실기.
+
+## C — 사용자 id · iOS (⟨2026-11-27⟩ [ADR-0207](../adr/0207-sentry-ios-and-user-id.md))
+
+| # | 조작 | 기대 | 상태 |
+|---|---|---|---|
+| C1 | iOS 시뮬레이터 · DSN 없는 빌드 실행 | SDK가 서지 않는다 — Debug 로그 `[DuruCrash] disabled (no DSN or debug build)` 한 줄, 앱은 그대로 뜬다 | **통과**(2026-11-27, iPhone 17 시뮬레이터 · Debug · 에이전트 실행) |
+| C2 | iOS · `Sentry.local.xcconfig`에 DSN과 `SENTRY_ENVIRONMENT = development`를 넣은 Release 빌드에서 크래시 1건(`kill -SEGV` 등) → 재실행 | `duru-apple-ios`에 이벤트 1건 · `environment: development` · `release: libitum.duru.ios@<version>+<build>` · breadcrumb · 스크린샷 없음 | 미실행 — 값 파일이 아직 없다 |
+| C3 | Android · DSN을 넣은 `bundled`로 로그인 → 임시 throw(B2와 같음) | 이벤트의 `user`가 `{id: <Supabase 사용자 UUID>}` 하나 — `email` · `username` · `ip_address` 없음. 대시보드 이슈의 Users 1 | 미실행 |
+| C4 | C3 뒤 로그아웃 → 같은 throw | 이벤트에 `user`가 없다 | 미실행 |
+| C5 | 손님으로 시작 → 같은 throw | 이벤트에 `user`가 없다 | 미실행 |

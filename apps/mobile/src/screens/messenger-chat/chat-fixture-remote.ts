@@ -6,17 +6,24 @@ import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
-import { remotePull, theirLines } from "./chat-remote-pull";
-import { previewRemoteRooms } from "./chat-remote-preview";
+import { remotePull, theirLines, type RemotePullDeps } from "./chat-remote-pull";
+import { remoteRoomSync } from "./chat-remote-sync";
 import { remoteWalletSync } from "./chat-remote-wallet";
+import { suggestionTagOf, type ChatSuggestionTag } from "./chat-suggestion-ref";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage, ChatSendOptions } from "./chat-source.contract";
-import { renderTurn, withHistoryNotes } from "./chat-remote-notes";
+import {
+  addFailedNotice,
+  removeFailedNotice,
+  renderTurn,
+  withHistoryNotes,
+} from "./chat-remote-notes";
 import { myTextLine, storyIdIn } from "./friend-stories";
 import { hasReplyAfter, mergeLog, sameIdeas, serverCopyOf } from "./chat-log-merge";
 import { turnOutcomeOf, type TurnOutcome } from "./companion-outcome";
 import { applyTurnEvent, initialTurnState, type TurnState } from "./companion-turn";
 import { quizAnswerPending } from "./story-quiz";
+import { noteSampleHead } from "./chat-sample-target";
 
 /** 끊긴 답 채우기 — 바로 한 번, 그 뒤 이 간격마다(누적 30초). 다 돌면 stalled. */
 const RECOVERY_RETRY_MS = [2_000, 3_000, 5_000, 20_000] as const;
@@ -31,14 +38,16 @@ export type RemoteRoomDeps = {
   readonly uuid: () => string;
   readonly mediaHooks?: ChatMediaHooks; // 사진 · 음성(ADR-0146)
   readonly preview?: readonly string[]; // 만들 때 기록을 미리 읽을 방(다시 켠 뒤 목록 미리보기)
+  readonly roomIds?: () => readonly string[]; // 목록 맞추기가 볼 방 — 없으면 미리 읽을 방
+  readonly seen?: RemotePullDeps["seen"]; // 본 마지막 인물 메시지(ADR-0213 개정) — 기록을 읽으면 그 뒤 인물 메시지 수로 안 읽음
 };
-
 export { uuidV4 } from "./chat-remote-notes";
 export function remoteRoomMethods(deps: RemoteRoomDeps) {
   const { remote, live, changed, now, schedule } = deps;
   const roomIdOf = (room: RoomState) => room.seed.roomId;
   const characterOf = (room: RoomState) => room.seed.counterpart.id;
   const clientIds = new Map<string, string>(); // 내 글 id → client_message_id(다시 보내기 멱등)
+  const tags = new Map<string, ChatSuggestionTag>(); // 내 글 id → 칩 탭 표시(ADR-0210 D1, 다시 보내기에도 실림)
   // 채우기가 끝났는지 — stalled에서 다시 시작하거나 다른 다시 읽기가 채웠는지 볼 때도 씁니다.
   const recoveryTargets = new WeakMap<RoomState, (log: readonly ChatMessage[]) => boolean>();
   const isOpen = (roomId: string) => deps.openRoomId() === roomId;
@@ -64,15 +73,15 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     }
     room.messages = mergeLog(room.messages, history.messages);
     room.notes = withHistoryNotes(room.notes, history);
+    noteSampleHead(room, history); // 무료 예시의 대상 — 첫 인사 · 앞부분을 읽었는지(ADR-0146 개정)
     if (room.pendingReplies === 0 && !sameIdeas(room.remoteIdeas, history.ideas))
-      setRemoteIdeas(room, history.ideas, history.ideasOrigin);
+      setRemoteIdeas(room, history.ideas, history.ideasOrigin, history.ideasRef);
     if (room.recovery === "stalled" && recoveryTargets.get(room)?.(history.messages) === true)
       room.recovery = "none";
     return confirmed;
   };
 
   const greeting = remoteGreetingMethods({ remote, live, changed, isOpen });
-  previewRemoteRooms({ remote, live, changed }, deps.preview ?? []);
   const wallet = remoteWalletSync(remote, deps.mediaHooks); // 엽전은 서버 지갑(ADR-0155)
 
   /** 방을 열 때 — 서버 기록을 읽고, 비어 있으면 첫 인사를 받습니다. 못 받으면 failed(다시 시도 안내). */
@@ -132,23 +141,6 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     })();
   };
 
-  const removeNotice = (room: RoomState, myId: string) => {
-    room.messages = room.messages.filter((message) => message.id !== `${myId}~failed`);
-  };
-  // 실패 줄은 그 글 바로 아래에 섭니다 — 뒤에 쌓인 Not sent 글 뒤로 밀리지 않게(리뷰 S3).
-  const addNotice = (room: RoomState, myId: string, notice: TurnOutcome & { kind: "notice" }) => {
-    removeNotice(room, myId);
-    const line: ChatMessage = {
-      id: `${myId}~failed`,
-      at: now(),
-      kind: "notice",
-      notice: notice.notice,
-    };
-    const index = room.messages.findIndex((message) => message.id === myId);
-    const at = index < 0 ? room.messages.length : index + 1;
-    room.messages = [...room.messages.slice(0, at), line, ...room.messages.slice(at)];
-  };
-
   const settle = (room: RoomState, myId: string, outcome: TurnOutcome, turn: TurnState) => {
     room.pendingReplies = Math.max(0, room.pendingReplies - 1);
     room.typing = false;
@@ -157,8 +149,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
         return;
       case "unsent":
         room.unsent = [myId, ...room.unsent.filter((id) => id !== myId)];
-        if (outcome.notice !== null)
-          addNotice(room, myId, { kind: "notice", notice: outcome.notice });
+        if (outcome.notice !== null) addFailedNotice(room, myId, outcome.notice, now());
         if (outcome.check) check(room);
         return;
       case "recover": {
@@ -167,7 +158,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
         return;
       }
       case "notice":
-        addNotice(room, myId, outcome);
+        addFailedNotice(room, myId, outcome.notice, now());
         return;
       case "block":
         room.inputBlock = outcome.block;
@@ -188,8 +179,15 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     clientIds.set(localId, clientMessageId);
     const storyId = storyIdIn(room.messages, localId); // 스토리 답장(ADR-0178 D5) — 다시 보내기에도 실림
     const quiz = quizAnswerPending(room.messages, localId); // 퀴즈 답이면 턴 뒤 판정을 다시 읽음
+    const tag = tags.get(localId);
     remote.openTurn(
-      { characterId: characterOf(room), text, clientMessageId, ...(storyId ? { storyId } : {}) },
+      {
+        characterId: characterOf(room),
+        text,
+        clientMessageId,
+        ...(storyId ? { storyId } : {}),
+        ...(tag === undefined ? {} : { suggestion: tag }),
+      },
       {
         onOpen: () => undefined,
         onEvent: (event, data) => {
@@ -226,7 +224,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     if (next === undefined || busy(room)) return;
     const text = textOf(room, next);
     room.unsent = room.unsent.slice(1);
-    removeNotice(room, next);
+    removeFailedNotice(room, next);
     if (text === null) return sendNextUnsent(room);
     startTurn(room, next, text);
   };
@@ -236,6 +234,8 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     const trimmed = text.trim();
     if (room === null || room.access.kind !== "open" || trimmed === "") return;
     const localId = `local-${deps.uuid()}`;
+    const tag = suggestionTagOf(room, options?.suggestion?.index, trimmed); // 칩 탭 표시(ADR-0210 D1)
+    if (tag !== undefined) tags.set(localId, tag);
     room.messages = [...room.messages, myTextLine(localId, now(), trimmed, options?.story)];
     // 앞에 보내지 못한 글이 있으면 순서가 섞이지 않게 그 뒤에 쌓습니다.
     if (room.unsent.length > 0) {
@@ -258,6 +258,9 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     })();
   };
 
+  const read = { remote, live, changed, refresh, seen: deps.seen ?? null };
+  const pull = remotePull({ ...read, isOpen, schedule, busy, applyHistory });
+  const sync = { ...read, openRoomId: deps.openRoomId, pull };
   const controls: ChatServerControls = {
     resend: (roomId) => {
       const room = live(roomId);
@@ -271,6 +274,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
         (m) => m.id !== messageId && m.id !== `${messageId}~failed`,
       );
       clientIds.delete(messageId);
+      tags.delete(messageId);
       changed(room);
     },
     reload: (roomId) => {
@@ -280,12 +284,8 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       if (room.recovery === "stalled" && isDone !== undefined) recover(room, isDone);
       else refresh(room);
     },
-    refreshOpenRoom: () => {
-      const id = deps.openRoomId();
-      const room = id === null ? null : live(id);
-      if (room !== null && room.access.kind === "open") refresh(room);
-    },
-    pullRoom: remotePull({ remote, live, changed, isOpen, schedule, busy, refresh, applyHistory }),
+    pullRoom: pull,
+    ...remoteRoomSync(sync, deps.preview ?? [], deps.roomIds), // refreshOpenRoom · syncRooms
   };
   return {
     loadRoom,

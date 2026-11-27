@@ -34,16 +34,9 @@ const seed = (memories?: ChatFixtureSeed["memories"]): ChatFixtureSeed => ({
 function mountSettings(
   source: ChatSource = makeSource(seed({ shared: ["You're from Manila."], byCharacter: {} })),
 ) {
-  const onOpenSharedMemories = vi.fn<() => void>();
   const onBack = vi.fn<() => void>();
-  render(
-    <ChatSettingsScreen
-      source={source}
-      onOpenSharedMemories={onOpenSharedMemories}
-      onBack={onBack}
-    />,
-  );
-  return { source, onOpenSharedMemories, onBack };
+  render(<ChatSettingsScreen source={source} onBack={onBack} />);
+  return { source, onBack };
 }
 
 const checkedOf = (testId: string): string | null => {
@@ -55,7 +48,7 @@ const checkedOf = (testId: string): string | null => {
   );
 };
 
-test("CS-UI5 Chats 화면은 추천 답변 · 먼저 보내는 메시지 · 공유 기억 · 생년 줄을 지금 값으로 보인다", () => {
+test("CS-UI5 Chats 화면은 추천 답변 · 먼저 보내는 메시지 · 생년 줄을 지금 값으로 보인다 — 공유 기억 줄은 없다(ADR-0210 D6)", () => {
   mountSettings();
 
   expect(checkedOf(ids.replyIdeas)).toBe("true");
@@ -63,11 +56,13 @@ test("CS-UI5 Chats 화면은 추천 답변 · 먼저 보내는 메시지 · 공�
   expect(screen.getByTestId(ids.proactive).getAttribute("accessibility-label")).toBe(
     "They message you first, Once a day · Any time",
   );
-  expect(screen.getByTestId(ids.sharedMemories).textContent).toContain(
-    "1 memory · shared by all characters",
+  expect(screen.queryByTestId("chat-settings-shared-memories")).toBeNull();
+  expect(screen.getByTestId(ids.screen).textContent).not.toContain("What everyone knows");
+  expect(screen.getByTestId(ids.screen).textContent).toContain(
+    "Each character remembers what you told them. Open a chat and tap ☰ to see what they remember.",
   );
   expect(screen.getByTestId(ids.birthYear)).toBeTruthy();
-  for (const id of [ids.proactive, ids.sharedMemories, ids.birthYear]) {
+  for (const id of [ids.proactive, ids.birthYear]) {
     const row = screen.getByTestId(id);
     expect(row.getAttribute("accessibility-enable-tap")).toBe("true");
     expect(row.getAttribute("flatten")).toBe("false");
@@ -119,25 +114,16 @@ test("CS-UI8 시트가 열렸을 때 시스템 뒤로는 시트만 닫고(저장
   expect(onBack).toHaveBeenCalledTimes(1);
 });
 
-test("CS-UI9 공유 기억 줄은 onOpenSharedMemories, 뒤로 단추는 onBack", () => {
-  const { onOpenSharedMemories, onBack } = mountSettings();
-  tapId(ids.sharedMemories);
-  expect(onOpenSharedMemories).toHaveBeenCalledTimes(1);
+test("CS-UI9 뒤로 단추는 onBack", () => {
+  const { onBack } = mountSettings();
   fireEvent.tap(within(screen.getByTestId(ids.back)).getByTestId("ui-lynx-round-button"), {});
   expect(onBack).toHaveBeenCalledTimes(1);
 });
 
-function mountMemories(memories: ChatFixtureSeed["memories"], character = true) {
+function mountMemories(memories: ChatFixtureSeed["memories"]) {
   const source = makeSource(seed(memories));
   const onBack = vi.fn<() => void>();
-  render(
-    <ChatMemoriesScreen
-      source={source}
-      scope={character ? { kind: "character", characterId: "mina" } : { kind: "shared" }}
-      name={character ? "Mina" : null}
-      onBack={onBack}
-    />,
-  );
+  render(<ChatMemoriesScreen source={source} characterId="mina" name="Mina" onBack={onBack} />);
   return { source, onBack };
 }
 
@@ -148,21 +134,18 @@ test("CS-UI10 기억 화면 — 제목 · 개수, 비면 빈 문구, 가득이�
   expect(screen.queryByTestId(ids.memoriesFull) === null).toBe(true);
   cleanup();
 
-  mountMemories({ shared: [], byCharacter: {} }, false);
-  expect(screen.getByTestId(ids.memoriesScreen).textContent).toContain(
-    "What everyone knows about you",
-  );
+  mountMemories({ shared: [], byCharacter: {} });
   expect(screen.getByTestId(ids.memoriesEmpty).textContent).toBe(
-    "Nothing yet. Characters will remember things you share as you chat.",
+    "Nothing yet. Mina will remember things you share as you chat.",
   );
   cleanup();
 
-  mountMemories(
-    { shared: Array.from({ length: 30 }, (_, i) => `fact ${i}`), byCharacter: {} },
-    false,
-  );
+  mountMemories({
+    shared: [],
+    byCharacter: { mina: Array.from({ length: 50 }, (_, i) => `fact ${i}`) },
+  });
   expect(screen.getByTestId(ids.memoriesFull).textContent).toContain("Memory is full");
-  expect(screen.getByTestId(ids.memoriesScreen).textContent).toContain("30 / 30");
+  expect(screen.getByTestId(ids.memoriesScreen).textContent).toContain("50 / 50");
 });
 
 test("CS-UI11 고치기 — 시트에서 글을 바꿔 Save하면 바뀌고 Edited가 붙는다, 빈 글이면 Save가 꺼진다", () => {

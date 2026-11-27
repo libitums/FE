@@ -6,7 +6,8 @@ import { Button } from "@libitums/ui-lynx/button";
 import { ItemListenControls } from "../../components/ItemListenControls";
 import { SpeechWaves } from "../../components/SpeechWaves";
 import { useListenAudio } from "../../components/use-listen-audio";
-import { useSpeechAttempt } from "../../components/use-speech-attempt";
+import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
+import { useMicSpeechAttempt } from "../../components/mic-permission/use-mic-speech-attempt";
 import { announce } from "../../lib/accessibility";
 import { stopAudio } from "../../lib/audio";
 import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
@@ -23,6 +24,7 @@ import {
   readAloudHintOf,
   readAloudInstructionOf,
   readAloudMatchedCount,
+  readAloudRemainingCount,
   readAloudSessionReducer,
   readAloudStepOf,
 } from "./read-aloud";
@@ -40,11 +42,27 @@ export function ReadAloudActivity({
   onFinish,
   lesson,
   lessonAudio,
+  mic,
 }: ReadAloudActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(readAloudSessionReducer, initialReadAloudSessionState);
   const finished = useRef(false);
-  const attempt = useSpeechAttempt((outcome) => dispatch({ type: "outcome", outcome }));
+  // 마이크 사전 안내 · 거부 시트(ADR-0206) — 이 레슨의 말하기를 건너뛰면 남은 문장을 건너뜀으로 세어 결과를 올립니다.
+  const latestState = useRef(state);
+  latestState.current = state;
+  const { attempt, permission } = useMicSpeechAttempt(
+    {
+      surface: "read-aloud",
+      context: mic,
+      checkOnOpen: true,
+      onReopen: () => dispatch({ type: "reopen" }),
+      onSkipSpeaking: () => {
+        listen.answered("skipped");
+        leave(readAloudRemainingCount(latestState.current, questions.length));
+      },
+    },
+    (outcome) => dispatch({ type: "outcome", outcome }),
+  );
 
   const index = Math.min(state.questionIndex, Math.max(0, questions.length - 1));
   const question = questions[index];
@@ -156,11 +174,11 @@ export function ReadAloudActivity({
   };
   const handleWaves = (): void => {
     "background only";
-    // 못 알아들은 뒤에는 마이크도 같은 문장을 다시 듣습니다(주 버튼 Try again과 같은 동작).
+    // 못 알아들음 · 인식 실패 뒤에는 마이크도 같은 문장을 다시 듣습니다(주 버튼 Try again과 같은 동작, ADR-0206 D5).
     if (
       primary === "speak" ||
       primary === "stop" ||
-      (primary === "retry" && phase.kind === "missed")
+      (primary === "retry" && phase.kind !== "heard")
     ) {
       playSound("button");
       run(primary);
@@ -168,74 +186,77 @@ export function ReadAloudActivity({
   };
 
   return (
-    <LearningShell
-      form="read-aloud"
-      questionIndex={counter.questionIndex}
-      questionCount={counter.questionCount}
-      instruction={readAloudInstructionOf(phase, copy)}
-      onExit={onExit}
-      actionLabel={primary === null ? undefined : labelOf(primary)}
-      onAction={primary === null ? undefined : () => run(primary)}
-      scrollCard
-      secondaryAction={
-        secondary === null ? undefined : (
-          <view
-            className="read-aloud-activity-secondary"
-            data-testid="read-aloud-secondary"
-            data-control={secondary}
-          >
-            <Button
-              label={labelOf(secondary)}
-              variant="outline"
-              size="xl"
-              width="hug"
-              bindtap={handleSecondary}
-            />
-          </view>
-        )
-      }
-      workspace={
-        <>
-          {/* 파형은 카드 밖입니다 — 녹음 아이콘과 아래 주 버튼이 같은 시작 · 중지 동작을 제공합니다. */}
-          {question === undefined ? null : (
-            <view className="read-aloud-activity-waves-slot">
-              <SpeechWaves
-                testId="read-aloud-waves"
-                state={speechWavesStateOf(phase)}
-                label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
-                onTap={handleWaves}
+    <>
+      <LearningShell
+        form="read-aloud"
+        questionIndex={counter.questionIndex}
+        questionCount={counter.questionCount}
+        instruction={readAloudInstructionOf(phase, copy)}
+        onExit={onExit}
+        actionLabel={primary === null ? undefined : labelOf(primary)}
+        onAction={primary === null ? undefined : () => run(primary)}
+        scrollCard
+        secondaryAction={
+          secondary === null ? undefined : (
+            <view
+              className="read-aloud-activity-secondary"
+              data-testid="read-aloud-secondary"
+              data-control={secondary}
+            >
+              <Button
+                label={labelOf(secondary)}
+                variant="outline"
+                size="xl"
+                width="hug"
+                bindtap={handleSecondary}
               />
             </view>
-          )}
-          <view className="read-aloud-activity-hint-slot">
-            {hint === null ? null : (
-              <text className="read-aloud-activity-hint" data-testid="read-aloud-hint">
-                {hint}
-              </text>
+          )
+        }
+        workspace={
+          <>
+            {/* 파형은 카드 밖입니다 — 녹음 아이콘과 아래 주 버튼이 같은 시작 · 중지 동작을 제공합니다. */}
+            {question === undefined ? null : (
+              <view className="read-aloud-activity-waves-slot">
+                <SpeechWaves
+                  testId="read-aloud-waves"
+                  state={speechWavesStateOf(phase)}
+                  label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
+                  onTap={handleWaves}
+                />
+              </view>
+            )}
+            <view className="read-aloud-activity-hint-slot">
+              {hint === null ? null : (
+                <text className="read-aloud-activity-hint" data-testid="read-aloud-hint">
+                  {hint}
+                </text>
+              )}
+            </view>
+          </>
+        }
+        card={
+          <view
+            className="read-aloud-activity-content"
+            data-testid="read-aloud-content"
+            data-questionindex={index}
+            data-phase={phase.kind}
+            data-reason={
+              phase.kind === "unavailable" || phase.kind === "missed" ? phase.reason : undefined
+            }
+          >
+            {question === undefined ? null : (
+              <>
+                <ReadAloudSentence question={question} matchedCount={matched} copy={copy} />
+                {question.audio === undefined ? null : (
+                  <ItemListenControls control={listenControl} testId="read-aloud-listen" />
+                )}
+              </>
             )}
           </view>
-        </>
-      }
-      card={
-        <view
-          className="read-aloud-activity-content"
-          data-testid="read-aloud-content"
-          data-questionindex={index}
-          data-phase={phase.kind}
-          data-reason={
-            phase.kind === "unavailable" || phase.kind === "missed" ? phase.reason : undefined
-          }
-        >
-          {question === undefined ? null : (
-            <>
-              <ReadAloudSentence question={question} matchedCount={matched} copy={copy} />
-              {question.audio === undefined ? null : (
-                <ItemListenControls control={listenControl} testId="read-aloud-listen" />
-              )}
-            </>
-          )}
-        </view>
-      }
-    />
+        }
+      />
+      <MicPermissionSheet mic={permission} />
+    </>
   );
 }

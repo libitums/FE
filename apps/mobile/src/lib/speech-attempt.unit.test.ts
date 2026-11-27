@@ -171,7 +171,8 @@ describe("speechWavesStateOf", () => {
     ["heard", heard("카드"), "off"],
     ["blocked", unavailable("blocked"), "off"],
     ["dictation-off", unavailable("dictation-off"), "off"],
-    ["failed", unavailable("failed"), "off"],
+    // 인식 실패는 다시 말하기라 마이크가 대기다(ADR-0206 D5).
+    ["failed", unavailable("failed"), "idle"],
   ];
 
   test.each(table)("SA4. %s → %s", (_name, phase, expected) => {

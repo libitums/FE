@@ -3,6 +3,8 @@
 
 import type { ChatCorrection, ChatCorrectionItem } from "./chat-feedback.contract";
 import { suggestionOriginOf } from "./chat-suggestion-events";
+import { ideasOf, ideasRefField } from "./chat-suggestion-ref";
+export { ideasOf }; // 칩 해석은 서버 자리와 한 곳에(chat-suggestion-ref)
 import { historyChatWordsOf } from "./companion-chat-words";
 import type { RemoteGreeting, RemoteHistory, RemoteSendFailure } from "./chat-remote.contract";
 import type {
@@ -10,7 +12,6 @@ import type {
   ChatCrisisResource,
   ChatMessage,
   ChatNoticeKind,
-  ChatReplyIdea,
 } from "./chat-source.contract";
 import { myTextOf } from "./friend-stories-parse";
 import { reactionLinesOf, withQuizAnswer } from "./story-quiz-parse";
@@ -134,16 +135,6 @@ export function correctionOf(raw: unknown): ChatCorrection | null {
   };
 }
 
-export function ideasOf(raw: unknown): readonly ChatReplyIdea[] | null {
-  if (!Array.isArray(raw)) return null;
-  return raw.flatMap((item) => {
-    const record = recordOf(item);
-    const text = stringOf(record?.text);
-    if (text === null || text.trim() === "") return [];
-    return [{ ko: text, roman: "", en: stringOf(record?.meaning) ?? "" }];
-  });
-}
-
 export function crisisOf(raw: unknown): readonly ChatCrisisResource[] | null {
   const resources = recordOf(raw)?.resources;
   if (!Array.isArray(resources)) return null;
@@ -179,6 +170,7 @@ function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
   const messages: ChatMessage[] = [];
   const corrections: Record<string, ChatCorrection> = {};
   let last: Json | null = null; // 마지막 캐릭터 메시지 — 추천 답변과 그 출처(ADR-0195)
+  let greetingId: string | null = null; // 첫 인사 — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩)
   for (const item of [...(raw.messages as unknown[])].reverse()) {
     const record = recordOf(item);
     const id = stringOf(record?.id);
@@ -195,19 +187,20 @@ function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
     } else if (record.role === "assistant") {
       messages.push(...reactionLinesOf(bubblesOf(id, at, segmentsOf(record.segments)), record)); // 반응 인용 · 퀴즈(ADR-0191)
       last = record;
+      if (greetingId === null && record.origin === "greeting") greetingId = id;
     } else if (record.role === "notice") {
       const notice = noticeKindOf(recordOf(record.notice)?.kind);
       if (notice !== null) messages.push({ id, at, kind: "notice", notice });
     }
   }
   const ideasOrigin = suggestionOriginOf(last?.origin);
-  return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin };
+  const ref = ideasRefField(stringOf(last?.id), last?.suggestions); // 칩 탭 표시(ADR-0210 D1)
+  const greeting = greetingId === null ? ref : { greetingId, ...ref };
+  return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin, ...greeting };
 }
 
-/**
- * `companion_load_profile` 본문 → 생년 · 추천 답변 설정 · 성인 확인 동의(ADR-0164, 칸이 없으면 false). 행이 없으면 JSON null(생년
- * 없음), 못 읽거나 틀린 본문이면 null.
- */
+// `companion_load_profile` 본문 → 생년 · 추천 답변 설정 · 성인 확인 동의(ADR-0164, 칸이 없으면 false). 행이 없으면 JSON null(생년
+// 없음), 못 읽거나 틀린 본문이면 null.
 export function profileFrom(bodyText: string | null): {
   readonly birthYear: number | null;
   readonly replySuggestions: boolean | null;
@@ -248,7 +241,9 @@ export function historyFrom(bodyText: string | null): RemoteHistory | null {
   const raw = recordOf(parse(bodyText));
   if (raw === null || !Array.isArray(raw.messages)) return null;
   const chatWords = historyChatWordsOf(raw.messages); // 채팅 단어가 있는 기록만 칸을 둡니다(ADR-0170)
-  return Object.keys(chatWords).length === 0 ? messagesOf(raw) : { ...messagesOf(raw), chatWords };
+  const words = Object.keys(chatWords).length === 0 ? {} : { chatWords };
+  // 더 오래된 쪽이 있으면 첫 인사가 로그 밖일 수 있습니다(ADR-0146 개정 ⟨가이드 점검⟩ 3).
+  return { ...messagesOf(raw), ...(raw.hasMore === true ? { hasMore: true } : {}), ...words };
 }
 
 export function greetingFrom(bodyText: string | null, now: number): RemoteGreeting | null {
@@ -271,7 +266,8 @@ export function greetingFrom(bodyText: string | null, now: number): RemoteGreeti
   if (raw?.status !== "ok" || messageId === null) return null;
   const messages = bubblesOf(messageId, now, segmentsOf(raw.segments));
   if (messages.length === 0) return null;
-  return { messages, ideas: ideasOf(recordOf(raw.suggestions)?.items) };
+  const items = recordOf(raw.suggestions)?.items; // 인사에 묶인 칩(ADR-0210 D1)
+  return { messages, ideas: ideasOf(items), ...ideasRefField(messageId, items) };
 }
 
 /** 스트림을 열기 전 오류 본문 → 앱의 실패 갈래. */

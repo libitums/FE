@@ -39,6 +39,7 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
             : `${count} 則新訊息`,
     jump: "跳到新訊息",
     latest: "捲動到最新訊息",
+    above: (media) => (media === "photo" ? "上方收到一張照片" : "上方收到一則語音訊息"),
   },
   replyToast: {
     dismiss: "關閉",
@@ -64,9 +65,7 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     sectionProactive: "角色傳來的訊息",
     proactive: "角色主動傳訊息給你",
     sectionAbout: "關於你",
-    sharedMemories: "大家都知道的關於你的事",
-    sharedMemoriesSummary: (count) => `${count}則記憶 · 所有角色共用`,
-    footnote: "每個角色也會記得和你聊過的事。打開聊天並點一下 ☰ 即可查看。",
+    footnote: "每個角色都記得你跟他說過的事。打開聊天並點一下 ☰ 即可查看。",
     proactiveSheet: {
       title: "角色主動傳訊息給你",
       body: "當你一段時間沒說話時，角色可能會先開啟聊天。這完全不花錢幣。",
@@ -81,7 +80,6 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
       close: "關閉",
     },
     memories: {
-      titleShared: "大家都知道的關於你的事",
       titleCharacter: (name) => `${name} 記得的事`,
       count: (count, cap) => `${count}則，上限${cap}則`,
       fullTitle: "記憶已滿",
@@ -186,6 +184,7 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
     stepOf: (step, total) => `第${step}步，共${total}步`,
     newTag: "新",
     free: "免費",
+    greeting: (name) => `${name} 正在打招呼…`,
   },
   launch: {
     newTag: "新",

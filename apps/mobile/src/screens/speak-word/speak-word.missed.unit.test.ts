@@ -9,7 +9,7 @@ import {
   speakWordResultAt,
   speakWordSessionReducer,
 } from "./speak-word";
-import type { SpeakWordQuestion, SpeakWordSessionState } from "./speak-word.contract";
+import type { SpeakWordSessionState } from "./speak-word.contract";
 
 // `unit` 계층: 못 알아들음(missed)에서 낱말 말하기가 판정 없이 같은 문항을 다시 듣게 하는 표입니다(ADR-0181).
 
@@ -22,18 +22,12 @@ const stateOf = (overrides: Partial<SpeakWordSessionState>): SpeakWordSessionSta
   ...overrides,
 });
 
-const question: SpeakWordQuestion = {
-  pictureUrl: "https://cdn/card.jpg",
-  meaning: "card",
-  answers: ["카드"],
-  romanization: "kadeu",
-};
-
 describe("speakWordSessionReducer — 못 알아들음", () => {
   it("SW-M1. 듣는 중에 온 missed는 국면이 되고 들은 목록 · 가용성은 그대로다", () => {
     const next = speakWordSessionReducer(stateOf({ phase: listening, heard: ["카드"] }), {
       type: "outcome",
       outcome: { kind: "missed", reason: "no-match" },
+      judgement: null,
     });
     expect(next.phase).toEqual(noMatch);
     expect(next.heard).toEqual(["카드"]);
@@ -65,7 +59,7 @@ describe("speakWordSessionReducer — 못 알아들음", () => {
   });
 
   it("SW-M5. missed는 판정을 내지 않는다(틀림으로 세지 않는다)", () => {
-    expect(speakWordResultAt(question, stateOf({ phase: noMatch }))).toBeNull();
+    expect(speakWordResultAt(stateOf({ phase: noMatch }))).toBeNull();
   });
 });
 

@@ -6,7 +6,9 @@ import {
   CONTENT_MANIFEST_KEY,
   CONTENT_RECEIVED_MANIFEST_KEY,
   contentEpisodeKey,
+  contentTranslationKey,
   readCachedSource,
+  readCachedTranslations,
   safeAvailable,
   safeGet,
   tryRemove,
@@ -83,5 +85,42 @@ describe("저장 키 · 안전 도우미", () => {
     expect(tryRemove(store, "k")).toBe(true);
     expect(data.has("k")).toBe(false);
     expect(safeAvailable(store)).toBe(true);
+  });
+});
+
+// 2026-11-27 제보(zh-TW만 영어): 보류된 편은 활성 항목이 옛 것이라 나중에 생긴 언어를 적지 않습니다 — 받은 매니페스트의 항목도 함께
+// 넘기면 그 언어의 저장 파일까지 읽습니다. 같은 (편, 언어)는 한 번만 읽습니다.
+describe("readCachedTranslations — 활성 · 받은 매니페스트 항목", () => {
+  const refOf = (language: string) => ({
+    url: `translations/${language}/u04-x.json`,
+    version: "v",
+    sha256: "c".repeat(64),
+    bytes: 1,
+  });
+  const active = remote("u04-x", 4, { translations: { vi: refOf("vi") } });
+  const received = remote("u04-x", 4, {
+    translations: { vi: refOf("vi"), "zh-TW": refOf("zh-TW") },
+  });
+  const entriesOf = (text: string) => parseCachedManifest(text)?.episodes ?? [];
+
+  test("EC3. 두 매니페스트 항목을 넘기면 어느 한쪽만 적은 언어도 읽고, 같은 언어는 한 번만 읽는다", () => {
+    const { store } = fakeStore({
+      [contentTranslationKey("vi", "u04-x")]: "VI",
+      [contentTranslationKey("zh-TW", "u04-x")]: "ZH",
+    });
+    const reads: string[] = [];
+    const counting: ContentStore = {
+      ...store,
+      get: (key) => {
+        reads.push(key);
+        return store.get(key);
+      },
+    };
+    const out = readCachedTranslations(counting, [
+      ...entriesOf(manifestText([active])),
+      ...entriesOf(manifestText([received])),
+    ]);
+    expect(out).toEqual({ "u04-x": { vi: "VI", "zh-TW": "ZH" } });
+    expect(reads.filter((key) => key === contentTranslationKey("vi", "u04-x"))).toHaveLength(1);
   });
 });

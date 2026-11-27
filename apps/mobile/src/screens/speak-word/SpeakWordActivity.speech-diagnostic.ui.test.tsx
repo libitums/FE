@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-libra
 import type { ItemAnswerReport } from "../../lib/item-answer";
 import { stubSpeechHost } from "../../lib/speech-host.test-support";
 import type { SpeechHostResult } from "../../lib/speech-host.test-support";
+import { tapSpeakWordPrimary } from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
@@ -36,10 +37,6 @@ function mount(): ReturnType<typeof vi.fn<(report: ItemAnswerReport) => void>> {
   return onItemAnswered;
 }
 
-function tap(testId: string): void {
-  fireEvent.tap(screen.getByTestId(testId), {});
-}
-
 const languageUnavailable: SpeechHostResult = {
   status: "recognition-failed",
   text: "",
@@ -53,8 +50,8 @@ test("USD1. 인식 실패 뒤 Skip은 unavailable:failed와 함께 오류 코드
   stubSpeechHost({ result: () => languageUnavailable });
   const onItemAnswered = mount();
 
-  tap("learning-shell-action");
-  tap("learning-shell-action");
+  tapSpeakWordPrimary();
+  tapSpeakWordPrimary();
 
   expect(onItemAnswered).toHaveBeenCalledTimes(1);
   expect(onItemAnswered).toHaveBeenCalledWith({
@@ -77,12 +74,13 @@ test("USD2. 네트워크로 되돌아가 들은 판정도 진단을 싣는다", 
   });
   const onItemAnswered = mount();
 
-  tap("learning-shell-action");
+  tapSpeakWordPrimary();
 
   expect(onItemAnswered).toHaveBeenCalledWith({
     questionIndex: 0,
     outcome: "correct",
     density: "regular",
+    grade: "perfect",
     speech: { errorCode: 0, fallback: "pack-missing", koreanPack: "available" },
   });
 });

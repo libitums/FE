@@ -40,6 +40,8 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
             : `${count} mensajes nuevos`,
     jump: "Ir a los mensajes nuevos",
     latest: "Ir al último mensaje",
+    above: (media) =>
+      media === "photo" ? "Llegó una foto arriba" : "Llegó un mensaje de voz arriba",
   },
   replyToast: {
     dismiss: "Cerrar",
@@ -65,12 +67,7 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     sectionProactive: "Mensajes de personajes",
     proactive: "Te escriben primero",
     sectionAbout: "Sobre ti",
-    sharedMemories: "Lo que todos saben de ti",
-    sharedMemoriesSummary: (count) =>
-      count === 1
-        ? "1 recuerdo · compartido por todos los personajes"
-        : `${count} recuerdos · compartidos por todos los personajes`,
-    footnote: "Cada personaje recuerda sus chats contigo. Abre un chat y toca ☰ para verlo.",
+    footnote: "Cada personaje recuerda lo que le contaste. Abre un chat y toca ☰ para verlo.",
     proactiveSheet: {
       title: "Te escriben primero",
       body: "Si llevas un tiempo sin escribir, un personaje puede empezar la conversación. Nunca cuesta monedas.",
@@ -85,7 +82,6 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
       close: "Cerrar",
     },
     memories: {
-      titleShared: "Lo que todos saben de ti",
       titleCharacter: (name) => `Lo que recuerda ${name}`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "La memoria está llena",
@@ -180,7 +176,7 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
       media:
         "También puedes pedirme una foto o un mensaje de voz con los botones sobre el teclado.",
       sample:
-        "¿Quieres ver qué estoy haciendo? Toca Snapshot y te envío una foto. La primera va por mi cuenta.",
+        "¿Quieres ver qué estoy haciendo? Toca Instantánea y te envío una foto. La primera va por mi cuenta.",
       voice:
         "¿Quieres oírlo con mi voz? Toca Nota de voz y te leo ese mensaje. El primero también va por mi cuenta.",
     },
@@ -200,6 +196,7 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step} de ${total}`,
     newTag: "Nuevo",
     free: "GRATIS",
+    greeting: (name) => `${name} te está saludando…`,
   },
   launch: {
     newTag: "NUEVO",

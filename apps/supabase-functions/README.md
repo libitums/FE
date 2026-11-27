@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
 Supabase Edge Function 앱이다. 함수는 `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 아래) · `admob-ssv`(광고 보고 티켓, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -152,9 +152,10 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 
 ## push-campaigns (자동 푸시 캠페인 — ADR-0130 D12)
 
-매시 예약 작업이 서버 키로 부르는 함수다. 진행 단계마다 현지 20시에 쉰 사람을 골라 대조군을 남기고 A(캐릭터 톤) ·
-B(단계별 예고)로 나눠 `send-push`로 보낸다. 배정은 보내기 전에 `push_campaign_sends`에 남긴다(실패하면 보내지 않음).
-규칙 · 문구는 `_shared/push-campaign-config.ts`, 판정은 `_shared/push-campaign-plan.ts`(콘솔과 같은 해시 · 규칙).
+매시 예약 작업이 서버 키로 부르는 함수다. 지금은 빈도 실험(ADR-0208)이다 — 사람마다 고정된 칸(안 보냄 · 하루 1번 · 하루 2번)으로
+현지 12시 · 20시에 보내고, 쉰 지 7일까지는 매일, 그 뒤는 10 · 14 · 21 · 30 · 45 · 60일째에 복귀 알림을 보낸다.
+배정은 보내기 전에 `push_campaign_sends`에 남긴다(실패하면 보내지 않음) — `variant` a = 하루 1번, b = 하루 2번, `story_step` = 간 문구.
+규칙은 `_shared/push-campaign-config.ts`, 문구는 `_shared/push-campaign-copy-*.ts`, 판정은 `_shared/push-campaign-plan.ts`.
 
 배포 순서: ① 마이그레이션 `20261210120000_push_campaigns.sql` ② `supabase functions deploy push-campaigns`
 ③ 미리보기 — 서버 키로 `{"dryRun": true}` POST(기록 · 발송 없음) ④ `supabase/cron/push-campaigns.sql`을 SQL 편집기에서 한 번.
@@ -240,6 +241,9 @@ B(단계별 예고)로 나눠 `send-push`로 보낸다. 배정은 보내기 전�
 | `20261124120000_companion_ratings_resend.sql` | 답변 평가 — `companion.message_ratings` · `companion_rate_message`(앱) · `companion_operator_rate_message`(플레이그라운드) · 메시지 줄의 `rating` · `companion_rating_stats`, 고쳐서 다시 보내기 — `companion_begin_replacement`(이전 턴 숨기기 + 시작, 막히면 되돌림) · 메시지 목록에서 고쳐서 숨긴 턴 빼기 · 칩 지표에서도 빼기 |
 | `20261125120000_companion_learning.sql` | 학습 표현 넣기 — `settings.learning_*`(켜기 · 최소 간격 · 시작 확률 · 강제 턴 · 하루 상한) · `companion.user_expressions`(유저 × 표현: 노출 · 유도 · 칩 · 산출 횟수와 시각) · `companion_record_learning` · `companion_learning_context`가 유저 기록 · 낸 에피소드 · 넣기 설정을 더 줌 · 카드의 `learnedUsed` · `companion_learning_stats` |
 | `20261126120000_companion_learning_scope.sql` | 배운 표현 범위 — `profiles.learning_scope` · `learning_units`, `companion.episodes` · `companion.sync_episodes`, `companion_learning_scope` · `companion_set_learning_scope`(앱) · `companion_operator_learning_scope` · `companion_operator_set_learning_scope`(플레이그라운드), `companion_learning_context`가 범위를 따르고 `scope` 를 더 줌 |
+| `20270114120000_companion_memory_local_date.sql` | 기억 원문에 학습자 현지 날짜 `localDate` · 기존 기억은 이 캐릭터 층만(ADR-0210) |
+| `20270114130000_companion_memory_per_character.sql` | 공유 기억을 나온 대화의 캐릭터 층으로 옮김 · 원본이 사라진 공유 기억은 잊음(ADR-0210 D6, 다시 적용해도 같음) |
+| `20270114140000_companion_memory_prompt_window.sql` | 답 프롬프트 기억 — 지난 대화 창 안 원본의 기억은 빼고(캐시 유지) · `memory_prompt_limit` 50(ADR-0210 D7 · D8) |
 
 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6 · RR1 ~ RR6 · LE1 ~ LE4, 함수 단위 테스트 CS1 ~ CS39 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR · LN · LM.
 
@@ -363,6 +367,10 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 `companion_add_memories` → `{ added, evicted, skipped, full }`(턴 뒤 로그 `memories= evicted= memory_full=`), `companion_list_memories(p)` → `{ memories[{…, userEdited}], count, cap, full }`
 (계약 `companion-memories`), SSE `state.memoryFull`(이 캐릭터 또는 공유 층이 가득 참 — 턴 시작 때 값), 운영 `companion_inspect_memory`에 `capacity { character, shared }` · `userEdited`.
 
+**기억은 캐릭터마다(ADR-0210, 20270114130000).** 추출은 늘 이 캐릭터 층에 쓰고(공유 층에 쓰지 않음), 원문 묶음의 기존 기억도 이 캐릭터 층만 준다. 기존 공유 기억은 나온 대화의
+캐릭터 층으로 옮겼다. 답 프롬프트에는 이 캐릭터 층에서 최신 50개를 넣되, 원본 메시지가 아직 지난 대화 창 안에 있는 기억은 뺀다(원문이 창에 있고,
+넣으면 기억 묶음마다 캐시가 깨진다 — 20270114140000). 공유 층 칸(`shared_memory_cap` · `capacity.shared` · `companion_list_memories(null)`)은 남아 있지만 비어 있다.
+
 **학습자의 `*…*`** — `*웃으며* 안녕하세요` · `*배고프다…*`처럼 별표 안은 학습자의 행동 · 속마음이다. 답 프롬프트: 행동에는 자연스럽게 반응하고,
 속마음은 장면에 맞으면 가볍게 받아도 되지만 엿들은 것처럼 그대로 되풀이하지 않는다. 검사는 별표 안까지 전체를 본다. 저장 글은 친 그대로다.
 
@@ -414,7 +422,7 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 서버 키(`Authorization: Bearer <서버 키>`, `isServiceKey` 규칙)만 받고, 아니면 401 `{"error":"invalid_session"}`.
 
 - `GET` → `{"models":{"reply","feedback","moderation"},"allowed":["claude-haiku-5-5","claude-haiku-5-5@medium","claude-sonnet-5-5","claude-opus-5-5"],"llm":"anthropic"|"fake"}`
-- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions"|"learning"|"reply","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
+- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions"|"learning"|"reply"|"memory","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
   `id` ≤ 64자. `model`은 `allowed` 안에서만(생략하면 그 단계에 설정된 모델). `@medium`이 붙은 모델은 답변(`reply` · `learning`)만 생각 깊이 medium으로
   돌고(나머지 단계는 같은 모델 그대로), 붙지 않으면 `COMPANION_REPLY_EFFORT`를 따른다 — 한 실행에서 low와 medium을 견주려고 둔다. 기본값 `ageBand` adult · `layer` input · `l1` null. `context`는
   검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다. 피드백 케이스는 `speechLevel`(polite · casual · slang, 생략하면 모름 —
@@ -426,6 +434,10 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
   피드백 카드(위 「피드백 카드」) 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
   케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+- **기억(`kind: "memory"`, ADR-0210)** — 운영 기억 묶음처럼 추출 작업(더하기 · 고치기 · 잊기)을 돌려주고 DB에는 적용하지 않는다(`_shared/companion-eval-memory.ts`).
+  케이스: `history`(앞 대화, `picked: true`는 칩을 그대로 고른 유저 말) · `text`(마지막 유저 말) · `memories`(기존 기억, m1 … 순서) · `localDate`(YYYY-MM-DD) ·
+  `ageBand`. 모델은 운영처럼 검사 모델, 제한 시간 30초. `output: {"ops":[{…작업, "problems":[…]}], "problems"}` — `problems`는 쓰기 규칙을 어긴 곳(polite ·
+  learner_subject · relative_time · trivial). 고정 세트는 `GET ?docs=1`의 `memoryEvalSets`(`expect`는 `memoryVerdict`가 견준다).
 - **답장(`kind: "reply"`, 2026-11-14)** — 운영 턴과 같은 시스템 프롬프트로 캐릭터 답장을 만들고 채점 노드가 축마다 채점한다(`_shared/companion-eval-reply.ts` ·
   `companion-eval-judge.ts`). 케이스: `characterId`(DB 카드 `companion_inspect_characters` — 없거나 모르면 `character.name`만, 결과 `persona: "case"`) ·
   `speechLevel` · `ageBand` · `l1` · `expressions`(`[{"surface","gloss"?}]` ≤ 40, 배운 표현) · `memories`(≤ 20) · `summary` · `history` · `text`(학습자의 새 말) ·
@@ -837,6 +849,56 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
 번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
 
+### 판정 · 기억 · 스토리 조회 1차 (20270118)
+
+`migrations/20270118120000_ops_admin_insights.sql`. 기획은 ops-dashboard `docs/admin-insights.md`, 계약은 `docs/admin-contract.md` G-A절.
+
+- **리비전**: `companion.moderation_events.rev`(8자리 16진수, 옛 줄 null). 함수가 RPC 요청 헤더 `x-guardrail-rev`로 싣고(`_shared/guardrail-rev.ts` —
+  검사 지시문 전부 + 답 프롬프트 앞부분 대표 셋의 FNV-1a, `companion-rpc.ts`가 모든 RPC에 붙인다), 칸 기본값 `companion.request_guardrail_rev()`가
+  PostgREST `request.headers`에서 읽는다. 턴 저장 RPC는 다시 정의하지 않았다. 헤더가 없거나 모양이 틀리면 null(저장은 막지 않는다).
+  `companion-eval` 응답에도 같은 `rev`가 실린다.
+- 표(`ops`, RPC로만): `ops.guardrail_revs`(리비전 이름 · 메모) · `ops.moderation_reviews`(판정 하나에 검토 하나 — 맞음 · 오탐 · 놓침 · 애매).
+- 새 RPC 여섯(모두 `service_role`만, 열람은 `view` · 쓰기는 `write` 기록):
+  `ops_moderation_summary`(분류 × 단계 · 입력 1천 건당 · 일별 · 기록용 허용 · 리비전 · 스트라이크, 90일까지) ·
+  `ops_moderation_feed`(앞 캐릭터 말 · 학습자 메시지 · 거절 답 · 걸린 초안 · 검토, 거르기 · 쪽 넘김 §F와 같은 규칙) ·
+  `ops_review_moderation` · `ops_set_guardrail_rev` · `ops_user_memories`(캐릭터 가리지 않은 전체 기억 · 출처 메시지 · 칩 여부) ·
+  `ops_user_stories`(내 스토리 · 반응 · Seen · 퀴즈 · 거절 사진(분류만, 격리 경로 없음) · 친구 스토리 답장 · 지난 스토리 열람).
+- 연령대 · 로맨스 선은 판정 줄이 아니라 그 턴 캐릭터 답의 meta(`ageBand` · `romanceLine`)에서 읽는다 — 답이 없는 판정(두 번 걸려 실패 등)은 null이라
+  그 거르기에서 빠진다.
+- 테스트: `migrations/ops-admin-insights.integration.test.ts`, `_shared/guardrail-rev.unit.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261212 뒤라면 어디든 된다(`ops` 도우미 · `companion.memories` · 내 스토리 표에 기댄다). 파일 하나만
+`supabase db query --linked -f supabase/migrations/20270118120000_ops_admin_insights.sql`(`db push` 금지). 다시 적용해도 같다.
+그 뒤 함수(`chat-send` · `companion-greet` · `companion-proactive` · `companion-eval` 등 RPC를 부르는 것)를 배포하면 새 판정에 `rev`가 찬다 —
+함수를 먼저 올려도 헤더는 무시되고, 마이그레이션만 먼저여도 `rev`가 null일 뿐이다.
+
+#### 판정 현황 · 목록 고침 (20270120)
+
+`migrations/20270120120000_ops_admin_insights_fix.sql`. 20270118 위에 쌓는다 — `ops.moderation_scope` · `ops_moderation_summary` · `ops_moderation_feed` 셋과
+인덱스 하나만 바꾼다. 인수 꼴 · 반환의 키 · 오류 코드는 그대로이고(더해진 것은 아래 3번), 표 · 리비전 칸 기본값 · 다른 RPC 넷 · 함수(`chat-send` 등)는 건드리지 않는다.
+
+1. **제한 시간이 실제로 걸린다.** 20270118 판 본문의 `set local statement_timeout = '8s'`는 이미 시작한 호출에 걸리지 않았다(9.5초 걸리게 한 호출이
+   PostgREST 뒤에서 200으로 끝났다). 함수 설정 `set statement_timeout = '8s'`로 옮겼다 — PostgREST가 함수 설정을 호출 전에 트랜잭션에 올린다.
+   같은 호출이 8.0초에 끊긴다: HTTP 500, `{"code":"57014","message":"canceling statement due to statement timeout"}`(PostgREST v12.2.12 · v13.0.7에서 확인).
+   SQL 편집기에서 직접 부르면 걸리지 않는다.
+2. **그 턴의 답 찾기를 끊었다.** 판정마다 그 메시지 뒤의 대화 전부를 읽던 것을 **뒤 30분 창**으로(`messages_conversation_idx`). 답은 턴을 처리한 요청 안에서
+   저장되므로 보통 턴에서는 같은 답이다 — 30분 넘게 뒤에 저장된 답은 그 턴의 답으로 보지 않는다(`reply` · `ageBand` · `romanceLine`이 null).
+   그리고 필요한 판정만 턴을 읽는다: 목록은 목록에 나올 수 있는 판정(allow가 아닌 것 · 기록용 허용)만, 현황은 연령대 · 선 · 캐릭터로 거를 때만 전부.
+   합성 데이터(판정 30만 · 대화마다 메시지 1,200개, shared_buffers 16MB): 현황 90일 54.1초 → 0.43초, 목록 90일 54.5초 → 0.13초, 현황 14일 1.27초 → 0.07초,
+   현황 90일 + 연령대 거르기 54.2초 → 1.3초.
+3. **리비전 없는 줄**: 현황에 `unrevisioned {events, blocks, reviewed, falsePositives}`(기간 + 모든 거르기), 목록의 `p_rev = 'none'`(`rev is null`).
+   그 밖에 8자리가 아닌 값은 그대로 `invalid_rev`.
+4. **현황 `revs`**: `firstAt` · `lastAt`은 그 리비전을 처음 · 마지막 본 때(기간 · 거르기와 상관없이 전체 — 인덱스 `moderation_events_rev_idx (rev, created_at) where rev is not null`).
+   수는 기간 + 모든 거르기(**단계 포함**)를 따른다. 기간 안에 보인 리비전은 거르기에 맞는 줄이 없어도 0으로 나온다. 순서는 그대로(처음 본 때 이른 순).
+5. **목록 `previous`**: 입력 검사가 맥락으로 받은 것만 — 그 메시지 앞의 캐릭터 답 중 완료 · 숨기지 않음 · 조각 있음인 가장 늦은 것(`companion_begin_turn`의 history 조건).
+   숨긴 답 · 위기 답은 앞 말로 나오지 않는다. 요약 창(`summarized_until`) · 지난 대화 개수 상한은 보지 않는다.
+
+- `ops.moderation_scope`는 인수가 넷으로 늘어(`p_listed` · `p_turn`) 옛 꼴(인수 둘)을 지운다. `public.ops_*`의 인수 꼴은 그대로라 이름만으로 불러도 겹치지 않는다.
+- 테스트: `migrations/ops-admin-insights.integration.test.ts` OI-8 ~ OI-12.
+
+**적용**: 20270118 **뒤에** 이 파일 하나(다시 적용해도 같다). 함수 배포는 필요 없다. 20270118을 이 파일 뒤에 다시 적용하면 옛 판(걸리지 않는 제한 시간 · 느린 답 찾기)으로
+돌아가고 옛 꼴 도우미가 되살아나니, 그때는 이 파일도 다시 적용한다. 인덱스는 리비전이 있는 줄만 담아 만들 때 표를 한 번 읽는 동안만 그 표 쓰기를 막는다.
+
 ## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 
 `migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
@@ -933,7 +995,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `push_campaign_sends`(묶음 `스토리` · 세그먼트 `friend-story` · 새 칸 `character_id` · `story_id`, 시험 계정 단계는 묶음 `스토리 시험`)에 먼저 기록 →
   `send-push` 목적지 `{ kind: "companion-chat", characterId, story: true }`(옛 앱은 방을 연다).
   후보: 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) ·
-  **오늘(현지) 보낸 알림 없음 — 모든 묶음**(선톡 · 스토리 · 자동 캠페인). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
+  **오늘(현지) 보낸 알림 없음 — 학습 자동 캠페인 밖의 모든 묶음**(선톡 · 스토리 · 스토리 반응 등, `companion.story_pushed_today`). 「자동 · 」 · 「빈도 · 」 묶음은
+  세지 않는다(ADR-0178 D7 개정, 2026-11-27 — 빈도 실험 칸마다 스토리 노출이 달라지지 않게). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
   `companion.pushed_today`는 스토리 묶음만 **대조군 줄도** 센다 — 스토리 대조군이 같은 날 선톡 푸시를 받지 않게(비교가 공정하게). 다른 묶음은 보낸 줄만.
 - 테스트: `migrations/friend-stories.integration.test.ts`(FS1 ~ FS20) · `_shared/companion-stories-handler.unit.test.ts`(SH1 ~ SH5) ·
   `chat-send-handler.unit.test.ts`(CSS1 ~ CSS3) · `companion-proactive-push.unit.test.ts`(PP9) · `send-push-body.unit.test.ts`(SP1) · 계약 `chat-send.unit.test.ts`(CS3e).
@@ -1034,7 +1097,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   예: `update companion.settings set my_story_rules = my_story_rules || '{"secondMaxSec": 1800}';`
 - 올리기(ADR-0191 D8): 현지 **아침 · 낮 · 밤 창마다 하나**(`my_story_slots` — 지워도 돌아오지 않음) + 24시간 안 `my_story_daily` + 1(기본 4)개 — 바르게 쓰는
   사람은 어느 24시간에도 창 셋 + 하나를 넘지 않는다(`companion.my_story_day_full`).
-  시간대는 `companion.user_timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`) → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
+  시간대(20270118130000, ADR-0211)는 저장된 `profiles.timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`, 0은 모름) → 스토어 나라(`p_region` · 없으면
+  `last_region`, `companion.story_country_timezone`) → 학습 프로필 나라 → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
 - 반응 상한: `story_reaction_user_daily`(사람 하루, 기본 6) · `story_reaction_global_daily`(전체 하루, 기본 1000 — 버그 · 악용에 대한 퓨즈).
   **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘으면 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차) 올린 지 24시간이 지나면 `skipped`.
   수는 지워지지 않는 장부 `my_story_usage`(사람 · UTC 날) · `my_story_usage_global`(날)에서 읽는다. claim은 그날 전체 장부 줄을 `for update`로 잠가 줄 세운다.
@@ -1065,8 +1129,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   done/failed/skipped) · `my_story_seen` · `my_story_slots` · `my_story_replies`(내가 인용해 보낸 답) · 장부 둘.
 - 지우기(ADR-0191 D10): 스토리 · 알람 · Seen이 사라진다. **대화방의 반응 메시지 글은 남고** 기록의 `story`만 `{ kind: deleted }`가 된다.
   프로필 `keep_my_stories`(기본 켬): 끄면 읽기는 살아 있는 것만, 정리(`companion_purge_my_stories`)가 24시간 지난 것을 지운다.
-- 앱 RPC(authenticated, 모양은 `packages/companion-contract/src/my-stories.ts`): `companion_my_stories(p_tz_offset_min?)` →
-  `{ enabled, keep, stories, window }`(최신 100개 · `reactions` · `seenBy`) · `companion_post_my_story(…, p_tz_offset_min?)` →
+- 앱 RPC(authenticated, 모양은 `packages/companion-contract/src/my-stories.ts`): `companion_my_stories(p_tz_offset_min?, p_region?)` →
+  `{ enabled, keep, stories, window }`(최신 100개 · `reactions` · `seenBy`) · `companion_post_my_story(…, p_tz_offset_min?, p_region?)` →
   `ok | off | window_used | daily_limit | invalid` · `companion_delete_my_story(id | null = 모두)` · `companion_set_keep_my_stories(bool)`.
 - 기록의 인용(`message_json.story`): 내 말 — friend(친구 스토리 답장) · mine · deleted. 인물의 반응 메시지 — mine · deleted.
 - 테스트: `migrations/my-stories.integration.test.ts`(MS1 ~ MS17) · `_shared/companion-reactions-handler.unit.test.ts`(RH1 ~ RH10) ·
@@ -1170,7 +1234,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 - 스토리 = 바탕(색 `text` · 사진 `photo`) × 얹은 것(직접 쓴 글 · 배운 단어). 단어 카드(word · card)는 `kinds`에서 빠졌다(「색 + 단어」).
 - 사진 · 색 바탕 올리기는 같은 흐름: 글 검수(사진 설명 · 쓴 글 + 직접 쓴 얹은 글 — `_shared/companion-story-compose.ts`) → (사진만) 사진 읽기 → 저장.
-  위기 신호(글 · 사진)는 둘 다 올리지 않고 `{ result: "crisis", resources }`(요청의 `client_region`으로 고름).
+  위기 신호(글 · 사진)는 둘 다 올리지 않고 `{ result: "crisis", resources }`(요청의 `client_region`으로 고름). `client_region`은 문 · 저장에 `p_region`으로도 넘겨 창의 시간대를 정한다(ADR-0211).
 - 답할 인물 · 각도: 사진 · 글 + 단어면 첫째 다른 인물 react, 덕수쌤 둘째(quiz · question · together). 색 + 단어만은 옛 단어 카드 규칙.
   단어 없으면 사진 규칙. 퀴즈 단어 = 첫 배운 단어(`companion.my_story_quiz_word`).
 - 퀴즈 답: 답을 만드는 모델이 `@state`의 `quiz`(correct · wrong · skip)로 판정 — skip이면 그 메시지는 무료로 두고 퀴즈를 닫는다(`skipped`).
@@ -1201,6 +1265,37 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 표 `companion.past_story_opens`(RLS 본인 읽기, 쓰기는 함수만). 테스트: `migrations/past-stories.integration.test.ts`(PX1 ~ PX14).
 
 **적용 순서** — `20270110120000` 뒤에 `20270111120000_past_stories.sql`. Edge Function 배포 없음. 켜기: `update companion.settings set past_stories = 'testers';`.
+
+## 광고 보고 티켓 — admob-ssv (20270117120000, ADR-0209)
+
+- AdMob 보상형 광고의 서버 측 확인(SSV) 콜백. Google이 `GET`으로 부르고, 인증은 Supabase JWT가 아니라 Google 공개키 서명이다(`config.toml` `verify_jwt = false`).
+  처리기 `_shared/admob-ssv-handler.ts`(400 · 401 · 403 · 405 · 500 재시도 · 200 outcome), 서명 · 키 캐시 · 환경 `_shared/admob-ssv.ts`.
+- 앱 RPC: `ad_ticket_status(offset, request_id?)` · `ad_ticket_start(offset)` — 앱이 받은 `requestId`를 SSV `custom_data`에, Supabase 사용자 id를 `user_id`에 싣는다.
+  지급 판정은 `ad_ticket_grant`(service_role만): 스위치 · 대상(회원 · 계정 24시간 뒤 · 구독 없음) · 하루 상한(`ad_ticket_daily_cap`, 기본 2) · 거래 id 멱등.
+- 티켓 원장은 앱에 있다 — 앱이 `granted`를 읽고 1장을 더한다. 테스트: `migrations/ad-ticket.integration.test.ts`(AT1 ~ AT9) ·
+  `_shared/admob-ssv*.test.ts`(AS-U · AS-H · AS-I).
+- 비밀: `ADMOB_AD_UNIT_IDS`(**필수**, 쉼표 — 콜백 `ad_unit` 값, 광고 단위 id의 `/` 뒤 숫자). 없으면 모든 콜백이 500 `misconfigured`
+  (Google SSV 키는 모든 게시자가 함께 써서 광고 단위로 우리 콜백임을 가린다).
+
+- 광고 단위 ID(전체 `ca-app-pub-…/…`)는 앱이 아니라 서버 설정 `companion.settings.ad_ticket_unit_ios` · `ad_ticket_unit_android`에 두고
+  `ad_ticket_status(…, p_platform)`이 `unitId`로 내린다(스위치 off · 대상 아님 · 값 없음이면 null) — 앱 빌드 없이 켠다(ADR-0209 D10).
+
+**적용 순서** — `20270117120000_ad_ticket.sql`(main의 #661 `20270114…` 뒤 · 열린 #664 `20270115120000` · #667 `20270116120000` 뒤). 함수 `supabase functions deploy admob-ssv`.
+켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.
+
+## 내 스토리 올리기 창의 시간대 (20270118130000, ADR-0211)
+
+- `companion.my_story_window(user, offset, now, p_region?)` — 저장된 `profiles.timezone` → 기기 시차(0이 아닌 값) → 스토어 나라(`p_region`) → coalesce(
+  `last_region`, 온보딩 나라) → UTC. 온보딩 나라가 기기 시차를 이겨 16:30 KST가 아침 창이 되던 것을 고친다.
+- 스토어 나라 표 `companion.story_country_timezone` = `country_timezone` + 내 스토리 전용 보충(스페인어권 · MO 등). `user_timezone` ·
+  `country_timezone`은 그대로(스토리 알림 · 선톡 대상이 바뀌지 않게).
+- RPC 여섯에 `p_region text default null`: `companion_my_stories` · `companion_post_my_story`(앱) · `companion_my_photo_gate` ·
+  `companion_save_my_photo_story` · `companion_my_text_gate` · `companion_save_my_text_story`(Edge — 요청의 `client_region`). 옛 호출은 그대로.
+- 테스트: `migrations/my-story-slot-timezone.integration.test.ts`(TZ1 ~ TZ7) · `_shared/companion-my-story-handler.unit.test.ts`(MH9).
+
+**적용 순서** — `20270118130000_my_story_slot_timezone.sql`(`20270118120000_ops_admin_insights` 뒤) → `supabase functions deploy companion-my-story`.
+마이그레이션이 먼저다 — 새 Edge가 옛 함수에 `p_region`을 넘기면 함수를 찾지 못한다. 앱이 `p_region`을 싣는 판은 마이그레이션 적용 뒤에 낸다.
+
 ## 롤플레이 미션 DB — 컴패니언 2단계 (20270112)
 
 `migrations/20270112120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다

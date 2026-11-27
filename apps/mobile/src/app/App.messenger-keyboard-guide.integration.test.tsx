@@ -26,11 +26,10 @@ import { legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
 // 이벤트 결선과 맞물린다. 휴대폰 키보드 화면에서 입력 칸이 알린 높이가 기기에 남고, 끝내면 키보드 단계 기록이 기존 안내 기록과
 // 다른 키에 남으며, 다시 들어오면 안내가 서지 않는다. 대역은 경계뿐 — `ChatRemote` 포트.
 
-const KEYS = [
-  messengerGuideSeenStorageKey,
-  messengerKeyboardGuideSeenStorageKey,
-  KEYBOARD_HEIGHT_KEY,
-];
+// 안내 기록은 계정별 칸(2026-11-27) — 시험 계정(`tester-1`)의 칸입니다.
+const GUIDE_KEY = `${messengerGuideSeenStorageKey}.tester-1`;
+const KEYBOARD_GUIDE_KEY = `${messengerKeyboardGuideSeenStorageKey}.tester-1`;
+const KEYS = [GUIDE_KEY, KEYBOARD_GUIDE_KEY, KEYBOARD_HEIGHT_KEY];
 const COACH = "messenger-chat-guide-coach";
 let events: EpisodeIntroEvent[] = [];
 const flush = () =>
@@ -123,10 +122,8 @@ test("KG-I1. 휴대폰 키보드 화면에서 잰 높이가 기기에 남고, �
   expect(coach().getAttribute("data-step")).toBe("ideas");
   next();
   expect(present(COACH)).toBe(false);
-  expect(getItem(messengerKeyboardGuideSeenStorageKey)).toBe("1");
-  expect(JSON.parse(getItem(messengerGuideSeenStorageKey) ?? "[]")).toEqual(
-    expect.arrayContaining(["room", "list"]),
-  );
+  expect(getItem(KEYBOARD_GUIDE_KEY)).toBe("1");
+  expect(JSON.parse(getItem(GUIDE_KEY) ?? "[]")).toEqual(expect.arrayContaining(["room", "list"]));
   const keyboard = events.flatMap((event) =>
     event.name === "messenger_guide_keyboard" ? [`${event.stage}:${event.action}`] : [],
   );

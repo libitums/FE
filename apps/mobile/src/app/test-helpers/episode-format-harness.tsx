@@ -91,6 +91,11 @@ export type SpeechOption = {
   readonly heard: (attempt: number) => string | null;
   /** 인식 실패 페이로드에 더 실을 키입니다(예: Android의 오류 코드 · 한국어 팩 · 되돌아감). */
   readonly failure?: Readonly<Record<string, unknown>>;
+  /**
+   * 있으면 마이크 권한을 이 칸이 정합니다(ADR-0206) — `getStatus`가 답하고, 요청은 미요청을 `onAsk`로 바꾸며, 테스트가 `microphone`을
+   * 바꾸면 다음 조회가 그 값입니다(설정에서 켜고 돌아옴). 없으면 예전처럼 `getStatus`가 답하지 않습니다.
+   */
+  readonly permission?: { microphone: string; onAsk?: string; openedSettings?: number };
 };
 export type BootOptions = {
   readonly speech?: SpeechOption;
@@ -104,10 +109,29 @@ export type BootOptions = {
 function speechModuleOf(speech: SpeechOption) {
   let attempts = 0;
   const status = speech.granted ? "granted" : "denied";
+  const permission = speech.permission;
+  const payload = () =>
+    permission === undefined
+      ? { microphone: status, speechRecognition: status, recognizerAvailable: true }
+      : {
+          microphone: permission.microphone,
+          speechRecognition: "granted",
+          recognizerAvailable: true,
+        };
   return {
-    getStatus: () => {},
-    requestPermissions: (callback: (payload: unknown) => void) =>
-      callback({ microphone: status, speechRecognition: status, recognizerAvailable: true }),
+    getStatus: (callback: (payload: unknown) => void) => {
+      if (permission !== undefined) callback(payload());
+    },
+    requestPermissions: (callback: (payload: unknown) => void) => {
+      if (permission?.microphone === "not-determined" && permission.onAsk !== undefined) {
+        permission.microphone = permission.onAsk;
+      }
+      callback(payload());
+    },
+    openSettings: () => {
+      if (permission !== undefined)
+        permission.openedSettings = (permission.openedSettings ?? 0) + 1;
+    },
     start: (_args: unknown, callback: (payload: unknown) => void) => {
       const text = speech.heard(attempts);
       attempts += 1;

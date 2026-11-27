@@ -80,6 +80,13 @@ export function startFollowUps(
   return { translation, chips, stop: () => own.abort() };
 }
 
+/** 출력 검사에 걸려 다시 만든 답의 기록(`meta.guardrailRecovered`) — 걸린 분류와 초안(ADR-0203 D5). 캐릭터가 쓴 글이라 학습자 글이 아니다. 오탐인지 나중에 가려 본다. */
+export type Withheld = { readonly category: string; readonly draft: string };
+export const withheld = (category: string, segments: readonly Segment[]): Withheld => ({
+  category,
+  draft: segmentsToPlain(segments).slice(0, 2000),
+});
+
 /** 걸린 분류로 화제를 돌린 답을 한 번 만들고 다시 검사합니다. 통과한 답(내보내기 전)만 돌려주고, 아니면 null. */
 export async function recoverReply(
   context: CheckContext,

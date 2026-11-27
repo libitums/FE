@@ -34,6 +34,8 @@ export const chatSendRequestSchema = z.object({
    * `message_id`가 지금 마지막 캐릭터 메시지이고 `text`가 그 자리의 칩과 (앞뒤 공백을 걷고) 똑같을 때만 칩을 그대로 보낸 것으로 보고
    * 피드백을 건너뜁니다(`correction`의 `status: "skipped"`). 그 사이 새 답이 왔으면 지난 칩(stale), 글이 다르면 직접 입력으로 보고
    * 보통처럼 피드백합니다. 칩 수정은 없습니다 — 입력 길은 탭 전송 · 직접 입력 둘뿐이고(2026-11-10), 직접 입력이면 보내지 않습니다.
+   * 이 칸이 없어도 `text`가 마지막 캐릭터 메시지의 칩 하나와 똑같으면 서버는 칩을 고른 것으로 봅니다(ADR-0210) — 칸은 어느 칩인지를
+   * 확실히 하고 지난 칩(stale)을 가려내는 데 씁니다.
    */
   suggestion: z.optional(
     z.object({
@@ -41,7 +43,7 @@ export const chatSendRequestSchema = z.object({
       index: z.int().check(z.gte(0), z.lte(2)),
     }),
   ),
-  /** 옛 표시(`suggestion` 앞). 참이면 마지막 캐릭터 메시지의 칩 어느 하나와 글이 같을 때 피드백을 건너뜁니다. */
+  /** 옛 표시(`suggestion` 앞). 지금은 없을 때와 같습니다 — 글이 마지막 캐릭터 메시지의 칩 하나와 같으면 칩으로 봅니다(ADR-0210). */
   from_suggestion: z.optional(z.boolean()),
   /**
    * 고쳐서 다시 보내기(PRD §3.15): 고칠 유저 메시지의 id. 그 대화의 마지막 유저 메시지여야 하고(그 뒤에 그 답이 아닌 캐릭터

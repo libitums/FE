@@ -119,10 +119,14 @@ public final class MainActivity extends Activity {
     pushNotifications = new PushNotificationController(this);
     builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
     builder.registerModule("SystemBackModule", SystemBackModule.class, this);
+    // 오류 수집에 로그인한 사용자의 내부 id 하나를 싣는다(ADR-0207). 이메일 · 이름 · IP는 받지 않는다.
+    builder.registerModule("CrashReportingModule", CrashReportingModule.class);
     DebugSupport.configure(builder);
     AirbridgeEvents.configure(builder);
     // 스토어 상품 · 구매 · 복원(ADR-0144 2단계) — SDK 키가 있어 시작된 빌드에서만 등록한다.
     PurchasesSdk.configure(builder, this);
+    // 보상형 광고(ADR-0209) — AdMob 값이 있어 시작된 빌드에서만 등록한다. 없으면 광고 줄이 서지 않는다.
+    RewardedAdSdk.configure(builder, this);
     lynxView = builder.build(this);
     // Airbridge 딥링크가 들어오면 JS에 알린다 — 링크는 싣지 않고 JS가 takeOpenedDeeplink로 꺼낸다(ADR-0080).
     deeplinkListener = () -> mainHandler.post(() -> {
@@ -456,6 +460,8 @@ public final class MainActivity extends Activity {
     if (audioPlayback != null) audioPlayback.interrupt();
     if (soundEffects != null) soundEffects.stopAll();
     if (speechRecognition != null) speechRecognition.interrupt();
+    // 앱이 뒤로 감 — 내 스토리 보기의 다시 읽기가 멈춘다(ADR-0194 개정 ⟨살아 있는 보기⟩). 앞으로 오는 것은 contentSyncOpportunity.
+    if (lynxView != null) lynxView.sendGlobalEvent("appDidEnterBackground", new JavaOnlyArray());
     super.onStop();
   }
 }

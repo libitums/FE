@@ -61,7 +61,7 @@ const styleOf = (el: Element) => el.getAttribute("style") ?? "";
 const percent = (style: string, key: string) =>
   Number(new RegExp(`${key}: ([0-9.]+)%`).exec(style)?.[1] ?? Number.NaN) / 100;
 
-test("MS-UI42. 단어 스티커 — 크게 하면 회전한 상자가 도구 열 앞에서 멈추고(끄는 중 transform), 손을 떼면 글자 크기로 확정 · 오른쪽 끝으로 끌어도 ×가 도구 열 앞", () => {
+test("MS-UI42. 단어 스티커 — 크게 하면 회전한 상자가 도구 열 앞에서 멈추고(끄는 중 transform), 손을 떼면 글자 크기로 확정 · 끌면 가운데가 화면 끝까지", () => {
   mount();
   tapId(ids.toolWords);
   tapId(ids.choice("w1"));
@@ -87,16 +87,15 @@ test("MS-UI42. 단어 스티커 — 크게 하면 회전한 상자가 도구 열
   expect(ko).toContain("font-size: 43.12px");
   expect(roman).toContain("font-size: 21.56px");
   expect(meaning).toContain("font-size: 23.52px");
-  // 오른쪽 끝으로 끌기 — 외접 사각형의 오른쪽이 도구 열(오른쪽 12 + 폭 64) 앞 36px에서 멈춤
-  gesture(sticker, [{ pageX: 0, pageY: 0 }], [{ pageX: 1000, pageY: 0 }]);
+  // 오른쪽 끝으로 끌기 — 가운데가 화면 끝까지(도구 열 위로도, 2026-11-27 인스타그램 감각), 위로 끌면 위 끝까지
+  gesture(sticker, [{ pageX: 0, pageY: 0 }], [{ pageX: 1000, pageY: -1000 }]);
   release(sticker);
-  const x = percent(styleOf(sticker()), "left");
-  const half =
-    ((120 * 1.96 + 4) * Math.cos((4 * Math.PI) / 180) +
-      (80 * 1.96 + 4) * Math.sin((4 * Math.PI) / 180)) /
-    2;
-  expect(x * CANVAS.width + half).toBeLessThanOrEqual(CANVAS.width - 100 + 0.5);
-  expect(x * CANVAS.width + half).toBeGreaterThan(CANVAS.width - 100 - 1);
+  expect(percent(styleOf(sticker()), "left")).toBe(1);
+  expect(percent(styleOf(sticker()), "top")).toBe(0);
+  gesture(sticker, [{ pageX: 0, pageY: 0 }], [{ pageX: -1000, pageY: 1000 }]);
+  release(sticker);
+  expect(percent(styleOf(sticker()), "left")).toBe(0);
+  expect(percent(styleOf(sticker()), "top")).toBe(1);
   expect(screen.getByTestId(ids.stickerRemove("s1"))).not.toBeNull();
 });
 

@@ -20,13 +20,7 @@ const labelOf = (testId: string) => screen.getByTestId(testId).getAttribute("acc
 
 test("AL-UI10 Chats 설정 About you의 「You in snapshots」 → 시트에서 고르고 Save하면 바뀐다(고른 적 없으면 Woman)", () => {
   const source = makeSource();
-  render(
-    <ChatSettingsScreen
-      source={source}
-      onOpenSharedMemories={vi.fn<() => void>()}
-      onBack={vi.fn<() => void>()}
-    />,
-  );
+  render(<ChatSettingsScreen source={source} onBack={vi.fn<() => void>()} />);
   expect(labelOf(ids.selfRow)).toBe("You in snapshots, Woman");
   tapId(ids.selfRow);
   expect(textOf(ids.selfSheet)).toContain("We never draw your face.");

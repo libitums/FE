@@ -82,7 +82,7 @@ function loadPicture(): void {
 function skipSpeakWord(): void {
   expect(screen.getByTestId("speak-word-content")).toBeInTheDocument();
   loadPicture();
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
   expect(phase("speak-word-content")).toBe("unavailable");
   tapId("learning-shell-action");
 }
@@ -202,7 +202,7 @@ test("SPK2. (AC2 인식) S5: 들은 글자가 문장과 같으면 조각이 모�
   });
 });
 
-test("SPK3. (AC3 정답) S6: 낱말 활동에서 그림이 서고 정답을 말하면 정답 배지 · 정답 상자 → 넘김 → PERFECT · S6 기록 · 이벤트", async () => {
+test("SPK3. (AC3 정답) S6: 낱말 활동에서 그림이 서고 정답을 말하면 결과 시트(perfect) · 정답 상자 → Continue → PERFECT · S6 기록 · 이벤트", async () => {
   const plan = lessonPlan(u01, "S6");
   const question = speakWordOf(plan).questions[0];
   if (question === undefined) throw new Error("empty speak-word activity");
@@ -218,13 +218,14 @@ test("SPK3. (AC3 정답) S6: 낱말 활동에서 그림이 서고 정답을 말�
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   loadPicture();
   expect(screen.getByTestId("speak-word-picture")).toHaveAttribute("data-loadstate", "loaded");
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   expect(phase("speak-word-content")).toBe("heard");
-  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(screen.getByTestId("speak-word-result")).toHaveAttribute("data-grade", "perfect");
   expect(screen.getByTestId("speak-word-reveal")).toHaveTextContent(question.answers[0]);
   expect(screen.getByTestId("speak-word-reveal")).toHaveTextContent(question.romanization ?? "");
-  tapId("learning-shell-advance");
+  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("Continue");
+  tapId("learning-shell-action");
   solveAfter(plan, target);
 
   expect(title()).toHaveTextContent("PERFECT LESSON!");
@@ -244,7 +245,7 @@ test("SPK3. (AC3 정답) S6: 낱말 활동에서 그림이 서고 정답을 말�
   });
 });
 
-test("SPK4. (AC3 오답) S6: 다른 낱말을 말하면 오답 배지 · 정답 상자 → 다른 문항은 정답이면 LESSON COMPLETE!(실수 1) · 통과 · 정답 수 7", async () => {
+test("SPK4. (AC3 오답) S6: 다른 낱말을 말하면 오답 시트 · Try again · Next → 다른 문항은 정답이면 LESSON COMPLETE!(실수 1) · 통과 · 정답 수 7", async () => {
   const plan = lessonPlan(u01, "S6");
   const { rpcs, events } = await boot(
     { [u01]: beforeS6 },
@@ -254,12 +255,16 @@ test("SPK4. (AC3 오답) S6: 다른 낱말을 말하면 오답 배지 · 정답 
   tapNode(u01, "S6");
   const target = solveBefore(plan, "speak-word");
   loadPicture();
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
-  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "incorrect");
+  expect(screen.getByTestId("speak-word-result")).toHaveAttribute("data-grade", "incorrect");
   expect(screen.getByTestId("speak-word-reveal")).toBeInTheDocument();
-  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
-  tapId("learning-shell-advance");
+  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("Try again");
+  const next = screen
+    .getByTestId("speak-word-secondary")
+    .querySelector('[data-testid="ui-lynx-button"]');
+  if (next === null) throw new Error("no Next button");
+  fireEvent.tap(next, {});
   solveAfter(plan, target);
   // 틀린 낱말은 결과 전에 다시 도전합니다 — 또 같은 말이 들려 판정은 첫 결과(실수 1) 그대로입니다(ADR-0058 ⟨2026-10-30⟩).
   missReview(plan, [{ activityIndex: target, questionIndex: 0 }]);
@@ -288,7 +293,7 @@ test("SPK5. (AC4 거부) S6: 권한을 거부하면 낱말 Speak가 불가가 �
   tapNode(u01, "S6");
   const target = solveBefore(plan, "speak-word");
   loadPicture();
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   expect(phase("speak-word-content")).toBe("unavailable");
   expect(screen.getByTestId("speak-word-hint")).toBeInTheDocument();

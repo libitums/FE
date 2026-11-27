@@ -163,7 +163,7 @@ test("[IR2] 미리보기 → 표지 컷 → 세 턴을 말하고 결과 → Back
 
   env.heard = ["아니요 괜찮아요", "현금으로 할게요", "아니요 영수증은 괜찮아요"];
   for (let turn = 0; turn < 3; turn += 1) {
-    fireEvent.tap(id("roleplay-talk-mic"), {});
+    fireEvent.tap(id("roleplay-mic-button"), {});
     tapButton("roleplay-talk-next");
   }
   expect(id("lesson-complete-screen")).toBeInTheDocument();
@@ -174,6 +174,32 @@ test("[IR2] 미리보기 → 표지 컷 → 세 턴을 말하고 결과 → Back
     judgedCount: "3",
     skippedCount: "0",
   });
+  // 턴마다 결과 · 등급이 한 번씩(ADR-0201 D6 적용 2) — 들은 문장은 싣지 않는다.
+  const turnEvents = env.events.filter((event) => event.name === "roleplay_story_turn_answered");
+  expect(turnEvents).toEqual([
+    {
+      name: "roleplay_story_turn_answered",
+      episodeId: "u01-water",
+      turn: "1",
+      result: "correct",
+      grade: "perfect",
+    },
+    {
+      name: "roleplay_story_turn_answered",
+      episodeId: "u01-water",
+      turn: "2",
+      result: "incorrect",
+      grade: "incorrect",
+    },
+    {
+      name: "roleplay_story_turn_answered",
+      episodeId: "u01-water",
+      turn: "3",
+      result: "correct",
+      grade: "perfect",
+    },
+  ]);
+  expect(JSON.stringify(turnEvents)).not.toContain("현금");
   expect(maybe("lesson-complete-tickets")).not.toBeInTheDocument();
   tapButton("lesson-complete-screen-exit");
   expect(id("roleplay-list-section-u01-water")).toBeInTheDocument();
@@ -187,7 +213,7 @@ test("[IR3] 롤플레이는 진행을 바꾸지 않는다 — 마쳐도 서버 �
   passCuts();
   env.heard = ["아니요 괜찮아요", "카드로 할게요", "아니요 영수증은 괜찮아요"];
   for (let turn = 0; turn < 3; turn += 1) {
-    fireEvent.tap(id("roleplay-talk-mic"), {});
+    fireEvent.tap(id("roleplay-mic-button"), {});
     tapButton("roleplay-talk-next");
   }
   await act(async () => {
@@ -204,13 +230,44 @@ test("[IR4] 잠긴 카드는 눌러도 열리지 않는다", async () => {
   expect(env.events.filter((event) => event.name === "roleplay_story_opened")).toHaveLength(0);
 });
 
-test("[IR5] 권한을 아직 묻지 않았으면 시작 때 묻고, 허용하면 그대로 표지 컷으로 간다", async () => {
+const micEvents = () => env.events.filter((event) => event.name.startsWith("mic_permission_"));
+
+test("[IR5] 권한을 아직 묻지 않았으면 시작 때 사전 안내(ADR-0206) — Allow로 묻고, 허용하면 그대로 표지 컷으로 간다", async () => {
   const unasked = { ...granted, microphone: "not-determined", speechRecognition: "not-determined" };
   await boot({ "u01-water": u01Complete }, unasked, granted);
   fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
   tapButton("roleplay-preview-start");
+  expect(id("mic-permission-sheet")).toHaveAttribute("data-sheet", "prime");
+  expect(maybe("catalog-cover-screen")).not.toBeInTheDocument();
+  tapButton("ui-lynx-bottom-sheet-action-allow");
+  expect(maybe("mic-permission-sheet")).not.toBeInTheDocument();
   expect(maybe("roleplay-preview-speech-notice")).not.toBeInTheDocument();
   expect(id("catalog-cover-screen")).toBeInTheDocument();
+  expect(micEvents()).toEqual([
+    { name: "mic_permission_sheet_shown", surface: "roleplay", sheet: "prime" },
+    { name: "mic_permission_answered", surface: "roleplay", result: "allowed", source: "prompt" },
+  ]);
+});
+
+test("[IR5b] 사전 안내를 한 번 본 뒤에는 시작 때 시스템 창으로 바로 묻는다", async () => {
+  const unasked = { ...granted, microphone: "not-determined", speechRecognition: "not-determined" };
+  await boot({ "u01-water": u01Complete }, unasked, granted);
+  env.store.set("libitum.mic-primer-seen", "1");
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  expect(maybe("mic-permission-sheet")).not.toBeInTheDocument();
+  expect(id("catalog-cover-screen")).toBeInTheDocument();
+});
+
+test("[IR5c] 사전 안내의 Not now는 묻지 않고 장면을 시작한다 — 말하기는 턴마다 건너뛸 수 있다", async () => {
+  const unasked = { ...granted, microphone: "not-determined", speechRecognition: "not-determined" };
+  await boot({ "u01-water": u01Complete }, unasked, granted);
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  tapButton("ui-lynx-bottom-sheet-action-not-now");
+  expect(maybe("mic-permission-sheet")).not.toBeInTheDocument();
+  expect(id("catalog-cover-screen")).toBeInTheDocument();
+  expect(env.status.microphone).toBe("not-determined");
 });
 
 test("[IR6] 권한이 거부돼 있으면 시작 대신 안내 — Open Settings는 설정을 열고, Not now는 닫는다", async () => {
@@ -234,5 +291,6 @@ test("[IR7] 묻고 나서도 거부하면 안내가 뜬다", async () => {
   await boot({ "u01-water": u01Complete }, unasked, { ...granted, speechRecognition: "denied" });
   fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
   tapButton("roleplay-preview-start");
+  tapButton("ui-lynx-bottom-sheet-action-allow");
   expect(id("roleplay-preview-speech-notice")).toHaveAttribute("data-notice", "blocked");
 });

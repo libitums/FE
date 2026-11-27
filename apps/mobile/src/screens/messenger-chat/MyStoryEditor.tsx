@@ -25,6 +25,8 @@ import {
 } from "./my-stories.contract";
 import { MyStoryAddSheet } from "./MyStoryComposer";
 import { MyStoryEditorFooter } from "./MyStoryEditorFooter";
+import { MyStoryTool as Tool } from "./MyStoryTool";
+import { CanvasGrip, canvasTouchHandlers, emptyGripHub, type GripHub } from "./use-placed-grip";
 import { MyStorySticker, type CanvasSize } from "./MyStorySticker";
 import { MyStoryTextBox, useEditorText } from "./MyStoryTextBox";
 import { MyStoryTextEntry } from "./MyStoryTextEntry";
@@ -36,42 +38,6 @@ import "./my-stories.css";
 const FOOTER_PADDING = 16;
 /** 사진 위 그라데이션이 인셋 아래로 덮는 높이 — 머리 줄(72) 아래로 조금 더 흐립니다. */
 const SHADE_BELOW_INSET = 120;
-
-function Tool({
-  testId,
-  label,
-  onTap,
-  children,
-}: {
-  readonly testId: string;
-  readonly label: string;
-  readonly onTap: () => void;
-  readonly children: ReactNode;
-}): ReactNode {
-  return (
-    <view
-      className="my-story-tool"
-      data-testid={testId}
-      accessibility-element={true}
-      accessibility-label={label}
-      accessibility-traits="button"
-      accessibility-enable-tap={true}
-      flatten={false}
-      bindtap={() => {
-        "background only";
-        playSound("button");
-        onTap();
-      }}
-    >
-      <view className="my-story-tool-icon" accessibility-elements-hidden={true}>
-        {children}
-      </view>
-      <text className="my-story-tool-text" accessibility-elements-hidden={true}>
-        {label}
-      </text>
-    </view>
-  );
-}
 
 export type MyStoryEditorProps = {
   readonly caps: EditorCaps;
@@ -108,7 +74,13 @@ export function MyStoryEditor({
   const [stickers, setStickers] = useState<readonly EditorSticker[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [sheet, setSheet] = useState(false);
-  const [canvas, setCanvas] = useState<CanvasSize>({ width: 0, height: 0 });
+  // 바탕 = 화면 전체(보기와 같은 좌표, 2026-11-27) — 위 줄 · 아래 줄은 그 위에 겹쳐 서고, 가리는 높이만 끝단에 넘깁니다.
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+  const [cover, setCover] = useState({ top: 0, bottom: 0 });
+  // 위 줄은 안전 영역 아래에 섭니다(층의 paddingTop) — 안전 영역은 그릴 때 더해 값이 바뀌어도 맞습니다.
+  const canvas: CanvasSize = { ...screenSize, top: insets.top + cover.top, bottom: cover.bottom };
+  // 지금 잡힌 것 · 고른 것 — 둘째 손가락이 바탕 어디에 닿아도 잡힌 것에, 바탕 두 손가락은 고른 것에 붙습니다(ADR-0194 개정 3).
+  const grip = useRef<GripHub>(emptyGripHub());
   const stickerIds = useRef(0); // 스티커 id — 이 편집 안에서만 씁니다(서버 clientId와 따로)
   useLayerBack(onClose);
 
@@ -140,7 +112,7 @@ export function MyStoryEditor({
         accessibility-elements-hidden={sheet || writing}
         style={{ paddingTop: `${insets.top}px` }}
       >
-        {/* 화면 끝까지(2026-11-26) — 사진은 캔버스가 아니라 층 전체(상태 표시줄 아래까지), 위는 보기 머리처럼 어둡게 흐립니다. */}
+        {/* 화면 끝까지(2026-11-26) — 사진 · 바탕(얹은 것의 좌표)은 층 전체(상태 표시줄 아래까지), 위는 보기 머리처럼 어둡게 흐립니다. */}
         {photo === null ? null : (
           <>
             <image
@@ -160,7 +132,55 @@ export function MyStoryEditor({
             />
           </>
         )}
-        <view className={`my-story-editor-top${writing ? " my-story-under-typing" : ""}`}>
+        <view
+          className="my-story-canvas"
+          data-testid={ids.stickers}
+          {...canvasTouchHandlers(grip.current)}
+          bindlayoutchange={(event: { detail: { width: number; height: number } }) => {
+            "background only";
+            setScreenSize({ width: event.detail.width, height: event.detail.height });
+          }}
+          bindtap={() => {
+            "background only";
+            // 두 손가락이 닿았던 손길의 누름은 고름을 풀지 않습니다(바탕 두 손가락이 고른 것을 돌리는 중).
+            if (!grip.current.multi) setSelected(null);
+          }}
+        >
+          <CanvasGrip.Provider value={grip.current}>
+            {text === null || writing ? null : (
+              <MyStoryTextBox
+                text={text}
+                canvas={canvas}
+                selected={selected === "text"}
+                onSelect={() => setSelected("text")}
+                onChange={typing.update}
+                onRemove={typing.remove}
+                onEdit={typing.start}
+              />
+            )}
+            {stickers.map((sticker) => (
+              <MyStorySticker
+                key={sticker.id}
+                sticker={sticker}
+                canvas={canvas}
+                selected={selected === sticker.id}
+                onSelect={() => setSelected(sticker.id)}
+                onChange={update}
+                onRemove={() =>
+                  changed(() => setStickers((now) => now.filter((each) => each.id !== sticker.id)))
+                }
+              />
+            ))}
+          </CanvasGrip.Provider>
+        </view>
+        <view
+          className={`my-story-editor-top${writing ? " my-story-under-typing" : ""}`}
+          data-testid={ids.editorTop}
+          bindlayoutchange={(event: { detail: { height: number } }) => {
+            "background only";
+            setCover((now) => ({ ...now, top: event.detail.height }));
+          }}
+        >
           <view
             className="my-story-editor-round"
             data-testid={ids.composerClose}
@@ -199,43 +219,6 @@ export function MyStoryEditor({
           )}
           <view className="my-story-editor-spacer" />
         </view>
-        <view
-          className="my-story-canvas"
-          data-testid={ids.stickers}
-          bindlayoutchange={(event: { detail: { width: number; height: number } }) => {
-            "background only";
-            setCanvas({ width: event.detail.width, height: event.detail.height });
-          }}
-          bindtap={() => {
-            "background only";
-            setSelected(null);
-          }}
-        >
-          {text === null || writing ? null : (
-            <MyStoryTextBox
-              text={text}
-              canvas={canvas}
-              selected={selected === "text"}
-              onSelect={() => setSelected("text")}
-              onChange={typing.update}
-              onRemove={typing.remove}
-              onEdit={typing.start}
-            />
-          )}
-          {stickers.map((sticker) => (
-            <MyStorySticker
-              key={sticker.id}
-              sticker={sticker}
-              canvas={canvas}
-              selected={selected === sticker.id}
-              onSelect={() => setSelected(sticker.id)}
-              onChange={update}
-              onRemove={() =>
-                changed(() => setStickers((now) => now.filter((each) => each.id !== sticker.id)))
-              }
-            />
-          ))}
-        </view>
         <view className={`my-story-tools${writing ? " my-story-under-typing" : ""}`}>
           {caps.text ? (
             <Tool testId={ids.toolText} label={copy.text} onTap={typing.start}>
@@ -248,15 +231,24 @@ export function MyStoryEditor({
             </Tool>
           ) : null}
         </view>
-        <MyStoryEditorFooter
-          sharing={sharing}
-          share={share}
-          hint={hint}
-          photo={photo !== null}
-          hidden={writing}
-          bottom={FOOTER_PADDING + bottom}
-          onShare={onShare}
-        />
+        <view
+          className="my-story-editor-bottom"
+          data-testid={ids.editorBottom}
+          bindlayoutchange={(event: { detail: { height: number } }) => {
+            "background only";
+            setCover((now) => ({ ...now, bottom: event.detail.height }));
+          }}
+        >
+          <MyStoryEditorFooter
+            sharing={sharing}
+            share={share}
+            hint={hint}
+            photo={photo !== null}
+            hidden={writing}
+            bottom={FOOTER_PADDING + bottom}
+            onShare={onShare}
+          />
+        </view>
       </view>
       {!sheet ? null : (
         <MyStoryAddSheet

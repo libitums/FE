@@ -116,7 +116,7 @@ export const myStoriesVi: MyStoriesCopy = {
     posting: "Đang chia sẻ…",
     hintOne: "Thêm một từ để chia sẻ.",
     hintOneText: "Thêm một từ hoặc viết một câu để chia sẻ.",
-    hintMove: "Kéo để di chuyển, chụm hai ngón để đổi cỡ.",
+    hintMove: "Kéo để di chuyển, chụm hai ngón để đổi cỡ hoặc xoay.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Xóa ${ko}`,
     textBlocked: "Không thể chia sẻ đoạn chữ này. Hãy thử từ khác.",

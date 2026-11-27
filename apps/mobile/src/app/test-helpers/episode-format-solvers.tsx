@@ -82,7 +82,8 @@ function solveSpeakWord(questionCount: number): void {
   for (let index = 0; index < questionCount; index += 1) {
     const picture = screen.queryByTestId("speak-word-picture-image");
     if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
-    if (phaseOf("speak-word-content") === "ready") tapId("learning-shell-action");
+    // 말하기는 마이크 하나가 맡습니다(셸 버튼 없음).
+    if (phaseOf("speak-word-content") === "ready") tapId("speak-word-mic-button");
     if (phaseOf("speak-word-content") === "heard") tapId("learning-shell-advance");
     else tapId("learning-shell-action");
   }

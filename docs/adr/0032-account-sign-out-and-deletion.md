@@ -156,7 +156,7 @@
 | `libitum.auth.session` | 지움 | 지움 |
 | `analytics.queue` | 그대로(이미 쌓인 이벤트는 보낸다) | **지움** |
 | `libitum.ui.language` | 그대로 | 그대로 |
-| `libitum.learning-item-guides.seen` ⟨2026-10-09 — 적용 기록⟩ | 그대로 | 그대로 |
+| `libitum.learning-item-guides.seen` ⟨2026-10-09 — 적용 기록⟩ (2026-11-27부터 옛 키 — 아래 계정별 칸) | 그대로 | 그대로 → 2026-11-27부터 지움(아래) |
 | `libitum.content.manifest` · `libitum.content.episode.<id>` ⟨2026-10-12 — 적용 기록⟩ | 그대로 | 그대로 |
 | `libitum.content.manifest.received` · `libitum.content.staged.episode.<id>` · `libitum.content.staged.entry.<id>` · `libitum.content.staged.assets.<id>` ⟨2026-10-20 — 적용 기록, [ADR-0078](0078-episode-update-on-splash.md) D1⟩ | 그대로 | 그대로 |
 | `libitum.content.assets.<id>` · **`libitum.content.assets.<id>.common`** · **`libitum.content.assets.<id>.unit.<key>`** ⟨2026-11-06 — 적용 기록, [ADR-0071](0071-episode-background-download.md) D3 ⟨2026-11-06⟩⟩ | 그대로 | 그대로 |
@@ -168,6 +168,8 @@
 | `libitum.progress.pending.guest` ⟨2026-11-06 — 적용 기록, [ADR-0111](0111-guest-entry-without-account.md) D4 · D6⟩ | — (로그인 때 그 사용자의 미전송 칸으로 옮겨져 없다) | — |
 | `libitum.learning-days.pending.guest` ⟨2026-11-06 — 적용 기록, [ADR-0111](0111-guest-entry-without-account.md) D4 · D6⟩ | — (로그인 때 그 사용자의 미전송 칸으로 옮겨져 없다) | — |
 | `libitum.session-option.show-choice-romanization` ⟨2026-11-06 — 적용 기록⟩ | 그대로 | 그대로 |
+| `libitum.messenger.guide-seen` · `libitum.messenger.keyboard-guide-seen` · `libitum.messenger.tab-visited` ⟨2026-11-27 — 적용 기록, [ADR-0139](0139-messenger-first-entry-guide.md) · [ADR-0190](0190-chat-keyboard-two-way-guide.md)⟩ (2026-11-27부터 옛 키 — 아래 계정별 칸) | 그대로 | **지움**(기기 하나에 하나 — 계정과 상관없이) |
+| `libitum.messenger.guide-seen.<owner>` · `libitum.messenger.keyboard-guide-seen.<owner>` · `libitum.messenger.tab-visited.<owner>` · `libitum.learning-item-guides.seen.<owner>` ⟨2026-11-27 — 개정, 계정별 칸⟩ (`<owner>` = 사용자 id, 비회원은 `guest`) | 그대로 | **지움**(그 계정 칸 + 아직 아무도 물려받지 않은 옛 기기 키) |
 
 언어는 사용자 설정이지 계정 데이터가 아니다 — 같은 기기의 다음 사람도 같은 UI 언어로 온보딩을 본다
 (ADR-0031 D4 재검토 조건의 판정).
@@ -183,6 +185,30 @@ ADR-0036의 것)를 싣지 않는다 — 이번에 채우지 않았다.
 ⟨2026-10-12 — 적용 기록, 새 결정 아님⟩ 표의 다섯째 줄은 검증을 통과한 원격 에피소드 콘텐츠다
 ([ADR-0056](0056-episode-content-delivery.md) D5). 계정과 무관한 공개 콘텐츠라 지우지 않는다 — 삭제 경로에 이 키를 지우는
 코드가 없다는 것까지다 [코드]. 원격에서 사라진 에피소드의 키만 콘텐츠 갱신이 지운다.
+
+⟨2026-11-27 — 적용 기록, 버그 수정⟩ 메신저 첫 입장 안내 기록 셋(목록 · 방 · 예시 단계, 키보드 단계, 탭 NEW)은 계정이 아니라 **기기**에
+남는다. 삭제 경로가 이 키를 지우지 않아, 같은 기기에서 계정을 지우고 새로 가입한 사람에게 안내 · 무료 예시 단계 · 탭 NEW가 서지 않았다
+(기기 제보 — 「튜토리얼 깨기 전에 메신저에 가면 가이드가 안 뜬다」. 튜토리얼은 조건이 아니었다). 메신저 해금 기록을 삭제 때 지우는 것
+(2026-11-17, 같은 기기의 다음 계정에 남지 않게)과 같은 이유로 **계정 삭제 성공 뒤 지운다**(`forgetMessengerGuide`). 무료 예시는 서버가
+계정마다 주므로 기기 기록이 막을 일이 아니다. **로그아웃은 남긴다** — 같은 사람이 다시 들어오는 경우가 많고, 다른 계정으로 바꿔 들어온
+사람에게 안내가 서지 않는 것은 이번에 고치지 않았다(계정별 키로 바꾸면 기존 사용자 기록을 옮길 규칙이 필요하다). 학습 문항 안내 기록(넷째 줄)은
+그대로 둔다.
+
+⟨2026-11-27 — 개정, 계정별 칸 (사용자 「추천으로」)⟩ 위 버그 수정 뒤에도 **로그아웃 뒤 같은 기기에서 다른 계정으로 들어오면** 안내가
+서지 않았다 — 기록이 기기에 하나뿐이어서다. 안내 기록 넷(메신저 목록 · 방 · 예시, 키보드, 탭 NEW, 학습 문항 안내)을 **계정별 칸**으로
+바꾼다. 칸은 옛 키 뒤에 `.<owner>` — 로그인은 토큰의 사용자 id, 비회원은 `guest`(가입 보상 `libitum.signup-reward.<uid>`와 같은 꼴,
+`lib/guide-records.ts`). 세션이 있는데 토큰에서 id를 못 읽거나 둘 다 없으면(로그인 전) 읽지도 쓰지도 않고 안내를 띄우지 않는다.
+
+- **이전**: 업데이트 뒤 처음 읽거나 쓰는 주인이 옛 기기 키 넷을 한꺼번에 물려받고(이미 칸이 있으면 합침 — 배열은 합집합, 표식은
+  하나라도 1이면 1) 옛 키를 지운다. 옛 키가 없으니 다른 계정은 처음부터 본다. 정상 경로에서 업데이트 뒤 처음 읽는 주인은 그때
+  로그인돼 있는 계정이다.
+- **비회원**: 비회원도 메신저 목록 안내 · 탭 NEW와 학습 문항 안내를 본다(GM1) — 그래서 메신저 칸도 비회원 칸을 둔다. 비회원이
+  로그인하면 `adoptGuestRecords`(ADR-0111)가 비회원 칸을 그 계정 칸에 합쳐 옮기고 지운다.
+- **로그아웃**: 남긴다 — 계정별이라 그 계정으로 다시 들어오면 그대로 이어진다.
+- **계정 삭제**: 그 계정 칸 넷과, 아직 아무도 물려받지 않은 옛 기기 키를 지운다(`forgetGuideRecords` — 지우는 계정이 이 기기의
+  사용자다). 다른 계정 · 비회원 칸은 그대로다. `forgetMessengerGuide`(위 버그 수정)는 이것으로 바뀌었다.
+- **테스트**: `guide-records.unit.test.ts` GR-U1 ~ U6, `App.guide-records-per-account.integration.test.tsx` GR-I1 · I2. 기기
+  (시뮬레이터 · 에뮬레이터)에서는 보지 않았다 — 두 계정 로그인 왕복이 운영 계정을 써야 해 integration으로 대신했다.
 
 ⟨2026-10-13 — 적용 기록, 새 결정 아님⟩ 표의 여섯째 · 일곱째 줄은 학습자 프로필(이름 · 나라)의 기기 칸이다
 ([ADR-0059](0059-learner-profile.md) D3). **계정 데이터라 계정 삭제 성공 뒤 그 사용자의 칸을 지운다** — 진행 · 날짜 대기열을 지우는

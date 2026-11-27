@@ -51,8 +51,10 @@ export function renderRoleplayStory(screen: RoleplayStoryScreen, wiring: ScreenW
         wiring.onFinishRoleplayStory(episodeId, results, skippedCount)
       }
       onExit={wiring.onExitRoleplayStory}
+      onTurnAnswered={(report) => wiring.onRoleplayTurnAnswered(episodeId, report)}
       romanization={choiceRomanizationOf(wiring.sessionOptions)}
       onRomanizationChange={wiring.onDialogRomanizationChange}
+      mic={{ lessonKey: null, onEvent: wiring.onMicPermissionEvent }}
     />
   );
 }

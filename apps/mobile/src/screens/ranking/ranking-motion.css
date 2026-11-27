@@ -1,4 +1,5 @@
-/* 순위 화면의 모션(ADR-0170 D12, 시안 「랭킹 모션」 2026-11-22). 길이 · 가속은 토큰, 지연은 d1(50ms) 배수입니다.
+/* 순위 화면의 모션(ADR-0170 D12, 시안 「랭킹 모션」 2026-11-22). 길이 · 가속은 토큰, 지연은 d1(50ms) 배수입니다 —
+   토큰과 같은 값은 토큰, 토큰에 없는 값(350 · 700ms)은 리터럴입니다. Lynx는 시간 값의 `calc(var(…))`를 0으로 읽습니다(ADR-0212 개정 1).
    움직임 줄이기에서는 이 클래스들이 붙지 않습니다(`ranking-motion.ts`). 한 요소에 애니메이션은 하나만 겁니다 —
    줄 상자(등장) · 메달(튀어나옴) · 내 줄(눌렸다 돌아옴) · 고리(번짐)가 서로 다른 요소입니다.
    메달의 넘침 scale(1.18) · 시작 scale(0.3), 내 줄 scale(1.025), 고리 scale(1.06)은 시안의 연출 값입니다(모션 리터럴 allowlist). */
@@ -13,27 +14,27 @@
 }
 
 .ranking-in-2 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 2);
+  animation-delay: var(--libitum-motion-duration-d2);
 }
 
 .ranking-in-3 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 3);
+  animation-delay: var(--libitum-motion-duration-d3);
 }
 
 .ranking-in-4 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 4);
+  animation-delay: var(--libitum-motion-duration-d4);
 }
 
 .ranking-in-5 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 5);
+  animation-delay: var(--libitum-motion-duration-d5);
 }
 
 .ranking-in-6 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+  animation-delay: var(--libitum-motion-duration-d6);
 }
 
 .ranking-in-7 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 7);
+  animation-delay: 350ms;
 }
 
 /* 3. 메달 — 자기 줄보다 d1 × 3 늦게 튀어나옵니다(1위 줄은 칸 0, 2위 1, 3위 2). */
@@ -43,15 +44,15 @@
 }
 
 .ranking-medal-in-1 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 3);
+  animation-delay: var(--libitum-motion-duration-d3);
 }
 
 .ranking-medal-in-2 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 4);
+  animation-delay: var(--libitum-motion-duration-d4);
 }
 
 .ranking-medal-in-3 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 5);
+  animation-delay: var(--libitum-motion-duration-d5);
 }
 
 /* 2. 내 줄 강조 — 줄이 다 뜬 뒤(d1 × 14) 한 번. 줄은 살짝 커졌다 돌아오고, 고리는 줄 테두리에서 밖으로 번지며 사라집니다. */
@@ -60,7 +61,7 @@
   overflow: visible;
   animation: ranking-pulse var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing)
     both;
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 14);
+  animation-delay: 700ms;
 }
 
 .ranking-ring {
@@ -77,7 +78,7 @@
   /* 채움은 forwards만 — both면 지연 동안 0% 값(opacity 0.6)이 적용돼 고리가 먼저 보입니다(리뷰 #549 · #550). */
   animation: ranking-ring var(--libitum-motion-duration-d8) var(--libitum-motion-easing-enter)
     forwards;
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 14);
+  animation-delay: 700ms;
 }
 
 @keyframes ranking-rise {

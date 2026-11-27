@@ -10,6 +10,7 @@ import type {
 } from "./chat-send.contract.ts";
 import { createChatSendHandler } from "./chat-send-handler.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
+import { memoryContent } from "./companion-memory-prompts.ts";
 import { emptyFeedback, recoveryDirective } from "./companion-llm-prompts.ts";
 import {
   checkTurnOrder,
@@ -460,7 +461,7 @@ describe("턴 스트림", () => {
     // 묶음의 유저 메시지에서 뽑고, 멱등 키는 묶음의 마지막 유저 메시지다.
     expect(rpcs.find((rpc) => rpc.fn === "companion_apply_memory_ops")?.args).toMatchObject({
       p_source_message_id: memoryBatch.sourceMessageId,
-      p_ops: [{ op: "add", kind: "fact", content: "떡볶이를 좋아한다", shared: true }],
+      p_ops: [{ op: "add", kind: "fact", content: "떡볶이를 좋아한다", shared: false }],
     });
     expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toEqual({
       p_conversation_id: begun.conversationId,
@@ -497,6 +498,38 @@ describe("턴 스트림", () => {
       { role: "user", text: "저는 서울에 살아요", picked: true },
       { role: "user", text: "저는 떡볶이를 좋아해요" },
     ]);
+  });
+
+  test("CS9d. 원문의 학습자 현지 날짜(localDate)는 추출 요청에 실리고, 프롬프트 첫 줄에 요일과 함께 보인다(ADR-0210)", async () => {
+    const seen: (string | undefined)[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      async extractMemories(request) {
+        seen.push(request.localDate);
+        return base.extractMemories(request);
+      },
+    };
+    const { handler, settle } = setup({
+      llm,
+      memorySource: { ...memoryBatch, localDate: "2026-11-27" },
+    });
+    await events(await handler(post()));
+    await settle();
+    expect(seen).toEqual(["2026-11-27"]);
+    expect(
+      memoryContent({
+        existing: [],
+        messages: [{ role: "user", text: "내일 면접이 있어요" }],
+        localDate: "2026-11-27",
+      }),
+    ).toBe(
+      "Today: 2026-11-27 (Friday)\n\nExisting memory:\n(none)\n\nRecent messages:\n학습자: 내일 면접이 있어요",
+    );
+    // 옛 DB(날짜 없음)는 날짜 줄이 없다.
+    expect(memoryContent({ existing: [], messages: [] })).toBe(
+      "Existing memory:\n(none)\n\nRecent messages:\n",
+    );
   });
 
   test("CS9c. 기존 기억은 번호로 보이고, 고치기 · 잊기는 기억 id로 바꿔 적용한다", async () => {
@@ -1448,7 +1481,7 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입
     list.flatMap((event) => (event.event === "correction" ? [event.data] : []));
   const choiceOf = (rpcs: Rpc[]) => rpcs.find((rpc) => rpc.fn === "companion_record_choice")?.args;
 
-  test("CS33. 지금 칩을 글 그대로(앞뒤 공백 무시) 보내면 모델 없이 skipped · 입력 출처를 적는다", async () => {
+  test("CS33. 지금 칩을 글 그대로(앞뒤 공백 무시) 보내면 표시가 없어도 모델 없이 skipped · 입력 출처를 적는다(ADR-0210)", async () => {
     const skipped = (text: string) => ({
       status: "skipped",
       reason: "suggestion",
@@ -1463,6 +1496,7 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입
     for (const marker of [
       { suggestion: { message_id: chipMessageId, index: 1 } },
       { from_suggestion: true },
+      {},
     ]) {
       const { llm, calls } = counting();
       const { handler, rpcs, finishArgs, settle } = setup({ status, llm });
@@ -1492,7 +1526,11 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입
 
   test("CS34. 직접 입력 · 글이 다른 표시(방어) · 지난 칩(stale) · 칩을 읽지 못함(옛 DB)은 보통처럼 피드백한다", async () => {
     const cases: { overrides: Record<string, unknown>; status: unknown; choice: unknown }[] = [
-      { overrides: { text: chips[0] }, status, choice: { inputSource: "manual" } },
+      {
+        overrides: { text: "덕수쌤은 어제 뭐 했어요?" },
+        status,
+        choice: { inputSource: "manual" },
+      },
       {
         overrides: {
           text: "덕수쌤은 어제 뭐 했어요?",
@@ -1828,6 +1866,11 @@ describe("출력 차단 되살리기(ADR-0151)", () => {
         { layer: "output_sync", category: "safe", action: "allow" },
       ],
     });
+    // 걸린 초안을 남긴다(ADR-0203 D4) — 오탐인지 나중에 가려 본다.
+    const recovered = (
+      finishArgs() as { p_assistant: { meta: { guardrailRecovered: { draft: string } } } }
+    ).p_assistant.meta.guardrailRecovered;
+    expect(recovered.draft).toContain("[unsafe]");
   });
 
   test("GR3. 다시 만든 답도 걸리면 지금처럼 guardrail_blocked · blocked — 조각 · 교정 없음", async () => {

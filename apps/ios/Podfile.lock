@@ -1,5 +1,8 @@
 PODS:
   - airbridge-ios-sdk (4.12.0)
+  - Google-Mobile-Ads-SDK (13.12.0):
+    - GoogleUserMessagingPlatform (>= 1.1)
+  - GoogleUserMessagingPlatform (3.1.0)
   - libwebp (1.6.0):
     - libwebp/demux (= 1.6.0)
     - libwebp/mux (= 1.6.0)
@@ -73,6 +76,9 @@ PODS:
   - SDWebImageWebPCoder (0.11.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.15)
+  - Sentry (9.19.1):
+    - Sentry/Core (= 9.19.1)
+  - Sentry/Core (9.19.1)
   - ServalMarkdown (0.1.1):
     - LynxTextra
   - ServalSVG (0.2.4)
@@ -123,6 +129,7 @@ PODS:
 
 DEPENDENCIES:
   - airbridge-ios-sdk (= 4.12.0)
+  - Google-Mobile-Ads-SDK (= 13.12.0)
   - Lynx/Framework (= 4.0.1)
   - LynxService/Http (from `podspecs/LynxService.podspec.json`)
   - LynxService/Image (from `podspecs/LynxService.podspec.json`)
@@ -132,11 +139,14 @@ DEPENDENCIES:
   - RevenueCat (= 5.99.2)
   - SDWebImage (= 5.21.7)
   - SDWebImageWebPCoder (= 0.11.0)
+  - Sentry (= 9.19.1)
   - XElement (= 4.0.1)
 
 SPEC REPOS:
   trunk:
     - airbridge-ios-sdk
+    - Google-Mobile-Ads-SDK
+    - GoogleUserMessagingPlatform
     - libwebp
     - Lynx
     - LynxBase
@@ -147,6 +157,7 @@ SPEC REPOS:
     - RevenueCat
     - SDWebImage
     - SDWebImageWebPCoder
+    - Sentry
     - ServalMarkdown
     - ServalSVG
     - XElement
@@ -157,6 +168,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   airbridge-ios-sdk: 473cc8e5c2acbc641c3d3a9585bb4d37cd6def66
+  Google-Mobile-Ads-SDK: cbfc0aa6883afbad2ff3dcccce75b673ff8d3f65
+  GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   Lynx: 1a461f83f48104309f7e2031dabf3af84b181807
   LynxBase: 5ca5092517e6460e0df6ad9b49fca76396c058d8
@@ -168,10 +181,11 @@ SPEC CHECKSUMS:
   RevenueCat: 1e9e9e41d12d719a53f7f82d453eecf69239e64d
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 295a6573c512f54ad2dd58098e64e17dcf008499
+  Sentry: e4588d62ac3fd3c82652bb7c8a215ec8c3de776b
   ServalMarkdown: 4e0401818bc34bbb7659270e2df775119ccc029f
   ServalSVG: 19bf88f72dae928c28a744c9b91475a3691ded42
   XElement: f1f022652fbc5e109e7d4d66299493bfd1a74b31
 
-PODFILE CHECKSUM: 8c156791d4992e5493feef3fce0e267379fcdbcb
+PODFILE CHECKSUM: 783bb61892fad567777fb16768f9d0373748354b
 
 COCOAPODS: 1.17.0

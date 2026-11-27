@@ -149,5 +149,10 @@ export function renderTesterApp(
   ui: Parameters<typeof renderSignedInApp>[0],
   options: Parameters<typeof renderSignedInApp>[1] = {},
 ): ReturnType<typeof renderSignedInApp> {
-  return renderSignedInApp(ui, { ...options, refreshedAccessToken: testerAccessToken });
+  // 부팅 세션도 시험 계정 토큰 — 계정별 안내 기록(2026-11-27)이 갱신 전 첫 그림부터 같은 계정 칸을 봅니다.
+  return renderSignedInApp(ui, {
+    bootAccessToken: testerAccessToken,
+    ...options,
+    refreshedAccessToken: testerAccessToken,
+  });
 }

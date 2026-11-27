@@ -3,7 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerBirthYearIfShown, passLearnerSignup } from "./test-helpers/learner-signup";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type { StorageModuleDouble } from "./test-helpers/signed-in-app";
 import type { AnalyticsConfig, AnalyticsTransport } from "../lib/analytics.contract";
@@ -264,6 +264,15 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
             "remove:libitum.learner-profile.user-1",
             "remove:libitum.wordbook.user-1",
             "remove:libitum.push-prompt.user-1", // ADR-0176 — 첫 스토리 뒤 알림 질문 표식
+            // 안내 기록(2026-11-27 계정별 칸) — 그 계정 칸과 아직 아무도 물려받지 않은 옛 기기 키
+            "remove:libitum.messenger.guide-seen.user-1",
+            "remove:libitum.messenger.guide-seen",
+            "remove:libitum.messenger.keyboard-guide-seen.user-1",
+            "remove:libitum.messenger.keyboard-guide-seen",
+            "remove:libitum.messenger.tab-visited.user-1",
+            "remove:libitum.messenger.tab-visited",
+            "remove:libitum.learning-item-guides.seen.user-1",
+            "remove:libitum.learning-item-guides.seen",
           ]
         : []),
       `remove:${sessionKey}`,
@@ -346,6 +355,7 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 �
     within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),
     {},
   );
+  passLearnerBirthYearIfShown();
   fireEvent.tap(
     within(screen.getByTestId("journey-entry-screen-story")).getByTestId("ui-lynx-button"),
     {},

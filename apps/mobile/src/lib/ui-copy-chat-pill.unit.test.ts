@@ -44,3 +44,19 @@ test("NP-C2 영어 문구 — 시안 그대로", () => {
   expect(pill?.jump).toBe("Jump to new messages");
   expect(pill?.latest).toBe("Scroll to latest");
 });
+
+test("GS-C1 「위에 도착 ↑」 알약 — 모든 언어에 사진 · 음성 문구가 따로 있고, 영어 밖의 언어는 영어를 그대로 두지 않는다(ADR-0146 개정)", () => {
+  const en = uiCopyCatalog.en.messengerChat?.newMessages?.above;
+  expect(en?.("photo")).toBe("Photo arrived above");
+  expect(en?.("voice")).toBe("Voice message arrived above");
+  for (const [language, copy] of Object.entries(uiCopyCatalog)) {
+    const above = copy.messengerChat?.newMessages?.above;
+    expect(above, language).toBeDefined();
+    const photo = above?.("photo") ?? "";
+    const voice = above?.("voice") ?? "";
+    expect(photo.trim(), language).not.toBe("");
+    expect(voice.trim(), language).not.toBe("");
+    expect(photo, language).not.toBe(voice);
+    if (language !== "en") expect(photo, language).not.toBe(en?.("photo"));
+  }
+});

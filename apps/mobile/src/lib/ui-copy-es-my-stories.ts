@@ -139,7 +139,7 @@ export const myStoriesEs: MyStoriesCopy = {
     posting: "Compartiendo…",
     hintOne: "Agrega una palabra para compartirla.",
     hintOneText: "Añade una palabra o escribe una frase para compartirla.",
-    hintMove: "Arrastra para mover y pellizca para cambiar el tamaño.",
+    hintMove: "Arrastra para mover. Pellizca para cambiar el tamaño o girar.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Quitar ${ko}`,
     textBlocked: "Este texto no se puede compartir. Prueba con otras palabras.",

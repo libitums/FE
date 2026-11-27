@@ -1,6 +1,8 @@
 // 그림 보고 낱말 말하기 활동(카탈로그 SPEAK_WORD)의 계약입니다. 타입만 둡니다.
 
 import type { ItemAnswerReporter } from "../../lib/item-answer";
+import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
+import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
 import type { PictureLoadState } from "../../lib/picture-load";
@@ -26,23 +28,39 @@ export type SpeakWordQuestion = {
   readonly audio?: AnswerEchoAudio;
 };
 
-/** 판정을 적지 않습니다 — 지나간 문항마다 들은 글자(건너뜀은 null)만 적고 결과는 파생입니다. */
+/**
+ * 지나간 문항마다 들은 글자(건너뜀은 null)를 적고, 지금 문항의 판정은 결말과 함께 받아 둡니다 — 렌더 중에는 채점하지
+ * 않습니다(채점 함수는 배경 스레드 전용, ADR-0201 개정 ⟨렌더 밖 판정⟩). 세션 결과는 끝낼 때(탭 핸들러) 다시 잽니다.
+ */
 export type SpeakWordSessionState = {
   readonly questionIndex: number;
   readonly phase: SpeechAttemptPhase;
   readonly availability: SpeechAvailability;
   readonly heard: readonly (string | null)[];
+  /** 국면이 heard일 때의 판정입니다. 그 밖에는 null. */
+  readonly judgement: SpokenAnswerJudgement | null;
+  /** 이 문항에서 다시 말한 수(0 · 1) — 처음 오답 뒤 한 번만 다시 말합니다(시안 S4). 다음 문항에서 0. */
+  readonly attempt: number;
 };
 
 export type SpeakWordSessionAction =
   /** ready · unavailable(dictation-off) → listening. */
   | { readonly type: "start" }
-  /** listening일 때만 — heard면 heard 목록에 글자를 더하고 국면 heard, 불가면 국면 unavailable + availability 갱신. */
-  | { readonly type: "outcome"; readonly outcome: SpeechAttemptOutcome }
+  /**
+   * listening일 때만 — heard면 heard 목록에 글자를 더하고 국면 heard · 판정 `judgement`, 불가면 국면 unavailable +
+   * availability 갱신. `judgement`는 결말 콜백이 `speakWordJudgementOf`로 잽니다(heard가 아니면 null).
+   */
+  | {
+      readonly type: "outcome";
+      readonly outcome: SpeechAttemptOutcome;
+      readonly judgement: SpokenAnswerJudgement | null;
+    }
   /** ready · unavailable → heard 목록에 null, 다음 문항. */
   | { readonly type: "skip" }
   /** heard → 다음 문항. */
-  | { readonly type: "next" };
+  | { readonly type: "next" }
+  /** 권한이 다시 열림(설정에서 돌아옴 · 사전 안내 허용) — 잠금을 풀고 불가(blocked) 국면이면 준비로(ADR-0206 D3). */
+  | { readonly type: "reopen" };
 
 export type SpeakWordActivityProps = {
   readonly questions: readonly SpeakWordQuestion[];
@@ -53,6 +71,8 @@ export type SpeakWordActivityProps = {
   readonly lessonAudio?: LessonAudio;
   /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
   readonly onItemAnswered?: ItemAnswerReporter;
+  /** 마이크 권한 안내의 레슨 맥락(ADR-0206) — 없으면 레슨 밖 · 이벤트 없음입니다. */
+  readonly mic?: MicPermissionContext;
 };
 
 /** 그림 틀 — 상태대로 빈 틀 · 그림 · 뜻 글자를 그립니다(상태 없음). 이름표는 없습니다(정답은 `AnswerReveal`). */
@@ -71,6 +91,19 @@ export type SpeakWordCopy = {
   readonly instruction: string;
   /** 불가(blocked · failed) 안내 줄 — Skip으로 이어 가라고 말합니다(다음 자리를 말하지 않음). */
   readonly recognitionUnavailable: string;
+  /** 결과 시트(시안 S2 ~ S4). 「Correct」 · 「Not quite」 · 「Answer」는 공용 문구를 씁니다. */
+  readonly result: {
+    /** perfect 제목. */
+    readonly perfect: string;
+    /** close 표지(맞음 옆 작은 알약). */
+    readonly almostPerfect: string;
+    /** close의 정답 머리 줄. */
+    readonly modelAnswer: string;
+    /** 들은 말 머리 줄. */
+    readonly youSaid: string;
+    /** 정답 상자의 소리 단추 낭독 이름. */
+    readonly hearAnswer: string;
+  };
 };
 
 export type SpeakWordTestId =

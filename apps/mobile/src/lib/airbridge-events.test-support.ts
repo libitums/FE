@@ -9,10 +9,16 @@ import {
 import { friendStoryEventNames } from "./friend-story-events.test-support";
 import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
 import { chatNoticeEventExamples, chatNoticeEventNames } from "./chat-push-ask-events.test-support";
+import { micEventExamples, micEventNames } from "./mic-permission-events.test-support";
+import { adTicketEventExamples, adTicketEventNames } from "./ad-ticket-events.test-support";
 import {
   messengerGuideEventExamples,
   messengerGuideEventNames,
 } from "./messenger-guide-events.test-support";
+import {
+  roleplayTurnEventExamples,
+  roleplayTurnEventNames,
+} from "./roleplay-turn-events.test-support";
 
 /** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
@@ -53,8 +59,6 @@ export const allEventNames = [
   "progress_load_recovered",
   "tickets_ran_out",
   "ticket_more_tapped",
-  "roleplay_story_opened",
-  "roleplay_story_completed",
   "episode_story_viewed",
   "episode_story_continued",
   "episode_story_skipped",
@@ -65,6 +69,7 @@ export const allEventNames = [
   "launch_chat_shown",
   "launch_chat_closed",
   ...messengerGuideEventNames,
+  ...roleplayTurnEventNames,
   "companion_unlocked",
   "new_friend_sheet_closed",
   "chat_sign_in_prompt_closed",
@@ -85,6 +90,8 @@ export const allEventNames = [
   ...suggestedFriendEventNames,
   ...friendStoryEventNames,
   ...chatNoticeEventNames,
+  ...micEventNames,
+  ...adTicketEventNames,
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
@@ -167,14 +174,6 @@ export const unmappedEvents = [
   { name: "progress_load_recovered", trigger: "manual" },
   { name: "ticket_more_tapped", surface: "ticket_modal", result: "bought", price: "20" },
   { name: "ticket_more_tapped", surface: "out_of_tickets", result: "short", price: "20" },
-  { name: "roleplay_story_opened", episodeId: "u01-water" },
-  {
-    name: "roleplay_story_completed",
-    episodeId: "u01-water",
-    correctCount: "2",
-    judgedCount: "3",
-    skippedCount: "0",
-  },
   { name: "episode_story_viewed", episodeId: "u04-directions", unitKey: "INT", form: "message" },
   { name: "episode_story_continued", episodeId: "u04-directions", unitKey: "INT", form: "message" },
   { name: "episode_story_skipped", episodeId: "u02-checkin", unitKey: "INT", form: "call" },
@@ -198,7 +197,10 @@ export const unmappedEvents = [
   { name: "launch_chat_shown", surface: "learning", daysSinceFirstOpen: "1", met: "1", total: "4" },
   { name: "launch_chat_closed", surface: "learning", daysSinceFirstOpen: "1", choice: "start" },
   ...messengerGuideEventExamples,
+  ...roleplayTurnEventExamples,
   ...chatNoticeEventExamples,
+  ...micEventExamples,
+  ...adTicketEventExamples,
   {
     name: "companion_unlocked",
     surface: "learning",
@@ -259,7 +261,6 @@ export const unmappedEvents = [
   ...planEventExamples.filter((event) => event.name === "shop_tab_switched"),
   ...suggestedFriendEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
-
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;
 export const episodeFinalPassed = {
   name: "episode_final_passed",
@@ -286,7 +287,6 @@ export const retiredSpecialUnitEvents = [
     entrySource: "roleplay",
   },
 ] as unknown as readonly AnalyticsEvent[];
-
 /** 분석 sink 넷이 모두 비어 있는 묶음입니다. */
 export const nullSinks = {
   entryEventSink: null,

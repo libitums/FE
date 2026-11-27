@@ -1,6 +1,6 @@
 // 자동 푸시 캠페인 — 겹침 · 대조군 · 변형 해시 · 문구 채우기 · 발송 묶음(콘솔과 같은 함수)입니다.
 
-import type { PlannedRow, SegmentId } from "./push-campaign-types.ts";
+import type { Arm, PlannedRow, SegmentId, Stage } from "./push-campaign-types.ts";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -69,7 +69,16 @@ export function renderCopy(
     .trim();
 }
 
+/** 앞선 실험(보냄 / 안 보냄 · 문구 A/B, ~2026-11-27)의 묶음 이름 — 콘솔 결과 탭이 옛 기록을 읽을 때 씁니다. */
 export const seriesOf = (segment: SegmentId): string => `자동 · ${segment}`;
+
+/** 빈도 실험(ADR-0208)의 묶음 이름 — 단계마다 하나. */
+export const frequencySeriesOf = (stage: Stage): string => `빈도 · ${stage}`;
+
+const ARMS: readonly Arm[] = ["control", "once", "twice"];
+
+/** 빈도 실험의 칸 — 사람마다 고정(진도가 바뀌어도 같은 칸), 1/3씩. */
+export const armOf = (userId: string): Arm => ARMS[hash32(`arm:빈도:${userId}`) % ARMS.length]!;
 
 export function batchesOf(
   rows: readonly PlannedRow[],
