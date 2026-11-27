@@ -19,6 +19,7 @@ import { bundledCatalogInput } from "../lib/episode-bundled";
 import {
   CONTENT_AUDIO_MANIFEST_KEY,
   CONTENT_MANIFEST_KEY,
+  CONTENT_RECEIVED_MANIFEST_KEY,
   hostContentStore,
   readCachedSource,
   readCachedTranslations,
@@ -57,9 +58,9 @@ function audioUrlOf(relativePath: string): string | null {
     : (contentFileUrl(relative) ?? bundledContentAudioSource(relative));
 }
 
-function cachedManifestText(): string | null {
+function cachedManifestText(key: string = CONTENT_MANIFEST_KEY): string | null {
   try {
-    return hostContentStore.get(CONTENT_MANIFEST_KEY);
+    return hostContentStore.get(key);
   } catch {
     return null;
   }
@@ -71,8 +72,14 @@ function readSource(): CatalogSourceText {
   const remoteEntries = parseCachedManifest(cachedManifestText())?.episodes ?? [];
   const cachedIds = remoteEntries.map((entry) => entry.id);
   const ids = [...bundledIds, ...cachedIds.filter((id) => !bundledIds.includes(id))];
-  // 원격 항목이 적은 언어의 저장 번역 파일도 함께 읽습니다(ADR-0102) — 카탈로그가 그 언어 표를 바꿉니다.
-  const translations = readCachedTranslations(hostContentStore, remoteEntries);
+  // 원격 항목이 적은 언어의 저장 번역 파일도 함께 읽습니다(ADR-0102) — 카탈로그가 그 언어 표를 바꿉니다. 새 판을 보류한 편은
+  // 활성 항목이 옛 것이라 나중에 생긴 언어(zh-TW · th · my)를 적지 않으므로, 받은 매니페스트(보류가 있을 때만 있음)의 항목도 봅니다.
+  const receivedEntries =
+    parseCachedManifest(cachedManifestText(CONTENT_RECEIVED_MANIFEST_KEY))?.episodes ?? [];
+  const translations = readCachedTranslations(hostContentStore, [
+    ...remoteEntries,
+    ...receivedEntries,
+  ]);
   // 파일 모듈이 있으면 내장본이 있는 원격 에피소드는 자산까지 갖춘 뒤에 원격본으로 엽니다(그 전엔 내장본). 내장본이
   // 없는 편은 본문만으로 엽니다 — 창 밖 편은 자산을 열 때 받으므로(ADR-0157 D3) 기다리면 버킷에 있는 편이 「준비
   // 중」으로 남습니다. 파일 모듈이 없으면(Explorer · 옛 호스트) 받을 수 없으니 모두 본문만으로 엽니다.
