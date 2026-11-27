@@ -18,7 +18,8 @@ afterEach(resetApp);
 
 const U01 = "u01-water";
 const body = JSON.parse(
-  readFileSync(resolve(process.cwd(), "content/episodes/u01-water.json"), "utf8"),
+  // 실행 위치(모노레포 루트 · 앱 폴더)와 상관없이 이 파일 기준으로 찾습니다.
+  readFileSync(resolve(import.meta.dirname, "../../content/episodes/u01-water.json"), "utf8"),
 ) as {
   readonly title_en: string;
   readonly translations: Readonly<Record<string, Readonly<Record<string, string>>>>;
