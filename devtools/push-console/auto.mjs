@@ -6,6 +6,15 @@ export const AUTO_VARIANTS = [
   { id: "b", label: "단계별 예고" },
 ];
 
+// 빈도 실험(ADR-0208, 묶음 「빈도 · <단계>」) — 같은 a · b 칸을 빈도 칸으로 씁니다.
+export const FREQUENCY_VARIANTS = [
+  { id: "a", label: "하루 1번(저녁)" },
+  { id: "b", label: "하루 2번(점심 + 저녁)" },
+];
+
+const variantsOf = (series) =>
+  String(series).startsWith("빈도 · ") ? FREQUENCY_VARIANTS : AUTO_VARIANTS;
+
 /**
  * @param {{ run_at: string, series: string, segment: string, user_id: string, group: "sent" | "control",
  *   variant: string | null, lang: string, story_step: string | null }[]} rows
@@ -30,7 +39,7 @@ export function autoCampaignsFrom(rows, timeZoneOf) {
         status: "sent",
         holdoutPercent: null,
         copy: null,
-        variants: AUTO_VARIANTS,
+        variants: variantsOf(row.series),
         recipients: [],
         batches: [],
         totals: null,
