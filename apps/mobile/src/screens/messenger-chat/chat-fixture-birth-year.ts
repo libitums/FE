@@ -3,7 +3,7 @@
 // - 시작: 기기에 적힌 값(계정마다) → 씨앗 → unasked. 다시 켜도 생년 시트를 다시 띄우지 않습니다.
 // - 서버 방: 처음에 `companion_load_profile`을 읽어 서버 생년이 있으면 그 값으로(다른 기기 · 재설치), 서버가 비었는데 기기에
 //   생년이 있으면(지난 저장 실패) 다시 보냅니다. 읽는 동안 학습자가 고른 값이 이깁니다.
-// - 고르면 기기에 적고 서버에 보냅니다. 건너뜀은 서버에 적을 칸이 없어 기기에만 둡니다 — 서버는 생년이 없으면 나이 모름(엄격)입니다.
+// - 고르면 기기에 적고 서버에 보냅니다. 건너뛰기는 없습니다(2026-11-27) — 옛 앱의 건너뜀 기록은 적힌 것 없음으로 읽어 다시 묻습니다.
 
 import { nextBirthYear, UNASKED } from "./chat-fixture-safety";
 import type { ChatProfileRemote } from "./chat-remote.contract";
@@ -35,7 +35,7 @@ function readStored(store: BirthYearStore | undefined): ChatBirthYear | null {
 
 export type BirthYearState = {
   readonly current: () => ChatBirthYear;
-  readonly set: (year: number | null) => void;
+  readonly set: (year: number) => void;
 };
 
 /** 출처 선택지에서 생년 상태를 만듭니다 — 기기 저장(`birthYearStore`) · 서버 프로필(`remote.profile`). */

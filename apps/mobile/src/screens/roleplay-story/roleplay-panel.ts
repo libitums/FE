@@ -47,7 +47,7 @@ export function roleplayAutoAdvanceReady(gate: RoleplayAutoAdvanceGate): boolean
   return !gate.waitsForReply || gate.replyEnded;
 }
 
-/** 대사 상자 아래 줄 —`VisualNovelDialog`의 `romanization` · `translation`에 그대로 넘깁니다. */
+/** 대사 상자 아래 줄 — `VisualNovelDialog`의 `romanization` · `translation`에 그대로 넘깁니다. */
 export type RoleplayDialogLines = {
   readonly romanization: string | undefined;
   readonly translation: string | undefined;

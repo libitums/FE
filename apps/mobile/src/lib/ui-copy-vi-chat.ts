@@ -205,8 +205,6 @@ export const messengerChatVi: MessengerChatCopy = {
       title: "Bạn sinh năm nào?",
       body: "Chúng tôi dùng thông tin này để cuộc trò chuyện phù hợp với độ tuổi của bạn. Không ai thấy được, và bạn có thể đổi sau trong cài đặt trò chuyện.",
       continue: "Tiếp tục",
-      skip: "Để sau",
-      skipNote: "Nếu bỏ qua, trò chuyện sẽ dùng cài đặt cho người dưới 18 tuổi.",
       sidebar: "Năm sinh",
       notSet: "Chưa đặt",
     },

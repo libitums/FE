@@ -43,10 +43,12 @@ export type SignupRewardInput = {
   /** 날기가 끝나면 지급 응답의 지갑 잔액을 칩의 서버 잔액으로. */
   readonly acceptBalance: (balance: number) => void;
   /**
-   * 첫날 무제한 이용권(ADR-0186) — 회원 · 생성 24시간 안 · 구독 없음 · 구독 상태 앎일 때만 있습니다(`useWelcomePass`). 창이 처음 서는 순간에
-   * 있으면 선물 두 줄(개정 3), 없으면 엽전 한 줄 — 그 판정을 창이 닫힐 때까지 붙잡습니다.
+   * 창이 `nowMs`에 선다면의 첫날 무제한 이용권(ADR-0186) — 회원 · 생성 48시간 안 · 구독 없음 · 구독 상태 앎이면 그때부터 24시간(개정 4,
+   * `useWelcomePass().onShown`). 창이 처음 서는 순간에 있으면 선물 두 줄(개정 3), 없으면 엽전 한 줄 — 그 판정을 창이 닫힐 때까지 붙잡습니다.
    */
-  readonly welcomePass?: UnlimitedPass;
+  readonly welcomePassOnShown?: (nowMs: number) => UnlimitedPass | undefined;
+  /** 창이 처음 선 시각(무제한 줄을 판정한 그 시각) — 첫날 무제한의 시작으로 적습니다(개정 4). */
+  readonly onWelcomeShown?: (atMs: number) => void;
   /** 테스트 주입 — 기본은 앱 서버 · 기기 저장소. */
   readonly claim?: () => Promise<SignupRewardClaim | null>;
   readonly store?: SignupRewardStore;
@@ -127,10 +129,14 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
   });
   latched.current = step === "modal";
   // 무제한 줄은 창이 처음 서는 렌더에서 한 번 판정해 닫힐 때까지 둡니다 — 창이 떠 있는 동안 줄이 생기거나 사라지지 않습니다.
+  // 그 시각이 첫날 무제한의 시작이 됩니다(개정 4) — 줄의 끝 시각과 기록이 어긋나지 않게 같은 값을 씁니다.
   const gift = useRef<WelcomeGiftEnd | null | undefined>(undefined);
+  const shownAt = useRef(0);
   if (step !== "modal") gift.current = undefined;
-  else if (gift.current === undefined)
-    gift.current = welcomeGiftEndOf(input.welcomePass, Date.now());
+  else if (gift.current === undefined) {
+    shownAt.current = Date.now();
+    gift.current = welcomeGiftEndOf(input.welcomePassOnShown?.(shownAt.current), shownAt.current);
+  }
 
   // 제품 이벤트(ADR-0029 · D3 목적 구분) — 카드는 세션에 처음 보일 때 한 번 · 누를 때마다, 모달은 설 때 한 번.
   useEffect(() => {
@@ -140,6 +146,7 @@ export function useSignupReward(input: SignupRewardInput): SignupReward {
     }
     if (step === "modal" && record !== null && !modalShown.current) {
       modalShown.current = true;
+      latest.current.onWelcomeShown?.(shownAt.current);
       emitCompanionEvent(sink, {
         name: "signup_reward_shown",
         surface: "learning",

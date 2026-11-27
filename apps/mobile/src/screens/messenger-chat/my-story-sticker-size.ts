@@ -66,7 +66,7 @@ export function stickerBoxPx(words: StickerWords, scale: number) {
   return stickerBoxAt(stickerBaseOf(words), scale);
 }
 
-/** 스티커 끝단 — 글 상자와 같은 규칙(`placedFit`): 회전한 외접 사각형이 바탕(여백 · 도구 열 뺌) 안. */
+/** 스티커 끝단 — 글 상자와 같은 규칙(`placedFit`): 크기는 회전한 외접 사각형이 바탕(여백 · 도구 열 뺌) 안, 자리는 가운데가 화면 안. */
 export function stickerFit(
   words: StickerWords,
   place: Pick<Placement, "scale" | "x" | "y" | "rotation">,

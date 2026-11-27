@@ -45,6 +45,7 @@ const viewedScreens: readonly EntryViewedScreenName[] = [
   "login",
   "verification-code",
   "language-select",
+  "learner-birth-year",
   "journey-entry",
 ];
 

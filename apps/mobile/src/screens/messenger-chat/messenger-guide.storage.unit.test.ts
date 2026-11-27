@@ -14,14 +14,20 @@ vi.mock("../../lib/storage", () => ({
     if (storage.failWrite) throw new Error("write failed");
     storage.values.set(key, value);
   },
+  removeItem: (key: string) => {
+    if (storage.failWrite) throw new Error("remove failed");
+    storage.values.delete(key);
+  },
 }));
 
 import {
   deviceGuideStore,
+  forgetMessengerGuide,
   markMessengerTabVisited,
   messengerGuideSeenStorageKey,
   messengerKeyboardGuideSeenStorageKey,
   messengerTabVisited,
+  messengerTabVisitedStorageKey,
 } from "./messenger-guide";
 
 afterEach(() => {
@@ -68,4 +74,26 @@ test("MG-U14 키보드 단계 기록은 새 키 하나 — 기존 기록에 섞�
   expect(deviceGuideStore.unseen("keyboard")).toBe(false);
   storage.available = false;
   expect(deviceGuideStore.unseen("keyboard")).toBe(false);
+});
+
+// 계정 삭제 뒤처리(2026-11-27 기기 — 탈퇴 후 재가입한 새 계정에 안내가 뜨지 않음): 기기의 안내 기록 셋을 지워 다음 계정이 처음부터 봅니다.
+test("MG-U15 안내 기록을 잊으면 목록 · 방 · 예시 · 키보드 안내와 탭 NEW가 다시 안 본 것이 되고, 다른 키는 그대로", () => {
+  for (const part of ["list", "room", "snapshot", "voice", "keyboard"] as const)
+    deviceGuideStore.markSeen(part);
+  markMessengerTabVisited();
+  storage.values.set("other", "kept");
+  forgetMessengerGuide();
+  for (const part of ["list", "room", "snapshot", "voice", "keyboard"] as const)
+    expect(deviceGuideStore.unseen(part)).toBe(true);
+  expect(messengerTabVisited()).toBe(false);
+  expect(storage.values.has(messengerGuideSeenStorageKey)).toBe(false);
+  expect(storage.values.has(messengerKeyboardGuideSeenStorageKey)).toBe(false);
+  expect(storage.values.has(messengerTabVisitedStorageKey)).toBe(false);
+  expect(storage.values.get("other")).toBe("kept");
+});
+
+test("MG-U15 지우기가 실패해도 던지지 않는다", () => {
+  deviceGuideStore.markSeen("room");
+  storage.failWrite = true;
+  expect(() => forgetMessengerGuide()).not.toThrow();
 });
