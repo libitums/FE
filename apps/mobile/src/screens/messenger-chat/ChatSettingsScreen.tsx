@@ -14,19 +14,18 @@ import {
   DEFAULT_SNAPSHOT_SELF,
   type ChatSnapshotSelf,
 } from "./chat-album.contract";
-import type { ChatMemoryScope, ChatSource } from "./chat-source.contract";
+import type { ChatSource } from "./chat-source.contract";
 import { chatSettingsTestIds as ids } from "./chat-settings.contract";
 import { NavRow } from "./NavRow";
 import { ProactiveSheet } from "./ProactiveSheet";
 import { SnapshotSelfSheet } from "./SnapshotSelfSheet";
 import { birthYearOptions } from "./safety-rules";
-import { useChatMemories, useChatSnapshot } from "./use-chat-source";
+import { useChatSnapshot } from "./use-chat-source";
 
 import "./chat-settings.css";
 
 export type ChatSettingsScreenProps = {
   readonly source: ChatSource;
-  readonly onOpenSharedMemories: () => void;
   readonly onBack: () => void;
 };
 
@@ -36,19 +35,12 @@ type Sheet =
   | { readonly kind: "snapshot-self"; readonly selected: ChatSnapshotSelf }
   | { readonly kind: "birth-year"; readonly selected: number | null };
 
-const SHARED: ChatMemoryScope = { kind: "shared" };
-
-// 설정 탭 > Chats 화면입니다(ADR-0126). 추천 답변 · 먼저 보내는 메시지 · 공유 기억 · 생년 · 사진 속 내 모습(ADR-0150) —
-// 모두 계정 하나의 값입니다.
-export function ChatSettingsScreen({
-  source,
-  onOpenSharedMemories,
-  onBack,
-}: ChatSettingsScreenProps): ReactNode {
+// 설정 탭 > Chats 화면입니다(ADR-0126). 추천 답변 · 먼저 보내는 메시지 · 생년 · 사진 속 내 모습(ADR-0150) — 모두 계정 하나의
+// 값입니다. 공유 기억 줄은 없습니다 — 기억은 캐릭터마다이고, 각 방의 ☰에서 봅니다(ADR-0210 D6).
+export function ChatSettingsScreen({ source, onBack }: ChatSettingsScreenProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const copy = chat.chatSettings;
   const { preferences, birthYear } = useChatSnapshot(source);
-  const shared = useChatMemories(source, SHARED);
   const [sheet, setSheet] = useState<Sheet>({ kind: "none" });
   const close = () => setSheet({ kind: "none" });
   useScreenBack(() => {
@@ -142,12 +134,6 @@ export function ChatSettingsScreen({
               {copy.sectionAbout}
             </text>
             <view className="chat-settings-card">
-              <NavRow
-                testId={ids.sharedMemories}
-                title={copy.sharedMemories}
-                value={copy.sharedMemoriesSummary(shared.count)}
-                onTap={onOpenSharedMemories}
-              />
               <NavRow
                 testId={ids.birthYear}
                 title={chat.safety.birthYear.sidebar}

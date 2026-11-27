@@ -62,7 +62,7 @@ export type Screen =
   // 요금제 비교(ADR-0144) — 연 자리(설정 · 티켓 · 메신저)의 스택에 쌓입니다. `focus`는 처음 고를 요금제(없으면 BEST)입니다.
   | { name: "plans"; placement: PlanPlacement; focus: PlanId | null }
   // 기억 화면입니다(ADR-0126). 인물 id · 이름이 없으면 공유 층(설정 탭에서), 있으면 그 인물 층(방 사이드바에서)입니다.
-  | { name: "chat-memories"; characterId: string | null; characterName: string | null }
+  | { name: "chat-memories"; characterId: string; characterName: string }
   // 인물 앨범입니다(ADR-0150) — 방 사이드바의 Album 줄에서 쌓입니다.
   | { name: "chat-album"; roomId: string; characterName: string }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.

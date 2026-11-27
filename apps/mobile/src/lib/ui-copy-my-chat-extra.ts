@@ -65,9 +65,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     sectionProactive: "ဇာတ်ကောင်ထံမှ စာ",
     proactive: "ဇာတ်ကောင်က အရင် စာပို့ခြင်း",
     sectionAbout: "သင့်အကြောင်း",
-    sharedMemories: "ဇာတ်ကောင်အားလုံး သိထားသော သင့်အကြောင်း",
-    sharedMemoriesSummary: (count) => `မှတ်ဉာဏ် ${count} ခု · ဇာတ်ကောင်အားလုံး မျှသုံး`,
-    footnote: "ဇာတ်ကောင်တစ်ဦးစီသည် သင်နှင့် ပြောခဲ့တာတွေကိုလည်း မှတ်ထားပါတယ်။ ကြည့်ရန် ချတ်တစ်ခု ဖွင့်ပြီး ☰ ကို တို့ပါ။",
+    footnote: "ဇာတ်ကောင်တစ်ဦးစီသည် သင် ပြောပြခဲ့တာတွေကို မှတ်ထားပါတယ်။ ကြည့်ရန် ချတ်တစ်ခု ဖွင့်ပြီး ☰ ကို တို့ပါ။",
     proactiveSheet: {
       title: "ဇာတ်ကောင်က အရင် စာပို့ခြင်း",
       body: "သင် ခဏ တိတ်နေရင် ဇာတ်ကောင်က စကားစပြောနိုင်ပါတယ်။ ဒင်္ဂါး ဘယ်တော့မှ မကုန်ပါ။",
@@ -82,7 +80,6 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
       close: "ပိတ်ရန်",
     },
     memories: {
-      titleShared: "ဇာတ်ကောင်အားလုံး သိထားသော သင့်အကြောင်း",
       titleCharacter: (name) => `${name} မှတ်မိထားတာ`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "မှတ်ဉာဏ် ပြည့်သွားပါပြီ",

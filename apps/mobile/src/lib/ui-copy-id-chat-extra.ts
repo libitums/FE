@@ -66,10 +66,8 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     sectionProactive: "Pesan dari karakter",
     proactive: "Mereka mengirim pesan lebih dulu",
     sectionAbout: "Tentang kamu",
-    sharedMemories: "Yang diketahui semua karakter tentangmu",
-    sharedMemoriesSummary: (count) => `${count} ingatan · dibagikan ke semua karakter`,
     footnote:
-      "Setiap karakter juga mengingat hal dari obrolan denganmu. Buka obrolan dan ketuk ☰ untuk melihatnya.",
+      "Setiap karakter mengingat apa yang kamu ceritakan kepadanya. Buka obrolan dan ketuk ☰ untuk melihatnya.",
     proactiveSheet: {
       title: "Mereka mengirim pesan lebih dulu",
       body: "Kalau kamu lama tidak mengobrol, karakter bisa memulai obrolan. Tidak pernah memakai koin.",
@@ -84,7 +82,6 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       close: "Tutup",
     },
     memories: {
-      titleShared: "Yang diketahui semua karakter tentangmu",
       titleCharacter: (name) => `Yang diingat ${name}`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "Ingatan penuh",

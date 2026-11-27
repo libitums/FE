@@ -162,8 +162,6 @@ export type ChatSettingsCopy = {
   readonly sectionProactive: string;
   readonly proactive: string;
   readonly sectionAbout: string;
-  readonly sharedMemories: string;
-  readonly sharedMemoriesSummary: (count: number) => string;
   readonly footnote: string;
   readonly proactiveSheet: {
     readonly title: string;
@@ -178,7 +176,6 @@ export type ChatSettingsCopy = {
     readonly close: string;
   };
   readonly memories: {
-    readonly titleShared: string;
     readonly titleCharacter: (name: string) => string;
     readonly count: (count: number, cap: number) => string;
     readonly fullTitle: string;
@@ -227,7 +224,6 @@ export const chatSettingsTestIds = {
   back: settings("back"),
   replyIdeas: settings("reply-ideas"),
   proactive: settings("proactive"),
-  sharedMemories: settings("shared-memories"),
   birthYear: settings("birth-year"),
   proactiveSheet: settings("proactive-sheet"),
   proactivePref: (pref: string): string => settings(`proactive-${pref}`),

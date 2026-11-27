@@ -149,13 +149,7 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
 
 export function renderChatSettings(wiring: ScreenWiring) {
   const chat = wiring.messengerChat;
-  return (
-    <ChatSettingsScreen
-      source={chat.source}
-      onOpenSharedMemories={() => chat.onOpenMemories(null, null)}
-      onBack={chat.onExitChatSettingsStack}
-    />
-  );
+  return <ChatSettingsScreen source={chat.source} onBack={chat.onExitChatSettingsStack} />;
 }
 
 /** 설정 › My stories(ADR-0194) — 반응에 답하면 메신저 탭으로 옮겨 그 방을 엽니다. */
@@ -176,16 +170,16 @@ export function renderMyStories(wiring: ScreenWiring) {
 }
 
 export function renderChatMemories(
-  characterId: string | null,
-  characterName: string | null,
+  characterId: string,
+  characterName: string,
   wiring: ScreenWiring,
 ) {
   const chat = wiring.messengerChat;
   return (
     <ChatMemoriesScreen
       source={chat.source}
-      scope={characterId === null ? { kind: "shared" } : { kind: "character", characterId }}
-      name={characterId === null ? null : characterName}
+      characterId={characterId}
+      name={characterName}
       onBack={chat.onExitChatSettingsStack}
     />
   );
