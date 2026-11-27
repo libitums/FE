@@ -89,8 +89,8 @@ export const privacyProvidersEn: LegalSection = {
         ],
         [
           "Functional Software, Inc. (Sentry)",
-          "Error reports on Android",
-          "Error details, App version, device model, and operating system version",
+          "Error and crash reports on Android and iOS",
+          "Error details, App version, device model, operating system version, and a random installation ID (iOS); if you are signed in, your user ID (a random internal ID). No name, email address, or IP address",
           "United States",
           notice("https://sentry.io/privacy/"),
         ],

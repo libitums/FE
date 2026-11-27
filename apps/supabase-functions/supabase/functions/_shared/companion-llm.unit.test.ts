@@ -157,14 +157,14 @@ test("LL2b. 칩을 그대로 고른 유저 말은 기억 원문에 표시가 붙
   expect(JSON.stringify(params["system"])).toContain("not evidence of the learner's facts");
 });
 
-test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이고, 모르는 번호 · 빈 글 · 같은 기억 두 번은 버린다", async () => {
+test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이고, 모르는 번호 · 빈 글 · 같은 기억 두 번은 버리고, 더하기는 늘 이 캐릭터 층(ADR-0210 D6)", async () => {
   parsedOps.push(
-    { op: "update", ref: "m1", kind: null, content: "부산에 산다", shared: null, reason: "moved" },
-    { op: "forget", ref: "m1", kind: null, content: null, shared: null, reason: "again" },
-    { op: "forget", ref: "m9", kind: null, content: null, shared: null, reason: "unknown" },
-    { op: "forget", ref: "m2", kind: null, content: null, shared: null, reason: "locked" },
-    { op: "add", ref: null, kind: "fact", content: " ", shared: true, reason: "empty" },
-    { op: "add", ref: null, kind: "event", content: "이사했다", shared: null, reason: "new" },
+    { op: "update", ref: "m1", kind: null, content: "부산에 산다", reason: "moved" },
+    { op: "forget", ref: "m1", kind: null, content: null, reason: "again" },
+    { op: "forget", ref: "m9", kind: null, content: null, reason: "unknown" },
+    { op: "forget", ref: "m2", kind: null, content: null, reason: "locked" },
+    { op: "add", ref: null, kind: "fact", content: " ", reason: "empty" },
+    { op: "add", ref: null, kind: "event", content: "이사했다", reason: "new" },
   );
   const ops = await anthropicCompanionLlm(config).extractMemories({
     messages: [{ role: "user", text: "부산으로 이사했어요" }],
@@ -182,8 +182,9 @@ test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이�
     { op: "add", kind: "event", content: "이사했다", shared: false, reason: "new" },
   ]);
   const content = (calls.parse.at(-1)!["messages"] as { content: string }[])[0]!.content;
-  expect(content).toContain("m1. [shared] 서울에 산다");
-  expect(content).toContain("m2. [shared] (locked) 이름은 마리아");
+  expect(content).toContain("m1. 서울에 산다");
+  expect(content).toContain("m2. (locked) 이름은 마리아");
+  expect(content).not.toContain("[shared]");
 });
 
 test("LL2d. 요약 — 네 칸(학습자 · 이어지는 이야기 · 캐릭터 · 약속), 칩을 그대로 고른 말은 표시하고 사실로 적지 않는다", () => {

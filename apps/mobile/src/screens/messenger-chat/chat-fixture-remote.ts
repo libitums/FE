@@ -17,6 +17,7 @@ import { hasReplyAfter, mergeLog, sameIdeas, serverCopyOf } from "./chat-log-mer
 import { turnOutcomeOf, type TurnOutcome } from "./companion-outcome";
 import { applyTurnEvent, initialTurnState, type TurnState } from "./companion-turn";
 import { quizAnswerPending } from "./story-quiz";
+import { noteSampleHead } from "./chat-sample-target";
 
 /** 끊긴 답 채우기 — 바로 한 번, 그 뒤 이 간격마다(누적 30초). 다 돌면 stalled. */
 const RECOVERY_RETRY_MS = [2_000, 3_000, 5_000, 20_000] as const;
@@ -32,7 +33,6 @@ export type RemoteRoomDeps = {
   readonly mediaHooks?: ChatMediaHooks; // 사진 · 음성(ADR-0146)
   readonly preview?: readonly string[]; // 만들 때 기록을 미리 읽을 방(다시 켠 뒤 목록 미리보기)
 };
-
 export { uuidV4 } from "./chat-remote-notes";
 export function remoteRoomMethods(deps: RemoteRoomDeps) {
   const { remote, live, changed, now, schedule } = deps;
@@ -64,7 +64,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     }
     room.messages = mergeLog(room.messages, history.messages);
     room.notes = withHistoryNotes(room.notes, history);
-    room.greetingId = history.greetingId ?? room.greetingId; // 무료 예시의 대상(ADR-0146 개정)
+    noteSampleHead(room, history); // 무료 예시의 대상 — 첫 인사 · 앞부분을 읽었는지(ADR-0146 개정)
     if (room.pendingReplies === 0 && !sameIdeas(room.remoteIdeas, history.ideas))
       setRemoteIdeas(room, history.ideas, history.ideasOrigin);
     if (room.recovery === "stalled" && recoveryTargets.get(room)?.(history.messages) === true)
