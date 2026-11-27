@@ -86,28 +86,23 @@ export function wordDiff(heard: string, expected: string): SyllableDiff {
   const expectedWords = wordsOf(expected);
   const heardSet = new Set(heardWords.map(bare));
   const expectedSet = new Set(expectedWords.map(bare));
+  // 한 번에 훑습니다 — 다른 낱말은 낱말만 표시하고 앞 띄어쓰기는 표시 없는 조각에 붙여, 이웃한 같은 표시는 묶습니다.
   const piecesOfWords = (words: readonly string[], other: ReadonlySet<string>): DiffPiece[] => {
     const pieces: DiffPiece[] = [];
-    words.forEach((word, index) => {
-      const text = index === 0 ? word : ` ${word}`;
-      const differs = bare(word) !== "" && !other.has(bare(word));
+    const push = (text: string, differs: boolean): void => {
       const last = pieces[pieces.length - 1];
-      // 다른 낱말 사이의 띄어쓰기는 앞 조각(같은 표시)에 붙여, 밑줄이 낱말 단위로 이어지게 합니다.
       if (last !== undefined && last.differs === differs) {
         pieces[pieces.length - 1] = { text: last.text + text, differs };
-      } else if (differs && index > 0) {
-        pieces.push({ text: " ", differs: false }, { text: word, differs });
       } else {
         pieces.push({ text, differs });
       }
+    };
+    words.forEach((word, index) => {
+      const differs = bare(word) !== "" && !other.has(bare(word));
+      if (index > 0) push(" ", differs && pieces[pieces.length - 1]?.differs === true);
+      push(word, differs);
     });
-    return pieces.reduce<DiffPiece[]>((merged, piece) => {
-      const last = merged[merged.length - 1];
-      if (last !== undefined && last.differs === piece.differs) {
-        merged[merged.length - 1] = { text: last.text + piece.text, differs: piece.differs };
-      } else merged.push(piece);
-      return merged;
-    }, []);
+    return pieces;
   };
   return {
     heard: piecesOfWords(heardWords, expectedSet),
