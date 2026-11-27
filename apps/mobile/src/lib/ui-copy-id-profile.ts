@@ -50,11 +50,6 @@ export const learnerProfileId: LearnerProfileCopy = {
       jumpTo: (letter) => `Loncat ke ${letter}`,
       jumpBar: "Loncat ke huruf",
     },
-    birthYear: {
-      title: "Kamu lahir tahun berapa?",
-      caption:
-        "Kami memakainya agar aplikasi sesuai usiamu. Tidak pernah ditampilkan ke siapa pun.",
-    },
   },
   settings: {
     title: "Nama dan negara",

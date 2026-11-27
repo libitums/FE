@@ -3,6 +3,7 @@
 // 같은 메시지가 SSE로 먼저 왔으면 기록 합치기(`mergeLog`, 메시지 id)가 한 줄로 두어 안 읽음이 오르지 않습니다 — 중복 제거는 id 기준입니다.
 
 import type { RoomState } from "./chat-fixture-room";
+import type { UnreadSeen } from "./chat-last-seen";
 import { mergeLog } from "./chat-log-merge";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage } from "./chat-source.contract";
@@ -22,6 +23,8 @@ export type RemotePullDeps = {
   readonly refresh: (room: RoomState) => void;
   /** 읽은 방(`loaded`)의 기록 합치기 — Not sent 확인 · 생각 칩까지. */
   readonly applyHistory: (room: RoomState, history: RemoteHistory) => unknown;
+  /** 본 마지막 인물 메시지(ADR-0213 개정) — 있으면 본 것 뒤 인물 메시지 수만큼 안 읽음(메시지 여럿이 한 번에 와도). */
+  readonly seen: UnreadSeen | null;
 };
 
 /** 인물의 말 · 지문 줄 수 — 새로 선 인물 말이 있는지 셉니다. */
@@ -48,6 +51,7 @@ export function remotePull(deps: RemotePullDeps): RemoteRoomPull {
     if (room.remoteHistory === "loaded") deps.applyHistory(room, history);
     else room.messages = mergeLog(room.messages, history.messages);
     if (theirLines(room.messages) > before && !isOpen(roomId)) room.unread += 1;
+    deps.seen?.settle(room);
     changed(room);
     return true;
   };

@@ -1,5 +1,5 @@
 // 진입 흐름 화면들의 route를 화면으로 옮깁니다 — 스플래시 → 온보딩 → 로그인 → 인증 코드 → ① 이름 → ② 나라 →
-// 언어 고르기 → ④ 출생 연도 → 여정 입구 → (기초부터면) 글자 → 합치기 → 준비 완료(ADR-0176). `render-learning-screen.tsx` ·
+// 언어 고르기 → 여정 입구 → (기초부터면) 글자 → 합치기 → 준비 완료(ADR-0176). `render-learning-screen.tsx` ·
 // `render-episode-intro.tsx` · `render-roleplay-screen.tsx`와 같은 갈래입니다.
 //
 // **묶음의 근거가 파일 크기가 아니라 흐름입니다.** 이 화면들은 앱을 처음 여는 한 흐름이고,
@@ -15,7 +15,6 @@ import { EntryBasicsLettersScreen } from "../screens/entry-basics/EntryBasicsLet
 import { EntryBasicsReadyScreen } from "../screens/entry-basics/EntryBasicsReadyScreen";
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
-import { LearnerBirthYearScreen } from "../screens/learner-profile/LearnerBirthYearScreen";
 import { LearnerCountryScreen } from "../screens/learner-profile/LearnerCountryScreen";
 import { LearnerNameScreen } from "../screens/learner-profile/LearnerNameScreen";
 import { LoginScreen } from "../screens/login/LoginScreen";
@@ -26,7 +25,7 @@ import { VerificationCodeScreen } from "../screens/verification-code/Verificatio
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
-/** 진입 흐름의 route 열셋입니다. `renderScreen`의 `switch`가 이 열셋을 한 자리로 보냅니다. */
+/** 진입 흐름의 route 열둘입니다. `renderScreen`의 `switch`가 이 열둘을 한 자리로 보냅니다. */
 export type EntryScreen = Extract<
   Screen,
   {
@@ -38,7 +37,6 @@ export type EntryScreen = Extract<
       | "learner-name"
       | "learner-country"
       | "language-select"
-      | "learner-birth-year"
       | "journey-entry"
       | "entry-basics-letters"
       | "entry-basics-compose"
@@ -92,7 +90,6 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
           port={wiring.learnerPort}
           onContinue={wiring.onContinueLearnerName}
           onBack={wiring.onLearnerProfileStepBack}
-          stepCount={signupStepCount(wiring)}
         />
       );
     case "learner-country":
@@ -103,7 +100,6 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
           port={wiring.learnerPort}
           onContinue={wiring.onContinueLearnerCountry}
           onBack={wiring.onLearnerProfileStepBack}
-          stepCount={signupStepCount(wiring)}
         />
       );
     case "language-select":
@@ -113,14 +109,6 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
           onSelect={wiring.onSelectEntryLanguage}
           onContinue={wiring.onContinueLanguageSelect}
           onBack={wiring.onLanguageSelectBack}
-          stepCount={signupStepCount(wiring)}
-        />
-      );
-    case "learner-birth-year":
-      return (
-        <LearnerBirthYearScreen
-          onContinue={wiring.onContinueLearnerBirthYear}
-          onBack={wiring.onLearnerBirthYearBack}
         />
       );
     case "journey-entry":
@@ -164,11 +152,6 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
         />
       );
   }
-}
-
-/** 가입 흐름 단계 수 — 비회원은 ④ 출생 연도가 없어 셋입니다(ADR-0059 개정 2026-11-27). */
-function signupStepCount(wiring: ScreenWiring): number {
-  return wiring.accountState === "guest" ? 3 : 4;
 }
 
 /** 준비 완료의 비행기 — 지도의 튜토리얼 표지와 같은 그림 · 같은 주소 해석입니다(새 바이트 0). */

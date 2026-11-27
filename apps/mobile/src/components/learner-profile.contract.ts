@@ -85,7 +85,7 @@ export type LearnerProfileCopy = {
     readonly row: (en: string, ko: string) => string;
     readonly countrySet: (en: string) => string;
   };
-  /** 가입 직후 ① 이름 · ② 나라 · ④ 출생 연도 화면입니다(언어 선택과 같은 틀). */
+  /** 가입 직후 ① 이름 · ② 나라 화면입니다(언어 선택과 같은 틀). */
   readonly signup: {
     readonly continue: string;
     readonly back: string;
@@ -106,11 +106,6 @@ export type LearnerProfileCopy = {
       /** 글자 막대 한 칸의 접근성 이름 — `Jump to A` */
       readonly jumpTo: (letter: string) => string;
       readonly jumpBar: string;
-    };
-    /** ④ 출생 연도(ADR-0059 개정 2026-11-27) — 앱 전체를 말하고, 나이 문턱 · 건너뛰기를 드러내지 않습니다(COPPA 중립). */
-    readonly birthYear: {
-      readonly title: string;
-      readonly caption: string;
     };
   };
   readonly settings: {

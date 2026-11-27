@@ -34,7 +34,9 @@ import { createTrialStore, type TrialStore } from "../screens/messenger-chat/tri
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { tabRootActions } from "./nav-reducer";
 import { deviceReplyIdeasStore } from "../screens/messenger-chat/reply-ideas-pref";
+import { deviceLastSeenStore } from "../screens/messenger-chat/chat-last-seen-store";
 import type { NavAction } from "./nav-state";
+import type { TestStores } from "./messenger-chat-test-stores";
 
 export type MessengerChatWiring = {
   readonly source: ChatSource;
@@ -79,18 +81,6 @@ let walletSingleton: SyncedCoinWallet | null = null;
 let trialSingleton: TrialStore | null = null;
 /** 테스트가 끼우는 메모리 저장 · 가짜 시계입니다(앱은 기기 저장 · `Date.now`). */
 let storeOverride: TestStores | null = null;
-
-export type TestStores = {
-  readonly unlock: UnlockStore;
-  readonly now: () => number;
-  /** 체험 남은 수의 처음 값입니다. 없으면 앱 안 방의 기본(체험 20통). */
-  readonly trial?: number | null;
-  /**
-   * 대화 등급을 고정합니다. 시험 계정은 무제한이라, 체험 · 엽전 흐름을 앱 단에서 보는 테스트는 `free`를 넘깁니다.
-   * 없으면 시험 계정 표시로 정합니다.
-   */
-  readonly tier?: ChatTier;
-};
 
 /** 해금 기록 저장입니다 — 앱은 지금 계정(출처 키)의 기기 저장, 테스트는 메모리(spec §7.2). */
 export function messengerUnlockStore(): UnlockStore {
@@ -213,7 +203,16 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
       ...(remote === null
         ? localSeedOptions(testSeed, guest)
         : // 다시 켠 뒤 목록 미리보기 — 열린 방의 서버 기록을 미리 읽습니다(2026-11-17).
-          { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks, previewOnStart: true }),
+          // 본 마지막 인물 메시지(ADR-0213 개정) — 앱이 꺼진 사이 온 선톡 · 반응을 다시 켤 때 안 읽음으로 셉니다(계정마다).
+          {
+            ...{
+              seed: companionSeed(),
+              remote,
+              mediaHooks: forwardedMediaHooks,
+              previewOnStart: true,
+            },
+            ...(storeOverride === null ? { lastSeen: deviceLastSeenStore(key) } : {}),
+          }),
     });
   } else if (replaced) {
     singleton.refreshImages();

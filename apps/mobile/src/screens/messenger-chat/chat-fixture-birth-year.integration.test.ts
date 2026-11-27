@@ -2,12 +2,12 @@ import { expect, test, vi } from "vitest";
 
 import { createFixtureChatSource } from "./chat-fixture-source";
 import { fakeTimers } from "./chat-fixture-timers.test-support";
-import { memoryBirthYearStore, parseBirthYear } from "./chat-local-stores";
+import { memoryBirthYearStore } from "./chat-local-stores";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
 import type { ChatProfileRemote, ChatRemote } from "./chat-remote.contract";
 import { companionSeed } from "./companion-roster";
 
-// `integration` 계층(BY-I1 ~ I3): 서버 모드 출처 + 기기 저장 + 가짜 프로필 원격 — 생년이 앱을 다시 켜도 남고 서버에 간다(ADR-0125).
+// `integration` 계층(BY-I1 ~ I2): 서버 모드 출처 + 기기 저장 + 가짜 프로필 원격 — 생년이 앱을 다시 켜도 남고 서버에 간다(ADR-0125).
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -58,15 +58,4 @@ test("BY-I2 새 기기 · 재설치면 서버 생년을 읽어 스냅샷을 바�
   await flush();
   expect(source.snapshot().birthYear).toEqual({ kind: "set", year: 1988 });
   expect(listener).toHaveBeenCalled();
-});
-
-test("BY-I3 옛 앱의 건너뜀 기록은 적힌 것 없음 — 서버가 비면 다시 묻고(unasked), 서버에 생년이 있으면 그 값", async () => {
-  const legacy = { read: () => parseBirthYear({ kind: "skipped" }), write: () => undefined };
-  const empty = serverSource(legacy, null);
-  await flush();
-  expect(empty.source.snapshot().birthYear).toEqual({ kind: "unasked" });
-  expect(empty.saveBirthYear).not.toHaveBeenCalled();
-  const filled = serverSource(legacy, 1979);
-  await flush();
-  expect(filled.source.snapshot().birthYear).toEqual({ kind: "set", year: 1979 });
 });

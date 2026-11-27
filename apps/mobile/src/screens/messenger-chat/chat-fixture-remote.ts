@@ -6,7 +6,7 @@ import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
-import { remotePull, theirLines } from "./chat-remote-pull";
+import { remotePull, theirLines, type RemotePullDeps } from "./chat-remote-pull";
 import { remoteRoomSync } from "./chat-remote-sync";
 import { remoteWalletSync } from "./chat-remote-wallet";
 import { suggestionTagOf, type ChatSuggestionTag } from "./chat-suggestion-ref";
@@ -39,6 +39,7 @@ export type RemoteRoomDeps = {
   readonly mediaHooks?: ChatMediaHooks; // 사진 · 음성(ADR-0146)
   readonly preview?: readonly string[]; // 만들 때 기록을 미리 읽을 방(다시 켠 뒤 목록 미리보기)
   readonly roomIds?: () => readonly string[]; // 목록 맞추기가 볼 방 — 없으면 미리 읽을 방
+  readonly seen?: RemotePullDeps["seen"]; // 본 마지막 인물 메시지(ADR-0213 개정) — 기록을 읽으면 그 뒤 인물 메시지 수로 안 읽음
 };
 export { uuidV4 } from "./chat-remote-notes";
 export function remoteRoomMethods(deps: RemoteRoomDeps) {
@@ -257,8 +258,9 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     })();
   };
 
-  const pull = remotePull({ remote, live, changed, isOpen, schedule, busy, refresh, applyHistory });
-  const sync = { remote, live, changed, openRoomId: deps.openRoomId, refresh, pull };
+  const read = { remote, live, changed, refresh, seen: deps.seen ?? null };
+  const pull = remotePull({ ...read, isOpen, schedule, busy, applyHistory });
+  const sync = { ...read, openRoomId: deps.openRoomId, pull };
   const controls: ChatServerControls = {
     resend: (roomId) => {
       const room = live(roomId);

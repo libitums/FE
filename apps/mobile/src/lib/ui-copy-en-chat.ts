@@ -205,6 +205,8 @@ export const messengerChatEn: MessengerChatCopy = {
       title: "What year were you born?",
       body: "We use it to keep chats right for your age. It is never shown to anyone, and you can change it later in chat settings.",
       continue: "Continue",
+      skip: "Skip for now",
+      skipNote: "If you skip, chats use our under-18 settings.",
       sidebar: "Birth year",
       notSet: "Not set",
     },

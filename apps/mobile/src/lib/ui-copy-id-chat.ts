@@ -206,6 +206,8 @@ export const messengerChatId: MessengerChatCopy = {
       title: "Kamu lahir tahun berapa?",
       body: "Kami memakainya agar obrolan sesuai usiamu. Tidak pernah ditampilkan ke siapa pun, dan bisa diubah nanti di pengaturan obrolan.",
       continue: "Lanjut",
+      skip: "Lewati dulu",
+      skipNote: "Jika dilewati, obrolan memakai pengaturan untuk di bawah 18 tahun.",
       sidebar: "Tahun lahir",
       notSet: "Belum diisi",
     },

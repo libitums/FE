@@ -76,6 +76,7 @@ export type ChatInputBlock =
 /** 첫 대화 전에 묻는 생년입니다. 건너뛰면 18세 미만 기본값이 적용됩니다(서버 몫). */
 export type ChatBirthYear =
   | { readonly kind: "unasked" }
+  | { readonly kind: "skipped" }
   | { readonly kind: "set"; readonly year: number };
 
 // 대화 설정 · 기억 타입(ADR-0126)은 대화 설정 계약에 둡니다 — 이 파일은 그 이름을 그대로 다시 내보냅니다.
@@ -259,8 +260,8 @@ export type ChatSource = {
   /** 교정 available일 때만: seen = true(즉시), detail idle이면 loading → timing.correctionMs 뒤 ready. */
   readonly openCorrection: (roomId: string, messageId: string) => void;
   readonly unlockCharacter: (characterId: string) => ChatUnlockResult;
-  /** 고른 연도를 적습니다 — 건너뛰기는 없습니다(ADR-0125 개정 2026-11-27). 바뀌면 구독자에게 알립니다. */
-  readonly setBirthYear: (year: number) => void;
+  /** null = 건너뜀. 바뀌면 구독자에게 알립니다. */
+  readonly setBirthYear: (year: number | null) => void;
   /** 바뀐 칸만 넘깁니다. 바뀌면 구독자에게 알립니다. */
   readonly setPreferences: (patch: Partial<ChatPreferences>) => void;
   /** 같은 상태면 같은 참조입니다. */

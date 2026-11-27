@@ -20,7 +20,7 @@ import type { Milestone, MilestoneStore } from "../../lib/companion-events";
 import { createAnalyticsSession } from "../../lib/posthog-client";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
 import { passSplash } from "./pass-splash";
-import { passLearnerBirthYearIfShown, passLearnerSignup } from "./learner-signup";
+import { passLearnerSignup } from "./learner-signup";
 
 const config: AnalyticsConfig | null = analyticsConfigFrom("phc_integration_test", "development");
 
@@ -145,7 +145,6 @@ export async function runEntryFlow(
   passLearnerSignup();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButton("language-select-screen-next");
-  passLearnerBirthYearIfShown();
   beforeStart();
   tapButton("journey-entry-screen-story");
   await advance(0);

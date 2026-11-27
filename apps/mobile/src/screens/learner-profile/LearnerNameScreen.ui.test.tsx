@@ -97,7 +97,7 @@ describe("LearnerNameScreen", () => {
     expect(screen.getByText(copy.signup.name.caption)).toBeInTheDocument();
     expect(screen.getByTestId("entry-step-bar")).toHaveAttribute(
       "accessibility-label",
-      "Step 1 of 4",
+      "Step 1 of 3",
     );
     expect(screen.getByTestId("ui-lynx-text-field-input")).toHaveAttribute("default-value", "Emma");
     expect(supporting()).toContain(copy.signup.name.helper);

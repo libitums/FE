@@ -103,7 +103,7 @@ describe("LearnerCountryScreen", () => {
     );
     expect(screen.getByTestId("entry-step-bar")).toHaveAttribute(
       "accessibility-label",
-      "Step 2 of 4",
+      "Step 2 of 3",
     );
     expect(screen.getByTestId("learner-country-screen-count")).toHaveTextContent(
       "ALL COUNTRIES · 4",

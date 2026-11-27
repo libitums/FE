@@ -25,6 +25,7 @@ import { createFixtureNotes } from "./chat-fixture-notes";
 import { remoteRoomMethods, uuidV4 } from "./chat-fixture-remote";
 import { roomResetMethods } from "./chat-room-reset";
 import { localSender } from "./chat-fixture-local-send";
+import { unreadSeen } from "./chat-last-seen";
 import type {
   ChatFixtureMessage,
   ChatMediaKind,
@@ -88,7 +89,11 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     },
   );
 
+  // 앱이 꺼진 사이 온 메시지의 안 읽음(ADR-0213 개정) — 열린 방의 마지막 인물 메시지를 기기에 적습니다(서버 모드만).
+  const seen =
+    options.lastSeen === undefined ? null : unreadSeen(options.lastSeen, (id) => openRoomId === id);
   const changed = (room: RoomState) => {
+    seen?.mark(room);
     room.summaryCache = null;
     room.threadCache = null;
     snapshotCache = null;
@@ -174,6 +179,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
           mediaHooks: options.mediaHooks,
           ...{ openRoomId: () => openRoomId, uuid: () => uuidV4() },
           preview: options.previewOnStart === true ? [...rooms.keys()] : [],
+          seen,
           roomIds: () => [...rooms.keys()],
         });
   const sendText = remoteRoom?.sendText ?? localSendText;
@@ -208,6 +214,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       const room = live(roomId);
       if (room === null) return;
       openRoomId = roomId;
+      seen?.mark(room);
       remoteRoom?.loadRoom(roomId);
       if (remoteRoom === null && options.greetOnOpen === true) greetLocally(room);
       if (room.unread === 0 && !room.isNew) return;
@@ -216,6 +223,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       changed(room);
     },
     closeRoom: (roomId) => {
+      const room = live(roomId);
+      if (room !== null) seen?.mark(room);
       if (openRoomId === roomId) openRoomId = null;
     },
     sendText,
@@ -253,7 +262,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     ...feedbackMethods({ live, changed, sendText }),
     ...roomResetMethods({
       ...{ live, changed, clearHandles, openingOf, remote: options.remote ?? null },
-      ...{ loadRoom: remoteRoom?.loadRoom, isOpen: (roomId) => openRoomId === roomId },
+      ...{ loadRoom: remoteRoom?.loadRoom, isOpen: (roomId) => openRoomId === roomId, seen },
       forget: (roomId) => {
         rooms.delete(roomId);
         if (openRoomId === roomId) openRoomId = null;

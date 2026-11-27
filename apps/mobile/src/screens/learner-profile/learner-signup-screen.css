@@ -154,8 +154,3 @@
   font-size: var(--libitum-typography-label-s-font-size);
   line-height: var(--libitum-typography-label-s-line-height);
 }
-
-/* ④ 출생 연도 — 줄이 스크롤 칸의 바로 아래 자식이라야 `initial-scroll-to-index`가 연도 줄을 셉니다. 사이는 줄 아래 여백으로 둡니다. */
-.learner-birth-year-row {
-  margin-bottom: var(--libitum-spacing-8);
-}
