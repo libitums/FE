@@ -106,7 +106,8 @@ describe("구독 표가 있는 DB", () => {
         auth: f.auth,
         service: f.service,
         definer: f.definer,
-        config: f.config,
+        // 판정 현황 · 목록(20270120)은 제한 시간 설정을 더 가집니다 — 그 값은 그쪽 테스트(OI-8)가 봅니다.
+        config: (f.config as string[]).filter((entry) => !entry.startsWith("statement_timeout=")),
       }).toEqual({
         sig: f.sig,
         anon: false,

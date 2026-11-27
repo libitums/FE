@@ -456,4 +456,297 @@ describe("ops admin insights", () => {
     );
     await anon.end();
   });
+
+  // ---- 20270120 고침(`ops_admin_insights_fix`). 글은 모두 지어낸 것입니다.
+
+  // OI-8 — 본문의 `set local statement_timeout`은 이미 시작한 호출에 걸리지 않습니다(9초 걸린 호출이 끝까지 돌았습니다). 함수 설정은
+  // PostgREST가 호출 전에 트랜잭션에 올려 그 호출에 겁니다 — PostgREST v12.2.12 · v13.0.7에서 9.5초 걸리게 한 호출이 8.0초에 57014로
+  // 끊기는 것을 확인했습니다(2026-11-27). DB만으로는 그 길을 재현할 수 없어 여기서는 설정이 붙어 있는지만 봅니다.
+  test("OI-8 제한 시간 — 판정 현황 · 목록에 함수 설정 8초, 본문의 set local은 없다", async () => {
+    const rows = (
+      await db.admin.query(
+        `select p.proname as name, p.proconfig as config, p.prosrc ~* 'set\\s+local\\s+statement_timeout' as in_body
+         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname in ('ops_moderation_summary', 'ops_moderation_feed') order by 1`,
+      )
+    ).rows;
+    expect(rows).toEqual([
+      {
+        name: "ops_moderation_feed",
+        config: ['search_path=""', "statement_timeout=8s"],
+        in_body: false,
+      },
+      {
+        name: "ops_moderation_summary",
+        config: ['search_path=""', "statement_timeout=8s"],
+        in_body: false,
+      },
+    ]);
+    // 인수 꼴은 그대로입니다 — 이름만으로 불러도 겹치지 않습니다(옛 도우미 꼴은 지웠습니다).
+    const shapes = (
+      await db.admin.query(
+        `select n.nspname || '.' || p.proname as name, count(*)::int as n
+         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+         where (n.nspname, p.proname) in (('public', 'ops_moderation_summary'), ('public', 'ops_moderation_feed'), ('ops', 'moderation_scope'))
+         group by 1 order by 1`,
+      )
+    ).rows;
+    expect(shapes).toEqual([
+      { name: "ops.moderation_scope", n: 1 },
+      { name: "public.ops_moderation_feed", n: 1 },
+      { name: "public.ops_moderation_summary", n: 1 },
+    ]);
+  });
+
+  /** 덕수쌤 방의 턴 하나: 사용자 메시지 + (있으면) 답 + 입력 차단 판정. 시각은 지금부터 몇 분 전인지. */
+  async function turn(options: {
+    minutesAgo: number;
+    replyAfterMinutes?: number;
+    replyMeta?: Json;
+    rev?: string | null;
+    category?: string;
+  }) {
+    const one = async (sql: string, args: unknown[]) =>
+      (await db.admin.query(sql, args)).rows[0].id as string;
+    const conversation = await one(
+      `insert into companion.conversations (user_id, character_id) values ($1, 'duksu')
+       on conflict (user_id, character_id) where kind = 'companion' do update set character_id = excluded.character_id returning id`,
+      [other],
+    );
+    const message = await one(
+      `insert into companion.messages (conversation_id, user_id, role, status, client_message_id, text, created_at)
+       values ($1, $2, 'user', 'blocked', gen_random_uuid(), '지어낸 말', now() - $3 * interval '1 minute') returning id`,
+      [conversation, other, options.minutesAgo],
+    );
+    const reply =
+      options.replyAfterMinutes === undefined
+        ? null
+        : await one(
+            `insert into companion.messages (conversation_id, user_id, role, status, segments, reply_to, meta, created_at)
+             values ($1, $2, 'assistant', 'complete', '[{"kind":"speech","text":"지어낸 답"}]', $3, $4::jsonb,
+               now() - $5 * interval '1 minute' + $6 * interval '1 minute') returning id`,
+            [
+              conversation,
+              other,
+              message,
+              JSON.stringify(options.replyMeta ?? { ageBand: "adult", romanceLine: "hug" }),
+              options.minutesAgo,
+              options.replyAfterMinutes,
+            ],
+          );
+    const event = await one(
+      `insert into companion.moderation_events (user_id, message_id, layer, category, action, rev, created_at)
+       values ($1, $2, 'input', $3, 'block', $4, now() - $5 * interval '1 minute') returning id`,
+      [other, message, options.category ?? "profanity", options.rev ?? null, options.minutesAgo],
+    );
+    return { conversation, message, reply, event };
+  }
+  const feedItem = async (event: string, extra: Record<string, unknown> = {}) =>
+    (
+      await named(server, "ops_moderation_feed", { p_actor: ACTOR, ...range(), ...extra })
+    ).items.find((e: Json) => e.id === event) as Json | undefined;
+
+  // OI-9 — 그 턴의 답은 그 메시지 뒤 30분 창에서만 찾습니다. 창이 없으면 판정마다 그 뒤의 대화 전부를 읽어 긴 대화에서 조회가 끝나지 않습니다.
+  test("OI-9 그 턴의 답 — 메시지 뒤 30분 안의 답, 그 밖은 답 없음", async () => {
+    const inside = await turn({ minutesAgo: 50, replyAfterMinutes: 29 });
+    const outside = await turn({ minutesAgo: 45, replyAfterMinutes: 31 });
+    const none = await turn({ minutesAgo: 40 });
+    expect(await feedItem(inside.event)).toMatchObject({
+      characterId: "duksu",
+      ageBand: "adult",
+      romanceLine: "hug",
+      message: { id: inside.message },
+      reply: { id: inside.reply },
+    });
+    // 창 밖의 답은 그 턴의 답으로 보지 않습니다 — 연령대 · 선도 모릅니다. 메시지 · 캐릭터는 그대로 나옵니다.
+    expect(await feedItem(outside.event)).toMatchObject({
+      characterId: "duksu",
+      ageBand: null,
+      romanceLine: null,
+      message: { id: outside.message },
+      reply: null,
+    });
+    expect(await feedItem(none.event)).toMatchObject({
+      message: { id: none.message },
+      reply: null,
+    });
+    // 판정이 답에 달려 있으면 그 답이 곧 답이고, 사용자 메시지는 `reply_to`로 찾습니다(창과 상관없음).
+    const onReply = (
+      await db.admin.query(
+        `insert into companion.moderation_events (user_id, message_id, layer, category, action, created_at)
+         values ($1, $2, 'output_async', 'sexual', 'hide', now() - interval '10 minutes') returning id`,
+        [other, outside.reply],
+      )
+    ).rows[0].id as string;
+    expect(await feedItem(onReply)).toMatchObject({
+      message: { id: outside.message },
+      reply: { id: outside.reply },
+      ageBand: "adult",
+    });
+    // 현황의 거르기도 같은 답을 읽습니다: 성인 턴은 창 안의 턴(입력 1)과 시드의 open 턴(입력 2)입니다.
+    const adult = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      ...range(),
+      p_age: "adult",
+    });
+    expect(adult.inputs).toBe(3);
+    // 캐릭터 거르기는 답이 없어도 잡습니다.
+    const duksu = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      ...range(),
+      p_character: "duksu",
+    });
+    expect(duksu.inputs).toBe(3);
+  });
+
+  test("OI-10 리비전 없는 줄 — 현황의 unrevisioned, 목록의 p_rev none", async () => {
+    const old = await turn({ minutesAgo: 30, replyAfterMinutes: 1, category: "hate" });
+    await named(server, "ops_review_moderation", {
+      p_actor: ACTOR,
+      p_event: old.event,
+      p_verdict: "false_positive",
+    });
+    const all = await named(server, "ops_moderation_summary", { p_actor: ACTOR, ...range() });
+    expect(Object.keys(all).sort()).toEqual(
+      ["cells", "daily", "inputs", "revs", "strikes", "tracked", "unrevisioned"].sort(),
+    );
+    // 리비전 없는 줄: 시드의 other 차단(spam)과 이 턴의 차단.
+    expect(all.unrevisioned).toEqual({ events: 2, blocks: 2, reviewed: 1, falsePositives: 1 });
+    // 리비전 수와 같은 거르기를 따릅니다(단계 · 캐릭터).
+    const output = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      ...range(),
+      p_stage: "output_sync",
+    });
+    expect(output.unrevisioned).toEqual({ events: 0, blocks: 0, reviewed: 0, falsePositives: 0 });
+    const duksu = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      ...range(),
+      p_character: "duksu",
+    });
+    expect(duksu.unrevisioned).toEqual({ events: 1, blocks: 1, reviewed: 1, falsePositives: 1 });
+
+    const ids = async (extra: Record<string, unknown>) =>
+      (
+        await named(server, "ops_moderation_feed", { p_actor: ACTOR, ...range(), ...extra })
+      ).items.map((e: Json) => e.id);
+    const none = await ids({ p_rev: "none" });
+    expect(none).toHaveLength(2);
+    expect(none).toContain(old.event);
+    expect(none).not.toContain(s.blockedEvent);
+    expect(await ids({ p_rev: REV_A })).toEqual([s.blockedEvent]);
+    expect(await ids({ p_rev: "none", p_review: "false_positive" })).toEqual([old.event]);
+    for (const rev of ["None", "null", "abc", "AAAA1111", ""])
+      await expect(
+        named(server, "ops_moderation_feed", { p_actor: ACTOR, ...range(), p_rev: rev }),
+      ).rejects.toThrow(/invalid_rev/);
+    const log = (
+      await db.admin.query(
+        "select detail->>'rev' as rev from ops.audit_log where action = 'moderation_feed' and detail ? 'rev' order by id limit 1",
+      )
+    ).rows;
+    expect(log).toEqual([{ rev: "none" }]);
+  });
+
+  // OI-11 — 그래프가 `firstAt`에 「리비전이 바뀐 날」 세로선을 긋습니다. 기간으로 자른 값이면 기간 첫날에 가짜 선이 생깁니다.
+  test("OI-11 리비전 줄 — 처음 · 마지막 본 때는 전체, 수는 기간 + 모든 거르기, 거르기에 안 맞아도 0으로 나온다", async () => {
+    // REV_B를 기간(최근 1시간) 밖 20일 전에도 봤습니다. REV_A는 그보다 뒤(9분 전)에 처음 봤습니다.
+    await db.admin.query(
+      `insert into companion.moderation_events (user_id, layer, category, action, rev, created_at)
+       values ($1, 'input', 'safe', 'allow', $2, now() - interval '20 days')`,
+      [other, REV_B],
+    );
+    const pick = (r: Json) =>
+      r.revs.map((v: Json) => [v.rev, v.events, v.blocks, v.reviewed, v.falsePositives]);
+    const all = await named(server, "ops_moderation_summary", { p_actor: ACTOR, ...range() });
+    // 순서는 처음 본 때 이른 순 — 전체로 보면 REV_B가 먼저입니다. 수는 기간 안의 것만입니다.
+    expect(pick(all)).toEqual([
+      [REV_B, 3, 1, 0, 0],
+      [REV_A, 2, 1, 0, 0],
+    ]);
+    const [revB, revA] = all.revs;
+    const from = Date.parse(range().p_from);
+    expect(Date.parse(revB.firstAt)).toBeLessThan(from - 19 * 86_400_000);
+    expect(Date.parse(revB.lastAt)).toBeGreaterThan(from);
+    expect(Date.parse(revA.firstAt)).toBeGreaterThan(from);
+    expect(Object.keys(revA).sort()).toEqual(
+      [
+        "blocks",
+        "events",
+        "falsePositives",
+        "firstAt",
+        "label",
+        "lastAt",
+        "note",
+        "rev",
+        "reviewed",
+      ].sort(),
+    );
+    // 단계 거르기: 리비전 수가 분류 × 단계 칸과 같은 기준입니다. 처음 · 마지막 본 때는 거르기와 상관없이 그대로입니다.
+    await named(server, "ops_review_moderation", {
+      p_actor: ACTOR,
+      p_event: s.recoveredEvent,
+      p_verdict: "false_positive",
+    });
+    const output = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      ...range(),
+      p_stage: "output_sync",
+    });
+    expect(pick(output)).toEqual([
+      [REV_B, 2, 1, 1, 1],
+      [REV_A, 0, 0, 0, 0],
+    ]);
+    expect(output.cells).toEqual([
+      { category: "romance", stage: "output_sync", blocks: 1, per1k: 250 },
+    ]);
+    expect(output.revs.map((v: Json) => [v.firstAt, v.lastAt])).toEqual(
+      all.revs.map((v: Json) => [v.firstAt, v.lastAt]),
+    );
+    // 연령대 거르기: 맞는 줄이 없는 리비전도 0으로 나옵니다(세로선이 거르기에 따라 사라지지 않습니다).
+    const adult = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      ...range(),
+      p_age: "adult",
+    });
+    expect(pick(adult)).toEqual([
+      [REV_B, 0, 0, 0, 0],
+      [REV_A, 2, 1, 0, 0],
+    ]);
+    // 기간 안에 보이지 않은 리비전은 나오지 않습니다.
+    const earlier = await named(server, "ops_moderation_summary", {
+      p_actor: ACTOR,
+      p_from: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+      p_to: new Date(Date.now() - 86_400_000).toISOString(),
+    });
+    expect(pick(earlier)).toEqual([[REV_B, 1, 0, 0, 0]]);
+    expect(earlier.revs[0].lastAt).toBe(revB.lastAt);
+  });
+
+  // OI-12 — 앞 말은 입력 검사가 맥락으로 받은 것이어야 합니다. 숨긴 답 · 위기 답을 앞 말로 보이면 운영 도구가 본 맥락과 실제 맥락이 달라집니다.
+  test("OI-12 앞 캐릭터 말 — 완료 · 숨기지 않음 · 조각 있음만", async () => {
+    const context = await turn({ minutesAgo: 30, replyAfterMinutes: 1 });
+    const say = (sql: string) => db.admin.query(sql, [context.conversation, other]);
+    // 그 뒤(28 ~ 26분 전)의 캐릭터 메시지 셋은 맥락이 아닙니다: 숨긴 답 · 위기 답(조각 없음) · 완료가 아닌 것.
+    await say(
+      `insert into companion.messages (conversation_id, user_id, role, status, segments, hidden, created_at)
+       values ($1, $2, 'assistant', 'complete', '[{"kind":"speech","text":"숨긴 말"}]', true, now() - interval '28 minutes')`,
+    );
+    await say(
+      `insert into companion.messages (conversation_id, user_id, role, origin, status, segments, created_at)
+       values ($1, $2, 'assistant', 'crisis', 'crisis', '[]', now() - interval '27 minutes')`,
+    );
+    await say(
+      `insert into companion.messages (conversation_id, user_id, role, status, segments, created_at)
+       values ($1, $2, 'assistant', 'complete', '[]', now() - interval '26 minutes')`,
+    );
+    const next = await turn({ minutesAgo: 20, replyAfterMinutes: 1 });
+    expect((await feedItem(next.event))?.previous).toEqual({
+      id: context.reply,
+      segments: [{ kind: "speech", text: "지어낸 답" }],
+      at: expect.any(String),
+    });
+    // 그 대화의 첫 턴은 앞 말이 없습니다.
+    expect((await feedItem(context.event))?.previous).toBeNull();
+  });
 });
