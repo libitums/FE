@@ -28,6 +28,7 @@ type Status = {
   used: number;
   left: number;
   request: { id: string; status: "pending" | "granted" | "rejected"; reason: string | null } | null;
+  unitId?: string | null;
 };
 
 const start = async (client = app, utcOffset = offset) =>
@@ -254,4 +255,44 @@ test("AT11. 같은 사용자의 다른 거래가 동시에 와도 상한(2)을 �
   expect(outcomes.filter((o) => o === "granted")).toHaveLength(2);
   expect(outcomes.filter((o) => o === "limit")).toHaveLength(2);
   expect((await status()).used).toBe(2);
+});
+
+const iosUnit = "ca-app-pub-3940256099942544/1712485313";
+const androidUnit = "ca-app-pub-3940256099942544/5224354917";
+const statusOn = async (platform: string | null) =>
+  (await app.query("select public.ad_ticket_status($1, null, $2) as r", [offset, platform])).rows[0]
+    .r as Status;
+
+test("AT12. 광고 단위 ID는 서버 설정에서 플랫폼별로 내린다 — 스위치 off · 대상 아님 · 값 없음 · 모르는 플랫폼이면 null", async () => {
+  expect((await statusOn("ios")).unitId).toBeNull();
+  await db.admin.query(
+    "update companion.settings set ad_ticket_unit_ios = $1, ad_ticket_unit_android = $2",
+    [iosUnit, androidUnit],
+  );
+  try {
+    expect((await statusOn("ios")).unitId).toBe(iosUnit);
+    expect((await statusOn("android")).unitId).toBe(androidUnit);
+    expect((await statusOn("web")).unitId).toBeNull();
+    expect((await statusOn(null)).unitId).toBeNull();
+    // 옛 호출(플랫폼 없음)도 그대로 돈다.
+    expect((await status()).unitId).toBeNull();
+    await db.admin.query("update auth.users set created_at = now() where id = $1", [user]);
+    expect(await statusOn("ios")).toMatchObject({ eligible: false, unitId: null });
+    await db.admin.query("update auth.users set created_at = '2026-01-01' where id = $1", [user]);
+    await enable(false);
+    expect((await statusOn("android")).unitId).toBeNull();
+  } finally {
+    await db.admin.query(
+      "update companion.settings set ad_ticket_unit_ios = null, ad_ticket_unit_android = null",
+    );
+  }
+});
+
+test("AT13. 단위 ID 칸은 `ca-app-pub-숫자/숫자` 꼴만 받는다(앱 ID · 빈 값 거절)", async () => {
+  await expect(
+    db.admin.query("update companion.settings set ad_ticket_unit_ios = 'ca-app-pub-1~2'"),
+  ).rejects.toThrow(/check/);
+  await expect(
+    db.admin.query("update companion.settings set ad_ticket_unit_android = ''"),
+  ).rejects.toThrow(/check/);
 });

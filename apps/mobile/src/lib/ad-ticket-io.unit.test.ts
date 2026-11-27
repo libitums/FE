@@ -29,6 +29,7 @@ describe("AT-A1 서버 응답 읽기", () => {
           used: 1,
           left: 1,
           request: { id: "r", status: "granted", reason: null },
+          unitId: "ca-app-pub-3940256099942544/1712485313",
         }),
       ),
     ).toEqual({
@@ -37,6 +38,7 @@ describe("AT-A1 서버 응답 읽기", () => {
       cap: 2,
       left: 1,
       request: { status: "granted", reason: null },
+      unitId: "ca-app-pub-3940256099942544/1712485313",
     });
     expect(
       adTicketStatusFrom(
@@ -99,7 +101,7 @@ describe("AT-A1 서버 응답 읽기", () => {
 describe("AT-A2 서버 요청", () => {
   test("로그인이 없으면 null · 부르지 않는다", async () => {
     const post = vi.fn<(build: unknown) => Promise<AuthRequestOutcome>>();
-    const client = createAdTicketClient({ token: async () => null, post });
+    const client = createAdTicketClient({ token: async () => null, post, platform: () => "ios" });
     expect(await client.status(420)).toBeNull();
     expect(await client.start(420)).toBeNull();
     expect(post).not.toHaveBeenCalled();
@@ -108,6 +110,7 @@ describe("AT-A2 서버 요청", () => {
     const built: { url: string; body: unknown }[] = [];
     const client = createAdTicketClient({
       token: async () => "tok",
+      platform: () => "android",
       post: async (build) => {
         const { url, init } = build(config);
         built.push({ url, body: JSON.parse(String(init.body)) });
@@ -122,11 +125,11 @@ describe("AT-A2 서버 요청", () => {
     expect(built).toEqual([
       {
         url: "https://db.example/rest/v1/rpc/ad_ticket_status",
-        body: { p_utc_offset_min: 420, p_request_id: "r-1" },
+        body: { p_utc_offset_min: 420, p_request_id: "r-1", p_platform: "android" },
       },
       {
         url: "https://db.example/rest/v1/rpc/ad_ticket_status",
-        body: { p_utc_offset_min: -300, p_request_id: null },
+        body: { p_utc_offset_min: -300, p_request_id: null, p_platform: "android" },
       },
       { url: "https://db.example/rest/v1/rpc/ad_ticket_start", body: { p_utc_offset_min: 420 } },
     ]);
@@ -134,10 +137,12 @@ describe("AT-A2 서버 요청", () => {
   test("실패 · 던짐은 null", async () => {
     const failing = createAdTicketClient({
       token: async () => "tok",
+      platform: () => "ios",
       post: async () => ({ ok: false, reason: "network" }),
     });
     expect(await failing.start(0)).toBeNull();
     const throwing = createAdTicketClient({
+      platform: () => "ios",
       token: async () => {
         throw new Error("x");
       },
@@ -214,14 +219,18 @@ describe("AT-A4 호스트 광고 모듈", () => {
   test("모듈이 없으면 쓸 수 없고 결과는 unavailable · failed", async () => {
     vi.stubGlobal("NativeModules", {});
     expect(rewardedAdAvailable()).toBe(false);
-    expect(await loadRewardedAd()).toBe("unavailable");
+    expect(await loadRewardedAd("ca-app-pub-3940256099942544/1712485313")).toBe("unavailable");
     expect(await showRewardedAd("u", "r")).toBe("failed");
   });
   test("모듈이 있으면 불러오기 · 보여 주기에 사용자 id · 요청 id를 넘긴다", async () => {
     const shown: string[][] = [];
+    const loaded: string[] = [];
     vi.stubGlobal("NativeModules", {
       RewardedAdModule: {
-        loadRewarded: (callback: (payload: unknown) => void) => callback({ status: "loaded" }),
+        loadRewarded: (unitId: string, callback: (payload: unknown) => void) => {
+          loaded.push(unitId);
+          callback({ status: "loaded" });
+        },
         showRewarded: (
           userId: string,
           customData: string,
@@ -233,7 +242,11 @@ describe("AT-A4 호스트 광고 모듈", () => {
       },
     });
     expect(rewardedAdAvailable()).toBe(true);
-    expect(await loadRewardedAd()).toBe("loaded");
+    expect(await loadRewardedAd("ca-app-pub-3940256099942544/1712485313")).toBe("loaded");
+    expect(loaded).toEqual(["ca-app-pub-3940256099942544/1712485313"]);
+    // 꼴이 틀린 단위는 호스트를 부르지 않는다.
+    expect(await loadRewardedAd("ca-app-pub-1~2")).toBe("unavailable");
+    expect(loaded).toHaveLength(1);
     expect(await showRewardedAd("user-1", "req-1")).toBe("earned");
     expect(shown).toEqual([["user-1", "req-1"]]);
   });
@@ -248,7 +261,7 @@ describe("AT-A4 호스트 광고 모듈", () => {
         },
       },
     });
-    expect(await loadRewardedAd()).toBe("unavailable");
+    expect(await loadRewardedAd("ca-app-pub-3940256099942544/1712485313")).toBe("unavailable");
     expect(await showRewardedAd("u", "r")).toBe("failed");
   });
 });

@@ -86,7 +86,7 @@ final class ViewController: UIViewController {
       if PurchasesSDK.isStarted {
         config.register(PurchasesModule.self)
       }
-      // 보상형 광고(ADR-0209). **AdMob 값이 있어 SDK가 시작된 빌드에서만** 등록한다 — 없으면 광고 줄이 서지 않는다.
+      // 보상형 광고(ADR-0209 D10). **앱 ID가 있는 빌드에서만** 등록한다(Release는 샘플 앱 ID 불가) — 없으면 광고 줄이 서지 않는다.
       if RewardedAdSDK.config != nil {
         config.register(RewardedAdModule.self)
       }

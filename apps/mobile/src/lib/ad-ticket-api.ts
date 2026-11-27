@@ -5,6 +5,7 @@
 import type { HttpRequestInit, SupabaseConfig } from "./auth-session.contract";
 import { bearerHeaders } from "./auth-request";
 import type { AdTicketServerStatus, AdTicketStart } from "./ad-ticket.contract";
+import { readAppVersionProperties } from "./app-version-properties";
 import { currentAccessToken } from "./progress-api";
 import { isSuccessStatus, send, type AuthRequestOutcome } from "./supabase-transport";
 
@@ -13,6 +14,8 @@ export type AdTicketClientDeps = {
   readonly post: (
     build: (config: SupabaseConfig) => { url: string; init: HttpRequestInit },
   ) => Promise<AuthRequestOutcome>;
+  /** 광고 단위 ID를 고르는 플랫폼(`ios` · `android`, 모르면 그 밖 — 서버가 null을 낸다). */
+  readonly platform: () => string;
 };
 
 export type AdTicketClient = {
@@ -55,7 +58,8 @@ export function adTicketStatusFrom(bodyText: string | null): AdTicketServerStatu
     if (status === undefined) return null;
     request = { status, reason: typeof value.reason === "string" ? value.reason : null };
   }
-  return { enabled: raw.enabled, eligible: raw.eligible, cap, left, request };
+  const unitId = typeof raw.unitId === "string" ? raw.unitId : null;
+  return { enabled: raw.enabled, eligible: raw.eligible, cap, left, request, unitId };
 }
 
 export function adTicketStartFrom(bodyText: string | null): AdTicketStart | null {
@@ -94,7 +98,11 @@ export function createAdTicketClient(deps: AdTicketClientDeps): AdTicketClient {
     status: (utcOffset, requestId) =>
       rpc(
         "ad_ticket_status",
-        { p_utc_offset_min: utcOffset, p_request_id: requestId ?? null },
+        {
+          p_utc_offset_min: utcOffset,
+          p_request_id: requestId ?? null,
+          p_platform: deps.platform(),
+        },
         adTicketStatusFrom,
       ),
     start: (utcOffset) =>
@@ -104,4 +112,8 @@ export function createAdTicketClient(deps: AdTicketClientDeps): AdTicketClient {
 
 /** 앱 결선 — 저장된 로그인 · 설정. background 스레드(효과 · 탭)에서만 부릅니다. */
 export const adTicketClient = (): AdTicketClient =>
-  createAdTicketClient({ token: () => currentAccessToken(), post: (build) => send(build, true) });
+  createAdTicketClient({
+    token: () => currentAccessToken(),
+    post: (build) => send(build, true),
+    platform: () => readAppVersionProperties().platform,
+  });

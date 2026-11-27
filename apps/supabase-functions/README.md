@@ -1139,5 +1139,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 비밀: `ADMOB_AD_UNIT_IDS`(**필수**, 쉼표 — 콜백 `ad_unit` 값, 광고 단위 id의 `/` 뒤 숫자). 없으면 모든 콜백이 500 `misconfigured`
   (Google SSV 키는 모든 게시자가 함께 써서 광고 단위로 우리 콜백임을 가린다).
 
+- 광고 단위 ID(전체 `ca-app-pub-…/…`)는 앱이 아니라 서버 설정 `companion.settings.ad_ticket_unit_ios` · `ad_ticket_unit_android`에 두고
+  `ad_ticket_status(…, p_platform)`이 `unitId`로 내린다(스위치 off · 대상 아님 · 값 없음이면 null) — 앱 빌드 없이 켠다(ADR-0209 D10).
+
 **적용 순서** — `20270112120000` 뒤에 `20270114120000_ad_ticket.sql`(`20270113120000`은 열린 PR #651). 함수 `supabase functions deploy admob-ssv`.
 켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.

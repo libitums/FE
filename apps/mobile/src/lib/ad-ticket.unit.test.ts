@@ -6,6 +6,7 @@ import {
   adTicketPollDelayMs,
   adTicketRetryMs,
   adTicketStep,
+  isRewardedUnitId,
   utcOffsetMinutes,
 } from "./ad-ticket";
 import type { AdTicketServerStatus, AdTicketState } from "./ad-ticket.contract";
@@ -17,6 +18,7 @@ const status = (over: Partial<AdTicketServerStatus> = {}): AdTicketServerStatus 
   cap: 2,
   left: 2,
   request: null,
+  unitId: "ca-app-pub-3940256099942544/1712485313",
   ...over,
 });
 const offer: AdTicketState = { kind: "offer", left: 2, cap: 2, failed: false };
@@ -45,8 +47,14 @@ describe("AT-U1 서버 상태 → 첫 화면", () => {
       adTicketStep(adTicketHidden, { type: "status", status: status({ left: 0 }) }).state,
     ).toEqual({ kind: "limit", cap: 2 });
   });
-  test("스위치 off · 대상 아님 · 읽지 못함이면 그리지 않는다", () => {
-    for (const s of [status({ enabled: false }), status({ eligible: false }), null]) {
+  test("스위치 off · 대상 아님 · 읽지 못함 · 광고 단위 없음 · 단위 꼴이 틀리면 그리지 않는다", () => {
+    for (const s of [
+      status({ enabled: false }),
+      status({ eligible: false }),
+      null,
+      status({ unitId: null }),
+      status({ unitId: "ca-app-pub-1~2" }),
+    ]) {
       expect(adTicketStep(offer, { type: "status", status: s }).state).toEqual(adTicketHidden);
     }
   });
@@ -217,5 +225,15 @@ describe("AT-U5 확인 간격 · 실험군 · 오프셋", () => {
     expect(utcOffsetMinutes({ getTimezoneOffset: () => -420 } as Date)).toBe(420);
     expect(utcOffsetMinutes({ getTimezoneOffset: () => 300 } as Date)).toBe(-300);
     expect(utcOffsetMinutes({ getTimezoneOffset: () => 0 } as Date)).toBe(0);
+  });
+});
+
+describe("AT-U6 광고 단위 ID 꼴(ADR-0209 D10)", () => {
+  test("ca-app-pub-숫자/숫자만 받는다", () => {
+    expect(isRewardedUnitId("ca-app-pub-3940256099942544/1712485313")).toBe(true);
+    expect(isRewardedUnitId("ca-app-pub-3940256099942544~1458002511")).toBe(false);
+    expect(isRewardedUnitId(" ca-app-pub-1/2")).toBe(false);
+    expect(isRewardedUnitId("")).toBe(false);
+    expect(isRewardedUnitId(null)).toBe(false);
   });
 });

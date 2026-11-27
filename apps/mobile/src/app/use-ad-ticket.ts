@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import {
+  isRewardedUnitId,
   adTicketHidden,
   adTicketLoadTimeoutMs,
   adTicketPollDelayMs,
@@ -33,7 +34,7 @@ export type AdTicketDeps = {
   readonly client: () => AdTicketClient;
   readonly flag: () => AdTicketFlag;
   readonly available: () => boolean;
-  readonly load: () => Promise<RewardedAdLoad>;
+  readonly load: (unitId: string) => Promise<RewardedAdLoad>;
   readonly show: (userId: string, customData: string) => Promise<RewardedAdShow>;
   readonly userId: () => string | null;
   readonly offset: () => number;
@@ -80,6 +81,8 @@ export function useAdTicket(
   const [state, setState] = useState<AdTicketState>(adTicketHidden);
   const current = useRef<AdTicketState>(adTicketHidden);
   const generation = useRef(0);
+  // 서버가 이번 대화상자에 내린 광고 단위 ID(ADR-0209 D10) — 줄이 서 있으면 꼴이 맞는 값이다.
+  const unit = useRef<string | null>(null);
   const latest = useRef({ deps, onGrant, sink });
   latest.current = { deps, onGrant, sink };
 
@@ -99,15 +102,23 @@ export function useAdTicket(
     generation.current += 1;
     const gen = generation.current;
     current.current = adTicketHidden;
+    unit.current = null;
     setState(adTicketHidden);
     const { deps: d, sink: s } = latest.current;
     const userId = d.userId();
     if (!open || userId === null || !d.available()) return;
     void Promise.all([d.client().status(d.offset()), d.flag().arm(userId)]).then(
       ([status, arm]) => {
-        if (gen !== generation.current || status === null || !status.enabled || !status.eligible) {
+        if (
+          gen !== generation.current ||
+          status === null ||
+          !status.enabled ||
+          !status.eligible ||
+          !isRewardedUnitId(status.unitId)
+        ) {
           return;
         }
+        unit.current = status.unitId;
         s?.({ name: "ad_ticket_offer_shown", arm, left: String(status.left) });
         if (arm === "test") apply(gen, { type: "status", status });
       },
@@ -148,12 +159,13 @@ export function useAdTicket(
     const gen = generation.current;
     const d = latest.current.deps;
     const userId = d.userId();
-    if (current.current.kind !== "offer" || userId === null) return;
+    const unitId = unit.current;
+    if (current.current.kind !== "offer" || userId === null || unitId === null) return;
     apply(gen, { type: "tap" });
     const start = await d.client().start(d.offset());
     const afterStart = apply(gen, { type: "started", start });
     if (afterStart?.kind !== "busy" || start?.result !== "ok") return;
-    const load = await loadWithin(d.load);
+    const load = await loadWithin(() => d.load(unitId));
     if (apply(gen, { type: "loaded", load, nowMs: Date.now() })?.kind !== "busy") return;
     d.quiet();
     const show = await d.show(userId, start.requestId);

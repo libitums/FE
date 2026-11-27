@@ -45,7 +45,7 @@
 
 | 이름 | 누가 | 하는 일 |
 |---|---|---|
-| `ad_ticket_status(p_utc_offset_min, p_request_id?)` | 앱(로그인) | `{enabled, eligible, reason, cap, used, left, request: {id, status, reason} \| null}` — 남의 요청은 null |
+| `ad_ticket_status(p_utc_offset_min, p_request_id?, p_platform?)` | 앱(로그인) | `{enabled, eligible, reason, cap, used, left, request: {id, status, reason} \| null, unitId}` — 남의 요청은 null, `unitId`는 D10 |
 | `ad_ticket_start(p_utc_offset_min)` | 앱(로그인) | `ok`(`requestId`) · `blocked`(`reason`) · `limit`. 요청 id는 24시간 산다. 하루 시작 20번까지 |
 | `ad_ticket_grant(p_user_id, p_request_id, p_transaction_id, p_ad_unit)` | `admob-ssv`(service_role)만 | `granted` · `duplicate` · `unknown_request` · `expired` · `already_granted` · `off` · `anonymous` · `new_account` · `subscribed` · `limit` |
 
@@ -59,6 +59,8 @@
   로그에 사용자 id · 거래 id · 서명을 싣지 않는다.
 - **광고 단위 목록 `ADMOB_AD_UNIT_IDS`는 필수**다(없으면 500 `misconfigured`). Google SSV 공개키는 모든 AdMob 게시자가 함께 쓰므로 서명만으로는
   우리 광고 단위의 콜백임이 증명되지 않는다 — 남의 광고 단위 SSV URL을 우리 주소로 돌려 티켓을 받는 길을 막는다(리뷰).
+
+- **광고 단위 ID는 서버가 내린다(D10).**
 
 ### D6. 실험 — 플래그와 스위치가 둘 다 켜져야
 
@@ -74,13 +76,24 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 
 ### D8. 광고 네트워크 · 개인정보
 
-- Google Mobile Ads SDK(AdMob). 계정 · 앱 ID · 광고 단위 ID는 사용자가 만든다. 저장소에는 Google 공식 **테스트 ID**만 둔다. 실제 ID는 gitignore된
-  값 파일(iOS xcconfig · Android properties — Airbridge · RevenueCat과 같은 방식)에서 읽고, 값이 없으면 버튼을 보이지 않는다.
+- Google Mobile Ads SDK(AdMob). 계정 · 앱 ID · 광고 단위 ID는 사용자가 만든다. 저장소에는 Google 공식 **테스트 ID**만 둔다. **앱 ID만** gitignore된
+  값 파일(iOS xcconfig · Android properties — Airbridge · RevenueCat과 같은 방식)에서 읽는다. 광고 단위 ID는 서버가 내린다(D10).
 - **비개인화 광고**로 시작한다(새 ATT 요청 없음 — 이미 있는 ATT 결과를 따른다). iOS `SKAdNetworkItems`(AdMob 권장 목록).
 
 ### D9. 측정
 
 `ad_ticket_offer_shown` · `ad_ticket_started` · `ad_ticket_completed` · `ad_ticket_failed`(이유) · `ad_ticket_granted` — PostHog만(앱 PR).
+
+### D10. 광고 단위 ID는 서버 설정에서 — 앱 빌드 없이 켠다 (사용자 결정 2026-11-27 「진행」)
+
+- 다음 빌드에는 진짜 AdMob **앱 ID만** 넣어 둔다. 그 뒤 켜기 · 바꾸기는 서버 설정 · 스위치 · PostHog 플래그만으로 — 앱을 다시 짓지 않는다.
+- 자리: `companion.settings.ad_ticket_unit_ios` · `ad_ticket_unit_android`(기본 null, `ca-app-pub-숫자/숫자` 꼴만 — 앱 ID(`~`) · 빈 값은 표가 거절).
+  **비밀(Edge 환경)이 아니라 설정 칸으로 고른 까닭**: 광고 단위 ID는 비밀이 아니다 — 보통의 광고 앱은 바이너리에 그대로 싣고, 알아도 우리 계정으로 광고를
+  요청할 뿐 돈이나 지급을 만들 수 없다(지급은 SSV 서명 + `ADMOB_AD_UNIT_IDS` + 요청 id가 막는다). 그리고 상태 RPC(SQL)가 읽어야 하는데 SQL은 Edge 비밀을
+  읽지 못한다. 칸은 RLS로 앱에 열리지 않고 상태 RPC만 내린다.
+- `ad_ticket_status(…, p_platform)` → `unitId`: 스위치 off · 대상 아님 · 값 없음 · 모르는 플랫폼(`ios` · `android` 밖)이면 null. 앱은 null이면 광고 줄을 그리지 않는다.
+- SSV 검증용 `ADMOB_AD_UNIT_IDS`(숫자만, Edge 비밀)는 그대로 따로다 — 같은 단위의 `/` 뒤 숫자를 넣는다.
+- 검사: SQL AT12(플랫폼별 · off · 대상 아님 · 값 없음 · 옛 호출) · AT13(칸 꼴).
 
 ## 버린 대안
 
@@ -93,6 +106,8 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 | 레슨 결과 · 축하 화면에도 광고 | 학습 흐름을 끊고 잠식 범위가 커진다. 벽(티켓 0장)에서만 |
 | IANA 시간대 · 프로필 `timezone`으로 하루 | Android PrimJS에 `Intl`이 없고, 프로필 시간대는 대부분 비어 있다 |
 | 플래그 하나(PostHog)만 | 서버가 막지 못하면 앱 버전이 남아 있는 동안 끌 수 없다. 서버 스위치가 즉시 멈춤 |
+| 광고 단위 ID를 앱 값 파일에 | 켜고 바꿀 때마다 앱 빌드 · 심사가 필요하다(D10, 사용자 결정 2026-11-27) |
+| 광고 단위 ID를 Edge 비밀에 | SQL 상태 RPC가 읽지 못하고, 비밀로 지킬 값이 아니다(D10) |
 | 엽전 20 아래에 광고 | 시안 메모의 기본(위) — 무료가 먼저 보여야 이탈을 줄인다. 주황 채움은 Start lesson만 |
 
 ## 대가 · 한계
@@ -102,14 +117,18 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 - 광고 SDK가 앱 크기를 키운다(앱 PR이 잰다).
 - 개인정보 처리방침 · 스토어 Data safety / 개인정보 라벨에 광고 SDK를 더해야 한다(앱 PR 보고 목록).
 
-## 운영 적용 (사용자 승인 뒤)
+## 운영 적용 (사용자 승인 뒤) — 앱 빌드는 앱 ID를 넣는 한 번뿐
 
-1. AdMob 계정 · 앱(iOS · Android) · 보상형 광고 단위 둘 만들기 → 광고 단위의 「서버 측 확인」 URL = `https://<project>.supabase.co/functions/v1/admob-ssv`.
-2. `20270114120000_ad_ticket.sql` 적용(직전 버전 뒤 · 중복 없음 확인).
-3. `supabase functions deploy admob-ssv` · 비밀(**필수**) `ADMOB_AD_UNIT_IDS`(쉼표, 콜백 `ad_unit` 값 — 광고 단위 id의 `/` 뒤 숫자).
-4. AdMob 콘솔의 「확인」 테스트 콜백이 400(쿼리 모양) 또는 200이 아닌지 로그 확인 → 테스트 계정으로 끝까지 본 광고 1번이 `granted`인지 확인.
-5. 앱 PR 배포 뒤 PostHog 플래그 `ad-ticket` 50/50 → `update companion.settings set ad_ticket_enabled = true;`.
-6. 멈춤: `update companion.settings set ad_ticket_enabled = false;`.
+1. AdMob 계정 · 앱(iOS · Android) 둘 → **앱 ID 둘**을 값 파일(iOS `apps/ios/Config/AdMob.local.xcconfig` `ADMOB_APP_ID` · Android
+   `apps/android/app/admob.properties` `ADMOB_APP_ID`)에 넣고 다음 스토어 빌드에 싣는다(/release-build가 샘플 앱 ID 0건을 확인).
+2. 보상형 광고 단위 둘 → 각 단위의 「서버 측 확인」 URL = `https://<project>.supabase.co/functions/v1/admob-ssv`.
+3. `20270114120000_ad_ticket.sql` 적용(직전 버전 뒤 · 중복 없음 확인).
+4. `supabase functions deploy admob-ssv` · 비밀(**필수**) `ADMOB_AD_UNIT_IDS`(쉼표, 두 단위의 `/` 뒤 숫자).
+5. 광고 단위 ID 둘을 서버 설정에:
+   `update companion.settings set ad_ticket_unit_ios = 'ca-app-pub-…/…', ad_ticket_unit_android = 'ca-app-pub-…/…';`
+6. AdMob 콘솔의 「확인」 테스트 콜백 로그 확인 → 테스트 계정(스위치를 켜기 전엔 시험 프로젝트)으로 끝까지 본 광고 1번이 `granted`인지 확인.
+7. 앱 ID가 든 빌드가 퍼진 뒤 PostHog 플래그 `ad-ticket` 50/50 → `update companion.settings set ad_ticket_enabled = true;`.
+8. 멈춤: `update companion.settings set ad_ticket_enabled = false;`(광고 줄이 사라지고 진행 중 콜백도 거절). 단위 교체는 5를 다시.
 
 ## 적용 기록 ⟨2026-11-27 — 앱 (`feat/ad-ticket-app`)⟩
 

@@ -11,11 +11,18 @@
 --   오프셋은 지난 48시간 안 요청의 값으로 고정된다(요청마다 바꿔 여러 날치를 앞당기지 못하게).
 --   멱등: 거래 id(`transaction_id`)마다 한 번 — 같은 콜백이 다시 와도 `duplicate`. 요청 하나에 지급도 한 번.
 --   요청 id는 24시간 산다(그 뒤 콜백은 `expired`). 사용자마다 하루 시작 수도 20번으로 막는다(표가 부풀지 않게).
+--   광고 단위 ID(사용자 결정 2026-11-27): 앱 값 파일이 아니라 서버 설정 `ad_ticket_unit_ios` · `ad_ticket_unit_android`(기본 null)에서
+--   상태 응답(`unitId`)으로 내린다 — 앱 빌드 없이 켜고 바꾸려고. 광고 단위 ID는 비밀이 아니다(모든 광고 앱이 바이너리에 싣는 공개 값).
+--   스위치 off · 대상 아님 · 값 없음 · 모르는 플랫폼이면 null이고, 앱은 null이면 광고 줄을 그리지 않는다.
 
 alter table companion.settings
   add column if not exists ad_ticket_enabled boolean not null default false,
   add column if not exists ad_ticket_daily_cap integer not null default 2
-    check (ad_ticket_daily_cap between 0 and 10);
+    check (ad_ticket_daily_cap between 0 and 10),
+  add column if not exists ad_ticket_unit_ios text
+    check (ad_ticket_unit_ios is null or ad_ticket_unit_ios ~ '^ca-app-pub-[0-9]+/[0-9]+$'),
+  add column if not exists ad_ticket_unit_android text
+    check (ad_ticket_unit_android is null or ad_ticket_unit_android ~ '^ca-app-pub-[0-9]+/[0-9]+$');
 
 create table companion.ad_ticket_requests (
   id uuid primary key default gen_random_uuid(),
@@ -107,7 +114,7 @@ revoke all on function companion.ad_ticket_day(integer, timestamptz), companion.
 
 -- ------------------------------------------------------------------ 앱: 상태 · 시작
 
-create function public.ad_ticket_status(p_utc_offset_min integer, p_request_id uuid default null)
+create function public.ad_ticket_status(p_utc_offset_min integer, p_request_id uuid default null, p_platform text default null)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare
   v_user uuid := auth.uid();
@@ -115,11 +122,17 @@ declare
   v_cap integer;
   v_used integer;
   v_request jsonb;
+  v_unit text;
 begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
   end if;
   v_block := companion.ad_ticket_block(v_user, now());
+  -- 광고 단위 ID는 받을 수 있는 사람에게만 — 스위치 off · 대상 아님이면 null.
+  if v_block is null then
+    select case p_platform when 'ios' then ad_ticket_unit_ios when 'android' then ad_ticket_unit_android end
+    into v_unit from companion.settings;
+  end if;
   select ad_ticket_daily_cap into v_cap from companion.settings;
   v_used := companion.ad_ticket_used(v_user,
     companion.ad_ticket_day(companion.ad_ticket_offset(v_user, p_utc_offset_min, now()), now()));
@@ -132,7 +145,8 @@ begin
     'cap', v_cap,
     'used', v_used,
     'left', greatest(v_cap - v_used, 0),
-    'request', v_request
+    'request', v_request,
+    'unitId', v_unit
   );
 end;
 $$;
@@ -228,7 +242,7 @@ begin
 end;
 $$;
 
-revoke all on function public.ad_ticket_status(integer, uuid), public.ad_ticket_start(integer) from public, anon;
-grant execute on function public.ad_ticket_status(integer, uuid), public.ad_ticket_start(integer) to authenticated;
+revoke all on function public.ad_ticket_status(integer, uuid, text), public.ad_ticket_start(integer) from public, anon;
+grant execute on function public.ad_ticket_status(integer, uuid, text), public.ad_ticket_start(integer) to authenticated;
 revoke all on function public.ad_ticket_grant(uuid, uuid, text, text) from public, anon, authenticated;
 grant execute on function public.ad_ticket_grant(uuid, uuid, text, text) to service_role;

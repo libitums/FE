@@ -47,8 +47,18 @@ const drainedProgress = () => {
   });
 };
 
-const status = (left: number, request: unknown = null) =>
-  ok({ enabled: true, eligible: true, reason: null, cap: 2, used: 2 - left, left, request });
+const unitId = "ca-app-pub-3940256099942544/1712485313";
+const status = (left: number, request: unknown = null, unit: string | null = unitId) =>
+  ok({
+    enabled: true,
+    eligible: true,
+    reason: null,
+    cap: 2,
+    used: 2 - left,
+    left,
+    request,
+    unitId: unit,
+  });
 
 const env = {
   store: new Map<string, string>(),
@@ -60,6 +70,7 @@ const env = {
   load: "loaded" as string,
   show: "earned" as string,
   shown: [] as string[][],
+  loads: [] as string[],
   audioStops: 0,
 };
 
@@ -80,6 +91,7 @@ async function boot(withModule = true): Promise<void> {
   env.events = [];
   env.calls = [];
   env.shown = [];
+  env.loads = [];
   env.audioStops = 0;
   vi.stubGlobal("NativeModules", {
     StorageModule: {
@@ -96,8 +108,10 @@ async function boot(withModule = true): Promise<void> {
     ...(withModule
       ? {
           RewardedAdModule: {
-            loadRewarded: (callback: (payload: unknown) => void) =>
-              setTimeout(() => callback({ status: env.load }), 300),
+            loadRewarded: (unit: string, callback: (payload: unknown) => void) => {
+              env.loads.push(unit);
+              setTimeout(() => callback({ status: env.load }), 300);
+            },
             showRewarded: (userId: string, customData: string, callback: (p: unknown) => void) => {
               env.shown.push([userId, customData]);
               setTimeout(() => callback({ status: env.show }), 1_000);
@@ -209,6 +223,7 @@ test("[IAT1] 실험군 · 대상 — 광고 줄 → 시작(요청 id) → 광고
   await flush();
   expect(screen.getByTestId("out-of-tickets-ad")).toHaveTextContent("Loading ad…");
   await flush(300);
+  expect(env.loads).toEqual([unitId]);
   expect(env.shown).toEqual([[user, "11111111-1111-4111-8111-111111111111"]]);
   expect(env.audioStops).toBeGreaterThanOrEqual(1);
   await flush(1_000);
@@ -313,4 +328,13 @@ test("[IAT7] Back to map으로 닫으면 진행 중인 확인을 버린다 — �
   expect(
     within(screen.getByTestId("out-of-tickets")).queryByTestId("out-of-tickets-ad-granted"),
   ).not.toBeInTheDocument();
+});
+
+test("[IAT8] 서버가 광고 단위 ID를 주지 않으면(설정 없음) 줄 · 노출 이벤트 · 광고 불러오기가 없다", async () => {
+  await boot();
+  env.statuses = [status(2, null, null)];
+  await openOutOfTickets();
+  expect(screen.queryByTestId("out-of-tickets-ad")).not.toBeInTheDocument();
+  expect(adEvents()).toEqual([]);
+  expect(env.loads).toEqual([]);
 });

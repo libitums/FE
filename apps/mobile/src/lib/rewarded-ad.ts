@@ -3,10 +3,11 @@
 // `rewardedAdAvailable()`이 거짓이고 광고 줄이 서지 않습니다. 광고는 비개인화(npa=1)로 요청합니다(호스트).
 // 보여 줄 때 SSV 옵션에 Supabase 사용자 id(user_id)와 서버 요청 id(custom_data)를 싣습니다. 던지지 않습니다.
 
+import { isRewardedUnitId } from "./ad-ticket";
 import type { RewardedAdLoad, RewardedAdShow } from "./ad-ticket.contract";
 
 interface RewardedAdModule {
-  loadRewarded(callback: (payload: unknown) => void): void;
+  loadRewarded(unitId: string, callback: (payload: unknown) => void): void;
   showRewarded(userId: string, customData: string, callback: (payload: unknown) => void): void;
 }
 
@@ -38,12 +39,13 @@ export function rewardedAdAvailable(): boolean {
   return nativeModule() !== undefined;
 }
 
-export function loadRewardedAd(): Promise<RewardedAdLoad> {
+/** 서버가 내린 광고 단위 ID로 불러옵니다(ADR-0209 D10). 꼴이 틀리면 호스트를 부르지 않습니다. */
+export function loadRewardedAd(unitId: string): Promise<RewardedAdLoad> {
   const host = nativeModule();
-  if (host === undefined) return Promise.resolve("unavailable");
+  if (host === undefined || !isRewardedUnitId(unitId)) return Promise.resolve("unavailable");
   return new Promise((resolve) => {
     try {
-      host.loadRewarded((payload) => resolve(rewardedAdLoadOf(payload)));
+      host.loadRewarded(unitId, (payload) => resolve(rewardedAdLoadOf(payload)));
     } catch {
       resolve("unavailable");
     }

@@ -13,6 +13,11 @@ export type AdTicketServerStatus = {
     readonly status: "pending" | "granted" | "rejected";
     readonly reason: string | null;
   } | null;
+  /**
+   * 보상형 광고 단위 ID(`ca-app-pub-…/…`) — 서버 설정에서 플랫폼별로 내린다(ADR-0209 D10). 스위치 off · 대상 아님 · 값 없음이면 null이고,
+   * null이면 광고 줄을 그리지 않는다.
+   */
+  readonly unitId: string | null;
 };
 
 /** `ad_ticket_start` 응답입니다. */

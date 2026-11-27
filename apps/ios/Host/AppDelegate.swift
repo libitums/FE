@@ -24,9 +24,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       PurchasesAttribution.linkAirbridgeDevice()
     }
 
-    // AdMob 보상형 광고(ADR-0209). 앱 ID · 광고 단위가 없으면 한 줄도 부르지 않는다 — 광고 모듈도 등록하지 않는다.
+    // AdMob 보상형 광고(ADR-0209 D10). 앱 ID만 읽어 둔다 — SDK는 서버가 광고 단위를 준 첫 불러오기 때 시작한다.
     if let config = RewardedAdConfig.fromBundle() {
-      RewardedAdSDK.start(config)
+      RewardedAdSDK.configure(config)
     }
 
     // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.

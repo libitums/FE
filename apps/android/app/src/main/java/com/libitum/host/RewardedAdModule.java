@@ -21,9 +21,10 @@ import com.lynx.react.bridge.JavaOnlyMap;
 import java.lang.ref.WeakReference;
 
 /**
- * 보상형 광고를 불러오고 보여 주는 호스트 모듈이다(ADR-0209 · ADR-0017). **광고 단위 값이 있어 SDK가 시작된 빌드에서만** 등록한다.
+ * 보상형 광고를 불러오고 보여 주는 호스트 모듈이다(ADR-0209 · ADR-0017). **앱 ID가 있는 빌드에서만** 등록한다.
  * <ul>
- *   <li>{@code loadRewarded(callback)} → {@code {status: loaded | no_fill | failed}}. 비개인화(npa=1)로 요청한다.
+ *   <li>{@code loadRewarded(unitId, callback)} → {@code {status: loaded | no_fill | failed}}. 단위 ID는 서버가 내린 값(꼴 검사), 처음이면
+ *       여기서 SDK를 시작한다. 비개인화(npa=1)로 요청한다.
  *   <li>{@code showRewarded(userId, customData, callback)} → {@code {status: earned | dismissed | failed}}. 닫힌 뒤 한 번 답한다.
  *       SSV 옵션에 Supabase 사용자 id와 서버 요청 id를 싣는다 — 지급은 서버가 Google 콜백으로 판정한다.
  * </ul>
@@ -38,9 +39,8 @@ public final class RewardedAdModule extends LynxModule {
     this.activityRef = new WeakReference<>(param instanceof Activity ? (Activity) param : null);
   }
 
-  @LynxMethod public void loadRewarded(Callback callback) {
-    RewardedAdConfig config = RewardedAdSdk.config();
-    if (config == null) {
+  @LynxMethod public void loadRewarded(String unitId, Callback callback) {
+    if (RewardedAdSdk.config() == null || !RewardedAdConfig.isUnitId(unitId)) {
       reply(callback, "failed");
       return;
     }
@@ -52,11 +52,12 @@ public final class RewardedAdModule extends LynxModule {
         return;
       }
       try {
+        RewardedAdSdk.startIfNeeded(activity);
         Bundle extras = new Bundle();
         extras.putString("npa", "1");
         AdRequest request =
             new AdRequest.Builder().addNetworkExtrasBundle(AdMobAdapter.class, extras).build();
-        RewardedAd.load(activity, config.unitId(), request, new RewardedAdLoadCallback() {
+        RewardedAd.load(activity, unitId, request, new RewardedAdLoadCallback() {
           @Override public void onAdLoaded(@NonNull RewardedAd loaded) {
             ad = loaded;
             reply(callback, "loaded");

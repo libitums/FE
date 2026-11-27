@@ -21,7 +21,9 @@ export function adTicketStep(state: AdTicketState, input: AdTicketInput): AdTick
     case "status": {
       if (busy !== null || state.kind === "granted") return stay(state);
       const s = input.status;
-      if (s === null || !s.enabled || !s.eligible) return stay(adTicketHidden);
+      if (s === null || !s.enabled || !s.eligible || !isRewardedUnitId(s.unitId)) {
+        return stay(adTicketHidden);
+      }
       if (s.left <= 0) return stay({ kind: "limit", cap: s.cap });
       return stay({ kind: "offer", left: s.left, cap: s.cap, failed: false });
     }
@@ -141,6 +143,13 @@ export function adTicketStep(state: AdTicketState, input: AdTicketInput): AdTick
       if (state.kind !== "no-fill") return stay(state);
       return stay({ kind: "offer", left: state.left, cap: state.cap, failed: false });
   }
+}
+
+const unitIdShape = /^ca-app-pub-\d+\/\d+$/;
+
+/** 보상형 광고 단위 ID 꼴(`ca-app-pub-숫자/숫자`)인가 — 서버가 내린 값을 호스트에 넘기기 전에 본다(ADR-0209 D10). */
+export function isRewardedUnitId(value: unknown): value is string {
+  return typeof value === "string" && unitIdShape.test(value);
 }
 
 /** `polls`번 물은 뒤 다음 물음까지 기다릴 시간 — 다했으면 null. */
