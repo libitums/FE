@@ -24,6 +24,7 @@ import {
 } from "./roleplay-story";
 import type { RoleplayTalkScreenProps } from "./roleplay-story.contract";
 import {
+  roleplayCloseOf,
   roleplayDialogLinesOf,
   roleplayHeaderLabel,
   roleplayProgressSegments,
@@ -66,6 +67,8 @@ export function RoleplayTalkScreen({
   const isLast = state.turnIndex === turns.length - 1;
   const heard = state.phase === "heard";
   const correct = heard && state.verdict === "correct";
+  // 맞았지만 완벽하지 않으면(close) 모범 정답을 보이고 저절로 넘기지 않습니다(ADR-0201 D6 적용 2 개정 ⟨close⟩).
+  const close = roleplayCloseOf(state);
 
   const { attempt, permission } = useMicSpeechAttempt(roleplayTalkMic(mic), (outcome) => {
     if (outcome.kind === "heard") {
@@ -86,6 +89,7 @@ export function RoleplayTalkScreen({
     turnIndex: state.turnIndex,
     turn,
     correct,
+    autoAdvance: close === null,
     done,
     replays,
     advance: () => run("next")(),
@@ -243,6 +247,7 @@ export function RoleplayTalkScreen({
             >
               <RoleplayResultPanel
                 correct={correct}
+                close={close}
                 expected={expected}
                 roman={romanizeKorean(expected)}
                 meaning={turn.replyTranslation}
