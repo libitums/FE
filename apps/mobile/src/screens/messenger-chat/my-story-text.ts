@@ -99,7 +99,7 @@ const textBoxAt = (base: { line: number; count: number }, scale: number) => ({
 
 /**
  * 글 상자 끝단 — 회전한 상자의 외접 사각형이 바탕(가장자리 여백 · 오른쪽 도구 열 뺌) 안에 들 때까지만 커지고(서버 상한 3과 둘 중 작은
- * 값), 자리는 그 사각형이 바탕 안에 남게 안쪽으로 밉니다(`placedFit`). 끄는 중 · 돌리는 중에도 같은 상한. 바탕 폭을 모르면(0) 그대로.
+ * 값), 자리는 가운데가 화면 안이면 됩니다(`placedFit` — 가려지지 않는 곳에 32px은 남김). 끄는 중 · 돌리는 중에도 같은 상한. 바탕 폭을 모르면(0) 그대로.
  */
 export function textFit(
   ko: string,
