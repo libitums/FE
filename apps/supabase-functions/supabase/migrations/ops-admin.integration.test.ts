@@ -97,8 +97,8 @@ describe("구독 표가 있는 DB", () => {
          where n.nspname = 'public' and p.proname like 'ops\\_%'`,
       )
     ).rows;
-    // 20261212의 22개 + 20261213(2차)의 10개 + 20261215(판정 메시지)의 1개.
-    expect(functions.length).toBe(33);
+    // 20261212의 22개 + 20261213(2차)의 10개 + 20261215(판정 메시지)의 1개 + 20270118(판정 · 기억 · 스토리 조회 1차)의 6개.
+    expect(functions.length).toBe(39);
     for (const f of functions) {
       expect({
         sig: f.sig,
@@ -106,7 +106,8 @@ describe("구독 표가 있는 DB", () => {
         auth: f.auth,
         service: f.service,
         definer: f.definer,
-        config: f.config,
+        // 20270118의 여섯은 제한 시간 설정을 더 가집니다 — 그 값은 그쪽 테스트(OI-13)가 봅니다.
+        config: (f.config as string[]).filter((entry) => !entry.startsWith("statement_timeout=")),
       }).toEqual({
         sig: f.sig,
         anon: false,
