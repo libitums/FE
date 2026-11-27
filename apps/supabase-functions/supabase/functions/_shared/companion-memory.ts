@@ -23,6 +23,8 @@ export type StoredMessage = {
 /** `companion_memory_source`의 반환 — 아직 묶음이 차지 않았으면 null. `existing`은 20261123부터. */
 type MemorySource = {
   until: string;
+  /** 마지막 메시지의 학습자 현지 날짜(20270114). */
+  localDate?: string;
   sourceMessageId: string;
   messages: StoredMessage[];
   existing?: { id: string; content: string; shared: boolean; userEdited: boolean }[];
@@ -109,6 +111,7 @@ export async function runMemoryBatch(
         shared,
         locked: userEdited,
       })),
+      ...(batch.localDate ? { localDate: batch.localDate } : {}),
       minor: input.minor,
       signal: AbortSignal.timeout(timeoutMs),
     });

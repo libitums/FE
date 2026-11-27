@@ -10,7 +10,7 @@ export function fakeMemoryOps(request: Pick<MemoryRequest, "messages" | "existin
     const likes = /저는 (.{1,20}) 좋아해요/.exec(entry.text);
     if (likes)
       return [
-        { op: "add", kind: "fact", content: `${likes[1]} 좋아한다`, shared: true, reason: "fake" },
+        { op: "add", kind: "fact", content: `${likes[1]} 좋아한다`, shared: false, reason: "fake" },
       ];
     const moved = /(\S+?)(?:으로|로) 이사했어요/.exec(entry.text);
     const home = moved ? find("산다") : undefined;

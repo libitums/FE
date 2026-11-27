@@ -41,7 +41,6 @@ export const memorySchema = z.object({
       ref: z.string().nullable(),
       kind: z.enum(["fact", "event"]).nullable(),
       content: z.string().nullable(),
-      shared: z.boolean().nullable(),
       reason: z.string(),
     }),
   ),
