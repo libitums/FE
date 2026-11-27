@@ -92,3 +92,13 @@
 - ⟨2026-11-05⟩ **앱 구현** — **사용자 결정**(「구현」). 매니페스트 항목 `translations` 디코드 · 인코드(`episode-manifest.ts`, 언어마다 틀리면 그 언어만 버림), `translation-1` 디코더와 표 덧씌우기(`lib/episode-translation-files.ts` — 표 정규화는 episode-core `translationsOf` 재사용), 받기 차례의 번역 단계(`lib/episode-translation-sync.ts` — 본문보다 먼저, UI 언어 하나, sha256 대조 · 저장 키 `libitum.content.translation.<언어>.<id>`), 카탈로그가 저장된 파일로 그 언어 표를 바꿈, UI 언어 저장 알림으로 받기 재실행, `CONTENT_CLIENT_LEVEL` 3 → 4.
   - 같은 판(version · 출처가 같음)이 열린 세션에서는 **번역표만** 새 것으로 바꾼다(`mergeCatalogForSession`) — 언어를 바꿔 받은 파일이 다음 실행을 기다리지 않는다. 판이 다르면 지금 규칙(다음 실행 · 스플래시 교체)대로.
   - **D4(내장본의 언어별 파일)는 미룬다.** 내장 본문(u00 ~ u10 balance 판)을 level-4 판으로 바꾸는 것은 콘텐츠 교체라 따로 한다. 그동안 내장본은 본문 안 표(vi · id · es · ja)를 그대로 쓰고, 원격 판이 이기면 파일 표가 쓰인다.
+- ⟨2026-11-27⟩ **개정 ⟨내장 표⟩ — D4의 「미룸」 일부 해소: 내장 본문에 zh-TW · th · my 표를 싣는다**(브랜치 `feat/bundled-translations-zh-th-my`).
+  - **사용자 결정**(2026-11-27): 「내장 번역표에 중국어 말고 다른 없는 언어도 넣어 줘야지」 · 「천장 올려」(ADR-0149 개정 8, 6,220,000 B).
+  - 까닭: 받아 둔 파일을 내장본에 입히는 개정(PR #684, 브랜치 `fix/roleplay-language`)은 파일을 받은 뒤에만 닿는다. 첫 실행 · 오프라인 · 매니페스트 실패 기기에서는 내장 표가 vi · id · es · ja뿐이라
+    zh-TW · th · my 사용자에게 u00 ~ u10의 뜻이 영어였다.
+  - 방법: 지금 내장 표(vi · id · es · ja)와 같은 자리(본문 최상위 `translations`)에, 운영 버킷 `translations/level-5/<언어>/<id>.json`(읽기만)에서
+    **내장 본문의 영어 문자열과 같은 키만** 골라 싣는다. 내장 목록(`content/manifest.json`)의 sha256 · bytes를 다시 셈(판 번호 그대로). 언어별 파일로 옮기는
+    D4 본래 안은 여전히 미룬다(내장 본문 교체가 함께 필요).
+  - **남는 것**: 내장 본문(2026-11-04.2 판)은 level-5와 영어가 다듬어진 줄이 있어, 세 언어 모두 고유 326줄(쓰이는 자리 917곳, 그중 롤플레이 턴 6곳)이
+    표에 없다 — 그 줄은 영어로 선다. 파일을 받아 원격본을 열면 사라진다. 한국어로 이어 더 채우는 갈래는 번들 천장을 넘어 쓰지 않았다(ADR-0149 개정 8).
+  - 확인: unit `episode-bundled.live` · integration `App.bundled-translations`(받은 파일 없음 + zh-TW · th · my).

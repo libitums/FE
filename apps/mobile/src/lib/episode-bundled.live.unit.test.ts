@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, test, vi } from "vitest";
 
 import { bundledContentImageUrl } from "./bundled-content-images";
+import { entryLanguages } from "./entry-language";
 import { bundledCatalogInput } from "./episode-bundled";
 import { buildEpisodeCatalog, checkEpisodeText } from "./episode-catalog";
 import { episodeAssetPaths } from "./episode-assets";
@@ -54,6 +55,25 @@ describe("실제 내장본", () => {
     expect(catalog.map((entry) => [entry.id, entry.status])).toEqual(
       BUNDLED_IDS.map((id) => [id, "ready"]),
     );
+  });
+
+  test("BL5. 편마다 영어 밖 일곱 화면 언어의 번역표가 모두 실려 있고 제목이 번역된다(ADR-0102 개정 ⟨내장 표⟩)", () => {
+    const languages = entryLanguages.filter((language) => language !== "en");
+    expect(languages).toHaveLength(7);
+    for (const entry of bundledCatalogInput.manifest.episodes) {
+      const body = bundledCatalogInput.episodes[entry.id] as {
+        readonly title_en: string;
+        readonly translations: Readonly<Record<string, Readonly<Record<string, string>>>>;
+      };
+      for (const language of languages) {
+        const table = body.translations[language] ?? {};
+        expect({ id: entry.id, language, title: Boolean(table[body.title_en]) }).toEqual({
+          id: entry.id,
+          language,
+          title: true,
+        });
+      }
+    }
   });
 
   test("BL4. u00이 가리키는 그림은 모두 앱에 실은 그림이고 파일이 있다", () => {
