@@ -11,6 +11,8 @@ const migration = new URL("./20261216120000_companion_friends.sql", import.meta.
 const ladder = new URL("./20261218120000_companion_romance_ladder.sql", import.meta.url);
 // 20270112(ADR-0203): 해준의 로맨스 태도를 고친다 — 다시 적용하면 이것도 이어서.
 const haejunWarmth = new URL("./20270112120000_companion_haejun_warmth.sql", import.meta.url);
+// 20270121: 친구 넷의 취향 · 배경과 스토리 다섯의 취향(likes · dislikes)을 정본에 맞춘다 — 다시 적용하면 이것도 이어서.
+const personaTastes = new URL("./20270121120000_companion_persona_tastes.sql", import.meta.url);
 const friendsJson = new URL("../../../../docs/content/companion-friends.json", import.meta.url);
 const year = new Date().getUTCFullYear();
 const adultYear = year - 30;
@@ -27,7 +29,7 @@ type Friend = {
   look: { identity: string };
   voiceId: string;
   persona: Record<
-    "history" | "values" | "people" | "goals" | "likes" | "dislikes" | "hooks",
+    "background" | "history" | "values" | "people" | "goals" | "likes" | "dislikes" | "hooks",
     string[]
   > & { romance: string };
 };
@@ -120,10 +122,10 @@ beforeEach(async () => {
   );
 });
 
-test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · 선톡 줄 · 수위 · MBTI, 스토리 다섯에는 MBTI · standard", async () => {
+test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · 선톡 줄 · 수위 · MBTI, 스토리 다섯에는 MBTI · standard · 취향", async () => {
   const content = JSON.parse(await readFile(friendsJson, "utf8")) as {
     friends: Friend[];
-    storyProfiles: Record<string, { mbti: string } | string>;
+    storyProfiles: Record<string, { mbti: string; likes?: string[]; dislikes?: string[] } | string>;
   };
   const rows = await db.admin.query(
     "select id, persona, media, active, sort_order from companion.characters order by sort_order, id",
@@ -158,6 +160,7 @@ test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · �
     for (const key of ["samples", "doNot", "background", "personality", "topics"])
       expect(row.persona[key].length, `${friend.id} ${key}`).toBeGreaterThan(2);
     for (const key of [
+      "background",
       "history",
       "values",
       "people",
@@ -174,6 +177,9 @@ test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · �
   for (const [id, value] of Object.entries(content.storyProfiles)) {
     if (typeof value === "string") continue;
     expect(byId.get(id)!.persona, id).toMatchObject({ mbti: value.mbti, romanceTier: "standard" });
+    // 취향(20270121) — 정본에 있는 칸은 서버 페르소나와 같다.
+    for (const key of ["likes", "dislikes"] as const)
+      if (value[key]) expect(byId.get(id)!.persona[key], `${id} ${key}`).toEqual(value[key]);
   }
   // 로맨스 대상이 아닌 인물(ADR-0168 D4) — 덕수쌤 · 윤경만.
   for (const row of rows.rows)
@@ -417,6 +423,7 @@ test("FR9. 다시 적용해도 같은 결과 · 서버용 함수는 앱이 부�
   await db.admin.query(await readFile(migration, "utf8"));
   await db.admin.query(await readFile(ladder, "utf8"));
   await db.admin.query(await readFile(haejunWarmth, "utf8"));
+  await db.admin.query(await readFile(personaTastes, "utf8"));
   expect((await snapshot()).rows[0]).toEqual(before);
   await signIn(app, member);
   await expect(
