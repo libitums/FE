@@ -299,6 +299,42 @@ describe("가이드 → 답 → 예시 받기", () => {
     expect(ids_().indexOf(`${G}~snapshot~${PHOTO}`)).toBe(ids_().indexOf(`${G}#1`) + 1);
   });
 
+  test("GA-I1 대화가 30개를 넘어 첫 쪽에 첫 인사가 없는 방 — 예시 단계가 서지 않고 받기를 부르지 않는다, 알약은 보통 가격(점검 3)", async () => {
+    // 재현: 예전에는 불러온 범위의 첫 캐릭터 말(R)에 예시를 놓고, 서버는 첫 인사(G)에 붙여 다시 열면 대화에서 사라졌다.
+    const lines: ChatMessage[] = [];
+    for (let turn = 0; turn < 15; turn += 1) {
+      const them = `9${String(turn).padStart(7, "0")}-0000-4000-8000-000000000000`;
+      lines.push({
+        id: `${them}#0`,
+        at: 10 + turn * 2,
+        kind: "text",
+        from: "them",
+        text: { ko: `말 ${turn}`, en: "" },
+      });
+      lines.push({
+        id: `u${turn}`,
+        at: 11 + turn * 2,
+        kind: "text",
+        from: "me",
+        text: { ko: "네", en: "" },
+      });
+    }
+    const env = serverRoom(
+      { messages: lines, corrections: {}, ideas: null, hasMore: true },
+      undefined,
+      { placedAt: G },
+    );
+    mountChat({
+      source: env.source,
+      roomId: "duksu",
+      guideStore: memoryStore(["list", "room", "keyboard"]),
+    });
+    await flush();
+    expect(screen.queryByTestId(ids.guideCoach)?.getAttribute("data-step") ?? null).toBeNull();
+    expect(screen.getByTestId(ids.snapshot).textContent).toContain("35");
+    expect(env.claim).not.toHaveBeenCalled();
+  });
+
   test("GS-I4 유료 사진은 지금처럼 가장 최근 메시지(응답)가 대상이다", async () => {
     const env = serverRoom({
       messages: greetingBubbles,

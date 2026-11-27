@@ -19,11 +19,14 @@ import type { MediaSenderDeps } from "./chat-remote-send";
 /** 예시 사진이 도착하기 전 「만드는 중」을 보이는 가장 짧은 시간. */
 export const SAMPLE_WAIT_MS = 1500;
 
+/** 예시 받기의 끝 — 받음 · 서버가 주지 않기로 함(14세 미만 · 일시 차단 · 첫 인사 없음 · 이미 씀 …) · 못 물음(연결 · 방 없음). */
+export type SampleClaimOutcome = "received" | "refused" | "failed";
+
 export type SampleSnapshotMethods = {
   /** 이 방의 인물에게서 받을 수 있는 예시(사진 · 음성) — 서버가 정합니다. 못 물으면 둘 다 false. */
   readonly offered: (roomId: string) => Promise<SampleOffer>;
-  /** 예시를 받아 대화에 놓습니다(기본 사진) — 받았으면 true. */
-  readonly claim: (roomId: string, media?: ChatMediaKind) => Promise<boolean>;
+  /** 예시를 받아 대화에 놓습니다(기본 사진). */
+  readonly claim: (roomId: string, media?: ChatMediaKind) => Promise<SampleClaimOutcome>;
 };
 
 const NO_OFFER: SampleOffer = { snapshot: false, voice: false };
@@ -44,7 +47,7 @@ export function sampleSnapshotMethods(
     return room !== null && room.access.kind === "open" ? room : null;
   };
   const targetOf = (room: RoomState, media: ChatMediaKind) =>
-    sampleTargetOf(room.messages, media, room.greetingId);
+    sampleTargetOf(room.messages, media, room.greetingId, room.olderHidden);
   /** 받은 결과를 대화에 놓습니다 — 사진 + 「이번 것은 무료」 줄, 아니면 회색 안내 줄. */
   const settle = async (
     room: RoomState,
@@ -52,14 +55,14 @@ export function sampleSnapshotMethods(
     target: ChatMediaTarget,
     media: ChatMediaKind,
     result: MediaRequestResult,
-  ): Promise<boolean> => {
-    if (!alive(room)) return false;
+  ): Promise<SampleClaimOutcome> => {
+    if (!alive(room)) return "failed";
     if (result.kind !== "accepted" || result.media.status !== "complete") {
       // 서버가 주지 않기로 했으면(다른 기기에서 이미 씀 · 예시 꺼짐) 다시 해 보라고 하지 않습니다.
       const notice = result.kind === "failed" ? "request-failed" : "unavailable";
       replace(room, reqId, noticeLine(room, target, media, notice));
       changed(room);
-      return false;
+      return result.kind === "refused" ? "refused" : "failed";
     }
     // 서버가 붙인 곳(첫 인사)이 앱이 고른 대상과 다르면 그 아래에 놓습니다 — 다시 읽을 때 서버 줄과 같은 자리 · 같은 id라 두 장이 되지 않습니다.
     const placed = placedSampleTarget(room.messages, target, result.media.messageId, media);
@@ -69,10 +72,10 @@ export function sampleSnapshotMethods(
     }
     // 값이 없으니 잔액을 읽지 않습니다(`cached`).
     await accept(room, reqId, placed, media, { media: result.media, cached: true });
-    if (!alive(room)) return false;
+    if (!alive(room)) return "failed";
     put(room, noticeLine(room, placed, media, "sample-gift"));
     changed(room);
-    return true;
+    return "received";
   };
   return {
     offered: async (roomId) => {
@@ -90,7 +93,7 @@ export function sampleSnapshotMethods(
       const room = openRoom(roomId);
       const sample = port?.sample;
       const target = room === null ? null : targetOf(room, media);
-      if (room === null || sample === undefined || target === null) return false;
+      if (room === null || sample === undefined || target === null) return "failed";
       const reqId = mediaLineId(target.messageId, media, "req");
       room.samples = [...room.samples, samplePrefixOf(target.messageId, media)];
       const at = now();
@@ -105,7 +108,7 @@ export function sampleSnapshotMethods(
       // 「만드는 중」을 적어도 `SAMPLE_WAIT_MS`는 보입니다. 타이머는 방의 것이라 방이 비워지면 함께 사라집니다(자리표시자도 없어짐).
       const remaining = SAMPLE_WAIT_MS - (now() - at);
       if (remaining <= 0) return settle(room, reqId, target, media, result);
-      return new Promise<boolean>((resolve) =>
+      return new Promise<SampleClaimOutcome>((resolve) =>
         schedule(
           room,
           remaining,
