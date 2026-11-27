@@ -797,6 +797,33 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 그 뒤 함수(`chat-send` · `companion-greet` · `companion-proactive` · `companion-eval` 등 RPC를 부르는 것)를 배포하면 새 판정에 `rev`가 찬다 —
 함수를 먼저 올려도 헤더는 무시되고, 마이그레이션만 먼저여도 `rev`가 null일 뿐이다.
 
+#### 판정 현황 · 목록 고침 (20270120)
+
+`migrations/20270120120000_ops_admin_insights_fix.sql`. 20270118 위에 쌓는다 — `ops.moderation_scope` · `ops_moderation_summary` · `ops_moderation_feed` 셋과
+인덱스 하나만 바꾼다. 인수 꼴 · 반환의 키 · 오류 코드는 그대로이고(더해진 것은 아래 3번), 표 · 리비전 칸 기본값 · 다른 RPC 넷 · 함수(`chat-send` 등)는 건드리지 않는다.
+
+1. **제한 시간이 실제로 걸린다.** 20270118 판 본문의 `set local statement_timeout = '8s'`는 이미 시작한 호출에 걸리지 않았다(9.5초 걸리게 한 호출이
+   PostgREST 뒤에서 200으로 끝났다). 함수 설정 `set statement_timeout = '8s'`로 옮겼다 — PostgREST가 함수 설정을 호출 전에 트랜잭션에 올린다.
+   같은 호출이 8.0초에 끊긴다: HTTP 500, `{"code":"57014","message":"canceling statement due to statement timeout"}`(PostgREST v12.2.12 · v13.0.7에서 확인).
+   SQL 편집기에서 직접 부르면 걸리지 않는다.
+2. **그 턴의 답 찾기를 끊었다.** 판정마다 그 메시지 뒤의 대화 전부를 읽던 것을 **뒤 30분 창**으로(`messages_conversation_idx`). 답은 턴을 처리한 요청 안에서
+   저장되므로 보통 턴에서는 같은 답이다 — 30분 넘게 뒤에 저장된 답은 그 턴의 답으로 보지 않는다(`reply` · `ageBand` · `romanceLine`이 null).
+   그리고 필요한 판정만 턴을 읽는다: 목록은 목록에 나올 수 있는 판정(allow가 아닌 것 · 기록용 허용)만, 현황은 연령대 · 선 · 캐릭터로 거를 때만 전부.
+   합성 데이터(판정 30만 · 대화마다 메시지 1,200개, shared_buffers 16MB): 현황 90일 54.1초 → 0.43초, 목록 90일 54.5초 → 0.13초, 현황 14일 1.27초 → 0.07초,
+   현황 90일 + 연령대 거르기 54.2초 → 1.3초.
+3. **리비전 없는 줄**: 현황에 `unrevisioned {events, blocks, reviewed, falsePositives}`(기간 + 모든 거르기), 목록의 `p_rev = 'none'`(`rev is null`).
+   그 밖에 8자리가 아닌 값은 그대로 `invalid_rev`.
+4. **현황 `revs`**: `firstAt` · `lastAt`은 그 리비전을 처음 · 마지막 본 때(기간 · 거르기와 상관없이 전체 — 인덱스 `moderation_events_rev_idx (rev, created_at) where rev is not null`).
+   수는 기간 + 모든 거르기(**단계 포함**)를 따른다. 기간 안에 보인 리비전은 거르기에 맞는 줄이 없어도 0으로 나온다. 순서는 그대로(처음 본 때 이른 순).
+5. **목록 `previous`**: 입력 검사가 맥락으로 받은 것만 — 그 메시지 앞의 캐릭터 답 중 완료 · 숨기지 않음 · 조각 있음인 가장 늦은 것(`companion_begin_turn`의 history 조건).
+   숨긴 답 · 위기 답은 앞 말로 나오지 않는다. 요약 창(`summarized_until`) · 지난 대화 개수 상한은 보지 않는다.
+
+- `ops.moderation_scope`는 인수가 넷으로 늘어(`p_listed` · `p_turn`) 옛 꼴(인수 둘)을 지운다. `public.ops_*`의 인수 꼴은 그대로라 이름만으로 불러도 겹치지 않는다.
+- 테스트: `migrations/ops-admin-insights.integration.test.ts` OI-8 ~ OI-12.
+
+**적용**: 20270118 **뒤에** 이 파일 하나(다시 적용해도 같다). 함수 배포는 필요 없다. 20270118을 이 파일 뒤에 다시 적용하면 옛 판(걸리지 않는 제한 시간 · 느린 답 찾기)으로
+돌아가고 옛 꼴 도우미가 되살아나니, 그때는 이 파일도 다시 적용한다. 인덱스는 리비전이 있는 줄만 담아 만들 때 표를 한 번 읽는 동안만 그 표 쓰기를 막는다.
+
 ## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 
 `migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
