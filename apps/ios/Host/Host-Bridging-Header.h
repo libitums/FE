@@ -1,5 +1,6 @@
 #import <Lynx/LynxConfig.h>
 #import <Lynx/LynxEnv.h>
+#import <Lynx/LynxError.h>
 #import <Lynx/LynxMediaResourceFetcher.h>
 #import <Lynx/LynxMemoryUsageQuery.h>
 #import <Lynx/LynxPerformanceEntry.h>

@@ -73,6 +73,9 @@ PODS:
   - SDWebImageWebPCoder (0.11.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.15)
+  - Sentry (9.19.1):
+    - Sentry/Core (= 9.19.1)
+  - Sentry/Core (9.19.1)
   - ServalMarkdown (0.1.1):
     - LynxTextra
   - ServalSVG (0.2.4)
@@ -132,6 +135,7 @@ DEPENDENCIES:
   - RevenueCat (= 5.99.2)
   - SDWebImage (= 5.21.7)
   - SDWebImageWebPCoder (= 0.11.0)
+  - Sentry (= 9.19.1)
   - XElement (= 4.0.1)
 
 SPEC REPOS:
@@ -147,6 +151,7 @@ SPEC REPOS:
     - RevenueCat
     - SDWebImage
     - SDWebImageWebPCoder
+    - Sentry
     - ServalMarkdown
     - ServalSVG
     - XElement
@@ -168,10 +173,11 @@ SPEC CHECKSUMS:
   RevenueCat: 1e9e9e41d12d719a53f7f82d453eecf69239e64d
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 295a6573c512f54ad2dd58098e64e17dcf008499
+  Sentry: e4588d62ac3fd3c82652bb7c8a215ec8c3de776b
   ServalMarkdown: 4e0401818bc34bbb7659270e2df775119ccc029f
   ServalSVG: 19bf88f72dae928c28a744c9b91475a3691ded42
   XElement: f1f022652fbc5e109e7d4d66299493bfd1a74b31
 
-PODFILE CHECKSUM: 8c156791d4992e5493feef3fce0e267379fcdbcb
+PODFILE CHECKSUM: f7ef43e8273d763c81e76f5203e1a65258624e4b
 
 COCOAPODS: 1.17.0

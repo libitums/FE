@@ -6,6 +6,7 @@ import UIKit
 /// **커스텀 네이티브 엘리먼트도 만들지 않는다** (ADR-0017 D1이 명시로 더한 항목).
 final class ViewController: UIViewController {
   private var lynxView: LynxView?
+  private let crashErrorClient = CrashLynxErrorClient()
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -73,6 +74,8 @@ final class ViewController: UIViewController {
       config.register(ExternalLinkModule.self)
       // 내 스토리 사진 — 고르기 · 찍기 · 줄이기 · 올리기(ADR-0199). 보관함은 PHPicker라 사진 권한을 묻지 않는다.
       config.register(StoryPhotoModule.self)
+      // 오류 수집에 로그인한 사용자의 내부 id 하나를 싣는다(ADR-0207 D3). DSN이 없어도 등록한다 — id만 잡고 보내지 않는다.
+      config.register(CrashReportingModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
       // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
       if AirbridgeEvents.isStarted {
@@ -102,6 +105,8 @@ final class ViewController: UIViewController {
     lynxView.translatesAutoresizingMaskIntoConstraints = true
     view.addSubview(lynxView)
     self.lynxView = lynxView
+    // Lynx JS 오류를 수집 깔때기로(ADR-0207 D1). 로드 앞에 걸어야 첫 렌더의 오류도 받는다.
+    lynxView.addLifecycleClient(crashErrorClient)
 
     // 앱 버전은 실행 중 바뀌지 않으니 로드 앞에 한 번만 건다(ADR-0086). `updateGlobalProps`는 키 단위로
     // 병합되므로 뒤에 오는 safe-area · 배율 · 동작 줄이기와 섞이지 않는다.

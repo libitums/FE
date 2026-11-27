@@ -11,6 +11,7 @@ import io.sentry.protocol.SentryException;
 import io.sentry.protocol.SentryStackFrame;
 import io.sentry.protocol.SentryStackTrace;
 import io.sentry.protocol.SentryThread;
+import io.sentry.protocol.User;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,10 +37,18 @@ public final class CrashEventPolicy {
     return event;
   }
 
-  /** The same event with identifying fields cleared, or null when it cannot be cleaned. */
+  /** beforeSend with the signed-in user the host holds right now (CrashUser). */
   public static SentryEvent beforeSend(SentryEvent e) {
+    return beforeSend(e, CrashUser.current());
+  }
+
+  /**
+   * The same event with identifying fields cleared, or null when it cannot be cleaned. The user is
+   * rebuilt from the internal id alone (docs/adr/0207); without a valid id there is no user.
+   */
+  public static SentryEvent beforeSend(SentryEvent e, String userId) {
     try {
-      e.setUser(null);
+      e.setUser(userOf(userId));
       e.setBreadcrumbs(null);
       e.setServerName(null);
       e.setRequest(null);
@@ -78,6 +87,14 @@ public final class CrashEventPolicy {
     } catch (RuntimeException | StackOverflowError error) {
       return null;
     }
+  }
+
+  private static User userOf(String userId) {
+    String id = CrashUser.idFrom(userId);
+    if (id == null) return null;
+    User user = new User();
+    user.setId(id);
+    return user;
   }
 
   static String withoutInstallPath(String value) {

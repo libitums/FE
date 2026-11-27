@@ -39,6 +39,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
             : `မက်ဆေ့ချ်အသစ် ${count} ခု`,
     jump: "မက်ဆေ့ချ်အသစ်များသို့ သွားရန်",
     latest: "နောက်ဆုံးမက်ဆေ့ချ်သို့ ဆင်းရန်",
+    above: (media) => (media === "photo" ? "အပေါ်မှာ ဓာတ်ပုံ ရောက်လာပါပြီ" : "အပေါ်မှာ အသံမက်ဆေ့ချ် ရောက်လာပါပြီ"),
   },
   replyToast: {
     dismiss: "ပိတ်ရန်",

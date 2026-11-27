@@ -268,3 +268,123 @@ test("MS11. 음성 막는 경우 — 음성 예시가 없으면 no_sample, 음�
     app.query("select public.companion_claim_sample_snapshot($1, 'video')", [id]),
   ).rejects.toMatchObject({ code: "22023" });
 });
+
+// ------------------------------------------------------------------ 대상은 그 대화의 첫 인사(20270113, 이슈 #648)
+// 예시 사진 · 음성은 덕수쌤 첫 인사에 맞춰 미리 만든 파일이다. 배포된 앱은 가장 최근 캐릭터 메시지를 보내므로, 받기는 받은 id를 믿지 않고
+// 그 메시지가 속한 대화의 첫 인사(origin greeting)로 바꿔 붙인다. 자막(`source` → `media.line`)도 첫 인사의 글이다.
+
+const REPLY = "좋아요! 오늘은 뭘 배워 볼까요?";
+
+/** 첫 인사 → 학습자 답 → 덕수쌤 응답(turn) → 선톡(proactive)이 있는 대화. */
+async function room(user: string) {
+  const greeting = await message(user);
+  const conversation = (
+    await db.admin.query("select conversation_id from companion.messages where id = $1", [greeting])
+  ).rows[0].conversation_id as string;
+  const assistant = async (origin: string, minutes: number) =>
+    (
+      await db.admin.query(
+        `insert into companion.messages (conversation_id, user_id, role, origin, status, segments, created_at)
+         values ($1, $2, 'assistant', $3, 'complete', $4::jsonb, now() - make_interval(mins => $5)) returning id`,
+        [
+          conversation,
+          user,
+          origin,
+          JSON.stringify([{ kind: "speech", text: REPLY, translation: "Great!" }]),
+          minutes,
+        ],
+      )
+    ).rows[0].id as string;
+  const answer = await message(user, "duksu", "user");
+  const reply = await assistant("turn", 50);
+  const proactive = await assistant("proactive", 10);
+  return { conversation, greeting, answer, reply, proactive };
+}
+type Placed = Claim & { media?: { messageId: string; line: { ko: string; en: string } } };
+const placed = async (messageId: string, kind: "snapshot" | "voice") =>
+  (await app.query("select public.companion_claim_sample_snapshot($1, $2) as c", [messageId, kind]))
+    .rows[0].c as Placed;
+const sourceOf = async (mediaId: string | undefined) =>
+  (await db.admin.query("select message_id, source from companion.media where id = $1", [mediaId]))
+    .rows[0] as { message_id: string; source: { text: string }[] };
+
+test("MS12. 응답(turn)의 id로 받아도 사진 · 음성 모두 첫 인사에 붙고, 자막도 첫 인사의 글이다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  for (const kind of ["snapshot", "voice"] as const) {
+    const got = await placed(chat.reply, kind);
+    expect(got.result).toBe("ok");
+    // 응답에 실린 id가 실제로 붙은 메시지다 — 새 앱은 이것으로 자리를 맞춘다.
+    expect(got.media?.messageId).toBe(chat.greeting);
+    expect(got.media?.line).toEqual({ ko: GREETING, en: "Hello!" });
+    const row = await sourceOf(got.media?.id);
+    expect(row.message_id).toBe(chat.greeting);
+    expect(row.source.map((seg) => seg.text)).toEqual([GREETING]);
+  }
+});
+
+test("MS13. 선톡(proactive)의 id로 받아도 첫 인사에 붙는다", async () => {
+  const chat = await room(learner);
+  const got = await placed(chat.proactive, "snapshot");
+  expect(got.result).toBe("ok");
+  expect(got.media?.messageId).toBe(chat.greeting);
+});
+
+test("MS14. 첫 인사의 id면 그대로 그 메시지에 붙는다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  for (const kind of ["snapshot", "voice"] as const) {
+    const got = await placed(chat.greeting, kind);
+    expect(got.result).toBe("ok");
+    expect(got.media?.messageId).toBe(chat.greeting);
+  }
+});
+
+test("MS15. 대화에 첫 인사가 없으면(숨김 · 지워짐) 받지 않는다 — not_eligible, 행도 생기지 않는다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  await db.admin.query("update companion.messages set hidden = true where id = $1", [
+    chat.greeting,
+  ]);
+  expect((await placed(chat.reply, "snapshot")).result).toBe("not_eligible");
+  await db.admin.query("delete from companion.messages where id = $1", [chat.greeting]);
+  expect((await placed(chat.reply, "snapshot")).result).toBe("not_eligible");
+  expect((await placed(chat.reply, "voice")).result).toBe("not_eligible");
+  const rows = await db.admin.query(
+    "select count(*)::int as n from companion.media where user_id = $1",
+    [learner],
+  );
+  expect(rows.rows[0].n).toBe(0);
+  // 제안은 그대로 남는다 — 새 첫 인사가 오면(대화 초기화 뒤) 받을 수 있다.
+  expect(await offer()).toEqual({ available: true, voice: true });
+});
+
+test("MS16. 계정당 한 번 — 응답으로 받은 뒤 첫 인사 · 다른 메시지로 다시 불러도 already로 같은 행", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  for (const kind of ["snapshot", "voice"] as const) {
+    const first = await placed(chat.reply, kind);
+    expect(first.result).toBe("ok");
+    for (const id of [chat.greeting, chat.proactive]) {
+      const again = await placed(id, kind);
+      expect(again.result).toBe("already");
+      expect(again.media?.id).toBe(first.media?.id);
+    }
+  }
+  const rows = await db.admin.query(
+    "select count(*)::int as n from companion.media where user_id = $1 and charge = 'sample'",
+    [learner],
+  );
+  expect(rows.rows[0].n).toBe(2);
+});
+
+test("MS17. 다른 사람 대화의 메시지 id면(첫 인사 · 응답 모두) forbidden — 남의 첫 인사에 붙지 않는다", async () => {
+  await addVoiceSample();
+  const theirs = await room(other);
+  for (const id of [theirs.greeting, theirs.reply]) {
+    expect((await placed(id, "snapshot")).result).toBe("forbidden");
+    expect((await placed(id, "voice")).result).toBe("forbidden");
+  }
+  const rows = await db.admin.query("select count(*)::int as n from companion.media");
+  expect(rows.rows[0].n).toBe(0);
+});
