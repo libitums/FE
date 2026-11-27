@@ -2,7 +2,7 @@
 // (`MissionPhase`)가 정하고 route는 하나입니다(대본형 롤플레이와 같은 방식). 뒤로가기 · 그만두기 · 목록으로는 롤플레이 목록으로 나갑니다.
 // 목록에 이 미션의 채점 대기 판(`pendingReports`, ADR-0177)이 있으면 열 때 곧장 채점해 리포트를 보입니다(`mission-finish`).
 
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import type { SafeAreaInsets } from "../lib/safe-area";
@@ -138,16 +138,29 @@ export type RoleplayMissionRouteProps = Omit<
 export function RoleplayMissionRoute(props: RoleplayMissionRouteProps): ReactNode {
   const { missionId, imageUrlOf, ordinalOf, source, device, ...rest } = props;
   const [list, setList] = useState<MissionList | null>(null);
-  useEffect(() => {
-    let alive = true;
+  // 처음 읽은 채점 대기 판 — 리포트 뒤 목록을 다시 읽어도 흐름이 다시 열리지 않게 처음 값만 씁니다.
+  const [pendingAtOpen, setPendingAtOpen] = useState<string | null | undefined>(undefined);
+  const alive = useRef(true);
+  const load = () => {
     source.list().then(
       (value) => {
-        if (alive) setList(value);
+        if (!alive.current) return;
+        setList(value);
+        setPendingAtOpen(
+          (prev) =>
+            prev ??
+            value.pendingReports?.find((entry) => entry.missionId === missionId)?.conversationId ??
+            null,
+        );
       },
       () => undefined,
     );
+  };
+  useEffect(() => {
+    alive.current = true;
+    load();
     return () => {
-      alive = false;
+      alive.current = false;
     };
   }, [source]);
   const card = list === null ? null : missionCardOf(list, missionId, imageUrlOf, ordinalOf);
@@ -156,14 +169,18 @@ export function RoleplayMissionRoute(props: RoleplayMissionRouteProps): ReactNod
       <view className="roleplay-story-screen-backdrop" data-testid="roleplay-mission-loading" />
     );
   }
-  const pending = list?.pendingReports?.find((entry) => entry.missionId === missionId);
   return (
     <RoleplayMissionFlow
       {...rest}
+      // 리포트를 받으면 이 route의 칸(최고 기록)도 다시 읽습니다 — Play again 뒤 미리보기가 옛 「Best」를 보이지 않게(QA 4).
+      onReport={() => {
+        rest.onReport();
+        load();
+      }}
       source={source}
       card={card}
       voice={{ device, transcribe: source.transcribe, speak: source.speak }}
-      pendingConversationId={pending?.conversationId ?? null}
+      pendingConversationId={pendingAtOpen ?? null}
     />
   );
 }

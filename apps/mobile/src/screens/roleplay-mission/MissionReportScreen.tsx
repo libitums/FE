@@ -6,6 +6,7 @@ import { useMissionCopy } from "../../lib/ui-copy-roleplay-mission-tables";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { missionTestIds as ids } from "./mission-test-ids";
 import {
+  missionPatternText,
   otherCorrections,
   ReportBetter,
   ReportFocus,
@@ -99,7 +100,7 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
             <ReportRow
               key={entry.id}
               testId={ids.reportExpression(entry.id)}
-              text={entry.ko}
+              text={missionPatternText(entry.ko)}
               value={entry.used ? copy.used : copy.notUsed}
               good={entry.used}
             />
@@ -159,7 +160,7 @@ function ReportBody({ report }: { readonly report: MissionReport }): ReactNode {
         </Section>
       )}
       <Section title={copy.summary}>
-        <text className="mission-report-row-text" data-testid={ids.reportSummary}>
+        <text className="mission-report-paragraph" data-testid={ids.reportSummary}>
           {report.summary}
         </text>
       </Section>

@@ -38,8 +38,28 @@ function Pair({
   );
 }
 
-/** 점수 항의 한 값 — 소수 첫째 자리까지(「+37.5」 · 「+10」). */
-const plus = (value: number): string => `+${String(Math.round(value * 10) / 10)}`;
+/**
+ * 점수 항을 정수로 — 서버 점수는 round(세 항의 합) − 감점이므로, 세 항을 큰 나머지 순으로 반올림해 합이 round(합)과 같게 맞춥니다
+ * (「+37.5 · +25.5 · +10」이 「+38 · +25 · +10 = 73」으로). 화면의 합이 총점과 어긋나 보이지 않게 합니다(QA 14).
+ */
+export function roundedScoreParts(parts: readonly number[]): readonly number[] {
+  const target = Math.round(parts.reduce((sum, value) => sum + value, 0));
+  const floors = parts.map((value) => Math.floor(value));
+  let left = target - floors.reduce((sum, value) => sum + value, 0);
+  const order = parts
+    .map((value, index) => ({ index, rest: value - Math.floor(value) }))
+    .sort((a, b) => b.rest - a.rest || a.index - b.index);
+  const result = [...floors];
+  for (const { index } of order) {
+    if (left <= 0) break;
+    result[index] = (result[index] ?? 0) + 1;
+    left -= 1;
+  }
+  return result;
+}
+
+/** 목표 표현의 자리표(`{음료}` · `{drink}`)를 빈칸으로 — 「___ 한 잔 주세요.」(QA 8). */
+export const missionPatternText = (text: string): string => text.replace(/\{[^}]*\}/g, "___");
 
 /** 히어로 아래 결과 한 줄(학습자 언어). */
 export function ReportHeadline({ report }: Report): ReactNode {
@@ -81,10 +101,15 @@ export function ReportScoreParts({ report }: Report): ReactNode {
   const copy = useMissionCopy().extra.report;
   const parts = report.scoreParts;
   if (parts === undefined) return null;
+  const [task, accuracy, expression] = roundedScoreParts([
+    parts.task,
+    parts.accuracy,
+    parts.expression,
+  ]);
   const rows = [
-    { key: "task", text: copy.partTask, value: plus(parts.task) },
-    { key: "accuracy", text: copy.partAccuracy, value: plus(parts.accuracy) },
-    { key: "expression", text: copy.partExpression, value: plus(parts.expression) },
+    { key: "task", text: copy.partTask, value: `+${String(task ?? 0)}` },
+    { key: "accuracy", text: copy.partAccuracy, value: `+${String(accuracy ?? 0)}` },
+    { key: "expression", text: copy.partExpression, value: `+${String(expression ?? 0)}` },
     ...(parts.hintPenalty > 0
       ? [{ key: "hints", text: copy.partHints, value: `−${String(parts.hintPenalty)}` }]
       : []),
@@ -166,6 +191,9 @@ export function ReportBetter({ report }: Report): ReactNode {
       {items.map((entry, index) => (
         <view key={`${entry.original}:${String(index)}`} className="mission-report-card">
           <Pair ko={entry.corrected} sub={entry.original} />
+          {entry.items?.[0]?.reason === undefined ? null : (
+            <text className="mission-report-muted">{entry.items[0].reason}</text>
+          )}
         </view>
       ))}
     </view>
@@ -188,7 +216,7 @@ export function ReportNextStep({ report }: Report): ReactNode {
   return report.nextStep === undefined || report.nextStep === "" ? null : (
     <view className="mission-report-section" data-testid={ids.reportNextStep}>
       <Heading text={copy.nextStep} />
-      <text className="mission-report-row-text">{report.nextStep}</text>
+      <text className="mission-report-paragraph">{report.nextStep}</text>
     </view>
   );
 }

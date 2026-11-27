@@ -19,7 +19,13 @@
   line-height: var(--libitum-typography-label-m-line-height);
 }
 
+/* 값 줄 · 안내 — 밝은 장면 위에서도 읽히게 알약과 같은 짙은 반투명 면에 둡니다(QA 11). */
 .mission-preview-line {
+  flex-shrink: 0;
+  align-self: center;
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(26, 28, 32, 0.72);
   color: var(--libitum-color-white);
   text-align: center;
   font-family: var(--libitum-typography-label-m-font-family);
@@ -36,4 +42,9 @@
 .mission-preview-scroll {
   flex-shrink: 1;
   min-height: 0;
+  width: 100%;
+  /* 대화창(VisualNovelDialog)의 z-index가 스크롤 경계 밖에 그려지지 않게 스크롤을 독립 레이어로 — 대본형
+     `.roleplay-story-bottom-scroll`과 같은 규칙(QA 5, 큰 글자에서 목표판이 밀려나던 것). */
+  overflow: hidden;
+  z-index: var(--libitum-elevation-z-default);
 }

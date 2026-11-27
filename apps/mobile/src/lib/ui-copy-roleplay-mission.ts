@@ -110,7 +110,7 @@ export const roleplayMissionEn: RoleplayMissionCopy = {
   placeholder: "Reply in Korean",
   send: "Send",
   speechUnavailable: "Speaking isn't available right now. You can type instead.",
-  hint: (left) => `Hint · ${String(left)} left`,
+  hint: (left) => `Hint · ${String(left)} left · −5 pts`,
   hintTitle: "Try saying",
   hintPenalty: "Each hint takes 5 points.",
   hintUse: "Use this",
@@ -119,7 +119,8 @@ export const roleplayMissionEn: RoleplayMissionCopy = {
   unsent: "Not sent. Send it again.",
   quit: "Quit mission",
   quitTitle: "Quit this mission?",
-  quitBody: "You won't get a report, and this play still counts.",
+  quitBody:
+    "You won't get a report, and today's free play or the Yeopjeon you spent won't come back.",
   quitConfirm: "Quit",
   quitCancel: "Keep going",
   ended: { goals: "Mission complete!", turn_limit: "Out of turns", finish: "Mission complete!" },

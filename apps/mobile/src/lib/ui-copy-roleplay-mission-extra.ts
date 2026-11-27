@@ -56,7 +56,7 @@ export const missionExtraEn: MissionExtraCopy = {
   },
   voice: {
     transcribing: "Transcribing…",
-    heardCheck: "Did I hear that right?",
+    heardCheck: "Did I hear that right? Check it, then send.",
     heardNotKorean: "That didn't sound like Korean. Try again?",
     tooShort: "Hold on a bit longer and try again.",
     notHeard: "We couldn't hear you. Try again or type.",
@@ -96,7 +96,7 @@ export const missionExtraEs: MissionExtraCopy = {
   },
   voice: {
     transcribing: "Transcribiendo…",
-    heardCheck: "¿Te entendí bien?",
+    heardCheck: "¿Te entendí bien? Revísalo y envíalo.",
     heardNotKorean: "No sonó a coreano. ¿Lo intentas otra vez?",
     tooShort: "Habla un poco más y vuelve a intentarlo.",
     notHeard: "No pudimos oírte. Inténtalo de nuevo o escribe.",
@@ -136,7 +136,7 @@ export const missionExtraJa: MissionExtraCopy = {
   },
   voice: {
     transcribing: "文字に起こしています…",
-    heardCheck: "聞き取りは合っていますか?",
+    heardCheck: "聞き取りは合っていますか? 確認してから送ってください。",
     heardNotKorean: "韓国語に聞こえませんでした。もう一度話しますか?",
     tooShort: "もう少し長く話して、もう一度試してください。",
     notHeard: "声が聞き取れませんでした。もう一度話すか、入力してください。",

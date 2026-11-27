@@ -84,6 +84,14 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
   const plays = new Map<string, FakePlay>();
   const pending = new Set<string>();
   const best = new Map(list.missions.map((item) => [item.id, item.best?.totalScore ?? null]));
+  const bests = new Map<string, NonNullable<MissionList["missions"][number]["best"]>>();
+  const currentList = (): MissionList => ({
+    ...list,
+    missions: list.missions.map((item) => {
+      const record = bests.get(item.id);
+      return record === undefined ? item : { ...item, best: record };
+    }),
+  });
   const heardIndex = new Map<string, number>();
   const failedTurns = new Set<string>();
   if (options.pendingReport === true) {
@@ -118,6 +126,13 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
       best.get(missionId) ?? null,
     );
     best.set(missionId, report.bestScore);
+    // 서버의 `companion_list_missions`처럼 목록의 최고 기록도 바뀝니다(QA 4 — 전에는 목록이 처음 값 그대로였습니다).
+    if (report.totalScore >= (report.bestScore ?? 0))
+      bests.set(missionId, {
+        totalScore: report.totalScore,
+        outcome: report.outcome,
+        createdAt: "2026-11-28T09:00:00+09:00",
+      });
     return { status: "graded", report };
   };
 
@@ -125,9 +140,9 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
     list: () =>
       later(() =>
         pending.size === 0
-          ? list
+          ? currentList()
           : {
-              ...list,
+              ...currentList(),
               pendingReports: [...pending].map((conversationId) => ({
                 conversationId,
                 missionId: plays.get(conversationId)?.script.start.missionId ?? "",

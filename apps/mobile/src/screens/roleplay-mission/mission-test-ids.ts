@@ -13,6 +13,7 @@ export const missionTestIds = {
   previewPrice: id("preview-price"),
   previewStart: id("preview-start"),
   previewError: id("preview-error"),
+  previewLocked: id("preview-locked"),
   talk: id("talk"),
   talkQuit: id("talk-quit"),
   talkTitle: id("talk-title"),

@@ -24,7 +24,7 @@ export type MissionTalkLineProps = {
   readonly playback: MissionPlayback;
   /** 상대역 메시지 다시 듣기(메시지 id). */
   readonly onReplay: (messageId: string) => void;
-  readonly onSend: (text: string, inputMode: MissionInputMode) => void;
+  readonly onSend: (text: string, inputMode: MissionInputMode, retryOf?: string) => void;
 };
 
 /** 행동 · 서술 지문 말풍선(「*…*」) — 읽지 않으므로 다시 듣기가 없습니다. */
@@ -84,7 +84,7 @@ export function MissionTalkLine({
           <UnsentMessage
             ko={line.ko}
             speaker={copy.roleplayStory.me}
-            onOpen={() => onSend(line.ko, line.inputMode)}
+            onOpen={() => onSend(line.ko, line.inputMode, line.id)}
           />
         ) : (
           <ChatTextBubble

@@ -24,6 +24,8 @@ export type MissionTopBarProps = {
   readonly turnsLeft: number;
   /** 필수 목표를 다 이뤘다(성공 확정) — 남은 턴 뒤에 「Mission success」가 붙고 카드를 닫아도 남습니다. */
   readonly success: boolean;
+  /** 판이 닫혔으면 남은 턴 대신 서는 끝 줄(「Out of turns」 · 「Mission complete!」). */
+  readonly endedLabel?: string | null;
   /** 상대역 말 자동 재생 — 머리 오른쪽 스피커 토글(켬 = 스피커, 끔 = 음소거). */
   readonly autoPlay: boolean;
   readonly onToggleAutoPlay: () => void;
@@ -41,6 +43,7 @@ export function MissionTopBar({
   goals,
   turnsLeft,
   success,
+  endedLabel = null,
   autoPlay,
   onToggleAutoPlay,
   onQuit,
@@ -86,9 +89,10 @@ export function MissionTopBar({
             data-testid={ids.turnsLeft}
             data-success={success ? "true" : "false"}
           >
-            {success
-              ? `${copy.turnsLeft(turnsLeft)} · ${copy.extra.success.mark}`
-              : copy.turnsLeft(turnsLeft)}
+            {endedLabel ??
+              (success
+                ? `${copy.turnsLeft(turnsLeft)} · ${copy.extra.success.mark}`
+                : copy.turnsLeft(turnsLeft))}
           </text>
         </view>
         <view data-testid={ids.autoPlay} data-on={autoPlay ? "true" : "false"}>

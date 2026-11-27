@@ -151,10 +151,17 @@ export function missionSessionReducer(
         failed: false,
         correction: null,
       };
+      // 다시 보내기면 보내지 못한 그 줄을 치웁니다 — 실패 줄이 남아 또 눌리는 일(같은 글 두 번 · 턴 두 번)을 막습니다.
+      const kept =
+        action.retryOf === undefined
+          ? state.lines
+          : state.lines.filter(
+              (entry) => !(entry.kind === "me" && entry.id === action.retryOf && entry.failed),
+            );
       return {
         ...state,
         phase: "awaiting",
-        lines: [...state.lines, line],
+        lines: [...kept, line],
         turn: initialTurnState,
         turnLineId: id,
         sentCount: state.sentCount + 1,

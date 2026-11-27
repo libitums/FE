@@ -1,8 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
-import tick from "@libitums/icons/lynx/tick";
-import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
@@ -143,13 +141,8 @@ export function MissionPreviewScreen({
                     accessibility-element={true}
                     accessibility-label={`${goal.label.en}, ${goal.required ? mission.required : mission.optional}`}
                   >
-                    <view className="mission-goal-mark">
-                      <svg
-                        className="mission-goal-icon"
-                        content={tick}
-                        current-color={color.white}
-                      />
-                    </view>
+                    {/* 아직 하지 않은 목표 — 대화 위 띠와 같은 빈 동그라미(체크 표시는 이룬 뒤에만, QA 9). */}
+                    <view className="mission-goal-mark" />
                     <text className="mission-goal-label">{goal.label.en}</text>
                     <text className="mission-goal-tag">
                       {goal.required ? mission.required : mission.optional}
@@ -162,6 +155,14 @@ export function MissionPreviewScreen({
           <text className="mission-preview-line" data-testid={ids.previewPrice}>
             {missionPriceLine(price, mission)}
           </text>
+          {item.unlocked || startError !== null ? null : (
+            <text
+              className="mission-preview-line mission-preview-error"
+              data-testid={ids.previewLocked}
+            >
+              {mission.startError.not_available}
+            </text>
+          )}
           {startError === null ? null : (
             <text
               className="mission-preview-line mission-preview-error"

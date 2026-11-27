@@ -61,7 +61,9 @@
   gap: var(--libitum-spacing-4);
 }
 
+/* 한 줄로 두고 넘치면 말줄임 — 큰 글자에서 둘째 줄이 아래 남은 턴 줄과 겹치던 것(QA 5). */
 .mission-talk-title {
+  text-overflow: ellipsis;
   color: var(--libitum-color-white);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-size: var(--libitum-typography-heading-s-font-size);
@@ -151,7 +153,10 @@
   flex-direction: column;
 }
 
+/* 내 줄 — 줄 폭을 다 써서(정해진 폭) 아래 교정 카드의 글 높이가 바르게 잡히게 합니다(QA 2). 말풍선은 오른쪽 끝. */
 .mission-talk-mine {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

@@ -62,6 +62,7 @@ export function withMissionItems(
           bestScore: mission.best?.totalScore ?? null,
           reportBadge: missionReportBadgeOf(missions, mission.id),
           imageUrl: firstCoverImageOf(content, mission.episodeId),
+          locked: !mission.unlocked,
         })),
       ],
     };

@@ -39,6 +39,7 @@
    내 말풍선 아래에 서므로 패널 면(`.mission-hint`와 같은 값)을 말풍선 폭에 맞춥니다. 더 나은 표현은 틀렸다는 인상을 주지 않게
    ✓ 표 · 초록 제목이고 정답 상자 테가 점선입니다(파이프라인 문서 §10.3 1). */
 .mission-feedback {
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-8);
@@ -48,6 +49,13 @@
   border-style: solid;
   border-color: var(--libitum-color-gray-300);
   background-color: var(--libitum-color-white);
+}
+
+/* 정답 상자의 글 묶음(`flex: 1`, basis 0)은 폭이 정해지지 않은 줄 안에서 Lynx가 높이를 한 줄로 접어 글이 겹쳤습니다(QA 2).
+   미션 카드에서는 내용 크기로 둡니다 — 대본형 패널은 폭이 정해진 흰 패널 안이라 접히지 않습니다. */
+.mission-feedback .roleplay-story-answer-text {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .mission-feedback-better .roleplay-story-answer {
@@ -80,6 +88,12 @@
   background-color: var(--libitum-color-white);
 }
 
+/* 성공 카드는 힌트 카드보다 낮게 — 작은 화면에서 대화 칸을 덜 가립니다(QA 15). */
+.mission-success {
+  padding: var(--libitum-spacing-12);
+  gap: var(--libitum-spacing-6);
+}
+
 .mission-hint-body {
   display: flex;
   flex-direction: column;
@@ -102,4 +116,15 @@
 
 .mission-hint-action {
   flex: 1;
+}
+
+/* 힌트 · 교정 카드의 뜻 줄은 한국어보다 작게 — 대본형 패널의 뜻(body-l)은 한국어가 감춰진 단계의 주인공이라 크지만, 미션 카드에서는
+   한국어 문장이 주인공입니다(QA 17). */
+.mission-hint .roleplay-story-panel-meaning,
+.mission-feedback .roleplay-story-panel-meaning {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
 }

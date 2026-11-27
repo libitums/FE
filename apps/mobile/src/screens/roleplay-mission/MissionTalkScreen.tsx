@@ -79,6 +79,11 @@ export function MissionTalkScreen({
 
   const tapMic = () => {
     "background only";
+    // 앞에서 받아 적어 입력 칸에 넣어 둔 글은 새로 말하면 지웁니다 — 실패 안내 옆에 앞 턴의 글이 남지 않게(QA 13).
+    if (heardPending && voice.state.rec === "idle") {
+      setHeardPending(false);
+      setPrefill((value) => ({ text: "", key: value.key + 1 }));
+    }
     mic.tap((decision) => {
       if (decision.kind === "send") {
         setHeardPending(false);
@@ -118,7 +123,9 @@ export function MissionTalkScreen({
         ? mission.ended[state.endReason]
         : null;
   const canFinish = canFinishMission(state);
-  const successShown = state.successPrompt === "shown" && state.endReason === null;
+  // 힌트 카드가 열려 있으면 성공 카드는 접어 둡니다(한 번에 카드 하나 — 작은 화면에서 대화가 가려지던 것, QA 15).
+  const successShown =
+    state.successPrompt === "shown" && state.endReason === null && state.hint === null;
   const check =
     voice.state.check === null || voice.state.rec !== "idle"
       ? null
@@ -143,6 +150,7 @@ export function MissionTalkScreen({
         goals={state.goals}
         turnsLeft={state.turnsLeft}
         success={state.requiredDone}
+        endedLabel={state.endReason === null ? null : mission.ended[state.endReason]}
         autoPlay={autoPlay}
         onToggleAutoPlay={() => {
           const next = !autoPlay;
@@ -245,10 +253,18 @@ export function MissionTalkScreen({
           <Dialog
             title={dialog.title}
             description={dialog.body}
-            actions={[
-              { id: "quit", label: dialog.confirm },
-              { id: "cancel", label: mission.quitCancel },
-            ]}
+            // 필수 전 그만두기는 값을 돌려주지 않으므로 머무르기가 주 단추(첫째 — 주황)입니다(QA 12). 필수 뒤는 끝내기(채점)가 주 단추.
+            actions={
+              state.requiredDone
+                ? [
+                    { id: "quit", label: dialog.confirm },
+                    { id: "cancel", label: mission.quitCancel },
+                  ]
+                : [
+                    { id: "cancel", label: mission.quitCancel },
+                    { id: "quit", label: dialog.confirm },
+                  ]
+            }
             phase="visible"
             bindaction={(action) => {
               setConfirming(false);

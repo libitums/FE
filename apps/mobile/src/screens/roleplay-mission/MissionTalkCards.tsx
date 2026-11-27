@@ -136,7 +136,7 @@ export function MissionSuccessCard({
 }: MissionSuccessCardProps): ReactNode {
   const success = useMissionCopy().extra.success;
   return (
-    <view className="mission-hint" data-testid={ids.successCard}>
+    <view className="mission-hint mission-success" data-testid={ids.successCard}>
       <view
         className="mission-hint-body"
         flatten={false}

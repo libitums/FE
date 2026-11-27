@@ -131,7 +131,7 @@ test("MT-UI4 이룬 목표는 체크되고 낭독이 done, 교정 카드는 내 
   expect(id("roleplay-mission-log")).toHaveTextContent("네, 포장해 드릴게요.");
 });
 
-test("MT-UI5 보내지 못한 글은 Not sent와 다시 보내기 — 누르면 같은 글을 다시 보낸다", () => {
+test("MT-UI5 보내지 못한 글은 Not sent와 다시 보내기 — 누르면 그 줄 id와 함께 같은 글을 다시 보낸다(실패 줄은 치움)", () => {
   const { onSend } = mount(
     sessionAfter([
       ...startedActions,
@@ -140,7 +140,7 @@ test("MT-UI5 보내지 못한 글은 Not sent와 다시 보내기 — 누르면 
     ]),
   );
   fireEvent.tap(id("messenger-chat-unsent-retry"), { eventType: "catchEvent" });
-  expect(onSend).toHaveBeenCalledWith("안녕", "voice");
+  expect(onSend).toHaveBeenCalledWith("안녕", "voice", "me-1");
 });
 
 test("MT-UI6 마이크 — 눌러 녹음 · 눌러 끝, 서버가 받아 적어 확신이 높으면 바로 voice로 보낸다", async () => {

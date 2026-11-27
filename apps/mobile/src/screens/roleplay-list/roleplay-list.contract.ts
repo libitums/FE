@@ -42,6 +42,8 @@ export type MissionRoleplayItem = {
    */
   readonly reportBadge: MissionReportBadgeState | null;
   readonly imageUrl: string | null;
+  /** 구획이 열렸어도 서버가 이 미션을 아직 열지 않았으면(`unlocked: false`) 참 — 대본형 잠김과 같은 표시로 섭니다. */
+  readonly locked?: boolean;
 };
 
 export type RoleplayItem = StoryRoleplayItem | MissionRoleplayItem;

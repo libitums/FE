@@ -177,7 +177,13 @@ export type MissionSessionAction =
   | { readonly type: "start-requested" }
   | { readonly type: "started"; readonly value: MissionStartResponse }
   | { readonly type: "start-rejected"; readonly code: MissionStartRejection }
-  | { readonly type: "send"; readonly text: string; readonly inputMode: MissionInputMode }
+  | {
+      readonly type: "send";
+      readonly text: string;
+      readonly inputMode: MissionInputMode;
+      /** 보내지 못한 내 줄을 다시 보냄 — 그 줄을 치우고 새 줄로 보냅니다(같은 글이 두 번 남거나 두 번 보내지지 않게). */
+      readonly retryOf?: string;
+    }
   | { readonly type: "turn-event"; readonly event: string; readonly data: string }
   | { readonly type: "turn-closed" }
   | { readonly type: "hint-requested" }
@@ -221,7 +227,8 @@ export type MissionTalkScreenProps = {
   readonly insets: SafeAreaInsets;
   readonly card: MissionCard;
   readonly state: MissionSessionState;
-  readonly onSend: (text: string, inputMode: MissionInputMode) => void;
+  /** 보내기 — `retryOf`는 보내지 못한 내 줄을 다시 보낼 때 그 줄 id(실패한 줄을 치우고 새로 보냄). */
+  readonly onSend: (text: string, inputMode: MissionInputMode, retryOf?: string) => void;
   readonly onHint: () => void;
   readonly onDismissHint: () => void;
   /** 그만두기 — 확인 뒤 부릅니다. 필수 전이면 리포트 없이 나가고, 필수를 이뤘으면 끝내기(채점 → 리포트)입니다. */

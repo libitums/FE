@@ -54,7 +54,7 @@ test("MR-UI1 부록 B 리포트 — 성공 · 73점 · 최고 기록, 목표 3/4
   expect(id("roleplay-mission-report")).toHaveTextContent("Target expressions · 1 / 2");
   expect(id("roleplay-mission-report-expression-patt:fbe5e354")).toHaveAttribute(
     "accessibility-label",
-    "{명사} 얼마예요?, Not used",
+    "___ 얼마예요?, Not used",
   );
   expect(id("roleplay-mission-report-accuracy")).toHaveTextContent("85");
   expect(id("roleplay-mission-report-hints")).toHaveTextContent("0 hints");
@@ -77,8 +77,9 @@ test("MR-UI1b 새 구역 — 결과 한 줄 · You could have said · 점수 항
   expect(id("roleplay-mission-report-tips")).toHaveTextContent("Ask how much it is");
   expect(id("roleplay-mission-report-tips")).toHaveTextContent("아메리카노 얼마예요?");
   expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("How your score adds up");
-  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Goals+37.5");
-  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Accuracy+25.5");
+  // 정수로 반올림하되 합이 총점(73)과 맞게 — 37.5 · 25.5 · 10 → 38 · 25 · 10(QA 14).
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Goals+38");
+  expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Accuracy+25");
   expect(id("roleplay-mission-report-score-parts")).toHaveTextContent("Target expressions+10");
   expect(id("roleplay-mission-report-score-parts")).not.toHaveTextContent("Hints");
   expect(id("roleplay-mission-report-strengths")).toHaveTextContent("What went well");

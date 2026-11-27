@@ -17,7 +17,7 @@ export const missionExtraId: MissionExtraCopy = {
   },
   voice: {
     transcribing: "Menuliskan ucapanmu…",
-    heardCheck: "Apakah aku mendengarnya dengan benar?",
+    heardCheck: "Apakah aku mendengarnya dengan benar? Periksa, lalu kirim.",
     heardNotKorean: "Itu tidak terdengar seperti bahasa Korea. Coba lagi?",
     tooShort: "Bicara sedikit lebih lama lalu coba lagi.",
     notHeard: "Kami tidak bisa mendengarmu. Coba lagi atau ketik.",
@@ -57,7 +57,7 @@ export const missionExtraVi: MissionExtraCopy = {
   },
   voice: {
     transcribing: "Đang chuyển thành chữ…",
-    heardCheck: "Mình nghe đúng chưa?",
+    heardCheck: "Mình nghe đúng chưa? Kiểm tra rồi gửi nhé.",
     heardNotKorean: "Nghe không giống tiếng Hàn. Thử lại nhé?",
     tooShort: "Hãy nói lâu hơn một chút rồi thử lại.",
     notHeard: "Chúng tôi không nghe thấy bạn. Hãy thử lại hoặc gõ chữ.",
@@ -97,7 +97,7 @@ export const missionExtraTh: MissionExtraCopy = {
   },
   voice: {
     transcribing: "กำลังถอดเป็นข้อความ…",
-    heardCheck: "ฟังถูกไหม?",
+    heardCheck: "ฟังถูกไหม? ตรวจแล้วค่อยส่งนะ",
     heardNotKorean: "ฟังไม่เหมือนภาษาเกาหลี ลองอีกครั้งไหม?",
     tooShort: "พูดให้นานขึ้นอีกนิดแล้วลองใหม่",
     notHeard: "เราไม่ได้ยินเสียงของคุณ ลองอีกครั้งหรือพิมพ์แทน",
@@ -137,7 +137,7 @@ export const missionExtraMy: MissionExtraCopy = {
   },
   voice: {
     transcribing: "စာအဖြစ် ပြောင်းနေသည်…",
-    heardCheck: "မှန်မှန် ကြားခဲ့လား?",
+    heardCheck: "မှန်မှန် ကြားခဲ့လား? စစ်ပြီးမှ ပို့ပါ။",
     heardNotKorean: "ကိုရီးယားစကားလို မကြားရပါ။ ထပ်ကြိုးစားမလား?",
     tooShort: "နည်းနည်း ပိုကြာကြာ ပြောပြီး ထပ်ကြိုးစားပါ။",
     notHeard: "အသံ မကြားရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် စာရိုက်ပါ။",

@@ -48,10 +48,11 @@
   line-height: var(--libitum-typography-accent-metric-line-height);
 }
 
+/* 머리(히어로) 안의 옅은 글만 가운데, 카드 안 옅은 글(뜻 · 까닭)은 왼쪽 — 한 카드 안에서 정렬이 섞이지 않게(QA 17). */
 .mission-report-best,
 .mission-report-muted {
   color: var(--libitum-color-fg-neutral-muted);
-  text-align: center;
+  text-align: left;
   font-family: var(--libitum-typography-body-m-font-family);
   font-size: var(--libitum-typography-body-m-font-size);
   font-weight: var(--libitum-typography-body-m-font-weight);
@@ -88,6 +89,21 @@
   font-size: var(--libitum-typography-body-m-font-size);
   font-weight: var(--libitum-typography-body-m-font-weight);
   line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 여러 줄 문단(총평 · 다음 도전) — 줄 글(`-row-text`)의 `flex: 1`(basis 0)은 세로 묶음에서 높이를 한 줄로 접어 아래 구역과
+   겹쳤습니다(QA 1, 메신저 `.chat-title-stacked`와 같은 원인). 문단은 flex 값을 두지 않아 글 높이만큼 섭니다. */
+.mission-report-paragraph {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.mission-report-hero .mission-report-best,
+.mission-report-hero .mission-report-muted {
+  text-align: center;
 }
 
 .mission-report-row-value {

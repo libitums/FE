@@ -17,10 +17,13 @@ import type {
   MissionSource,
 } from "./roleplay-mission.contract";
 
+/** 턴으로 닫힌 판의 끝 줄을 보이는 시간(스스로 정한 기본값 — 마무리 대사 한 줄을 읽고 자동 재생이 시작될 만큼). */
+export const MISSION_END_HOLD_MS = 2500;
+
 export type MissionSessionControl = {
   readonly state: MissionSessionState;
   readonly start: () => void;
-  readonly send: (text: string, inputMode: MissionInputMode) => void;
+  readonly send: (text: string, inputMode: MissionInputMode, retryOf?: string) => void;
   readonly hint: () => void;
   readonly dismissHint: () => void;
   /** 「Mission success!」 카드의 Keep going — 카드만 닫습니다. */
@@ -58,9 +61,19 @@ export function useMissionSession(source: MissionSource, missionId: string): Mis
     );
   };
 
-  // 판이 닫히면(모든 목표 · 턴 상한 · 끝내기) 곧장 채점합니다(PRD §3.6 「자동으로」).
+  // 판이 닫히면(모든 목표 · 턴 상한 · 끝내기) 채점합니다(PRD §3.6 「자동으로」). 턴으로 닫혔으면(모든 목표 · 턴 상한) 상대역 마무리
+  // 대사 · 끝 줄(「Mission complete!」 · 「Out of turns」) · 다 찬 목표를 잠깐 보인 뒤 채점합니다(QA 7, e2e RM-T7) — 끝내기는 곧장.
   useEffect(() => {
-    if (state.phase === "ended" && state.conversationId !== null) grade(state.conversationId);
+    const id = state.conversationId;
+    if (state.phase !== "ended" || id === null) return;
+    if (state.endReason === "finish") {
+      grade(id);
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (mounted.current) grade(id);
+    }, MISSION_END_HOLD_MS);
+    return () => clearTimeout(timer);
   }, [state.phase]);
 
   return {
@@ -79,11 +92,11 @@ export function useMissionSession(source: MissionSource, missionId: string): Mis
         () => safe({ type: "start-rejected", code: "network" }),
       );
     },
-    send: (text, inputMode) => {
+    send: (text, inputMode, retryOf) => {
       "background only";
       const conversationId = state.conversationId;
       if (!canSendMission(state) || conversationId === null || text.trim() === "") return;
-      dispatch({ type: "send", text, inputMode });
+      dispatch({ type: "send", text, inputMode, ...(retryOf === undefined ? {} : { retryOf }) });
       cancelTurn.current = source.sendTurn(
         { conversationId, text: text.trim(), inputMode },
         {
