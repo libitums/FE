@@ -372,6 +372,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   sink는 새로 만들지 않았다 — 열림은 롤플레이 목록 결선(`journey-wiring.ts`), 끝은 `roleplay-story-wiring.ts`가 `episodeIntroEventSink`로 낸다. 타입 정본은 `screens/roleplay-story/roleplay-story.contract.ts`(`RoleplayStoryEvent`)이고 `EpisodeIntroEvent` union에 든다.
   - **`roleplay_story_opened`** — 롤플레이 탭에서 에피소드 롤플레이 카드를 누름. 속성 `episodeId`.
   - **`roleplay_story_completed`** — 마지막 턴을 넘김. 속성 `episodeId` · `correctCount` · `judgedCount` · `skippedCount`(10진 문자열). 대사 · 들은 문장은 싣지 않는다.
+  - **`roleplay_story_turn_answered`**(ADR-0201 D6 적용 2, 2026-11-27) — 턴 하나를 넘기거나 건너뜀. 속성 `episodeId` · `turn`(1부터, 10진 문자열) · `result`(correct · incorrect · skipped) · `grade`(perfect · close · incorrect, 판정이 났을 때만) · `hintUsed`(listen · show, 썼을 때만). 대사 · 들은 문장은 싣지 않는다.
   - Meta 앱 이벤트 매핑은 둘을 옮기지 않는다. PostHog 도착은 보지 않았다.
   - **읽는 법** — `S5`(말하기는 읽기만 있는 단계)의 `skippedCount > 0` ⇔ 그 기기에서 인식을 쓸 수 없었다(권한 거부 · 인식기 없음 · 인식 실패 — 읽기의 사용자 넘김은 `Next`라 세지 않는다) → **인식 불가 비율의 깨끗한 신호**.
     `S6` · `S8`의 `skippedCount`는 사용자 `Skip`이 섞인 상한이다. 그 두 단계의 판정 분모 = `questionCount − skippedCount`(한 단계에 말하기 유형이 하나뿐이라 성립 — 섞이면 ADR-0067 재검토 조건 2), 정답률 = `correctCount ÷ (questionCount − skippedCount)`.

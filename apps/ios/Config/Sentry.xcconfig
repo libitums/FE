@@ -1,0 +1,8 @@
+// Sentry 오류 수집 값(ADR-0207). 이 파일은 추적하고 DSN은 비워 둔다.
+// 값은 추적하지 않는 Sentry.local.xcconfig에 적는다(Sentry.local.xcconfig.example 참조).
+// DSN이 비거나 꼴이 틀리면 SDK를 시작하지 않는다 — 앱은 이 SDK가 없을 때와 같다. Debug 구성은 DSN이 있어도 시작하지 않는다.
+SENTRY_DSN =
+// Android의 `release` 빌드와 같은 값이다. 운영 지표를 더럽히지 않는 로컬 확인은 local 파일에서 `development`로 바꾼다.
+SENTRY_ENVIRONMENT = release
+
+#include? "Sentry.local.xcconfig"

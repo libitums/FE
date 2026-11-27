@@ -10,10 +10,13 @@ import type { SpeechStatus } from "./speech-recognition";
 // 같은 규칙으로 채점합니다. 권한 판정(`canListen`)만 앱의 말하기 상태에 기대어 여기 남습니다.
 export {
   judgeSpeaking,
+  judgeSpokenAnswer,
   matchedWordCount,
   speakingChunks,
   speakingWords,
   type SpeakingChunk,
+  type SpokenAnswerJudgement,
+  type SpokenGrade,
 } from "@libitums/episode-core/judge";
 
 /** 마이크 · 음성 인식 권한이 둘 다 있고 인식기가 서 있어야 들을 수 있습니다. */

@@ -133,6 +133,7 @@ export function itemAnsweredEventOf(
       ? { skipReason: report.skipReason }
       : {}),
     ...(report.hintUsed === undefined ? {} : { hintUsed: report.hintUsed }),
+    ...(report.grade === undefined ? {} : { grade: report.grade }),
     ...(report.speech === undefined
       ? {}
       : {

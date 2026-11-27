@@ -40,15 +40,22 @@ test("[RS2] 이름이 든 낱말은 판정에서 빠진다 — 인식기가 이�
   expect(judgeRoleplayReply(accepted, "엠마로 왔어요", ["Emma"])).toBe("incorrect");
 });
 
-test("[RS3] 이름과 나라가 함께 든 문장 — 나머지 낱말이 차례대로 있어야 맞다", () => {
+test("[RS3] 이름과 나라가 함께 든 문장 — 나머지 조각을 빠짐없이 말해야 맞다(마디 순서는 무관, ADR-0201)", () => {
   const accepted = ["저는 미국에서 왔어요. 여기서 며칠 묵어요?"] as const;
   const wildcards = ["Mary Jane", "미국"];
   expect(judgeRoleplayReply(accepted, "저는 미국에서 왔어요 여기서 며칠 묵어요", wildcards)).toBe(
     "correct",
   );
-  expect(judgeRoleplayReply(accepted, "여기서 며칠 묵어요 저는 왔어요", wildcards)).toBe(
+  expect(judgeRoleplayReply(accepted, "여기서 며칠 묵어요 저는 왔어요", wildcards)).toBe("correct");
+  expect(judgeRoleplayReply(accepted, "저는 미국에서 여기서 며칠 묵어요", wildcards)).toBe(
     "incorrect",
   );
+});
+
+test("[RS10] 발음 기준 — 띄어쓰기 · 받침 표기 · 작은 오차는 맞고, 다른 낱말은 틀리다(ADR-0201)", () => {
+  expect(judgeRoleplayReply(["카드로 할게요."], "카드로 할께요", [])).toBe("correct");
+  expect(judgeRoleplayReply(["카드로 할게요."], "카드루 할게요", [])).toBe("correct");
+  expect(judgeRoleplayReply(["카드로 할게요."], "현금으로 할게요", [])).toBe("incorrect");
 });
 
 test("[RS9] 정답이 이름뿐이면 무언가 말해야 맞다 — 빈 인식은 오답", () => {
@@ -60,8 +67,13 @@ test("[RS4] 한 턴 — 말하기 → 판정 → 다음, 결과가 쌓이고 힌
   let state = roleplayTalkReducer(initialRoleplayTalkState, { type: "hint" });
   state = roleplayTalkReducer(state, { type: "start" });
   expect(state.phase).toBe("listening");
-  state = roleplayTalkReducer(state, { type: "heard", text: "네", verdict: "correct" });
-  expect(state).toMatchObject({ phase: "heard", heard: "네", verdict: "correct" });
+  state = roleplayTalkReducer(state, {
+    type: "heard",
+    text: "네",
+    verdict: "correct",
+    judgement: null,
+  });
+  expect(state).toMatchObject({ phase: "heard", heard: "네", verdict: "correct", judgement: null });
   state = roleplayTalkReducer(state, { type: "next" });
   expect(state).toMatchObject({
     turnIndex: 1,
@@ -73,11 +85,21 @@ test("[RS4] 한 턴 — 말하기 → 판정 → 다음, 결과가 쌓이고 힌
 
 test("[RS5] 틀리면 다시 말할 수 있고, 맞힌 뒤에는 다시 하기가 무시된다", () => {
   let state = roleplayTalkReducer(initialRoleplayTalkState, { type: "start" });
-  state = roleplayTalkReducer(state, { type: "heard", text: "아", verdict: "incorrect" });
+  state = roleplayTalkReducer(state, {
+    type: "heard",
+    text: "아",
+    verdict: "incorrect",
+    judgement: null,
+  });
   state = roleplayTalkReducer(state, { type: "retry" });
   expect(state).toMatchObject({ phase: "ready", heard: "", verdict: null });
   state = roleplayTalkReducer(state, { type: "start" });
-  state = roleplayTalkReducer(state, { type: "heard", text: "네", verdict: "correct" });
+  state = roleplayTalkReducer(state, {
+    type: "heard",
+    text: "네",
+    verdict: "correct",
+    judgement: null,
+  });
   expect(roleplayTalkReducer(state, { type: "retry" })).toBe(state);
 });
 
@@ -97,6 +119,7 @@ test("[RS7] 늦게 온 인식 결과는 듣는 중이 아니면 무시된다", (
       type: "heard",
       text: "네",
       verdict: "correct",
+      judgement: null,
     }),
   ).toBe(initialRoleplayTalkState);
 });

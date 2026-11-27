@@ -163,7 +163,7 @@ test("[IR2] 미리보기 → 표지 컷 → 세 턴을 말하고 결과 → Back
 
   env.heard = ["아니요 괜찮아요", "현금으로 할게요", "아니요 영수증은 괜찮아요"];
   for (let turn = 0; turn < 3; turn += 1) {
-    fireEvent.tap(id("roleplay-talk-mic"), {});
+    fireEvent.tap(id("roleplay-mic-button"), {});
     tapButton("roleplay-talk-next");
   }
   expect(id("lesson-complete-screen")).toBeInTheDocument();
@@ -174,6 +174,32 @@ test("[IR2] 미리보기 → 표지 컷 → 세 턴을 말하고 결과 → Back
     judgedCount: "3",
     skippedCount: "0",
   });
+  // 턴마다 결과 · 등급이 한 번씩(ADR-0201 D6 적용 2) — 들은 문장은 싣지 않는다.
+  const turnEvents = env.events.filter((event) => event.name === "roleplay_story_turn_answered");
+  expect(turnEvents).toEqual([
+    {
+      name: "roleplay_story_turn_answered",
+      episodeId: "u01-water",
+      turn: "1",
+      result: "correct",
+      grade: "perfect",
+    },
+    {
+      name: "roleplay_story_turn_answered",
+      episodeId: "u01-water",
+      turn: "2",
+      result: "incorrect",
+      grade: "incorrect",
+    },
+    {
+      name: "roleplay_story_turn_answered",
+      episodeId: "u01-water",
+      turn: "3",
+      result: "correct",
+      grade: "perfect",
+    },
+  ]);
+  expect(JSON.stringify(turnEvents)).not.toContain("현금");
   expect(maybe("lesson-complete-tickets")).not.toBeInTheDocument();
   tapButton("lesson-complete-screen-exit");
   expect(id("roleplay-list-section-u01-water")).toBeInTheDocument();
@@ -187,7 +213,7 @@ test("[IR3] 롤플레이는 진행을 바꾸지 않는다 — 마쳐도 서버 �
   passCuts();
   env.heard = ["아니요 괜찮아요", "카드로 할게요", "아니요 영수증은 괜찮아요"];
   for (let turn = 0; turn < 3; turn += 1) {
-    fireEvent.tap(id("roleplay-talk-mic"), {});
+    fireEvent.tap(id("roleplay-mic-button"), {});
     tapButton("roleplay-talk-next");
   }
   await act(async () => {

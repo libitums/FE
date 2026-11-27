@@ -3,7 +3,8 @@
 import type { AnswerResult } from "../../lib/answer-result";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { PictureLoadState } from "../../lib/picture-load";
-import { judgeSpeaking } from "../../lib/speaking-judge";
+import { judgeSpokenAnswer } from "../../lib/speaking-judge";
+import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import {
   speechAvailabilityAfter,
   speechMissedHintOf,
@@ -11,7 +12,11 @@ import {
   speechReopened,
   speechRetryable,
 } from "../../lib/speech-attempt";
-import type { SpeechAttemptPhase, SpeechControls } from "../../lib/speech-attempt";
+import type {
+  SpeechAttemptOutcome,
+  SpeechAttemptPhase,
+  SpeechControls,
+} from "../../lib/speech-attempt";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   SpeakWordQuestion,
@@ -24,6 +29,8 @@ export const initialSpeakWordSessionState: SpeakWordSessionState = {
   phase: { kind: "ready" },
   availability: "open",
   heard: [],
+  judgement: null,
+  attempt: 0,
 };
 
 function nextQuestion(
@@ -35,7 +42,16 @@ function nextQuestion(
     phase: speechPhaseFor(state.availability),
     availability: state.availability,
     heard,
+    judgement: null,
+    attempt: 0,
   };
+}
+
+/** 처음 오답이면 한 번 다시 말할 수 있습니다(시안 S4) — 두 번째 오답 · 맞음 뒤에는 없습니다. */
+function canRetry(state: SpeakWordSessionState): boolean {
+  return (
+    state.phase.kind === "heard" && state.judgement?.result === "incorrect" && state.attempt === 0
+  );
 }
 
 export function speakWordSessionReducer(
@@ -45,6 +61,16 @@ export function speakWordSessionReducer(
   const { phase } = state;
   switch (action.type) {
     case "start": {
+      // 처음 오답 뒤 다시 말하기 — 틀린 말은 목록에서 빼고(문항당 한 칸) 같은 문항을 다시 듣습니다.
+      if (canRetry(state)) {
+        return {
+          ...state,
+          phase: { kind: "listening" },
+          heard: state.heard.slice(0, -1),
+          judgement: null,
+          attempt: state.attempt + 1,
+        };
+      }
       const startable =
         phase.kind === "ready" ||
         speechRetryable(phase) ||
@@ -61,6 +87,7 @@ export function speakWordSessionReducer(
         phase: outcome,
         availability: speechAvailabilityAfter(state.availability, outcome),
         heard: outcome.kind === "heard" ? [...state.heard, outcome.text] : state.heard,
+        judgement: outcome.kind === "heard" ? action.judgement : null,
       };
     }
     case "skip":
@@ -83,18 +110,28 @@ export function speakWordSkipRest(
   return [...state.heard, ...new Array<null>(rest).fill(null)];
 }
 
-/** 정답 중 하나라도 맞게 말했으면 정답입니다(앞 낱말 일치 — 부호 · 뒤 낱말은 무시). */
+/**
+ * 정답 중 하나라도 발음 기준으로 맞게 말했으면 정답입니다(ADR-0201) — 띄어쓰기 · 연음 · 받침 표기 · 군말 · 뒤에 덧붙은
+ * 낱말은 무시하고, 긴 정답은 자모 몇 개의 오차까지 받습니다. 「통과(close)」 등급과 모범 정답은 `judgeSpokenAnswer`가 냅니다.
+ */
 export function judgeSpokenWord(answers: NonEmpty<string>, heard: string): AnswerResult {
-  return answers.some((answer) => judgeSpeaking(answer, heard) === "correct")
-    ? "correct"
-    : "incorrect";
+  return judgeSpokenAnswer(answers, heard).result;
 }
 
-export function speakWordResultAt(
+/**
+ * 결말 하나의 판정입니다 — 들린 결말만 채점하고 그 밖은 null. 인식 결말 콜백(배경 스레드)에서 불러 `outcome` 동작에
+ * 싣습니다. 렌더에서 부르지 않습니다(ADR-0201 개정 ⟨렌더 밖 판정⟩).
+ */
+export function speakWordJudgementOf(
   question: SpeakWordQuestion,
-  state: SpeakWordSessionState,
-): AnswerResult | null {
-  return state.phase.kind === "heard" ? judgeSpokenWord(question.answers, state.phase.text) : null;
+  outcome: SpeechAttemptOutcome,
+): SpokenAnswerJudgement | null {
+  return outcome.kind === "heard" ? judgeSpokenAnswer(question.answers, outcome.text) : null;
+}
+
+/** 지금 문항의 판정 — 들음 국면에서 받아 둔 값만 읽습니다(렌더에서 채점하지 않습니다). */
+export function speakWordResultAt(state: SpeakWordSessionState): AnswerResult | null {
+  return state.phase.kind === "heard" ? (state.judgement?.result ?? null) : null;
 }
 
 export function speakWordSessionResults(
@@ -152,9 +189,6 @@ export function speakWordControlsOf(
 }
 
 export function speakWordHintOf(phase: SpeechAttemptPhase, copy: UiCopy): string | null {
-  if (phase.kind === "heard") {
-    return copy.speaking.tapToContinue;
-  }
   if (phase.kind === "missed") {
     return speechMissedHintOf(phase.reason, copy);
   }
@@ -178,21 +212,39 @@ export function speakWordInstructionOf(
   return question.instruction ?? copy.speakWord.instruction;
 }
 
-/** 판정 알림 — 틀리면 정답 문구를 이어 싣습니다(자동으로 넘어가 정답 상자를 순회할 틈이 없습니다). */
+/**
+ * 판정 알림(결과 시트의 live region 몫) — perfect는 판정만, close는 모범 답안, 오답은 들은 말과 정답을 잇습니다.
+ * 들은 글자는 기기 안 낭독에만 쓰고 이벤트에는 싣지 않습니다.
+ */
 export function speakWordResultAnnouncement(
   question: SpeakWordQuestion,
-  result: AnswerResult,
+  judgement: SpokenAnswerJudgement,
+  heard: string,
   copy: UiCopy,
 ): string {
-  const verdict = copy.common.resultAnnouncement(result);
-  return result === "correct" ? verdict : `${verdict}, ${speakWordRevealText(question, copy)}`;
+  const verdict = copy.common.resultAnnouncement(judgement.result);
+  const answer = answerWithRomanization(question, judgement.expected);
+  switch (judgement.grade) {
+    case "perfect":
+      return verdict;
+    case "close":
+      return `${verdict}, ${copy.speakWord.result.modelAnswer}: ${answer}`;
+    case "incorrect":
+      return heard.trim() === ""
+        ? `${verdict}, ${copy.typing.answerReveal(answer)}`
+        : `${verdict}, ${copy.speakWord.result.youSaid}: ${heard}, ${copy.typing.answerReveal(answer)}`;
+  }
+}
+
+/** 정답 글자 — 첫 정답이면 로마자를 「 · 」로 잇습니다. */
+function answerWithRomanization(question: SpeakWordQuestion, answer: string): string {
+  return answer === question.answers[0] && question.romanization !== null
+    ? `${answer} · ${question.romanization}`
+    : answer;
 }
 
 export function speakWordRevealText(question: SpeakWordQuestion, copy: UiCopy): string {
-  const [first] = question.answers;
-  return copy.typing.answerReveal(
-    question.romanization === null ? first : `${first} · ${question.romanization}`,
-  );
+  return copy.typing.answerReveal(answerWithRomanization(question, question.answers[0]));
 }
 
 /** 그림이 실패하면 틀 안 대체 글자가 같은 뜻을 보이므로 뜻 줄은 숨깁니다. */
@@ -218,3 +270,5 @@ export function speakWordPictureLabel(
 export function speakWordCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
   return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }
+
+export { speakWordJudgedControls, speakWordMicStateOf } from "./speak-word-controls";

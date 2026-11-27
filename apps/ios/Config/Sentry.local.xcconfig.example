@@ -1,0 +1,6 @@
+// 이 파일을 Sentry.local.xcconfig로 복사해 값을 채운다(추적하지 않는다). 값을 바꾸면 다시 빌드한다.
+// DSN은 Sentry 프로젝트 duru-apple-ios의 [Settings] > [Client Keys (DSN)]의 값이다(auth token이 아니다).
+// xcconfig는 `//`를 주석으로 읽는다 — 스킴 뒤 `//`를 `/$()/`로 적는다: https://<key>@<host>/<id> → https:/$()/<key>@<host>/<id>
+SENTRY_DSN = https:/$()/<key>@<host>/<project-id>
+// 로컬 확인 빌드는 development로 두어 운영(release) 지표에 섞이지 않게 한다. 스토어 제출 빌드는 이 줄을 지우거나 release로 둔다.
+SENTRY_ENVIRONMENT = development
