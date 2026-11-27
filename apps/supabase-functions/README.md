@@ -431,7 +431,7 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
   평가 때 볼 것: 한국어 · 영어가 섞인 입력은 `l1_to_ko` 하나(이유 설명 없음)로, 존댓말 관계의 반말은 `better`로, 반말 관계의 존댓말과 자연스러운 문장은 `none`으로 나와야 한다.
 - 피드백 케이스는 `history`(`[{"role":"user"|"assistant","text"}]`, 오래된 것부터, 최대 20 — 운영처럼 마지막 6개만 쓴다)도 받는다. `context`는 계속
   앞 캐릭터 말 한 줄이고, `history`가 있으면 그쪽이 맥락이다.
-- 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
+- 응답 `{"kind","model","rev","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `rev`는 이 실행이 쓴 지시문의 리비전(8자리, 아래 「판정 · 기억 · 스토리 조회 1차」)이고, `output`은 판정 `{category, action}` 또는
   피드백 카드(위 「피드백 카드」) 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
   케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
 - **기억(`kind: "memory"`, ADR-0210)** — 운영 기억 묶음처럼 추출 작업(더하기 · 고치기 · 잊기)을 돌려주고 DB에는 적용하지 않는다(`_shared/companion-eval-memory.ts`).
@@ -773,6 +773,46 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 **운영은 2026-11-23에 SQL 편집기로 적용했다**(20261214 없이 20261213 위에). `supabase migration repair --status applied 20261227130000`으로 기록한다.
 다시 적용해도 같다. 20261214를 이 파일 뒤에 다시 적용하면 수 없는 옛 함수로 돌아가니, 그때는 이 파일도 다시 적용한다.
 번호는 main의 `20261227120000_ranking_group_size.sql`과 겹치지 않게 `…130000`이다.
+
+### 판정 · 기억 · 스토리 조회 1차 (20270118)
+
+`migrations/20270118120000_ops_admin_insights.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §G-A(기획 `docs/admin-insights.md`). 20261212의 공통 규칙 그대로다.
+
+- **리비전**(ADR-0203 개정 ⟨리비전⟩): `companion.moderation_events.rev` — 그 판정이 나온 지시문의 해시 8자리(16진수, 옛 줄은 null).
+  `_shared/companion-guardrail-rev.ts`가 검사 지시문 30개(`moderationInstruction` 단계 2 × 연령대 3 × 선 5)와 답 프롬프트의 인물 공통 줄(수위선 셋 ·
+  `commonRequests`)을 이어 붙여 SHA-256 앞 8자리를 낸다(인스턴스마다 처음 한 번). `chat-send`가 판정마다 `rev`를 싣고 `companion_finish_turn`이 그대로 넣는다 —
+  없거나 8자리가 아니면 null. `companion-eval`의 POST 응답에도 같은 계산의 `rev`가 있다(재현 결과를 운영 판정과 견준다).
+  판정을 표에 넣는 함수는 `companion_finish_turn` 하나다 — 첫 인사 · 선톡 · 이야기 초안의 검사는 판정 줄을 남기지 않는다(그대로). **이 함수의 최신 판은 이제 이 파일이다**
+  (20261204 판 + `rev`) — 뒤에 이 함수를 고치는 마이그레이션은 이 판에서 시작한다.
+- 표(`ops`, RPC로만 — `service_role`도 직접 못 읽는다): `ops.guardrail_revs`(리비전에 사람이 붙인 이름 · 메모) · `ops.moderation_reviews`(판정 하나에 검토 하나 —
+  `correct` · `false_positive` · `missed` · `unsure`, 판정이 지워지면 같이 지워진다).
+- 새 RPC 6개:
+  - `ops_moderation_summary(p_actor, p_from, p_to, p_stage, p_age, p_line, p_character)` — 기간(≤ 90일, 날은 UTC) 판정 현황.
+    `{inputs, cells[{category, stage, blocks, per1k}], daily[{day, category, blocks}], tracked[{line, characterId, category, count}], revs[…], unrevisioned, strikes[…]}`.
+    `blocks`는 allow가 아닌 판정(block · crisis · hide), `per1k`는 같은 거르기(단계 빼고)의 입력 검사 1천 건당. `tracked`는 허용했지만 기록하는
+    로맨스 · 성적 긴장(ADR-0168 D3). `revs`는 기간 안에 보인 리비전 — 처음 · 마지막 본 때는 기간 밖까지, 나머지 수는 기간 · 거르기 안. 리비전 없는 옛 줄은
+    `unrevisioned {events, blocks, reviewed, falsePositives}`. `strikes`는 지금 창 안 스트라이크가 상한 − 1 이상인 사용자(50명까지).
+  - `ops_moderation_feed(p_actor, p_from, p_to, p_category, p_stage, p_action, p_character, p_age, p_line, p_rev, p_review, p_user, p_limit 기본 50(1~200), p_before)` —
+    판정 목록. 줄마다 앞 캐릭터 말(`previous`) · 학습자 메시지(`message`, `inputSource`) · 그 뒤 답(`reply` — 거절이면 `refusal {stage, category}`, 출력 검사에 걸려
+    다시 만든 답이면 `recovered {category, draft}`) · `rev` · `ageBand` · `romanceLine` · `user` · `strikes`(지금 값) · `review`. `p_action`을 비우면 allow가 아닌 것,
+    `tracked`면 기록용 허용. `p_rev` · `p_review`의 `none`은 리비전 없는 옛 줄 · 검토 안 한 것. 쪽 넘김은 20261215와 같다(쪽 끝 시각과 같은 판정은 다 넣는다).
+  - `ops_review_moderation(p_actor, p_event, p_verdict, p_expected_category, p_note ≤ 200자)` — 다시 고르면 덮고, `p_verdict`가 비면 지운다. 기록 `write` ·
+    `review_moderation`, detail `{event, verdict, before}`(대상 사용자는 비운다 — 사용자의 운영 이력에 섞지 않는다).
+  - `ops_set_guardrail_rev(p_actor, p_rev, p_label ≤ 80자, p_note ≤ 500자)` — 이름 · 메모(비면 지운다). 기록 `write` · `set_guardrail_rev`.
+  - `ops_user_memories(p_actor, p_user, p_include_deleted)` — 캐릭터를 고르지 않은 전체 기억 + 출처 메시지(글 300자 · `inputSource`) + 캐릭터마다의 관계.
+  - `ops_user_stories(p_actor, p_user, p_limit 기본 30(1~100), p_before)` — 내 스토리(반응 · Seen 수 · 답장 수 · 퀴즈) 한 쪽 + 거절된 사진 · 친구 스토리 답장 ·
+    지난 스토리 열람 최근 50. 거절된 사진의 격리 파일 경로는 싣지 않는다.
+- **연령대 · 로맨스 선은 판정 줄에 없다** — 그 턴의 캐릭터 답 `meta.ageBand` · `meta.romanceLine`에서 읽는다. 답이 없는 턴(실패)은 null이고 그 둘로 거르면 빠진다.
+  그 턴의 답은 대화 인덱스로 찾는다(같은 대화에서 그 메시지 뒤 30분 안의 `reply_to`가 그 메시지인 답 — `reply_to`에는 인덱스가 없다). 거르기가 없으면 기록용 허용 줄만 답을 읽는다.
+- 제한 시간: 여섯 함수에 `statement_timeout = '5s'` 설정을 건다. 본문의 `set local`은 이미 시작한 호출에 걸리지 않고, PostgREST가 함수 설정을 호출 전에 트랜잭션에 올린다
+  (SQL 편집기에서 직접 부르면 걸리지 않는다).
+- 오류: `invalid_range`(기간 거꾸로 · 90일 초과) · `invalid_stage` · `invalid_action` · `invalid_review` · `invalid_verdict` · `invalid_rev` · `invalid_label` ·
+  `invalid_note` · `invalid_expected_category` · `invalid_limit` · `not_found`. 분류 · 캐릭터 · 연령대 · 선은 검사하지 않는다(맞는 줄이 없을 뿐).
+- 테스트: `migrations/ops-admin-insights.integration.test.ts`(OI-1 ~ OI-14) · `_shared/companion-guardrail-rev.unit.test.ts`(GV1 ~ GV3).
+
+**배포 순서**: 이 마이그레이션(20261213 **뒤**, 다시 적용해도 같다) → `chat-send` · `companion-eval`. 어느 쪽이 먼저여도 턴은 저장된다 — 마이그레이션이 먼저면
+옛 `chat-send`가 `rev`를 보내지 않아 그동안의 판정이 null이고, 함수가 먼저면 옛 저장 함수가 `rev`를 버려 역시 null이다. 둘 다 올라간 뒤의 판정부터 리비전이 남는다.
+이 파일이 없으면 ops_admin은 그 화면을 「DB 업데이트 뒤에 보입니다」로 보인다.
 
 ## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 

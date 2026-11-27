@@ -648,7 +648,7 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 | `corrections` | `card` jsonb — 고정 카드 전체(§4.2). 옛 열(`status` · `kind` · `items` · `better`)은 찾아보기용으로 함께 쓴다 |
 | `messages` | `segments[].translation`(L1 번역) · `meta.translation`(번역 결과 이유) · `suggestions` jsonb(추천 답변 캐시) · 거절 답 `meta.refusal` · `refusalStage` · `refusalCategory` · `refusalSource` |
 | `memories` | `embedding` 열 없음(pgvector 미룸) · `user_edited`(유저가 고침 — 용량 밀어내기에서 지킴) |
-| `moderation_events` | `category` 값에 `profanity`(열은 글자 — 표 변경 없음) |
+| `moderation_events` | `category` 값에 `profanity`(열은 글자 — 표 변경 없음). ⟨20270118⟩ `rev`(그 판정이 나온 지시문의 리비전 8자리, 옛 줄은 null — ADR-0203 개정 ⟨리비전⟩) |
 
 **1단계에 넣지 않는 위키 초안 표**: `mission_results`(2단계) · `item_attempts` · `user_expressions`(채팅 완료 뒤) ·
 `roleplay_turn_logs`(별도 FE 작업). 위키 05의 `learner_profiles` 확장은 `profiles`가 대신한다(PRD 비고 3).
