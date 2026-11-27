@@ -113,11 +113,24 @@ export const createAdmobKeys: CreateAdmobKeys = ({
   minReloadMs = 60_000,
 }) => {
   let cache: { keys: Map<string, string>; at: number } | null = null;
-  const load = async () => {
+  let loading: Promise<Map<string, string>> | null = null;
+  const fetchKeys = async () => {
     const response = await outbound({ url, method: "GET", headers: {}, body: null });
     if (response.status !== 200) throw new Error(`admob keys: ${response.status}`);
     cache = { keys: keysFrom(await response.text()), at: nowMs() };
     return cache.keys;
+  };
+  // 겹친 요청은 진행 중인 읽기 하나를 함께 기다린다. 읽기가 실패하면 낡은 키라도 있으면 그것을 쓴다(stale-on-error).
+  const load = async () => {
+    loading ??= fetchKeys().finally(() => {
+      loading = null;
+    });
+    try {
+      return await loading;
+    } catch (error) {
+      if (cache !== null) return cache.keys;
+      throw error;
+    }
   };
   return {
     keyFor: async (keyId) => {
@@ -141,13 +154,11 @@ export const admobSsvEnvFrom: AdmobSsvEnvFrom = (read) => {
   if (rawUrl === null || supabaseServiceRoleKey === null || !rawUrl.startsWith("https://")) {
     return null;
   }
+  // 광고 단위 목록은 필수다 — Google SSV 키는 모든 게시자가 함께 쓰므로 서명만으로는 「우리 광고 단위」임이 증명되지 않는다.
   const units = (value("ADMOB_AD_UNIT_IDS") ?? "")
     .split(",")
     .map((unit) => unit.trim())
     .filter((unit) => unit !== "");
-  return {
-    supabaseUrl: rawUrl.replace(/\/+$/, ""),
-    supabaseServiceRoleKey,
-    adUnitIds: units.length > 0 ? units : null,
-  };
+  if (units.length === 0) return null;
+  return { supabaseUrl: rawUrl.replace(/\/+$/, ""), supabaseServiceRoleKey, adUnitIds: units };
 };

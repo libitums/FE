@@ -24,7 +24,13 @@ export const createAdmobSsvHandler: CreateAdmobSsvHandler =
     if (request.method !== "GET") return done(405, "method_not_allowed");
     const url = new URL(request.url);
     const query = parseAdmobSsvQuery(url.search.replace(/^\?/, ""));
-    if (query === null || !uuidShape.test(query.customData) || !uuidShape.test(query.userId)) {
+    if (
+      query === null ||
+      !uuidShape.test(query.customData) ||
+      !uuidShape.test(query.userId) ||
+      query.transactionId.length > 200 ||
+      query.adUnit.length > 200
+    ) {
       return done(400, "invalid_query");
     }
     let publicKey: string | null;
@@ -33,13 +39,12 @@ export const createAdmobSsvHandler: CreateAdmobSsvHandler =
     } catch {
       return done(500, "keys_failed");
     }
-    if (
-      publicKey === null ||
-      !(await verifyAdmobSignature(query.signedContent, query.signature, publicKey))
-    ) {
+    // 모르는 key_id는 키 교체 직후일 수 있다 — 다시 받도록 500. 서명이 틀린 것만 401(다시 보내도 같다).
+    if (publicKey === null) return done(500, "unknown_key");
+    if (!(await verifyAdmobSignature(query.signedContent, query.signature, publicKey))) {
       return done(401, "bad_signature");
     }
-    if (env.adUnitIds !== null && !env.adUnitIds.includes(query.adUnit)) {
+    if (!env.adUnitIds.includes(query.adUnit)) {
       return done(403, "ad_unit_not_allowed");
     }
     try {

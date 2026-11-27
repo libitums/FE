@@ -8,6 +8,7 @@
 --   스위치: `companion.settings.ad_ticket_enabled`(기본 off). 앱의 PostHog 플래그 `ad-ticket`과 둘 다 켜져야 버튼이 보인다.
 --   대상: 로그인(익명 아님) · 계정 생성 뒤 24시간 지남(첫날 무제한, ADR-0186) · 활성 구독 없음(요금제 종류 무관).
 --   상한: 하루 `ad_ticket_daily_cap`(기본 2)회. 하루는 앱이 보낸 UTC 오프셋(분)의 자정부터 — 기기 원장의 「하루」(기기 지역 날짜)와 같다.
+--   오프셋은 지난 48시간 안 요청의 값으로 고정된다(요청마다 바꿔 여러 날치를 앞당기지 못하게).
 --   멱등: 거래 id(`transaction_id`)마다 한 번 — 같은 콜백이 다시 와도 `duplicate`. 요청 하나에 지급도 한 번.
 --   요청 id는 24시간 산다(그 뒤 콜백은 `expired`). 사용자마다 하루 시작 수도 20번으로 막는다(표가 부풀지 않게).
 
@@ -82,6 +83,18 @@ begin
 end;
 $$;
 
+-- 이 사용자의 「하루」 오프셋. 지난 48시간 안에 시작한 요청이 있으면 그 오프셋을 그대로 쓴다 — 요청마다 오프셋을 바꿔
+-- 날짜 셋(−14h ~ +14h)에 걸쳐 상한을 한꺼번에 앞당겨 받지 못하게(리뷰). 48시간 쉬면 새 오프셋(여행 · 시간대 변경)을 받는다.
+create function companion.ad_ticket_offset(p_user_id uuid, p_requested integer, p_now timestamptz)
+returns integer language sql stable set search_path = '' as $$
+  select coalesce(
+    (select utc_offset_min from companion.ad_ticket_requests
+     where user_id = p_user_id and created_at > p_now - interval '48 hours'
+     order by created_at desc limit 1),
+    case when p_requested between -840 and 840 then p_requested else 0 end
+  )
+$$;
+
 create function companion.ad_ticket_used(p_user_id uuid, p_day date)
 returns integer language sql stable set search_path = '' as $$
   select count(*)::integer from companion.ad_ticket_requests
@@ -89,6 +102,7 @@ returns integer language sql stable set search_path = '' as $$
 $$;
 
 revoke all on function companion.ad_ticket_day(integer, timestamptz), companion.ad_ticket_block(uuid, timestamptz),
+  companion.ad_ticket_offset(uuid, integer, timestamptz),
   companion.ad_ticket_used(uuid, date) from public;
 
 -- ------------------------------------------------------------------ 앱: 상태 · 시작
@@ -107,7 +121,8 @@ begin
   end if;
   v_block := companion.ad_ticket_block(v_user, now());
   select ad_ticket_daily_cap into v_cap from companion.settings;
-  v_used := companion.ad_ticket_used(v_user, companion.ad_ticket_day(p_utc_offset_min, now()));
+  v_used := companion.ad_ticket_used(v_user,
+    companion.ad_ticket_day(companion.ad_ticket_offset(v_user, p_utc_offset_min, now()), now()));
   select jsonb_build_object('id', id, 'status', status, 'reason', reason) into v_request
   from companion.ad_ticket_requests where id = p_request_id and user_id = v_user;
   return jsonb_build_object(
@@ -126,7 +141,7 @@ create function public.ad_ticket_start(p_utc_offset_min integer)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
   v_user uuid := auth.uid();
-  v_offset integer := case when p_utc_offset_min between -840 and 840 then p_utc_offset_min else 0 end;
+  v_offset integer;
   v_block text;
   v_cap integer;
   v_left integer;
@@ -135,6 +150,7 @@ begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
   end if;
+  v_offset := companion.ad_ticket_offset(v_user, p_utc_offset_min, now());
   select ad_ticket_daily_cap into v_cap from companion.settings;
   v_left := greatest(v_cap - companion.ad_ticket_used(v_user, companion.ad_ticket_day(v_offset, now())), 0);
   v_block := companion.ad_ticket_block(v_user, now());

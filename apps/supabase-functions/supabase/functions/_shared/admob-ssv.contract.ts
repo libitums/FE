@@ -45,8 +45,11 @@ export type AdmobSsvEnvName = "SUPABASE_URL" | "SUPABASE_SERVICE_ROLE_KEY" | "AD
 export type AdmobSsvEnv = {
   readonly supabaseUrl: string;
   readonly supabaseServiceRoleKey: string;
-  /** 받을 광고 단위 id 목록(쉼표). 비면 `null` — 광고 단위를 가리지 않습니다. */
-  readonly adUnitIds: readonly string[] | null;
+  /**
+   * 받을 광고 단위 id 목록(쉼표, 콜백 `ad_unit` 값 — 광고 단위 id의 `/` 뒤 숫자). **필수** — 비면 환경이 null(500). Google SSV 공개키는
+   * 모든 게시자가 함께 쓰므로, 남의 광고 단위 콜백을 우리 주소로 돌려 티켓을 받지 못하게 합니다.
+   */
+  readonly adUnitIds: readonly string[];
 };
 
 export type AdmobSsvEnvFrom = (

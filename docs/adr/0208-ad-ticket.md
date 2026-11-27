@@ -30,7 +30,8 @@
 
 - `companion.settings.ad_ticket_daily_cap`(기본 2). 지급된(`granted`) 요청만 센다 — 광고가 없거나(no fill) 끝까지 보지 않으면 세지 않는다.
 - 「하루」는 앱이 보낸 UTC 오프셋(분)의 자정부터다. 기기 원장의 하루(기기 지역 날짜)와 같다. Android PrimJS에 `Intl`이 없어 IANA 시간대 대신
-  `Date#getTimezoneOffset`의 분을 쓴다. 범위(−840 ~ 840) 밖은 0(UTC).
+  `Date#getTimezoneOffset`의 분을 쓴다. 범위(−840 ~ 840) 밖은 0(UTC). **지난 48시간 안에 시작한 요청이 있으면 그 오프셋으로 고정**한다 —
+  요청마다 오프셋을 바꿔 날짜 셋에 걸쳐 상한을 한꺼번에 앞당기지 못하게(리뷰). 48시간 쉬면 새 오프셋을 받는다.
 
 ### D4. 대상 — 비구독 회원, 계정 생성 24시간 뒤
 
@@ -53,8 +54,11 @@
   advisory lock으로 한 줄로 세워 상한을 함께 넘지 않는다.
 - 요청 id가 그 사용자 것이 아니면 `unknown_request` — 위조 콜백이 남의 이름으로 와도 지급하지 않는다(서명 자체도 Google 키다).
 - `admob-ssv`: GET 쿼리 → key_id의 Google 공개키(`gstatic.com/admob/reward/verifier-keys.json`, 24시간 캐시, 모르는 key_id면 1분에 한 번 다시 읽음) →
-  ECDSA P-256 / SHA-256 서명 확인(DER → r‖s) → RPC 한 번. 상태: DB가 판정한 모든 결과 200 · 쿼리 모양 400 · 서명 401 · 받지 않는 광고 단위 403
-  (`ADMOB_AD_UNIT_IDS`가 있을 때) · 환경 · 키 목록 · DB 실패 500(Google이 다시 보낸다). 로그에 사용자 id · 거래 id · 서명을 싣지 않는다.
+  ECDSA P-256 / SHA-256 서명 확인(DER → r‖s) → RPC 한 번. 상태: DB가 판정한 모든 결과 200 · 쿼리 모양(값 200자 넘음 포함) 400 · 서명 401 ·
+  받지 않는 광고 단위 403 · 환경 · 키 목록 · 모르는 key_id(키 교체 직후) · DB 실패 500(Google이 다시 보낸다). 키 목록 읽기가 실패하면 낡은 키를 쓴다.
+  로그에 사용자 id · 거래 id · 서명을 싣지 않는다.
+- **광고 단위 목록 `ADMOB_AD_UNIT_IDS`는 필수**다(없으면 500 `misconfigured`). Google SSV 공개키는 모든 AdMob 게시자가 함께 쓰므로 서명만으로는
+  우리 광고 단위의 콜백임이 증명되지 않는다 — 남의 광고 단위 SSV URL을 우리 주소로 돌려 티켓을 받는 길을 막는다(리뷰).
 
 ### D6. 실험 — 플래그와 스위치가 둘 다 켜져야
 
@@ -94,7 +98,7 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 ## 대가 · 한계
 
 - 서버가 지급을 확인한 뒤 앱이 원장에 쓰기 전에 앱이 꺼지면 1장을 잃는다(엽전 구매와 같은 한계 — ADR-0075 적용 기록 2026-11-23).
-- 하루 경계는 앱이 보낸 오프셋이다 — 기기 시간대를 바꾸면 경계 근처에서 하루 1장을 더 받을 수 있다(광고를 본 대가라 받아들인다).
+- 하루 경계는 앱이 보낸 오프셋이다(48시간 고정). 첫 요청 때 오프셋을 꾸미면 경계를 몇 시간 옮길 수 있을 뿐 하루 상한은 그대로다.
 - 광고 SDK가 앱 크기를 키운다(앱 PR이 잰다).
 - 개인정보 처리방침 · 스토어 Data safety / 개인정보 라벨에 광고 SDK를 더해야 한다(앱 PR 보고 목록).
 
@@ -102,7 +106,7 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 
 1. AdMob 계정 · 앱(iOS · Android) · 보상형 광고 단위 둘 만들기 → 광고 단위의 「서버 측 확인」 URL = `https://<project>.supabase.co/functions/v1/admob-ssv`.
 2. `20270114120000_ad_ticket.sql` 적용(직전 버전 뒤 · 중복 없음 확인).
-3. `supabase functions deploy admob-ssv` · 비밀(선택) `ADMOB_AD_UNIT_IDS`(쉼표, 콜백 `ad_unit` 값 — 광고 단위 id의 `/` 뒤 숫자).
+3. `supabase functions deploy admob-ssv` · 비밀(**필수**) `ADMOB_AD_UNIT_IDS`(쉼표, 콜백 `ad_unit` 값 — 광고 단위 id의 `/` 뒤 숫자).
 4. AdMob 콘솔의 「확인」 테스트 콜백이 400(쿼리 모양) 또는 200이 아닌지 로그 확인 → 테스트 계정으로 끝까지 본 광고 1번이 `granted`인지 확인.
 5. 앱 PR 배포 뒤 PostHog 플래그 `ad-ticket` 50/50 → `update companion.settings set ad_ticket_enabled = true;`.
 6. 멈춤: `update companion.settings set ad_ticket_enabled = false;`.

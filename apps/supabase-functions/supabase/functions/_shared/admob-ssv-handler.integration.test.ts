@@ -35,7 +35,7 @@ beforeAll(async () => {
     env: {
       supabaseUrl: "https://db.example",
       supabaseServiceRoleKey: "sb_secret_x",
-      adUnitIds: null,
+      adUnitIds: ["1234567890"],
     },
     outbound: outbound as never,
     keys: createAdmobKeys({ outbound: outbound as never, nowMs: () => 0 }),

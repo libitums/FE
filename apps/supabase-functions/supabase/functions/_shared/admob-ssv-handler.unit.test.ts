@@ -8,7 +8,7 @@ import type { OutboundRequest } from "./delete-account.contract.ts";
 const env: AdmobSsvEnv = {
   supabaseUrl: "https://db.example",
   supabaseServiceRoleKey: "sb_secret_x",
-  adUnitIds: null,
+  adUnitIds: ["1234567890"],
 };
 const user = "00000000-0000-4000-8000-0000000000a1";
 const requestId = "11111111-1111-4111-8111-111111111111";
@@ -89,14 +89,14 @@ describe("AS-H2 거절", () => {
     expect(calls).toHaveLength(0);
   });
 
-  test("모르는 key_id는 401", async () => {
+  test("모르는 key_id는 500(키 교체 직후일 수 있어 다시 받는다)", async () => {
     const { signer, get, calls } = await setup();
     const query = await signedQuery(signer.sign, {
       customData: requestId,
       userId: user,
       keyId: "1",
     });
-    expect((await get(query)).status).toBe(401);
+    expect((await get(query)).status).toBe(500);
     expect(calls).toHaveLength(0);
   });
 
@@ -113,7 +113,24 @@ describe("AS-H2 거절", () => {
     expect(calls).toHaveLength(0);
   });
 
-  test("광고 단위 목록이 있으면 밖의 단위는 403", async () => {
+  test("거래 id · 광고 단위가 200자를 넘으면 400(DB까지 가지 않는다)", async () => {
+    const { signer, get, calls } = await setup();
+    const long = "x".repeat(201);
+    expect(
+      (
+        await get(
+          await signedQuery(signer.sign, {
+            customData: requestId,
+            userId: user,
+            transactionId: long,
+          }),
+        )
+      ).status,
+    ).toBe(400);
+    expect(calls).toHaveLength(0);
+  });
+
+  test("목록 밖의 광고 단위는 403", async () => {
     const { signer, get, calls } = await setup({ env: { ...env, adUnitIds: ["555"] } });
     const query = await signedQuery(signer.sign, { customData: requestId, userId: user });
     expect((await get(query)).status).toBe(403);

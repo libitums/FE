@@ -154,6 +154,27 @@ describe("AS-U3 공개키 캐시", () => {
     expect(calls).toHaveLength(2);
   });
 
+  test("다시 읽기가 실패하면 낡은 키를 쓰고, 겹친 첫 읽기는 하나로 합친다", async () => {
+    let now = 0;
+    let fail = false;
+    const calls: OutboundRequest[] = [];
+    const keys = createAdmobKeys({
+      outbound: async (call) => {
+        calls.push(call);
+        return fail
+          ? { status: 503, text: async () => "" }
+          : { status: 200, text: async () => keysJson("7", "KEY7") };
+      },
+      nowMs: () => now,
+      ttlMs: 1000,
+    });
+    expect(await Promise.all([keys.keyFor("7"), keys.keyFor("7")])).toEqual(["KEY7", "KEY7"]);
+    expect(calls).toHaveLength(1);
+    fail = true;
+    now += 2000;
+    expect(await keys.keyFor("7")).toBe("KEY7");
+  });
+
   test("목록을 못 읽으면(상태 · 모양) 거부한다", async () => {
     await expect(fakeKeys(["{}"], 500).keys.keyFor("7")).rejects.toThrow(/admob keys: 500/);
     await expect(fakeKeys(["not json"]).keys.keyFor("7")).rejects.toThrow(/JSON/);
@@ -163,20 +184,21 @@ describe("AS-U3 공개키 캐시", () => {
 
 describe("AS-U4 환경 값", () => {
   const read = (values: Record<string, string>) => (name: string) => values[name];
-  const full = { SUPABASE_URL: "https://db.example/", SUPABASE_SERVICE_ROLE_KEY: " sb_secret_x " };
-  test("필수 둘을 읽고 끝 / · 공백을 걷는다. 광고 단위 목록은 쉼표로, 비면 null", () => {
+  const full = {
+    SUPABASE_URL: "https://db.example/",
+    SUPABASE_SERVICE_ROLE_KEY: " sb_secret_x ",
+    ADMOB_AD_UNIT_IDS: " 111 , 222 ,",
+  };
+  test("셋을 읽고 끝 / · 공백을 걷는다. 광고 단위 목록은 쉼표로", () => {
     expect(admobSsvEnvFrom(read(full))).toEqual({
       supabaseUrl: "https://db.example",
       supabaseServiceRoleKey: "sb_secret_x",
-      adUnitIds: null,
+      adUnitIds: ["111", "222"],
     });
-    expect(
-      admobSsvEnvFrom(read({ ...full, ADMOB_AD_UNIT_IDS: " ca-app-pub-1/2 , ca-app-pub-1/3 ," }))
-        ?.adUnitIds,
-    ).toEqual(["ca-app-pub-1/2", "ca-app-pub-1/3"]);
   });
-  test("하나라도 없거나 https가 아니면 null", () => {
+  test("하나라도 없거나(광고 단위 목록 포함) https가 아니면 null", () => {
     expect(admobSsvEnvFrom(read({ SUPABASE_URL: "https://db.example" }))).toBeNull();
+    expect(admobSsvEnvFrom(read({ ...full, ADMOB_AD_UNIT_IDS: " , " }))).toBeNull();
     expect(admobSsvEnvFrom(read({ ...full, SUPABASE_URL: "http://kong:8000" }))).toBeNull();
   });
 });

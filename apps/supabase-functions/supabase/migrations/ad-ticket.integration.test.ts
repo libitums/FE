@@ -222,3 +222,36 @@ test("AT8. 권한: 로그인 없이 시작 · 상태 불가, 앱은 지급 RPC �
 test("AT9. 오프셋이 범위 밖이면 0(UTC)으로 본다 — 거절하지 않는다", async () => {
   expect((await start(app, 100_000)).result).toBe("ok");
 });
+
+test("AT10. 오프셋을 바꿔도 48시간 안에는 첫 오프셋의 하루로 센다 — 여러 날치를 앞당기지 못한다", async () => {
+  const a = await start(app, 840);
+  const b = await start(app, 840);
+  await grant(a.requestId!, "tx-a");
+  await grant(b.requestId!, "tx-b");
+  expect(await start(app, -840)).toMatchObject({ result: "limit", left: 0 });
+  const stored = await db.admin.query(
+    "select distinct utc_offset_min from companion.ad_ticket_requests where user_id = $1",
+    [user],
+  );
+  expect(stored.rows).toEqual([{ utc_offset_min: 840 }]);
+});
+
+test("AT11. 같은 사용자의 다른 거래가 동시에 와도 상한(2)을 넘지 않는다", async () => {
+  const ids = [await start(), await start(), await start(), await start()].map((s) => s.requestId!);
+  const servers = await Promise.all(ids.map(() => db.connect()));
+  await Promise.all(servers.map((client) => client.query("set role service_role")));
+  const outcomes = await Promise.all(
+    ids.map(
+      async (id, i) =>
+        (
+          await servers[i]!.query(
+            "select public.ad_ticket_grant($1::uuid, $2::uuid, $3, 'u') as r",
+            [user, id, `tx-c${i}`],
+          )
+        ).rows[0].r.outcome as string,
+    ),
+  );
+  expect(outcomes.filter((o) => o === "granted")).toHaveLength(2);
+  expect(outcomes.filter((o) => o === "limit")).toHaveLength(2);
+  expect((await status()).used).toBe(2);
+});
