@@ -155,7 +155,8 @@ export function turnSticker<T extends Placement>(
 ): { readonly item: T; readonly snap: number | null } {
   const before = distance(from[0], from[1]);
   const ratio = before === 0 ? 1 : distance(to[0], to[1]) / before;
-  const delta = angle(to[0], to[1]) - angle(from[0], from[1]);
+  // 두 점의 각도는 ±180°에서 넘어가므로 차이도 접어 가장 짧은 회전으로(179° → −179°는 2°).
+  const delta = foldRotation(angle(to[0], to[1]) - angle(from[0], from[1]));
   const turn =
     Math.abs(delta) < TURN_MIN
       ? { rotation: foldRotation(start.rotation + delta), snap: null }

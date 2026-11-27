@@ -60,6 +60,21 @@ test("RT-U3. 두 손가락 — 크기와 회전을 함께, 회전은 접고 붙�
   ]);
   expect(resized.item.rotation).toBeCloseTo(-4 + (Math.atan2(1, 300) * 180) / Math.PI, 3);
   expect(resized.snap).toBeNull();
+  // 두 점의 각도가 ±180°를 넘어감(179.6° → −179.6°) — 실제로는 0.8°만 돌림: 크기만 바꾼 것으로 보고 −4°를 붙이지 않음
+  const edge = 100 * Math.tan((0.4 * Math.PI) / 180);
+  const crossed = turnSticker(
+    start,
+    [
+      { x: 100, y: 0 },
+      { x: 0, y: edge },
+    ],
+    [
+      { x: 100, y: 0 },
+      { x: 0, y: -edge },
+    ],
+  );
+  expect(crossed.item.rotation).toBeCloseTo(-3.2, 2);
+  expect(crossed.snap).toBeNull();
   expect(
     turnSticker(start, from, [
       { x: 0, y: 0 },
