@@ -10,6 +10,7 @@
 - OS: iOS 26.5 시뮬레이터 · Android 에뮬레이터
 - Lynx SDK: 4.0.1
 - 빌드: 로컬 `pnpm --filter @libitums/mobile build`(.env.local 없음) — main.lynx.bundle `feat/spoken-judge` 5,754,372 bytes → 5,782,953 bytes(+28,581). 천장 6,180,000 안(여유 약 397 kB)
+- **#646 머지 뒤 다시 잼**: `feat/spoken-judge` 9db639f6 계열 5,767,357 bytes → 5,796,311 bytes(+28,954). 천장 6,180,000 안.
 - 실행 회차: 01
 
 ## 시나리오
