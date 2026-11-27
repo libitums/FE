@@ -38,7 +38,7 @@ const NOW = Date.now();
 const HOUR = 3_600_000;
 
 function serverRemote(state: MyStoriesState | "fail") {
-  const list = vi.fn(async (_tzOffsetMin: number) => {
+  const list = vi.fn(async (_tzOffsetMin: number, _region?: string | null) => {
     if (state === "fail") throw new Error("network");
     return state;
   });
@@ -132,7 +132,8 @@ test("MSI1. 「Your story」 → 반응 → Open chat: 그 인물 방이 열리�
     kinds: ["word", "card"],
   });
   await openMessenger();
-  expect(list).toHaveBeenCalledWith(-new Date().getTimezoneOffset() || 0);
+  // 스토어 나라는 요금제 결선이 적는다 — 테스트 앱에는 없어 null(ADR-0211).
+  expect(list).toHaveBeenCalledWith(-new Date().getTimezoneOffset() || 0, null);
   expect(present(fsIds.row)).toBe(true);
   expect(present(ids.create)).toBe(true);
   tapId(ids.mine);

@@ -108,7 +108,9 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
     },
     load: async () => {
       try {
-        const state = (await remote()?.list(tzOffsetMinOf(Date.now()))) ?? null;
+        // 스토어 나라 — 기기 UTC 차이가 0일 때 서버가 올리기 창의 시간대로 씁니다(ADR-0211).
+        const region = regionOf(purchaseStore().storefront);
+        const state = (await remote()?.list(tzOffsetMinOf(Date.now()), region)) ?? null;
         if (state !== null) enabled.set(args.accountKey(), state.enabled);
         return state;
       } catch {
@@ -116,7 +118,10 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
       }
     },
     knownEnabled: () => enabled.get(args.accountKey()) === true,
-    post: async (draft) => (await remote()?.post(draft)) ?? { result: "failed" },
+    post: async (draft) =>
+      (await remote()?.post({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {
+        result: "failed",
+      },
     // 위기 연락처 지역(#598 `client_region`) — 스토어 계정 나라(두 글자)를 알면 싣고, 모르면 서버가 국제 목록을 씁니다.
     postText: async (draft) =>
       (await remote()?.postText({ ...draft, region: regionOf(purchaseStore().storefront) })) ?? {

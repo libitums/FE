@@ -154,6 +154,8 @@ export type MyStoryDraft = {
   readonly lang: string;
   /** 기기의 UTC 차이(분, 동쪽이 +) — 서버가 시간대를 모를 때 창을 이것으로 셉니다(`p_tz_offset_min`). */
   readonly tzOffsetMin: number;
+  /** 스토어 나라(ISO 3166-1 alpha-2) — 기기 차이가 0일 때 창의 시간대(`p_region`, ADR-0211). 모르면 없음. */
+  readonly region?: string | null;
 };
 
 /** 앱이 다루는 올리기 결과 — 서버 `result`중 화면이 가르는 것. 모르는 새 결과 · `invalid`는 failed. */

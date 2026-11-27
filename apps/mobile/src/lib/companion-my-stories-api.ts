@@ -22,11 +22,18 @@ function keepFrom(body: string | null): boolean | null {
   }
 }
 
+/** 스토어 나라 → `p_region`(ADR-0211). 모르면 키를 싣지 않습니다 — 서버가 시간대를 모를 때만 씁니다. */
+const regionArg = (region: string | null | undefined): { p_region?: string } =>
+  region == null ? {} : { p_region: region };
+
 export function myStoriesRemote(call: Call): CompanionMyStoriesRemote {
   return {
-    list: async (tzOffsetMin) =>
+    list: async (tzOffsetMin, region) =>
       myStoriesFrom(
-        await call("/rest/v1/rpc/companion_my_stories", { p_tz_offset_min: tzOffsetMin }),
+        await call("/rest/v1/rpc/companion_my_stories", {
+          p_tz_offset_min: tzOffsetMin,
+          ...regionArg(region),
+        }),
       ),
     post: async (draft) =>
       myStoryPostFrom(
@@ -41,6 +48,7 @@ export function myStoriesRemote(call: Call): CompanionMyStoriesRemote {
           p_example_meaning: draft.example?.meaning ?? null,
           p_lang: draft.lang,
           p_tz_offset_min: draft.tzOffsetMin,
+          ...regionArg(draft.region),
         }),
       ),
     // 글 스토리 — 사진 `post`와 같은 함수 · 같은 action에서 `image_path` 대신 `background`(서버 반영 예상, ADR-0194 적용 기록).

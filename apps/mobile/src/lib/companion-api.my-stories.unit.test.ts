@@ -80,6 +80,22 @@ describe("MS-S 내 스토리 RPC", () => {
     expect(await setup("throw").remote.myStories?.post(draft)).toEqual({ result: "failed" });
   });
 
+  test("MS-S5. 스토어 나라 — 읽기 · 올리기에 `p_region`(ADR-0211). 모르면 싣지 않는다", async () => {
+    const t = setup({ status: 200, bodyText: JSON.stringify({ result: "ok" }) });
+    await t.remote.myStories?.list(0, "KR");
+    await t.remote.myStories?.post({ ...draft, tzOffsetMin: 0, region: "KR" });
+    await t.remote.myStories?.list(540, null);
+    await t.remote.myStories?.post({ ...draft, region: null });
+    expect(t.requests.map((r) => r.body)).toEqual([
+      { p_tz_offset_min: 0, p_region: "KR" },
+      expect.objectContaining({ p_tz_offset_min: 0, p_region: "KR" }),
+      { p_tz_offset_min: 540 },
+      expect.objectContaining({ p_tz_offset_min: 540 }),
+    ]);
+    // 옛 서버(인자 없음)와도 맞게 — 모르면 키 자체를 싣지 않는다.
+    expect(Object.keys(t.requests[3]?.body as object)).not.toContain("p_region");
+  });
+
   test("MS-S3. 지우기 — 하나 · 모두(null), 성공이면 true", async () => {
     const t = setup({ status: 200, bodyText: JSON.stringify({ deleted: 1 }) });
     expect(await t.remote.myStories?.remove("ms-1")).toBe(true);

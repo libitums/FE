@@ -93,8 +93,11 @@ export type ChatRemote = {
 
 /** 내 스토리 RPC — 던지지 않습니다. */
 export type CompanionMyStoriesRemote = {
-  /** `tzOffsetMin` — 기기의 UTC 차이(분), 서버가 시간대를 모를 때 창을 셉니다(`p_tz_offset_min`). */
-  readonly list: (tzOffsetMin: number) => Promise<MyStoriesState | null>;
+  /**
+   * `tzOffsetMin` — 기기의 UTC 차이(분), 서버가 시간대를 모를 때 창을 셉니다(`p_tz_offset_min`).
+   * `region` — 스토어 나라(두 글자), 기기 차이가 0일 때 창의 시간대(`p_region`, ADR-0211). 모르면 싣지 않습니다.
+   */
+  readonly list: (tzOffsetMin: number, region?: string | null) => Promise<MyStoriesState | null>;
   readonly post: (draft: MyStoryDraft) => Promise<MyStoryPostResult>;
   /** 글 스토리(서버 반영 예상) · 올리기 전 교정 — Edge Function `companion-my-story`. */
   readonly postText: (draft: MyTextStoryDraft) => Promise<MyStoryPostResult>;
