@@ -264,6 +264,10 @@ function expectSignedOutEnd(h: Harness, scope: "identity" | "identity-and-queue"
             "remove:libitum.learner-profile.user-1",
             "remove:libitum.wordbook.user-1",
             "remove:libitum.push-prompt.user-1", // ADR-0176 — 첫 스토리 뒤 알림 질문 표식
+            // ADR-0139 개정 2026-11-27 — 메신저 안내 기록(기기 하나에 하나)
+            "remove:libitum.messenger.guide-seen",
+            "remove:libitum.messenger.keyboard-guide-seen",
+            "remove:libitum.messenger.tab-visited",
           ]
         : []),
       `remove:${sessionKey}`,
