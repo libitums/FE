@@ -191,7 +191,7 @@ function RowBody({
       return <ChatActionRow text={message.text} name={counterpart.name} />;
     case "photo-pending":
       return (
-        <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
+        <ChatIncomingRow avatar={avatar} testId={ids.incoming} lineId={message.id}>
           <PhotoPendingBubble
             name={counterpart.name}
             testId={ids.photoPending}
@@ -204,7 +204,7 @@ function RowBody({
       );
     case "photo":
       return (
-        <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
+        <ChatIncomingRow avatar={avatar} testId={ids.incoming} lineId={message.id}>
           <PhotoBubble
             src={message.imageUrl}
             {...(message.aspect === undefined ? {} : { aspect: message.aspect })}
@@ -217,7 +217,7 @@ function RowBody({
       );
     case "voice-pending":
       return (
-        <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
+        <ChatIncomingRow avatar={avatar} testId={ids.incoming} lineId={message.id}>
           <VoicePendingBubble
             name={counterpart.name}
             testId={ids.voicePending}
@@ -228,7 +228,7 @@ function RowBody({
       );
     case "voice":
       return (
-        <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
+        <ChatIncomingRow avatar={avatar} testId={ids.incoming} lineId={message.id}>
           <VoiceBubble
             durationMs={message.durationMs}
             {...(message.audioUrl === undefined ? {} : { audioUrl: message.audioUrl })}

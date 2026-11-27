@@ -33,7 +33,8 @@ export const remoteKindOf = (media: ChatMediaKind): RemoteMediaKind =>
 /** 서버 캐릭터 말풍선 id(`<uuid>#<자리>`)의 메시지 id. */
 const SERVER_BUBBLE = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})#\d+$/i;
 
-const bubbleOwner = (message: ChatMessage): string | null => {
+/** 서버 캐릭터 말풍선(말 · 지문)이면 그 메시지 id, 아니면 null. */
+export const bubbleOwner = (message: ChatMessage): string | null => {
   const fromThem =
     message.kind === "action" || (message.kind === "text" && message.from === "them");
   return fromThem ? (SERVER_BUBBLE.exec(message.id)?.[1] ?? null) : null;
@@ -47,7 +48,15 @@ export function mediaTargetOf(
   for (let i = messages.length - 1; i >= 0 && owner === null; i -= 1) {
     owner = bubbleOwner(messages[i] as ChatMessage);
   }
-  if (owner === null) return null;
+  return owner === null ? null : targetOfOwner(messages, owner, media);
+}
+
+/** 그 캐릭터 메시지를 대상으로 — 말 조각의 글을 모읍니다. 음성인데 말 조각이 없으면 null. */
+export function targetOfOwner(
+  messages: readonly ChatMessage[],
+  owner: string,
+  media: ChatMediaKind,
+): ChatMediaTarget | null {
   const speech = messages.filter(
     (m): m is Extract<ChatMessage, { kind: "text" }> =>
       m.kind === "text" && bubbleOwner(m) === owner,

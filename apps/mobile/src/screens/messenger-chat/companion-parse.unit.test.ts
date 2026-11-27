@@ -181,6 +181,40 @@ describe("기록 · 인사", () => {
     expect(history?.ideas).toEqual([{ ko: "뭐 마셔요?", roman: "", en: "What do you drink?" }]);
   });
 
+  test("GS-U7 기록: 첫 인사(origin greeting) 메시지 id를 낸다 — 없으면 칸이 없고, 숨긴 인사는 세지 않는다(ADR-0146 개정 ⟨예시 대상⟩)", () => {
+    const G = "55555555-5555-4555-8555-555555555555";
+    const P = "66666666-6666-4666-8666-666666666666";
+    const assistant = (id: string, origin: string, createdAt: string, hidden = false) => ({
+      id,
+      role: "assistant",
+      origin,
+      status: "complete",
+      hidden,
+      text: null,
+      inputMode: null,
+      segments: [{ kind: "speech", text: "안녕", translation: "Hi" }],
+      notice: null,
+      feedback: null,
+      createdAt,
+    });
+    // 서버 기록은 최근 것부터 온다.
+    const greeted = {
+      messages: [
+        ...page.messages,
+        assistant(G, "greeting", "2026-11-12T09:00:00.000Z"),
+        assistant(P, "proactive", "2026-11-12T08:00:00.000Z"),
+      ],
+      hasMore: false,
+    };
+    expect(historyFrom(JSON.stringify(greeted))?.greetingId).toBe(G);
+    expect(historyFrom(JSON.stringify(page))?.greetingId).toBeUndefined();
+    const hidden = {
+      messages: [...page.messages, assistant(G, "greeting", "2026-11-12T09:00:00.000Z", true)],
+      hasMore: false,
+    };
+    expect(historyFrom(JSON.stringify(hidden))?.greetingId).toBeUndefined();
+  });
+
   test("ES-U15 서버에서 턴이 실패한 내 글(status failed)은 기록에서 뺀다 — 보낸 글로 보이지 않게(리뷰 W4)", () => {
     const failed = {
       id: "99999999-9999-4999-8999-999999999999",

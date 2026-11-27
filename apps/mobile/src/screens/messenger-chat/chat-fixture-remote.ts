@@ -64,6 +64,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     }
     room.messages = mergeLog(room.messages, history.messages);
     room.notes = withHistoryNotes(room.notes, history);
+    room.greetingId = history.greetingId ?? room.greetingId; // 무료 예시의 대상(ADR-0146 개정)
     if (room.pendingReplies === 0 && !sameIdeas(room.remoteIdeas, history.ideas))
       setRemoteIdeas(room, history.ideas, history.ideasOrigin);
     if (room.recovery === "stalled" && recoveryTargets.get(room)?.(history.messages) === true)

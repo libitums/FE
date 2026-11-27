@@ -9,6 +9,7 @@ import type {
   ChatPhotoProps,
   ChatTextBubbleProps,
 } from "./chat.contract";
+import { chatLineElementId } from "./chat-log-scroll";
 
 import "./chat.css";
 
@@ -16,7 +17,12 @@ import "./chat.css";
 const AVATAR_SLOP = "6px";
 
 // 상대 줄 — 왼쪽 위 아바타 + 쌓음(사진 · 말풍선). `avatar.profile`이 있으면 아바타가 프로필 단추입니다(ADR-0178 개정 ⟨대화방⟩).
-export function ChatIncomingRow({ avatar, testId, children }: ChatIncomingRowProps): ReactNode {
+export function ChatIncomingRow({
+  avatar,
+  testId,
+  lineId,
+  children,
+}: ChatIncomingRowProps): ReactNode {
   const face = (
     <Avatar
       name={avatar.name}
@@ -27,7 +33,11 @@ export function ChatIncomingRow({ avatar, testId, children }: ChatIncomingRowPro
   );
   const { profile } = avatar;
   return (
-    <view className="chat-row" data-testid={testId}>
+    <view
+      className="chat-row"
+      data-testid={testId}
+      {...(lineId === undefined ? {} : { id: chatLineElementId(lineId), flatten: false })}
+    >
       {profile === undefined ? (
         face
       ) : (
