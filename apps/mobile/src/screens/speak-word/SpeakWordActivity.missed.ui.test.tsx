@@ -75,9 +75,8 @@ test("USW-M1. Android no-match는 판정 없이 안내 · Try again(주) · Skip
   expect(speech.announced.builtin).toEqual([notCaughtText]);
   expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
-  expect(id("speak-word-waves")).toHaveAttribute("data-state", "idle");
-  expect(maybe("answer-verdict")).not.toBeInTheDocument();
-  expect(maybe("speak-word-reveal")).not.toBeInTheDocument();
+  expect(id("speak-word-mic")).toHaveAttribute("data-state", "idle");
+  expect(maybe("speak-word-result")).not.toBeInTheDocument();
   expect(onItemAnswered).not.toHaveBeenCalled();
 });
 
@@ -93,7 +92,7 @@ test("USW-M2. Try again은 같은 문항을 다시 듣고, 두 번째에 맞히�
 
   act(() => speech.pending[0]?.({ ...recognized("카드"), isFinal: true }));
 
-  expect(id("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(id("speak-word-result")).toHaveAttribute("data-grade", "perfect");
   expect(onItemAnswered).toHaveBeenCalledTimes(1);
   expect(onItemAnswered.mock.calls[0]?.[0]).toMatchObject({ questionIndex: 0, outcome: "correct" });
 });
@@ -102,7 +101,7 @@ test("USW-M3. 마이크를 다시 눌러도 같은 문항을 다시 듣는다", 
   const { speech } = mount([androidNoMatch, null]);
 
   tapAction("Speak");
-  fireEvent.tap(id("speak-word-waves"), {});
+  fireEvent.tap(id("speak-word-mic-button"), {});
 
   expect(speech.calls.start).toBe(2);
   expect(id("speak-word-content")).toHaveAttribute("data-phase", "listening");

@@ -133,6 +133,13 @@ export const readAloudZhTw: ReadAloudCopy = {
 export const speakWordZhTw: SpeakWordCopy = {
   instruction: "說出圖片對應的單字。",
   recognitionUnavailable: "目前無法使用語音辨識。點「略過」繼續。",
+  result: {
+    perfect: "完美！",
+    almostPerfect: "幾乎完美",
+    modelAnswer: "示範答案",
+    youSaid: "你說的是",
+    hearAnswer: "聽答案",
+  },
 };
 
 export const pairMatchZhTw: PairMatchCopy = {

@@ -11,6 +11,7 @@ final class SpeechRecognitionSession {
   private double level;
   private double peakLevel;
   private double levelSum;
+  private double levelDb = Double.NaN;
   private String fallback = SpeechRecognitionRoute.FALLBACK_NONE;
   private int fallbackErrorCode;
   private String koreanPack = SpeechRecognitionRoute.PACK_UNKNOWN;
@@ -51,6 +52,7 @@ final class SpeechRecognitionSession {
   // This bounded conversion is a meter approximation, not a raw microphone RMS.
   void observeLevel(float rmsDb) {
     if (!Float.isFinite(rmsDb)) return;
+    levelDb = rmsDb;
     level = Math.max(0, Math.min(1, Math.pow(10, rmsDb / 20.0)));
     peakLevel = Math.max(peakLevel, level);
     levelSum += level;
@@ -60,6 +62,8 @@ final class SpeechRecognitionSession {
   void observeBuffer() { bufferCount++; }
   int bufferCount() { return bufferCount; }
   double level() { return level; }
+  /** The last raw dB the service reported, or NaN before the first one. The screen meter scales it. */
+  double levelDb() { return levelDb; }
   double peakLevel() { return peakLevel; }
   double averageLevel() { return levelCount == 0 ? 0 : levelSum / levelCount; }
   long durationMs(long nowMs) { return Math.max(0, nowMs - startedAtMs); }

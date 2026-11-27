@@ -169,7 +169,7 @@
 }
 
 .roleplay-story-hint {
-  color: var(--libitum-color-white);
+  color: var(--libitum-color-fg-neutral-muted);
   text-align: center;
   font-family: var(--libitum-typography-body-m-font-family);
   font-size: var(--libitum-typography-body-m-font-size);
@@ -222,7 +222,7 @@
 
 .roleplay-story-link {
   padding: var(--libitum-spacing-12) var(--libitum-spacing-4);
-  color: var(--libitum-color-white);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-button-m-font-family);
   font-size: var(--libitum-typography-button-m-font-size);
   font-weight: var(--libitum-typography-button-m-font-weight);
@@ -230,5 +230,191 @@
 }
 
 .roleplay-story-link-hint {
-  color: var(--libitum-color-brand-secondary);
+  color: var(--libitum-color-fg-brand);
+}
+
+/* 아래 패널(시안 R1 ~ R5) — 흰 카드 면이라 그림 위에 흰 글자를 두지 않습니다. 글자는 흰 면 위 4.5:1을 넘는
+   fg-neutral · fg-neutral-muted · fg-brand만 씁니다. */
+.roleplay-story-panel {
+  align-self: stretch;
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+  background-color: var(--libitum-color-white);
+}
+
+.roleplay-story-panel-line {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+}
+
+.roleplay-story-panel-label {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.roleplay-story-panel-korean {
+  display: flex;
+  flex-direction: column;
+}
+
+.roleplay-story-panel-ko,
+.roleplay-story-answer-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.roleplay-story-panel-roman {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.roleplay-story-panel-meaning {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.roleplay-story-panel-mic-row {
+  display: flex;
+  justify-content: center;
+}
+
+.roleplay-story-hint-row {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+}
+
+.roleplay-story-hint-button {
+  flex: 1;
+}
+
+.roleplay-story-reaction {
+  margin-top: var(--libitum-spacing-8);
+}
+
+.roleplay-story-result-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.roleplay-story-result-mark {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roleplay-story-result-mark-correct {
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.roleplay-story-result-mark-incorrect {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.roleplay-story-result-icon {
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+}
+
+.roleplay-story-result-title {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.roleplay-story-result-title-correct {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.roleplay-story-result-title-incorrect {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+/* 오답 패널의 주인공 — 정답 문장 상자(중립 흰 면 · 회색 테). 소리 단추는 48 × 48입니다. */
+.roleplay-story-answer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-500);
+}
+
+.roleplay-story-answer-play {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.roleplay-story-answer-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.roleplay-story-heard {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-4);
+}
+
+.roleplay-story-heard-label,
+.roleplay-story-heard-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 다른 낱말 — 색만으로 말하지 않도록 밑줄을 함께 긋습니다. */
+.roleplay-story-differs {
+  color: var(--libitum-color-brand-strong);
+  text-decoration: underline;
+}
+
+/* 진행 칸 막대(「Line 1 / 2」 대신, 시안 R1) — 장면 위 머리 줄이라 흰 칸입니다. */
+.roleplay-story-segments {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-4);
+}
+
+.roleplay-story-segment {
+  flex: 1;
+  height: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+  opacity: var(--libitum-opacity-45);
+}
+
+.roleplay-story-segment-done {
+  opacity: 1;
 }

@@ -97,7 +97,7 @@ export function planCampaign(input: {
       pool.length === 0 ? 0 : (dayIndex + hash32(`copy:${learner.userId}`)) % pool.length;
     const copy: Copy | undefined = last ? config.lastCopy : pool[index];
     const wanted = copyLanguageFor(learner.country);
-    const lang = copy?.[wanted]?.title && copy[wanted]?.body ? wanted : "en";
+    const lang = copy?.[wanted]?.title && copy?.[wanted]?.body ? wanted : "en";
     const chosen = copy?.[lang];
     if (chosen === undefined) {
       skipped["no-copy"]! += 1;

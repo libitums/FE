@@ -56,6 +56,13 @@
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
 
+/* 판정 뒤 결과 시트 칸 — 작업 영역 폭을 다 씁니다(시안 S2 ~ S4). */
+.speak-word-activity-result-slot {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
 /* 두 번 실패한 뒤 안내 줄 아래 서는 「Hear it」(ADR-0206 D5) — 가운데 정렬입니다. */
 .speak-word-activity-hear-it {
   display: flex;

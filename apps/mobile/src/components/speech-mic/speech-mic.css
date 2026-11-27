@@ -1,0 +1,88 @@
+/* 공용 마이크(시안 S1 · R2). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   단추 88 × 88(44pt 넘음), 링 상자 112 × 112, 음량 막대 칸 높이 40. 주색 단추 위 흰 아이콘은 큰 그림(3:1)을 넘습니다. */
+.speech-mic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.speech-mic-bars {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: var(--libitum-spacing-40);
+  margin-bottom: var(--libitum-spacing-12);
+}
+
+.speech-mic-bar {
+  width: var(--libitum-spacing-4);
+  margin-left: var(--libitum-spacing-2);
+  margin-right: var(--libitum-spacing-2);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+.speech-mic-dial {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.speech-mic-dial-ringed {
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+}
+
+.speech-mic-ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+}
+
+.speech-mic-button {
+  width: calc(var(--libitum-spacing-80) + var(--libitum-spacing-8));
+  height: calc(var(--libitum-spacing-80) + var(--libitum-spacing-8));
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--libitum-color-brand-primary);
+}
+
+.speech-mic-button-checking {
+  background: var(--libitum-color-brand-secondary);
+}
+
+.speech-mic-button-disabled {
+  background: var(--libitum-color-gray-300);
+}
+
+.speech-mic-icon {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+}
+
+.speech-mic-status {
+  margin-top: var(--libitum-spacing-12);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  text-align: center;
+}
+
+.speech-mic-hint {
+  margin-top: var(--libitum-spacing-2);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  text-align: center;
+}

@@ -30,6 +30,7 @@ export const initialSpeakWordSessionState: SpeakWordSessionState = {
   availability: "open",
   heard: [],
   judgement: null,
+  attempt: 0,
 };
 
 function nextQuestion(
@@ -42,7 +43,15 @@ function nextQuestion(
     availability: state.availability,
     heard,
     judgement: null,
+    attempt: 0,
   };
+}
+
+/** 처음 오답이면 한 번 다시 말할 수 있습니다(시안 S4) — 두 번째 오답 · 맞음 뒤에는 없습니다. */
+function canRetry(state: SpeakWordSessionState): boolean {
+  return (
+    state.phase.kind === "heard" && state.judgement?.result === "incorrect" && state.attempt === 0
+  );
 }
 
 export function speakWordSessionReducer(
@@ -52,6 +61,16 @@ export function speakWordSessionReducer(
   const { phase } = state;
   switch (action.type) {
     case "start": {
+      // 처음 오답 뒤 다시 말하기 — 틀린 말은 목록에서 빼고(문항당 한 칸) 같은 문항을 다시 듣습니다.
+      if (canRetry(state)) {
+        return {
+          ...state,
+          phase: { kind: "listening" },
+          heard: state.heard.slice(0, -1),
+          judgement: null,
+          attempt: state.attempt + 1,
+        };
+      }
       const startable =
         phase.kind === "ready" ||
         speechRetryable(phase) ||
@@ -170,9 +189,6 @@ export function speakWordControlsOf(
 }
 
 export function speakWordHintOf(phase: SpeechAttemptPhase, copy: UiCopy): string | null {
-  if (phase.kind === "heard") {
-    return copy.speaking.tapToContinue;
-  }
   if (phase.kind === "missed") {
     return speechMissedHintOf(phase.reason, copy);
   }
@@ -196,21 +212,39 @@ export function speakWordInstructionOf(
   return question.instruction ?? copy.speakWord.instruction;
 }
 
-/** 판정 알림 — 틀리면 정답 문구를 이어 싣습니다(자동으로 넘어가 정답 상자를 순회할 틈이 없습니다). */
+/**
+ * 판정 알림(결과 시트의 live region 몫) — perfect는 판정만, close는 모범 답안, 오답은 들은 말과 정답을 잇습니다.
+ * 들은 글자는 기기 안 낭독에만 쓰고 이벤트에는 싣지 않습니다.
+ */
 export function speakWordResultAnnouncement(
   question: SpeakWordQuestion,
-  result: AnswerResult,
+  judgement: SpokenAnswerJudgement,
+  heard: string,
   copy: UiCopy,
 ): string {
-  const verdict = copy.common.resultAnnouncement(result);
-  return result === "correct" ? verdict : `${verdict}, ${speakWordRevealText(question, copy)}`;
+  const verdict = copy.common.resultAnnouncement(judgement.result);
+  const answer = answerWithRomanization(question, judgement.expected);
+  switch (judgement.grade) {
+    case "perfect":
+      return verdict;
+    case "close":
+      return `${verdict}, ${copy.speakWord.result.modelAnswer}: ${answer}`;
+    case "incorrect":
+      return heard.trim() === ""
+        ? `${verdict}, ${copy.typing.answerReveal(answer)}`
+        : `${verdict}, ${copy.speakWord.result.youSaid}: ${heard}, ${copy.typing.answerReveal(answer)}`;
+  }
+}
+
+/** 정답 글자 — 첫 정답이면 로마자를 「 · 」로 잇습니다. */
+function answerWithRomanization(question: SpeakWordQuestion, answer: string): string {
+  return answer === question.answers[0] && question.romanization !== null
+    ? `${answer} · ${question.romanization}`
+    : answer;
 }
 
 export function speakWordRevealText(question: SpeakWordQuestion, copy: UiCopy): string {
-  const [first] = question.answers;
-  return copy.typing.answerReveal(
-    question.romanization === null ? first : `${first} · ${question.romanization}`,
-  );
+  return copy.typing.answerReveal(answerWithRomanization(question, question.answers[0]));
 }
 
 /** 그림이 실패하면 틀 안 대체 글자가 같은 뜻을 보이므로 뜻 줄은 숨깁니다. */
@@ -236,3 +270,5 @@ export function speakWordPictureLabel(
 export function speakWordCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
   return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }
+
+export { speakWordJudgedControls, speakWordMicStateOf } from "./speak-word-controls";

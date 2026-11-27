@@ -10,7 +10,9 @@ import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
 import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
 import { useMicSpeechAttempt } from "../../components/mic-permission/use-mic-speech-attempt";
-import { announce } from "../../lib/accessibility";
+import { playAudio } from "../../lib/audio";
+import { romanizeKorean } from "../../lib/korean-romanize";
+import { judgeSpokenAnswer } from "../../lib/speaking-judge";
 import { playSound } from "../../lib/sound-effects";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -20,22 +22,27 @@ import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import {
   initialRoleplayTalkState,
   isRoleplayTalkDone,
-  judgeRoleplayReply,
   roleplayTalkReducer,
 } from "./roleplay-story";
 import type { RoleplayTalkScreenProps } from "./roleplay-story.contract";
 import {
-  RoleplaySpeakControls,
-  roleplayMissedMessage,
-  roleplayTalkMic,
-  unavailableMessage,
-} from "./RoleplaySpeakControls";
+  roleplayHeaderLabel,
+  roleplayProgressSegments,
+  roleplayTurnReportOf,
+} from "./roleplay-panel";
+import { RoleplayProgressBar, RoleplayReplyDialogue } from "./RoleplayReplyDialogue";
+import { RoleplayResultPanel } from "./RoleplayResultPanel";
+import { RoleplaySpeakControls, roleplayTalkMic } from "./RoleplaySpeakControls";
+import { useRoleplayAnnouncements } from "./use-roleplay-announcements";
 
 import "./roleplay-story-screen.css";
 
+/** 맞힌 뒤 다음 턴으로 저절로 넘어가기까지(시안 R3) — 누르면 바로 넘어갑니다. */
+export const ROLEPLAY_CORRECT_ADVANCE_MS = 2000;
+
 /**
- * 롤플레이 대화입니다 — 표지와 같은 장면 위에 상대 대사 다이얼로그가 서고, 그 아래 마이크로 내 대답을 말합니다.
- * 들은 뒤에는 같은 다이얼로그의 「Me」(독백 꼴)로 내 말을 보이고 판정을 붙입니다. 인식은 앱 내장 모듈(기기 안)입니다.
+ * 롤플레이 대화입니다 — 표지와 같은 장면 위에 상대 대사가 서고, 아래 흰 패널에 내 문장 · 공용 마이크가 섭니다(시안 R1 ~ R5).
+ * 맞으면 내 말풍선 뒤로 상대의 다음 줄이 곧장 반응하고 2초 뒤 다음 턴, 틀리면 정답 문장이 주인공인 패널이 섭니다.
  */
 export function RoleplayTalkScreen({
   insets,
@@ -45,6 +52,7 @@ export function RoleplayTalkScreen({
   wildcards,
   onFinish,
   onExit,
+  onTurnAnswered,
   mic,
 }: RoleplayTalkScreenProps): ReactNode {
   const copy = useUiCopy();
@@ -60,11 +68,9 @@ export function RoleplayTalkScreen({
 
   const { attempt, permission } = useMicSpeechAttempt(roleplayTalkMic(mic), (outcome) => {
     if (outcome.kind === "heard") {
-      dispatch({
-        type: "heard",
-        text: outcome.text,
-        verdict: judgeRoleplayReply(turn.accepted, outcome.text, wildcards),
-      });
+      // 결말 콜백(배경 스레드)에서 채점합니다 — 렌더는 담아 둔 판정만 읽습니다(ADR-0201 개정 ⟨렌더 밖 판정⟩).
+      const judgement = judgeSpokenAnswer(turn.accepted, outcome.text, wildcards);
+      dispatch({ type: "heard", text: outcome.text, verdict: judgement.result, judgement });
       return;
     }
     if (outcome.kind === "missed") {
@@ -90,27 +96,7 @@ export function RoleplayTalkScreen({
     onFinish(state.results, state.skippedCount);
   }, [done, onFinish, state.results, state.skippedCount]);
 
-  // 못 알아들음 안내는 서는 순간 한 번 알립니다 — 듣는 중에는 알리지 않습니다(낭독이 인식기에 들어갑니다).
-  useEffect(() => {
-    if (state.missedReason !== null) {
-      announce(roleplayMissedMessage(state.missedReason, copy));
-    }
-  }, [state.turnIndex, state.missedReason]);
-
-  // 불가 안내도 서는 순간 한 번 알립니다(낱말 말하기 · 따라 읽기와 같다).
-  useEffect(() => {
-    if (state.unavailableReason !== null) {
-      announce(unavailableMessage(state.unavailableReason, copy));
-    }
-  }, [state.turnIndex, state.unavailableReason]);
-
-  useEffect(() => {
-    if (state.verdict !== null) {
-      announce(
-        state.verdict === "correct" ? copy.roleplayStory.great : copy.roleplayStory.notQuite,
-      );
-    }
-  }, [state.turnIndex, state.verdict]);
+  useRoleplayAnnouncements(state);
 
   const handleExit = () => {
     "background only";
@@ -131,13 +117,35 @@ export function RoleplayTalkScreen({
     dispatch({ type: "start" });
     attempt.start();
   };
-  const run = (type: "next" | "skip" | "retry" | "hint") => () => {
+  const run = (type: "next" | "skip" | "retry" | "hint" | "hintShow") => () => {
     "background only";
     playSound("button");
+    if (type === "next" || type === "skip") onTurnAnswered?.(roleplayTurnReportOf(state, type));
     dispatch({ type });
   };
+  const hear = () => {
+    "background only";
+    if (turn.replyAudioSource === undefined) return;
+    audio.stop();
+    if (playAudio(turn.replyAudioSource, () => {}) === "started") dispatch({ type: "hintListen" });
+  };
+  const expire = () => {
+    "background only";
+    if (state.phase === "listening") attempt.stop();
+  };
 
-  const micLabel = state.phase === "listening" ? copy.roleplayStory.stop : copy.roleplayStory.speak;
+  // 맞힌 뒤 2초면 다음 턴으로(시안 R3). 턴 · 국면이 바뀌면 다시 잽니다.
+  const advance = useRef(run("next"));
+  advance.current = run("next");
+  useEffect(() => {
+    if (!correct) return undefined;
+    const timer = setTimeout(() => advance.current(), ROLEPLAY_CORRECT_ADVANCE_MS);
+    return () => clearTimeout(timer);
+  }, [correct, state.turnIndex]);
+
+  const reaction = correct ? turns[state.turnIndex + 1] : undefined;
+  const expected = state.judgement?.expected ?? turn.accepted[0];
+  const segments = roleplayProgressSegments(state.turnIndex, turns.length, correct);
 
   return (
     <view
@@ -183,14 +191,15 @@ export function RoleplayTalkScreen({
           </view>
           <view className="roleplay-story-screen-header-text">
             <text className="roleplay-story-screen-title" accessibility-traits="header">
-              {copy.catalogMap.episodeLabel(ordinal)}
+              {roleplayHeaderLabel(copy.catalogMap.episodeLabel(ordinal))}
             </text>
-            <text className="roleplay-story-screen-progress" data-testid="roleplay-talk-progress">
-              {copy.roleplayStory.lineProgress(
+            <RoleplayProgressBar
+              segments={segments}
+              label={copy.roleplayStory.lineProgress(
                 Math.min(state.turnIndex + 1, turns.length),
                 turns.length,
               )}
-            </text>
+            />
           </view>
         </view>
 
@@ -203,31 +212,14 @@ export function RoleplayTalkScreen({
             scroll-orientation="vertical"
             scroll-bar-enable={false}
           >
-            {heard ? (
-              <view data-testid="roleplay-talk-reply" data-verdict={state.verdict ?? ""}>
-                <text
-                  className={`roleplay-story-verdict roleplay-story-verdict-${correct ? "correct" : "incorrect"}`}
-                  data-testid="roleplay-talk-verdict"
-                >
-                  {correct ? copy.roleplayStory.great : copy.roleplayStory.notQuite}
-                </text>
-                <VisualNovelDialog
-                  variant="thought"
-                  speakerName={copy.roleplayStory.me}
-                  line={correct ? turn.accepted[0] : state.heard || copy.roleplayStory.heardNothing}
-                  translation={
-                    correct
-                      ? (turn.replyTranslation ?? undefined)
-                      : copy.catalogFinal.correctAnswer(turn.accepted[0])
-                  }
-                  reveal="instant"
-                  continueIndicator="off"
-                  surface="opaque"
-                  contentLanguage="learning"
-                  languageTag="ko"
-                  reducedMotion={reducedMotion}
-                />
-              </view>
+            {correct ? (
+              <RoleplayReplyDialogue
+                line={expected}
+                translation={turn.replyTranslation}
+                counterpartName={counterpartName}
+                reaction={reaction}
+                reducedMotion={reducedMotion}
+              />
             ) : (
               <view className="roleplay-story-line" data-testid="roleplay-talk-line">
                 <VisualNovelDialog
@@ -257,27 +249,20 @@ export function RoleplayTalkScreen({
           </scroll-view>
 
           {heard ? (
-            <view className="roleplay-story-actions" data-testid="roleplay-talk-actions">
-              {correct ? null : (
-                <view data-testid="roleplay-talk-retry">
-                  <Button
-                    label={copy.speaking.tryAgain}
-                    variant="brand"
-                    size="xl"
-                    width="fill"
-                    bindtap={run("retry")}
-                  />
-                </view>
-              )}
-              <view data-testid="roleplay-talk-next">
-                <Button
-                  label={isLast ? copy.common.seeResults : copy.common.next}
-                  variant={correct ? "brand" : "text"}
-                  size="xl"
-                  width="fill"
-                  bindtap={run("next")}
-                />
-              </view>
+            <view
+              data-testid={correct ? undefined : "roleplay-talk-reply"}
+              data-verdict={state.verdict ?? ""}
+            >
+              <RoleplayResultPanel
+                correct={correct}
+                expected={expected}
+                roman={romanizeKorean(expected)}
+                heard={state.heard}
+                isLast={isLast}
+                onHear={turn.replyAudioSource === undefined ? undefined : hear}
+                onRetry={run("retry")}
+                onNext={run("next")}
+              />
             </view>
           ) : (
             <RoleplaySpeakControls
@@ -285,10 +270,19 @@ export function RoleplayTalkScreen({
               unavailableReason={state.unavailableReason}
               missedReason={state.missedReason}
               retrying={state.retrying}
-              hint={state.hintShown ? turn.replyTranslation : null}
-              canShowHint={turn.replyTranslation !== null && !state.hintShown}
+              meaning={turn.replyTranslation}
+              korean={
+                state.hintUsed === "show"
+                  ? { ko: turn.accepted[0], roman: romanizeKorean(turn.accepted[0]) }
+                  : null
+              }
+              hintOpen={state.hintShown}
+              canHear={turn.replyAudioSource !== undefined}
               onMic={tapMic}
+              onExpire={expire}
               onHint={run("hint")}
+              onHear={hear}
+              onShowKorean={run("hintShow")}
               onSkip={run("skip")}
             />
           )}
