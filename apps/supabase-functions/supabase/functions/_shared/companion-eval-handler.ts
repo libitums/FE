@@ -6,6 +6,7 @@
 // 운영 페르소나로 만든 답장과 그 채점(`reply`, `companion-eval-reply.ts`) · 기억 작업(`memory`, `companion-eval-memory.ts`, DB에 적용하지 않음). 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
 
+import { guardrailRev } from "./guardrail-rev.ts";
 import type {
   ChatSendEnv,
   ChatSendLogEntry,
@@ -286,6 +287,11 @@ export function createCompanionEvalHandler(
       status: 200,
       outcome: `${kind} ${model}${judgeModel ? ` judge=${judgeModel}` : ""} ok=${results.filter((result) => result.ok).length}/${results.length}`,
     });
-    return json(200, judgeModel ? { kind, model, judgeModel, results } : { kind, model, results });
+    // 이 실행이 쓴 지시문의 리비전(운영 도구 재현이 판정 줄의 리비전과 견준다 — ops-dashboard 계약 G-B절).
+    const rev = guardrailRev();
+    return json(
+      200,
+      judgeModel ? { kind, model, judgeModel, rev, results } : { kind, model, rev, results },
+    );
   };
 }

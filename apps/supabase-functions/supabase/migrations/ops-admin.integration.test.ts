@@ -97,8 +97,8 @@ describe("구독 표가 있는 DB", () => {
          where n.nspname = 'public' and p.proname like 'ops\\_%'`,
       )
     ).rows;
-    // 20261212의 22개 + 20261213(2차)의 10개 + 20261215(판정 메시지)의 1개.
-    expect(functions.length).toBe(33);
+    // 20261212의 22개 + 20261213(2차)의 10개 + 20261215(판정 메시지)의 1개 + 20270118(판정 · 기억 · 스토리 조회)의 6개.
+    expect(functions.length).toBe(39);
     for (const f of functions) {
       expect({
         sig: f.sig,
