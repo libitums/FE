@@ -26,8 +26,11 @@ final class AudioPrepareQueue<T> {
     void accept(T target, Exception error);
   }
 
+  /** Enough that one open hung on the network does not stall the next tap; tickets make order moot. */
+  private static final int THREADS = 3;
+
   private static final class Holder {
-    static final Executor BACKGROUND = Executors.newSingleThreadExecutor(task -> {
+    static final Executor BACKGROUND = Executors.newFixedThreadPool(THREADS, task -> {
       Thread thread = new Thread(task, "AudioPrepare");
       thread.setDaemon(true);
       return thread;
@@ -36,7 +39,8 @@ final class AudioPrepareQueue<T> {
 
   private final Executor background;
   private final Executor main;
-  private long currentTicket;
+  /** Written on main only; read on the prepare threads to skip requests that went stale in line. */
+  private volatile long currentTicket;
 
   AudioPrepareQueue(Executor background, Executor main) {
     this.background = background;
@@ -57,6 +61,11 @@ final class AudioPrepareQueue<T> {
   void attach(long ticket, T target, Attach<T> attach, Ready<T> onReady, Failed<T> onFailed,
       Ready<T> onStale) {
     background.execute(() -> {
+      if (ticket != currentTicket) {
+        // 차례를 기다리는 동안 버려졌다 — 열지 않고 바로 해제 쪽으로(대기열에 플레이어가 쌓이지 않게).
+        main.execute(() -> onStale.accept(target));
+        return;
+      }
       Exception failure = null;
       try {
         attach.run(target);
@@ -72,7 +81,7 @@ final class AudioPrepareQueue<T> {
     });
   }
 
-  /** One shared daemon thread, so sources open one at a time in the order they were requested. */
+  /** A few shared daemon threads named AudioPrepare; a late or out-of-order result is just stale. */
   static Executor backgroundExecutor() {
     return Holder.BACKGROUND;
   }

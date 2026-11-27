@@ -64,6 +64,7 @@ public final class AudioPrepareQueueTest {
   @Test public void lateResultOfAReplacedRequestIsDiscarded() {
     long first = queue.begin();
     attach(first, "a");
+    background.runAll(); // a는 이미 열렸고 결과가 메인으로 가는 중이다.
     long second = queue.begin();
     attach(second, "b");
     background.runAll();
@@ -85,8 +86,7 @@ public final class AudioPrepareQueueTest {
     for (int i = 0; i < 3; i++) attach(queue.begin(), "same" + i);
     background.runAll();
     main.runAll();
-    assertEquals(List.of("attach:same0", "attach:same1", "attach:same2",
-        "stale:same0", "stale:same1", "ready:same2"), events);
+    assertEquals(List.of("attach:same2", "stale:same0", "stale:same1", "ready:same2"), events);
   }
 
   // P6 — 준비 실패는 현재 요청이면 failed, 이미 버려진 요청이면 stale로만 간다.
@@ -113,6 +113,30 @@ public final class AudioPrepareQueueTest {
     background.runAll();
     main.runAll();
     assertEquals(List.of("stale:b"), events);
+  }
+
+  // P9 — 차례를 기다리는 동안 버려진 요청은 소스를 열지 않고 바로 해제 쪽으로 간다(대기열이 쌓이지 않게).
+  @Test public void requestReplacedBeforeItRunsSkipsTheOpen() {
+    attach(queue.begin(), "a");
+    attach(queue.begin(), "b");
+    background.runAll();
+    main.runAll();
+    assertEquals(List.of("attach:b", "stale:a", "ready:b"), events);
+  }
+
+  // P10 — 망에 걸린 앞 열기가 뒤 요청의 열기를 막지 않는다.
+  @Test public void hungOpenDoesNotStallTheNextRequest() throws InterruptedException {
+    CountDownLatch unblock = new CountDownLatch(1);
+    CountDownLatch secondOpened = new CountDownLatch(1);
+    AudioPrepareQueue<String> real =
+        new AudioPrepareQueue<>(AudioPrepareQueue.backgroundExecutor(), Runnable::run);
+    real.attach(real.begin(), "hung", value -> unblock.await(30, TimeUnit.SECONDS),
+        value -> { }, (value, error) -> { }, value -> { });
+    real.attach(real.begin(), "next", value -> secondOpened.countDown(),
+        value -> { }, (value, error) -> { }, value -> { });
+    boolean opened = secondOpened.await(5, TimeUnit.SECONDS);
+    unblock.countDown();
+    assertTrue("the next request waited behind a hung open", opened);
   }
 
   // P7 — 전용 데몬 스레드에서 돈다.
