@@ -122,7 +122,7 @@ test("ST-UI2. 두 손가락에서 하나를 떼면 남은 손가락으로 이어
   expect(placeOf().y).toBeCloseTo(before.y + 100 / 844, 2);
 });
 
-test("ST-UI3. 바탕은 화면 전체 — 위로 끝까지 끌어도 위 줄(뒤로 · 색) 아래, 아래로 끝까지 끌어도 아래 줄(안내 · Share) 위에 멈춤", () => {
+test("ST-UI3. 바탕은 화면 전체 — 위 · 아래로 끝까지 끌면 위 줄 · 아래 줄 위로도 가고, 가려지지 않는 곳에 상자 32px이 남음(2026-11-27)", () => {
   mount();
   const drag = (dy: number) =>
     act(() => {
@@ -130,11 +130,11 @@ test("ST-UI3. 바탕은 화면 전체 — 위로 끝까지 끌어도 위 줄(뒤
       fireEvent.touchmove(box(), { touches: [touch(0, 200, 400 + dy)] });
       fireEvent.touchend(box(), { touches: [], changedTouches: [touch(0, 200, 400 + dy)] });
     });
-  // 「오늘」 상자 높이 28 + 16 + 4 = 48 → 반 24
+  // 「오늘」 상자 높이 28 + 16 + 4 = 48 → 반 24 — 상자 아래 끝이 위 줄(안전 영역 59 + 72) 아래 32px, 위 끝이 아래 줄 위 32px
   drag(-2000);
-  expect(placeOf().y).toBeCloseTo((59 + 72 + 36 + 24) / 844, 3);
+  expect(placeOf().y).toBeCloseTo((59 + 72 + 32 - 24) / 844, 3);
   drag(4000);
-  expect(placeOf().y).toBeCloseTo(1 - (160 + 36 + 24) / 844, 3);
+  expect(placeOf().y).toBeCloseTo(1 - (160 + 32 - 24) / 844, 3);
 });
 
 test("ST-UI4. 글 입력은 여러 줄(textarea, Enter는 줄바꿈) — 친 줄대로 상자에 그리고 올릴 때도 줄바꿈 그대로", () => {

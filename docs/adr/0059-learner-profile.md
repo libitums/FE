@@ -253,3 +253,21 @@
 - ⟨2026-11-20 — ADR-0158 개정⟩ th · my도 화면 문구를 가져 미리보기 틀(`preview.*.th` · `.my`)과 나라 이름 표 `country-names/{th,my}.json`(CLDR, 같은 짧은 이름 손질 — HK · MO · CD · CG · PS · MM(th))을 더했다. 영어 관사는 en 문장에만 붙는다. **남은 일(사람)**: 두 파일을 버킷에 올린다(부록 H).
 - 번들: 이 l10n 점검 전체로 `main.lynx.bundle` +10,254 B(origin/main 8ec8ff7d 기준 5,313,855 → 5,324,109, 천장 5,327,000 — 여유 2,891 B).
   테스트 LP-L1 ~ L5 · CN1 ~ CN8 · LP-U1 ~ U4 · P5e · P5f · P5g.
+
+#### D7 적용 기록 ⟨2026-11-27 — 사용자 결정: 가입 직후 ④ 출생 연도⟩
+
+사용자: 「진행」(메신저 생년 시트의 「Skip for now」를 걷는 결정과 함께, [ADR-0125](0125-messenger-safety-ui.md) 적용 기록 ⟨2026-11-27, feat/onboarding-birth-year⟩). 생년이 없으면 서버가
+「나이 모름」을 미성년처럼 다뤄 반응 · 선톡이 오지 않았고, 생년은 메신저 방을 처음 열 때만 물어 방에 가지 않은 사람은 끝내 비어 있었다.
+
+| 진입점 | 자리 | 건너뛰기 | 고르기 전 Continue | 뒤로 |
+| --- | --- | --- | --- | --- |
+| **가입 직후 ④ 출생 연도** | **회원**의 언어 선택 다음 · 여정 입구 앞, route `learner-birth-year` · 진행 막대 4/4(① · ② · ③은 1/4 · 2/4 · 3/4) | **없음** | 꺼져 있음 | ③ 언어 선택 |
+
+- **화면**: 메신저 생년 시트와 같은 목록 규칙(`lib/birth-year-options.ts`로 옮겨 함께 씀) — 올해 → 100년 전, 가운데(50년 전)에서 열고 **어느 줄도 미리 고르지 않는다**. ② 나라와 같은 틀(머리 뒤로 · 진행 막대, 제목 · 설명, 목록, 아래 Continue). 문구는 채팅이 아니라 앱 전체 — en 「What year were you born?」 · 「We use it to keep the app right for your age. It's never shown to anyone.」, 여덟 언어 실제 번역(제목은 메신저 시트와 같은 번역). **COPPA 중립 연령 확인** — 성인 기본값 없음, 「어리면 못 쓴다」 · 나이 문턱 안내 없음.
+- **저장**: 메신저 대화 출처의 `setBirthYear` 한 길(`entry-birth-year-wiring.ts`) — 기기(계정마다 `libitum.messenger.birth-year`)에 적고 서버 `companion_save_profile(p_birth_year, p_age_source = "self")`로 보낸다. 기다리지 않는다. 서버 저장이 실패해도 기기 값이 남아 다음에 출처를 세울 때(앱 재실행) 서버가 비어 있으면 다시 보낸다(ADR-0125 2026-11-17 서버 결선의 그 길). 같은 값이 출처 스냅숏에 들어가 메신저 방은 시트를 다시 띄우지 않는다.
+- **비회원**(「Continue without an account」)은 ④가 없다 — 세션이 없어 서버에 적을 곳이 없고, 메신저는 로그인 뒤 방에서 묻는다. 비회원의 진행 막대는 그대로 1/3 · 2/3 · 3/3(`stepCount`).
+- **기존 회원**(판정이 맵으로 보내는 사람)은 가입 흐름을 지나지 않으므로 지금처럼 메신저 방 시트가 맡는다(생년이 없을 때만).
+- **이벤트**: 새 이벤트 이름은 없다 — `entry_screen_viewed`의 `screen`에 `learner-birth-year`가 더해졌다(③ → ④ → `journey-entry`). 이탈은 `entry_screen_viewed(learner-birth-year)` 대비 `entry_screen_viewed(journey-entry)`(회원)로 본다. 연도 값 · 나이대는 어떤 속성으로도 싣지 않는다. 이름 수가 그대로라 AN1(137) · AB3(107 · 99) 개수 계약은 바뀌지 않았다.
+- **버린 대안**: (1) 메신저 방에서만 묻기(지금까지) — 방에 가지 않은 회원은 끝내 「나이 모름」. (2) 언어 선택 앞(① 이름 옆)에 두기 — 사용자 지시는 언어 선택 다음. (3) 바텀 시트로 띄우기 — 가입 흐름의 다른 단계와 모양이 달라지고 진행 막대에 들지 않는다. (4) 건너뛰기 두기 — ADR-0125 같은 날 개정과 같은 이유로 버렸다. (5) 새 이벤트 `entry_birth_year_saved` — 열람 두 개의 차로 같은 질문에 답해 이름만 는다.
+- **대가**: 회원 가입 흐름이 한 단계 길어졌다. 연도를 주기 싫은 사람은 여기서 멈춘다(뒤로는 된다) — 이탈을 위 열람 차로 본다.
+- 테스트: unit BYS-U1(여덟 언어 문구) · EBY-U1 · U1b · U2 · U3(결선) · EF4, ui BYS-UI1 ~ UI6(화면) · LN1 · LC1 · LS-U0(진행 막대 n/4), integration EBY-I1 · I2(서버 저장 · 실패 뒤 재시도) · IE7b · IE13 · HT-E1 · IS8 개정과 가입 흐름을 지나는 통합 테스트들의 ④ 통과(`passLearnerBirthYearIfShown`).

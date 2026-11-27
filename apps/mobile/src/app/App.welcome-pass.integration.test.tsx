@@ -18,9 +18,10 @@ import {
   tapButtonIn,
 } from "./test-helpers/guest-entry";
 import { goToTabRoot } from "./test-helpers/more-menu";
+import { welcomePassShownStorageKey } from "./welcome-pass-record";
 
-// `integration` 계층: 첫날 무제한 티켓은 회원에게만(ADR-0186 개정 1) — 비회원은 새 기기여도 없고, 가입하면 그때부터 24시간,
-// 로그아웃하면 사라진다. 대역은 경계뿐입니다(`test-helpers/guest-entry` — 저장소 · 인증 · RPC).
+// `integration` 계층: 첫날 무제한 티켓은 회원에게만(ADR-0186 개정 1) — 비회원은 새 기기여도 없고, 가입하면 가입 보상 창을 본 때부터
+// 24시간(개정 4), 로그아웃하면 사라진다. 대역은 경계뿐입니다(`test-helpers/guest-entry` — 저장소 · 인증 · RPC).
 
 afterEach(() => {
   cleanup();
@@ -39,7 +40,7 @@ test("[WP-I1] 새 기기의 비회원은 첫날 무제한이 없다 — 칩은 �
   expect([...host.store.keys()].some((key) => key.includes("welcome-pass"))).toBe(false);
 });
 
-test("[WP-I2] 비회원이 설정에서 가입(기록 이어받기)하면 가입 때부터 24시간 무제한 — 칩 · 남은 시간 판", async () => {
+test("[WP-I2] 비회원이 튜토리얼 중에 설정에서 가입(기록 이어받기)하면 가입 보상 창을 보기 전까지는 아직 없다(개정 4) — 칩은 숫자", async () => {
   const host = installGuestHost({ accountCreatedAt: isoHoursAgo(0) });
   await bootGuestAfterFirstUnit(host);
   expect(ticketsUnlimited()).toBe(false);
@@ -49,10 +50,10 @@ test("[WP-I2] 비회원이 설정에서 가입(기록 이어받기)하면 가입
   goToTabRoot("journey");
   await flushRounds(2);
 
-  expect(ticketsUnlimited()).toBe(true);
-  expect(chip()).not.toHaveTextContent(/\d/); // 무제한 칩
-  fireEvent.tap(chip(), {});
-  expect(screen.getByTestId("unlimited-ticket-modal-days-left")).toHaveTextContent(/hours left/);
+  // 튜토리얼은 티켓을 쓰지 않고, 창이 서는 순간부터 24시간이 시작한다(App.welcome-pass-start WS-I1).
+  expect(ticketsUnlimited()).toBe(false);
+  expect(chip()).toHaveTextContent(/^\d+$/);
+  expect([...host.store.keys()].some((key) => key.includes("welcome-pass"))).toBe(false);
 });
 
 test("[WP-I3] 오래된 계정으로 로그인하면 무제한이 없다 — 기준은 이 기기가 아니라 계정 생성 시각", async () => {
@@ -78,6 +79,8 @@ test("[WP-I4] 새 회원이 로그아웃하면 무제한도 사라진다", async
       }),
     ],
     [learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue],
+    // 가입 보상 창을 한 시간 전에 본 계정(개정 4 — 시작은 창이 선 때).
+    [welcomePassShownStorageKey("u1"), String(Date.now() - HOUR)],
   ]);
   const host = installGuestHost({ store, accountCreatedAt: isoHoursAgo(2) });
   await renderGuestApp(host, { platform: "ios" });

@@ -49,6 +49,10 @@ export const learnerProfileZhTw: LearnerProfileCopy = {
       jumpTo: (letter) => `跳到 ${letter}`,
       jumpBar: "跳到字母",
     },
+    birthYear: {
+      title: "你是哪一年出生的？",
+      caption: "我們用它來讓 App 適合你的年齡。這不會顯示給任何人。",
+    },
   },
   settings: {
     title: "名字和國家",

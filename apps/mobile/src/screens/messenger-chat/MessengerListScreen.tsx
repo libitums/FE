@@ -22,6 +22,7 @@ import { useCoinBalance } from "./use-coin-balance";
 import { useSuggestedFriends } from "./use-suggested-friends";
 import { useFriendStories } from "./use-friend-stories";
 import { useRowImpressions } from "./use-row-impressions";
+import { useListLiveSync } from "./use-list-live-sync";
 import { useGuestGate } from "./use-guest-gate";
 import { canBrowseChats } from "./messenger-access";
 
@@ -47,10 +48,8 @@ export function MessengerListScreen({
 }: MessengerListScreenProps & SuggestedFriendsProps & FriendStoriesProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
-  // 목록에 들어오면 한 번 맞춥니다 — 다른 탭 · 방에 있는 동안 푸시 없이 온 선톡 · 스토리 반응(폴링 없음, ADR-0200 · ADR-0213).
-  useEffect(() => {
-    source.server?.syncRooms();
-  }, [source]);
+  // 목록에 들어오면 한 번, 보이는 동안 30초마다 맞춥니다 — 푸시 없이 온 선톡 · 스토리 반응(ADR-0213 개정 2).
+  useListLiveSync(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
   const coinBalance = useCoinBalance(wallet);
   const [coinShopOpen, setCoinShopOpen] = useState(false);

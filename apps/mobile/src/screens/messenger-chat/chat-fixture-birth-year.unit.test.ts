@@ -38,13 +38,10 @@ const make = (over: Partial<Parameters<typeof birthYearState>[0]> = {}) => {
   return { state, onChange };
 };
 
-test("BY-U1 기기에 적힌 생년 · 건너뜀으로 시작한다 — 다시 켜도 다시 묻지 않는다", () => {
+test("BY-U1 기기에 적힌 생년으로 시작한다 — 다시 켜도 다시 묻지 않는다", () => {
   expect(make({ store: memoryStore({ kind: "set", year: 1990 }).store }).state.current()).toEqual({
     kind: "set",
     year: 1990,
-  });
-  expect(make({ store: memoryStore({ kind: "skipped" }).store }).state.current()).toEqual({
-    kind: "skipped",
   });
   // 기기에 없으면 씨앗, 씨앗도 없으면 unasked.
   expect(make({ seed: { kind: "set", year: 2001 } }).state.current()).toEqual({
@@ -69,18 +66,8 @@ test("BY-U2 고르면 기기에 적고 서버에 생년 · 출처를 보내며 �
   expect(onChange).toHaveBeenCalledTimes(1);
 });
 
-test("BY-U3 건너뛰면 기기에만 적는다 — 서버는 건너뜀을 적을 칸이 없고 비어 있으면 나이 모름(엄격)이다", () => {
-  const { store, write } = memoryStore();
-  const { profile, saveBirthYear } = remoteOf(new Promise(() => undefined));
-  const { state } = make({ store, profile });
-  state.set(null);
-  expect(state.current()).toEqual({ kind: "skipped" });
-  expect(write).toHaveBeenLastCalledWith({ kind: "skipped" });
-  expect(saveBirthYear).not.toHaveBeenCalled();
-});
-
 test("BY-U4 서버에 생년이 있으면 그 값으로 바꾸고 기기에 적는다(다른 기기 · 재설치)", async () => {
-  const { store, write } = memoryStore({ kind: "skipped" });
+  const { store, write } = memoryStore();
   const { profile, saveBirthYear } = remoteOf(Promise.resolve({ birthYear: 1988 }));
   const { state, onChange } = make({ store, profile });
   await flush();

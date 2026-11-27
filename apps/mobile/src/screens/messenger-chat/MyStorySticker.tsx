@@ -96,7 +96,7 @@ export function MyStoryPlaced<T extends Placement>({
   const [settled, setSettled] = useState(item.scale);
   const settle = () => setSettled(item.scale);
   const change = (next: T) => onChange(fit(next, settled));
-  const grip = usePlacedGrip({ item, canvas, change, settle, onSelect });
+  const grip = usePlacedGrip({ item, canvas, selected, change, settle, onSelect });
 
   const box = (
     <view

@@ -63,3 +63,29 @@ export function heldPoints(held: readonly number[], touches: readonly Finger[]):
     return [{ x: only.x, y: only.y }];
   return points;
 }
+
+/**
+ * 바탕에 닿아 아직 아무것도 잡지 않은 손가락(ADR-0194 개정 3) — 이벤트의 `touches`에 없는 것(끝을 못 받음)은 버리고, 새로 닿은 것을
+ * 둘까지 더합니다.
+ */
+export function looseFingers(
+  loose: readonly number[],
+  landed: readonly Finger[],
+  touches: readonly Finger[],
+): number[] {
+  const alive = loose.filter((id) => touches.some((finger) => finger.id === id));
+  return holdFingers(alive, landed);
+}
+
+/** 바탕 손가락을 뗌 — 뗀 것만 뺍니다. */
+export function dropLoose(loose: readonly number[], lifted: readonly Finger[]): number[] {
+  return loose.filter((id) => !lifted.some((finger) => finger.id === id));
+}
+
+/**
+ * 바탕 두 손가락이 잡을 손가락 — 고른 것이 있고 바탕 손가락이 둘일 때만 그 둘. 고른 것이 없으면 null(아무것도 하지 않음 — 바탕 탭으로
+ * 고름을 푼 뒤의 두 손가락에는 사용자가 가리킨 것이 없습니다).
+ */
+export function canvasPinch(loose: readonly number[], selected: boolean): number[] | null {
+  return selected && loose.length >= MAX_FINGERS ? loose.slice(0, MAX_FINGERS) : null;
+}

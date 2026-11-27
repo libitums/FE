@@ -1,6 +1,7 @@
-// 첫날 무제한 티켓 — 회원만(ADR-0186 개정 1). 계정을 만든 때부터 24시간 동안 레슨이 티켓을 쓰지 않습니다. 기준은 세션이 지닌
-// 계정 생성 시각(인증 응답 `user.created_at`)이라 앱을 지웠다 깔고 로그인해도 같고, 비회원 · 로그아웃은 받지 않습니다.
-// 기기 저장소에 따로 적지 않습니다. 활성 구독이 있으면(요금제 종류 무관) 없습니다(개정 2). 순수 함수만 있습니다.
+// 첫날 무제한 티켓 — 회원만(ADR-0186 개정 1). 24시간 동안 레슨이 티켓을 쓰지 않습니다. 시작은 가입 보상 창이 처음 선 시각이고(개정 4,
+// 창이 계정 생성 뒤 48시간 안에 섰을 때), 창 기록이 없거나 늦었으면 세션이 지닌 계정 생성 시각(인증 응답 `user.created_at`)입니다.
+// 창 기록은 앱 결선(`app/welcome-pass-record`)이 기기에 둡니다. 비회원 · 로그아웃은 받지 않고, 활성 구독이 있으면(요금제 종류 무관)
+// 없습니다(개정 2). 순수 함수만 있습니다.
 
 import type { AuthSession } from "./auth-session.contract";
 import type { SubscriptionState } from "./plan-access";
@@ -8,7 +9,7 @@ import type { UnlimitedPass } from "./unlimited-pass";
 
 export const WELCOME_PASS_MS = 24 * 3_600_000;
 
-/** 세션 → 첫날 이용권의 시작 시각(계정 생성 시각). 비회원(세션 없음)이거나 생성 시각을 모르면 null. 순수. */
+/** 세션 → 계정 생성 시각(창 기록이 없을 때의 시작 — 개정 4). 비회원(세션 없음)이거나 생성 시각을 모르면 null. 순수. */
 export function welcomePassStartOf(session: AuthSession | null): number | null {
   return session?.accountCreatedAt ?? null;
 }
@@ -36,6 +37,49 @@ export function welcomeTicketUntilMs(
   subscription: SubscriptionState,
 ): number {
   return startedAtMs === null || subscription === "active" ? 0 : startedAtMs + WELCOME_PASS_MS;
+}
+
+/** 남용 상한(개정 4) — 가입 보상 창이 계정 생성 뒤 이 안에 섰을 때만 창 기준으로 시작합니다. */
+export const WELCOME_SHOWN_CAP_MS = 48 * 3_600_000;
+
+/** 첫날 이용권의 시작을 정하는 값들(개정 4). */
+export type WelcomePassBasis = {
+  /** 세션의 계정 생성 시각 — 비회원 · 모르면 null. */
+  readonly accountCreatedAt: number | null;
+  /** 이 기기에서 이 계정의 가입 보상 창이 처음 선 시각 — 기록이 없으면(재설치 · 기기 변경 · 아직) null. */
+  readonly shownAtMs: number | null;
+  /** 가입 보상 창이 아직 앞에 있나(튜토리얼 중 · 받은 보상 창 대기 — `signupWindowAhead`). */
+  readonly windowAhead: boolean;
+};
+
+/**
+ * 첫날 이용권의 시작 시각(개정 4) — 창이 생성 뒤 48시간 안에 섰으면 창이 선 시각, 창이 아직 앞에 있으면 null(시작 전),
+ * 그 밖(창이 늦게 섬 · 기록 없음 · 시계를 되돌려 창이 생성보다 앞)은 계정 생성 시각. 생성 시각을 모르면 null. 순수.
+ */
+export function welcomePassStartFrom(basis: WelcomePassBasis): number | null {
+  const created = basis.accountCreatedAt;
+  if (created === null) return null;
+  const shown = basis.shownAtMs;
+  if (shown !== null)
+    return shown >= created && shown - created <= WELCOME_SHOWN_CAP_MS ? shown : created;
+  return basis.windowAhead ? null : created;
+}
+
+/**
+ * 가입 보상 창이 `nowMs`에 선다면의 이용권 — 창의 무제한 줄이 그립니다. 기록이 이미 있으면 그 기록이 시작입니다. 순수.
+ */
+export function welcomePassOnShown(
+  accountCreatedAt: number | null,
+  shownAtMs: number | null,
+  nowMs: number,
+  subscription: SubscriptionState,
+): UnlimitedPass | undefined {
+  const start = welcomePassStartFrom({
+    accountCreatedAt,
+    shownAtMs: shownAtMs ?? nowMs,
+    windowAhead: false,
+  });
+  return welcomePassOf(start, nowMs, subscription);
 }
 
 /** 두 시간 한정 이용권 가운데 늦게 끝나는 쪽 — 머리 칩은 하나만 그립니다. 순수. */

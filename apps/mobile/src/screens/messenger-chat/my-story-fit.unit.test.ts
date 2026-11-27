@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { rotatedBounds, STORY_EDGE, TOOL_COLUMN } from "./my-story-fit";
+import { rotatedBounds, STORY_EDGE, STORY_VISIBLE, TOOL_COLUMN } from "./my-story-fit";
 import { stickerBoxPx, stickerFit, stickerSizeOf } from "./my-story-sticker-size";
 import { textFit } from "./my-story-text";
 
@@ -24,17 +24,11 @@ test("MS-U48. 회전 — 외접 사각형 |w·cosθ| + |h·sinθ|로 크기 상�
   expect(textFit(ko, { scale: 3, x: 0.5, y: 0.5, rotation: 0 }, canvas).scale).toBe(1.172);
   expect(textFit(ko, { scale: 3, x: 0.5, y: 0.5, rotation: 90 }, canvas).scale).toBe(2.926);
   expect(textFit(ko, { scale: 3, x: 0.5, y: 0.5, rotation: 45 }, canvas).scale).toBe(1.231);
-  // 세운 상자(90°)는 오른쪽 가까이 둘 수 있지만, 돌리면 외접 사각형이 넓어져 안쪽으로 밀림
+  // 자리는 가운데가 화면 안이면 그대로(2026-11-27, MS-U52) — 돌려도 안쪽으로 밀지 않음
   const upright = { scale: 1, x: 0.64, y: 0.5, rotation: 90 };
   expect(textFit(ko, upright, canvas).x).toBe(0.64);
-  expect(textFit(ko, { ...upright, rotation: 45 }, canvas).x).toBeCloseTo(
-    1 - ((221.2 + 76) * Math.SQRT1_2) / 2 / 390 - 100 / 390,
-    3,
-  );
-  expect(textFit(ko, { ...upright, rotation: 0 }, canvas).x).toBeCloseTo(
-    1 - 221.2 / 2 / 390 - 100 / 390,
-    3,
-  );
+  expect(textFit(ko, { ...upright, rotation: 45 }, canvas).x).toBe(0.64);
+  expect(textFit(ko, { ...upright, rotation: 0 }, canvas).x).toBe(0.64);
 });
 
 test("MS-U49. 끄는 중 — 확정 크기(settled)의 상자를 transform으로 키운 크기도 재어, 놓기 전에도 도구 열 앞에서 멈춤", () => {
@@ -84,9 +78,9 @@ test("MS-U51. 단어 스티커 끝단 — 글 상자와 같은 규칙(도구 열
   const at = (scale: number, x: number, rotation = 0) => ({ scale, x, y: 0.5, rotation });
   // (100.8 + 32)s + 4 ≤ 254 → 1.882
   expect(stickerFit(long, at(3, 0.5), canvas).scale).toBe(1.882);
-  // 오른쪽 끝 — 반폭 + 36 + 도구 열 64 앞에서 멈춤
-  expect(stickerFit(long, at(1, 1), canvas).x).toBeCloseTo(1 - 136.8 / 2 / 390 - 100 / 390, 3);
-  expect(stickerFit(long, at(1, 0), canvas).x).toBeCloseTo(136.8 / 2 / 390 + 36 / 390, 3);
+  // 좌우 끝 — 가운데가 화면 끝까지(도구 열 · 가장자리 여백은 크기 상한에만, MS-U52)
+  expect(stickerFit(long, at(1, 1), canvas).x).toBe(1);
+  expect(stickerFit(long, at(1, 0), canvas).x).toBe(0);
   // 45°: 폭 76s + 4 · 높이 80s + 4 → (156s + 8)·0.7071 ≤ 254 → 2.251
   const short = { ko: "찌개", roman: "jjigae", meaning: "stew" };
   expect(stickerFit(short, at(3, 0.5, 45), canvas).scale).toBe(2.251);
@@ -98,4 +92,27 @@ test("MS-U51. 단어 스티커 끝단 — 글 상자와 같은 규칙(도구 열
     x: 0.95,
     y: 0.5,
   });
+});
+
+test("MS-U52. 옮길 수 있는 곳(인스타그램 감각, 2026-11-27) — 가운데가 화면 안이면 되고 상자 일부는 밖으로 나가도 되지만, 위 · 아래 줄 밖으로 적어도 32px은 남김", () => {
+  expect(STORY_VISIBLE).toBe(32);
+  const screen = { width: 390, height: 844, top: 100, bottom: 150 };
+  const short = { ko: "찌개", roman: "jjigae", meaning: "stew" }; // 80 × 84
+  const at = (x: number, y: number) => ({ scale: 1, x, y, rotation: 0 });
+  // 좌우 — 가운데가 화면 끝(0 · 1)까지, 도구 열 위로도
+  expect(stickerFit(short, at(-0.2, 0.5), screen).x).toBe(0);
+  expect(stickerFit(short, at(1.3, 0.5), screen).x).toBe(1);
+  expect(stickerFit(short, at(0.97, 0.5), screen).x).toBe(0.97);
+  // 위 — 상자 아래 끝이 위 줄(100) 아래 32px까지: (100 + 32 − 42) / 844
+  expect(stickerFit(short, at(0.5, 0), screen).y).toBeCloseTo(90 / 844, 3);
+  expect(stickerFit(short, at(0.5, 0.12), screen).y).toBe(0.12);
+  // 아래 — 상자 위 끝이 아래 줄(150) 위 32px까지: (844 − 150 − 32 + 42) / 844
+  expect(stickerFit(short, at(0.5, 1), screen).y).toBeCloseTo(704 / 844, 3);
+  // 큰 상자(세운 글 상자)는 위 줄 위로 더 올라감 — 아래 끝만 위 줄 아래 32px에 남으면 됨
+  const big = textFit(ko, { scale: 1, x: 0.5, y: 0, rotation: 90 }, screen);
+  expect(big.y).toBeLessThan(90 / 844);
+  // 위 줄이 없으면(보기와 같은 화면 전체) 가운데가 화면 위 끝까지
+  expect(textFit(ko, { scale: 1, x: 0.5, y: 0, rotation: 90 }, { width: 390, height: 844 }).y).toBe(
+    0,
+  );
 });

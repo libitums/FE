@@ -67,3 +67,13 @@
 - **사용자 결정 2026-11-24** 「이 흐름과 화면 그대로 진행」 — 방 코치마크의 ① 보내기 · 교정(입력 칸 고리) 단계를 지우고, 맨 앞에 키보드
   두 갈래 단계(Phone keyboard 먼저 → Hangul keys)를 둔다. 순서 keyboard → ideas → (제안 시) sample → voice. 안내를 이미 본 사람도 키보드
   단계만 한 번. 결정 · 겹침 · 기록 키 · 이벤트는 [ADR-0190](0190-chat-keyboard-two-way-guide.md).
+
+## 개정 ⟨2026-11-27⟩ — 계정 삭제 때 안내 기록을 지운다 (버그 수정)
+
+- **증상(기기 제보)**: 탈퇴 후 재가입한 새 계정으로 튜토리얼 전에 메신저에 들어가면 목록 카드 · 방 코치마크가 뜨지 않았다.
+- **원인**: 안내 기록(`guide-seen` · `keyboard-guide-seen` · `tab-visited`)은 기기 하나에 하나인데 계정 삭제가 지우지 않았다 — 지운 계정이
+  본 기록이 새 계정의 안내 · 무료 예시 단계를 막았다. 튜토리얼 진행 · 첫 인사 · 예시 제안은 원인이 아니다(안내 조건에 튜토리얼이 없고, 서버는
+  튜토리얼 전 계정에도 첫 인사를 만든다).
+- **고침**: 계정 삭제 성공 뒤 세 키를 지운다(`forgetMessengerGuide`, [ADR-0032](0032-account-sign-out-and-deletion.md) 저장소 표). 로그아웃은
+  남긴다 — 다른 계정으로 바꿔 들어온 사람은 여전히 안내를 보지 못한다(계정별 키는 기존 기록을 옮길 규칙이 필요해 이번에 하지 않음).
+- **테스트**: `messenger-guide.storage.unit.test.ts` MG-U15, `App.messenger-guide-new-account.integration.test.tsx` GA-I3 · I4.
