@@ -1,0 +1,5 @@
+# AdMob 앱 ID(ADR-0209 D10). 이 파일을 admob.properties로 복사해 채운다(admob.properties는 추적하지 않는다).
+# 값은 AdMob 콘솔의 **Android 앱 ID**(ca-app-pub-…~…) 하나뿐이다 — 광고 단위 ID는 서버 설정(companion.settings.ad_ticket_unit_android)에 둔다.
+# 파일이 없으면 Google 샘플 앱 ID로 채워진다(비면 SDK가 앱을 죽인다) — 샘플은 release 빌드에서 광고 모듈을 열지 않는다.
+# 아래는 Google 공식 샘플(테스트) 앱 ID다 — 개발 · 기기 확인용. 스토어 빌드에는 넣지 않는다.
+ADMOB_APP_ID=ca-app-pub-3940256099942544~3347511713

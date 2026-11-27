@@ -7,6 +7,7 @@
 import type { MoreCopy } from "./ui-copy-more.contract";
 import type { AssembledHintCopy } from "./ui-copy-assembled-hint";
 import type { MicPermissionCopy } from "./ui-copy-mic-permission";
+import type { AdTicketCopy } from "./ui-copy-ad-ticket";
 import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 import type { AuthFailureCopy } from "./auth-failure";
 import type { EntryLanguage } from "./entry-language";
@@ -89,6 +90,8 @@ export type UiCopy = {
   readonly speaking: SpeakingCopy;
   /** 마이크 권한 안내 · 인식 실패(ADR-0206). */
   readonly micPermission: MicPermissionCopy;
+  /** 광고 보고 티켓 1장(ADR-0209, 시안 A1 ~ A5). */
+  readonly adTicket: AdTicketCopy;
   readonly learningItemGuide: LearningItemGuideCopy;
   readonly assessment: AssessmentCopy;
   readonly lessonComplete: LessonCompleteCopy;

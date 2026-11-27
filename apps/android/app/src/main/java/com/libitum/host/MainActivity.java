@@ -125,6 +125,8 @@ public final class MainActivity extends Activity {
     AirbridgeEvents.configure(builder);
     // 스토어 상품 · 구매 · 복원(ADR-0144 2단계) — SDK 키가 있어 시작된 빌드에서만 등록한다.
     PurchasesSdk.configure(builder, this);
+    // 보상형 광고(ADR-0209) — AdMob 값이 있어 시작된 빌드에서만 등록한다. 없으면 광고 줄이 서지 않는다.
+    RewardedAdSdk.configure(builder, this);
     lynxView = builder.build(this);
     // Airbridge 딥링크가 들어오면 JS에 알린다 — 링크는 싣지 않고 JS가 takeOpenedDeeplink로 꺼낸다(ADR-0080).
     deeplinkListener = () -> mainHandler.post(() -> {
