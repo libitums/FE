@@ -4,7 +4,10 @@
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { MicPermissionSheet } from "../components/mic-permission/MicPermissionSheet";
+import { useMicPermission } from "../components/mic-permission/use-mic-permission";
 import type { AnswerResult } from "../lib/answer-result";
+import type { MicPermissionContext } from "../lib/mic-permission-event.contract";
 import type { SafeAreaInsets } from "../lib/safe-area";
 import type { ChoiceRomanization } from "../lib/session-options";
 import {
@@ -34,6 +37,8 @@ export type RoleplayStoryFlowProps = {
   readonly romanization?: ChoiceRomanization;
   /** 대사 상자 안 로마자 스위치(ADR-0188 개정 D7) — 없으면 스위치를 그리지 않습니다. */
   readonly onRomanizationChange?: (next: ChoiceRomanization) => void;
+  /** 마이크 권한 안내의 맥락(ADR-0206) — 이벤트 받는 곳. 없으면 이벤트가 없습니다. */
+  readonly mic?: MicPermissionContext;
 };
 
 export function RoleplayStoryFlow({
@@ -43,6 +48,7 @@ export function RoleplayStoryFlow({
   onExit,
   romanization = "hidden",
   onRomanizationChange,
+  mic,
 }: RoleplayStoryFlowProps): ReactNode {
   const [stage, setStage] = useState<Stage>("preview");
   const [notice, setNotice] = useState<RoleplaySpeechNotice | null>(null);
@@ -56,12 +62,22 @@ export function RoleplayStoryFlow({
   }, []);
 
   const begin = () => setStage(model.cuts === null ? "talk" : "cuts");
+  // 처음 시작할 때 시스템 창보다 먼저 사전 안내(ADR-0206 D1) — Allow 뒤 답은 아래 `decide`가, Not now는 장면을 그대로 시작합니다
+  // (말하기는 턴마다 「Can't speak now」로 넘길 수 있고, 마이크를 누르면 그때 시스템 창이 뜹니다).
+  const permission = useMicPermission({
+    surface: "roleplay",
+    context: mic,
+    checkOnOpen: false,
+    onSkipSpeaking: () => begin(),
+    onAnswer: (status) => decide(status, true),
+  });
   // 시작 전 말하기 준비 — 묻지 않은 권한은 시스템 창으로 먼저 묻고, 거부 · 인식기 없음은 안내를 띄웁니다.
   const decide = (status: SpeechStatus, asked: boolean) => {
     if (!mounted.current) return;
     const readiness = speechReadinessOf(status);
     if (readiness === "ready") return begin();
     if (readiness === "ask" && !asked) {
+      if (permission.openPrime()) return;
       const requested = requestSpeechPermissions((next) => decide(next, true));
       if (requested === "unavailable") begin();
       return;
@@ -82,18 +98,21 @@ export function RoleplayStoryFlow({
 
   if (stage === "preview") {
     return (
-      <RoleplayPreviewScreen
-        insets={insets}
-        ordinal={model.ordinal}
-        title={model.title}
-        counterpartName={model.counterpartName}
-        lineCount={model.turns.length}
-        imageUrl={model.imageUrl}
-        onStart={start}
-        onExit={onExit}
-        speechNotice={notice}
-        onSpeechNoticeAction={onNoticeAction}
-      />
+      <>
+        <RoleplayPreviewScreen
+          insets={insets}
+          ordinal={model.ordinal}
+          title={model.title}
+          counterpartName={model.counterpartName}
+          lineCount={model.turns.length}
+          imageUrl={model.imageUrl}
+          onStart={start}
+          onExit={onExit}
+          speechNotice={notice}
+          onSpeechNoticeAction={onNoticeAction}
+        />
+        <MicPermissionSheet mic={permission} />
+      </>
     );
   }
   if (stage === "cuts" && model.cuts !== null) {
@@ -119,6 +138,7 @@ export function RoleplayStoryFlow({
       wildcards={model.wildcards}
       onFinish={onFinish}
       onExit={onExit}
+      mic={mic}
     />
   );
 }

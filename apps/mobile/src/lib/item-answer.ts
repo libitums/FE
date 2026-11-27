@@ -19,7 +19,9 @@ export type ItemAnswerOutcome = AnswerResult | "skipped";
 export type ItemSkipReason =
   | "user"
   | `unavailable:${SpeechUnavailableReason}`
-  | `missed:${SpeechMissReason}`;
+  | `missed:${SpeechMissReason}`
+  // 사전 안내에서 「Not now」를 골라 이 레슨의 말하기를 건너뜀(ADR-0206 D4).
+  | "mic:not-now";
 
 export type ItemAnswerReport = {
   readonly questionIndex: number;

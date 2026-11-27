@@ -11,6 +11,7 @@ import {
   stopSpeechRecognition,
 } from "../lib/speech-recognition";
 import type { SpeechResult } from "../lib/speech-recognition";
+import { micGateOf } from "../lib/mic-permission";
 import { canListen } from "../lib/speaking-judge";
 import { speechAttemptOutcomeOf, speechBlocked } from "../lib/speech-attempt";
 import type { SpeechAttemptOutcome } from "../lib/speech-attempt";
@@ -22,13 +23,20 @@ export type SpeechAttemptControl = {
   readonly stop: () => void;
 };
 
+/**
+ * `onPermissionDenied`는 사용자가 거부한 권한 때문에 듣지 못했을 때(설정에서 되돌릴 수 있음) 결말과 함께 한 번 더 부릅니다 —
+ * 거부 시트(ADR-0206 D2)가 받습니다. 제한 · 인식기 없음은 부르지 않습니다.
+ */
 export function useSpeechAttempt(
   onOutcome: (outcome: SpeechAttemptOutcome) => void,
+  onPermissionDenied?: () => void,
 ): SpeechAttemptControl {
   const mounted = useRef(true);
   // 렌더마다 최신 함수를 둡니다 — 늦게 온 콜백이 앞 렌더의 함수를 부르지 않습니다.
   const latest = useRef(onOutcome);
   latest.current = onOutcome;
+  const denied = useRef(onPermissionDenied);
+  denied.current = onPermissionDenied;
   // 시도 번호입니다. 새로 시작한 뒤에는 앞 시도의 늦은 콜백을 버립니다.
   const attempt = useRef(0);
 
@@ -55,11 +63,16 @@ export function useSpeechAttempt(
       }
       if (!canListen(status)) {
         emit(speechBlocked);
+        if (micGateOf(status) === "denied") denied.current?.();
         return;
       }
-      const started = startSpeechRecognition({}, (result: SpeechResult) =>
-        emit(speechAttemptOutcomeOf(result)),
-      );
+      const started = startSpeechRecognition({}, (result: SpeechResult) => {
+        emit(speechAttemptOutcomeOf(result));
+        // 듣는 사이 권한이 거두어진 경우 — 결과가 실은 권한 상태로 봅니다.
+        if (result.status === "permission-denied" && mounted.current && attempt.current === mine) {
+          if (micGateOf({ ...status, ...result }) === "denied") denied.current?.();
+        }
+      });
       if (started === "unavailable") {
         emit(speechBlocked);
       }

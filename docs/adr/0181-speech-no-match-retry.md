@@ -2,6 +2,9 @@
 
 - 상태: **채택 — 앱**(2026-11-24). 브랜치 `fix/speech-no-match`.
 - 날짜: 2026-11-24
+- **부분 개정** ⟨2026-11-27 — [ADR-0206](0206-mic-permission-flow.md) D5⟩ D3 · D4의 인식 실패(`unavailable:failed`) — 「진짜 불가 · Try again 없음 · 불가 문구」였던 것을
+  거부와 다른 문구(「Something went wrong while listening. Try again.」) · Try again(주) · Skip(보조)로 바꾼다(롤플레이도). Android 언어 없음(12 · 13, 한국어 팩)은 그대로다.
+  같은 문항에서 두 번 실패하면 낱말 말하기에 「Hear it」이 함께 선다. 건너뜀 까닭은 그대로 `unavailable:failed`.
 - **사용자 보고(2026-11-23)**: Android에서 말하기를 시험하는데 「Speech recognition isn't available right now. Tap Skip to continue.」가 뜸 —
   「하드웨어 문제가 아닌 발음 문제면 틀렸다고 떠야하지 않나」. 이어 「못알아들음 문제면 다시 풀 수 있게 retry 버튼도 있으면 좋을 거 같은데」.
 - 이어받는 결정: [ADR-0067](0067-episode-format-speaking.md) D4 · D5(국면별 조작 · 활동 안 잠금) ·

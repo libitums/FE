@@ -9,6 +9,8 @@ import {
   speechAvailabilityAfter,
   speechMissedHintOf,
   speechPhaseFor,
+  speechReopened,
+  speechRetryable,
 } from "../../lib/speech-attempt";
 import type {
   SpeechAttemptOutcome,
@@ -52,7 +54,7 @@ export function speakWordSessionReducer(
     case "start": {
       const startable =
         phase.kind === "ready" ||
-        phase.kind === "missed" ||
+        speechRetryable(phase) ||
         (phase.kind === "unavailable" && phase.reason === "dictation-off");
       return startable ? { ...state, phase: { kind: "listening" } } : state;
     }
@@ -75,7 +77,18 @@ export function speakWordSessionReducer(
         : state;
     case "next":
       return phase.kind === "heard" ? nextQuestion(state, state.heard) : state;
+    case "reopen":
+      return speechReopened(state);
   }
+}
+
+/** 이 활동의 남은 문항을 모두 건너뛴 들은 글자 목록입니다(ADR-0206 D4 — 이 레슨의 말하기 건너뜀). */
+export function speakWordSkipRest(
+  state: SpeakWordSessionState,
+  total: number,
+): readonly (string | null)[] {
+  const rest = Math.max(0, total - state.questionIndex);
+  return [...state.heard, ...new Array<null>(rest).fill(null)];
 }
 
 /**
@@ -147,10 +160,11 @@ export function speakWordControlsOf(
       return { primary: "stop", secondary: null };
     case "heard":
       return { primary: null, secondary: null };
-    // 못 알아들음은 판정이 아니라 같은 문항을 다시 말할 기회입니다(ADR-0181).
+    // 못 알아들음 · 인식 실패는 판정이 아니라 같은 문항을 다시 말할 기회입니다(ADR-0181 · ADR-0206 D5).
     case "missed":
       return { primary: "retry", secondary: "skip" };
     case "unavailable":
+      if (speechRetryable(phase)) return { primary: "retry", secondary: "skip" };
       return { primary: "skip", secondary: phase.reason === "dictation-off" ? "retry" : null };
   }
 }
@@ -161,6 +175,9 @@ export function speakWordHintOf(phase: SpeechAttemptPhase, copy: UiCopy): string
   }
   if (phase.kind === "missed") {
     return speechMissedHintOf(phase.reason, copy);
+  }
+  if (phase.kind === "unavailable" && speechRetryable(phase)) {
+    return copy.micPermission.listenFailed;
   }
   if (phase.kind === "unavailable" && phase.reason !== "dictation-off") {
     return copy.speakWord.recognitionUnavailable;

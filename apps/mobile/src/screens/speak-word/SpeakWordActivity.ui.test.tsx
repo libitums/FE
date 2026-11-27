@@ -300,14 +300,15 @@ test("USW8a. 받아쓰기 꺼짐은 지시문이 바뀌고 Skip과 Try again이 
   expect(speech.calls.start).toBe(2);
 });
 
-test("USW8b. 일반 인식 실패는 안내와 Skip만 서고 잠기지 않아 다음 문항은 준비 국면이다", () => {
+test("USW8b. 일반 인식 실패는 Try again(주) · Skip(보조)이고 잠기지 않아 다음 문항은 준비 국면이다(ADR-0206 D5)", () => {
   host({ result: () => audioFailed });
   mount([cardQuestion, passport]);
   loadPicture();
 
   tapAction("Speak");
   expect(id("speak-word-content")).toHaveAttribute("data-reason", "failed");
-  tapAction("Skip");
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  tapSecondary("skip", "Skip");
 
   expect(id("speak-word-content")).toHaveAttribute("data-questionIndex", "1");
   expect(id("speak-word-content")).toHaveAttribute("data-phase", "ready");

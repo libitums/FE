@@ -55,3 +55,10 @@
   line-height: var(--libitum-typography-label-l-line-height);
   letter-spacing: var(--libitum-typography-label-l-letter-spacing);
 }
+
+/* 두 번 실패한 뒤 안내 줄 아래 서는 「Hear it」(ADR-0206 D5) — 가운데 정렬입니다. */
+.speak-word-activity-hear-it {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-8);
+}

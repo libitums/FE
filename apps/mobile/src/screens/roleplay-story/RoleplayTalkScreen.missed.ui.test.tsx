@@ -116,11 +116,11 @@ test("[RT-M4] 네트워크 실패는 연결 안내와 Try again이다", () => {
   expect(retryButton()).toHaveAttribute("accessibility-label", "Try again");
 });
 
-test("[RT-M5] 진짜 불가(마이크 입력 실패 · 권한 거부)에는 Try again 버튼이 없다", () => {
+test("[RT-M5] 권한 거부에는 Try again 버튼이 없다(마이크 입력 실패는 ADR-0206 D5로 있다)", () => {
   mount([audioFailed]);
   fireEvent.tap(id("roleplay-talk-mic"), {});
   expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "failed");
-  expect(maybe("roleplay-talk-missed-retry")).not.toBeInTheDocument();
+  expect(id("roleplay-talk-missed-retry")).toBeInTheDocument();
   cleanup();
 
   stubSpeechHost({ microphone: "denied" });
