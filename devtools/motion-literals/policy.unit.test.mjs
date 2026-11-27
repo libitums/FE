@@ -100,11 +100,11 @@ test("PO7′. loadAllowlist는 모양이 틀리면 던진다", () => {
   assert.throws(() => loadAllowlist([{}]));
 });
 
-test("PO8′. 실제 allowlist.json은 검증을 통과하고 항목이 열이다(서사 배경 · 지표 모션 둘 · 문화 카드 뒤집기 · 등장 모션 둘 · 다시 풀기 배지 · 무제한 칩 빛 훑기 · 순위 모션 · 스토리 진행 막대), 문자열 입력은 던진다", () => {
+test("PO8′. 실제 allowlist.json은 검증을 통과하고 항목이 열이다(서사 배경 · 지표 모션 둘 · 문화 카드 뒤집기 · 등장 모션 둘 · 다시 풀기 배지 · 무제한 칩 빛 훑기 · 순위 모션 · 스토리 진행 막대 · 출시 모달 · 가입 보상), 문자열 입력은 던진다", () => {
   assert.throws(() => loadAllowlist("[]"));
   const json = readFileSync(new URL("./allowlist.json", import.meta.url), "utf8");
   const entries = loadAllowlist(JSON.parse(json));
-  assert.equal(entries.length, 10);
+  assert.equal(entries.length, 12);
   assert.ok(entries[0].path.endsWith("narrative-background.css"));
   assert.ok(entries[1].path.endsWith("stat-chip-motion.css"));
   assert.ok(entries[2].path.endsWith("journey-stat-modal-motion.css"));
@@ -115,6 +115,8 @@ test("PO8′. 실제 allowlist.json은 검증을 통과하고 항목이 열이�
   assert.ok(entries[7].path.endsWith("unlimited-ticket-chip-motion.css"));
   assert.ok(entries[8].path.endsWith("ranking-motion.css"));
   assert.ok(entries[9].path.endsWith("story-progress.css"));
+  assert.ok(entries[10].path.endsWith("launch.css"));
+  assert.ok(entries[11].path.endsWith("signup-reward.css"));
   for (const entry of entries) assert.ok(entry.reason.trim().length > 0);
 });
 
