@@ -122,7 +122,7 @@ back tomorrow) · A5 광고 없음(횟수 차감 없음, 안내 한 줄, 1분 �
 1. AdMob 계정 · 앱(iOS · Android) 둘 → **앱 ID 둘**을 값 파일(iOS `apps/ios/Config/AdMob.local.xcconfig` `ADMOB_APP_ID` · Android
    `apps/android/app/admob.properties` `ADMOB_APP_ID`)에 넣고 다음 스토어 빌드에 싣는다(/release-build가 샘플 앱 ID 0건을 확인).
 2. 보상형 광고 단위 둘 → 각 단위의 「서버 측 확인」 URL = `https://<project>.supabase.co/functions/v1/admob-ssv`.
-3. `20270117120000_ad_ticket.sql` 적용(열린 PR #661 `20270114…` · #664 `20270115120000` · #667 `20270116120000` 뒤 — 적용 전 운영 버전과 중복 없음 확인).
+3. `20270117120000_ad_ticket.sql` 적용(main의 #661 `20270114…` · 열린 #664 `20270115120000` · #667 `20270116120000` 뒤 — 적용 전 운영 버전과 중복 없음 확인).
 4. `supabase functions deploy admob-ssv` · 비밀(**필수**) `ADMOB_AD_UNIT_IDS`(쉼표, 두 단위의 `/` 뒤 숫자).
 5. 광고 단위 ID 둘을 서버 설정에:
    `update companion.settings set ad_ticket_unit_ios = 'ca-app-pub-…/…', ad_ticket_unit_android = 'ca-app-pub-…/…';`
