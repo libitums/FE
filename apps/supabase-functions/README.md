@@ -859,7 +859,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `push_campaign_sends`(묶음 `스토리` · 세그먼트 `friend-story` · 새 칸 `character_id` · `story_id`, 시험 계정 단계는 묶음 `스토리 시험`)에 먼저 기록 →
   `send-push` 목적지 `{ kind: "companion-chat", characterId, story: true }`(옛 앱은 방을 연다).
   후보: 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) ·
-  **오늘(현지) 보낸 알림 없음 — 모든 묶음**(선톡 · 스토리 · 자동 캠페인). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
+  **오늘(현지) 보낸 알림 없음 — 학습 자동 캠페인 밖의 모든 묶음**(선톡 · 스토리 · 스토리 반응 등, `companion.story_pushed_today`). 「자동 · 」 · 「빈도 · 」 묶음은
+  세지 않는다(ADR-0178 D7 개정, 2026-11-27 — 빈도 실험 칸마다 스토리 노출이 달라지지 않게). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
   `companion.pushed_today`는 스토리 묶음만 **대조군 줄도** 센다 — 스토리 대조군이 같은 날 선톡 푸시를 받지 않게(비교가 공정하게). 다른 묶음은 보낸 줄만.
 - 테스트: `migrations/friend-stories.integration.test.ts`(FS1 ~ FS20) · `_shared/companion-stories-handler.unit.test.ts`(SH1 ~ SH5) ·
   `chat-send-handler.unit.test.ts`(CSS1 ~ CSS3) · `companion-proactive-push.unit.test.ts`(PP9) · `send-push-body.unit.test.ts`(SP1) · 계약 `chat-send.unit.test.ts`(CS3e).
