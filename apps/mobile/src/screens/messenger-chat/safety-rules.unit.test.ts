@@ -7,9 +7,14 @@ import {
   overlayParent,
 } from "./chat-room-state";
 import type { KeyboardPlan } from "./keyboard-plan";
-import { birthYearOptions, clockOf, isOpenableExternalUrl } from "./safety-rules";
+import {
+  birthYearOptions,
+  birthYearScrollIndex,
+  clockOf,
+  isOpenableExternalUrl,
+} from "./safety-rules";
 
-// `unit` 계층(SU-U1 ~ U8): 법 · 안전 UI의 순수 규칙 — 생년 목록 · 시각 · 열 수 있는 주소 · 생년 시트 리듀서(ADR-0125).
+// `unit` 계층(SU-U1 ~ U10): 법 · 안전 UI의 순수 규칙 — 생년 목록 · 시트가 열리는 자리 · 시각 · 열 수 있는 주소 · 생년 시트 리듀서(ADR-0125).
 
 describe("birthYearOptions", () => {
   test("SU-U1 올해부터 100년 전까지 101개, 새 연도가 먼저", () => {
@@ -18,6 +23,27 @@ describe("birthYearOptions", () => {
     expect(years).toHaveLength(101);
     expect(years[0]).toBe(2026);
     expect(years[100]).toBe(1926);
+  });
+});
+
+describe("birthYearScrollIndex", () => {
+  const years = birthYearOptions(new Date(2026, 10, 27, 9, 0).getTime());
+
+  test("SU-U9 고른 연도가 없으면 목록 가운데(1976)가 칸 가운데 — 맨 위 올해 줄에서 열지 않는다", () => {
+    // 맨 위(2026)에서 열면 대충 누른 탭이 0세로 저장됐습니다(운영 2026년생 55명, 2026-11-27).
+    const top = birthYearScrollIndex(years, null);
+    expect(top).toBe(48);
+    expect(years[top + 2]).toBe(1976);
+    expect(years.slice(top, top + 5)).not.toContain(2026);
+  });
+
+  test("SU-U10 고른 연도가 있으면 그 연도가 칸 가운데, 목록 끝에서는 맨 위 · 맨 아래 칸으로 멈춘다", () => {
+    expect(years[birthYearScrollIndex(years, 2001) + 2]).toBe(2001);
+    expect(birthYearScrollIndex(years, 2026)).toBe(0);
+    expect(birthYearScrollIndex(years, 2025)).toBe(0);
+    expect(birthYearScrollIndex(years, 1926)).toBe(96);
+    // 목록에 없는 연도(범위 밖 서버 값)면 고르지 않은 것과 같습니다.
+    expect(birthYearScrollIndex(years, 1900)).toBe(48);
   });
 });
 
