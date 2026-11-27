@@ -1,7 +1,7 @@
 // 메신저 첫 입장 안내(사용자 결정 2026-11-13) — 하단 탭 NEW 배지 · 덕수쌤 목록 카드 · 덕수쌤 방 코치마크의 판정과 기기 기록.
 // 판정은 순수, 기록은 기기 저장소(읽기 · 쓰기 실패는 조용히 — 본 것으로 치지 않습니다).
 
-import { getItem, isStorageAvailable, setItem } from "../../lib/storage";
+import { getItem, isStorageAvailable, removeItem, setItem } from "../../lib/storage";
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { ComposerKeyboard } from "./keyboard-plan";
 import type { MessengerAccess } from "./messenger-access";
@@ -156,6 +156,25 @@ export function markMessengerTabVisited(): void {
     if (getItem(messengerTabVisitedStorageKey) !== "1") setItem(messengerTabVisitedStorageKey, "1");
   } catch {
     // 저장 실패가 화면을 막지 않습니다.
+  }
+}
+
+/**
+ * 계정 삭제 뒤처리 — 기기의 안내 기록 셋(목록 · 방 · 예시, 키보드, 탭 NEW)을 지웁니다. 기록은 계정과 상관없이 기기에 남아, 지운 계정이
+ * 본 기록 때문에 같은 기기에서 새로 가입한 계정에 안내 · 무료 예시 단계가 서지 않았습니다(2026-11-27 기기). 로그아웃은 남깁니다.
+ */
+export function forgetMessengerGuide(): void {
+  const keys = [
+    messengerGuideSeenStorageKey,
+    messengerKeyboardGuideSeenStorageKey,
+    messengerTabVisitedStorageKey,
+  ];
+  for (const key of keys) {
+    try {
+      removeItem(key);
+    } catch {
+      // 지우지 못해도 뒤처리를 멈추지 않습니다 — 그 안내만 다음 계정에 서지 않습니다.
+    }
   }
 }
 
