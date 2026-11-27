@@ -29,8 +29,8 @@ export type ChatRoomDockProps = {
   /** 키보드 자리 높이(바깥 인셋 포함 총높이)와, 입력 칸이 잰 휴대폰 키보드 높이를 받는 곳입니다. */
   readonly keyboard: PhoneKeyboardHeight;
   readonly dispatch: (action: ChatRoomAction) => void;
-  /** 입력 칸의 글을 보냅니다. 답장 보기를 누르면 그 글을 줍니다. */
-  readonly onSend: (idea?: string) => void;
+  /** 입력 칸의 글을 보냅니다. 답장 보기를 누르면 그 글과 보기 자리를 줍니다(자리는 칩 탭 표시, ADR-0210 D1). */
+  readonly onSend: (idea?: string, ideaIndex?: number) => void;
   /** 보내기 단추 종류(T4면 엽전 보내기)입니다. */
   readonly sendCost: SendCost;
   /** 입력 줄 바로 위 자리입니다(T2 마지막 무료 띠). 없으면 null. */
@@ -190,7 +190,7 @@ export function ChatRoomDock({
               const idea = thread.ideas[index];
               if (idea === undefined) return;
               suggestionTapped(index);
-              onSend(idea.ko);
+              onSend(idea.ko, index);
             }}
             onTypeMyself={() => dispatch({ type: "type-myself" })}
             bottomInset={edges.bottom}

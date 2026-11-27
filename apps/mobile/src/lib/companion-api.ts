@@ -201,6 +201,15 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
                 text: request.text,
                 input_mode: "text",
                 ...(request.storyId === undefined ? {} : { story_id: request.storyId }),
+                // 칩을 탭해 보냄(ADR-0210 D1) — 모르는 키는 서버가 버린다.
+                ...(request.suggestion === undefined
+                  ? {}
+                  : {
+                      suggestion: {
+                        message_id: request.suggestion.messageId,
+                        index: request.suggestion.index,
+                      },
+                    }),
               }),
             },
             {

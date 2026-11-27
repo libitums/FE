@@ -3,6 +3,8 @@
 
 import type { ChatCorrection, ChatCorrectionItem } from "./chat-feedback.contract";
 import { suggestionOriginOf } from "./chat-suggestion-events";
+import { ideasOf, ideasRefField } from "./chat-suggestion-ref";
+export { ideasOf }; // 칩 해석은 서버 자리와 한 곳에(chat-suggestion-ref)
 import { historyChatWordsOf } from "./companion-chat-words";
 import type { RemoteGreeting, RemoteHistory, RemoteSendFailure } from "./chat-remote.contract";
 import type {
@@ -10,7 +12,6 @@ import type {
   ChatCrisisResource,
   ChatMessage,
   ChatNoticeKind,
-  ChatReplyIdea,
 } from "./chat-source.contract";
 import { myTextOf } from "./friend-stories-parse";
 import { reactionLinesOf, withQuizAnswer } from "./story-quiz-parse";
@@ -134,16 +135,6 @@ export function correctionOf(raw: unknown): ChatCorrection | null {
   };
 }
 
-export function ideasOf(raw: unknown): readonly ChatReplyIdea[] | null {
-  if (!Array.isArray(raw)) return null;
-  return raw.flatMap((item) => {
-    const record = recordOf(item);
-    const text = stringOf(record?.text);
-    if (text === null || text.trim() === "") return [];
-    return [{ ko: text, roman: "", en: stringOf(record?.meaning) ?? "" }];
-  });
-}
-
 export function crisisOf(raw: unknown): readonly ChatCrisisResource[] | null {
   const resources = recordOf(raw)?.resources;
   if (!Array.isArray(resources)) return null;
@@ -203,7 +194,8 @@ function messagesOf(raw: Json): Omit<RemoteHistory, "chatWords"> {
     }
   }
   const ideasOrigin = suggestionOriginOf(last?.origin);
-  const greeting = greetingId === null ? {} : { greetingId };
+  const ref = ideasRefField(stringOf(last?.id), last?.suggestions); // 칩 탭 표시(ADR-0210 D1)
+  const greeting = greetingId === null ? ref : { greetingId, ...ref };
   return { messages, corrections, ideas: ideasOf(last?.suggestions), ideasOrigin, ...greeting };
 }
 
@@ -274,7 +266,8 @@ export function greetingFrom(bodyText: string | null, now: number): RemoteGreeti
   if (raw?.status !== "ok" || messageId === null) return null;
   const messages = bubblesOf(messageId, now, segmentsOf(raw.segments));
   if (messages.length === 0) return null;
-  return { messages, ideas: ideasOf(recordOf(raw.suggestions)?.items) };
+  const items = recordOf(raw.suggestions)?.items; // 인사에 묶인 칩(ADR-0210 D1)
+  return { messages, ideas: ideasOf(items), ...ideasRefField(messageId, items) };
 }
 
 /** 스트림을 열기 전 오류 본문 → 앱의 실패 갈래. */
