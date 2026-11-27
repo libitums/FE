@@ -1,6 +1,7 @@
 // 그림 보고 낱말 말하기 활동(카탈로그 SPEAK_WORD)의 계약입니다. 타입만 둡니다.
 
 import type { ItemAnswerReporter } from "../../lib/item-answer";
+import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
 import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
@@ -57,7 +58,9 @@ export type SpeakWordSessionAction =
   /** ready · unavailable → heard 목록에 null, 다음 문항. */
   | { readonly type: "skip" }
   /** heard → 다음 문항. */
-  | { readonly type: "next" };
+  | { readonly type: "next" }
+  /** 권한이 다시 열림(설정에서 돌아옴 · 사전 안내 허용) — 잠금을 풀고 불가(blocked) 국면이면 준비로(ADR-0206 D3). */
+  | { readonly type: "reopen" };
 
 export type SpeakWordActivityProps = {
   readonly questions: readonly SpeakWordQuestion[];
@@ -68,6 +71,8 @@ export type SpeakWordActivityProps = {
   readonly lessonAudio?: LessonAudio;
   /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
   readonly onItemAnswered?: ItemAnswerReporter;
+  /** 마이크 권한 안내의 레슨 맥락(ADR-0206) — 없으면 레슨 밖 · 이벤트 없음입니다. */
+  readonly mic?: MicPermissionContext;
 };
 
 /** 그림 틀 — 상태대로 빈 틀 · 그림 · 뜻 글자를 그립니다(상태 없음). 이름표는 없습니다(정답은 `AnswerReveal`). */

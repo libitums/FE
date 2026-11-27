@@ -63,16 +63,16 @@ const question = (overrides: Partial<SpeakWordQuestion> = {}): SpeakWordQuestion
 });
 
 describe("speakWordSessionReducer — start", () => {
-  it("SW1. 준비 · 받아쓰기 꺼짐에서는 듣는 중이 된다", () => {
-    for (const phase of [ready, dictationOff]) {
+  it("SW1. 준비 · 받아쓰기 꺼짐 · 인식 실패(ADR-0206 D5)에서는 듣는 중이 된다", () => {
+    for (const phase of [ready, dictationOff, failed]) {
       expect(speakWordSessionReducer(stateOf({ phase }), { type: "start" }).phase).toEqual(
         listening,
       );
     }
   });
 
-  it("SW1. 들음(판정 뒤) · blocked · failed · 듣는 중에서는 같은 참조다 — 판정 뒤 재시도 없음", () => {
-    for (const phase of [heard("카드"), blocked, failed, listening]) {
+  it("SW1. 들음(판정 뒤) · blocked · 듣는 중에서는 같은 참조다 — 판정 뒤 재시도 없음", () => {
+    for (const phase of [heard("카드"), blocked, listening]) {
       const state = stateOf({ phase });
 
       expect(speakWordSessionReducer(state, { type: "start" })).toBe(state);
@@ -333,7 +333,8 @@ describe("조작 표", () => {
         secondary: "retry",
       });
       expect(speakWordControlsOf(blocked, picture)).toEqual({ primary: "skip", secondary: null });
-      expect(speakWordControlsOf(failed, picture)).toEqual({ primary: "skip", secondary: null });
+      // 인식 실패는 다시 말하기 — Try again(주) · Skip(보조)(ADR-0206 D5).
+      expect(speakWordControlsOf(failed, picture)).toEqual({ primary: "retry", secondary: "skip" });
     }
   });
 
@@ -349,9 +350,9 @@ describe("안내 · 지시문 · 문구", () => {
     expect(speakWordHintOf(heard("카드"), markedUiCopy)).toBeNull();
   });
 
-  it("SW8. blocked · failed는 낱말용 불가 안내이고 나머지는 안내 줄이 없다", () => {
+  it("SW8. blocked는 낱말용 불가 안내, failed는 다른 문구(ADR-0206 D5)이고 나머지는 안내 줄이 없다", () => {
     expect(speakWordHintOf(blocked, markedUiCopy)).toBe("⟦speakWord.recognitionUnavailable⟧");
-    expect(speakWordHintOf(failed, markedUiCopy)).toBe("⟦speakWord.recognitionUnavailable⟧");
+    expect(speakWordHintOf(failed, markedUiCopy)).toBe("⟦micPermission.listenFailed⟧");
     for (const phase of [ready, listening, dictationOff]) {
       expect(speakWordHintOf(phase, markedUiCopy)).toBeNull();
     }

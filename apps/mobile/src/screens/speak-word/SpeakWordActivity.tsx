@@ -1,7 +1,7 @@
-import { useEffect, useReducer, useRef, useState } from "@lynx-js/react";
+import { useEffect, useReducer, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { useSpeechAttempt } from "../../components/use-speech-attempt";
+import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
 import { announceCompletion } from "../../lib/accessibility";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { speechItemReportOf } from "../../lib/item-answer";
@@ -27,15 +27,12 @@ import {
   speakWordHintOf,
   speakWordInstructionOf,
   speakWordJudgedControls,
-  speakWordJudgementOf,
   speakWordMicStateOf,
   speakWordResultAt,
   speakWordSessionReducer,
-  speakWordSessionResults,
-  speakWordSkippedCount,
-  speakWordSkippedIndexes,
 } from "./speak-word";
 import type { SpeakWordActivityProps } from "./speak-word.contract";
+import { SpeakWordHearIt, useSpeakWordMic } from "./SpeakWordMic";
 import { SpeakWordPicture } from "./SpeakWordPicture";
 import { SpeakWordSecondary } from "./SpeakWordSecondary";
 import { SpeakWordWorkspace } from "./SpeakWordWorkspace";
@@ -55,18 +52,13 @@ export function SpeakWordActivity({
   lesson,
   lessonAudio,
   onItemAnswered,
+  mic,
 }: SpeakWordActivityProps): ReactNode {
   const copy = useUiCopy();
   const density = useLearningDensity();
   const [state, dispatch] = useReducer(speakWordSessionReducer, initialSpeakWordSessionState);
-  const finished = useRef(false);
   const complete = isSpeakWordSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
-  // 판정은 결말 콜백(배경 스레드)에서 잽니다 — 렌더는 담아 둔 값만 읽습니다(ADR-0201 개정 ⟨렌더 밖 판정⟩).
-  const attempt = useSpeechAttempt((outcome) => {
-    const judgement = question == null ? null : speakWordJudgementOf(question, outcome);
-    dispatch({ type: "outcome", outcome, judgement });
-  });
   const picture = useSpeakWordPicture(state.questionIndex, question?.meaning ?? null);
   const { phase, judgement } = state;
   // 멈춤을 누른 뒤 결말이 오기까지는 「Checking…」입니다. 국면이 바뀌면 풀립니다.
@@ -88,6 +80,17 @@ export function SpeakWordActivity({
         : speakWordControlsOf(phase, picture.state);
   const hint = question == null ? null : speakWordHintOf(phase, copy);
   const answerHint = Hint.useSpeakWordHint(question, state.questionIndex);
+  // 말하기 결선(판정은 결말 콜백에서) · 마이크 권한 시트 · 결과 올리기(한 번만)는 `useSpeakWordMic`이 집니다(ADR-0206).
+  const { attempt, finish, ...speech } = useSpeakWordMic({
+    mic,
+    questions,
+    state,
+    dispatch,
+    density,
+    onItemAnswered,
+    onFinish,
+    hint: answerHint,
+  });
   const report = (outcome: ItemAnswerOutcome, grade?: SpokenGrade): void =>
     onItemAnswered?.({
       ...speechItemReportOf(state.questionIndex, outcome, density, phase),
@@ -111,16 +114,6 @@ export function SpeakWordActivity({
     announceCompletion(speakWordCompletionAnnouncement(copy.common.seeResults, copy));
   }, [complete]);
 
-  // 결과는 한 번만 올라갑니다(부모가 걷기 전의 두 번째 탭을 막음).
-  const finish = (heard: readonly (string | null)[]): void => {
-    if (finished.current) return;
-    finished.current = true;
-    onFinish(
-      speakWordSessionResults(questions, heard),
-      speakWordSkippedCount(heard),
-      speakWordSkippedIndexes(heard),
-    );
-  };
   const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
 
   const run = (control: SpeechControl): void => {
@@ -166,13 +159,9 @@ export function SpeakWordActivity({
       run(secondary);
     }
   };
-  // 마이크는 주 버튼과 같은 시작 · 멈춤이고, 못 알아들은 뒤에는 같은 문항을 다시 듣습니다.
+  // 마이크는 주 버튼과 같은 시작 · 멈춤이고, 못 알아들음 · 인식 실패 뒤에는 같은 문항을 다시 듣습니다(ADR-0206 D5).
   const handleMic = (): void => {
-    if (
-      primary === "speak" ||
-      primary === "stop" ||
-      (primary === "retry" && phase.kind === "missed")
-    ) {
+    if (primary === "speak" || primary === "stop" || (primary === "retry" && !judged)) {
       playSound("button");
       run(primary);
     }
@@ -235,7 +224,12 @@ export function SpeakWordActivity({
               onExpire={handleExpire}
               onHear={handleHear}
               hint={hint}
-              secondary={action === undefined ? secondaryNode : undefined}
+              secondary={
+                <>
+                  <SpeakWordHearIt shown={speech.hearIt} hint={answerHint} />
+                  {action === undefined ? secondaryNode : null}
+                </>
+              }
             />
           )
         }
@@ -275,6 +269,7 @@ export function SpeakWordActivity({
         }
       />
       <Hint.SpeakWordHintSheet hint={answerHint} />
+      <MicPermissionSheet mic={speech.permission} />
     </>
   );
 }

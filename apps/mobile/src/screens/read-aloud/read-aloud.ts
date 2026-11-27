@@ -5,6 +5,8 @@ import {
   speechAvailabilityAfter,
   speechMissedHintOf,
   speechPhaseFor,
+  speechReopened,
+  speechRetryable,
 } from "../../lib/speech-attempt";
 import type { SpeechAttemptPhase, SpeechControls } from "../../lib/speech-attempt";
 import type { UiCopy } from "../../lib/ui-copy.contract";
@@ -42,7 +44,7 @@ export function readAloudSessionReducer(
       const startable =
         phase.kind === "ready" ||
         phase.kind === "heard" ||
-        phase.kind === "missed" ||
+        speechRetryable(phase) ||
         (phase.kind === "unavailable" && phase.reason === "dictation-off");
       return startable ? { ...state, phase: { kind: "listening" } } : state;
     }
@@ -60,7 +62,14 @@ export function readAloudSessionReducer(
       return phase.kind === "unavailable" || phase.kind === "missed"
         ? nextQuestion(state, 1)
         : state;
+    case "reopen":
+      return speechReopened(state);
   }
+}
+
+/** 이 활동에서 아직 끝내지 않은 문항 수 — 지금 문항 포함(ADR-0206 D4 — 이 레슨의 말하기 건너뜀). */
+export function readAloudRemainingCount(state: ReadAloudSessionState, total: number): number {
+  return Math.max(0, total - state.questionIndex);
 }
 
 export function readAloudStepOf(
@@ -82,10 +91,11 @@ export function readAloudControlsOf(phase: SpeechAttemptPhase): SpeechControls {
       return { primary: "stop", secondary: null };
     case "heard":
       return { primary: "next", secondary: "retry" };
-    // 못 알아들음은 같은 문장을 다시 말할 기회입니다(ADR-0181).
+    // 못 알아들음 · 인식 실패는 같은 문장을 다시 말할 기회입니다(ADR-0181 · ADR-0206 D5).
     case "missed":
       return { primary: "retry", secondary: "skip" };
     case "unavailable":
+      if (speechRetryable(phase)) return { primary: "retry", secondary: "skip" };
       return { primary: "skip", secondary: phase.reason === "dictation-off" ? "retry" : null };
   }
 }
@@ -110,6 +120,9 @@ export function readAloudHintOf(
   }
   if (phase.kind === "missed") {
     return speechMissedHintOf(phase.reason, copy);
+  }
+  if (phase.kind === "unavailable" && speechRetryable(phase)) {
+    return copy.micPermission.listenFailed;
   }
   if (phase.kind === "unavailable" && phase.reason !== "dictation-off") {
     return copy.speaking.recognitionUnavailable;

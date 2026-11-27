@@ -267,16 +267,19 @@ test("URA9. 빈 글자가 인식되면 0 of n을 알리고 아무것도 칠하�
   expect(chunk(0)).toHaveAttribute("data-matched", "false");
 });
 
-test("URA10. 일반 인식 실패는 안내와 Skip만 서고 잠기지 않아 다음 문항은 준비 국면이다", () => {
+test("URA10. 일반 인식 실패는 다른 문구 · Try again(주) · Skip(보조)이고 잠기지 않아 다음 문항은 준비 국면이다", () => {
   const host = stubSpeechHost({ result: () => audioFailed });
   const { onFinish } = mount([fine, card]);
 
   tapAction("Speak");
 
+  // ADR-0206 D5 — 인식 실패는 거부와 다른 문구로 다시 말하기를 권합니다.
+  const listenFailedText = "Something went wrong while listening. Try again.";
   expect(id("read-aloud-content")).toHaveAttribute("data-reason", "failed");
-  expect(hintText()).toBe(recognitionUnavailableText);
-  expect(host.announced.builtin).toEqual([recognitionUnavailableText]);
-  tapAction("Skip");
+  expect(hintText()).toBe(listenFailedText);
+  expect(host.announced.builtin).toEqual([listenFailedText]);
+  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  tapSecondary("skip", "Skip");
 
   expect(id("read-aloud-content")).toHaveAttribute("data-phase", "ready");
   expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Speak");

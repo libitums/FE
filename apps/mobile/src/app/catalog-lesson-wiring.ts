@@ -8,8 +8,8 @@ import type { LearningTrail } from "./learning-trail";
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { isCatalogUnitDone, markCatalogUnitDone } from "../lib/catalog-progress";
-import { initialListenPace } from "../lib/listen-pace";
-import type { ListenPace } from "../lib/listen-pace";
+import { initialListenPace, type ListenPace } from "../lib/listen-pace";
+import { clearLessonSpeakingSkip } from "../lib/lesson-speaking-skip";
 import { assessmentCompletesStep, judgeAssessment } from "../screens/assessment/assessment";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
@@ -110,12 +110,13 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     finishGuard.current = null;
   };
 
-  // 세션이 드는 넷을 한 자리에서 비웁니다 — 한쪽만 리셋하는 자리가 생기지 않게 합니다.
+  // 세션이 드는 것을 한 자리에서 비웁니다(「이 레슨의 말하기 건너뜀」 ADR-0206 포함) — 한쪽만 리셋하는 자리가 생기지 않게.
   const clearSession = (): void => {
     setPendingResults([]);
     setPendingSkippedCount(0);
     setPendingMistakes([]);
     setListenPace(initialListenPace);
+    clearLessonSpeakingSkip();
   };
 
   // 처음 끝내는가는 이 렌더의 진행(끝내기 전)으로 봅니다 — 결과 화면의 엽전 보상과 엽전 기록이 같은 답을 씁니다.

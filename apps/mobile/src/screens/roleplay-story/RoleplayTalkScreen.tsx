@@ -8,7 +8,8 @@ import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
-import { useSpeechAttempt } from "../../components/use-speech-attempt";
+import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
+import { useMicSpeechAttempt } from "../../components/mic-permission/use-mic-speech-attempt";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -26,6 +27,7 @@ import type { RoleplayTalkScreenProps } from "./roleplay-story.contract";
 import {
   RoleplaySpeakControls,
   roleplayMissedMessage,
+  roleplayTalkMic,
   unavailableMessage,
 } from "./RoleplaySpeakControls";
 
@@ -43,6 +45,7 @@ export function RoleplayTalkScreen({
   wildcards,
   onFinish,
   onExit,
+  mic,
 }: RoleplayTalkScreenProps): ReactNode {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
@@ -55,7 +58,7 @@ export function RoleplayTalkScreen({
   const heard = state.phase === "heard";
   const correct = heard && state.verdict === "correct";
 
-  const attempt = useSpeechAttempt((outcome) => {
+  const { attempt, permission } = useMicSpeechAttempt(roleplayTalkMic(mic), (outcome) => {
     if (outcome.kind === "heard") {
       dispatch({
         type: "heard",
@@ -291,6 +294,7 @@ export function RoleplayTalkScreen({
           )}
         </view>
       </view>
+      <MicPermissionSheet mic={permission} />
     </view>
   );
 }

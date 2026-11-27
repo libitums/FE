@@ -2,6 +2,7 @@
 // 요금제 · 상점 문구(`ui-copy-my-plans.ts`) · 연속 학습 보상(`streakRewardMy`) · 조립 힌트(`assembledHintMy`)도 구획 파일이 집니다.
 // 번역 초안 — 원어민 검수 필요.
 
+import { micPermissionMy } from "./ui-copy-mic-permission";
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
@@ -84,6 +85,7 @@ export const uiCopyMy: UiCopy = {
   sentenceOrder: sentenceOrderMy,
   assembledHint: assembledHintMy,
   speaking: speakingMy,
+  micPermission: micPermissionMy,
   learningItemGuide: learningItemGuideMy,
   assessment: assessmentMy,
   lessonComplete: lessonCompleteMy,

@@ -1,5 +1,6 @@
 // 따라 읽기 활동(카탈로그 SHADOW)의 계약입니다. 타입만 둡니다.
 
+import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
 import type { LessonAudio, ListenAudio } from "../../lib/question-audio";
 import type {
   SpeechAttemptOutcome,
@@ -35,7 +36,9 @@ export type ReadAloudSessionAction =
   /** ready · heard → 다음 문항. */
   | { readonly type: "next" }
   /** unavailable → 다음 문항 + skippedCount 1. */
-  | { readonly type: "skip" };
+  | { readonly type: "skip" }
+  /** 권한이 다시 열림(설정에서 돌아옴 · 사전 안내 허용) — 잠금을 풀고 불가(blocked) 국면이면 준비로(ADR-0206 D3). */
+  | { readonly type: "reopen" };
 
 /** 넘기는 버튼이 하는 일 — 다음 문항 / 다음 활동으로 넘김 / 결과 보기. */
 export type ReadAloudStep = "advance" | "hand-off" | "finish";
@@ -48,6 +51,8 @@ export type ReadAloudActivityProps = {
   readonly lesson?: LessonPosition;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
+  /** 마이크 권한 안내의 레슨 맥락(ADR-0206) — 없으면 레슨 밖 · 이벤트 없음입니다. */
+  readonly mic?: MicPermissionContext;
 };
 
 export type ReadAloudCopy = {

@@ -9,6 +9,7 @@ import {
 import { friendStoryEventNames } from "./friend-story-events.test-support";
 import { suggestionEventNames, suggestionEvents } from "./suggestion-events.test-support";
 import { chatNoticeEventExamples, chatNoticeEventNames } from "./chat-push-ask-events.test-support";
+import { micEventExamples, micEventNames } from "./mic-permission-events.test-support";
 import {
   messengerGuideEventExamples,
   messengerGuideEventNames,
@@ -85,6 +86,7 @@ export const allEventNames = [
   ...suggestedFriendEventNames,
   ...friendStoryEventNames,
   ...chatNoticeEventNames,
+  ...micEventNames,
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
@@ -199,6 +201,7 @@ export const unmappedEvents = [
   { name: "launch_chat_closed", surface: "learning", daysSinceFirstOpen: "1", choice: "start" },
   ...messengerGuideEventExamples,
   ...chatNoticeEventExamples,
+  ...micEventExamples,
   {
     name: "companion_unlocked",
     surface: "learning",

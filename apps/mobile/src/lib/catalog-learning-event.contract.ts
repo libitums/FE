@@ -5,6 +5,7 @@ import type { AssessmentVerdict } from "../screens/assessment/assessment";
 import type { ItemAnswerOutcome, ItemSkipReason, ScoredItemType } from "./item-answer";
 import type { LearningDensity } from "./learning-density";
 import type { ListenPace } from "./listen-pace";
+import type { MicPermissionEvent } from "./mic-permission-event.contract";
 import type { ListenItemResult, ListenItemType } from "./question-audio";
 import type { SpokenGrade } from "./speaking-judge";
 import type { SpeechFallback, SpeechKoreanPack } from "./speech-recognition-types";
@@ -125,4 +126,5 @@ export type CatalogLearningEvent =
   | EpisodeListenItemAnsweredEvent
   | EpisodeItemAnsweredEvent
   | SentenceAudioReplayedEvent
-  | ChoiceChipSoundPlayedEvent;
+  | ChoiceChipSoundPlayedEvent
+  | MicPermissionEvent;
