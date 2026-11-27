@@ -108,8 +108,15 @@ test("CE7. 답변 refusal 대체 모델 — Haiku면 기본 Sonnet 5.5, 아니�
   expect(from({ ...base, COMPANION_MODEL: "claude-haiku-5-5" })?.llm).toMatchObject({
     replyFallbackModel: "claude-sonnet-5-5",
   });
-  expect(from({ ...base, COMPANION_MODEL: "claude-sonnet-5-5" })?.llm).not.toHaveProperty("replyFallbackModel", "claude-sonnet-5-5");
+  expect(from({ ...base, COMPANION_MODEL: "claude-sonnet-5-5" })?.llm).not.toHaveProperty(
+    "replyFallbackModel",
+    "claude-sonnet-5-5",
+  );
   expect(
-    from({ ...base, COMPANION_MODEL: "claude-haiku-5-5", COMPANION_REPLY_FALLBACK_MODEL: "claude-opus-5-5" })?.llm,
+    from({
+      ...base,
+      COMPANION_MODEL: "claude-haiku-5-5",
+      COMPANION_REPLY_FALLBACK_MODEL: "claude-opus-5-5",
+    })?.llm,
   ).toMatchObject({ replyFallbackModel: "claude-opus-5-5" });
 });

@@ -54,14 +54,33 @@ export function replyLlm(spec: string, onUsage: (usage: LlmUsage) => void): Comp
       ...inner,
       async *reply(request) {
         const { collect, pick } = await import("./bestof.ts");
-        const candidates = await Promise.all(Array.from({ length: n }, () => collect(inner, request)));
+        const candidates = await Promise.all(
+          Array.from({ length: n }, () => collect(inner, request)),
+        );
         const name = /You are ([^,.]+)/.exec(request.system)?.[1] ?? "the character";
         const history = request.history
           .slice(-6)
-          .map((h) => (h.role === "user" ? `Learner: ${h.text}` : `${name}: ${h.segments.map((s) => s.text).join(" / ")}`))
+          .map((h) =>
+            h.role === "user"
+              ? `Learner: ${h.text}`
+              : `${name}: ${h.segments.map((s) => s.text).join(" / ")}`,
+          )
           .join("\n");
-        const chosen = await pick({ name } as never, "as in the reply", history, request.userText, candidates, (usd) =>
-          onUsage({ step: "reply", model: "claude-haiku-5-5", inputTokens: Math.round(usd * 1e7), cacheReadTokens: 0, cacheWriteTokens: 0, outputTokens: 0 }),
+        const chosen = await pick(
+          { name } as never,
+          "as in the reply",
+          history,
+          request.userText,
+          candidates,
+          (usd) =>
+            onUsage({
+              step: "reply",
+              model: "claude-haiku-5-5",
+              inputTokens: Math.round(usd * 1e7),
+              cacheReadTokens: 0,
+              cacheWriteTokens: 0,
+              outputTokens: 0,
+            }),
         );
         yield candidates[chosen] ?? "";
       },
@@ -85,7 +104,9 @@ export function replyLlm(spec: string, onUsage: (usage: LlmUsage) => void): Comp
 export type CharacterRow = { id: string; active: boolean; persona: PersonaCard };
 
 export function personas(): Map<string, PersonaCard> {
-  const rows = JSON.parse(readFileSync(join(here, "data/characters.json"), "utf8")) as CharacterRow[];
+  const rows = JSON.parse(
+    readFileSync(join(here, "data/characters.json"), "utf8"),
+  ) as CharacterRow[];
   return new Map(rows.map((row) => [row.id, row.persona]));
 }
 

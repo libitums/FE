@@ -1,7 +1,11 @@
 // best-of-N 실험(하니스 전용, 운영 코드 아님): 같은 요청으로 답 N개를 만들고 Haiku 선택자가 하나를 고른다.
 import Anthropic from "@anthropic-ai/sdk";
 
-import type { CompanionLlm, PersonaCard, ReplyRequest } from "../../supabase/functions/_shared/chat-send.contract.ts";
+import type {
+  CompanionLlm,
+  PersonaCard,
+  ReplyRequest,
+} from "../../supabase/functions/_shared/chat-send.contract.ts";
 import { segmentsToTagged } from "../../supabase/functions/_shared/companion-segments.ts";
 import { apiKey } from "./lib.ts";
 
@@ -25,7 +29,13 @@ export async function pick(
   client ??= new Anthropic({ apiKey: apiKey(), maxRetries: 3 });
   const letters = "ABCD";
   const body = candidates
-    .map((c, i) => `## ${letters[i]}\n${c.split("\n").filter((l) => !l.startsWith("@state")).join("\n")}`)
+    .map(
+      (c, i) =>
+        `## ${letters[i]}\n${c
+          .split("\n")
+          .filter((l) => !l.startsWith("@state"))
+          .join("\n")}`,
+    )
     .join("\n\n");
   const response = await client.messages.create({
     model: "claude-haiku-5-5",
@@ -47,8 +57,15 @@ export async function pick(
   return index >= 0 && index < candidates.length ? index : 0;
 }
 
-export const historyText = (name: string, history: readonly { role: string; text?: string; segments?: { kind: string; text: string }[] }[]) =>
+export const historyText = (
+  name: string,
+  history: readonly { role: string; text?: string; segments?: { kind: string; text: string }[] }[],
+) =>
   history
     .slice(-6)
-    .map((h) => (h.role === "user" ? `Learner: ${h.text}` : `${name}: ${segmentsToTagged((h.segments ?? []) as never)}`))
+    .map((h) =>
+      h.role === "user"
+        ? `Learner: ${h.text}`
+        : `${name}: ${segmentsToTagged((h.segments ?? []) as never)}`,
+    )
     .join("\n");

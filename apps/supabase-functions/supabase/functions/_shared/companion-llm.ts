@@ -189,13 +189,16 @@ export function anthropicCompanionLlm(
       if (final.stop_reason !== "refusal") return;
       // refusal(2026-11-28): 이미 글을 보냈으면 보낸 데까지로 조용히 끝낸다(반쯤 나온 말풍선은 남는다). 아무것도 보내지 않았으면
       // 대체 모델로 한 번 다시 부른다 — Haiku 5.5는 서버 쪽 대체가 없다. 대체 모델도 거절하거나 대체가 없으면 지금처럼 오류.
-      console.warn(`reply refusal model=${config.model} category=${final.stop_details?.category ?? "null"} yielded=${yielded}`);
+      console.warn(
+        `reply refusal model=${config.model} category=${final.stop_details?.category ?? "null"} yielded=${yielded}`,
+      );
       if (yielded) return;
       const fallback = config.replyFallbackModel;
       if (fallback === undefined || fallback === config.model) throw new Error("refusal");
       const retry = run(fallback);
       for await (const event of retry) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta") yield event.delta.text;
+        if (event.type === "content_block_delta" && event.delta.type === "text_delta")
+          yield event.delta.text;
       }
       const second = await retry.finalMessage();
       record(usageOf("reply", fallback, second.usage));

@@ -114,13 +114,17 @@ export const greetingUserText =
  */
 export function personaAnchor(persona: PersonaCard, speechLevel: SpeechLevel): string {
   const level = speechLevel === "polite" ? "polite 해요체" : "반말";
-  const style = persona.speech ? ` ${persona.speech.replace(/\s+$/, "").replace(/[.。]?$/, ".")}` : "";
+  const style = persona.speech
+    ? ` ${persona.speech.replace(/\s+$/, "").replace(/[.。]?$/, ".")}`
+    : "";
   return `Reply as ${persona.name}, in your own voice.${style} Keep it to 1 or 2 short chat bubbles in ${level} with easy everyday words, react first to what they just said, and ask at most one question.`;
 }
 
 /** 이번 턴 지시 여러 개를 한 system 메시지로. 빈 것은 뺀다. */
 export const joinDirectives = (...parts: readonly (string | null | undefined)[]): string | null => {
-  const kept = parts.filter((part): part is string => typeof part === "string" && part.trim() !== "");
+  const kept = parts.filter(
+    (part): part is string => typeof part === "string" && part.trim() !== "",
+  );
   return kept.length === 0 ? null : kept.join("\n\n");
 };
 

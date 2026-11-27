@@ -14,7 +14,10 @@ import type {
   ReplyJudgeRequest,
 } from "../../supabase/functions/_shared/chat-send.contract.ts";
 import { replyJudgeContent } from "../../supabase/functions/_shared/companion-eval-judge.ts";
-import { evalReply, type ReplyEvalCase } from "../../supabase/functions/_shared/companion-eval-reply.ts";
+import {
+  evalReply,
+  type ReplyEvalCase,
+} from "../../supabase/functions/_shared/companion-eval-reply.ts";
 import { companionEvalSets } from "../../supabase/functions/_shared/companion-eval-sets.ts";
 
 import { argValue, costOf, personas, replyLlm, splitOf } from "./lib.ts";
@@ -28,14 +31,19 @@ const batchSize = Number(argValue("batch", "12"));
 mkdirSync(out, { recursive: true });
 
 const casesFile = argValue("cases", "");
-const fromFile = casesFile === ""
-  ? null
-  : (JSON.parse(readFileSync(casesFile, "utf8")) as (ReplyEvalCase & { id: string })[]).map((item) => ({ set: "real", item }));
-const cases = (fromFile ?? companionEvalSets
-  .filter((set) => set.kind === "reply")
-  .filter((set) => only === "" || only.split(",").includes(set.id))
-  .flatMap((set) => set.cases.map((item) => ({ set: set.id, item }))))
-  .filter(({ item }) => split === "all" || splitOf(item.id) === split);
+const fromFile =
+  casesFile === ""
+    ? null
+    : (JSON.parse(readFileSync(casesFile, "utf8")) as (ReplyEvalCase & { id: string })[]).map(
+        (item) => ({ set: "real", item }),
+      );
+const cases = (
+  fromFile ??
+  companionEvalSets
+    .filter((set) => set.kind === "reply")
+    .filter((set) => only === "" || only.split(",").includes(set.id))
+    .flatMap((set) => set.cases.map((item) => ({ set: set.id, item })))
+).filter(({ item }) => split === "all" || splitOf(item.id) === split);
 
 const cards = personas();
 type Row = {

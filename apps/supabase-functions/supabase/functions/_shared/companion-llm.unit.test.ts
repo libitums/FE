@@ -26,7 +26,8 @@ vi.mock("@anthropic-ai/sdk", () => ({
             },
             finalMessage: async () => ({
               stop_reason: step.stop,
-              stop_details: step.stop === "refusal" ? { type: "refusal", category: "general_harms" } : null,
+              stop_details:
+                step.stop === "refusal" ? { type: "refusal", category: "general_harms" } : null,
               usage: {
                 input_tokens: 300,
                 output_tokens: 40,
@@ -97,7 +98,10 @@ test("LL1c. refusal — 아무것도 보내기 전이면 대체 모델로 한 �
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   streamPlan.push({ text: "", stop: "refusal" }, { text: "@speech 다시 안녕\n", stop: "end_turn" });
   expect(await reply(anthropicCompanionLlm(haiku))).toEqual(["@speech 다시 안녕\n"]);
-  expect(calls.stream.map((params) => params["model"])).toEqual(["claude-haiku-5-5", "claude-sonnet-5-5"]);
+  expect(calls.stream.map((params) => params["model"])).toEqual([
+    "claude-haiku-5-5",
+    "claude-sonnet-5-5",
+  ]);
   expect(calls.stream[1]).toMatchObject({ fallbacks: "default" });
 
   calls.stream.length = 0;
@@ -106,7 +110,9 @@ test("LL1c. refusal — 아무것도 보내기 전이면 대체 모델로 한 �
   expect(calls.stream).toHaveLength(1);
 
   streamPlan.push({ text: "", stop: "refusal" });
-  await expect(reply(anthropicCompanionLlm({ ...config, model: "claude-haiku-5-5" }))).rejects.toThrow("refusal");
+  await expect(
+    reply(anthropicCompanionLlm({ ...config, model: "claude-haiku-5-5" })),
+  ).rejects.toThrow("refusal");
   streamPlan.push({ text: "", stop: "refusal" }, { text: "", stop: "refusal" });
   await expect(reply(anthropicCompanionLlm(haiku))).rejects.toThrow("refusal");
 });

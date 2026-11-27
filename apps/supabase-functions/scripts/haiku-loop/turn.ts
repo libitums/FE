@@ -41,7 +41,11 @@ import { eligibleBeats, pickStory } from "../../supabase/functions/_shared/compa
 
 import { argValue, costOf, learningContext, personas, replyLlm } from "./lib.ts";
 import { collect, historyText, pick } from "./bestof.ts";
-import { dropRepeatedAction, replyViolations, retryDirective } from "../../supabase/functions/_shared/companion-reply-check.ts";
+import {
+  dropRepeatedAction,
+  replyViolations,
+  retryDirective,
+} from "../../supabase/functions/_shared/companion-reply-check.ts";
 
 type Segment = { kind: string; text: string };
 type Conversation = {
@@ -72,7 +76,10 @@ type Conversation = {
 
 // 운영의 첫 인사(origin greeting)는 인물마다 정해진 글이다(운영 DB 표본).
 const greetings: Record<string, string[]> = {
-  duksu: ["안녕하세요! 덕수쌤이에요.", "한국어나 한국 문화에 대해 궁금한 게 있으면 언제든지 물어봐요."],
+  duksu: [
+    "안녕하세요! 덕수쌤이에요.",
+    "한국어나 한국 문화에 대해 궁금한 게 있으면 언제든지 물어봐요.",
+  ],
   daeun: ["안녕하세요! 송다은이에요.", "어느 나라에서 왔어요? 저 외국인 친구 처음이에요!"],
   geonwoo: ["안녕하세요! 임건우예요.", "한국 음식 뭐 좋아해요? 맛집 알려 줄게요."],
 };
@@ -153,7 +160,10 @@ if (command === "new") {
     story: story.text,
     romanceTier: conv.romanceTier,
   });
-  const directive = joinDirectives(withStoryDirective(null, branch.directive), personaAnchor(conv.persona, conv.speechLevel));
+  const directive = joinDirectives(
+    withStoryDirective(null, branch.directive),
+    personaAnchor(conv.persona, conv.speechLevel),
+  );
   const usage: LlmUsage[] = [];
   // 모델 표기 끝의 `+bo2`: 답 2개를 만들고 Haiku 선택자가 고른다(best-of-2 실험, 하니스 전용).
   // 끝의 `+rc`: 답을 규칙 검사(companion-reply-check)하고 어기면 그 턴만 한 번 다시 만든다(i10).
@@ -175,7 +185,14 @@ if (command === "new") {
   if (bestOf) {
     const n = Number(bestOf[1]);
     const candidates = await Promise.all(Array.from({ length: n }, () => collect(llm, request)));
-    const chosen = await pick(conv.persona, conv.speechLevel, historyText(conv.persona.name, conv.history as never), text, candidates, (usd) => (pickCost += usd));
+    const chosen = await pick(
+      conv.persona,
+      conv.speechLevel,
+      historyText(conv.persona.name, conv.history as never),
+      text,
+      candidates,
+      (usd) => (pickCost += usd),
+    );
     deltas.push(...splitter.push(candidates[chosen] ?? ""));
     firstMs = Date.now() - now;
   } else {
@@ -188,16 +205,29 @@ if (command === "new") {
   deltas.push(...splitter.end());
   let state = splitter.state();
   let segments = collectSegments(deltas).map(({ kind, text: t }) => ({ kind, text: t }));
-  let retry: { first: string[]; second: string[]; firstReply: typeof segments; firstMs: number } | null = null;
-  const previousReplies = (conv.history as { role: string; segments?: { kind: string; text: string }[] }[])
+  let retry: {
+    first: string[];
+    second: string[];
+    firstReply: typeof segments;
+    firstMs: number;
+  } | null = null;
+  const previousReplies = (
+    conv.history as { role: string; segments?: { kind: string; text: string }[] }[]
+  )
     .filter((entry) => entry.role === "assistant" && entry.segments !== undefined)
     .map((entry) => entry.segments as { kind: string; text: string }[]);
   const found = recheck ? replyViolations(segments, conv.speechLevel, previousReplies) : [];
   if (found.length > 0) {
     const firstDoneMs = Date.now() - now;
     const again = createSegmentSplitter();
-    const raw = await collect(llm, { ...request, directive: joinDirectives(directive, retryDirective(found)) });
-    const redo = collectSegments([...again.push(raw), ...again.end()]).map(({ kind, text: t }) => ({ kind, text: t }));
+    const raw = await collect(llm, {
+      ...request,
+      directive: joinDirectives(directive, retryDirective(found)),
+    });
+    const redo = collectSegments([...again.push(raw), ...again.end()]).map(({ kind, text: t }) => ({
+      kind,
+      text: t,
+    }));
     const second = replyViolations(redo, conv.speechLevel, previousReplies);
     retry = { first: found, second, firstReply: segments, firstMs: firstDoneMs };
     if (redo.length > 0 && second.length <= found.length) {
@@ -207,7 +237,9 @@ if (command === "new") {
     }
   }
   if (recheck) {
-    const last = [...conv.history].reverse().find((entry) => entry.role === "assistant") as { segments?: { kind: string; text: string }[] } | undefined;
+    const last = [...conv.history].reverse().find((entry) => entry.role === "assistant") as
+      | { segments?: { kind: string; text: string }[] }
+      | undefined;
     segments = dropRepeatedAction(segments, last?.segments ?? null);
   }
   const result = resolveLearning(branch.learning, state, segments, false);
@@ -243,7 +275,9 @@ if (command === "new") {
   const conv = load();
   for (const entry of conv.history)
     console.log(
-      entry.role === "user" ? `학습자: ${entry.text}` : `${conv.persona.name}: ${speak(entry.segments)}`,
+      entry.role === "user"
+        ? `학습자: ${entry.text}`
+        : `${conv.persona.name}: ${speak(entry.segments)}`,
     );
 } else {
   throw new Error("usage: turn.ts new|say|show --conv <file> ...");
@@ -251,7 +285,9 @@ if (command === "new") {
 
 /** 운영 `companion-after-turn.ts`의 하니스 판 — 기억 묶음(유저 메시지 5개) · 요약(남길 20개 밖에 30개). 실패해도 턴은 그대로. */
 async function afterTurn(conv: any, llm: any, usage: LlmUsage[]): Promise<void> {
-  const keep = 20, summaryAfter = 30, memoryEvery = 5;
+  const keep = 20,
+    summaryAfter = 30,
+    memoryEvery = 5;
   conv.memories ??= [];
   conv.memoryUntil ??= 0;
   conv.summarizedUntil ??= 0;
@@ -259,8 +295,18 @@ async function afterTurn(conv: any, llm: any, usage: LlmUsage[]): Promise<void> 
   try {
     const pending = conv.history.slice(conv.memoryUntil);
     if (pending.filter((entry: { role: string }) => entry.role === "user").length >= memoryEvery) {
-      const refs = (conv.memories as string[]).map((content, index) => ({ ref: `m${index + 1}`, content, shared: false, locked: false }));
-      const ops = await llm.extractMemories({ messages: pending, existing: refs, minor: conv.ageBand !== "adult", signal: AbortSignal.timeout(60_000) });
+      const refs = (conv.memories as string[]).map((content, index) => ({
+        ref: `m${index + 1}`,
+        content,
+        shared: false,
+        locked: false,
+      }));
+      const ops = await llm.extractMemories({
+        messages: pending,
+        existing: refs,
+        minor: conv.ageBand !== "adult",
+        signal: AbortSignal.timeout(60_000),
+      });
       const next = [...conv.memories] as (string | null)[];
       for (const op of ops) {
         const index = op.op === "add" ? -1 : Number(String(op.ref).slice(1)) - 1;
@@ -270,14 +316,28 @@ async function afterTurn(conv: any, llm: any, usage: LlmUsage[]): Promise<void> 
       }
       conv.memories = next.filter((content): content is string => typeof content === "string");
       conv.memoryUntil = conv.history.length;
-      conv.longTermLog.push({ at: conv.turns.length, kind: "memory", ops: ops.length, total: conv.memories.length });
+      conv.longTermLog.push({
+        at: conv.turns.length,
+        kind: "memory",
+        ops: ops.length,
+        total: conv.memories.length,
+      });
     }
     const unsummarized = conv.history.slice(conv.summarizedUntil);
     const candidates = unsummarized.length - keep;
     if (candidates >= summaryAfter) {
-      conv.summary = await llm.summarize({ previous: conv.summary ?? null, messages: unsummarized.slice(0, candidates), signal: AbortSignal.timeout(60_000) });
+      conv.summary = await llm.summarize({
+        previous: conv.summary ?? null,
+        messages: unsummarized.slice(0, candidates),
+        signal: AbortSignal.timeout(60_000),
+      });
       conv.summarizedUntil += candidates;
-      conv.longTermLog.push({ at: conv.turns.length, kind: "summary", summarized: candidates, chars: String(conv.summary).length });
+      conv.longTermLog.push({
+        at: conv.turns.length,
+        kind: "summary",
+        summarized: candidates,
+        chars: String(conv.summary).length,
+      });
     }
   } catch (error) {
     conv.longTermLog.push({ at: conv.turns.length, kind: "error", message: String(error) });

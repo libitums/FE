@@ -57,20 +57,28 @@ describe("조각 나누기", () => {
     }
     // 찌꺼기 줄(`<br>` · `<<…>>` · `brief:`)도 버린다.
     expect(
-      collectSegments(split(["@speech 좋아요!\n<br>\n<<HUMAN_CONVERSATION_START>>\nbrief: x\n@speech 또 봐요"])),
+      collectSegments(
+        split(["@speech 좋아요!\n<br>\n<<HUMAN_CONVERSATION_START>>\nbrief: x\n@speech 또 봐요"]),
+      ),
     ).toEqual([
       { kind: "speech", text: "좋아요!" },
       { kind: "speech", text: "또 봐요" },
     ]);
     // 자기 수정 · 메타 줄도 버린다(태그가 붙어 와도).
     expect(
-      collectSegments(split(["@speech 반가워요!\nWait — I must keep 해요체 everywhere.\nLet me redo that cleanly.\n@speech 어디에서 왔어요?"])),
+      collectSegments(
+        split([
+          "@speech 반가워요!\nWait — I must keep 해요체 everywhere.\nLet me redo that cleanly.\n@speech 어디에서 왔어요?",
+        ]),
+      ),
     ).toEqual([
       { kind: "speech", text: "반가워요!" },
       { kind: "speech", text: "어디에서 왔어요?" },
     ]);
     // 학습자에게 보일 평범한 중괄호 글은 그대로 speech.
-    expect(collectSegments(split(["{웃음} 좋아요"]))).toEqual([{ kind: "speech", text: "{웃음} 좋아요" }]);
+    expect(collectSegments(split(["{웃음} 좋아요"]))).toEqual([
+      { kind: "speech", text: "{웃음} 좋아요" },
+    ]);
   });
 
   test("SG4. 프롬프트용 태그 줄로 되돌린다", () => {

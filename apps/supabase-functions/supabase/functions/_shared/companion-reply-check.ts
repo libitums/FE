@@ -5,7 +5,15 @@
 import type { SpeechLevel } from "./companion-contract/index.ts";
 
 export type CheckSegment = { readonly kind: string; readonly text: string };
-export type ReplyViolation = "empty" | "questions" | "bubbles" | "speech-level" | "meta" | "meeting" | "repeat" | "long";
+export type ReplyViolation =
+  | "empty"
+  | "questions"
+  | "bubbles"
+  | "speech-level"
+  | "meta"
+  | "meeting"
+  | "repeat"
+  | "long";
 
 const casualEnding =
   /(겠다|었다|았다|였다|했다|한다|는다|이다|이야|거야|잖아|할래|볼래|하자|가자|먹자|구나|는군|겠네|었네|았네|좋네|하네|해봐|해 봐|먹어봐|있어|없어|좋아|싫어|했어|봤어|먹었어|갔어|알아|몰라|맞아|그래|할게|줄게|볼게|해 줘|해줘)$/;
@@ -29,7 +37,8 @@ function breaksLevel(text: string, level: SpeechLevel): boolean {
   const spoken = text.replace(/'[^']*'|"[^"]*"|「[^」]*」|‘[^’]*’|“[^”]*”/g, "");
   return sentenceEnds(spoken).some((end) => {
     const last = end.split(/\s+/).pop() ?? "";
-    if (level === "polite") return last.length >= 2 && casualEnding.test(last) && !politeEnding.test(last);
+    if (level === "polite")
+      return last.length >= 2 && casualEnding.test(last) && !politeEnding.test(last);
     return politeEnding.test(last) && !/^(네요|아니요|네|예)$/.test(last);
   });
 }
@@ -39,7 +48,11 @@ const looksMeta = (text: string): boolean => {
   const latin = (text.match(/[A-Za-z]/g) ?? []).length;
   const hangul = (text.match(/[가-힣]/g) ?? []).length;
   if (latin > 15 && hangul === 0) return true; // 한국어 캐릭터의 한글 없는 영어 말풍선 = 속말이 샌 것(「Oops, that has two questions? No — only one. Fine.」)
-  return latin > 20 && latin > hangul * 2 && /\b(wait|oops|let me|rule|state|fix|redo|should|I need|I'll|instead)\b/i.test(text);
+  return (
+    latin > 20 &&
+    latin > hangul * 2 &&
+    /\b(wait|oops|let me|rule|state|fix|redo|should|I need|I'll|instead)\b/i.test(text)
+  );
 };
 
 /** 한국어 자기 수정이 말풍선에 남은 것(「여러분... 아니, 학생!」 · 「…구나... 아니, …군요」 · 「들어가세요, 아니 주무세요」). */
@@ -51,7 +64,9 @@ const looksSelfFix = (text: string): boolean =>
  * 장면 안의 환대(게스트하우스 · 가게 인물의 「오면 밥 준비해 둘게요」)는 허용한다(2026-11-28 결정).
  */
 const looksMeeting = (text: string): boolean =>
-  /(앞|에서|마당|가게|역|공항)[^.!?]{0,15}(기다리고 있을게|기다릴게)|[가-힣]에서 (만나요|만나자|봐요)(?![?？])|만나러 갈게|데리러 갈게/.test(text);
+  /(앞|에서|마당|가게|역|공항)[^.!?]{0,15}(기다리고 있을게|기다릴게)|[가-힣]에서 (만나요|만나자|봐요)(?![?？])|만나러 갈게|데리러 갈게/.test(
+    text,
+  );
 
 /** 말풍선 첫 낱말(「헐,」 → 헐). */
 const openerOf = (text: string): string | null => /^\s*([가-힣A-Za-z]+)/.exec(text)?.[1] ?? null;
@@ -67,7 +82,10 @@ const speechOf = (segments: readonly CheckSegment[]): string[] =>
  * 지난 답들과 같은 꼴을 되풀이하나(i15) — 첫 말풍선의 첫 낱말이 지난 세 답 중 둘 이상과 같거나(매 답 「헐,」),
  * 어느 말풍선의 첫 다섯 글자가 지난 여덟 답 중 둘 이상에 이미 나왔다(매 답 「한국어로는 …」).
  */
-function repeatsRecent(segments: readonly CheckSegment[], previous: readonly (readonly CheckSegment[])[]): boolean {
+function repeatsRecent(
+  segments: readonly CheckSegment[],
+  previous: readonly (readonly CheckSegment[])[],
+): boolean {
   const lines = speechOf(segments);
   if (lines.length === 0 || previous.length === 0) return false;
   const opener = openerOf(lines[0] ?? "");
@@ -97,13 +115,19 @@ export function replyViolations(
   // 「소고기요?」 · 「뭐?」 같은 짧은 되묻기 · 퀴즈 메아리는 질문으로 세지 않는다.
   const questions = speech
     .flatMap((segment) => segment.text.split(/(?<=[?？])/))
-    .filter((sentence) => /[?？]\s*$/.test(sentence) && (sentence.match(/[가-힣A-Za-z]/g) ?? []).length > 4)
+    .filter(
+      (sentence) =>
+        /[?？]\s*$/.test(sentence) && (sentence.match(/[가-힣A-Za-z]/g) ?? []).length > 4,
+    )
     // 퀴즈(「김 더하기 밥은?」 · 「뭘까요?」)와 맞장구(「따뜻하죠?」)는 대화 질문으로 세지 않는다(i16 — 다시 만들어도 38%가 그대로였다).
-    .filter((sentence) => !/(더하기|\+|뭘까요|무엇일까요|뭐게요|(죠|지요)\s*[?？]\s*$)/.test(sentence)).length;
+    .filter(
+      (sentence) => !/(더하기|\+|뭘까요|무엇일까요|뭐게요|(죠|지요)\s*[?？]\s*$)/.test(sentence),
+    ).length;
   if (questions > 1) found.push("questions");
   if (segments.length > 3) found.push("bubbles");
   if (speech.some((segment) => breaksLevel(segment.text, level))) found.push("speech-level");
-  if (segments.some((segment) => looksMeta(segment.text) || looksSelfFix(segment.text))) found.push("meta");
+  if (segments.some((segment) => looksMeta(segment.text) || looksSelfFix(segment.text)))
+    found.push("meta");
   if (speech.some((segment) => looksMeeting(segment.text))) found.push("meeting");
   if (repeatsRecent(segments, previous)) found.push("repeat");
   if (speech.some((segment) => longLine(segment.text))) found.push("long");
@@ -111,14 +135,16 @@ export function replyViolations(
 }
 
 const violationNote: Record<ReplyViolation, string> = {
-  empty: "it had no spoken line — write at least one \"@speech \" line",
+  empty: 'it had no spoken line — write at least one "@speech " line',
   questions: "it asked more than one question — keep only the best one, at the end",
   bubbles: "it had more than 3 bubbles — use 1 or 2",
   "speech-level": "a spoken line broke the speech level",
-  repeat: "it opened or was shaped the same way as your recent replies (same first word or same sentence frame) — say it differently this time",
+  repeat:
+    "it opened or was shaped the same way as your recent replies (same first word or same sentence frame) — say it differently this time",
   long: "a bubble was too long — keep each bubble to one short, easy sentence (under 60 Korean characters)",
-  meeting: "it promised to really meet or wait somewhere — you live in this chat, so keep it a playful wish without a place or time",
-  meta: "it contained notes, English commentary or a visible self-correction (\"… 아니, …\") — write the right line only",
+  meeting:
+    "it promised to really meet or wait somewhere — you live in this chat, so keep it a playful wish without a place or time",
+  meta: 'it contained notes, English commentary or a visible self-correction ("… 아니, …") — write the right line only',
 };
 
 /** 다시 만들 때 이번 턴 지시 끝에 붙이는 한 줄. */
@@ -129,7 +155,10 @@ export const retryDirective = (found: readonly ReplyViolation[]): string =>
  * 행동 · 묘사 줄이 두 답 연달아 오면 이번 답의 그것을 뺀다(호출 없이 코드로, i11). 말이 하나도 안 남으면 그대로 둔다.
  * 운영에서는 조각을 보내기 전에 거를 수 있다 — 지난 답에 행동 줄이 있었는지만 알면 된다.
  */
-export function dropRepeatedAction<T extends CheckSegment>(segments: readonly T[], previous: readonly CheckSegment[] | null): T[] {
+export function dropRepeatedAction<T extends CheckSegment>(
+  segments: readonly T[],
+  previous: readonly CheckSegment[] | null,
+): T[] {
   const hadAction = previous?.some((segment) => segment.kind !== "speech") ?? false;
   if (!hadAction) return [...segments];
   const kept = segments.filter((segment) => segment.kind === "speech");

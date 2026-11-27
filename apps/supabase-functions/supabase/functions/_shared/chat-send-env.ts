@@ -55,7 +55,9 @@ export const chatSendEnvFrom: ChatSendEnvFrom = (read) => {
       suggestModel: value("COMPANION_SUGGEST_MODEL") ?? moderationModel,
       replyEffort: replyEffort as ReplyEffort,
       // Haiku 5.5는 서버 쪽 refusal 대체(fallbacks)가 없다 — 아무것도 보내기 전 거절이면 이 모델로 한 번 다시 부른다(2026-11-28).
-      replyFallbackModel: value("COMPANION_REPLY_FALLBACK_MODEL") ?? (model.startsWith("claude-haiku") ? "claude-sonnet-5-5" : undefined),
+      replyFallbackModel:
+        value("COMPANION_REPLY_FALLBACK_MODEL") ??
+        (model.startsWith("claude-haiku") ? "claude-sonnet-5-5" : undefined),
     } as const;
   } else {
     return null;
