@@ -3,6 +3,7 @@
 import type { SpeechMicState } from "../../components/speech-mic/speech-mic";
 import type { PictureLoadState } from "../../lib/picture-load";
 import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
+import { speechRetryable } from "../../lib/speech-attempt";
 import type { SpeechAttemptPhase, SpeechControls } from "../../lib/speech-attempt";
 
 /**
@@ -30,7 +31,8 @@ export function speakWordMicStateOf(
     case "listening":
       return stopping ? "checking" : "listening";
     case "unavailable":
-      return phase.reason === "dictation-off" ? "idle" : "disabled";
+      // 인식 실패는 다시 말할 수 있어 마이크가 그대로 눌립니다 — 다시 말하기는 마이크 하나가 「Try again」으로 맡습니다(ADR-0201 D6 적용 1 개정).
+      return phase.reason === "dictation-off" || speechRetryable(phase) ? "idle" : "disabled";
     default:
       return "idle";
   }

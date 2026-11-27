@@ -238,7 +238,21 @@ D3의 「앞뒤 낱말 공짜」를 고친다. 마디마다 맞춘 구간의 시
 - **문구**: 새 키 8개 — `speaking.listening` · `checking` · `tapToStop`, `speakWord.result.perfect` · `almostPerfect` · `modelAnswer` ·
   `youSaid` · `hearAnswer`, 여덟 언어 모두. 「Correct」 · 「Not quite」 · 「Answer」 · 「Continue」 · 「Next」 · 「Try again」은 있는 문구를 쓴다.
 - 스스로 정한 기본값: 셸 아래 주 버튼(Speak · Stop speaking)은 남겼다(큰 마이크와 같은 동작, 접근성 이름이 있는 큰 단추). 권한 · 실패
-  화면은 `feat/mic-permission-flow`의 몫이라 건드리지 않았다.
+  화면은 `feat/mic-permission-flow`의 몫이라 건드리지 않았다. → 아래 「적용 1 개정 ⟨마이크 하나⟩」로 바뀜.
+
+### 적용 1 개정 ⟨마이크 하나⟩(2026-11-27, 브랜치 `fix/speak-word-duplicate-mic-button`)
+
+- **사용자 결정**(2026-11-27, 「줄여줘」): 말하기 퀴즈의 셸 아래 주 버튼 중 큰 마이크와 **같은 동작**인 것(Speak · Stop speaking · 판정 전
+  Try again)을 걷는다. 바로 위 「스스로 정한 기본값 — 남겼다」를 바꾼다. 근거: 같은 일을 하는 단추가 둘이고, 듣는 중에는 「Stop」이 마이크와
+  버튼 두 곳에 동시에 섰다(롤플레이는 같은 날 ADR-0206 D5 개정으로 먼저 하나로 줄임).
+- 이제 동그란 마이크 하나가 그 이름으로 낭독된다 — 대기 「Speak」, 듣는 중 「Stop speaking」, 못 알아들음 · 인식 실패 뒤 「Try again」(아래
+  상태 문구도 「Try again」). 같은 문구 키를 쓴다(`speaking.speak` · `stopSpeaking` · `tryAgain`). 인식 실패(`unavailable:failed`)도 마이크가
+  눌린다(전에는 꺼지고 셸 버튼만 다시 말하기였다).
+- 셸 버튼 행에는 마이크가 하지 않는 일만 선다 — 판정 뒤(Continue · Try again · Next), 불가(Skip), 결과. 버튼 행이 비는 국면에는 보조 Skip이
+  작업 영역(마이크 아래)에 선다(그림 로딩 중과 같은 자리).
+- 받아쓰기 꺼짐(`dictation-off`)은 그대로 — Skip(주) · Try again(보조)이다(마이크가 아닌 설정 경로 안내라 다른 일).
+- 확인: unit `speak-word.retry` SR3 / ui `SpeakWordActivity.*.ui`(마이크로 누름 — `speak-word-controls.test-support`가 같은 이름이 두 곳에
+  서지 않는지 매번 봄) · USW-M7 / integration `App.speak-word-missed` ISM1 · `App.episode-format-speaking` · `App.mic-permission`.
 
 ## D6 적용 2 ⟨롤플레이 화면⟩(2026-11-27, 브랜치 `feat/roleplay-speak-ui`)
 

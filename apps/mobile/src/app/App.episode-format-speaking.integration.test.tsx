@@ -82,7 +82,7 @@ function loadPicture(): void {
 function skipSpeakWord(): void {
   expect(screen.getByTestId("speak-word-content")).toBeInTheDocument();
   loadPicture();
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
   expect(phase("speak-word-content")).toBe("unavailable");
   tapId("learning-shell-action");
 }
@@ -218,7 +218,7 @@ test("SPK3. (AC3 정답) S6: 낱말 활동에서 그림이 서고 정답을 말�
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   loadPicture();
   expect(screen.getByTestId("speak-word-picture")).toHaveAttribute("data-loadstate", "loaded");
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   expect(phase("speak-word-content")).toBe("heard");
   expect(screen.getByTestId("speak-word-result")).toHaveAttribute("data-grade", "perfect");
@@ -255,7 +255,7 @@ test("SPK4. (AC3 오답) S6: 다른 낱말을 말하면 오답 시트 · Try aga
   tapNode(u01, "S6");
   const target = solveBefore(plan, "speak-word");
   loadPicture();
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   expect(screen.getByTestId("speak-word-result")).toHaveAttribute("data-grade", "incorrect");
   expect(screen.getByTestId("speak-word-reveal")).toBeInTheDocument();
@@ -293,7 +293,7 @@ test("SPK5. (AC4 거부) S6: 권한을 거부하면 낱말 Speak가 불가가 �
   tapNode(u01, "S6");
   const target = solveBefore(plan, "speak-word");
   loadPicture();
-  tapId("learning-shell-action");
+  tapId("speak-word-mic-button");
 
   expect(phase("speak-word-content")).toBe("unavailable");
   expect(screen.getByTestId("speak-word-hint")).toBeInTheDocument();

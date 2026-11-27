@@ -10,6 +10,7 @@ import {
   stubSpeechHost,
 } from "../../lib/speech-host.test-support";
 import type { SpeechHostResult } from "../../lib/speech-host.test-support";
+import { expectMicControl, tapSpeakWordControl } from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
@@ -49,11 +50,8 @@ function mount(results: readonly (SpeechHostResult | null)[]) {
 const id = (testId: string) => screen.getByTestId(testId);
 const maybe = (testId: string) => screen.queryByTestId(testId);
 
-function tapAction(label: string): void {
-  const action = id("learning-shell-action");
-  expect(action).toHaveAttribute("accessibility-label", label);
-  fireEvent.tap(action, {});
-}
+// 마이크가 맡는 이름(Speak · Stop speaking · 판정 전 Try again)은 마이크를, 그 밖은 셸 버튼을 누릅니다.
+const tapAction = tapSpeakWordControl;
 
 function tapSecondary(control: string, label: string): void {
   const slot = id("speak-word-secondary");
@@ -73,7 +71,7 @@ test("USW-M1. Android no-match는 판정 없이 안내 · Try again(주) · Skip
   expect(id("speak-word-content")).toHaveAttribute("data-reason", "no-match");
   expect(id("speak-word-hint")).toHaveTextContent(notCaughtText);
   expect(speech.announced.builtin).toEqual([notCaughtText]);
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  expectMicControl("Try again");
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
   expect(id("speak-word-mic")).toHaveAttribute("data-state", "idle");
   expect(maybe("speak-word-result")).not.toBeInTheDocument();
@@ -131,7 +129,7 @@ test("USW-M5. iOS 말 없음(1110)도 같은 다시 말하기 국면이다", () 
   tapAction("Speak");
 
   expect(id("speak-word-content")).toHaveAttribute("data-reason", "no-match");
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  expectMicControl("Try again");
 });
 
 test("USW-M6. 네트워크 실패는 연결 안내와 Try again · Skip이다", () => {
@@ -141,6 +139,24 @@ test("USW-M6. 네트워크 실패는 연결 안내와 Try again · Skip이다", 
 
   expect(id("speak-word-content")).toHaveAttribute("data-reason", "network");
   expect(id("speak-word-hint")).toHaveTextContent(networkText);
-  expect(id("learning-shell-action")).toHaveAttribute("accessibility-label", "Try again");
+  expectMicControl("Try again");
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
+});
+
+test("USW-M7. 다시 말하기 · 멈춤은 마이크 하나가 맡는다 — 같은 동작의 셸 버튼이 없고 「Stop」은 한 곳에만 선다(2026-11-27 사용자 결정)", () => {
+  const { speech } = mount([androidNoMatch, null]);
+
+  tapAction("Speak");
+  expect(maybe("learning-shell-action")).not.toBeInTheDocument();
+  expect(screen.getAllByTestId("speak-word-mic-button")).toHaveLength(1);
+  expect(id("speak-word-mic-status")).toHaveTextContent("Try again");
+
+  fireEvent.tap(id("speak-word-mic-button"), {});
+  expect(speech.calls.start).toBe(2);
+  expect(id("speak-word-content")).toHaveAttribute("data-phase", "listening");
+  expect(id("speak-word-mic-button")).toHaveAttribute("accessibility-label", "Stop speaking");
+  expect(maybe("learning-shell-action")).not.toBeInTheDocument();
+
+  fireEvent.tap(id("speak-word-mic-button"), {});
+  expect(speech.calls.stop).toBe(1);
 });

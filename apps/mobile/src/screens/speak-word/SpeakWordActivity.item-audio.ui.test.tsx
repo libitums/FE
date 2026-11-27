@@ -10,6 +10,7 @@ import {
 } from "../../lib/question-audio.test-support";
 import type { LessonAudio } from "../../lib/question-audio";
 import { dictationOff, stubSpeechHost } from "../../lib/speech-host.test-support";
+import { tapSpeakWordControl } from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
@@ -48,11 +49,8 @@ const loadPicture = (): void =>
     new window.Event("bindEvent:load"),
   );
 
-function tapAction(label: string): void {
-  const action = screen.getByTestId("learning-shell-action");
-  expect(action).toHaveAttribute("accessibility-label", label);
-  fireEvent.tap(action, {});
-}
+// 마이크가 맡는 이름(Speak · Stop speaking · 판정 전 Try again)은 마이크를, 그 밖은 셸 버튼을 누릅니다.
+const tapAction = tapSpeakWordControl;
 
 function tapRetry(): void {
   const slot = screen.getByTestId("speak-word-secondary");
