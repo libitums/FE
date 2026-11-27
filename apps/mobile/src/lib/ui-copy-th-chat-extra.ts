@@ -65,9 +65,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     sectionProactive: "ข้อความจากตัวละคร",
     proactive: "ตัวละครทักมาก่อน",
     sectionAbout: "เกี่ยวกับคุณ",
-    sharedMemories: "สิ่งที่ตัวละครทุกคนรู้เกี่ยวกับคุณ",
-    sharedMemoriesSummary: (count) => `${count} ความทรงจำ · ใช้ร่วมกันทุกตัวละคร`,
-    footnote: "ตัวละครแต่ละคนยังจำเรื่องจากแชทกับคุณด้วย เปิดแชทแล้วแตะ ☰ เพื่อดู",
+    footnote: "ตัวละครแต่ละคนจำสิ่งที่คุณเล่าให้ฟังได้ เปิดแชทแล้วแตะ ☰ เพื่อดู",
     proactiveSheet: {
       title: "ตัวละครทักมาก่อน",
       body: "เมื่อคุณเงียบไปสักพัก ตัวละครอาจเริ่มแชทก่อน ไม่เสียเหรียญเลย",
@@ -82,7 +80,6 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
       close: "ปิด",
     },
     memories: {
-      titleShared: "สิ่งที่ตัวละครทุกคนรู้เกี่ยวกับคุณ",
       titleCharacter: (name) => `สิ่งที่ ${name} จำได้`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "ความทรงจำเต็มแล้ว",

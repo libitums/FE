@@ -67,10 +67,8 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     sectionProactive: "キャラクターからのメッセージ",
     proactive: "相手から話しかける",
     sectionAbout: "あなたについて",
-    sharedMemories: "みんなが知っているあなたのこと",
-    sharedMemoriesSummary: (count) => `${count}件 · すべてのキャラクターと共有`,
     footnote:
-      "キャラクターはそれぞれ、あなたとのチャットの内容も覚えています。チャットを開いて ☰ をタップすると見られます。",
+      "キャラクターはそれぞれ、あなたが話したことを覚えています。チャットを開いて ☰ をタップすると見られます。",
     proactiveSheet: {
       title: "相手から話しかける",
       body: "しばらくやり取りがないと、キャラクターから話しかけることがあります。コインはかかりません。",
@@ -85,7 +83,6 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       close: "閉じる",
     },
     memories: {
-      titleShared: "みんなが知っているあなたのこと",
       titleCharacter: (name) => `${name}が覚えていること`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "記憶がいっぱいです",

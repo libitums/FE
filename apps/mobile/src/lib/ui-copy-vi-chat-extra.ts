@@ -67,10 +67,8 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     sectionProactive: "Tin nhắn từ nhân vật",
     proactive: "Nhân vật nhắn trước",
     sectionAbout: "Về bạn",
-    sharedMemories: "Điều mọi nhân vật biết về bạn",
-    sharedMemoriesSummary: (count) => `${count} ghi nhớ · dùng chung cho mọi nhân vật`,
     footnote:
-      "Mỗi nhân vật cũng nhớ những điều từ cuộc trò chuyện với bạn. Mở một cuộc trò chuyện và chạm ☰ để xem.",
+      "Mỗi nhân vật nhớ những điều bạn đã kể với họ. Mở một cuộc trò chuyện và chạm ☰ để xem.",
     proactiveSheet: {
       title: "Nhân vật nhắn trước",
       body: "Khi bạn im lặng một lúc, nhân vật có thể bắt đầu trò chuyện. Không bao giờ tốn xu.",
@@ -85,7 +83,6 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       close: "Đóng",
     },
     memories: {
-      titleShared: "Điều mọi nhân vật biết về bạn",
       titleCharacter: (name) => `Điều ${name} nhớ`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "Bộ nhớ đã đầy",

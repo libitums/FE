@@ -88,6 +88,7 @@
   화면으로 바꾼다. 문구 `sharedMemoriesSummary`(「· shared by all characters」)도 함께.
 - 각주 「Each character also remembers things from your chats with them…」의 「also」는 공유 층을 전제한다 — 「Each character remembers what you told them…」처럼.
 - 대화 지우기 확인 문구(「what {name} remembers about you will be erased」)는 이제 그대로 맞다(그 캐릭터의 기억이 전부다).
+- → PR #670 에서 처리 — 공유 기억 줄 · 화면 길 · 문구를 걷고 각주 「also」를 여덟 언어에서 뺐다(모아 보기 화면은 하지 않음, [ADR-0126](0126-messenger-chat-settings.md) 적용 기록).
 
 ### D7. 지난 대화 창 안의 메시지에서 뽑은 기억은 답 프롬프트에 넣지 않는다
 

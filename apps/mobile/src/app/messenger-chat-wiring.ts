@@ -55,7 +55,7 @@ export type MessengerChatWiring = {
   /** 대화 설정(ADR-0126) — 설정 탭 Chats 화면 · 기억 화면을 쌓고 내립니다. */
   readonly onOpenChatSettings: () => void;
   readonly onOpenMyStories: () => void; // 설정 › My stories(ADR-0194)
-  readonly onOpenMemories: (characterId: string | null, name: string | null) => void;
+  readonly onOpenMemories: (characterId: string, name: string) => void;
   /** 인물 앨범(ADR-0150). */
   readonly onOpenAlbum: (roomId: string, name: string) => void;
   /** 방 사이드바 My profile — 설정 탭으로 옮겨 User profile을 쌓습니다(ADR-0156). */

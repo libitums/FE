@@ -22,8 +22,8 @@ import {
 } from "./test-helpers/airbridge-events-harness";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
 
-// `integration` 계층(CS-I1 ~ I3): 앱 결선에서 대화 설정(ADR-0126) — 설정 탭 Chats 줄 → Chats 화면 → 공유 기억 화면이
-// 설정 스택에 쌓이고 뒤로 내려오며, 방 사이드바의 기억 줄이 그 인물의 기억 화면을 쌓는다. 추천 답변 스위치가 방의 보기를 끈다.
+// `integration` 계층(CS-I1 ~ I4): 앱 결선에서 대화 설정(ADR-0126) — 설정 탭 Chats 줄 → Chats 화면이 설정 스택에 쌓이고 뒤로
+// 내려오며(공유 기억 줄 없음, ADR-0210 D6), 방 사이드바의 기억 줄이 그 인물의 기억 화면을 쌓는다. 추천 답변 스위치가 방의 보기를 끈다.
 
 beforeEach(async () => {
   // 1.5(ADR-0117 D3)부터 미나 방은 해금 전 잠겨 있어, 이미 해금한 설치로 시작합니다.
@@ -46,18 +46,13 @@ async function bootToChats(): Promise<void> {
   expect(present("chat-settings-screen")).toBe(true);
 }
 
-test("CS-I1 설정 탭 Chats → 공유 기억 화면이 쌓이고, 시스템 뒤로 두 번이면 설정 탭으로 돌아온다", async () => {
+test("CS-I1 설정 탭 Chats에는 공유 기억 줄이 없고 각주가 방의 ☰로 안내하며, 시스템 뒤로 한 번이면 설정 탭으로 돌아온다", async () => {
   await bootToChats();
   stubBackHost();
-  expect(textOf("chat-settings-shared-memories")).toContain("2 memories");
+  expect(present("chat-settings-shared-memories")).toBe(false);
+  expect(textOf("chat-settings-screen")).not.toContain("What everyone knows about you");
+  expect(textOf("chat-settings-screen")).toContain("Each character remembers what you told them.");
 
-  tapId("chat-settings-shared-memories");
-  expect(present("chat-settings-memories")).toBe(true);
-  expect(textOf("chat-settings-memories")).toContain("What everyone knows about you");
-  expect(textOf("chat-settings-memories")).toContain("You're preparing for TOPIK II.");
-
-  pressSystemBack();
-  expect(present("chat-settings-screen")).toBe(true);
   pressSystemBack();
   expect(present("settings-screen-list")).toBe(true);
 });
@@ -116,8 +111,6 @@ test("CS-I4 Chats 화면 · 기억 화면을 오가도 분석 이벤트가 생�
 
   tapCell("ui-lynx-settings-group-item-chats");
   tapCell("chat-settings-reply-ideas");
-  tapId("chat-settings-shared-memories");
-  tapRound("chat-settings-memories-back");
   tapRound("chat-settings-back");
   // 뒤에 아는 이벤트 하나를 내 보내 그 사이의 대기열이 모두 나간 것을 확인합니다.
   tapId("top-bar-notifications");
