@@ -69,6 +69,8 @@ enum CrashScrub {
     var out = ""
     var last = 0
     for match in dotlessEmail.matches(in: text, options: [], range: NSRange(location: 0, length: ns.length)) {
+      // 무리 둘이 없는 일치는 있을 수 없지만, 있다면 그 글을 지운 것으로 다룬다(지우지 못한 것을 보내지 않는다).
+      guard match.numberOfRanges >= 3 else { return "" }
       let whole = ns.substring(with: match.range)
       let name = ns.substring(with: match.range(at: 1))
       let tail = ns.substring(with: match.range(at: 2))
