@@ -105,6 +105,7 @@ export async function postPhotoStory(
     p_user_id: userId,
     p_client_id: body.client_id,
     p_tz_offset_min: body.tz_offset_min ?? null,
+    p_region: body.client_region ?? null,
     p_now: now,
   });
   if (gate?.["result"] === "exists") return { result: "ok", story: gate["story"] ?? null };
@@ -182,6 +183,7 @@ export async function postPhotoStory(
     p_scene: scene,
     p_status: read === null ? "checking" : "live",
     p_tz_offset_min: body.tz_offset_min ?? null,
+    p_region: body.client_region ?? null,
     p_now: now,
   });
   return saved ?? { result: "invalid" };

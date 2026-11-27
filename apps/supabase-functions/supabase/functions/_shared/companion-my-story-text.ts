@@ -48,6 +48,7 @@ export async function postTextStory(
     p_user_id: userId,
     p_client_id: body.client_id,
     p_tz_offset_min: body.tz_offset_min ?? null,
+    p_region: body.client_region ?? null,
     p_now: now,
   });
   if (gate?.["result"] === "exists") return { result: "ok", story: gate["story"] ?? null };
@@ -76,6 +77,7 @@ export async function postTextStory(
     p_overlays: overlays,
     p_lang: body.lang,
     p_tz_offset_min: body.tz_offset_min ?? null,
+    p_region: body.client_region ?? null,
     p_now: now,
   });
   return saved ?? { result: "invalid" };

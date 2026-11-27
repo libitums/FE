@@ -972,7 +972,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   예: `update companion.settings set my_story_rules = my_story_rules || '{"secondMaxSec": 1800}';`
 - 올리기(ADR-0191 D8): 현지 **아침 · 낮 · 밤 창마다 하나**(`my_story_slots` — 지워도 돌아오지 않음) + 24시간 안 `my_story_daily` + 1(기본 4)개 — 바르게 쓰는
   사람은 어느 24시간에도 창 셋 + 하나를 넘지 않는다(`companion.my_story_day_full`).
-  시간대는 `companion.user_timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`) → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
+  시간대(20270118120000, ADR-0211)는 저장된 `profiles.timezone` → 앱이 보낸 UTC 차이(분, `p_tz_offset_min`, 0은 모름) → 스토어 나라(`p_region` · 없으면
+  `last_region`, `companion.story_country_timezone`) → 학습 프로필 나라 → UTC. 결과 `window_used`는 `window.nextAt`(다음 창)을 함께 준다.
 - 반응 상한: `story_reaction_user_daily`(사람 하루, 기본 6) · `story_reaction_global_daily`(전체 하루, 기본 1000 — 버그 · 악용에 대한 퓨즈).
   **claim 수**로 센다 — 모델 호출이 실패해도 센다. 사람 상한을 넘으면 `skipped`, 전체 상한에 닿으면 남겨 두고(다음 회차) 올린 지 24시간이 지나면 `skipped`.
   수는 지워지지 않는 장부 `my_story_usage`(사람 · UTC 날) · `my_story_usage_global`(날)에서 읽는다. claim은 그날 전체 장부 줄을 `for update`로 잠가 줄 세운다.
@@ -1003,8 +1004,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   done/failed/skipped) · `my_story_seen` · `my_story_slots` · `my_story_replies`(내가 인용해 보낸 답) · 장부 둘.
 - 지우기(ADR-0191 D10): 스토리 · 알람 · Seen이 사라진다. **대화방의 반응 메시지 글은 남고** 기록의 `story`만 `{ kind: deleted }`가 된다.
   프로필 `keep_my_stories`(기본 켬): 끄면 읽기는 살아 있는 것만, 정리(`companion_purge_my_stories`)가 24시간 지난 것을 지운다.
-- 앱 RPC(authenticated, 모양은 `packages/companion-contract/src/my-stories.ts`): `companion_my_stories(p_tz_offset_min?)` →
-  `{ enabled, keep, stories, window }`(최신 100개 · `reactions` · `seenBy`) · `companion_post_my_story(…, p_tz_offset_min?)` →
+- 앱 RPC(authenticated, 모양은 `packages/companion-contract/src/my-stories.ts`): `companion_my_stories(p_tz_offset_min?, p_region?)` →
+  `{ enabled, keep, stories, window }`(최신 100개 · `reactions` · `seenBy`) · `companion_post_my_story(…, p_tz_offset_min?, p_region?)` →
   `ok | off | window_used | daily_limit | invalid` · `companion_delete_my_story(id | null = 모두)` · `companion_set_keep_my_stories(bool)`.
 - 기록의 인용(`message_json.story`): 내 말 — friend(친구 스토리 답장) · mine · deleted. 인물의 반응 메시지 — mine · deleted.
 - 테스트: `migrations/my-stories.integration.test.ts`(MS1 ~ MS17) · `_shared/companion-reactions-handler.unit.test.ts`(RH1 ~ RH10) ·
@@ -1108,7 +1109,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 - 스토리 = 바탕(색 `text` · 사진 `photo`) × 얹은 것(직접 쓴 글 · 배운 단어). 단어 카드(word · card)는 `kinds`에서 빠졌다(「색 + 단어」).
 - 사진 · 색 바탕 올리기는 같은 흐름: 글 검수(사진 설명 · 쓴 글 + 직접 쓴 얹은 글 — `_shared/companion-story-compose.ts`) → (사진만) 사진 읽기 → 저장.
-  위기 신호(글 · 사진)는 둘 다 올리지 않고 `{ result: "crisis", resources }`(요청의 `client_region`으로 고름).
+  위기 신호(글 · 사진)는 둘 다 올리지 않고 `{ result: "crisis", resources }`(요청의 `client_region`으로 고름). `client_region`은 문 · 저장에 `p_region`으로도 넘겨 창의 시간대를 정한다(ADR-0211).
 - 답할 인물 · 각도: 사진 · 글 + 단어면 첫째 다른 인물 react, 덕수쌤 둘째(quiz · question · together). 색 + 단어만은 옛 단어 카드 규칙.
   단어 없으면 사진 규칙. 퀴즈 단어 = 첫 배운 단어(`companion.my_story_quiz_word`).
 - 퀴즈 답: 답을 만드는 모델이 `@state`의 `quiz`(correct · wrong · skip)로 판정 — skip이면 그 메시지는 무료로 두고 퀴즈를 닫는다(`skipped`).
@@ -1156,3 +1157,16 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서** — `20270117120000_ad_ticket.sql`(main의 #661 `20270114…` 뒤 · 열린 #664 `20270115120000` · #667 `20270116120000` 뒤). 함수 `supabase functions deploy admob-ssv`.
 켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.
+
+## 내 스토리 올리기 창의 시간대 (20270118120000, ADR-0211)
+
+- `companion.my_story_window(user, offset, now, p_region?)` — 저장된 `profiles.timezone` → 기기 시차(0이 아닌 값) → 스토어 나라(`p_region`, 없으면
+  `last_region`) → 학습 프로필 나라 → UTC. 학습 프로필 나라가 기기 시차를 이겨 16:30 KST가 아침 창이 되던 것을 고친다.
+- 스토어 나라 표 `companion.story_country_timezone` = `country_timezone` + 내 스토리 전용 보충(스페인어권 · MO 등). `user_timezone` ·
+  `country_timezone`은 그대로(스토리 알림 · 선톡 대상이 바뀌지 않게).
+- RPC 여섯에 `p_region text default null`: `companion_my_stories` · `companion_post_my_story`(앱) · `companion_my_photo_gate` ·
+  `companion_save_my_photo_story` · `companion_my_text_gate` · `companion_save_my_text_story`(Edge — 요청의 `client_region`). 옛 호출은 그대로.
+- 테스트: `migrations/my-story-slot-timezone.integration.test.ts`(TZ1 ~ TZ7) · `_shared/companion-my-story-handler.unit.test.ts`(MH9).
+
+**적용 순서** — `20270118120000_my_story_slot_timezone.sql`(`20270117120000` 뒤) → `supabase functions deploy companion-my-story`.
+마이그레이션이 먼저다 — 새 Edge가 옛 함수에 `p_region`을 넘기면 함수를 찾지 못한다. 앱이 `p_region`을 싣는 판은 마이그레이션 적용 뒤에 낸다.
