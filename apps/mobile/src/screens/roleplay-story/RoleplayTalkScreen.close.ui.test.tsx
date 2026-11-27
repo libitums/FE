@@ -108,9 +108,10 @@ test("[RT-C5] close는 서는 순간 모범 정답까지 한 번 알린다", () 
     />,
   );
   fireEvent.tap(screen.getByTestId("roleplay-mic-button"), {});
-  expect(host.announced.builtin).toContain(
+  // 판정 · 모범 정답은 같은 갱신에 서므로 알림은 한 번뿐입니다(의존성에 judgement · copy를 넣어도 두 번 나가지 않음).
+  expect(host.announced.builtin.filter((text) => text.startsWith("Great"))).toEqual([
     "Great, Almost perfect. Model answer: 아니요, 괜찮아요.",
-  );
+  ]);
 });
 
 test("[RT-C4] 앱 언어(ja) — 같은 문구 키의 그 언어 글자", () => {
