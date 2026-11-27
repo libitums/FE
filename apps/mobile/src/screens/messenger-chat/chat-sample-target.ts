@@ -30,7 +30,8 @@ export function sampleTargetOf(
   let first: string | null = null;
   for (const message of messages) {
     const owner = bubbleOwner(message);
-    if (owner !== null && owner === greetingId) return targetOfOwner(messages, owner, media);
+    if (owner === null) continue;
+    if (owner === greetingId) return targetOfOwner(messages, owner, media);
     if (first === null) first = owner;
   }
   return first === null ? null : targetOfOwner(messages, first, media);
