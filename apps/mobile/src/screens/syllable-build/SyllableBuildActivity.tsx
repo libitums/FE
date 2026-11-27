@@ -3,6 +3,7 @@ import { selectedField, selectedTilesText } from "../../lib/item-answer";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
+import { RevealOnAnswer } from "../../components/RevealOnAnswer";
 import {
   AssembledHintButton,
   AssembledHintSheet,
@@ -261,12 +262,18 @@ export function SyllableBuildActivity({
                 />
 
                 {/* 맞아도 보입니다 — 타자 입력과 같은 규칙입니다. */}
-                {state.phase === "checked" ? (
-                  <AnswerReveal
-                    testId="syllable-build-reveal"
-                    text={copy.typing.answerReveal(question.answers[0])}
-                  />
-                ) : null}
+                <RevealOnAnswer
+                  shown={state.phase === "checked"}
+                  itemCount={1}
+                  testId="syllable-build-reveal-box"
+                >
+                  <RevealOnAnswer.Item order={0}>
+                    <AnswerReveal
+                      testId="syllable-build-reveal"
+                      text={copy.typing.answerReveal(question.answers[0])}
+                    />
+                  </RevealOnAnswer.Item>
+                </RevealOnAnswer>
               </>
             )}
           </view>
