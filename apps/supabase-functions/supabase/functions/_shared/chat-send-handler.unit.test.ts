@@ -9,6 +9,7 @@ import type {
   ModerationVerdict,
 } from "./chat-send.contract.ts";
 import { createChatSendHandler } from "./chat-send-handler.ts";
+import { guardrailRev } from "./companion-guardrail-rev.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import { memoryContent } from "./companion-memory-prompts.ts";
 import { emptyFeedback, recoveryDirective } from "./companion-llm-prompts.ts";
@@ -960,6 +961,12 @@ describe("비속어 · *행동*", () => {
         { layer: "output_sync", category: "profanity", action: "block" },
       ],
     });
+    // 입력 검사 · 첫 출력 검사 · 다시 검사 모두 같은 지시문 리비전을 싣습니다 — 운영 도구가 판정을 리비전으로 나눕니다.
+    const rev = await guardrailRev();
+    expect(rev).toMatch(/^[0-9a-f]{8}$/);
+    expect(
+      (finishArgs()!["p_moderation"] as { rev?: string }[]).map((record) => record.rev),
+    ).toEqual([rev, rev, rev]);
   });
 
   test("CS19. *행동 · 속마음* — 글은 그대로 저장, 답은 몸짓에 반응하고 속마음을 따라 말하지 않는다", async () => {
@@ -1981,11 +1988,9 @@ describe("완화 수위(ADR-0164)", () => {
       romanceLine: "open",
     });
     // 허용한 로맨스도 판정 기록에 romance로 남는다(ADR-0168 트래킹).
-    expect(finish["p_moderation"]).toContainEqual({
-      layer: "input",
-      category: "romance",
-      action: "allow",
-    });
+    expect(finish["p_moderation"]).toContainEqual(
+      expect.objectContaining({ layer: "input", category: "romance", action: "allow" }),
+    );
     expect(systems[0]).toContain("You may be a couple, say 사랑해, kiss deeply");
     expect(systems[0]).toContain("No explicit sexual content");
   });

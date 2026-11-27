@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, CompanionLlm, ReplyJudgeRequest } from "./chat-send.contract.ts";
 import { judgementFrom, replyJudgeContent, replyJudgeSystem } from "./companion-eval-judge.ts";
 import { createCompanionEvalHandler, evalModels } from "./companion-eval-handler.ts";
+import { guardrailRev } from "./companion-guardrail-rev.ts";
 import { companionLlmWithModel, StructuredUnavailable } from "./companion-llm.ts";
 import { feedbackSystem, refusalDirective, refusalUserText } from "./companion-llm-prompts.ts";
 import { suggestionSystem } from "./companion-suggest-prompts.ts";
@@ -131,6 +132,8 @@ test("EV3. 검사 — 운영 판정 그대로, 기본값은 성인 · 입력 검
   expect(status).toBe(200);
   expect(body["kind"]).toBe("moderation");
   expect(body["model"]).toBe("fake");
+  // 이 실행이 쓴 지시문의 리비전 — `chat-send`가 판정에 싣는 값과 같은 계산이라 재현 결과를 운영 판정과 견줄 수 있습니다.
+  expect(body["rev"]).toBe(await guardrailRev());
   const results = body["results"] as { id: string; ok: boolean; output?: unknown; ms: number }[];
   expect(results.map(({ id, ok, output }) => ({ id, ok, output }))).toEqual([
     { id: "safe", ok: true, output: { category: "safe", action: "allow" } },

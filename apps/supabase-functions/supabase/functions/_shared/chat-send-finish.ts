@@ -12,6 +12,7 @@ import type {
 import type { Sink } from "./chat-send-http.ts";
 import type { AfterTurnInput } from "./companion-after-turn.ts";
 import type { RefusalStage, SpeechLevel } from "./companion-contract/index.ts";
+import { guardrailRev } from "./companion-guardrail-rev.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { effectiveRomanceTier } from "./companion-safety.ts";
 import type { SuggestOutcome } from "./companion-suggest-generate.ts";
@@ -79,23 +80,27 @@ type FinishContext = {
 export function turnFinisher(context: FinishContext, moderation: readonly ModerationRecord[]) {
   const { deps, env, sink, gate, turn } = context;
   return {
-    finish: (
+    // 판정마다 그때의 지시문 리비전을 싣습니다. 턴의 검사는 모두 이 인스턴스의 지시문으로 돌아 값이 하나입니다. `rev`를 모르는
+    // 옛 저장 함수는 이 칸을 읽지 않고 버리므로 함수를 먼저 올려도 턴이 저장됩니다.
+    finish: async (
       status: TurnStatusName,
       assistant: Record<string, unknown> | null,
       extra: { feedback?: Feedback; intimacyDelta?: number; topicState?: unknown } = {},
-    ) =>
-      callRpc<Finished>(deps.outbound, env, "companion_finish_turn", {
+    ) => {
+      const rev = await guardrailRev();
+      return callRpc<Finished>(deps.outbound, env, "companion_finish_turn", {
         p_user_message_id: turn.userMessageId,
         p_status: status,
         p_assistant: assistant,
-        p_moderation: moderation,
+        p_moderation: moderation.map((record) => ({ ...record, rev })),
         p_notices: status === "failed" ? [] : gate.notices,
         p_now: new Date(deps.nowMs()).toISOString(),
         p_feedback: extra.feedback ?? null,
         p_intimacy_delta: extra.intimacyDelta ?? 0,
         p_topic_state: extra.topicState ?? null,
         p_hold_id: turn.holdId,
-      }),
+      });
+    },
     /** 기억 가득 참은 턴 시작 때 읽은 값이다 — 읽지 못했으면 싣지 않는다. */
     sendState: (finished: Finished) =>
       sink.send({

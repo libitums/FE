@@ -159,7 +159,7 @@ const list = (items: readonly string[] | undefined) =>
 
 // 수위선(앞부분 — 캐시). 인물의 수위 · 종류로만 갈려 인물마다 고정이다(ADR-0168). open 인물 · 추천 친구는 스킨십 한도를 학습자마다 다른
 // Romance 줄에 맡기고(적용 선이 hug면 그 줄이 「포옹까지」다), 노골적 성 묘사 · 음담패설 금지는 모두에게 남긴다. 스토리 인물은 포옹까지 고정.
-const hardLimits = (persona: PersonaCard) =>
+const hardLimits = (persona: Pick<PersonaCard, "romanceTier" | "kind">) =>
   persona.romanceTier === "open"
     ? `- No explicit sexual content: never describe sexual acts, genitals or nudity, never undress anyone in detail, no dirty talk or crude sexual jokes (음담패설). Sexual tension and a scene that fades to black are allowed only when the "Romance" line under "This learner" says so.
 - How far romance and physical affection may go follows the "Romance" line under "This learner" — never go beyond it, in speech or in an @action. If the learner pushes for more, decline in character and move on.`
@@ -168,6 +168,13 @@ const hardLimits = (persona: PersonaCard) =>
 - How far romance and physical affection may go follows the "Romance" line under "This learner" — never go beyond it, in speech or in an @action. If the learner pushes for more, decline in character and move on.`
       : `- No sexual content of any kind: no dirty talk, sexual jokes or innuendo, no suggestive descriptions. No physical intimacy beyond holding hands or a hug — never kissing or anything more physical, in speech or in an @action. If the learner pushes for more, decline in character and move on.
 - Romance and flirting follow the "Romance" line under "This learner".`;
+
+/** 수위선의 세 갈래(open 인물 · 추천 친구 · 스토리 인물). 인물 카드와 상관없이 정해진 글이라 가드레일 리비전이 읽습니다. */
+export const hardLimitVariants = (): readonly string[] => [
+  hardLimits({ romanceTier: "open" }),
+  hardLimits({ kind: "friend" }),
+  hardLimits({}),
+];
 
 // 그 밖의 금지(앞부분 — 캐시). 스토리 인물은 늘 청소년에게 안전하게, 추천 친구는 연령에 맞추는 일을 「This learner」의 Age · Romance 줄에
 // 맡긴다 — 앞부분에 「청소년에게 안전하게」를 두면 성인 open · close 대화와 부딪친다(ADR-0168).

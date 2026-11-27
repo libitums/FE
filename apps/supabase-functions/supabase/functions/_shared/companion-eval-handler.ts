@@ -25,6 +25,7 @@ import { evalMemory, type MemoryEvalOutput } from "./companion-eval-memory.ts";
 import { defaultJudgeModel } from "./companion-eval-judge.ts";
 import { evalReply, type ReplyEvalOutput, UnsupportedCase } from "./companion-eval-reply.ts";
 import { evalSuggestions } from "./companion-eval-suggest.ts";
+import { guardrailRev } from "./companion-guardrail-rev.ts";
 import type { CandidateRecord } from "./companion-suggest-select.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
@@ -286,6 +287,11 @@ export function createCompanionEvalHandler(
       status: 200,
       outcome: `${kind} ${model}${judgeModel ? ` judge=${judgeModel}` : ""} ok=${results.filter((result) => result.ok).length}/${results.length}`,
     });
-    return json(200, judgeModel ? { kind, model, judgeModel, results } : { kind, model, results });
+    // 이 실행이 쓴 지시문의 리비전 — 운영 판정의 `rev`와 견줍니다(같은 계산).
+    const rev = await guardrailRev();
+    return json(
+      200,
+      judgeModel ? { kind, model, judgeModel, rev, results } : { kind, model, rev, results },
+    );
   };
 }
