@@ -30,3 +30,10 @@
 - iOS 시뮬레이터(iPhone 17 Pro) · Android 에뮬레이터(Pixel 8, `assembleBundled`): AT-E1 ~ AT-E5 · AT-E7 통과 — 테스트 광고 실제 재생 · 「Reward granted」 뒤 닫기,
   지급은 서버 흉내(운영 요청 없음).
 - iOS: `GADApplicationIdentifier`가 비면 SDK가 앱이 뜰 때 죽였다(GADInvalidInitializationException) → 기본값을 Google 샘플 앱 ID로 두고 광고 단위를 스위치로 삼았다.
+
+## 기록 ⟨2026-11-27 — 광고 단위 ID를 서버가 내림(ADR-0209 D10)⟩
+
+- iOS 시뮬레이터(Debug, 샘플 앱 ID) · Android 에뮬레이터(`assembleBundled`, 샘플 앱 ID): 흉내 서버가 플랫폼별 Google 테스트 단위 ID를 내린 상태에서
+  A1 → 실제 테스트 광고 「Reward granted」 → A3, A5 통과.
+- 사용자 실제 앱 ID 값 파일(앱 ID 한 줄만, 광고 단위 줄 없음)로 iOS Release(시뮬레이터) · Android `assembleBundled`를 지어 실행 — 정상으로 뜨고
+  광고 모듈이 등록된다(광고 요청은 하지 않음). Android FATAL 0건.
