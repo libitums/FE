@@ -1128,7 +1128,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서** — `20270110120000` 뒤에 `20270111120000_past_stories.sql`. Edge Function 배포 없음. 켜기: `update companion.settings set past_stories = 'testers';`.
 
-## 광고 보고 티켓 — admob-ssv (20270114120000, ADR-0209)
+## 광고 보고 티켓 — admob-ssv (20270117120000, ADR-0209)
 
 - AdMob 보상형 광고의 서버 측 확인(SSV) 콜백. Google이 `GET`으로 부르고, 인증은 Supabase JWT가 아니라 Google 공개키 서명이다(`config.toml` `verify_jwt = false`).
   처리기 `_shared/admob-ssv-handler.ts`(400 · 401 · 403 · 405 · 500 재시도 · 200 outcome), 서명 · 키 캐시 · 환경 `_shared/admob-ssv.ts`.
@@ -1142,5 +1142,5 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 광고 단위 ID(전체 `ca-app-pub-…/…`)는 앱이 아니라 서버 설정 `companion.settings.ad_ticket_unit_ios` · `ad_ticket_unit_android`에 두고
   `ad_ticket_status(…, p_platform)`이 `unitId`로 내린다(스위치 off · 대상 아님 · 값 없음이면 null) — 앱 빌드 없이 켠다(ADR-0209 D10).
 
-**적용 순서** — `20270112120000` 뒤에 `20270114120000_ad_ticket.sql`(`20270113120000`은 열린 PR #651). 함수 `supabase functions deploy admob-ssv`.
+**적용 순서** — `20270117120000_ad_ticket.sql`(main의 `20270113120000` 뒤 · 열린 PR #661 `20270114…` · #664 `20270115120000` · #667 `20270116120000` 뒤). 함수 `supabase functions deploy admob-ssv`.
 켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.
