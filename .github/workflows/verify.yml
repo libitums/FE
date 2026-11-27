@@ -232,7 +232,13 @@ jobs:
       - name: Assemble bundled APK
         if: ${{ steps.decide.outputs.build == 'true' }}
         working-directory: apps/android
-        run: ./gradlew --no-daemon :app:assembleBundled
+        # bash는 여기서 `-eo pipefail`이라 tee가 gradlew의 실패를 삼키지 않습니다.
+        shell: bash
+        run: ./gradlew --no-daemon :app:assembleBundled 2>&1 | tee "$RUNNER_TEMP/gradle-android.log"
+      # lintVital은 Kotlin metadata 판 불일치를 `e:` 줄로만 내고 빌드를 통과시킵니다. 그 줄을 실패로 바꿉니다.
+      - name: Check Gradle output for Kotlin metadata mismatch
+        if: ${{ steps.decide.outputs.build == 'true' }}
+        run: node devtools/android-build/check-gradle-log.mjs "$RUNNER_TEMP/gradle-android.log"
 
   policy:
     name: Performance report policy
