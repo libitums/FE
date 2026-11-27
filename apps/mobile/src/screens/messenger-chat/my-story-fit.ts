@@ -9,7 +9,11 @@ export const STORY_EDGE = 36;
 export const TOOL_COLUMN = 64;
 
 export type BoxSize = { readonly width: number; readonly height: number };
-export type CanvasBox = BoxSize;
+/**
+ * 바탕 — 화면 전체(보기와 같은 좌표). `top` · `bottom`은 편집 화면의 위 줄 · 아래 줄이 가리는 높이(px)라, 끝단은 그 안쪽에만 놓습니다.
+ * 없으면 0.
+ */
+export type CanvasBox = BoxSize & { readonly top?: number; readonly bottom?: number };
 
 /** 회전한 상자의 외접 사각형 — |w·cosθ| + |h·sinθ|, |w·sinθ| + |h·cosθ|. */
 export function rotatedBounds(size: BoxSize, rotation: number): BoxSize {
@@ -50,8 +54,10 @@ export function placedFit(
     );
   };
   const right = STORY_EDGE + TOOL_COLUMN;
+  const top = STORY_EDGE + (canvas.top ?? 0);
+  const bottom = STORY_EDGE + (canvas.bottom ?? 0);
   const roomX = canvas.width - STORY_EDGE - right;
-  const roomY = canvas.height - 2 * STORY_EDGE;
+  const roomY = canvas.height - top - bottom;
   const fits = (s: number) => {
     const b = boundsAt(s);
     return b.width <= roomX && b.height <= roomY;
@@ -78,11 +84,6 @@ export function placedFit(
   return {
     scale: round(fitted),
     x: inside(x, bounds.width / 2 / canvas.width, STORY_EDGE / canvas.width, right / canvas.width),
-    y: inside(
-      y,
-      bounds.height / 2 / canvas.height,
-      STORY_EDGE / canvas.height,
-      STORY_EDGE / canvas.height,
-    ),
+    y: inside(y, bounds.height / 2 / canvas.height, top / canvas.height, bottom / canvas.height),
   };
 }

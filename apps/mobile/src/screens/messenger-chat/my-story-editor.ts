@@ -5,6 +5,7 @@
 // - `photo`가 있어야 시작 시트의 Camera · 최근 사진이 섭니다. 사진 위 편집은 늘 Aa · 얹기 여덟이고 사진 스토리로 올립니다(ADR-0199).
 
 import { romanizeKorean } from "../../lib/korean-romanize";
+import { storyTextOf } from "./my-story-lines";
 import { photoLineOf } from "./my-story-photo";
 import type {
   MyStoryChoice,
@@ -154,13 +155,13 @@ export function pinchSticker<T extends Placement>(
   };
 }
 
-/** 글 상자를 마침(Done) — 앞 글 상자가 있으면 자리를 잇습니다. 빈 글이면 null(상자 없앰). */
+/** 글 상자를 마침(Done) — 앞 글 상자가 있으면 자리를 잇습니다. 친 줄바꿈은 지킵니다(`storyTextOf`). 빈 글이면 null(상자 없앰). */
 export function typedText(
   ko: string,
   color: StoryTextColor,
   before: EditorText | null,
 ): EditorText | null {
-  const line = ko.trim();
+  const line = storyTextOf(ko);
   if (line === "") return null;
   const place: Placement = before ?? TEXT_START;
   return {

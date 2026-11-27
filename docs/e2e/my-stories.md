@@ -33,4 +33,12 @@ Edge Function `chat-send` · `companion-story-reactions`, pg_cron이 적용되�
 | MSP-E5 | (탐침) 게시 응답 `checking` | 보기 사진 위 「Checking your photo」 띠 |
 | MSP-E6 | (탐침) 게시 응답 `rejected` | 편집 아래 「This photo can't be shared」 판 · Share 꺼짐 · Ask for a review → 「Thanks — we'll take another look.」 |
 
+### 글 상자 이동 · 줄바꿈(ADR-0194 개정 ⟨글 상자 이동 · 줄바꿈⟩, 2026-11-27)
+
+| # | 절차 | 기대 |
+| --- | --- | --- |
+| ST-E1 | 여정 지도에 두 손가락을 댔다 뗀 뒤 → 메신저 「+」 → Aa로 글 → 한 손가락으로 끌기 | 글 상자가 손가락을 따라 옮겨지고 작아지거나 돌지 않음(고치기 전: 지도에 남은 점을 축으로 작아지고 돎) |
+| ST-E2 | 글 상자를 화면 아래쪽까지 끌고 Share → 보기 | 보기에서 편집과 같은 높이(아래 그늘 · 바 밑으로 내려가지 않음). 위 줄 · 아래 줄 밑으로는 끌어지지 않음 |
+| ST-E3 | Aa에서 Enter로 두 줄 쓰기 → Done → Share → 보기 | 입력 칸이 두 줄로 자라고 Enter가 Done이 아님. 편집 · 보기 모두 친 줄대로 두 줄 |
+
 **확인 기록**: PR 본문 · 보고에 시뮬레이터 · `assembleBundled` 스크린샷 경로를 적는다. [성능 기록](../performance/reports/my-stories-01.md) · [v2](../performance/reports/my-stories-02.md).
