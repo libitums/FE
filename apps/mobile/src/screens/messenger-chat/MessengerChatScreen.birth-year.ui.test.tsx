@@ -1,5 +1,5 @@
 import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 import { fixtureRoom, mountChat, seedOf } from "./chat-ui.test-support";
 import type { ChatFixtureSeed } from "./chat-source.contract";
@@ -8,7 +8,18 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 // `ui` 계층(SU-UI13 ~ UI14): 생년 시트가 처음 보이는 자리(ADR-0125 개정 2026-11-27). 맨 위 올해 줄에서 열면
 // 대충 누른 탭이 0세로 저장됐습니다 — 고른 연도가 없으면 목록 가운데에서, 있으면 그 연도에서 엽니다.
 
-const thisYear = new Date().getFullYear();
+// 시각을 고정합니다 — 해가 바뀌는 순간에 돌아도 목록과 기대값이 같은 해를 봅니다(PR #659 리뷰).
+const thisYear = 2026;
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(2026, 10, 27, 9, 0));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 const unasked = (seed: ChatFixtureSeed): ChatFixtureSeed => ({ rooms: seed.rooms });
 const listOf = (year: number) => screen.getByTestId(ids.birthYearOption(year)).parentElement;
 const selectedOf = (year: number) =>
