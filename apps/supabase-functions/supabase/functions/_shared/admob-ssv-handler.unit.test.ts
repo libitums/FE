@@ -4,7 +4,7 @@ import { signedQuery, testSigner } from "./admob-ssv.test-support.ts";
 import type { AdmobKeys, AdmobSsvEnv, AdmobSsvLogEntry } from "./admob-ssv.contract.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
 
-// AdMob SSV 처리기(ADR-0208) — 서명 확인 뒤에만 DB RPC 한 번. 상태 코드가 Google 재전송을 정한다(2xx가 아니면 다시 보냄).
+// AdMob SSV 처리기(ADR-0209) — 서명 확인 뒤에만 DB RPC 한 번. 상태 코드가 Google 재전송을 정한다(2xx가 아니면 다시 보냄).
 const env: AdmobSsvEnv = {
   supabaseUrl: "https://db.example",
   supabaseServiceRoleKey: "sb_secret_x",

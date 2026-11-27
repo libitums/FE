@@ -1,4 +1,4 @@
-// AdMob SSV 테스트 도우미 — 시험용 P-256 키로 Google처럼 서명한 콜백 쿼리를 만듭니다(ADR-0208).
+// AdMob SSV 테스트 도우미 — 시험용 P-256 키로 Google처럼 서명한 콜백 쿼리를 만듭니다(ADR-0209).
 // Google은 서명을 DER(ASN.1 SEQUENCE{r, s})로 싣고 WebCrypto는 r‖s(64바이트)를 내므로 여기서 DER로 감쌉니다.
 
 import { base64FromBytes, base64UrlFromBytes } from "./base64.ts";

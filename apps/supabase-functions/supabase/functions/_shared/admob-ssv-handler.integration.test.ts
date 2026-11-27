@@ -4,7 +4,7 @@ import { createAdmobSsvHandler } from "./admob-ssv-handler.ts";
 import { createAdmobKeys } from "./admob-ssv.ts";
 import { keysJson, signedQuery, testSigner } from "./admob-ssv.test-support.ts";
 
-// AdMob SSV 처리기 + 실제 마이그레이션(ADR-0208) — 서명이 틀린 콜백은 DB에 아무것도 남기지 않고, 맞는 콜백은 한 번만 지급한다.
+// AdMob SSV 처리기 + 실제 마이그레이션(ADR-0209) — 서명이 틀린 콜백은 DB에 아무것도 남기지 않고, 맞는 콜백은 한 번만 지급한다.
 // 바깥 호출 둘(공개키 목록 · Supabase REST RPC)을 흉내 낸다 — RPC는 service_role 연결로 실제 함수를 부른다.
 const user = "00000000-0000-4000-8000-0000000000d1";
 

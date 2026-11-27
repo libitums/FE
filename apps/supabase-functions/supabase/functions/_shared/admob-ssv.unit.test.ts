@@ -8,7 +8,7 @@ import {
 import { keysJson, signedQuery, testSigner } from "./admob-ssv.test-support.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
 
-// AdMob SSV 콜백(ADR-0208) — 쿼리 읽기 · 서명 확인 · 공개키 캐시 · 환경 값.
+// AdMob SSV 콜백(ADR-0209) — 쿼리 읽기 · 서명 확인 · 공개키 캐시 · 환경 값.
 const user = "00000000-0000-4000-8000-0000000000a1";
 const request = "11111111-1111-4111-8111-111111111111";
 

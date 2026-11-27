@@ -1,4 +1,4 @@
--- 광고 보고 티켓 1장(ADR-0208, 사용자 결정 2026-11-27 「1단계 티켓 추가만」).
+-- 광고 보고 티켓 1장(ADR-0209, 사용자 결정 2026-11-27 「1단계 티켓 추가만」).
 --
 --   「Out of tickets」 대화상자의 「Watch a short ad」 → 앱이 `ad_ticket_start`로 요청 id를 받아 AdMob 보상형 광고의 SSV custom_data에 싣는다 →
 --   광고를 끝까지 보면 Google이 Edge Function `admob-ssv`를 부르고, 서명을 확인한 뒤 `ad_ticket_grant`(service_role)가 판정한다 →
