@@ -84,13 +84,20 @@ describe("Lynx CSS 시간 값", () => {
     if (literal === undefined) throw new Error(`시간 값을 읽지 못함: ${value}`);
     return Number(literal);
   };
-  /** 선택자의 `animation-delay`(없으면 `animation` 단축 속성의 길이) — 여러 규칙이면 마지막. */
+  /**
+   * 선택자의 시간 선언 값(ms) — 여러 규칙이면 마지막. 규칙의 선택자 목록(`.a, .b { … }`)을 쉼표로 나눠 그중 하나와 같으면 그 규칙입니다.
+   * `@keyframes` 안 블록(`0% { … }`)은 선택자 목록이 맞지 않아 걸리지 않습니다.
+   */
   const timeOf = (file: string, selector: string, property: string): number => {
     const css = stripComments(readFileSync(join(REPO, file), "utf8"));
-    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const blocks = [...css.matchAll(new RegExp(`(?:^|[},])\\s*${escaped}\\s*\\{([^{}]*)\\}`, "g"))];
+    const blocks = [...css.matchAll(/([^{}]*)\{([^{}]*)\}/g)].filter((block) =>
+      (block[1] ?? "")
+        .split(",")
+        .map((part) => part.trim())
+        .includes(selector),
+    );
     const values = blocks.flatMap((block) =>
-      declarationsOf(`{${block[1] ?? ""}}`).filter((d) => d.property === property),
+      declarationsOf(`{${block[2] ?? ""}}`).filter((d) => d.property === property),
     );
     const last = values.at(-1);
     if (last === undefined) throw new Error(`${file} ${selector} ${property} 없음`);
