@@ -73,8 +73,9 @@ export const privacyCollectEn: LegalSection = {
     {
       kind: "list",
       items: [
-        "On Android, if the App hits an error, a report is sent to our error-reporting provider. It contains the error details, the App version, your device model, and your operating system version.",
-        "We do not attach your user ID to error reports, and we remove identifying details before they are sent.",
+        "On Android and iOS, if the App hits an error, crashes, or stops responding, a report is sent to our error-reporting provider. It contains the error details, the App version, your device model, and your operating system version.",
+        "If you are signed in, the report also includes your user ID, a random internal ID that lets us see how many people an error affects and match it to a problem you report. We do not include your name, email address, or IP address, and we remove other identifying details, such as email addresses or phone numbers in error messages, before reports are sent.",
+        "On iOS, the error-reporting tool also includes a random installation ID that it creates for the App, so that we can measure how often the App runs without crashing. It is not the advertising identifier (IDFA), and it changes if you reinstall the App.",
       ],
     },
     { kind: "subheading", text: "Advertising measurement" },

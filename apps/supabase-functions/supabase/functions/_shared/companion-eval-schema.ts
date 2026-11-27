@@ -26,10 +26,21 @@ export const caseSchema = z.object({
   l1: z.string().min(1).max(35).nullable().optional(),
   // 검사: 출력 검사 때 앞선 유저 메시지. 피드백: 바로 앞 캐릭터 말.
   context: z.string().max(2000).nullable().optional(),
-  // 피드백만: 최근 대화(맥락, 오래된 것부터 — 운영처럼 마지막 6개만 쓴다).
+  // 피드백: 최근 대화(맥락, 오래된 것부터 — 운영처럼 마지막 6개만 쓴다). 기억: `text` 앞의 대화 — `picked`는 칩을 그대로 고른 유저 말.
   history: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) }))
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        text: z.string().max(2000),
+        picked: z.boolean().optional(),
+      }),
+    )
     .max(20)
+    .optional(),
+  // 기억만: 마지막 메시지의 학습자 현지 날짜(운영 `companion_memory_source`의 `localDate`, ADR-0210).
+  localDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
   // 피드백만: 관계 말투 단계 · 상대 캐릭터. 생략하면 모름(말투 규칙은 한 메시지 안 섞임만 본다).
   speechLevel: z.enum(["polite", "casual", "slang"]).nullable().optional(),
@@ -57,6 +68,7 @@ export const caseSchema = z.object({
     )
     .max(40)
     .optional(),
+  // 답장: 프롬프트의 기억. 기억: 기존 기억(m1, m2 … 순서, 이 캐릭터 층).
   memories: z.array(z.string().min(1).max(300)).max(20).optional(),
   spoilerNote: z.string().max(1000).nullable().optional(),
   // 답장만: 끝낸 에피소드 — 운영처럼 「지금까지 이야기」 카드를 싣고 채점자가 canon 축을 본다.
@@ -97,7 +109,15 @@ export const caseSchema = z.object({
     .optional(),
 });
 export const bodySchema = z.object({
-  kind: z.enum(["moderation", "feedback", "translation", "suggestions", "learning", "reply"]),
+  kind: z.enum([
+    "moderation",
+    "feedback",
+    "translation",
+    "suggestions",
+    "learning",
+    "reply",
+    "memory",
+  ]),
   model: z.enum(evalModels).optional(),
   // 답장만: 채점 모델. 생략하면 `defaultJudgeModel` — 실행끼리 견주려면 바꾸지 않는다.
   judgeModel: z.enum(evalModels).optional(),

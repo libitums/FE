@@ -37,6 +37,8 @@ export type RoomState = {
   remoteIdeasOrigin: ChatIdeasOrigin | null;
   /** 첫 인사(서버 `origin` greeting) 메시지 id — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩). 모르면 null. */
   greetingId: string | null;
+  /** 서버 기록의 앞부분을 읽지 않음(`hasMore`) — 첫 인사가 로그 밖이면 무료 예시를 세우지 않습니다(ADR-0146 개정 ⟨가이드 점검⟩ 3). */
+  olderHidden: boolean;
   /** 이 실행에서 받은 무료 예시의 줄 id 앞부분(받은 순서) — 화면이 그 줄을 보입니다(`ChatThread.samples`). */
   samples: readonly string[];
   origin: "local" | "server";
@@ -89,6 +91,7 @@ export function newRoomState(
     remoteIdeas: null,
     remoteIdeasOrigin: null,
     greetingId: null,
+    olderHidden: false,
     samples: [],
     origin: "local",
     unsent: [],

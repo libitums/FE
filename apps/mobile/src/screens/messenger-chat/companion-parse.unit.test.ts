@@ -215,6 +215,12 @@ describe("기록 · 인사", () => {
     expect(historyFrom(JSON.stringify(hidden))?.greetingId).toBeUndefined();
   });
 
+  test("GA-U2 기록: 서버가 더 오래된 쪽이 있다고 하면(hasMore) 그것을 낸다 — 없거나 false면 칸이 없다(점검 3)", () => {
+    expect(historyFrom(JSON.stringify({ ...page, hasMore: true }))?.hasMore).toBe(true);
+    expect(historyFrom(JSON.stringify({ ...page, hasMore: false }))?.hasMore).toBeUndefined();
+    expect(historyFrom(JSON.stringify({ messages: page.messages }))?.hasMore).toBeUndefined();
+  });
+
   test("ES-U15 서버에서 턴이 실패한 내 글(status failed)은 기록에서 뺀다 — 보낸 글로 보이지 않게(리뷰 W4)", () => {
     const failed = {
       id: "99999999-9999-4999-8999-999999999999",
