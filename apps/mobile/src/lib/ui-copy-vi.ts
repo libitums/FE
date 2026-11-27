@@ -2,6 +2,7 @@
 // 번역 초안 — 원어민 검수 필요.
 
 import { micPermissionVi } from "./ui-copy-mic-permission";
+import { adTicketVi } from "./ui-copy-ad-ticket";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
 import { signupRewardCopy } from "./ui-copy-signup-reward";
@@ -85,6 +86,7 @@ export const uiCopyVi: UiCopy = {
   assembledHint: assembledHintVi,
   speaking: speakingVi,
   micPermission: micPermissionVi,
+  adTicket: adTicketVi,
   learningItemGuide: learningItemGuideVi,
   assessment: assessmentVi,
   lessonComplete: lessonCompleteVi,

@@ -1,0 +1,4 @@
+// 이 파일을 AdMob.local.xcconfig로 복사해 값을 채운다(추적하지 않는다). 값을 바꾸면 다시 빌드한다.
+// 값은 AdMob 콘솔의 **iOS 앱 ID**(ca-app-pub-…~…) 하나뿐이다 — 광고 단위 ID는 서버 설정(companion.settings.ad_ticket_unit_ios)에 둔다(ADR-0209 D10).
+// 아래는 Google 공식 샘플(테스트) 앱 ID다 — Debug 빌드 확인용. 스토어 빌드에는 넣지 않는다.
+ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511

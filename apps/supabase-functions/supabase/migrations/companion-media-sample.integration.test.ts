@@ -97,6 +97,7 @@ beforeEach(async () => {
 });
 
 test("MS1. 제안 — 그 인물의 예시가 켜져 있고 스냅샷을 한 번도 만든 적이 없을 때만 available", async () => {
+  await message(learner); // 제안은 첫 인사가 있는 대화에만(20270115, MS18)
   expect(await offer()).toMatchObject({ available: true });
   expect(await offer("mina")).toMatchObject({ available: false });
   await db.admin.query("update companion.media_samples set active = false");
@@ -216,10 +217,10 @@ test("MS8. 대화를 쓰지 못하는 계정(14세 미만 · 일시 차단)은 �
 // ------------------------------------------------------------------ 예시 음성(20261230) — 스냅샷 다음 단계에서 미리 만든 음성 하나
 
 test("MS9. 음성 제안 — 그 인물의 음성 예시가 켜져 있고 음성을 한 번도 만든 적이 없을 때만 voice. 사진 제안과 따로 간다", async () => {
+  const id = await message(learner); // 제안은 첫 인사가 있는 대화에만(20270115)
   expect(await offer()).toEqual({ available: true, voice: false });
   await addVoiceSample();
   expect(await offer()).toEqual({ available: true, voice: true });
-  const id = await message(learner);
   await db.admin.query(
     `insert into companion.media (user_id, character_id, message_id, kind, status, charge, cost, storage_path, mime, text)
      values ($1, 'duksu', $2, 'voice', 'complete', 'voice', 15, $3, 'audio/mpeg', '안녕')`,
@@ -355,8 +356,8 @@ test("MS15. 대화에 첫 인사가 없으면(숨김 · 지워짐) 받지 않는
     [learner],
   );
   expect(rows.rows[0].n).toBe(0);
-  // 제안은 그대로 남는다 — 새 첫 인사가 오면(대화 초기화 뒤) 받을 수 있다.
-  expect(await offer()).toEqual({ available: true, voice: true });
+  // 제안도 꺼진다(20270115) — 받기가 거절할 단계를 세우지 않는다. 새 첫 인사가 오면(대화 초기화 뒤) 다시 제안한다.
+  expect(await offer()).toEqual({ available: false, voice: false });
 });
 
 test("MS16. 계정당 한 번 — 응답으로 받은 뒤 첫 인사 · 다른 메시지로 다시 불러도 already로 같은 행", async () => {
@@ -387,4 +388,78 @@ test("MS17. 다른 사람 대화의 메시지 id면(첫 인사 · 응답 모두)
   }
   const rows = await db.admin.query("select count(*)::int as n from companion.media");
   expect(rows.rows[0].n).toBe(0);
+});
+
+// ------------------------------------------------------------------ 제안은 받을 수 있는 사람에게만(20270115, 가이드 점검 2)
+// 제안이 「받은 적 없음」만 보고 받기는 14세 미만 · 일시 차단 · 첫 인사 없음을 거절해, 받을 수 없는 사람에게 예시 단계가 서고 회색 줄이 섰다.
+
+test("MS18. 제안 — 그 인물과의 대화에 쓸 수 있는 첫 인사가 있어야 한다(대화 없음 · 첫 인사 없음 · 숨김은 둘 다 false)", async () => {
+  await addVoiceSample();
+  expect(await offer()).toEqual({ available: false, voice: false });
+  const chat = await room(learner);
+  expect(await offer()).toEqual({ available: true, voice: true });
+  // 다른 인물의 대화에 첫 인사가 있어도 이 인물의 제안은 아니다.
+  expect(await offer("mina")).toEqual({ available: false, voice: false });
+  await db.admin.query("update companion.messages set hidden = true where id = $1", [
+    chat.greeting,
+  ]);
+  expect(await offer()).toEqual({ available: false, voice: false });
+  await db.admin.query(
+    "update companion.messages set hidden = false, status = 'failed' where id = $1",
+    [chat.greeting],
+  );
+  expect(await offer()).toEqual({ available: false, voice: false });
+});
+
+test("MS19. 제안 — 14세 미만 · 일시 차단 중이면 둘 다 false, 풀리면 다시 제안한다(받기와 같은 막음)", async () => {
+  await addVoiceSample();
+  await message(learner);
+  expect(await offer()).toEqual({ available: true, voice: true });
+  await db.admin.query(
+    "update companion.profiles set birth_year = extract(year from now())::int - 12 where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: false, voice: false });
+  // 14세 이상 미성년은 받기처럼 막지 않는다.
+  await db.admin.query(
+    "update companion.profiles set birth_year = extract(year from now())::int - 15 where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: true, voice: true });
+  await db.admin.query("update companion.profiles set birth_year = 1990 where user_id = $1", [
+    learner,
+  ]);
+  await db.admin.query(
+    `insert into companion.moderation_state (user_id, blocked_until) values ($1, now() + interval '1 hour')
+     on conflict (user_id) do update set blocked_until = excluded.blocked_until`,
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: false, voice: false });
+  await db.admin.query(
+    "update companion.moderation_state set blocked_until = now() - interval '1 minute' where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: true, voice: true });
+});
+
+test("MS20. 제안이 true면 받기도 ok다 — 제안과 받기의 조건이 같다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  expect(await offer()).toEqual({ available: true, voice: true });
+  expect((await placed(chat.reply, "snapshot")).result).toBe("ok");
+  expect((await placed(chat.reply, "voice")).result).toBe("ok");
+  expect(await offer()).toEqual({ available: false, voice: false });
+});
+
+test("MS21. 생년을 모르거나(null) 프로필 행이 없어도 오류 없이 제안한다 — 받기와 같이 14세 미만으로 보지 않는다(리뷰)", async () => {
+  await message(learner);
+  await db.admin.query(
+    "update companion.profiles set birth_year = null, age_source = null where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toMatchObject({ available: true });
+  await db.admin.query("delete from companion.profiles where user_id = $1", [learner]);
+  expect(await offer()).toMatchObject({ available: true });
+  const id = await message(learner);
+  expect((await claim(id)).result).toBe("ok");
 });

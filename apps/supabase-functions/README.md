@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
 Supabase Edge Function 앱이다. 함수는 `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 아래) · `admob-ssv`(광고 보고 티켓, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -870,7 +870,8 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   `push_campaign_sends`(묶음 `스토리` · 세그먼트 `friend-story` · 새 칸 `character_id` · `story_id`, 시험 계정 단계는 묶음 `스토리 시험`)에 먼저 기록 →
   `send-push` 목적지 `{ kind: "companion-chat", characterId, story: true }`(옛 앱은 방을 연다).
   후보: 기기 · 방(가장 새 기기 뒤 그 인물에게 말함) · 선톡 설정 off 아님 · 답하지 않음 · 올린 지 6시간 · 현지 09 ~ 21시(시간대 모르면 제외) ·
-  **오늘(현지) 보낸 알림 없음 — 모든 묶음**(선톡 · 스토리 · 자동 캠페인). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
+  **오늘(현지) 보낸 알림 없음 — 학습 자동 캠페인 밖의 모든 묶음**(선톡 · 스토리 · 스토리 반응 등, `companion.story_pushed_today`). 「자동 · 」 · 「빈도 · 」 묶음은
+  세지 않는다(ADR-0178 D7 개정, 2026-11-27 — 빈도 실험 칸마다 스토리 노출이 달라지지 않게). 선톡 푸시도 문의 `pushedToday`(선톡 · 스토리 묶음)로 `daily_cap` 건너뛴다.
   `companion.pushed_today`는 스토리 묶음만 **대조군 줄도** 센다 — 스토리 대조군이 같은 날 선톡 푸시를 받지 않게(비교가 공정하게). 다른 묶음은 보낸 줄만.
 - 테스트: `migrations/friend-stories.integration.test.ts`(FS1 ~ FS20) · `_shared/companion-stories-handler.unit.test.ts`(SH1 ~ SH5) ·
   `chat-send-handler.unit.test.ts`(CSS1 ~ CSS3) · `companion-proactive-push.unit.test.ts`(PP9) · `send-push-body.unit.test.ts`(SP1) · 계약 `chat-send.unit.test.ts`(CS3e).
@@ -1138,3 +1139,20 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 - 표 `companion.past_story_opens`(RLS 본인 읽기, 쓰기는 함수만). 테스트: `migrations/past-stories.integration.test.ts`(PX1 ~ PX14).
 
 **적용 순서** — `20270110120000` 뒤에 `20270111120000_past_stories.sql`. Edge Function 배포 없음. 켜기: `update companion.settings set past_stories = 'testers';`.
+
+## 광고 보고 티켓 — admob-ssv (20270117120000, ADR-0209)
+
+- AdMob 보상형 광고의 서버 측 확인(SSV) 콜백. Google이 `GET`으로 부르고, 인증은 Supabase JWT가 아니라 Google 공개키 서명이다(`config.toml` `verify_jwt = false`).
+  처리기 `_shared/admob-ssv-handler.ts`(400 · 401 · 403 · 405 · 500 재시도 · 200 outcome), 서명 · 키 캐시 · 환경 `_shared/admob-ssv.ts`.
+- 앱 RPC: `ad_ticket_status(offset, request_id?)` · `ad_ticket_start(offset)` — 앱이 받은 `requestId`를 SSV `custom_data`에, Supabase 사용자 id를 `user_id`에 싣는다.
+  지급 판정은 `ad_ticket_grant`(service_role만): 스위치 · 대상(회원 · 계정 24시간 뒤 · 구독 없음) · 하루 상한(`ad_ticket_daily_cap`, 기본 2) · 거래 id 멱등.
+- 티켓 원장은 앱에 있다 — 앱이 `granted`를 읽고 1장을 더한다. 테스트: `migrations/ad-ticket.integration.test.ts`(AT1 ~ AT9) ·
+  `_shared/admob-ssv*.test.ts`(AS-U · AS-H · AS-I).
+- 비밀: `ADMOB_AD_UNIT_IDS`(**필수**, 쉼표 — 콜백 `ad_unit` 값, 광고 단위 id의 `/` 뒤 숫자). 없으면 모든 콜백이 500 `misconfigured`
+  (Google SSV 키는 모든 게시자가 함께 써서 광고 단위로 우리 콜백임을 가린다).
+
+- 광고 단위 ID(전체 `ca-app-pub-…/…`)는 앱이 아니라 서버 설정 `companion.settings.ad_ticket_unit_ios` · `ad_ticket_unit_android`에 두고
+  `ad_ticket_status(…, p_platform)`이 `unitId`로 내린다(스위치 off · 대상 아님 · 값 없음이면 null) — 앱 빌드 없이 켠다(ADR-0209 D10).
+
+**적용 순서** — `20270117120000_ad_ticket.sql`(main의 #661 `20270114…` 뒤 · 열린 #664 `20270115120000` · #667 `20270116120000` 뒤). 함수 `supabase functions deploy admob-ssv`.
+켜기: `update companion.settings set ad_ticket_enabled = true;`(앱의 PostHog 플래그 `ad-ticket`도 켜져야 보인다). 끄기는 false — 진행 중 콜백도 거절한다.

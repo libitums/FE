@@ -2,3 +2,4 @@
 #include "Airbridge.xcconfig"
 #include "RevenueCat.xcconfig"
 #include "Sentry.xcconfig"
+#include "AdMob.xcconfig"

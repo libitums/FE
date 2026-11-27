@@ -86,6 +86,10 @@ final class ViewController: UIViewController {
       if PurchasesSDK.isStarted {
         config.register(PurchasesModule.self)
       }
+      // 보상형 광고(ADR-0209 D10). **앱 ID가 있는 빌드에서만** 등록한다(Release는 샘플 앱 ID 불가) — 없으면 광고 줄이 서지 않는다.
+      if RewardedAdSDK.config != nil {
+        config.register(RewardedAdModule.self)
+      }
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을
