@@ -35,22 +35,22 @@ test("ST-U7. 줄 나누기 — 친 줄바꿈에서 먼저 나누고, 그 줄이 
   expect(textBoxPx("오늘\n김치찌개", 1)).toEqual({ width: 120, height: 76 });
 });
 
-test("ST-U8. 끝단 — 바탕이 화면 전체여도 위 줄(top) · 아래 줄(bottom)이 가리는 곳에는 놓이지 않는다", () => {
+test("ST-U8. 끝단 — 바탕이 화면 전체 · 위 줄(top) · 아래 줄(bottom) 위로도 가지만, 가려지지 않는 곳에 상자가 32px 남는다(2026-11-27)", () => {
   const canvas = { width: 390, height: 844, top: 120, bottom: 160 };
   const box = () => ({ width: 100, height: 40 });
   const up = placedFit(box, { scale: 1, x: 0.5, y: 0, rotation: 0 }, canvas);
-  expect(up.y).toBeCloseTo((120 + 36 + 20) / 844, 3);
+  expect(up.y).toBeCloseTo((120 + 32 - 20) / 844, 3);
   const down = placedFit(box, { scale: 1, x: 0.5, y: 1, rotation: 0 }, canvas);
-  expect(down.y).toBeCloseTo(1 - (160 + 36 + 20) / 844, 3);
-  // 세로 자리가 줄어든 만큼 크기 상한도 — 세운 상자(90°) 높이 ≤ 844 − 120 − 160 − 72
+  expect(down.y).toBeCloseTo(1 - (160 + 32 - 20) / 844, 3);
+  // 크기 상한은 그대로 — 세운 상자(90°) 높이 ≤ 844 − 120 − 160 − 72
   const tall = textFit(
     "오늘 처음 김치찌개 만들었어",
     { scale: 3, x: 0.5, y: 0.5, rotation: 90 },
     canvas,
   );
   expect(tall.scale).toBeCloseTo((844 - 120 - 160 - 72 - 4) / 213.2, 2);
-  // top · bottom이 없으면 예전과 같다
+  // top · bottom이 없으면 화면 끝까지 — 높이 40의 낮은 상자는 화면 안에 32px(가운데가 끝에서 12px)
   expect(
     placedFit(box, { scale: 1, x: 0.5, y: 0, rotation: 0 }, { width: 390, height: 700 }).y,
-  ).toBeCloseTo((36 + 20) / 700, 3);
+  ).toBeCloseTo((32 - 20) / 700, 3);
 });

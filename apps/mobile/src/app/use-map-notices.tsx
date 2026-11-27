@@ -68,9 +68,15 @@ export function useMapNotices(input: MapNoticesInput): {
   const idle = input.idle && !promptAsking;
   // 첫날 무제한 티켓(ADR-0186) — 회원만, 따로 안내 모달 없음. 구독 중이면 없고 구독 상태를 모르는 동안은 칩을 그리지 않습니다(개정 2).
   // 요금제 결선이 없으면(비회원 · 플래그 꺼짐) 구독 없음과 같습니다. 가입 보상 창이 선물 두 줄로 알립니다(개정 3).
-  const welcomePass = useWelcomePass(input.wiring.plans?.subscription ?? "none");
+  // 시작은 가입 보상 창이 처음 선 때(개정 4) — 창이 앞에 있는 동안(튜토리얼 중 · 창 대기)은 없습니다.
+  const welcome = useWelcomePass(
+    input.wiring.plans?.subscription ?? "none",
+    tutorialDone(input.progress, input.wiring.legacyTutorialPassed),
+  );
+  const welcomePass = welcome.pass;
   const signup = useSignupReward({
-    welcomePass,
+    welcomePassOnShown: welcome.onShown,
+    onWelcomeShown: welcome.markShown,
     wiring: input.wiring,
     idle:
       idle &&

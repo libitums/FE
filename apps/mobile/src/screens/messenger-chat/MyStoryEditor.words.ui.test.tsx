@@ -99,16 +99,17 @@ test("ST-UI6. 단어 스티커를 누르면 고른 표시(× · 손잡이)가 �
   expect(screen.queryByTestId(ids.stickerRemove("s1"))).not.toBeNull();
 });
 
-test("ST-UI7. 단어 스티커 — 아래로 끝까지 끌어도 아래 줄(안내 · Share) 위에 멈춤(바탕은 화면 전체)", () => {
+test("ST-UI7. 단어 스티커 — 아래로 끝까지 끌면 아래 줄(안내 · Share) 위로도 가고, 상자 위 끝 32px이 아래 줄 위에 남음(2026-11-27)", () => {
   mount();
   act(() => {
     fireEvent.touchstart(sticker(), { touches: [touch(0, 200, 460)] });
     fireEvent.touchmove(sticker(), { touches: [touch(0, 200, 4000)] });
     fireEvent.touchend(sticker(), { touches: [], changedTouches: [touch(0, 200, 4000)] });
   });
-  // 「찌개」 · yageun · stew — 높이 (28 + 16 + 16 + 2·2) + 16 + 4 = 84, −4° 외접 높이의 반만큼 아래 줄 + 36 위
+  // 「찌개」 · yageun · stew — 높이 (28 + 16 + 16 + 2·2) + 16 + 4 = 84, −4° 외접 높이의 반만큼 아래 줄 + 32 아래까지
   const half =
     (84 * Math.cos((4 * Math.PI) / 180) + (2 * 22 + 32 + 4) * Math.sin((4 * Math.PI) / 180)) / 2;
-  expect(percent("top")).toBeLessThanOrEqual(1 - (160 + 36) / 844 - half / 844 + 0.002);
-  expect(percent("top")).toBeGreaterThan(1 - (160 + 36) / 844 - half / 844 - 0.01);
+  expect(percent("top")).toBeLessThanOrEqual(1 - (160 + 32) / 844 + half / 844 + 0.002);
+  expect(percent("top")).toBeGreaterThan(1 - (160 + 32) / 844 + half / 844 - 0.01);
+  expect(percent("top")).toBeGreaterThan(1 - 160 / 844);
 });

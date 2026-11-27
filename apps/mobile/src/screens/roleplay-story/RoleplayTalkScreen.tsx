@@ -10,13 +10,11 @@ import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
 import { MicPermissionSheet } from "../../components/mic-permission/MicPermissionSheet";
 import { useMicSpeechAttempt } from "../../components/mic-permission/use-mic-speech-attempt";
-import { playAudio } from "../../lib/audio";
 import { romanizeKorean } from "../../lib/korean-romanize";
 import { judgeSpokenAnswer } from "../../lib/speaking-judge";
 import { playSound } from "../../lib/sound-effects";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
-import { useAudioCue } from "../../lib/use-audio-cue";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { NarrativeBackground } from "../episode-narrative/NarrativeBackground";
 import {
@@ -26,6 +24,7 @@ import {
 } from "./roleplay-story";
 import type { RoleplayTalkScreenProps } from "./roleplay-story.contract";
 import {
+  roleplayDialogLinesOf,
   roleplayHeaderLabel,
   roleplayProgressSegments,
   roleplayTurnReportOf,
@@ -34,15 +33,16 @@ import { RoleplayProgressBar, RoleplayReplyDialogue } from "./RoleplayReplyDialo
 import { RoleplayResultPanel } from "./RoleplayResultPanel";
 import { RoleplaySpeakControls, roleplayTalkMic } from "./RoleplaySpeakControls";
 import { useRoleplayAnnouncements } from "./use-roleplay-announcements";
+import { useRoleplayVoices } from "./use-roleplay-voices";
 
 import "./roleplay-story-screen.css";
 
-/** 맞힌 뒤 다음 턴으로 저절로 넘어가기까지(시안 R3) — 누르면 바로 넘어갑니다. */
-export const ROLEPLAY_CORRECT_ADVANCE_MS = 2000;
+export { ROLEPLAY_CORRECT_ADVANCE_MS } from "./use-roleplay-auto-advance";
 
 /**
  * 롤플레이 대화입니다 — 표지와 같은 장면 위에 상대 대사가 서고, 아래 흰 패널에 내 문장 · 공용 마이크가 섭니다(시안 R1 ~ R5).
- * 맞으면 내 말풍선 뒤로 상대의 다음 줄이 곧장 반응하고 2초 뒤 다음 턴, 틀리면 정답 문장이 주인공인 패널이 섭니다.
+ * 맞으면 내 말풍선 뒤로 상대의 다음 줄이 곧장 반응하고, 내 문장 소리가 끝난 뒤(최소 2초) 다음 턴 — 한 번에 한 목소리입니다.
+ * 틀리면 정답 문장이 주인공인 패널이 섭니다.
  */
 export function RoleplayTalkScreen({
   insets,
@@ -54,6 +54,7 @@ export function RoleplayTalkScreen({
   onExit,
   onTurnAnswered,
   mic,
+  romanization = "hidden",
 }: RoleplayTalkScreenProps): ReactNode {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
@@ -80,15 +81,16 @@ export function RoleplayTalkScreen({
     dispatch({ type: "unavailable", reason: outcome.reason });
   });
 
-  const cueSource = correct ? turn.replyAudioSource : turn.counterpartAudioSource;
-  const audio = useAudioCue(
-    cueSource === undefined || done
-      ? null
-      : {
-          key: `${String(state.turnIndex)}:${correct ? "reply" : String(replays)}`,
-          source: cueSource,
-        },
-  );
+  // 소리 — 상대 줄 · 내 문장(맞힌 뒤) · 힌트 듣기. 한 번에 한 목소리, 맞힌 뒤에는 내 문장 소리가 끝나야(최소 2초) 넘깁니다.
+  const { stop: stopVoices, hear } = useRoleplayVoices({
+    turnIndex: state.turnIndex,
+    turn,
+    correct,
+    done,
+    replays,
+    advance: () => run("next")(),
+    onHintListen: () => dispatch({ type: "hintListen" }),
+  });
 
   useEffect(() => {
     if (!done || finished.current) return;
@@ -100,7 +102,7 @@ export function RoleplayTalkScreen({
 
   const handleExit = () => {
     "background only";
-    audio.stop();
+    stopVoices();
     attempt.stop();
     onExit();
   };
@@ -113,7 +115,7 @@ export function RoleplayTalkScreen({
       attempt.stop();
       return;
     }
-    audio.stop();
+    stopVoices();
     dispatch({ type: "start" });
     attempt.start();
   };
@@ -123,25 +125,10 @@ export function RoleplayTalkScreen({
     if (type === "next" || type === "skip") onTurnAnswered?.(roleplayTurnReportOf(state, type));
     dispatch({ type });
   };
-  const hear = () => {
-    "background only";
-    if (turn.replyAudioSource === undefined) return;
-    audio.stop();
-    if (playAudio(turn.replyAudioSource, () => {}) === "started") dispatch({ type: "hintListen" });
-  };
   const expire = () => {
     "background only";
     if (state.phase === "listening") attempt.stop();
   };
-
-  // 맞힌 뒤 2초면 다음 턴으로(시안 R3). 턴 · 국면이 바뀌면 다시 잽니다.
-  const advance = useRef(run("next"));
-  advance.current = run("next");
-  useEffect(() => {
-    if (!correct) return undefined;
-    const timer = setTimeout(() => advance.current(), ROLEPLAY_CORRECT_ADVANCE_MS);
-    return () => clearTimeout(timer);
-  }, [correct, state.turnIndex]);
 
   const reaction = correct ? turns[state.turnIndex + 1] : undefined;
   const expected = state.judgement?.expected ?? turn.accepted[0];
@@ -218,6 +205,7 @@ export function RoleplayTalkScreen({
                 translation={turn.replyTranslation}
                 counterpartName={counterpartName}
                 reaction={reaction}
+                romanization={romanization}
                 reducedMotion={reducedMotion}
               />
             ) : (
@@ -225,7 +213,7 @@ export function RoleplayTalkScreen({
                 <VisualNovelDialog
                   speakerName={counterpartName}
                   line={turn.line.ko}
-                  translation={turn.line.en ?? turn.line.roman ?? undefined}
+                  {...roleplayDialogLinesOf(turn.line, romanization)}
                   reveal="instant"
                   continueIndicator="off"
                   surface="opaque"
@@ -257,6 +245,7 @@ export function RoleplayTalkScreen({
                 correct={correct}
                 expected={expected}
                 roman={romanizeKorean(expected)}
+                meaning={turn.replyTranslation}
                 heard={state.heard}
                 isLast={isLast}
                 onHear={turn.replyAudioSource === undefined ? undefined : hear}

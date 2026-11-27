@@ -26,7 +26,7 @@ import {
 import { MyStoryAddSheet } from "./MyStoryComposer";
 import { MyStoryEditorFooter } from "./MyStoryEditorFooter";
 import { MyStoryTool as Tool } from "./MyStoryTool";
-import { CanvasGrip, canvasTouchHandlers, type GripHub } from "./use-placed-grip";
+import { CanvasGrip, canvasTouchHandlers, emptyGripHub, type GripHub } from "./use-placed-grip";
 import { MyStorySticker, type CanvasSize } from "./MyStorySticker";
 import { MyStoryTextBox, useEditorText } from "./MyStoryTextBox";
 import { MyStoryTextEntry } from "./MyStoryTextEntry";
@@ -79,8 +79,8 @@ export function MyStoryEditor({
   const [cover, setCover] = useState({ top: 0, bottom: 0 });
   // 위 줄은 안전 영역 아래에 섭니다(층의 paddingTop) — 안전 영역은 그릴 때 더해 값이 바뀌어도 맞습니다.
   const canvas: CanvasSize = { ...screenSize, top: insets.top + cover.top, bottom: cover.bottom };
-  // 지금 잡힌 것 — 둘째 손가락이 바탕 어디에 닿아도 그것에 붙습니다(ADR-0194 개정 ⟨두 손가락 회전⟩).
-  const grip = useRef<GripHub>({ current: null });
+  // 지금 잡힌 것 · 고른 것 — 둘째 손가락이 바탕 어디에 닿아도 잡힌 것에, 바탕 두 손가락은 고른 것에 붙습니다(ADR-0194 개정 3).
+  const grip = useRef<GripHub>(emptyGripHub());
   const stickerIds = useRef(0); // 스티커 id — 이 편집 안에서만 씁니다(서버 clientId와 따로)
   useLayerBack(onClose);
 
@@ -142,7 +142,8 @@ export function MyStoryEditor({
           }}
           bindtap={() => {
             "background only";
-            setSelected(null);
+            // 두 손가락이 닿았던 손길의 누름은 고름을 풀지 않습니다(바탕 두 손가락이 고른 것을 돌리는 중).
+            if (!grip.current.multi) setSelected(null);
           }}
         >
           <CanvasGrip.Provider value={grip.current}>

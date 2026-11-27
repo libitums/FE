@@ -92,6 +92,15 @@
 - ⟨2026-11-05⟩ **앱 구현** — **사용자 결정**(「구현」). 매니페스트 항목 `translations` 디코드 · 인코드(`episode-manifest.ts`, 언어마다 틀리면 그 언어만 버림), `translation-1` 디코더와 표 덧씌우기(`lib/episode-translation-files.ts` — 표 정규화는 episode-core `translationsOf` 재사용), 받기 차례의 번역 단계(`lib/episode-translation-sync.ts` — 본문보다 먼저, UI 언어 하나, sha256 대조 · 저장 키 `libitum.content.translation.<언어>.<id>`), 카탈로그가 저장된 파일로 그 언어 표를 바꿈, UI 언어 저장 알림으로 받기 재실행, `CONTENT_CLIENT_LEVEL` 3 → 4.
   - 같은 판(version · 출처가 같음)이 열린 세션에서는 **번역표만** 새 것으로 바꾼다(`mergeCatalogForSession`) — 언어를 바꿔 받은 파일이 다음 실행을 기다리지 않는다. 판이 다르면 지금 규칙(다음 실행 · 스플래시 교체)대로.
   - **D4(내장본의 언어별 파일)는 미룬다.** 내장 본문(u00 ~ u10 balance 판)을 level-4 판으로 바꾸는 것은 콘텐츠 교체라 따로 한다. 그동안 내장본은 본문 안 표(vi · id · es · ja)를 그대로 쓰고, 원격 판이 이기면 파일 표가 쓰인다.
+- ⟨2026-11-27⟩ **개정 — 원격이 이겼지만 내장본으로 여는 판에도 내장본에 없는 언어의 파일 표를 입힌다**(브랜치 `fix/roleplay-language`).
+  - 제보(사용자, iPhone Release 12fc1f04): 앱 언어 zh-TW에서 롤플레이 · 레슨의 뜻이 영어. vi에서는 재현되지 않았다.
+  - 원인 [코드]: 파일 모듈이 있는 기기에서 내장본이 있는 원격 편은 **자산을 다 받은 뒤에만** 원격본으로 연다(로더의 `keep`). 그 전에는 같은 id
+    내장본으로 여는데(`bundledFallback`), 위의 D4가 미뤄져 내장 본문 안 표는 vi · id · es · ja뿐이고 받아 둔 파일 표는 원격본에만 입혔다 —
+    그래서 zh-TW · th · my 사용자는 자산을 받기 전까지 u00 ~ u10의 뜻을 영어로 봤다. 운영 버킷(level-5)의 zh-TW 파일 18편 · 롤플레이 턴 문장은
+    빠짐 0이었다 [데이터] — 콘텐츠 문제가 아니다.
+  - 결정: 내장본으로 열 때 **내장본에 없는 언어만** 이긴 항목이 적은 저장 파일 표로 채운다(`missingTranslationTablesOf`). 내장본에 있는 언어는
+    그 판의 표를 지킨다 — 한 언어 안에서 판이 다른 두 출처를 섞지 않는다(위 D3). 파일 키가 영어 원문이라 판이 달라 어긋나는 줄만 영어로 남는다.
+  - 확인: unit `episode-catalog.translations` CT5 ~ CT7 / integration `App.roleplay-language` IRL1.
 - ⟨2026-11-27⟩ **개정 ⟨내장 표⟩ — D4의 「미룸」 일부 해소: 내장 본문에 zh-TW · th · my 표를 싣는다**(브랜치 `feat/bundled-translations-zh-th-my`).
   - **사용자 결정**(2026-11-27): 「내장 번역표에 중국어 말고 다른 없는 언어도 넣어 줘야지」 · 「천장 올려」(ADR-0149 개정 8, 6,220,000 B).
   - 까닭: 받아 둔 파일을 내장본에 입히는 개정(PR #684, 브랜치 `fix/roleplay-language`)은 파일을 받은 뒤에만 닿는다. 첫 실행 · 오프라인 · 매니페스트 실패 기기에서는 내장 표가 vi · id · es · ja뿐이라

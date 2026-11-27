@@ -6,6 +6,7 @@ import type { MicPermissionContext } from "../../lib/mic-permission-event.contra
 import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import type { SpeechMissReason, SpeechUnavailableReason } from "../../lib/speech-attempt";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type { CatalogRoleplayTurns } from "../catalog-final/catalog-final.contract";
 
 /**
@@ -96,6 +97,8 @@ export type RoleplayTalkScreenProps = {
   readonly mic?: MicPermissionContext;
   /** 턴 하나를 넘기거나 건너뛸 때마다 한 번(측정). 들은 글자는 싣지 않습니다. */
   readonly onTurnAnswered?: (report: RoleplayTurnReport) => void;
+  /** 로마자 스위치(ADR-0188) — 켜면 대사 상자에 로마자 줄이 섭니다. 없으면 `"hidden"`. */
+  readonly romanization?: ChoiceRomanization;
 };
 
 /** 턴 하나를 넘길 때의 측정입니다(`roleplay-panel.ts`가 만듭니다). */
