@@ -1,6 +1,5 @@
 import { useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-import type { TouchEvent } from "@lynx-js/types";
 import cross from "@libitums/icons/lynx/cross";
 import { color } from "@libitums/design-tokens";
 
@@ -9,20 +8,27 @@ import {
   moveSticker,
   pinchSticker,
   resizeSticker,
+  round,
   type EditorSticker,
   type Placement,
   type Point,
 } from "./my-story-editor";
+import type { CanvasBox } from "./my-story-fit";
 import { stickerFit, stickerSizeOf } from "./my-story-sticker-size";
+import { fingersOf, heldPoints, holdFingers, liftFingers } from "./my-story-touch";
 import { textBoxSizeOf } from "./my-story-text";
 import { myStoriesTestIds as ids } from "./my-stories.contract";
 import { StickerWordLines } from "./StoryOverlayLines";
 
-/** 바탕의 크기(px) — 끌기 거리를 비율로 바꿉니다. 아직 모르면 0(끌기 없음). */
-export type CanvasSize = { readonly width: number; readonly height: number };
+/**
+ * 바탕의 크기(px) — 화면 전체(보기와 같은 좌표). `top` · `bottom`은 위 줄 · 아래 줄이 가리는 높이(끝단만 씀). 아직 모르면 0(끌기 없음).
+ */
+export type CanvasSize = CanvasBox;
 
-const pointsOf = (event: TouchEvent): Point[] =>
-  (event.touches ?? []).map((touch) => ({ x: touch.pageX, y: touch.pageY }));
+type TouchLists = { readonly touches?: unknown; readonly changedTouches?: unknown };
+/** 이 요소에서 막 닿거나 뗀 손가락 — `changedTouches`가 없으면(옛 환경 · 테스트) `touches`. */
+const changedOf = (event: TouchLists) =>
+  fingersOf(event.changedTouches === undefined ? event.touches : event.changedTouches);
 
 /**
  * 단어 스티커의 그리기 값(가운데 기준) — 확정 크기(`settled`)는 글자 · 사이 · 안쪽 여백에(`StickerWordLines`), 끄는 동안의 몫만
@@ -34,8 +40,8 @@ export function stickerStyle(
 ) {
   const size = stickerSizeOf(place.scale, settled);
   return {
-    left: `${place.x * 100}%`,
-    top: `${place.y * 100}%`,
+    left: `${round(place.x * 100)}%`,
+    top: `${round(place.y * 100)}%`,
     transform: `translate(-50%, -50%) rotate(${place.rotation}deg) scale(${size.live})`,
     padding: size.padding,
     gap: size.gap,
@@ -47,7 +53,7 @@ export function stickerStyle(
  * 바뀌지 않게 하려는 것입니다(절대 위치 상자는 left에서 오른쪽 끝까지만 넓어져, 옮기면 줄이 다시 흐름 — 기기 확인).
  */
 export function laneStyle(place: Pick<Placement, "x" | "y">) {
-  return { left: `${(place.x - 0.5) * 100}%`, top: `${place.y * 100}%` };
+  return { left: `${round((place.x - 0.5) * 100)}%`, top: `${round(place.y * 100)}%` };
 }
 
 /** 글 상자 — 확정 크기(`settled`)는 안쪽 여백 · 글자(`StoryTextLines`)에, 끄는 동안의 몫만 transform(A안, 선명하게). */
@@ -103,46 +109,60 @@ export function MyStoryPlaced<T extends Placement>({
   const [settled, setSettled] = useState(item.scale);
   const settle = () => setSettled(item.scale);
   const change = (next: T) => onChange(fit(next, settled));
-  const start = useRef<{ item: T; points: Point[] } | null>(null);
-  const resize = useRef<{ item: T; point: Point } | null>(null);
+  // 잡은 손가락(id) · 그 손가락들이 지금 모양이 된 때의 자리 · 점. 손가락 수가 바뀌면 그 자리부터 다시 잽니다.
+  const start = useRef<{ held: number[]; item: T; points: Point[] } | null>(null);
+  const resize = useRef<{ id: number; item: T; point: Point } | null>(null);
+  const restart = (held: number[], event: TouchLists) => {
+    start.current =
+      held.length === 0 ? null : { held, item, points: heldPoints(held, fingersOf(event.touches)) };
+  };
 
-  const begin = (event: TouchEvent) => {
+  const begin = (event: TouchLists) => {
     "background only";
-    start.current = { item, points: pointsOf(event) };
+    restart(holdFingers(start.current?.held ?? [], changedOf(event)), event);
     onSelect();
   };
-  const move = (event: TouchEvent) => {
+  const move = (event: TouchLists) => {
     "background only";
     const from = start.current;
-    const now = pointsOf(event);
-    const [a0, b0] = from?.points ?? [];
+    if (from === null) return;
+    const now = heldPoints(from.held, fingersOf(event.touches));
+    const [a0, b0] = from.points;
     const [a1, b1] = now;
-    if (from === null || a0 === undefined || a1 === undefined) return;
-    if (b0 !== undefined && b1 !== undefined)
-      return change(pinchSticker(from.item, [a0, b0], [a1, b1]));
-    if (b0 !== undefined && b1 === undefined) {
-      // 두 손가락에서 하나를 뗌 — 그 자리부터 다시 끕니다.
-      start.current = { item, points: now };
+    if (now.length !== from.points.length) {
+      // 잡은 손가락이 사라짐(끝 이벤트를 못 받음) — 남은 손가락 자리부터 다시 잽니다.
+      start.current = { ...from, item, points: now };
       return;
     }
+    if (a0 === undefined || a1 === undefined) return;
+    if (b0 !== undefined && b1 !== undefined)
+      return change(pinchSticker(from.item, [a0, b0], [a1, b1]));
     if (canvas.width <= 0 || canvas.height <= 0) return;
     change(moveSticker(from.item, (a1.x - a0.x) / canvas.width, (a1.y - a0.y) / canvas.height));
   };
-  const end = () => {
+  const end = (event: TouchLists) => {
+    "background only";
+    const held = liftFingers(start.current?.held ?? [], changedOf(event), fingersOf(event.touches));
+    // 두 손가락에서 하나를 뗌 — 남은 손가락 자리부터 이어 끕니다.
+    restart(held, event);
+    if (held.length === 0) settle();
+  };
+  const cancel = () => {
     "background only";
     start.current = null;
     settle();
   };
-  const resizeBegin = (event: TouchEvent) => {
+  const resizeBegin = (event: TouchLists) => {
     "background only";
-    const [point] = pointsOf(event);
-    if (point !== undefined) resize.current = { item, point };
+    const [finger] = changedOf(event);
+    if (finger !== undefined) resize.current = { id: finger.id, item, point: finger };
   };
-  const resizeMove = (event: TouchEvent) => {
+  const resizeMove = (event: TouchLists) => {
     "background only";
     const from = resize.current;
-    const [point] = pointsOf(event);
-    if (from === null || point === undefined) return;
+    if (from === null) return;
+    const [point] = heldPoints([from.id], fingersOf(event.touches));
+    if (point === undefined) return;
     change(resizeSticker(from.item, point.x - from.point.x, point.y - from.point.y));
   };
   const resizeEnd = () => {
@@ -162,15 +182,12 @@ export function MyStoryPlaced<T extends Placement>({
       bindtouchstart={begin}
       bindtouchmove={move}
       bindtouchend={end}
-      bindtouchcancel={end}
-      {...(onTap === undefined
-        ? {}
-        : {
-            catchtap: () => {
-              "background only";
-              onTap();
-            },
-          })}
+      bindtouchcancel={cancel}
+      // 누름은 바탕으로 올리지 않습니다 — 바탕의 누름은 「고름 풀기」라, 올라가면 단어 스티커를 눌러도 × · 손잡이가 바로 꺼집니다.
+      catchtap={() => {
+        "background only";
+        onTap?.();
+      }}
     >
       {children(settled)}
       {selected ? (

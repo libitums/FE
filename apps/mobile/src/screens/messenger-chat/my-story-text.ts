@@ -1,7 +1,7 @@
 // 바탕 위 글 상자(Aa)의 줄 · 크기 · 끝단(A안, 사용자 결정 2026-11-25) — 순수. 편집 · 보기(친구 화면 · 보관함 · 내 스토리 보기)가 같은 규칙을 씁니다.
 
 import { round, type Placement } from "./my-story-editor";
-import { placedFit } from "./my-story-fit";
+import { placedFit, type CanvasBox } from "./my-story-fit";
 
 /** 글 상자 한 줄의 폭(한글 글자 수) — 바탕 80% 폭 · heading-m 22px 기준. */
 const LINE_UNITS = 12;
@@ -14,13 +14,21 @@ export const unitsOf = (word: string): number => {
 
 /**
  * 글 상자의 줄(A안, 사용자 결정 2026-11-25) — 띄어쓰기로 나누고 한 줄 폭을 넘는 낱말은 자릅니다. 크기와 무관한 규칙이라 키우고 줄여도
- * 줄이 다시 흐르지 않고, 편집 · 보기(친구 화면 · 보관함)가 같은 줄을 그립니다. 서버엔 `ko` 그대로(줄바꿈 문자 없이) 보냅니다.
+ * 줄이 다시 흐르지 않고, 편집 · 보기(친구 화면 · 보관함)가 같은 줄을 그립니다. 사용자가 친 줄바꿈(`\n`)에서 먼저 나눕니다 — 서버엔 `ko`를
+ * 줄바꿈 그대로 보냅니다(overlay 글은 서버가 그대로 저장, 2026-11-27 확인).
  */
 export function storyTextLines(ko: string): string[] {
   const lines: string[] = [];
+  for (const typed of ko.split("\n")) lines.push(...wrapLine(typed));
+  return lines;
+}
+
+/** 사용자가 친 한 줄을 한 줄 폭에 맞춰 나눕니다(띄어쓰기 기준, 긴 낱말은 자름). */
+function wrapLine(typed: string): string[] {
+  const lines: string[] = [];
   let line = "";
   let used = 0;
-  for (const word of ko.split(" ")) {
+  for (const word of typed.split(" ")) {
     let rest = word;
     while (rest !== "") {
       const need = unitsOf(rest);
@@ -96,7 +104,7 @@ const textBoxAt = (base: { line: number; count: number }, scale: number) => ({
 export function textFit(
   ko: string,
   place: Pick<Placement, "scale" | "x" | "y"> & { readonly rotation?: number },
-  canvas: { readonly width: number; readonly height: number },
+  canvas: CanvasBox,
   settled: number = place.scale,
 ) {
   const base = textBaseOf(ko);
