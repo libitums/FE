@@ -210,6 +210,36 @@ D3의 「앞뒤 낱말 공짜」를 고친다. 마디마다 맞춘 구간의 시
 - 세션 결과(`speakWordSessionResults`)는 끝낼 때(탭 핸들러) 다시 잰다 — 배경 스레드다.
 - 롤플레이는 이미 결말 콜백에서 판정한다(`RoleplayTalkScreen`).
 
+## D6 적용 1 ⟨말하기 퀴즈 화면⟩(2026-11-27, 브랜치 `feat/speak-word-ui`)
+
+시안(말하기 개선 시안 S1 ~ S4, 사용자 승인 2026-11-27 「진행」)대로 SPEAK_WORD 화면을 바꿨다. 근거 데이터: Android 말하기 정답률 50%,
+오답 화면이 들은 말을 보이지 않고 정답 상자가 초록이며 2.5초 뒤 저절로 넘어가 아무것도 가르치지 않았다.
+
+- **공용 마이크**(`components/speech-mic`): 국면 idle · listening · checking · disabled. 88pt 단추, 음량 막대 7개(실제 음량), 남은 시간 링,
+  「Listening…」 · 「Checking…」(멈춤을 누른 뒤 결말이 오기까지) · 「Tap to stop when you're done」. 롤플레이도 쓴다(다음 PR).
+  - 음량: 두 호스트 모두 듣는 동안 `getStatus`에 `level`을 이미 싣는다 — 화면이 100 ms마다 읽는다. iOS는 PCM RMS 원값이라 제곱근 × 3으로
+    편다. **Android는 `level`이 0 ~ 1로 잘려 말소리에서 늘 1이라 호스트를 작게 고쳤다** — 인식 서비스 dB 원값을 `levelDb`로 함께 싣고
+    화면이 -2 ~ 10 dB를 0 ~ 1로 옮긴다(`SpeechRecognitionSession.levelDb`). 진단 값(`level` · `peakLevel` · `averageLevel`)은 그대로다.
+  - **최대 8초**(스스로 정한 기본값): 링이 다 줄면 화면이 멈춤을 누른 것과 같이 멈춘다. 전에는 iOS는 누를 때까지 들었다.
+  - 움직임 줄이기: 음량을 읽지 않고 막대는 고정 높이, 링은 다 찬 채 — 문구만 바뀐다. 만료 시계는 그대로다.
+- **결과 시트**(`SpeakWordResult` · 보기 모형 `speak-word-result.ts`): 셸의 판정 배지 대신 작업 영역에 선다(`LearningShell`에는 `result`만
+  넘겨 다시 도전 판은 그대로 선다).
+  - perfect: 초록 면 · 「Perfect!」 · 정답 상자.
+  - close: 초록 면 · 「Correct」 + 「Almost perfect」 · 「Model answer」 정답 상자 · 들은 말(다른 음절 주황 밑줄).
+  - 오답: 흰 면 · 「Not quite」 · 「You said」 들은 말 ↔ 「Answer」 정답, 양쪽 다른 음절 밑줄(색만으로 말하지 않게 밑줄).
+  - 정답 상자는 판정과 상관없이 중립(흰 면 · 회색 테), 정답 소리가 있으면 소리 단추(44pt 넘음).
+  - 음절 차이는 순수 함수 `lib/syllable-diff.ts`(최장 공통 부분열, 띄어쓰기 · 부호는 비교 밖).
+- **넘김**: 저절로 넘어가지 않는다. 맞으면 Continue, 처음 오답이면 Try again(주) + Next(보조) — 다시 말하기 한 번, 두 번째 오답이면
+  Continue 하나. 다시 말하면 틀린 말은 문항 기록에서 빠지고 마지막 시도로 채점한다. 다시 도전(ADR-0058) 중에는 다시 말하기를 두지 않는다.
+- **알림**: 결과는 서는 순간 한 번 `announce` — perfect 「Result, correct」, close 「…, Model answer: 카드 · kadeu」,
+  오답 「…, You said: 카페, Answer: 카드 · kadeu」. 듣는 중에는 알리지 않는다(낭독이 인식기에 들어감).
+- **측정**: `episode_item_answered`에 `grade`(perfect · close · incorrect)를 싣는다 — 문항의 처음 판정에서만(다시 말한 뒤는 보고하지 않음).
+  들은 글자는 싣지 않는다. 이벤트 수는 그대로(AN1 · AB3 변동 없음).
+- **문구**: 새 키 8개 — `speaking.listening` · `checking` · `tapToStop`, `speakWord.result.perfect` · `almostPerfect` · `modelAnswer` ·
+  `youSaid` · `hearAnswer`, 여덟 언어 모두. 「Correct」 · 「Not quite」 · 「Answer」 · 「Continue」 · 「Next」 · 「Try again」은 있는 문구를 쓴다.
+- 스스로 정한 기본값: 셸 아래 주 버튼(Speak · Stop speaking)은 남겼다(큰 마이크와 같은 동작, 접근성 이름이 있는 큰 단추). 권한 · 실패
+  화면은 `feat/mic-permission-flow`의 몫이라 건드리지 않았다.
+
 ## 대가 · 알려진 한계
 
 - **뒤에 덧붙은 낱말은 공짜다**: 정답 뒤로 아무 낱말이나 붙여도 감점이 없다(전 앱 규칙도 뒤 낱말은 무시했다). 앞 낱말은 E2.

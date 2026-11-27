@@ -133,6 +133,13 @@ export const readAloudTh: ReadAloudCopy = {
 export const speakWordTh: SpeakWordCopy = {
   instruction: "พูดคำที่ตรงกับรูปภาพ",
   recognitionUnavailable: "ตอนนี้ยังรู้จำเสียงพูดไม่ได้ แตะ ข้าม เพื่อไปต่อ",
+  result: {
+    perfect: "สมบูรณ์แบบ!",
+    almostPerfect: "เกือบสมบูรณ์แบบ",
+    modelAnswer: "คำตอบตัวอย่าง",
+    youSaid: "คุณพูดว่า",
+    hearAnswer: "ฟังคำตอบ",
+  },
 };
 
 export const pairMatchTh: PairMatchCopy = {

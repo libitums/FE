@@ -48,6 +48,9 @@ export const speakingZhTw: SpeakingCopy = {
   instruction: "把這個句子大聲唸出來。",
   speak: "說話",
   stopSpeaking: "停止說話",
+  listening: "正在聆聽…",
+  checking: "正在檢查…",
+  tapToStop: "說完後點一下停止",
   tryAgain: "再試一次",
   dictationDisabled:
     "Siri 或聽寫功能已關閉。請到「設定」>「一般」>「鍵盤」開啟「啟用聽寫」，然後再試一次。",

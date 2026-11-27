@@ -25,6 +25,8 @@ export type SpeechHostOptions = {
    * (`pending`에 쌓입니다). 주지 않으면 늘 보관합니다.
    */
   readonly result?: (attempt: number) => SpeechHostResult | null;
+  /** 주면 `getStatus`가 지금 권한에 이 필드를 덧붙여 곧바로 답합니다(공용 마이크의 음량 읽기). */
+  readonly status?: Readonly<Record<string, unknown>>;
   /** 참이면 `getStatus`가 지금 권한으로 답합니다(ADR-0206 — 화면이 열릴 때 확인). 거짓이면 예전처럼 답하지 않습니다. */
   readonly answerStatus?: boolean;
   /** `requestPermissions`가 미요청 권한에 내릴 답입니다(시스템 창). 주지 않으면 미요청은 그대로 남습니다. */
@@ -66,7 +68,8 @@ export function stubSpeechHost(options: SpeechHostOptions = {}): SpeechHost {
   const speechModule = {
     getStatus: (callback: (payload: unknown) => void) => {
       host.calls.status += 1;
-      if (options.answerStatus === true) callback(statusPayload());
+      if (options.status !== undefined) callback({ ...statusPayload(), ...options.status });
+      else if (options.answerStatus === true) callback(statusPayload());
     },
     requestPermissions: (callback: (payload: unknown) => void) => {
       host.calls.request += 1;
