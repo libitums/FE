@@ -6,6 +6,7 @@
 
 import { romanizeKorean } from "../../lib/korean-romanize";
 import { storyTextOf } from "./my-story-lines";
+import { foldRotation, snapRotation } from "./my-story-turn";
 import { photoLineOf } from "./my-story-photo";
 import type {
   MyStoryChoice,
@@ -140,19 +141,43 @@ export function resizeSticker<T extends Placement>(start: T, dx: number, dy: num
 const distance = (a: Point, b: Point) => Math.hypot(b.x - a.x, b.y - a.y);
 const angle = (a: Point, b: Point) => (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
 
-/** 두 손가락 — 처음 두 점과 지금 두 점의 거리 비로 크기, 각도 차로 회전. */
+/** 붙이기를 켜는 회전 — 이만큼(도)도 돌리지 않았으면 크기만 바꾸는 것으로 보고 처음 기울기를 그대로 둡니다. */
+const TURN_MIN = 1;
+
+/**
+ * 두 손가락 — 처음 두 점과 지금 두 점의 거리 비로 크기, 각도 차로 회전. 회전은 −180 ~ 180으로 접고, 돌리는 중(1° 이상)이면 0° · ±90° · 180°
+ * 가까이에서 붙입니다(`snap` — 붙은 각도, 진동 판정용).
+ */
+export function turnSticker<T extends Placement>(
+  start: T,
+  from: readonly [Point, Point],
+  to: readonly [Point, Point],
+): { readonly item: T; readonly snap: number | null } {
+  const before = distance(from[0], from[1]);
+  const ratio = before === 0 ? 1 : distance(to[0], to[1]) / before;
+  // 두 점의 각도는 ±180°에서 넘어가므로 차이도 접어 가장 짧은 회전으로(179° → −179°는 2°).
+  const delta = foldRotation(angle(to[0], to[1]) - angle(from[0], from[1]));
+  const turn =
+    Math.abs(delta) < TURN_MIN
+      ? { rotation: foldRotation(start.rotation + delta), snap: null }
+      : snapRotation(start.rotation + delta);
+  return {
+    item: {
+      ...start,
+      scale: round(clamp(start.scale * ratio, MIN_SCALE, MAX_SCALE)),
+      rotation: turn.rotation,
+    },
+    snap: turn.snap,
+  };
+}
+
+/** 두 손가락의 결과 자리만(`turnSticker`). */
 export function pinchSticker<T extends Placement>(
   start: T,
   from: readonly [Point, Point],
   to: readonly [Point, Point],
 ): T {
-  const before = distance(from[0], from[1]);
-  const ratio = before === 0 ? 1 : distance(to[0], to[1]) / before;
-  return {
-    ...start,
-    scale: round(clamp(start.scale * ratio, MIN_SCALE, MAX_SCALE)),
-    rotation: round(start.rotation + angle(to[0], to[1]) - angle(from[0], from[1])),
-  };
+  return turnSticker(start, from, to).item;
 }
 
 /** 글 상자를 마침(Done) — 앞 글 상자가 있으면 자리를 잇습니다. 친 줄바꿈은 지킵니다(`storyTextOf`). 빈 글이면 null(상자 없앰). */
