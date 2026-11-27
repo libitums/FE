@@ -19,11 +19,16 @@ function mediaIdentity(message: ChatMessage): string | null {
   return MEDIA_KINDS.has(message.kind) ? message.id : null;
 }
 
-export function jumpKeyOf(messages: readonly ChatMessage[]): string {
+/** `skip`인 줄은 세지 않습니다 — 안내의 무료 예시는 첫 인사 아래에 서서 끝으로 내리지 않고 그 줄을 보입니다(ADR-0146 개정). */
+export function jumpKeyOf(
+  messages: readonly ChatMessage[],
+  skip: (id: string) => boolean = () => false,
+): string {
   let own = 0;
   let last = "";
   const media = new Set<string>();
   for (const message of messages) {
+    if (skip(message.id)) continue;
     if (message.kind === "text" && message.from === "me") {
       own += 1;
       last = message.text.ko; // 고친 문장 다시 보내기(ADR-0129)는 글 수가 같아도 글이 바뀝니다.

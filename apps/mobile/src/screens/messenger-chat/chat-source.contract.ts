@@ -146,6 +146,11 @@ export type ChatThread = {
   readonly ratings: Readonly<Record<string, ChatRating>>;
   /** null이면 보통 입력 줄입니다. */
   readonly inputBlock: ChatInputBlock | null;
+  /**
+   * 이 실행에서 안내로 받은 무료 예시의 줄 id 앞부분(`samplePrefixOf`, 받은 순서) — 서버 방만, 없으면 없음. 예시 줄은 첫 인사 아래에
+   * 서서 화면이 끝으로 내리지 않고 그 줄을 보입니다(ADR-0146 개정 ⟨예시 대상⟩).
+   */
+  readonly samples?: readonly string[];
 };
 
 /** 잔액(보유 엽전)은 출처가 아니라 앱이 줍니다(§9 · ADR-0116). */

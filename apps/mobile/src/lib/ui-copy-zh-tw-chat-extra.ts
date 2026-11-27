@@ -39,6 +39,7 @@ export const messengerChatExtraZhTw: MessengerChatExtraCopy = {
             : `${count} 則新訊息`,
     jump: "跳到新訊息",
     latest: "捲動到最新訊息",
+    above: (media) => (media === "photo" ? "上方收到一張照片" : "上方收到一則語音訊息"),
   },
   replyToast: {
     dismiss: "關閉",

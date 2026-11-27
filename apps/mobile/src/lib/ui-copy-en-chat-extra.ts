@@ -40,6 +40,7 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
             : `${count} new messages`,
     jump: "Jump to new messages",
     latest: "Scroll to latest",
+    above: (media) => (media === "photo" ? "Photo arrived above" : "Voice message arrived above"),
   },
   replyToast: {
     dismiss: "Dismiss",

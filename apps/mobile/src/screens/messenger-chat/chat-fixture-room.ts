@@ -35,6 +35,10 @@ export type RoomState = {
   remoteIdeas: readonly ChatReplyIdea[] | null;
   /** 서버 추천 답변이 붙은 답장의 출처(ADR-0195) — 모르면 null. */
   remoteIdeasOrigin: ChatIdeasOrigin | null;
+  /** 첫 인사(서버 `origin` greeting) 메시지 id — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩). 모르면 null. */
+  greetingId: string | null;
+  /** 이 실행에서 받은 무료 예시의 줄 id 앞부분(받은 순서) — 화면이 그 줄을 보입니다(`ChatThread.samples`). */
+  samples: readonly string[];
   origin: "local" | "server";
   /** 서버 모드 배달(ADR-0138): 서버가 받지 못한 내 글 id(보낸 순서) · 끊긴 답 채우기. */
   unsent: string[];
@@ -84,6 +88,8 @@ export function newRoomState(
     remoteHistory: "idle",
     remoteIdeas: null,
     remoteIdeasOrigin: null,
+    greetingId: null,
+    samples: [],
     origin: "local",
     unsent: [],
     recovery: "none",
@@ -205,6 +211,7 @@ export function threadOf(
       notes: room.notes,
       ratings: room.ratings,
       inputBlock: room.inputBlock,
+      ...(room.samples.length > 0 ? { samples: room.samples } : {}),
     };
   }
   return room.threadCache;
