@@ -183,14 +183,11 @@ export function MyStoryPlaced<T extends Placement>({
       bindtouchmove={move}
       bindtouchend={end}
       bindtouchcancel={cancel}
-      {...(onTap === undefined
-        ? {}
-        : {
-            catchtap: () => {
-              "background only";
-              onTap();
-            },
-          })}
+      // 누름은 바탕으로 올리지 않습니다 — 바탕의 누름은 「고름 풀기」라, 올라가면 단어 스티커를 눌러도 × · 손잡이가 바로 꺼집니다.
+      catchtap={() => {
+        "background only";
+        onTap?.();
+      }}
     >
       {children(settled)}
       {selected ? (
