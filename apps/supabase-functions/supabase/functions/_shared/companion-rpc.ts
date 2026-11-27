@@ -3,6 +3,7 @@
 
 import type { ChatSendEnv } from "./chat-send.contract.ts";
 import type { Outbound, OutboundRequest } from "./delete-account.contract.ts";
+import { guardrailRev } from "./guardrail-rev.ts";
 import { isJwtShaped, serviceKeyHeaders } from "./service-key.ts";
 
 /** RPC · 인증 조회에 필요한 환경 칸만. `ChatSendEnv`도 이 모양을 품는다(스냅샷 · 음성의 `MediaEnv`도). */
@@ -31,6 +32,8 @@ export function rpcRequest(
     headers: {
       ...serviceKeyHeaders(env.supabaseServiceRoleKey),
       "Content-Type": "application/json",
+      // 판정 기록의 리비전(20270118 — `moderation_events.rev` 기본값이 읽는다). 판정을 쓰지 않는 RPC는 그냥 무시한다.
+      "x-guardrail-rev": guardrailRev(),
     },
     body: JSON.stringify(args),
   };
