@@ -101,3 +101,13 @@
   - 결정: 내장본으로 열 때 **내장본에 없는 언어만** 이긴 항목이 적은 저장 파일 표로 채운다(`missingTranslationTablesOf`). 내장본에 있는 언어는
     그 판의 표를 지킨다 — 한 언어 안에서 판이 다른 두 출처를 섞지 않는다(위 D3). 파일 키가 영어 원문이라 판이 달라 어긋나는 줄만 영어로 남는다.
   - 확인: unit `episode-catalog.translations` CT5 ~ CT7 / integration `App.roleplay-language` IRL1.
+- ⟨2026-11-27⟩ **개정 ⟨내장 표⟩ — D4의 「미룸」 일부 해소: 내장 본문에 zh-TW · th · my 표를 싣는다**(브랜치 `feat/bundled-translations-zh-th-my`).
+  - **사용자 결정**(2026-11-27): 「내장 번역표에 중국어 말고 다른 없는 언어도 넣어 줘야지」 · 「천장 올려」(ADR-0149 개정 8, 6,220,000 B).
+  - 까닭: 받아 둔 파일을 내장본에 입히는 개정(PR #684, 브랜치 `fix/roleplay-language`)은 파일을 받은 뒤에만 닿는다. 첫 실행 · 오프라인 · 매니페스트 실패 기기에서는 내장 표가 vi · id · es · ja뿐이라
+    zh-TW · th · my 사용자에게 u00 ~ u10의 뜻이 영어였다.
+  - 방법: 지금 내장 표(vi · id · es · ja)와 같은 자리(본문 최상위 `translations`)에, 운영 버킷 `translations/level-5/<언어>/<id>.json`(읽기만)에서
+    **내장 본문의 영어 문자열과 같은 키만** 골라 싣는다. 내장 목록(`content/manifest.json`)의 sha256 · bytes를 다시 셈(판 번호 그대로). 언어별 파일로 옮기는
+    D4 본래 안은 여전히 미룬다(내장 본문 교체가 함께 필요).
+  - **남는 것**: 내장 본문(2026-11-04.2 판)은 level-5와 영어가 다듬어진 줄이 있어, 세 언어 모두 고유 326줄(쓰이는 자리 917곳, 그중 롤플레이 턴 6곳)이
+    표에 없다 — 그 줄은 영어로 선다. 파일을 받아 원격본을 열면 사라진다. 한국어로 이어 더 채우는 갈래는 번들 천장을 넘어 쓰지 않았다(ADR-0149 개정 8).
+  - 확인: unit `episode-bundled.live` · integration `App.bundled-translations`(받은 파일 없음 + zh-TW · th · my).
