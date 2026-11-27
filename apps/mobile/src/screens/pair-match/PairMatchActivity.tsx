@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
+import { RevealOnAnswer } from "../../components/RevealOnAnswer";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -198,9 +199,16 @@ export function PairMatchActivity({
                   {question.meanings.map((_, index) => tileOf("meaning", index))}
                 </view>
               </view>
-              {revealText === null ? null : (
-                <AnswerReveal testId="pair-match-reveal" text={revealText} />
-              )}
+              {/* 틀린 짝의 정답 상자 — 카드가 펼쳐지며 나타납니다(ADR-0212). */}
+              <RevealOnAnswer
+                shown={revealText !== null}
+                itemCount={1}
+                testId="pair-match-reveal-box"
+              >
+                <RevealOnAnswer.Item order={0}>
+                  <AnswerReveal testId="pair-match-reveal" text={revealText ?? ""} />
+                </RevealOnAnswer.Item>
+              </RevealOnAnswer>
             </>
           )}
         </view>

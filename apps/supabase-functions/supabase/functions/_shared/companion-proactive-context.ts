@@ -14,6 +14,8 @@ export type ProactiveContext = {
   /** 유저가 한 번이라도 말했는가(20261122). 첫 인사만 있는 대화에는 `force`여도 보내지 않는다. 옛 DB에는 없다. */
   hasUserMessage?: boolean;
   allowed: boolean;
+  /** 스토리 반응 허용(20270119) — 나이 모름도 미성년 기준(나라 앎 · US 아님)으로 받는다. 옛 DB에는 없다 — `allowed`를 쓴다. */
+  reactionAllowed?: boolean;
   capReached: boolean;
   /** 빈도 판정(20261115 · 20261123): off · no_timezone(20261226) · quiet_hours · hour · daily_cap · gap · spacing · unanswered_limit · backoff, 보내도 되면 null. */
   skipReason?: string | null;

@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { ListenPlaybackRow } from "../../components/ListenPlaybackControls";
+import { RevealOnAnswer } from "../../components/RevealOnAnswer";
 import { TextRoles } from "../../components/TextRoles";
 import type { ListenAudioControl } from "../../components/use-listen-audio";
 import {
@@ -18,7 +19,8 @@ import "./listening-prompt.css";
 // 이 컴포넌트는 문항의 **제시 채널**이고, 제시 방식이 바뀌면 통째로 교체되는 자리입니다.
 //
 // 카드 안이 위에서 아래로 재생 줄 → 구분선 → (답한 뒤) 한글 → 로마자입니다. 답하기 전에는 재생 줄만 서고,
-// 답한 뒤나 대본을 켜 둔 세션에서는 한글 + 로마자가 섭니다.
+// 답한 뒤나 대본을 켜 둔 세션에서는 한글 + 로마자가 섭니다. 답해서 처음 설 때는 카드가 펼쳐지며 구분선 · 한글 · 로마자가
+// 차례로 나타납니다(`RevealOnAnswer`, ADR-0212) — 대본을 켜 둔 세션과 움직임 줄이기에서는 움직이지 않습니다.
 //
 // **이 컴포넌트는 표시만 합니다.** 재생 상태 · 자동 재생 · 조작은 화면의 `useListenAudio`가 주인이고(학습 껍데기가
 // 배치를 바꿀 때 무대 내용을 다시 세워도 소리가 끊기지 않게 하려는 것입니다), 여기에는 `playback` 묶음 하나로
@@ -60,22 +62,26 @@ export function ListeningPrompt({
           **대본은 CSS로 숨기지 않고 렌더를 거릅니다.** jsdom은 스타일을 계산하지 않아 `display:none`은 ui 계층이
           원리적으로 못 보고, 숨긴 `<text>`는 보조기술 정지점으로 남습니다. */}
       <ListenPlaybackRow control={playback} testIdPrefix="listening-prompt" />
-      {script === "none" ? null : (
-        <>
+      <RevealOnAnswer shown={script !== "none"} itemCount={3} testId="listening-card-reveal">
+        <RevealOnAnswer.Item order={0}>
           <TextRoles.Divider testId="listening-prompt-divider" />
+        </RevealOnAnswer.Item>
+        <RevealOnAnswer.Item order={1}>
           <text
             className={`listening-prompt-text korean-text-${step} korean-text-tone-${koreanBrandToneOf(step)}`}
             data-testid="listening-prompt-text"
           >
             {text}
           </text>
+        </RevealOnAnswer.Item>
+        <RevealOnAnswer.Item order={2}>
           <TextRoles.Romanization
             segments={romanizationSegmentsOf(romanization, undefined)}
             size={romanizationSizeFor(step)}
             testId="listening-prompt-romanization"
           />
-        </>
-      )}
+        </RevealOnAnswer.Item>
+      </RevealOnAnswer>
     </view>
   );
 }
