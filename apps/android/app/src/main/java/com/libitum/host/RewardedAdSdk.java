@@ -5,7 +5,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.lynx.tasm.LynxViewBuilder;
 
 /**
- * Google Mobile Ads SDK를 시작하는 유일한 자리다(ADR-0208). 광고 단위가 없으면 이 클래스의 어떤 코드도 SDK를 부르지 않고 광고 모듈도
+ * Google Mobile Ads SDK를 시작하는 유일한 자리다(ADR-0209). 광고 단위가 없으면 이 클래스의 어떤 코드도 SDK를 부르지 않고 광고 모듈도
  * 등록하지 않는다.
  */
 final class RewardedAdSdk {

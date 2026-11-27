@@ -12,7 +12,7 @@ import {
 import type { TicketLedger } from "../../lib/learning-tickets";
 import { OutOfTicketsDialog } from "./OutOfTicketsDialog";
 
-// `ui` 계층: 「Out of tickets」의 광고 줄(ADR-0208, 시안 A1 ~ A5).
+// `ui` 계층: 「Out of tickets」의 광고 줄(ADR-0209, 시안 A1 ~ A5).
 
 const T0 = 1_800_000_000_000;
 const empty = [0, 0, 0].reduce<TicketLedger>(

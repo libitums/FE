@@ -10,7 +10,7 @@ import {
 } from "./ad-ticket";
 import type { AdTicketServerStatus, AdTicketState } from "./ad-ticket.contract";
 
-// 광고 보고 티켓 1장(ADR-0208) — 시안 A1 ~ A5 상태 기계 · 확인 간격 · 실험군.
+// 광고 보고 티켓 1장(ADR-0209) — 시안 A1 ~ A5 상태 기계 · 확인 간격 · 실험군.
 const status = (over: Partial<AdTicketServerStatus> = {}): AdTicketServerStatus => ({
   enabled: true,
   eligible: true,

@@ -12,7 +12,7 @@ import type {
   SampleOffer,
 } from "./chat-media.contract";
 import { mediaLineId } from "./chat-media-rules";
-import { samplePrefixOf, sampleTargetOf } from "./chat-sample-target";
+import { placedSampleTarget, samplePrefixOf, sampleTargetOf } from "./chat-sample-target";
 import type { ChatMediaKind } from "./chat-source.contract";
 import type { MediaSenderDeps } from "./chat-remote-send";
 
@@ -61,10 +61,16 @@ export function sampleSnapshotMethods(
       changed(room);
       return false;
     }
+    // 서버가 붙인 곳(첫 인사)이 앱이 고른 대상과 다르면 그 아래에 놓습니다 — 다시 읽을 때 서버 줄과 같은 자리 · 같은 id라 두 장이 되지 않습니다.
+    const placed = placedSampleTarget(room.messages, target, result.media.messageId, media);
+    if (placed.messageId !== target.messageId) {
+      room.messages = room.messages.filter((message) => message.id !== reqId);
+      room.samples = [...room.samples, samplePrefixOf(placed.messageId, media)];
+    }
     // 값이 없으니 잔액을 읽지 않습니다(`cached`).
-    await accept(room, reqId, target, media, { media: result.media, cached: true });
+    await accept(room, reqId, placed, media, { media: result.media, cached: true });
     if (!alive(room)) return false;
-    put(room, noticeLine(room, target, media, "sample-gift"));
+    put(room, noticeLine(room, placed, media, "sample-gift"));
     changed(room);
     return true;
   };

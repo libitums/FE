@@ -1,4 +1,4 @@
-# ADR-0208: 광고 보고 티켓 1장 — 「Out of tickets」에만 · 서버 검증(SSV) 뒤 지급 · 하루 2회 · 실험 플래그
+# ADR-0209: 광고 보고 티켓 1장 — 「Out of tickets」에만 · 서버 검증(SSV) 뒤 지급 · 하루 2회 · 실험 플래그
 
 - 상태: **채택 — 서버 파일(PR `feat/ad-ticket-server`) · 앱(PR `feat/ad-ticket-app`, 서버 PR 위), 운영 미적용 · 함수 미배포 · 실제 AdMob ID 없음(테스트 ID만)**.
 - 날짜: 2026-11-27

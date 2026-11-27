@@ -12,7 +12,7 @@ import {
 } from "./rewarded-ad";
 import type { AuthRequestOutcome } from "./supabase-transport";
 
-// 광고 보고 티켓(ADR-0208)의 바깥 접점 — 서버 RPC 둘 · PostHog 플래그 · 호스트 광고 모듈. 모두 던지지 않는다.
+// 광고 보고 티켓(ADR-0209)의 바깥 접점 — 서버 RPC 둘 · PostHog 플래그 · 호스트 광고 모듈. 모두 던지지 않는다.
 const ok = (body: unknown): AuthRequestOutcome =>
   ({ ok: true, status: 200, bodyText: JSON.stringify(body) }) as AuthRequestOutcome;
 const config = { url: "https://db.example", anonKey: "anon" } as never;

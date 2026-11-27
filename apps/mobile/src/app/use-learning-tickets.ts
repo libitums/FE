@@ -54,7 +54,7 @@ export type OutOfTicketsWiring = {
   readonly onGetMore: () => void;
   readonly onStartLesson: () => void;
   readonly onClose: () => void;
-  /** 광고 보고 1장(ADR-0208) — 그리지 않을 때는 없음. */
+  /** 광고 보고 1장(ADR-0209) — 그리지 않을 때는 없음. */
   readonly adTicket?: AdTicketWiring;
 };
 
@@ -87,7 +87,7 @@ export type LearningTicketsOptions = {
   readonly chipShown: boolean;
   /** 엽전으로 1장 사기(서버 RPC) — 없으면 앱 결선(저장된 로그인)입니다. 단위 테스트가 바꿔 끼웁니다. */
   readonly buy?: (requestId: string) => Promise<TicketPurchase | "signed-out" | null>;
-  /** 광고 보고 1장의 바깥 접점(ADR-0208) — 없으면 앱 결선입니다. */
+  /** 광고 보고 1장의 바깥 접점(ADR-0209) — 없으면 앱 결선입니다. */
   readonly adTicket?: Partial<AdTicketDeps>;
 };
 
@@ -166,7 +166,7 @@ export function useLearningTickets(
       });
   };
 
-  // 광고로 받은 1장(서버가 SSV 지급을 확인한 뒤) — 엽전 구매와 같은 길(ADR-0208 D2). 가득이면 더할 칸이 없습니다.
+  // 광고로 받은 1장(서버가 SSV 지급을 확인한 뒤) — 엽전 구매와 같은 길(ADR-0209 D2). 가득이면 더할 칸이 없습니다.
   const adTicket = useAdTicket(
     blocked !== null,
     () => {

@@ -18,7 +18,7 @@ import { contentNotFoundResponse, isContentRequest } from "./test-helpers/conten
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { legacyPassedRecord } from "./test-helpers/progress-seed";
 
-// 광고 보고 티켓 1장(ADR-0208)을 App 한 트리에서 봅니다 — 「Out of tickets」 광고 줄 · 서버 시작(요청 id) · 호스트 광고 ·
+// 광고 보고 티켓 1장(ADR-0209)을 App 한 트리에서 봅니다 — 「Out of tickets」 광고 줄 · 서버 시작(요청 id) · 호스트 광고 ·
 // 지급 확인(SSV가 늦으면 다시 읽음) · 원장에 1장 · 이벤트. 대역은 경계뿐 — `fetch`(Supabase · PostHog) · `NativeModules`.
 
 type Reply = { status: number; body: string };

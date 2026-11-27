@@ -1,4 +1,4 @@
-// 광고 보고 티켓 실험 플래그(ADR-0208 D6) — PostHog 피처 플래그 `ad-ticket`, 회원(distinct id = Supabase 사용자 id) 단위 50/50.
+// 광고 보고 티켓 실험 플래그(ADR-0209 D6) — PostHog 피처 플래그 `ad-ticket`, 회원(distinct id = Supabase 사용자 id) 단위 50/50.
 // 분석 클라이언트는 원격 플래그를 끈 채로 둡니다(`disableRemoteFeatureFlags`) — 이 플래그 하나만 `/flags/?v=2`로 따로 묻습니다.
 // **기본 꺼짐**: 설정 · 전송이 없거나, 읽지 못하거나, 플래그가 없으면 대조군(`control`). 사용자마다 10분 동안 기억합니다.
 

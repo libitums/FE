@@ -1,4 +1,4 @@
-// Google Mobile Ads(AdMob) 보상형 광고 값(ADR-0208). 이 파일은 추적한다 — 실제 값은 추적하지 않는 AdMob.local.xcconfig에 적는다
+// Google Mobile Ads(AdMob) 보상형 광고 값(ADR-0209). 이 파일은 추적한다 — 실제 값은 추적하지 않는 AdMob.local.xcconfig에 적는다
 // (AdMob.local.xcconfig.example 참조).
 //
 // ADMOB_APP_ID의 기본값은 Google 공식 **샘플(테스트) 앱 ID**다. SDK는 시작하지 않아도 앱이 뜰 때 Info.plist의 GADApplicationIdentifier를

@@ -1,4 +1,4 @@
-// 광고 보고 티켓 이벤트의 이름 · 견본(ADR-0208 D9) — airbridge 매핑 표(`airbridge-events.test-support`)가 가져다 씁니다.
+// 광고 보고 티켓 이벤트의 이름 · 견본(ADR-0209 D9) — airbridge 매핑 표(`airbridge-events.test-support`)가 가져다 씁니다.
 // 모두 PostHog만(Airbridge로 나가지 않음).
 import type { AnalyticsEvent } from "./analytics.contract";
 

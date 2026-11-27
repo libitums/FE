@@ -1,4 +1,4 @@
-// AdMob SSV 콜백 — 쿼리 읽기 · 서명 확인 · 공개키 캐시 · 환경 값(ADR-0208). 런타임 중립(WebCrypto · fetch 대신 Outbound).
+// AdMob SSV 콜백 — 쿼리 읽기 · 서명 확인 · 공개키 캐시 · 환경 값(ADR-0209). 런타임 중립(WebCrypto · fetch 대신 Outbound).
 // 서명: ECDSA P-256 · SHA-256, 대상은 쿼리에서 `&signature=` 앞까지의 받은 글자 그대로, 서명 값은 base64url DER.
 // 공개키: https://www.gstatic.com/admob/reward/verifier-keys.json 의 `keys[].base64`(SPKI DER) — key_id로 고른다.
 

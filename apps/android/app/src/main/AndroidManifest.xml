@@ -31,7 +31,7 @@
     android:theme="@style/Theme.Duru">
     <!-- Sentry starts from DuruApplication only when a DSN is built in (docs/adr/0061). -->
     <meta-data android:name="io.sentry.auto-init" android:value="false" />
-    <!-- AdMob 앱 ID(ADR-0208) — admob.properties에서, 없으면 Google 샘플 앱 ID(비면 SDK가 앱을 죽인다). 광고 단위가 없으면 SDK를 시작하지 않는다. -->
+    <!-- AdMob 앱 ID(ADR-0209) — admob.properties에서, 없으면 Google 샘플 앱 ID(비면 SDK가 앱을 죽인다). 광고 단위가 없으면 SDK를 시작하지 않는다. -->
     <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="${admobAppId}" />
     <!-- 측정 초기화는 SDK를 시작할 때까지 미룬다. -->
     <meta-data android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT" android:value="true" />

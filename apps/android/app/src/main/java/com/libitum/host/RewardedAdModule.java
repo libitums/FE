@@ -21,7 +21,7 @@ import com.lynx.react.bridge.JavaOnlyMap;
 import java.lang.ref.WeakReference;
 
 /**
- * 보상형 광고를 불러오고 보여 주는 호스트 모듈이다(ADR-0208 · ADR-0017). **광고 단위 값이 있어 SDK가 시작된 빌드에서만** 등록한다.
+ * 보상형 광고를 불러오고 보여 주는 호스트 모듈이다(ADR-0209 · ADR-0017). **광고 단위 값이 있어 SDK가 시작된 빌드에서만** 등록한다.
  * <ul>
  *   <li>{@code loadRewarded(callback)} → {@code {status: loaded | no_fill | failed}}. 비개인화(npa=1)로 요청한다.
  *   <li>{@code showRewarded(userId, customData, callback)} → {@code {status: earned | dismissed | failed}}. 닫힌 뒤 한 번 답한다.

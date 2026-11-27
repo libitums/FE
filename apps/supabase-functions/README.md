@@ -152,9 +152,10 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 
 ## push-campaigns (자동 푸시 캠페인 — ADR-0130 D12)
 
-매시 예약 작업이 서버 키로 부르는 함수다. 진행 단계마다 현지 20시에 쉰 사람을 골라 대조군을 남기고 A(캐릭터 톤) ·
-B(단계별 예고)로 나눠 `send-push`로 보낸다. 배정은 보내기 전에 `push_campaign_sends`에 남긴다(실패하면 보내지 않음).
-규칙 · 문구는 `_shared/push-campaign-config.ts`, 판정은 `_shared/push-campaign-plan.ts`(콘솔과 같은 해시 · 규칙).
+매시 예약 작업이 서버 키로 부르는 함수다. 지금은 빈도 실험(ADR-0208)이다 — 사람마다 고정된 칸(안 보냄 · 하루 1번 · 하루 2번)으로
+현지 12시 · 20시에 보내고, 쉰 지 7일까지는 매일, 그 뒤는 10 · 14 · 21 · 30 · 45 · 60일째에 복귀 알림을 보낸다.
+배정은 보내기 전에 `push_campaign_sends`에 남긴다(실패하면 보내지 않음) — `variant` a = 하루 1번, b = 하루 2번, `story_step` = 간 문구.
+규칙은 `_shared/push-campaign-config.ts`, 문구는 `_shared/push-campaign-copy-*.ts`, 판정은 `_shared/push-campaign-plan.ts`.
 
 배포 순서: ① 마이그레이션 `20261210120000_push_campaigns.sql` ② `supabase functions deploy push-campaigns`
 ③ 미리보기 — 서버 키로 `{"dryRun": true}` POST(기록 · 발송 없음) ④ `supabase/cron/push-campaigns.sql`을 SQL 편집기에서 한 번.
@@ -1127,7 +1128,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서** — `20270110120000` 뒤에 `20270111120000_past_stories.sql`. Edge Function 배포 없음. 켜기: `update companion.settings set past_stories = 'testers';`.
 
-## 광고 보고 티켓 — admob-ssv (20270114120000, ADR-0208)
+## 광고 보고 티켓 — admob-ssv (20270114120000, ADR-0209)
 
 - AdMob 보상형 광고의 서버 측 확인(SSV) 콜백. Google이 `GET`으로 부르고, 인증은 Supabase JWT가 아니라 Google 공개키 서명이다(`config.toml` `verify_jwt = false`).
   처리기 `_shared/admob-ssv-handler.ts`(400 · 401 · 403 · 405 · 500 재시도 · 200 outcome), 서명 · 키 캐시 · 환경 `_shared/admob-ssv.ts`.

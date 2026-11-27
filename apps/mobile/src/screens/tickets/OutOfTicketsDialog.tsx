@@ -31,7 +31,7 @@ export type OutOfTicketsDialogProps = {
   readonly onClose: () => void;
   /** 무제한 티켓 카드(ADR-0144) — 기능 플래그가 꺼졌으면 없음, 대화상자는 지금 그대로. */
   readonly offer?: PlanOfferWiring;
-  /** 광고 보고 티켓 1장(ADR-0208) — 플래그 · 모듈 · 서버가 허락하지 않으면 없음(지금 그대로). */
+  /** 광고 보고 티켓 1장(ADR-0209) — 플래그 · 모듈 · 서버가 허락하지 않으면 없음(지금 그대로). */
   readonly adTicket?: AdTicketWiring;
 };
 
@@ -46,7 +46,7 @@ export function OutOfTicketsDialog({
 }: OutOfTicketsDialogProps): ReactNode {
   const allCopy = useUiCopy();
   const copy = allCopy.tickets;
-  // A3 — 광고로 받은 직후(ADR-0208): 제목 · 링 아래 글자 · 안내가 받음으로 바뀌고 Start lesson이 주 버튼입니다.
+  // A3 — 광고로 받은 직후(ADR-0209): 제목 · 링 아래 글자 · 안내가 받음으로 바뀌고 Start lesson이 주 버튼입니다.
   const adGranted = adTicket?.state.kind === "granted" ? adTicket.state : null;
   const canStart = status.available > 0;
   const charging = status.slots.find((slot) => slot.kind === "charging");
@@ -106,7 +106,7 @@ export function OutOfTicketsDialog({
         ) : (
           <AdTicketGranted left={adGranted.left} />
         )}
-        {/* 광고 보고 1장(ADR-0208, 시안 A1) — 선택지 맨 위. 결선이 없으면 지금 대화상자 그대로. */}
+        {/* 광고 보고 1장(ADR-0209, 시안 A1) — 선택지 맨 위. 결선이 없으면 지금 대화상자 그대로. */}
         {adTicket === undefined ? null : <AdTicketOption wiring={adTicket} />}
         {/* 무제한 티켓 카드(ADR-0144, 시안 ①) — 결선이 있으면 「Go unlimited」가 첫 동작입니다. */}
         {offer === undefined ? null : <TicketsPlanOffer offer={offer} />}

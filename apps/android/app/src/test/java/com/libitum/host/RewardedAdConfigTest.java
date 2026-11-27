@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-/** AdMob 값 판정(ADR-0208) — 둘 다 모양이 맞을 때만 SDK를 시작한다. 값은 Google 공식 테스트 ID다. */
+/** AdMob 값 판정(ADR-0209) — 둘 다 모양이 맞을 때만 SDK를 시작한다. 값은 Google 공식 테스트 ID다. */
 public final class RewardedAdConfigTest {
   private static final String APP = "ca-app-pub-3940256099942544~3347511713";
   private static final String UNIT = "ca-app-pub-3940256099942544/5224354917";

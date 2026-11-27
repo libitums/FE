@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       PurchasesAttribution.linkAirbridgeDevice()
     }
 
-    // AdMob 보상형 광고(ADR-0208). 앱 ID · 광고 단위가 없으면 한 줄도 부르지 않는다 — 광고 모듈도 등록하지 않는다.
+    // AdMob 보상형 광고(ADR-0209). 앱 ID · 광고 단위가 없으면 한 줄도 부르지 않는다 — 광고 모듈도 등록하지 않는다.
     if let config = RewardedAdConfig.fromBundle() {
       RewardedAdSDK.start(config)
     }

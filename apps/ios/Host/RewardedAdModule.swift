@@ -2,7 +2,7 @@ import Foundation
 import GoogleMobileAds
 import UIKit
 
-/// AdMob 보상형 광고 값 판정(ADR-0208). `Info.plist`의 `GADApplicationIdentifier` · `AdMobRewardedUnitID`(← `Config/AdMob.xcconfig` ←
+/// AdMob 보상형 광고 값 판정(ADR-0209). `Info.plist`의 `GADApplicationIdentifier` · `AdMobRewardedUnitID`(← `Config/AdMob.xcconfig` ←
 /// 추적하지 않는 `AdMob.local.xcconfig`)가 둘 다 `ca-app-pub-`으로 시작할 때만 선다. 앱 ID는 늘 샘플 값이라도 차 있고(비면 SDK가 앱을 죽인다),
 /// 광고 단위가 비면 SDK를 한 줄도 부르지 않고 모듈도 등록하지 않는다 — JS는 모듈이 없으니 「Out of tickets」에 광고 줄을 세우지 않는다.
 struct RewardedAdConfig: Equatable {
@@ -41,7 +41,7 @@ enum RewardedAdSDK {
   }
 }
 
-/// 보상형 광고를 불러오고 보여 주는 호스트 모듈이다(ADR-0208 · ADR-0017). **값이 있어 SDK가 시작된 빌드에서만** 등록한다.
+/// 보상형 광고를 불러오고 보여 주는 호스트 모듈이다(ADR-0209 · ADR-0017). **값이 있어 SDK가 시작된 빌드에서만** 등록한다.
 /// - `loadRewarded(callback)` → `{status: "loaded" | "no_fill" | "failed"}`. 비개인화(npa=1)로 요청한다 — 새 ATT 요청은 없다.
 /// - `showRewarded(userId, customData, callback)` → `{status: "earned" | "dismissed" | "failed"}`. 닫힌 뒤 한 번 답한다.
 ///   SSV 옵션에 Supabase 사용자 id(`user_id`)와 서버 요청 id(`custom_data`)를 싣는다 — 지급은 서버가 Google 콜백으로 판정한다.

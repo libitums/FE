@@ -3,7 +3,7 @@ package com.libitum.host;
 import java.util.regex.Pattern;
 
 /**
- * AdMob 보상형 광고 값의 순수 판정(ADR-0208). 앱 ID(`ca-app-pub-…~…`)와 보상형 광고 단위 ID(`ca-app-pub-…/…`)가 둘 다 모양에 맞을 때만
+ * AdMob 보상형 광고 값의 순수 판정(ADR-0209). 앱 ID(`ca-app-pub-…~…`)와 보상형 광고 단위 ID(`ca-app-pub-…/…`)가 둘 다 모양에 맞을 때만
  * 선다. 아니면 SDK를 시작하지 않고 광고 모듈도 등록하지 않는다 — JS는 모듈이 없으니 「Out of tickets」에 광고 줄을 세우지 않는다.
  * 매니페스트의 앱 ID는 값이 없을 때 Google 샘플 앱 ID로 채워진다(비면 SDK가 앱을 죽인다) — 그래서 광고 단위가 실제 스위치다.
  */

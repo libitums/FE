@@ -88,7 +88,7 @@ export type TicketsCopy = {
 
 export type TicketEvent =
   | { readonly name: "tickets_ran_out" }
-  /** 광고 보고 티켓(ADR-0208 D9) — PostHog만. */
+  /** 광고 보고 티켓(ADR-0209 D9) — PostHog만. */
   | AdTicketEvent
   | {
       readonly name: "ticket_more_tapped";

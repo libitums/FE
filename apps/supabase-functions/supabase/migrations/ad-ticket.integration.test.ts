@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 광고 보고 티켓 1장(20270114, ADR-0208). 앱이 「광고 시작」 요청 id를 받고(ad_ticket_start), Google SSV 콜백이 서명 확인 뒤
+// 광고 보고 티켓 1장(20270114, ADR-0209). 앱이 「광고 시작」 요청 id를 받고(ad_ticket_start), Google SSV 콜백이 서명 확인 뒤
 // ad_ticket_grant(service_role)를 부르고, 앱은 ad_ticket_status로 지급을 확인한다. 티켓 원장은 여전히 앱에 있다(ADR-0075).
 const user = "00000000-0000-4000-8000-0000000000e1";
 const other = "00000000-0000-4000-8000-0000000000e2";

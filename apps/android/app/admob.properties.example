@@ -1,4 +1,4 @@
-# AdMob 보상형 광고 값(ADR-0208). 이 파일을 admob.properties로 복사해 채운다(admob.properties는 추적하지 않는다).
+# AdMob 보상형 광고 값(ADR-0209). 이 파일을 admob.properties로 복사해 채운다(admob.properties는 추적하지 않는다).
 # 아래는 Google 공식 **테스트 ID**다(가짜 광고, 수익 없음 · 개발 · 기기 확인용). 운영 빌드는 AdMob 콘솔의 Android 앱 ID(ca-app-pub-…~…)와
 # 보상형 광고 단위 ID(ca-app-pub-…/…)로 바꾼다.
 # 파일이 없거나 광고 단위가 비면 SDK를 시작하지 않고 광고 모듈도 등록하지 않는다. 매니페스트 앱 ID는 그때 Google 샘플 앱 ID로 채운다

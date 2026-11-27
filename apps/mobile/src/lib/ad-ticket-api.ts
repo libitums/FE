@@ -1,4 +1,4 @@
-// 광고 보고 티켓 서버 RPC(ADR-0208) — `ad_ticket_status`(스위치 · 대상 · 오늘 남은 횟수 · 요청 지급 상태)와
+// 광고 보고 티켓 서버 RPC(ADR-0209) — `ad_ticket_status`(스위치 · 대상 · 오늘 남은 횟수 · 요청 지급 상태)와
 // `ad_ticket_start`(SSV custom_data에 실을 요청 id 발급). 하루의 기준은 기기 UTC 오프셋(분)입니다.
 // **던지지 않습니다** — 로그인이 없거나 실패 · 틀린 응답은 null.
 

@@ -10,7 +10,7 @@ import type { AdTicketCopy } from "../../lib/ui-copy-ad-ticket";
 
 import "./ad-ticket.css";
 
-// 「Out of tickets」의 광고 줄(ADR-0208, 시안 A1 ~ A5). 대화상자 선택지 맨 위 — 광고(무료) → 엽전 20 → Go unlimited.
+// 「Out of tickets」의 광고 줄(ADR-0209, 시안 A1 ~ A5). 대화상자 선택지 맨 위 — 광고(무료) → 엽전 20 → Go unlimited.
 // 주황 채움은 「Start lesson」만이라 이 줄은 테두리 줄입니다. 상태는 순수 함수(`adTicketStep`)가 정하고 여기서는 그리기만 합니다.
 //   A1 offer — 누르면 `onWatch`. 실패 뒤면 줄 위에 안내 한 줄.
 //   A2 busy — 줄 안에서만 로딩(다른 선택지는 그대로), 누르지 않음.
