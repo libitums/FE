@@ -38,5 +38,7 @@ export function missingTranslationTablesOf(
   for (const [language, text] of Object.entries(stored)) {
     if (!(language in own)) missing[language] = text;
   }
+  // 채울 언어가 없으면 표 덧씌우기를 부르지 않고 같은 객체를 돌려줍니다.
+  if (Object.keys(missing).length === 0) return episode;
   return translationTablesOf(entry, episode, missing);
 }
