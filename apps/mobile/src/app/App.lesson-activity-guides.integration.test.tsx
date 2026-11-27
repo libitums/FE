@@ -31,7 +31,7 @@ const guideRoot = (kind: LearningItemGuideKind) =>
   screen.queryByTestId(`learning-item-guide-${kind}`);
 const anyGuide = () => screen.queryAllByTestId(/^learning-item-guide-(sentence-order|activity-)/);
 const seenOf = (store: Map<string, string>): unknown =>
-  JSON.parse(store.get(learningItemGuideSeenStorageKey) ?? "[]");
+  JSON.parse(store.get(`${learningItemGuideSeenStorageKey}.u`) ?? "[]"); // 계정별 칸(2026-11-27) — 부팅 계정 `u`
 
 async function dismiss(kind: LearningItemGuideKind): Promise<void> {
   const root = guideRoot(kind);

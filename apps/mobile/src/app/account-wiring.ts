@@ -2,13 +2,13 @@
 // `entry_screen_viewed(login)` → App 세션 재시작)를 잇습니다. 어휘는 `leave-app.contract.ts`입니다.
 
 import { clearWordbook } from "../lib/wordbook";
+import { forgetGuideRecords } from "../lib/guide-records";
 import { authUserIdFrom } from "../lib/auth-user-id";
 import { setCrashUser } from "../lib/crash-user";
 import { clearGuestSession, loadGuestSession } from "../lib/guest-session";
 import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
 import { forgetDeviceUnlocks, serverAccountKey } from "../screens/messenger-chat/chat-local-stores";
 import { forgetLastSeen } from "../screens/messenger-chat/chat-last-seen-store";
-import { forgetMessengerGuide } from "../screens/messenger-chat/messenger-guide";
 import { clearPendingLearningDays } from "./pending-learning-days";
 import { clearCachedProgress } from "./cached-learning-progress";
 import { clearPendingProgress } from "./pending-learning-progress";
@@ -87,9 +87,9 @@ export function accountWiring({
           // 메신저 해금 기록도 그 계정 것만 지웁니다 — 같은 기기의 다음 계정에 열린 인물이 남지 않게(2026-11-17).
           forgetDeviceUnlocks(serverAccountKey(userId));
           forgetLastSeen(serverAccountKey(userId));
+          // 안내 기록(메신저 셋 · 학습 문항)도 그 계정 칸만 지웁니다 — 로그아웃은 남깁니다(2026-11-27, 계정별 칸).
+          forgetGuideRecords(userId);
         }
-        // 메신저 안내 기록은 기기 하나에 하나라 계정과 상관없이 지웁니다 — 새로 가입한 계정이 안내를 처음부터 봅니다(2026-11-27).
-        forgetMessengerGuide();
         leave("deleted");
       }
       return result;

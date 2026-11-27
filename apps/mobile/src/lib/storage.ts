@@ -22,7 +22,6 @@
 // - `libitum.ui.language` — UI 언어(ADR-0031 D4, 지우지 않는 근거는 ADR-0032)
 // - `libitum.episode-survey.done` — 설문을 답했거나 건너뛴 에피소드 목록(ADR-0036)
 // - `libitum.app-review.requested` — 스토어 평점 창을 요청한 기록, 설치당 한 번(ADR-0036 D4)
-// - `libitum.learning-item-guides.seen` — 학습 문항 안내를 본 기록(ADR-0054 D3)
 // - `libitum.catalog-update-notice` — 끝낸 에피소드 업데이트 안내의 마지막으로 본 에피소드 버전 · 「다시 보지 않기」(ADR-0089)
 // - `libitum.session-option.show-choice-romanization` — 보기 로마자 표시 설정, `"on"` | `"off"`(ADR-0108 D3)
 // - `libitum.session-option.vibration` — 판정 진동 설정, `"on"` | `"off"`(ADR-0109 D4)
@@ -33,6 +32,10 @@
 // - `libitum.letters` — Letters를 연 기록 · Letters 추천을 본 횟수 · 마지막 본 날 · Keep going 횟수(ADR-0169 D5)
 // 메신저 방마다 본 마지막 인물 메시지(ADR-0213 개정)는 `libitum.messenger.last-seen`에 계정마다 — 서버로 가지 않고 로그아웃 ·
 // 계정 삭제에 그 계정 것만 지웁니다.
+// 안내 기록 넷(메신저 `libitum.messenger.guide-seen` · `keyboard-guide-seen` · `tab-visited`, 학습 문항
+// `libitum.learning-item-guides.seen`)은 2026-11-27부터 계정마다 `<키>.<userId>`, 비회원은 `<키>.guest`(로그인 때 계정 칸으로
+// 합치며 지움) — 서버로 가지 않고 로그아웃에 남으며 계정 삭제에 그 계정 칸을 지웁니다. 앞부분만 있는 옛 기기 키는 처음 읽는
+// 사람이 물려받고 지웁니다(ADR-0032 · ADR-0139 · ADR-0054 개정).
 // 단어장(ADR-0169 D4)은 계정마다 `libitum.wordbook.<userId>`, 비회원은 `libitum.wordbook.guest`(로그인 때 계정 칸으로 합치며 지움) —
 // 서버로 가지 않고 로그아웃에 남으며 계정 삭제 성공에 지웁니다.
 
