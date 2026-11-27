@@ -16,6 +16,7 @@ import { COMPANION_CATALOG } from "../screens/messenger-chat/companion-roster";
 import type {
   AddFriendResult,
   AdultAckPort,
+  EarlyAccessListing,
   EarlyAccessResult,
   FriendCatalog,
   SuggestedFriendsPort,
@@ -38,6 +39,7 @@ export function setEarlyAccessRemote(factory: (() => ChatRemote) | null): void {
   earlyRemote = null;
   cachedPort = null;
   visibleMemory = createVisibleFriendsMemory();
+  offersMemory = new Map();
 }
 
 let earlyFactory: (() => ChatRemote) | null = null;
@@ -45,6 +47,8 @@ let earlyRemote: ChatRemote | null = null;
 let askedOverride: AdultAckAskedStore | null = null;
 // 보이는 추천 친구의 실행 중 기억(계정마다) — 목록 화면이 다시 설 때 첫 프레임부터 같은 줄을 그립니다.
 let visibleMemory = createVisibleFriendsMemory();
+// 먼저 만나기 제안의 실행 중 기억(계정마다) — 제안이 늦게 얹혀 추천 · 스토리 줄 순서가 바뀌지 않게 첫 프레임부터 같은 값으로 그립니다.
+let offersMemory = new Map<string, readonly EarlyAccessListing[]>();
 
 /** 서버 포트는 처음 쓸 때(배경 스레드 — 효과 · 이벤트) 한 번 만듭니다. */
 function serverRemote(): ChatRemote | null {
@@ -106,6 +110,14 @@ async function visibleFriends() {
   return sourceKey() === key ? list : null;
 }
 
+/** 켜진 제안 — 읽은 목록은 부른 때의 계정으로 기억합니다(던지면 기억하지 않고 화면이 제안 없음으로 둡니다). */
+async function offers(): Promise<readonly EarlyAccessListing[]> {
+  const key = sourceKey();
+  const list = (await earlyAccessRemote()?.offers()) ?? [];
+  offersMemory.set(key, list);
+  return sourceKey() === key ? list : [];
+}
+
 /** 이 계정에서 마지막으로 읽은 보이는 친구 — 읽은 적이 없으면 null. */
 const lastVisibleFriends = () => visibleMemory.recall(sourceKey());
 
@@ -163,7 +175,8 @@ export function suggestedFriendsPort(args?: SuggestedFriendsViewArgs): Suggested
     allStory: planAllCharacters,
     // 먼저 만나기(ADR-0162 D5, 2026-11-19 적용) — 서버 포트가 끼워진 앱(진입점)에서만 켜집니다. 손님은 제안 목록이 비어 단추가 없습니다.
     earlyAccess: earlyFactory === null ? null : unlockEarly,
-    offers: earlyFactory === null ? null : async () => (await earlyAccessRemote()?.offers()) ?? [],
+    offers: earlyFactory === null ? null : offers,
+    lastOffers: () => offersMemory.get(sourceKey()) ?? null,
     // 추천 친구(ADR-0164) — 서버 포트가 끼워진 앱에서만. 손님 · 시험 계정이 아닌 회원은 빈 목록이라 일반 인물이 없습니다.
     ...(earlyFactory === null
       ? {}

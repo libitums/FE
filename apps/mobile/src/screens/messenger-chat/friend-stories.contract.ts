@@ -2,7 +2,7 @@
 
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type { LocalizedLine } from "./friend-catalog.contract";
-import type { MineRowSlot, MyStoriesPort, MyStory } from "./my-stories.contract";
+import type { LastShown, MineRowSlot, MyStoriesPort, MyStory } from "./my-stories.contract";
 import type { SuggestedFriend } from "./suggested-friends";
 import type { ChatTier } from "./free-turns";
 import type { TrialStore } from "./trial-store";
@@ -74,6 +74,8 @@ export type FriendStoriesPort = {
   readonly replyPlan?: () => StoryReplyPlan | null;
   /** 답장 칸이 잰 키보드 높이를 남기는 곳(대화방 입력 줄과 같은 저장) — 없으면 남기지 않고 화면 표로 시작합니다. */
   readonly keyboardHeightStore?: KeyboardHeightStore;
+  /** 마지막으로 보인 스토리(계정마다, 실행 동안) — 탭을 다시 열면 첫 프레임에 그리고 뒤에서 다시 읽습니다. 없으면 빈 줄에서 시작합니다. */
+  readonly memory?: LastShown<readonly FriendStory[]>;
 };
 
 /** 보기 답장의 앱 관문 재료 — 대화방 입력 줄의 관문(`useChatTurns`)과 같은 체험 · 등급입니다. */
@@ -114,8 +116,7 @@ export type StoryRow = {
 /** 경과 시간 — 1분 미만 now, 1시간 미만 분, 그 밖 시간(내림). */
 export type StoryAge =
   | { readonly unit: "now" }
-  | { readonly unit: "m"; readonly value: number }
-  | { readonly unit: "h"; readonly value: number };
+  | { readonly unit: "m" | "h"; readonly value: number };
 
 export type StoryCloseReason = "completed" | "closed" | "back";
 /** 보기 화면의 한 장 — 이름 · 얼굴은 대화 스냅숏의 방, 안 만난 친구는 추천 친구(소개 · 상태)를 함께 받습니다. */
@@ -296,5 +297,4 @@ export const friendStoriesTestIds = {
   quoteBar: "chat-story-quote-bar",
   quoteBarRemove: "chat-story-quote-bar-remove",
 } as const;
-/** 목록 화면이 받는 스토리 포트입니다(없으면 스토리 없음 — 손님 · 테스트 · 옛 결선). */
 export type FriendStoriesProps = { readonly stories?: FriendStoriesPort };

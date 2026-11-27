@@ -241,6 +241,20 @@
 - 확인: unit `friend-stories-reload.unit.test.ts`(FS-U15) · `friend-stories-wiring.unit.test.ts`(FS-U16) · ui `MessengerListScreen.stories-reload.ui.test.tsx`(FS-UI14 ~ UI17) ·
   `use-messenger-refresh.ui.test.tsx`(FS-UI18) · integration `App.friend-stories.integration.test.tsx`(FSI7 · FSI8) · e2e FS-E13 ~ E15.
 
+### 탭 재진입의 첫 프레임 ⟨2026-11-27⟩
+
+제보: 메뉴(하단 탭)를 바꿀 때마다 「+」(내 스토리 만들기)가 새로 서며 레이아웃이 밀리고, 스토리 줄 순서가 달랐다가 다시 바뀐다.
+
+- 원인: 탭 루트 전환은 목록 화면을 다시 마운트하고(맵만 숨김 상자로 남음, ADR-0106), 줄 재료 셋이 빈 값에서 시작했다 — 친구 스토리 · 내 스토리는 `null`이라
+  첫 프레임에 스토리 줄 대신 **추천 줄**이 서고 두 RPC가 끝나면 스토리 줄(「+」 맨 앞)로 갈아 끼웠다. 먼저 만나기 제안(`offers`)도 `[]`에서 시작해, 제안이
+  얹히면 추천 순서(제안 있는 잠긴 인물이 앞, `rankOf`)가 바뀌었다. 정렬 규칙(`storyOrderOf` · `suggestedFriendsOf`)은 하나였고, 재료가 늦게 와서 순서가 바뀐 것이다.
+- 이제 셋 다 **계정마다 실행 동안 마지막 값**을 기억해(`story-row-memory.ts` `accountMemory` · 포트 `memory` · `lastOffers`, 보이는 친구의 `lastVisibleFriends`와 같은 꼴)
+  첫 프레임을 그 값으로 그리고, 마운트 읽기는 뒤에서 한다(stale-while-revalidate). 같은 정렬 규칙이 같은 재료를 받으므로 순서가 같다. 새 값이 오면 바뀐 것만 바뀐다.
+- 기억이 있으면 첫 읽기 대기(`rowPending`)가 아니다 — 그린 줄이 곧 그 줄이다(노출 이벤트 규칙 그대로).
+- 채팅방 줄은 대화 출처가 앱 하나라(스냅숏) 이미 첫 프레임부터 같다. 기기 저장(앱을 새로 켤 때)은 하지 않는다 — 스토리는 24시간짜리라 오래된 값을 그릴 위험이 크다.
+- 확인: unit `story-row-memory.unit.test.ts`(SRM-U1 ~ U3) · ui `MessengerListScreen.story-row-memory.ui.test.tsx`(SRM-UI1 ~ UI4) ·
+  integration `App.story-row-memory.integration.test.tsx`(SRM-I1 — 탭 다섯 번 재진입, 다시 읽기 전 첫 프레임이 같은 순서).
+
 ## D5 개정 — 보기에서 바로 답장 ⟨2026-11-25⟩
 
 사용자 요청(「답장하기 누르면 채팅방으로 가는 게 아니라 input에 입력되어야지」)으로 D5의 답장 칸 · 칩을 바꾼다(인스타 방식). 서버 · 무료 판정(D6)은 그대로다.

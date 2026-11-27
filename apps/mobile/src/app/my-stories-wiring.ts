@@ -10,6 +10,7 @@ import type { MyStoriesPort } from "../screens/messenger-chat/my-stories.contrac
 import type { MyStoryPhotoPort } from "../screens/messenger-chat/my-story-photo.contract";
 import { discardStoryPhoto, pickStoryPhoto, storyPhotosAvailable } from "../lib/story-photo";
 import { tzOffsetMinOf } from "../screens/messenger-chat/my-stories";
+import { accountMemory } from "../screens/messenger-chat/story-row-memory";
 import { loadCurrentWordbook, todayLocal } from "./learning-trail-port";
 import { myStoryChoicesOf } from "./my-stories-choices";
 import { companionServerRemote } from "./suggested-friends-wiring";
@@ -145,5 +146,6 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
       for (const id of ids) args.seen().markSeen(id, until, now);
     },
     newClientId: () => uuidV4(),
+    memory: accountMemory(args.accountKey),
   };
 }

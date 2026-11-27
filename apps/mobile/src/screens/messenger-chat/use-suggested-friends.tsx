@@ -66,7 +66,10 @@ export function useSuggestedFriends({
   const [filter, setFilter] = useState<DirectoryFilter>(ALL);
   const [toast, setToast] = useState<SuggestedFriendToastValue | null>(null);
   const toastKey = useRef(0);
-  const [offers, setOffers] = useState<readonly EarlyAccessListing[]>([]);
+  // 첫 값은 이 계정에서 마지막으로 읽은 제안 — 제안이 늦게 얹혀 줄 순서(제안 있는 인물이 앞)가 바뀌지 않게.
+  const [offers, setOffers] = useState<readonly EarlyAccessListing[]>(
+    () => port?.lastOffers?.() ?? [],
+  );
   // 첫 값은 이 계정에서 마지막으로 읽은 목록 — 탭에 다시 들어올 때 새 친구가 늦게 끼어 줄이 바뀌지 않게(ADR-0164 D2 개정).
   const [visible, setVisible] = useState<readonly VisibleFriend[] | null>(
     () => port?.lastVisibleFriends?.() ?? null,

@@ -28,6 +28,7 @@ import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import type { StoryRowStats } from "./use-row-impressions";
 import { useMyStories } from "./use-my-stories";
 import { useStoryReload } from "./use-story-reload";
+import { useKeepShown } from "./use-story-row-memory";
 import type { SuggestedFriendsUi } from "./use-suggested-friends";
 
 export type FriendStoriesUi = {
@@ -76,7 +77,11 @@ export function useFriendStories({
   readonly profileOf?: (characterId: string) => FriendProfile | null;
 }): FriendStoriesUi {
   const { emit } = useChatEvents();
-  const [stories, setStories] = useState<readonly FriendStory[] | null>(null);
+  // 탭을 다시 열면 마지막으로 보인 줄부터 그리고(줄이 비었다가 서며 밀리지 않게), 마운트 읽기가 끝나면 바꿉니다.
+  const [stories, setStories] = useState<readonly FriendStory[] | null>(
+    () => port?.memory?.read() ?? null,
+  );
+  useKeepShown(port?.memory, stories);
   // 읽기가 끝난 횟수 — 알림으로 들어오면 다시 읽고(목록이 선 뒤에 올라온 스토리), 끝난 뒤 그 스토리를 엽니다(리뷰 m1).
   const [loadCount, setLoadCount] = useState(0);
   const [, setSeenVersion] = useState(0);
@@ -217,7 +222,7 @@ export function useFriendStories({
   });
 
   return {
-    rowPending: (port !== undefined && loadCount === 0) || mine.loading,
+    rowPending: (port !== undefined && loadCount === 0 && stories === null) || mine.loading,
     rowStats:
       hasStories || mine.slot !== null
         ? {
