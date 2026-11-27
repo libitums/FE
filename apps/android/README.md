@@ -507,6 +507,12 @@ Play는 64비트 네이티브 라이브러리가 16 KB 페이지를 지원하기
 소스의 해제가 HTTP 연결을 끊을 때까지 메인 스레드를 막아 ANR이 났다(Sentry DURU-ANDROID-H · M, 2026-11). 리스너 해제 · 상태 초기화 ·
 포커스 반납은 그대로 메인 스레드에서 즉시 하고, 해제 차례를 기다리는 플레이어는 넘기기 전에 볼륨 0 · 일시정지로 소리를 끈다. 해제 실패는 `AudioPlayback` 태그의 `W`로 남고, `AudioPlayerReleaserTest`(JUnit)가
 호출 스레드 밖 실행 · 순서 · 실패 격리 · 막힌 해제 뒤 호출 즉시 반환을 확인한다.
+소스 열기(`setAudioAttributes` · `setDataSource`)도 메인이 아니라 데몬 스레드 `AudioPrepare` 하나에서 한다 — 저사양 기기에서
+`setDataSource`가 JNI에서 미디어 서버를 기다리며 메인 스레드를 막아 포그라운드 ANR이 났다(Sentry DURU-ANDROID-17, 2026-11).
+결과는 메인으로 돌아와 리스너를 달고 `prepareAsync`를 부른다. 요청마다 표를 받고, 여는 동안 stop · 다른 요청 · 화면 이탈 · 연타로
+표가 바뀌면 늦게 열린 플레이어는 재생하지 않고 `AudioRelease`로 넘긴다. 여는 중인 플레이어는 메인 스레드가 건드리지 않는다(일시정지는 표시만 남겨 열린 뒤 지킨다).
+`AudioPrepareQueueTest`(JUnit)가 호출 스레드 밖 실행 · 메인 실행기로만 결과 전달 · 늦은 결과 버림을, 계측 `AudioPrepareOffMainTest`가 느린 소스에서
+`play()`가 메인을 바로 돌려주는 것과 대체 · stop · 화면 이탈 · 연타 · 일시정지를 확인한다.
 `SoundEffectAssetTest`·`SoundEffectsSessionTest`(JUnit)는 효과음 id 8개와 `apps/ios/Host/sfx`의 1:1 대응, 로드 전 요청·벨
 상태를, 계측 `SoundEffectsModuleTest`는 8개 자산 열기·벨 반복과 `stopRing`·`stopAll`을 확인한다.
 오디오 자산(`apps/ios/Host/audio/*.m4a` 대사, `apps/ios/Host/sfx/*.mp3` 효과음)은 Android에 복사본을 두지 않는다. Gradle이 변형마다
