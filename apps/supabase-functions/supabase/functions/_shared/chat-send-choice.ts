@@ -5,6 +5,8 @@
 //   · stale      — 그 사이 새 캐릭터 답이 와 지난 칩이 됨. 직접 입력처럼 피드백한다.
 //   · manual     — 직접 입력. 표시가 왔는데 글이 칩과 다르거나 칩을 확인할 수 없어도 여기다(방어). 고쳐서 다시 보내기
 //                  (`replaces_message_id`)도 늘 여기다 — 고친 글은 유저가 쓴 글이다.
+// 표시가 없어도 글이 지금 칩 하나와 똑같으면 칩을 고른 것으로 본다(ADR-0210). 칩을 고쳐 보내는 길이 없어 글이 같으면 칩이다 — 메신저 앱이
+// 표시를 보내지 않아 유저 말이 전부 manual로 남았고(운영 2026-11-26: 유저 말의 49%가 칩과 같은 글), 칩 글이 유저 사실로 기억에 들어갔다.
 // 결과는 스트림을 닫은 뒤 `companion_record_choice`가 유저 메시지 meta와 앞 캐릭터 메시지의 칩 셋(`outcome`)에 적는다.
 
 import type { TurnStatus } from "./chat-send-finish.ts";
@@ -43,18 +45,15 @@ export function resolveChoice(
       ...(item.intent ? { suggestionIntent: item.intent } : {}),
     };
   }
-  // 옛 표시: 마지막 캐릭터 메시지의 칩 어느 하나와 글이 같으면 그 칩.
-  if (body.from_suggestion === true) {
-    const texts = latest?.items.map((item) => item.text) ?? status?.latestSuggestions ?? [];
-    const index = texts.findIndex((item) => item.trim() === text);
-    if (index < 0) return manual;
-    const intent = latest?.items[index]?.intent;
-    return {
-      inputSource: "suggestion",
-      ...(latest ? { suggestionMessageId: latest.messageId } : {}),
-      suggestionIndex: index,
-      ...(intent ? { suggestionIntent: intent } : {}),
-    };
-  }
-  return manual;
+  // 표시가 없거나 옛 표시(`from_suggestion`): 마지막 캐릭터 메시지의 칩 어느 하나와 글이 같으면 그 칩.
+  const texts = latest?.items.map((item) => item.text) ?? status?.latestSuggestions ?? [];
+  const index = texts.findIndex((item) => item.trim() === text);
+  if (index < 0) return manual;
+  const intent = latest?.items[index]?.intent;
+  return {
+    inputSource: "suggestion",
+    ...(latest ? { suggestionMessageId: latest.messageId } : {}),
+    suggestionIndex: index,
+    ...(intent ? { suggestionIntent: intent } : {}),
+  };
 }

@@ -24,6 +24,7 @@ import {
   stateLine,
 } from "./companion-prompt.ts";
 import { companionEvalSets } from "./companion-eval-sets.ts";
+import { memoryEvalSets } from "./companion-eval-sets-memory.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 
@@ -156,5 +157,7 @@ export async function companionDocs(
     prompts: promptDocs(),
     // 고정 평가 세트(추천 친구 페르소나 유지 · 로맨스 수위 경계) — 대시보드가 세트마다 POST로 돌린다.
     evalSets: companionEvalSets,
+    // 기억 추출 세트(ADR-0210) — `POST { kind: "memory" }`로 돌리고 `expect`와 견준다. 모양이 달라 `evalSets`와 따로 둔다.
+    memoryEvalSets,
   };
 }

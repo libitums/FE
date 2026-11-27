@@ -109,8 +109,11 @@ App Store 내려받기 크기는 압축 뒤라 더 작다 [추론]. JS 번들은
 ## 사용자 확인 필요
 
 1. iOS 세션 — 설치 id가 든 세션을 살릴지(지금), 끌지(D4).
-2. 개인정보 처리방침(`apps/landing/src/legal/privacy-*-providers.ts`)의 Sentry 행이 「Error reports on Android」 · 사용자 id 없음으로 적혀 있다 — iOS · 사용자 id를 더해야 한다.
+2. ~~개인정보 처리방침(`apps/landing/src/legal/privacy-*-providers.ts`)의 Sentry 행이 「Error reports on Android」 · 사용자 id 없음으로 적혀 있다 — iOS · 사용자 id를 더해야 한다.~~
+   ⟨2026-11-27 — **반영**, 사용자 결정 「지금」⟩ 문서 PR(`docs/privacy-sentry-user-id`)이 en · ko 처리방침의 Sentry 행과 「오류 보고」 절(iOS · 회원의 내부 사용자 id · 이름 · 이메일 · IP 없음 · iOS 세션의 무작위 설치 id)을 고치고 시행일을 2026-11-27로 올렸다.
+   `docs/android-data-safety.md` · `docs/ios-privacy.md`도 같은 PR에서 맞췄다.
 3. App Store 「앱 개인정보」 · Play 「데이터 보안」의 비정상 종료 로그 · 진단을 **사용자와 연결: 예**로 바꿔야 한다.
+   ⟨2026-11-27⟩ 바꿀 칸 목록은 위 문서 PR 본문과 두 문서에 적었다. **양식 변경은 사용자가 한다 — 아직 바꾸지 않았다.** 다음 스토어 빌드(DSN이 든 빌드) 제출 전에 바꾼다.
 4. Sentry 프로젝트 설정 「IP 주소 저장 안 함」(Data Scrubbing → Prevent Storing of IP Addresses)을 두 프로젝트에서 켰는지.
 
 ## 재검토 조건
