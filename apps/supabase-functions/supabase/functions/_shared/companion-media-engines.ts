@@ -100,15 +100,41 @@ export async function claudeTool(
 // ------------------------------------------------------------------ ElevenLabs
 
 /**
- * `POST /v1/text-to-speech/{voice}` — mp3(44.1kHz 128kbps). `voice_settings.speed`는 보내지 않는다 — ElevenLabs 문서상 eleven_v3는
- * 받지 않는다(lab과 같다). 0.85배 재생은 앱이 한다.
+ * 인물 `media.voiceSettings`(camelCase)를 ElevenLabs `voice_settings`(snake_case)로 옮긴다. 범위 밖 · 숫자 아닌 값은 버리고,
+ * 남은 게 없으면 `undefined`(기본 설정). `speed`는 일부러 받지 않는다 — 0.85배 재생은 앱이 하므로 서버에서 또 줄이면 겹친다.
+ */
+export function voiceSettingsBody(raw: unknown): Record<string, number> | undefined {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const source = raw as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  for (const [from, to] of [
+    ["stability", "stability"],
+    ["similarityBoost", "similarity_boost"],
+    ["style", "style"],
+  ] as const) {
+    const value = source[from];
+    if (typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1)
+      out[to] = value;
+  }
+  return Object.keys(out).length === 0 ? undefined : out;
+}
+
+/**
+ * `POST /v1/text-to-speech/{voice}` — mp3(44.1kHz 128kbps). 모델은 인물 `media.voiceModel`이 있으면 그것, 없으면 settings의 `voice_model`.
+ * `voice_settings`는 인물에 정해 둔 것만 싣는다(없으면 엔진 기본). `speed`는 보내지 않는다 — 0.85배 재생은 앱이 한다.
  */
 export async function elevenSpeech(
   fetchImpl: Fetch,
   apiKey: string,
-  input: { readonly voiceId: string; readonly model: string; readonly text: string },
+  input: {
+    readonly voiceId: string;
+    readonly model: string;
+    readonly text: string;
+    readonly voiceSettings?: unknown;
+  },
   timeoutMs: number,
 ): Promise<Uint8Array> {
+  const voiceSettings = voiceSettingsBody(input.voiceSettings);
   let response: Response;
   try {
     response = await fetchImpl(
@@ -116,7 +142,11 @@ export async function elevenSpeech(
       {
         method: "POST",
         headers: { "xi-api-key": apiKey, "Content-Type": "application/json", Accept: "audio/mpeg" },
-        body: JSON.stringify({ text: input.text, model_id: input.model }),
+        body: JSON.stringify({
+          text: input.text,
+          model_id: input.model,
+          ...(voiceSettings === undefined ? {} : { voice_settings: voiceSettings }),
+        }),
         signal: AbortSignal.timeout(timeoutMs),
       },
     );

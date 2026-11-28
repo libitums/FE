@@ -672,6 +672,46 @@ test("MH10. 음성 — ElevenLabs eleven_v3(speed 없음) → mp3 올리기 → 
   expect(finished()).toMatchObject({ p_status: "failed", p_result: { failure: "storage_failed" } });
 });
 
+test("MH10b. 인물 음성 설정 — 작업에 voiceSettings가 있으면 snake_case로 싣고 meta에 남긴다 · speed · 범위 밖 · 숫자 아님은 버린다", async () => {
+  begin = okBegin("voice", {
+    ...voiceJob,
+    characterId: "daeun",
+    voiceId: "jCmXpvRzefYTd42Z167f",
+    model: "eleven_v4",
+    voiceSettings: { stability: 0.4, similarityBoost: 0.8, style: 0.45, speed: 0.88, extra: 1 },
+  });
+  await run("voice");
+  const [speech] = callsTo("https://api.elevenlabs.io/");
+  expect(speech!.body).toEqual({
+    text: "오늘은 궁 마당에서 수업해요!",
+    model_id: "eleven_v4",
+    voice_settings: { stability: 0.4, similarity_boost: 0.8, style: 0.45 },
+  });
+  expect(finished()).toMatchObject({
+    p_status: "complete",
+    p_result: {
+      meta: {
+        model: "eleven_v4",
+        voiceSettings: { stability: 0.4, similarity_boost: 0.8, style: 0.45 },
+      },
+    },
+  });
+
+  calls = [];
+  work = [];
+  eleven = [{ status: 200, bytes: MP3 }];
+  begin = okBegin("voice", {
+    ...voiceJob,
+    voiceSettings: { stability: 2, style: "0.4", speed: 1 },
+  });
+  await run("voice");
+  expect(callsTo("https://api.elevenlabs.io/")[0]!.body).toEqual({
+    text: "오늘은 궁 마당에서 수업해요!",
+    model_id: "eleven_v3",
+  });
+  expect(finished()!.p_result["meta"]).not.toHaveProperty("voiceSettings");
+});
+
 test("MH11. 플레이그라운드 — 서버 키 + user_id · 앱 토큰으로 user_id를 보내면 401", async () => {
   begin = okBegin("voice", voiceJob);
   expect((await run("voice", { message_id: MESSAGE, user_id: PLAY }, SERVICE)).status).toBe(202);

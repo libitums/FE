@@ -338,3 +338,18 @@
 - **운영 적용**: 머지 뒤 사용자 승인으로 `20270116120000` 적용(함수 교체만, 표 변경 없음).
 - **테스트**: 서버 `companion-media-sample.integration.test.ts` MS18 ~ MS21(첫 인사 없음 · 숨김 · 실패 · 다른 인물, 14세 미만 · 14세 이상 미성년 · 일시 차단과 풀림,
   제안이 true면 받기도 ok, 생년 없음 · 프로필 없음은 막지 않음). MS1 · MS9는 첫 인사를 먼저 만들고, MS15의 마지막 기대는 「제안도 꺼짐」으로 바뀌었다.
+
+## 개정 ⟨2026-11-28⟩ — 인물별 음성 모델 · 설정 [사용자]
+
+- **계기**: 다은의 채팅 음성이 이상하게 들린다는 사용자 확인이 있었다. 음성 id와 모델은 바뀐 적이 없었다. 다만 프로필 견본(ADR-0198, `docs/content/companion-voice-intros.json`)은 `eleven_v4`에 세부 설정(stability 0.4 · similarity 0.8 · style 0.45 · speed 0.88)으로 만들었고, 채팅 음성은 `settings.voice_model`(`eleven_v3`)에 엔진 기본 설정이었다. 그래서 같은 인물이 견본과 대화에서 다르게 들렸다.
+- **결정**:
+  - 인물 `media`에 `voiceModel` · `voiceSettings`(camelCase: `stability` · `similarityBoost` · `style`, 0~1)를 둘 수 있다. 정해 두면 `companion_media_begin`이 음성 작업에 싣고, 정하지 않은 인물은 지금처럼 settings 모델 · 엔진 기본이다.
+  - Edge(`voiceSettingsBody`)는 범위 밖 값과 숫자가 아닌 값을 버리고 snake_case로 옮긴다. 쓴 설정은 `meta.voiceSettings`에 남는다.
+  - **speed는 서버에서 보내지 않는다.** 앱이 0.85배로 재생하므로 견본의 0.88을 서버에서도 쓰면 약 0.75배가 된다. 사용자 결정: 서버는 1배, 느리게 하는 건 앱만 한다.
+  - 우선 다은만 `eleven_v4` + 견본 설정으로 바꿔 시험한다. 요금은 v3와 같은 등급이다(1자 1크레딧).
+- **적용**:
+  - 마이그레이션 `20270121130000_companion_voice_per_character.sql`(함수 본문은 20261202와 같고 음성 작업 한 줄만 바뀐다. 운영 정의와 본문이 같음을 2026-11-28에 확인했다)
+  - 함수 `companion-voice`
+  - 순서는 함수 먼저다. 새 함수는 설정 없는 작업도 그대로 처리하고, 옛 함수는 설정을 무시한다.
+- **되돌리기**: `update companion.characters set media = media - 'voiceModel' - 'voiceSettings' where id = 'daeun';`
+- **남은 일**: 대사의 ㅋㅋ · ㅠㅠ 같은 자모가 그대로 엔진에 들어간다(`companion.spoken_korean`은 `*행동*`만 뺀다). 다은 음성 26건 중 13건에 자모가 있었다. 웃음 태그로 바꿀지는 v4로 들어 본 뒤 정한다.

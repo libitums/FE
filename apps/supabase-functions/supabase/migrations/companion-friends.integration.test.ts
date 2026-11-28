@@ -11,6 +11,11 @@ const migration = new URL("./20261216120000_companion_friends.sql", import.meta.
 const ladder = new URL("./20261218120000_companion_romance_ladder.sql", import.meta.url);
 // 20270112(ADR-0203): 해준의 로맨스 태도를 고친다 — 다시 적용하면 이것도 이어서.
 const haejunWarmth = new URL("./20270112120000_companion_haejun_warmth.sql", import.meta.url);
+// 다은 음성 모델 · 설정(2026-11-28) — 친구 마이그레이션을 다시 적용하면 media가 씨앗으로 돌아가므로 뒤이어 다시 적용한다.
+const voicePerCharacter = new URL(
+  "./20270121130000_companion_voice_per_character.sql",
+  import.meta.url,
+);
 const friendsJson = new URL("../../../../docs/content/companion-friends.json", import.meta.url);
 const year = new Date().getUTCFullYear();
 const adultYear = year - 30;
@@ -417,6 +422,7 @@ test("FR9. 다시 적용해도 같은 결과 · 서버용 함수는 앱이 부�
   await db.admin.query(await readFile(migration, "utf8"));
   await db.admin.query(await readFile(ladder, "utf8"));
   await db.admin.query(await readFile(haejunWarmth, "utf8"));
+  await db.admin.query(await readFile(voicePerCharacter, "utf8"));
   expect((await snapshot()).rows[0]).toEqual(before);
   await signIn(app, member);
   await expect(

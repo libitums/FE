@@ -360,7 +360,9 @@
         "profileScene": "A softly blurred university campus in spring: pale stone building with ivy and pink cherry blossoms, warm pastel daylight, no signs or banners."
       },
       "voiceBrief": "Early-20s Korean woman. Bright mid-high, fast and bouncy, rising endings, lots of breathy excitement; clear articulation. Sounds like a friend who just heard good news.",
-      "voiceId": "jCmXpvRzefYTd42Z167f"
+      "voiceId": "jCmXpvRzefYTd42Z167f",
+      "voiceModel": "eleven_v4",
+      "voiceSettings": { "stability": 0.4, "similarityBoost": 0.8, "style": 0.45 }
     },
     {
       "id": "geonwoo",
