@@ -31,7 +31,7 @@ function uiLynxSourceAliases(): Record<string, string> {
 // build가 타입 검사를 겸하면 실패 원인이 타입인지 번들링인지 읽히지 않는다.
 // 타입 검사는 `pnpm typecheck`(tsc --noEmit)이 단독으로 맡는다.
 // 롤플레이 미션 스위치(`src/screens/roleplay-mission/roleplay-mission-ready.ts`)를 빌드 시점에 읽습니다 — 정본은 그 파일 하나.
-// 미션 코드는 dev 빌드이거나 스위치가 켜졌을 때만 번들에 싣습니다(`__ROLEPLAY_MISSION_IN_BUNDLE__`, ADR-0177 · 번들 천장 ADR-0149).
+// 미션 코드는 dev 빌드이거나 스위치가 켜졌을 때만 번들에 싣습니다(`__ROLEPLAY_MISSION_IN_BUNDLE__`, ADR-0193 · 번들 천장 ADR-0149).
 // 모듈 사이의 상수는 번들러가 접지 못해(실측: 상수 export로는 미션 코드가 그대로 남음) `defineDCE`로 글자를 바꿔 넣습니다.
 function roleplayMissionReady(): boolean {
   const source = readFileSync(
@@ -106,7 +106,7 @@ export default defineConfig(({ command }): Config => {
             { test: /render-dev-probe\.tsx$/, sideEffects: false },
             // 롤플레이 미션의 가짜 출처 · 가짜 기기 · fixture도 같은 길로 release에서 뺍니다(`roleplay-mission-dev-fakes.ts`).
             { test: /roleplay-mission-dev-fakes\.ts$/, sideEffects: false },
-            // 스위치가 꺼진 release에서 미션 화면 · 문구 · CSS 전체를 뺍니다(`roleplay-mission-entry.ts`, ADR-0177).
+            // 스위치가 꺼진 release에서 미션 화면 · 문구 · CSS 전체를 뺍니다(`roleplay-mission-entry.ts`, ADR-0193).
             { test: /roleplay-mission(-list)?-entry\.ts$/, sideEffects: false },
             // 메인 스레드는 첫 화면(스플래시)만 그려(`render-app-content.tsx`) 다른 화면만 쓰는 ui-lynx 컴포넌트의 import가
             // 쓰이지 않게 됩니다. ui-lynx의 `sideEffects`는 CSS만 적어, 그대로 두면 그 모듈이 통째로 빠지면서 모듈 최상위의

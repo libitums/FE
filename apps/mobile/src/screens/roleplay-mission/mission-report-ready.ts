@@ -1,4 +1,4 @@
-// 채점 대기 판(`pendingReports`, ADR-0177)의 목록 표시 규칙입니다 — UI를 import하지 않습니다. 목록 카드(롤플레이 목록 화면)가
+// 채점 대기 판(`pendingReports`, ADR-0193)의 목록 표시 규칙입니다 — UI를 import하지 않습니다. 목록 카드(롤플레이 목록 화면)가
 // 「Report ready」를 붙일지 · 무엇을 붙일지를 여기서 고릅니다. 카드를 누르면 미션 route가 곧장 `mission-finish` → 리포트로 엽니다.
 
 import type { RoleplayMissionListCopy } from "../../lib/ui-copy-roleplay-mission-list";

@@ -128,7 +128,7 @@ export type UiCopy = {
   /** 요금제(ADR-0144) — 설정 → Plans · 맥락 카드. */
   readonly plans: PlansCopy;
   readonly roleplayStory: RoleplayStoryCopy;
-  /** 롤플레이 미션(ADR-0160) — 스위치 뒤. */
+  /** 롤플레이 미션(ADR-0193) — 스위치 뒤. */
   readonly appUpdate: AppUpdateCopy;
   readonly storyMessenger: StoryMessengerCopy;
   readonly messengerChat: MessengerChatCopy;

@@ -1,6 +1,6 @@
 // 롤플레이 미션 문구 가운데 **늘 번들에 드는 몫** — 롤플레이 목록 카드가 쓰는 낱말(형태 · 목표 수 · 최고 기록 · 「Report ready」)만.
 // 나머지 미션 문구(미리보기 · 대화 · 리포트 · 음성)는 미션 화면과 함께 빌드 상수로 가지치기되므로 문구표(`UiCopy`)에 두지 않고
-// `ui-copy-roleplay-mission-tables.ts`(`useMissionCopy`)가 집니다(ADR-0177, 번들 천장 ADR-0149). 영어 밖은 번역 초안 — 원어민 검수 필요.
+// `ui-copy-roleplay-mission-tables.ts`(`useMissionCopy`)가 집니다(ADR-0193, 번들 천장 ADR-0149). 영어 밖은 번역 초안 — 원어민 검수 필요.
 
 import { n } from "./ui-copy-en-plural";
 

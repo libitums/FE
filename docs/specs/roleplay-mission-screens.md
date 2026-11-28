@@ -1,8 +1,8 @@
 # 롤플레이 미션 화면 — 미리보기 · 대화 · 리포트 (초안, 스위치 뒤)
 
 - 상태: **초안 — 가짜 출처로만 돈다.** 스위치 `ROLEPLAY_MISSION_READY = false`라 사용자에게 보이지 않는다.
-- 작성: 2026-11-19. 정본 기획: [2단계 PRD](ai-companion-mission.md)(§0 불변식 · §3.3 ~ §3.8 · **§4 화면에 오는 값과 시점** · §7 · 부록 B), [ADR-0160](../adr/0160-companion-mission.md).
-- 새 ADR이 없다 — 화면의 결정은 PRD §4 · §7과 ADR-0160으로 충분하고, 이 문서의 [제안]은 서버 조각과 함께 확인받는다.
+- 작성: 2026-11-19. 정본 기획: [2단계 PRD](ai-companion-mission.md)(§0 불변식 · §3.3 ~ §3.8 · **§4 화면에 오는 값과 시점** · §7 · 부록 B), [ADR-0193](../adr/0193-companion-mission.md).
+- 새 ADR이 없다 — 화면의 결정은 PRD §4 · §7과 ADR-0193으로 충분하고, 이 문서의 [제안]은 서버 조각과 함께 확인받는다.
 - 표기: **[결정]**은 PRD · ADR이 정한 것, **[제안]**은 이 문서가 처음 내놓는 것.
 
 ## 1. 범위
@@ -122,9 +122,9 @@ PRD §9 M10이 FE에 맡긴 것. 스위치 뒤 초안이라 **결선하지 않�
 - 번들 — 스위치가 꺼져 있어도 +122 kB가 든다([성능 기록](../performance/reports/roleplay-mission-draft-01.md)). 가짜 출처 · fixture를 개발 빌드에만 두기, 번역 초안의 지연 적재를 서버 출처 전에 본다.
 - 판 도중 앱을 떠났다 돌아오는 경우(이어 하기 없음, PRD §0.6) — 지금은 route가 내려가면 판이 그대로 방치되고 서버 정리 작업이 닫는다.
 
-## 10. v2 — 서버 계약 2026-11-23 반영(ADR-0177, 파이프라인 문서 §10)
+## 10. v2 — 서버 계약 2026-11-23 반영(ADR-0193, 파이프라인 문서 §10)
 
-- 정본: 서버 브랜치의 [파이프라인 문서](ai-companion-mission-pipeline.md) §10 「앱 인계」 · §6 음성 · §11 결정, [ADR-0177](../adr/0177-companion-mission.md). 참고 구현은 대시보드 「미션 플레이어」.
+- 정본: 서버 브랜치의 [파이프라인 문서](ai-companion-mission-pipeline.md) §10 「앱 인계」 · §6 음성 · §11 결정, [ADR-0193](../adr/0193-companion-mission.md). 참고 구현은 대시보드 「미션 플레이어」.
 - **계속하기 / 끝내기** — `mission` 이벤트의 `requiredDone`이 참이고 `ended`가 null이면 「Mission success!」 카드(Keep going / Finish, 한 판에 한 번 — `successPrompt`), 카드를 닫으면 입력 줄 위 힌트 옆에 Finish 글 단추, 위 띠의 남은 턴 뒤에 「· Mission success」. 끝내기 = 국면 `ended` · 끝 이유 `finish` → 결선이 `mission-finish`(`abandon` 없이).
 - **성공 뒤 그만두기 = 끝내기** — 대화상자 문구가 「Finish this mission?」으로 바뀌고 확인하면 채점 → 리포트. 필수 전이면 지금처럼 리포트 없이 나감.
 - **채점 대기 판** — 목록의 `pendingReports`에 이 미션의 판이 있으면 route를 열 때 미리보기 대신 곧장 `mission-finish` → 채점 중 → 리포트(`pending-opened`). 목록 카드의 「Report ready」 표시는 미션 쪽 부품까지 만들었다 — 규칙 `mission-report-ready.ts`(`missionReportBadgeOf`), 부품 `MissionReportReadyBadge.tsx`(준비됨 · 채점 중). 롤플레이 목록 화면(`screens/roleplay-list/`)은 다른 화면이라 붙이지 않았다 — 붙일 자리: `MissionRoleplayItem`에 표시 칸, `app/roleplay-sections.ts`의 `withMissionItems`에서 채움, `RoleplayCard.tsx`의 둘째 줄 아래에 부품, 카드 접근성 이름에 `missionReportBadgeText` 덧붙임. 개발 미리보기의 가짜 출처는 대기 판 하나를 둔다.

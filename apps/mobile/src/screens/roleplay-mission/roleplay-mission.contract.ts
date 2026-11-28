@@ -1,4 +1,4 @@
-// 롤플레이 미션(ADR-0160 · ADR-0177) 화면 셋 — 미리보기 · 대화 · 리포트 — 의 타입 전용 계약입니다. 구현 · JSX를 두지 않습니다.
+// 롤플레이 미션(ADR-0193) 화면 셋 — 미리보기 · 대화 · 리포트 — 의 타입 전용 계약입니다. 구현 · JSX를 두지 않습니다.
 // 서버 모양은 계약 패키지(`@libitums/companion-contract`)의 타입을 그대로 씁니다 — `import type`이라 번들에 들지 않습니다
 // (zod 스키마는 앱 번들에 넣지 않습니다, 메신저 `companion-parse.ts`와 같은 이유). 정본은 PRD `docs/specs/ai-companion-mission.md` §4.
 

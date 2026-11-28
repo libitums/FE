@@ -31,7 +31,7 @@ export type MissionTalkLineProps = {
 const isAction = (ko: string): boolean => ko.startsWith("*") && ko.endsWith("*");
 
 /**
- * 대화 줄 하나 — 상대역 말풍선(+ 다시 듣기) 또는 내 글(+ 교정 카드). 교정은 둘로 갈립니다(ADR-0177): 고치기(`correction` ·
+ * 대화 줄 하나 — 상대역 말풍선(+ 다시 듣기) 또는 내 글(+ 교정 카드). 교정은 둘로 갈립니다(ADR-0193): 고치기(`correction` ·
  * `l1_to_ko`)와 더 나은 표현(`better`) — 대본형 롤플레이의 판정 패널과 같은 말의 카드(`MissionFeedbackCard`)입니다.
  */
 export function MissionTalkLine({

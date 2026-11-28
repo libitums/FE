@@ -1,6 +1,6 @@
 // 롤플레이 탭의 구획입니다 — 본편 에피소드마다 롤플레이 하나. **진행에서 파생합니다**(ADR-0007 D3).
 // 튜토리얼 에피소드(u00)도 구획을 만들지 않습니다(ADR-0076 적용 기록).
-// 미션 스위치가 켜져 있으면 그 에피소드 구획의 대본형 항목 아래 미션 항목이 하나 더 섭니다(ADR-0160 · PRD §4.1).
+// 미션 스위치가 켜져 있으면 그 에피소드 구획의 대본형 항목 아래 미션 항목이 하나 더 섭니다(ADR-0193 · PRD §4.1).
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import type { LearnerProfile } from "../lib/placeholder-fill";

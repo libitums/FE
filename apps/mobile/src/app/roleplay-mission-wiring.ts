@@ -1,4 +1,4 @@
-// 롤플레이 미션(ADR-0160)의 결선입니다 — 스위치 · 출처 선택 · 목록 구독. 메신저 결선(`messenger-chat-wiring.ts`)처럼
+// 롤플레이 미션(ADR-0193)의 결선입니다 — 스위치 · 출처 선택 · 목록 구독. 메신저 결선(`messenger-chat-wiring.ts`)처럼
 // 출처는 앱 프로세스 싱글턴이고, 지금은 가짜 출처만 있습니다. 서버 출처(`mission-start` · `chat-send` + `conversation_id` ·
 // `mission-hint` · `mission-finish`)는 운영에 2단계를 적용한 뒤 `serverMissionSource` 자리에 붙입니다(PRD §0.9 · §8 N3).
 

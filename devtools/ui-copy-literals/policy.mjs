@@ -52,7 +52,7 @@ export const uiCopyLiteralPolicy = {
     "entry-basics.ts#FIRST_LETTERS",
     "entry-basics.ts#SENTENCE_SYLLABLES",
     "entry-basics.ts#ENTRY_BASICS_SENTENCE",
-    // 롤플레이 미션 가짜 출처(ADR-0160) — 계약 fixture를 옮긴 미션 값과 6화 가짜 대본(상대역 대사 · 판정 낱말)은 학습 내용입니다.
+    // 롤플레이 미션 가짜 출처(ADR-0193) — 계약 fixture를 옮긴 미션 값과 6화 가짜 대본(상대역 대사 · 판정 낱말)은 학습 내용입니다.
     "mission-fixture.ts#missionListFixture",
     "mission-fixture.ts#missionStartFixture",
     "mission-fixture.ts#missionHintExamples",

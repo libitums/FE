@@ -583,7 +583,7 @@ VoiceOver 확인은 [수동 iOS E2E](e2e/visual-novel.md)에 남아 있고 아�
 
 > ⟨2026-10-21⟩ 메신저 · 전화 · 비주얼 노벨이 지워져 롤플레이 탭은 **본편 에피소드의 이야기 롤플레이**(`roleplay-story`, [ADR-0076](adr/0076-episode-roleplay.md))만 싣는다 — 튜토리얼 u00은 빠진다([ADR-0081](adr/0081-tutorial-as-catalog-episode.md) D10). 아래 「특별 유닛을 다시 연습」 서술은 기록이다.
 
-> ⟨2026-11-19 — 롤플레이 미션 초안⟩ 스위치(`ROLEPLAY_MISSION_READY`)가 켜지면 에피소드 구획의 대본형 카드 뒤에 **미션** 카드(`Mission · N goals · Best n`)가 하나 더 서고, route `roleplay-mission` 하나가 미리보기 → 대화(위 띠 장면 · 목표 · 남은 턴, 메신저 말풍선 · 교정 카드, 글 · 마이크 · 힌트 입력 줄) → 리포트(채점 실패 · 다시 시도 포함)를 집는다. **스위치는 꺼져 있어 지금 사용자에게는 이 문단 전의 화면 그대로다.** 가짜 출처로만 돈다 — [화면 스펙](specs/roleplay-mission-screens.md) · [PRD](specs/ai-companion-mission.md) · [ADR-0160](adr/0160-companion-mission.md).
+> ⟨2026-11-19 — 롤플레이 미션 초안⟩ 스위치(`ROLEPLAY_MISSION_READY`)가 켜지면 에피소드 구획의 대본형 카드 뒤에 **미션** 카드(`Mission · N goals · Best n`)가 하나 더 서고, route `roleplay-mission` 하나가 미리보기 → 대화(위 띠 장면 · 목표 · 남은 턴, 메신저 말풍선 · 교정 카드, 글 · 마이크 · 힌트 입력 줄) → 리포트(채점 실패 · 다시 시도 포함)를 집는다. **스위치는 꺼져 있어 지금 사용자에게는 이 문단 전의 화면 그대로다.** 가짜 출처로만 돈다 — [화면 스펙](specs/roleplay-mission-screens.md) · [PRD](specs/ai-companion-mission.md) · [ADR-0193](adr/0193-companion-mission.md).
 
 세 유형 중 **기본 학습형을 뺀** 것이다 — 서사 주입형과 학습 동반형만 남는다. 그래서
 롤플레이는 새 학습 형태가 아니라 **기존 두 유형의 재배치**다.

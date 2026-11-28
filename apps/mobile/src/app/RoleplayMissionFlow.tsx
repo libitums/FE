@@ -1,6 +1,6 @@
 // 롤플레이 미션 한 route의 흐름입니다 — 미리보기 → 대화 → (채점) → 리포트, 다시 하기는 미리보기로. 단계는 판의 상태
 // (`MissionPhase`)가 정하고 route는 하나입니다(대본형 롤플레이와 같은 방식). 뒤로가기 · 그만두기 · 목록으로는 롤플레이 목록으로 나갑니다.
-// 목록에 이 미션의 채점 대기 판(`pendingReports`, ADR-0177)이 있으면 열 때 곧장 채점해 리포트를 보입니다(`mission-finish`).
+// 목록에 이 미션의 채점 대기 판(`pendingReports`, ADR-0193)이 있으면 열 때 곧장 채점해 리포트를 보입니다(`mission-finish`).
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";

@@ -1,7 +1,7 @@
 // 미션 출처의 가짜 구현입니다 — 대본이 있는 미션(6화 「커피 주문」 · 1화 「편의점에서 계산하기」, `mission-fake-scripts.ts`)을 끝까지
 // 결정적으로 돌립니다. 목록에서 잠긴 미션 · 대본이 없는 미션은 서버처럼 `not_available`입니다.
 // 학습자 글의 낱말로 목표를 이루고(서버 상태 줄의 흉내, `mission-fake-turn.ts`), 점수는 PRD §3.7의 식으로 계산합니다. 필수를 이룬
-// 판은 끝내기 · 그만두기 모두 채점하고(ADR-0177), 채점 대기 판(`pendingReports`)도 하나 만들 수 있습니다. 받아 적기 · 합성은 대본의
+// 판은 끝내기 · 그만두기 모두 채점하고(ADR-0193), 채점 대기 판(`pendingReports`)도 하나 만들 수 있습니다. 받아 적기 · 합성은 대본의
 // 말을 차례로 돌려줍니다. 테스트는 가지를 고릅니다 — 시작 거절 · 채점 실패(한 번 / 늘) · 턴 오류 · 받아 적기 · 합성 실패.
 
 import { buildFakeReport } from "./mission-fake-rules";
@@ -235,7 +235,7 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
             resolve({ status: "abandoned", conversationId });
             return;
           }
-          // 필수를 이룬 판은 끝내기 · 그만두기 모두 채점(ADR-0177). 필수 전이면 그만둠, 열린 판을 그냥 채점하려 하면 거절.
+          // 필수를 이룬 판은 끝내기 · 그만두기 모두 채점(ADR-0193). 필수 전이면 그만둠, 열린 판을 그냥 채점하려 하면 거절.
           if (requiredDoneOf(play) || play.ended !== null) {
             resolve(grade(play));
             return;

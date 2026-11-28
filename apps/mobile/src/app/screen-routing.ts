@@ -6,7 +6,7 @@ import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import type { Screen } from "./nav-state";
 
-// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이, 또는 스위치가 켜졌을 때의 미션(ADR-0160)입니다. 던지지 않습니다.
+// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이, 또는 스위치가 켜졌을 때의 미션(ADR-0193)입니다. 던지지 않습니다.
 export function roleplayScreenFor(
   item: RoleplayItem,
 ): Extract<Screen, { name: "roleplay-story" | "roleplay-mission" }> {

@@ -3,7 +3,7 @@ import { join, relative, sep } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-// 스위치가 꺼진 release 번들에서 미션 코드를 통째로 빼는 약속(ME, ADR-0177)입니다 — 빌드 상수 `__ROLEPLAY_MISSION_IN_BUNDLE__`
+// 스위치가 꺼진 release 번들에서 미션 코드를 통째로 빼는 약속(ME, ADR-0193)입니다 — 빌드 상수 `__ROLEPLAY_MISSION_IN_BUNDLE__`
 // (`lynx.config.ts`의 `defineDCE`)와 부수 효과 없는 입구(`roleplay-mission-entry.ts`). 실제로 빠졌는지는 release 번들을 grep해서
 // 봅니다(성능 보고서 04). 여기서는 그 수단이 코드 모양으로 서 있는지를 지킵니다 — 미션 화면 쪽 모듈을 늘 번들에 드는 파일이 직접
 // import하면 가지치기가 조용히 깨집니다.

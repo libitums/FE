@@ -1,6 +1,6 @@
 // 롤플레이 목록 화면의 타입 전용 계약입니다 — 구현·JSX를 두지 않습니다.
 // **판별자는 `form`입니다** — 목록이 보이는 것이 곧 형태라서 이름이 그 뜻을 말하게 합니다.
-// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이(`story`)와, 스위치가 켜졌을 때 그 아래 서는 미션(`mission`, ADR-0160)입니다.
+// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이(`story`)와, 스위치가 켜졌을 때 그 아래 서는 미션(`mission`, ADR-0193)입니다.
 
 import type { MissionReportBadgeState } from "../roleplay-mission/mission-report-ready";
 
@@ -22,7 +22,7 @@ export type StoryRoleplayItem = {
 };
 
 /**
- * 에피소드에 묶인 롤플레이 미션입니다(ADR-0160 · PRD §4.1) — 대본 없이 자기 말로 과업을 해내고 채점받습니다(`roleplay-mission`).
+ * 에피소드에 묶인 롤플레이 미션입니다(ADR-0193 · PRD §4.1) — 대본 없이 자기 말로 과업을 해내고 채점받습니다(`roleplay-mission`).
  * 스위치(`ROLEPLAY_MISSION_READY`)가 켜졌을 때만 섭니다. 카드 둘째 줄이 목표 수와 이 미션 최고 기록을 말합니다.
  * 잠김은 다른 항목처럼 구획이 집니다(그 에피소드를 끝내면 열림 — 서버도 같은 진행 스냅숏으로 판정, PRD §3.2).
  */
@@ -37,7 +37,7 @@ export type MissionRoleplayItem = {
   /** 이 미션 최고 점수. 해 본 적이 없으면 `null`. */
   readonly bestScore: number | null;
   /**
-   * 채점 대기 판(`pendingReports`, ADR-0177)의 표시 — 둘째 줄 아래 「Report ready」 알약. 없으면 `null`(지금 카드 그대로).
+   * 채점 대기 판(`pendingReports`, ADR-0193)의 표시 — 둘째 줄 아래 「Report ready」 알약. 없으면 `null`(지금 카드 그대로).
    * 누르면 미션 route가 곧장 채점 → 리포트로 엽니다.
    */
   readonly reportBadge: MissionReportBadgeState | null;

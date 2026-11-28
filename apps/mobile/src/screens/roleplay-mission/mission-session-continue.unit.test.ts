@@ -10,7 +10,7 @@ import {
 } from "./mission-session";
 import type { MissionSessionAction, MissionSessionState } from "./roleplay-mission.contract";
 
-// `unit` 계층(MC-U1 ~): 계속하기 / 끝내기 · 성공 뒤 그만두기 · 채점 대기 판(파이프라인 문서 §10.4, ADR-0177) — 상태 기계만.
+// `unit` 계층(MC-U1 ~): 계속하기 / 끝내기 · 성공 뒤 그만두기 · 채점 대기 판(파이프라인 문서 §10.4, ADR-0193) — 상태 기계만.
 
 const U1 = "11111111-1111-4111-8111-111111111111";
 const A1 = "22222222-2222-4222-8222-222222222222";

@@ -71,7 +71,7 @@ test("[DP-I1] 최종 설정: render-dev-probe.tsx를 부수 효과 없는 모듈
   expect(sideEffectFreeRules).toHaveLength(1);
 });
 
-test("[MD-I1] 최종 설정: roleplay-mission-dev-fakes.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0177)", () => {
+test("[MD-I1] 최종 설정: roleplay-mission-dev-fakes.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0193)", () => {
   // 이 규칙이 빠지면 release에서 `__DEV__` 호출은 죽어도 미션 가짜 출처 · 가짜 기기 · fixture가 번들에 남습니다.
   const fakesModule = resolve(import.meta.dirname, "roleplay-mission-dev-fakes.ts");
   const sideEffectFreeRules = bundlerConfig.module.rules.filter(
@@ -81,7 +81,7 @@ test("[MD-I1] 최종 설정: roleplay-mission-dev-fakes.ts를 부수 효과 없�
   expect(sideEffectFreeRules).toHaveLength(1);
 });
 
-test("[ME-I1] 최종 설정: roleplay-mission-entry.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0177)", () => {
+test("[ME-I1] 최종 설정: roleplay-mission-entry.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0193)", () => {
   // 이 규칙이 빠지면 스위치가 꺼진 release에서도 미션 화면 · 문구 · CSS가 번들에 남습니다(약 150 kB).
   const entryModule = resolve(import.meta.dirname, "roleplay-mission-entry.ts");
   const sideEffectFreeRules = bundlerConfig.module.rules.filter(

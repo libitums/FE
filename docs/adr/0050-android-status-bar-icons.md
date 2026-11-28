@@ -388,5 +388,5 @@ SwiftShader에서도 앱 안의 값은 그대로였다 — 「앱이 늦게 바�
 
 ## 적용 기록 ⟨2026-11-19 — 롤플레이 미션 초안(스위치 뒤)⟩
 
-- **등록부**: `fullBleedRoutes`에 `roleplay-mission`을 더했다 — 표지를 다는 컴포넌트는 `MissionPreviewScreen`(짙은 장면 위) · `MissionTalkScreen`(위 띠가 짙은 장면). 리포트(`MissionReportScreen`)는 밝은 면이라 표지가 없다. `componentFiles`에 두 파일을 더했다. 새 `position: fixed` 층은 없다([ADR-0160](0160-companion-mission.md), [화면 스펙](../specs/roleplay-mission-screens.md)).
+- **등록부**: `fullBleedRoutes`에 `roleplay-mission`을 더했다 — 표지를 다는 컴포넌트는 `MissionPreviewScreen`(짙은 장면 위) · `MissionTalkScreen`(위 띠가 짙은 장면). 리포트(`MissionReportScreen`)는 밝은 면이라 표지가 없다. `componentFiles`에 두 파일을 더했다. 새 `position: fixed` 층은 없다([ADR-0193](0193-companion-mission.md), [화면 스펙](../specs/roleplay-mission-screens.md)).
 - D1 ~ D8의 결정 문장은 그대로다.

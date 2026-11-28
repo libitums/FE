@@ -126,7 +126,7 @@ export type MissionSuccessCardProps = {
 };
 
 /**
- * 「Mission success!」 — 필수 목표를 이뤘는데 판이 열려 있을 때 한 번(ADR-0177). 힌트 카드와 같은 자리 · 같은 면이고, 머리는 대본형
+ * 「Mission success!」 — 필수 목표를 이뤘는데 판이 열려 있을 때 한 번(ADR-0193). 힌트 카드와 같은 자리 · 같은 면이고, 머리는 대본형
  * 정답 패널과 같은 ✓ 표 · 초록 제목입니다. Keep going(카드만 닫음) / Finish(채점 → 리포트). 답을 기다리는 동안은 Finish가 잠깁니다.
  */
 export function MissionSuccessCard({

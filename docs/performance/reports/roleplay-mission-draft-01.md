@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 미측정 — 번들만. 렌더링 · 메모리 캡처를 돌리지 않았다. 스위치(`ROLEPLAY_MISSION_READY`)가 꺼져 있어 사용자 화면 · 렌더 경로는 바뀌지 않는다 — 롤플레이 목록의 구획 계산에 `useRoleplayMissions()`(꺼져 있으면 상태 · 효과 없음)가 한 번 더 돌 뿐이다.
-- 기능 PR: 롤플레이 미션 화면 초안 — 미리보기 · 대화 · 리포트, `MissionSource` 포트와 가짜 출처, 목록의 미션 항목(ADR-0160 · PRD §4 · §8 N3).
+- 기능 PR: 롤플레이 미션 화면 초안 — 미리보기 · 대화 · 리포트, `MissionSource` 포트와 가짜 출처, 목록의 미션 항목(ADR-0193 · PRD §4 · §8 N3).
 - 대상 commit: 이 보고서와 같은 브랜치 `feat/companion-mission-app`의 HEAD(비교 기준은 그 바탕 `feat/companion-mission-core` c971a102)
 - 기기: 측정 기기 없음(번들 크기만)
 - OS: 해당 없음(번들 산출물)

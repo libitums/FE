@@ -27,7 +27,7 @@ import {
 } from "../screens/roleplay-mission/mission-ui.test-support";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 
-// 롤플레이 미션(ADR-0160 · ADR-0177)을 App 한 트리에서 봅니다 — 스위치 · 목록 항목 · 미리보기 → 대화 → 성공 카드 · 끝내기 → 채점 →
+// 롤플레이 미션(ADR-0193)을 App 한 트리에서 봅니다 — 스위치 · 목록 항목 · 미리보기 → 대화 → 성공 카드 · 끝내기 → 채점 →
 // 리포트 → 다시 하기 / 목록, 그만두기(필수 전 · 성공 뒤), 채점 실패 → 다시 시도, 채점 대기 판, 음성 한 턴. 출처 · 기기 음성은
 // 가짜(계약 fixture)이고 대역은 경계뿐입니다 — `StorageModule` · `fetch`.
 

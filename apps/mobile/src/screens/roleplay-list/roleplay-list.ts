@@ -19,7 +19,7 @@ import type {
 } from "./roleplay-list.contract";
 
 // 미션 항목의 낱말 · 배지는 미션 쪽 입구에서 옵니다 — 스위치가 꺼진 release에서는 미션 항목이 없고 미션 문구도 번들에 없습니다
-// (`__ROLEPLAY_MISSION_IN_BUNDLE__`, ADR-0177). 그 삼항을 풀지 않습니다(ME-S2).
+// (`__ROLEPLAY_MISSION_IN_BUNDLE__`, ADR-0193). 그 삼항을 풀지 않습니다(ME-S2).
 export function roleplayFormLabel(form: RoleplayUnitForm, copy: UiCopy): string {
   if (form !== "mission") return copy.roleplay.form[form];
   return __ROLEPLAY_MISSION_IN_BUNDLE__ ? missionFormLabel(copy.learnerProfile.language) : "";

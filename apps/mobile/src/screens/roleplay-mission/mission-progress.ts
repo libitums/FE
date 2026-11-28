@@ -7,7 +7,7 @@ export type MissionProgress = {
   readonly goals: readonly { readonly id: string; readonly done: boolean }[];
   readonly turnsLeft: number;
   readonly ended: MissionEndReason | null;
-  /** 필수 목표를 모두 이뤘는가(ADR-0177). 칸이 없는 옛 이벤트는 `false`. */
+  /** 필수 목표를 모두 이뤘는가(ADR-0193). 칸이 없는 옛 이벤트는 `false`. */
   readonly requiredDone: boolean;
 };
 

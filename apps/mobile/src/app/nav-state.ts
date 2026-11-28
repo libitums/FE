@@ -104,7 +104,7 @@ export type Screen =
   | { name: "roleplay-episode"; episodeId: RoleplayEpisodeId }
   // 본편 에피소드의 롤플레이입니다 — 미리보기 → 표지 컷 → 말하기 대화를 한 route가 집니다.
   | { name: "roleplay-story"; episodeId: string }
-  // 롤플레이 미션(ADR-0160) — 미리보기 → 대화 → 리포트를 한 route가 집니다. 스위치가 꺼져 있으면 아무 코드도 push하지 않습니다.
+  // 롤플레이 미션(ADR-0193) — 미리보기 → 대화 → 리포트를 한 route가 집니다. 스위치가 꺼져 있으면 아무 코드도 push하지 않습니다.
   | { name: "roleplay-mission"; missionId: string }
   | {
       name: "roleplay-story-complete";
