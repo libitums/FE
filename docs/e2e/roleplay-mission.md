@@ -112,5 +112,7 @@ ui · integration(`MissionTalk*.ui` · `MissionFeedbackCard.ui` · `MissionRepor
 
 - QA 넷(기능 2 · 페르소나 2)의 결함 17건을 고친 뒤 같은 화면을 다시 찍어 봤다: 리포트 문단 겹침 · 교정 카드 상자 · `#fail` 다시 보내기 · 최고 기록 갱신 ·
   잠긴 카드 · 모든 목표 / 턴 상한 닫힘 · 미리보기 아이콘 · 요금 줄 · 그만두기 대화상자 · 점수 항 · 자리표 · 큰 글자(미리보기 · 대화 위 띠).
-- 남은 것: 아주 큰 글자에서 미리보기의 목표판이 여전히 화면 밖(스크롤되지 않음) — 작업 보고에 원인 추정과 함께 적음.
+- 수정 뒤 화면: [미리보기](evidence/ios-roleplay-mission-preview.png) · [대화의 교정(FIX) · 성공 카드](evidence/ios-roleplay-mission-fix-success.png) ·
+  [리포트 아래쪽](evidence/ios-roleplay-mission-report-bottom.png) · [목록의 잠긴 미션](evidence/ios-roleplay-mission-list-locked.png).
+- 남은 것: 아주 큰 글자에서 미리보기의 목표판이 여전히 화면 밖(스크롤되지 않음, [아주 큰 글자 미리보기](evidence/ios-roleplay-mission-preview-largest-font.png)) — 작업 보고에 원인 추정과 함께 적음.
 - 개발 서버 주의: JSX 파일을 고치면 메인 스레드 번들이 갱신되지 않아 「Snapshot not found」로 화면이 비었다 — 개발 서버를 다시 띄워야 반영된다.

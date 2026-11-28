@@ -45,6 +45,42 @@ describe("조각 나누기", () => {
     expect(splitter.push("녕")).toEqual([{ segment: 0, kind: "speech", text: "녕" }]);
   });
 
+  // SG3b — Haiku가 `@state` 태그를 빠뜨리고 JSON만 쓰거나 찌꺼기 줄(`_state_placeholder`)을 쓰면 말풍선에 새면 안 된다(2026-11-27).
+  test("SG3b. 태그 없는 상태 JSON은 상태 줄로, _state 찌꺼기 줄은 버린다 — 글자 단위로 와도 같다", () => {
+    const whole =
+      '@speech 시험 힘내요!\n{"intimacy_delta": 2, "topic": "시험", "user_wants_switch": false}\n_state_placeholder';
+    for (const chunks of [[whole], [...whole]]) {
+      const splitter = createSegmentSplitter();
+      const deltas = [...chunks.flatMap((chunk) => splitter.push(chunk)), ...splitter.end()];
+      expect(collectSegments(deltas)).toEqual([{ kind: "speech", text: "시험 힘내요!" }]);
+      expect(splitter.state()).toMatchObject({ intimacyDelta: 2, topic: "시험" });
+    }
+    // 찌꺼기 줄(`<br>` · `<<…>>` · `brief:`)도 버린다.
+    expect(
+      collectSegments(
+        split(["@speech 좋아요!\n<br>\n<<HUMAN_CONVERSATION_START>>\nbrief: x\n@speech 또 봐요"]),
+      ),
+    ).toEqual([
+      { kind: "speech", text: "좋아요!" },
+      { kind: "speech", text: "또 봐요" },
+    ]);
+    // 자기 수정 · 메타 줄도 버린다(태그가 붙어 와도).
+    expect(
+      collectSegments(
+        split([
+          "@speech 반가워요!\nWait — I must keep 해요체 everywhere.\nLet me redo that cleanly.\n@speech 어디에서 왔어요?",
+        ]),
+      ),
+    ).toEqual([
+      { kind: "speech", text: "반가워요!" },
+      { kind: "speech", text: "어디에서 왔어요?" },
+    ]);
+    // 학습자에게 보일 평범한 중괄호 글은 그대로 speech.
+    expect(collectSegments(split(["{웃음} 좋아요"]))).toEqual([
+      { kind: "speech", text: "{웃음} 좋아요" },
+    ]);
+  });
+
   test("SG4. 프롬프트용 태그 줄로 되돌린다", () => {
     expect(
       segmentsToTagged([

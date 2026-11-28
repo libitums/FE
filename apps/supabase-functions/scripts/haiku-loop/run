@@ -1,0 +1,5 @@
+#!/bin/sh
+# 사용: scripts/haiku-loop/run turn|static ...  (Node 22 타입 변환으로 운영 코드를 그대로 불러온다)
+dir=$(cd "$(dirname "$0")" && pwd)
+name=$1; shift
+exec node --experimental-transform-types --no-warnings "$dir/$name.ts" "$@"

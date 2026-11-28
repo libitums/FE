@@ -95,9 +95,28 @@ test("CE5. 번역 — 기본 every · off · 모르는 값은 설정 오류, 번
   });
 });
 
-test("CE6. 답변 생각 깊이 — 기본 low · medium · 모르는 값은 설정 오류", () => {
-  expect(from({ ...base, COMPANION_REPLY_EFFORT: "medium" })?.llm).toMatchObject({
-    replyEffort: "medium",
+test("CE6. 답변 생각 깊이 — 기본 low · medium · high · off · 모르는 값은 설정 오류", () => {
+  expect(from(base)?.llm).toMatchObject({ replyEffort: "low" });
+  for (const effort of ["medium", "high", "off"])
+    expect(from({ ...base, COMPANION_REPLY_EFFORT: effort })?.llm).toMatchObject({
+      replyEffort: effort,
+    });
+  expect(from({ ...base, COMPANION_REPLY_EFFORT: "max" })).toBeNull();
+});
+
+test("CE7. 답변 refusal 대체 모델 — Haiku면 기본 Sonnet 5.5, 아니면 없음, 설정하면 그 값", () => {
+  expect(from({ ...base, COMPANION_MODEL: "claude-haiku-5-5" })?.llm).toMatchObject({
+    replyFallbackModel: "claude-sonnet-5-5",
   });
-  expect(from({ ...base, COMPANION_REPLY_EFFORT: "high" })).toBeNull();
+  expect(from({ ...base, COMPANION_MODEL: "claude-sonnet-5-5" })?.llm).not.toHaveProperty(
+    "replyFallbackModel",
+    "claude-sonnet-5-5",
+  );
+  expect(
+    from({
+      ...base,
+      COMPANION_MODEL: "claude-haiku-5-5",
+      COMPANION_REPLY_FALLBACK_MODEL: "claude-opus-5-5",
+    })?.llm,
+  ).toMatchObject({ replyFallbackModel: "claude-opus-5-5" });
 });

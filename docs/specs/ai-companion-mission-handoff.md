@@ -13,7 +13,7 @@
 |---|---|---|---|
 | FE | `feat/companion-mission` (PR #496) | PRD + ADR-0193 | CI 통과 |
 | FE | `feat/companion-mission-core` | 미션 코어 — 계약 · 미션 파일 둘 · 프롬프트 틀 · 상태 전이 · 점수식 · 채점 · 힌트 · 실험실 번들 | `pnpm verify` |
-| FE | `feat/companion-mission-db` | 마이그레이션 `20270112120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
+| FE | `feat/companion-mission-db` | 마이그레이션 `20270122120000_companion_mission.sql` · SQL 함수 · 통합 테스트 | `pnpm verify` |
 | FE | **`feat/companion-mission-server`** | 위 둘을 합치고 Edge Function을 이은 **통합 브랜치** — `mission-start` · `chat-send` 미션 갈래 · `mission-hint` · `mission-finish` · 미션 올리기 스크립트. 이 문서가 여기 있다 | `pnpm verify` |
 | FE | `feat/companion-mission-app` | 앱 화면 초안(mock 데이터, 스위치 뒤) — §6 | `pnpm verify` |
 | FE | **`feat/companion-mission-e2e-int`** (2026-11-23) | 위 서버 통합 위에 세 갈래를 합친 것 — 답 · 페르소나 · 가드레일 · 연출 지시 · 목표 판정(`e2e-reply`, A), 채점 · 리포트 새 칸(`e2e-report`, C), 작별 인사 · 교정 비한글 거르개 · 미션 장면의 메뉴와 값(version 2). 단계 · 수치 · 앱 인계 · 사용자 결정은 [미션 파이프라인](ai-companion-mission-pipeline.md) | `pnpm verify` |
@@ -183,12 +183,12 @@ DEEPGRAM_API_KEY=
 ### 4.7 앞서 올린 PR에 남아 있는 것
 32. #495 법률 문서: 시행일 · 「대화를 AI 학습에 쓰지 않는다」 약속 · Sentry 보존 기간 · Notion 두 페이지 맞추기 · 이용약관의 낡은 내용.
 33. #498 턴 로그: 운영 적용 순서 · 방침 문장과 시행일 · 스토어 표시 · 기기 모델(네이티브 모듈 필요).
-34. 번호 — main 받기(2026-11-22)에서 미션을 ADR 0160 → **0177**, 마이그레이션 20261214 → **20261226**으로 옮겼다(main에 0160 구독 입구 · 0176 입장 선택, 20261214 구독 대기 · 20261225 선톡 푸시가 먼저 들어옴). main에는 0159(온보딩) · 0167(법률 문서) · 마이그레이션 20261213(early access)이 이미 있어, #495 법률 문서의 ADR 0159와 #498 턴 로그의 ADR 0161 · 마이그레이션 20261213도 머지할 때 옮겨야 한다(0161은 아직 main에 비어 있다). ⟨2026-11-23⟩ main 받기에서 다시 ADR 0177 → **0178**(main에 0177 고민 힌트), 마이그레이션 20261226 → **20270102**(main에 20261227 ~ 20261231, 열린 PR #498이 20270101)로 옮겼다 — 미션이 main의 함수(`companion_media_orphans` · `companion_release_stale_holds`)를 다시 정의하므로 main의 것보다 뒤에 적용돼야 한다. ⟨2026-11-26⟩ 세 번째 main 받기에서 ADR 0178 → **0193**(main에 0178 친구 스토리 ~ 0202, 열린 PR #628이 0201 — PR #496과 같은 번호), 마이그레이션 20270102 → **20270112**(main에 20270101 ~ 20270111).
+34. 번호 — main 받기(2026-11-22)에서 미션을 ADR 0160 → **0177**, 마이그레이션 20261214 → **20261226**으로 옮겼다(main에 0160 구독 입구 · 0176 입장 선택, 20261214 구독 대기 · 20261225 선톡 푸시가 먼저 들어옴). main에는 0159(온보딩) · 0167(법률 문서) · 마이그레이션 20261213(early access)이 이미 있어, #495 법률 문서의 ADR 0159와 #498 턴 로그의 ADR 0161 · 마이그레이션 20261213도 머지할 때 옮겨야 한다(0161은 아직 main에 비어 있다). ⟨2026-11-23⟩ main 받기에서 다시 ADR 0177 → **0178**(main에 0177 고민 힌트), 마이그레이션 20261226 → **20270102**(main에 20261227 ~ 20261231, 열린 PR #498이 20270101)로 옮겼다 — 미션이 main의 함수(`companion_media_orphans` · `companion_release_stale_holds`)를 다시 정의하므로 main의 것보다 뒤에 적용돼야 한다. ⟨2026-11-26⟩ 세 번째 main 받기에서 ADR 0178 → **0193**(main에 0178 친구 스토리 ~ 0202, 열린 PR #628이 0201 — PR #496과 같은 번호), 마이그레이션 20270102 → **20270112**(main에 20270101 ~ 20270111). ⟨2026-11-28⟩ 네 번째 main 받기에서 마이그레이션 20270112 → **20270122**(main에 20270112 해준 말투 ~ 20270120, 열린 PR #694가 20270121 · #498이 20270101). ADR 0193은 main · 열린 PR에서 비어 있어 그대로다. main의 새 마이그레이션은 미션이 다시 정의한 함수 · 제약(위 셋 · `companion_proactive_push_gate` · 제약 셋)을 건드리지 않았다.
 
 ### 4.8 알려진 것 — 미션 판(`kind = 'mission'`)이 섞이는 1단계 · main 쪽 SQL (2026-11-26)
 
 - **선톡 푸시 문 — 막음**: main의 `companion_proactive_push_gate`(원본 `20261228120000_friend_stories.sql`, `20261228140000_my_stories.sql`이 묶음 배열을 고친 최신 정의)는
-  `hasRoom`을 사용자 + 인물로만 골라, u06(도윤) 미션만 한 사람도 「도윤 방이 있다」로 잡혀 선톡 푸시를 받을 수 있었다. 미션 마이그레이션(`20270112120000`)이
+  `hasRoom`을 사용자 + 인물로만 골라, u06(도윤) 미션만 한 사람도 「도윤 방이 있다」로 잡혀 선톡 푸시를 받을 수 있었다. 미션 마이그레이션(`20270122120000`)이
   이 함수를 다시 정의해 `c.kind = 'companion'` 한 조건만 더했다(나머지는 원본과 글자 그대로, 테스트 `migrations/companion-mission-push-gate.integration.test.ts`).
   **선톡 푸시 담당자에게**: main 쪽 원본에 이 조건을 넣으면 미션 마이그레이션의 재정의는 지워도 된다. 반대로 미션보다 뒤 번호에서 이 함수를 다시 정의하면
   조건이 빠지니 함께 넣어 달라(ADR-0193 「다시 정의한 기존 함수」).
@@ -196,6 +196,8 @@ DEEPGRAM_API_KEY=
   `ops_user_moderation`(`20261215130000_ops_admin_moderation.sql`)에 미션 턴의 검사 기록도 함께 보인다.
 - **고치지 않음(보고만)**: 친구 스토리 알림 후보 `companion_story_push_candidates`(`20261228120000_friend_stories.sql`)의 「기기 등록 뒤 그 인물에게 말함」도
   `kind` 조건이 없어 미션 판의 말을 센다(스토리 알림 쪽 결정이 필요).
+- **고치지 않음(표시용, 2026-11-28 main 받기)**: 운영 도구의 판정 목록 `ops.moderation_scope` · `ops_moderation_summary` · `ops_moderation_feed`
+  (`20270118120000_ops_admin_insights.sql` · `20270120120000_ops_admin_insights_fix.sql`)가 대화의 `kind`를 보지 않아 미션 턴의 판정도 함께 보이고, 인물 칸에 미션 상대역의 `character_id`(단역이면 비어 있음)가 온다.
 
 ## 5. 확인하지 못한 것
 

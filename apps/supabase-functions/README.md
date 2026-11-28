@@ -1296,9 +1296,9 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 **적용 순서** — `20270118130000_my_story_slot_timezone.sql`(`20270118120000_ops_admin_insights` 뒤) → `supabase functions deploy companion-my-story`.
 마이그레이션이 먼저다 — 새 Edge가 옛 함수에 `p_region`을 넘기면 함수를 찾지 못한다. 앱이 `p_region`을 싣는 판은 마이그레이션 적용 뒤에 낸다.
 
-## 롤플레이 미션 DB — 컴패니언 2단계 (20270112)
+## 롤플레이 미션 DB — 컴패니언 2단계 (20270122)
 
-`migrations/20270112120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
+`migrations/20270122120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
 ([ADR-0193](../../docs/adr/0193-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
 컴패니언 쪽 SQL의 `kind = 'companion'` 조건 · 캐릭터당 고유 색인은 그대로 둬 미션 행이 기록 · 선톡 · 요약 · 기억 · 대화 비우기 · 첫 인사에
 섞이지 않는다(D2). 턴의 SQL은 미션 전용 함수다 — `companion_begin_turn` · `companion_finish_turn`은 바뀌지 않는다(D3).
@@ -1318,7 +1318,10 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
   (진행 스냅숏 `catalogProgress`에 정의의 `completionKeys`, 없으면 `RP`). 계정 단위(연령 · 일시 차단 · 사용 시간)는 컴패니언 판정과 같은 규칙이다.
 - 값: 시작 때 판 단위로 예약한다(무료 횟수가 남았으면 금액 0, 아니면 정액). 결과 저장 · 그만둠 · 새 판 · 방치는 확정, 채점 실패는 해제(무료 횟수도
   돌려줌), 채점 다시 시도가 성공하면 다시 받는다(잔액이 모자라면 리포트만). 판 단위 예약은 `companion_release_stale_holds`가 건드리지 않는다
-  (기존 함수 가운데 이것만 다시 정의 — `reason <> 'mission'` 한 줄).
+  (`reason <> 'mission'` 한 줄).
+- **다시 정의한 기존 함수 · 제약**(ADR-0193 「다시 정의한 기존 함수」 — 모두 main 최신 정의에서 출발해 미션 몫만 더함): `companion_release_stale_holds`(위 한 줄) ·
+  `companion_media_orphans`(합성 캐시 `mission-tts/` 제외) · `companion_proactive_push_gate`(`hasRoom`에 `c.kind = 'companion'`) · 제약 `messages_origin_check` ·
+  `credit_holds_reason_check` · `conversations_kind_check`(각각 `mission` 더함). 그래서 이 파일은 main의 마이그레이션보다 뒤 번호여야 한다.
 - 점수는 `companion_mission_save_result`가 계산한다: 과업 = 달성 목표 ÷ 전체(턴 ∪ 채점자) · 목표 표현 = 쓴 것 ÷ 목표 표현(없으면 100) ·
   최종 = max(0, round(가중치 합) − 감점 × 힌트). 성공 = 필수 목표 모두.
 - 끝: `companion_mission_finish_turn`은 모든 목표면 `goals`, 턴 상한이면 `turn_limit`을 적는다(필수만이면 적지 않고 상태의 `requiredDone`만 참).
@@ -1330,9 +1333,9 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **운영 적용은 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 운영 DB에는 적용하지 않는다(PRD §0.9).** 정리된 뒤의 순서:
 
-1. 앞의 마이그레이션 모두(20261108 ~ 20270111, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유 · 20261229 ~ 20261230 미디어 표본) **뒤에** 적용한다. `supabase db push --dry-run`으로
-   이 파일만 올라가는지 보고 `supabase db push`, 또는 SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
-   `supabase migration repair --status applied 20270112120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
+1. 앞의 마이그레이션 모두(20261108 ~ 20270121, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유 · 20261229 ~ 20261230 미디어 표본) **뒤에** 적용한다. 이 파일 하나만
+   `supabase db query --linked -f supabase/migrations/20270122120000_companion_mission.sql`로 실행한다(`db push` 금지 — 운영의 마이그레이션 기록이
+   실제와 어긋나 있어 다른 파일까지 다시 돈다). 실행 전에 위 「다시 정의한 기존 함수 · 제약」이 운영에서 main 최신 정의와 같은지 본다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
 2. 미션 파일을 올리는 스크립트로 `companion_upsert_mission`을 부른다(파일마다 한 번, 다시 불러도 같다).
 3. `cron/companion-mission.sql`을 SQL 편집기에서 한 번 실행한다.
 4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
@@ -1341,7 +1344,7 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 ## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0193)
 
-미션 코어(`_shared/mission-*.ts`)와 미션 DB(20270112)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
+미션 코어(`_shared/mission-*.ts`)와 미션 DB(20270122)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
 진입 `index.ts`, 인증은 사용자 토큰 또는 플레이그라운드 경로(`Authorization: Bearer <서버 키>` + `x-companion-user-id`), `config.toml`의
 `verify_jwt = false`, 요청마다 로그 한 줄(`mission_start` · `mission_hint` · `mission_finish`, 턴은 `chat_send … mission …`).
 LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고,
