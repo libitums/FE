@@ -5,6 +5,7 @@
 import type { EvalSet } from "./companion-eval-set-shape.ts";
 import { friendReplySetsA } from "./companion-eval-sets-friends-a.ts";
 import { friendReplySetsB } from "./companion-eval-sets-friends-b.ts";
+import { friendReplySetsC } from "./companion-eval-sets-friends-c.ts";
 import { storyReactionSets } from "./companion-eval-sets-reactions.ts";
 import { misfireSets } from "./companion-eval-sets-misfires.ts";
 import { commonRequestSets } from "./companion-eval-sets-requests.ts";
@@ -15,6 +16,7 @@ export type { EvalSet, EvalVerdict } from "./companion-eval-set-shape.ts";
 export const companionEvalSets: readonly EvalSet[] = [
   ...friendReplySetsA,
   ...friendReplySetsB,
+  ...friendReplySetsC,
   ...tierBoundarySets,
   ...commonRequestSets,
   ...misfireSets,
