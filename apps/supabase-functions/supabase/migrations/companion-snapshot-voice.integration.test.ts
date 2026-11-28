@@ -464,6 +464,34 @@ test("SV6. 음성 — 한국어 대사만 · 저장본은 무료 · 「다시」
   await ledgerMatchesWallet();
 });
 
+test("SV6b. 인물별 음성 모델 · 설정 — 다은은 eleven_v4 + 견본 설정(speed 없음) · 정하지 않은 인물은 settings 모델 · 설정 없음", async () => {
+  const daeun = await db.admin.query(
+    "select media->>'voiceModel' as model, media->'voiceSettings' as settings from companion.characters where id = 'daeun'",
+  );
+  expect(daeun.rows[0]).toEqual({
+    model: "eleven_v4",
+    settings: { stability: 0.4, similarityBoost: 0.8, style: 0.45 },
+  });
+  const plain = await begin(await message(), "voice");
+  expect(plain.job).toMatchObject({ model: "eleven_v3" });
+  expect(plain.job).not.toHaveProperty("voiceSettings");
+
+  await db.admin.query(
+    `update companion.characters set media = media || '{"voiceModel": "eleven_v4", "voiceSettings": {"stability": 0.5}}' where id = 'duksu'`,
+  );
+  try {
+    expect((await begin(await message(), "voice")).job).toMatchObject({
+      voiceId: "WW9FljMgKZtSNvBwgs3R",
+      model: "eleven_v4",
+      voiceSettings: { stability: 0.5 },
+    });
+  } finally {
+    await db.admin.query(
+      "update companion.characters set media = media - 'voiceModel' - 'voiceSettings' where id = 'duksu'",
+    );
+  }
+});
+
 test("SV7. 엽전 부족 · 하루 상한 · 기준 이미지 없음 — 예약도 행도 없다", async () => {
   await db.admin.query("truncate companion.credit_ledger, companion.credit_wallets");
   await grant(20);

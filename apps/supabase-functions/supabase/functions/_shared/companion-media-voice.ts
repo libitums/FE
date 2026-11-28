@@ -3,7 +3,7 @@
 // 던지지 않는다. 예상 못 한 오류도 failed로 닫는다(예약 해제).
 
 import { VOICE_PHASES } from "./companion-media-budget.ts";
-import { elevenSpeech, uploadMedia } from "./companion-media-engines.ts";
+import { elevenSpeech, uploadMedia, voiceSettingsBody } from "./companion-media-engines.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
 import {
   budgetExhausted,
@@ -23,6 +23,8 @@ export type VoiceJob = {
   readonly voiceId: string;
   readonly model: string;
   readonly text: string;
+  /** 인물 `media.voiceSettings`(있을 때만). 엔진에 넣기 전 `voiceSettingsBody`가 범위를 거른다. */
+  readonly voiceSettings?: unknown;
 };
 
 export async function runVoice(deps: MediaRunDeps, env: MediaEnv, job: VoiceJob): Promise<void> {
@@ -31,12 +33,14 @@ export async function runVoice(deps: MediaRunDeps, env: MediaEnv, job: VoiceJob)
   const budget = budgetFor(deps);
   const speechTimeouts: number[] = [];
   const timeouts: Record<string, number | number[]> = { speech: speechTimeouts };
+  const voiceSettings = voiceSettingsBody(job.voiceSettings);
   const meta: Record<string, unknown> = {
     aiGenerated: true,
     engine: "elevenlabs",
     model: job.model,
     voiceId: job.voiceId,
     chars: job.text.length,
+    ...(voiceSettings === undefined ? {} : { voiceSettings }),
     timeouts,
   };
   const done = (status: Status, result: Result) =>
