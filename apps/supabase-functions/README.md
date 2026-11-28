@@ -1330,9 +1330,9 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **운영 적용은 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 운영 DB에는 적용하지 않는다(PRD §0.9).** 정리된 뒤의 순서:
 
-1. 앞의 마이그레이션 모두(20261108 ~ 20270121, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유 · 20261229 ~ 20261230 미디어 표본) **뒤에** 적용한다. `supabase db push --dry-run`으로
-   이 파일만 올라가는지 보고 `supabase db push`, 또는 SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
-   `supabase migration repair --status applied 20270122120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
+1. 앞의 마이그레이션 모두(20261108 ~ 20270121, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유 · 20261229 ~ 20261230 미디어 표본) **뒤에** 적용한다. 이 파일 하나만
+   `supabase db query --linked -f supabase/migrations/20270122120000_companion_mission.sql`로 실행한다(`db push` 금지 — 운영의 마이그레이션 기록이
+   실제와 어긋나 있어 다른 파일까지 다시 돈다). 실행 전에 위 함수 셋 · 제약 셋이 운영에서 main 최신 정의와 같은지 본다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
 2. 미션 파일을 올리는 스크립트로 `companion_upsert_mission`을 부른다(파일마다 한 번, 다시 불러도 같다).
 3. `cron/companion-mission.sql`을 SQL 편집기에서 한 번 실행한다.
 4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
