@@ -13,6 +13,11 @@ const ladder = new URL("./20261218120000_companion_romance_ladder.sql", import.m
 const haejunWarmth = new URL("./20270112120000_companion_haejun_warmth.sql", import.meta.url);
 // 20270121: 친구 넷의 취향 · 배경과 스토리 다섯의 취향(likes · dislikes)을 정본에 맞춘다 — 다시 적용하면 이것도 이어서.
 const personaTastes = new URL("./20270121120000_companion_persona_tastes.sql", import.meta.url);
+// 20270123: 동물 셋(먹물 · 치즈 · 보리)의 생김새 · 사연과 다은의 게임 취향 · doNot을 정본에 맞춘다 — 다시 적용하면 이것도 이어서.
+const personaPetsGames = new URL(
+  "./20270123120000_companion_persona_pets_games.sql",
+  import.meta.url,
+);
 const friendsJson = new URL("../../../../docs/content/companion-friends.json", import.meta.url);
 const year = new Date().getUTCFullYear();
 const adultYear = year - 30;
@@ -29,7 +34,15 @@ type Friend = {
   look: { identity: string };
   voiceId: string;
   persona: Record<
-    "background" | "history" | "values" | "people" | "goals" | "likes" | "dislikes" | "hooks",
+    | "background"
+    | "history"
+    | "values"
+    | "people"
+    | "goals"
+    | "likes"
+    | "dislikes"
+    | "hooks"
+    | "doNot",
     string[]
   > & { romance: string };
 };
@@ -168,6 +181,7 @@ test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · �
       "likes",
       "dislikes",
       "hooks",
+      "doNot",
     ] as const)
       expect(row.persona[key], `${friend.id} ${key}`).toEqual(friend.persona[key]);
     // 로맨스 태도(ADR-0168 — 다은 · 건우는 사다리에 맞춰 20261218에 고쳤다).
@@ -424,6 +438,7 @@ test("FR9. 다시 적용해도 같은 결과 · 서버용 함수는 앱이 부�
   await db.admin.query(await readFile(ladder, "utf8"));
   await db.admin.query(await readFile(haejunWarmth, "utf8"));
   await db.admin.query(await readFile(personaTastes, "utf8"));
+  await db.admin.query(await readFile(personaPetsGames, "utf8"));
   expect((await snapshot()).rows[0]).toEqual(before);
   await signIn(app, member);
   await expect(
