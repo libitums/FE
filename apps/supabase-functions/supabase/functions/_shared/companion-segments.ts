@@ -44,6 +44,8 @@ export type SegmentSplitter = {
   end(): SegmentDelta[];
   /** `@state` 줄을 읽은 결과. 없거나 깨졌으면 null. `end()` 뒤에 부릅니다. */
   state(): TurnState | null;
+  /** `@state` 줄의 글자 그대로(앞뒤 공백 걷음). 없으면 null. 미션 턴은 상태 줄 모양이 달라 이것을 따로 읽습니다(`mission-state.ts`). */
+  stateText(): string | null;
 };
 
 /** `learned`: 후보 id(`e1` …) 또는 옛 모양의 true. null · false · 빈 글은 쓰지 않음. */
@@ -167,6 +169,9 @@ export function createSegmentSplitter(): SegmentSplitter {
     },
     state() {
       return stateText.trim() === "" ? null : parseTurnState(stateText.trim());
+    },
+    stateText() {
+      return stateText.trim() === "" ? null : stateText.trim();
     },
   };
 }

@@ -24,6 +24,8 @@ export class EngineError extends Error {
     readonly retryable: boolean,
     /** 엔진이 안전 정책으로 거절했다(다시 하지 않는다, blocked로 닫는다). */
     readonly refused = false,
+    /** 엔진의 HTTP 상태(응답을 받았을 때만). 미션 음성이 429(붐빔)와 5xx를 가른다. */
+    readonly status?: number,
   ) {
     super(message);
   }
@@ -128,6 +130,8 @@ export async function elevenSpeech(
     throw new EngineError(
       `ElevenLabs ${response.status}: ${body}`,
       retryableStatus(response.status),
+      false,
+      response.status,
     );
   }
   const bytes = new Uint8Array(await response.arrayBuffer());
@@ -137,7 +141,10 @@ export async function elevenSpeech(
 
 // ------------------------------------------------------------------ Storage (서버 키)
 
-const objectUrl = (env: MediaEnv, bucket: string, path: string) =>
+/** Storage에 닿는 데 필요한 칸만(미션 음성 env도 이 모양을 품는다). */
+export type StorageEnv = Pick<MediaEnv, "supabaseUrl" | "supabaseServiceRoleKey">;
+
+export const objectUrl = (env: StorageEnv, bucket: string, path: string) =>
   `${env.supabaseUrl}/storage/v1/object/${bucket}/${path.split("/").map(encodeURIComponent).join("/")}`;
 
 /** 기준 이미지 한 장(`companion-refs/<name>`). */
@@ -179,7 +186,7 @@ export async function downloadRefJson(
 /** 결과 파일 올리기(`companion-media/<path>`). 같은 경로면 덮어쓴다(재시도 안전). */
 export async function uploadMedia(
   fetchImpl: Fetch,
-  env: MediaEnv,
+  env: StorageEnv,
   path: string,
   bytes: Uint8Array,
   mime: string,

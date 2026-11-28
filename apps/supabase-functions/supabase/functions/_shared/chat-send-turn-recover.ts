@@ -9,7 +9,7 @@ import type {
   PersonaCard,
   Segment,
 } from "./chat-send.contract.ts";
-import { type TurnContext, turnRomanceLine } from "./chat-send-context.ts";
+import { type RomanceContext, type TurnContext, turnRomanceLine } from "./chat-send-context.ts";
 import type { ModerationRecord } from "./chat-send-finish.ts";
 import { chipTarget } from "./chat-send-learning.ts";
 import { defaultLlmTimeoutMs, startReply } from "./chat-send-reply.ts";
@@ -19,8 +19,12 @@ import type { LearningTarget } from "./companion-learning.ts";
 import { recoveryDirective, refusalTopic } from "./companion-llm-prompts.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 
+/** 검사 · 다시 만들기가 읽는 턴 값만(미션 턴도 같이 쓴다 — 미션은 인물 없이 기본 선, ADR-0168 `defaultRomanceLine`과 같다). */
+type CheckContext = Pick<TurnContext, "deps" | "llm"> &
+  RomanceContext & { readonly body: { readonly text: string } };
+
 /** 동기 출력 검사 — 결과를 검사 목록에 더합니다. 검사 실패는 거부(턴이 `upstream_unavailable`로). 완화 수위(open) 턴도 여기를 지난다. */
-export function outputChecker(context: TurnContext, moderation: ModerationRecord[]) {
+export function outputChecker(context: CheckContext, moderation: ModerationRecord[]) {
   const { deps, llm, body, gate } = context;
   return async (segments: readonly Segment[]): Promise<ModerationVerdict> => {
     const output = await llm.moderate({
@@ -85,7 +89,7 @@ export const withheld = (category: string, segments: readonly Segment[]): Withhe
 
 /** 걸린 분류로 화제를 돌린 답을 한 번 만들고 다시 검사합니다. 통과한 답(내보내기 전)만 돌려주고, 아니면 null. */
 export async function recoverReply(
-  context: TurnContext,
+  context: CheckContext,
   input: {
     readonly history: HistoryEntry[];
     readonly system: string;

@@ -25,6 +25,8 @@ import type {
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
 import type { FriendPersonaFields, RomanceTier } from "./companion-friends.contract.ts";
 import type { RomanceLine } from "./companion-friends.contract.ts";
+import type { LlmUsage } from "./companion-llm-usage.contract.ts";
+import type { MissionLlmMembers, MissionLogEvent } from "./mission-llm.contract.ts";
 
 export {
   type PersonaExample,
@@ -165,30 +167,10 @@ export type {
   TranslationRequest,
 } from "./companion-steps.contract.ts";
 
-/** LLM 호출 단계 — 사용량 기록의 이름. */
-export type LlmStep =
-  | "reply"
-  | "moderation_input"
-  | "moderation_output"
-  | "feedback"
-  | "translation"
-  | "memory"
-  | "summary"
-  | "suggestions"
-  | "judge";
-
-/** 호출 하나의 토큰 사용량(API 응답의 usage). 캐시 쓰기 · 읽기는 입력과 따로 센다. */
-export type LlmUsage = {
-  readonly step: LlmStep;
-  readonly model: string;
-  readonly inputTokens: number;
-  readonly cacheReadTokens: number;
-  readonly cacheWriteTokens: number;
-  readonly outputTokens: number;
-};
+export type { LlmStep, LlmUsage } from "./companion-llm-usage.contract.ts";
 
 /** 벤더 추상화 계층(PRD §5 M1). 메인 답변은 글자 조각의 흐름, 나머지는 구조화된 결과 하나입니다. */
-export type CompanionLlm = {
+export type CompanionLlm = MissionLlmMembers & {
   readonly model: string;
   reply(request: ReplyRequest): AsyncIterable<string>;
   moderate(request: ModerationRequest): Promise<ModerationVerdict>;
@@ -265,7 +247,8 @@ export type ChatSendLogEntry = {
     | "companion_proactive"
     | "companion_memory_flush"
     | "companion_eval"
-    | "companion_stories";
+    | "companion_stories"
+    | MissionLogEvent;
   readonly status: number | "stream";
   readonly outcome?: string;
   readonly error?: string;

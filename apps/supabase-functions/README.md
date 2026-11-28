@@ -662,6 +662,81 @@ supabase functions serve --no-verify-jwt                                        
 되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
 
+### 롤플레이 미션 코어 (2단계, ADR-0193)
+
+에피소드 하나에 묶인 짧은 과업 대화의 **순수 층**이다 — DB · 네트워크 · Deno에 닿지 않고, 핸들러(`mission-start` · `chat-send`의 미션 갈래 ·
+`mission-hint` · `mission-finish`)와 SQL은 따로 들어온다. 기획: [PRD](../../docs/specs/ai-companion-mission.md) · [ADR-0193](../../docs/adr/0193-companion-mission.md).
+
+| 파일(`_shared/`) | 하는 일 |
+|---|---|
+| `missions/*.json` | 미션 정의의 **정본**(1판: `u06-cafe` 캐스트 도윤 · `u01-water` 단역 점원). 스크립트가 `companion.missions`로 올린다 — `missions/README.md` |
+| `mission-definition.ts` | `validateMission` · `parseMission`(계약 `missionDefinitionSchema`), 캐스트의 바탕 네 칸 `missionCounterpartBase` |
+| `mission-template.ts` | 「틀 + 채우기」 `fillTemplate` — `{{이름}}` 자리표, 값이 없으면 던진다 |
+| `mission-prompt.ts` | 턴의 시스템 프롬프트 — 고정부 `turnSystemStable` · 가변부 `turnDynamic` · 상태 줄 `missionStateLine` |
+| `mission-state.ts` | 상태 줄 해석 `parseMissionState` · `parseMissionReply`, 전이 `advanceMission`(되돌리지 않는 합치기 · 끝 판정 `missionEndReason` · 필수 달성 `requiredDone`), 끝내기 `missionFinishReason`, SSE 값 `missionEventData`, `mission_state jsonb` 왕복 |
+| `mission-score.ts` | 점수식 `scoreMission`(가중치 · 감점은 인자, 반올림 half up) · 기본값 · 힌트 상한 |
+| `mission-grader.ts` | 채점 프롬프트 · `graderSchema` · `normalizeGrade`(턴 ∪ 채점자) · `buildMissionReport` |
+| `mission-hint.ts` | 힌트 목표 고르기 `pickHintGoal` · `hintAvailability` · 프롬프트 · `hintSchema` |
+| `mission-context.ts` | 미션 요약 `missionBrief` · 대화 전문 `missionTranscript` · 교정 요청 `missionFeedbackRequest` |
+| `mission-env.ts` | 모델 이름 `missionModelsFrom` · 출력 토큰 상한 |
+| `mission-bundle.ts` · `mission-fixtures.ts` · `mission-transition-fixtures.ts` | 실험실 번들 만들기와 그 사례(단위 테스트와 같은 것) |
+
+**판이 끝나는 규칙**(2026-11-23 바뀜 — ADR-0193 D6): 판은 **모든 목표**(필수 + 선택)를 이루면 `goals`, 학습자 턴이 상한에 닿으면 `turn_limit`,
+필수를 모두 이룬 뒤 학습자가 끝내기(`mission-finish`, `abandon` 없이)를 누르면 `finish`로 닫힌다. 필수만 이룬 판은 닫히지 않는다 — 「성공 확정」
+(`mission` 이벤트 · 상태의 `requiredDone: true`)이고 대화가 이어진다. 선택 목표가 없는 미션은 필수를 이루는 순간 `goals`. 성공 = 필수 목표 모두
+(끝난 까닭과 무관 — 필수 뒤 턴 상한도 성공). 필수를 못 이룬 끝내기는 지금처럼 `mission_not_ended`(그만두기는 `abandon: true`).
+
+계약은 `packages/companion-contract/src/mission.ts` · `mission-report.ts`(정의 · 시작 · 미션 턴 요청 · 힌트 · 끝 · 리포트 · 목록)와
+SSE `mission` 이벤트다. `chat-send` 요청에는 `conversation_id`(선택)가 더해졌고 `character_id`의 뜻은 그대로다.
+
+**실험실 번들** — 대시보드의 「롤플레이 실험실」이 읽는 `apps/supabase-functions/mission-lab-bundle.json`(규격 v1)을 프롬프트 · 미션 파일 ·
+점수식에서 그대로 뽑는다. 프롬프트 · 미션 파일 · 사례를 고치면 다시 만들어 함께 커밋한다(안 하면 `mission-bundle.unit.test.ts`가 실패한다).
+
+```sh
+pnpm mission:bundle   # 번들을 다시 쓰고 pnpm format
+```
+
+**환경 변수**(새로 넷, 값은 비워 둔다 — `supabase/functions/env.example`). 컴패니언의 모델 설정을 물려받지 않는다(2026-11-19 사용자 결정):
+
+```sh
+COMPANION_MISSION_MODEL=            # 상대역 답 모델 id. 비워 두면 claude-sonnet-5-5
+COMPANION_MISSION_GRADER_MODEL=     # 채점 모델 id. 비워 두면 claude-sonnet-5-5
+COMPANION_MISSION_FEEDBACK_MODEL=   # 교정 모델 id. 비워 두면 claude-haiku-5-5
+COMPANION_MISSION_HINT_MODEL=       # 힌트 모델 id. 비워 두면 claude-haiku-5-5
+```
+
+미션 턴의 입력 · 출력 검사와 번역만 컴패니언의 `COMPANION_MODERATION_MODEL` · `COMPANION_TRANSLATION_MODEL`을 그대로 쓴다.
+
+### 미션 음성 — mission-stt · mission-tts (2026-11-23)
+
+롤플레이에서는 기기 음성 인식을 쓰지 않고 서버가 ElevenLabs를 부른다(STT Scribe v3 · TTS `eleven_v4_turbo`, 파이프라인 문서 §6 · §10). 앱은 키를 갖지 않는다.
+계약은 `packages/companion-contract/src/mission-voice.ts`(JSON Schema `mission-stt-*` · `mission-tts-*` · `mission-voice-error`), fixture는 `fixtures-mission-voice.ts`.
+
+- **`mission-stt`**: multipart `contract_version` · `conversation_id` · `audio`(16kHz mono 16-bit PCM WAV, 30초 · 1 MiB까지) → `{text, autoSend, reason, words, features, latencyMs}`.
+  자기의 **열린 판**(active · 끝나지 않음)만. Scribe는 `language_code=kor` · `tag_audio_events=false` · `timestamps_granularity=word`, 화자 분리 없음,
+  무보존 모드 `enable_logging=false`는 기본 끔(`COMPANION_MISSION_STT_ZERO_RETENTION=on`으로 켬 — 엔터프라이즈 계정 전용, 벤더 보존은 처리방침에 적힌 범위에서 허용 · 2026-11-26 사용자 결정). **녹음은 저장하지 않는다** — 메모리에서 벤더로 넘기고 버린다(기록 · 로그에도 글 · 소리 없음).
+  `autoSend`는 순수 함수 `autosendDecision`(`_shared/mission-voice-autosend.ts`, 대시보드 `autosend_decision`과 같은 규칙 · 문턱 0.85 · 0.93 · 0.35초 · 한글 0.6).
+  실패: `speech_empty` 422(빈 결과 · 0.2초 미만) · `speech_busy` 429(다시 하지 않음) · `speech_unavailable` 503(5xx · 연결 실패는 한 번 다시, 시간 초과 12초는 다시 하지 않음).
+- **`mission-tts`**: `{conversation_id, kind: "message", message_id}`(상대역 메시지 · 진입 대사) 또는 `{…, kind: "hint", hint_no}`(힌트 예문) → `{url, expiresAt, cached, mime}`.
+  **앱이 보낸 글은 합성하지 않는다** — SQL이 그 판의 메시지에서 말 조각(speech)만 꺼내고(행동 지문 제외), 힌트는 `mission-hint`가 저장한 예문(`companion.mission_hints`, 응답의 `hintNo`)을 읽는다.
+  읽기 글은 숫자를 한국어 수로(`spokenText`). 음성 = 미션 파일 `counterpart.voice`(없으면 `COMPANION_MISSION_TTS_VOICE`). 실패는 가벼운 `tts_unavailable` 503(앱은 조용히 글자만).
+- **돌려주는 방식 = 1단계 음성과 같은 비공개 버킷 `companion-media` + 서명 주소**(파일 `mission-tts/<모델>/<음성>/<읽는 글 sha256>.mp3`, 1시간).
+  응답 본문 스트리밍 대신 이것을 고른 까닭: ① 같은 글(진입 대사 · 정형 문장)은 사용자 사이에서 한 번만 합성하는 캐시가 파일 자리 하나로 된다(캐시 적중은 서명 한 번, 벤더 0원)
+  ② 앱의 재생 포트(`play(url)`)가 주소를 받는다 ③ 다시 듣기 · 리포트에서 같은 주소를 쓴다. 대가는 첫 합성의 첫 소리가 「합성 끝 + 올리기 + 서명」만큼 늦는 것(실측 합성 전체 0.34 ~ 0.6초 + 저장 왕복) —
+  첫 소리를 더 당겨야 하면 캐시 빗나감에서만 본문 스트리밍을 더하는 것이 다음 단계다. 공유 파일이라 앱이 자기 토큰으로 서명할 수 없어(정책은 `<user_id>/`만) 서버가 서명한다.
+  `companion_media_orphans`는 `mission-tts/`를 세지 않는다(이 마이그레이션이 다시 정의).
+- **상한 · 기록**(엽전은 받지 않는다 — 판 단위 과금에 포함): `companion_mission_voice_begin`이 판을 잠그고 센다 — 판당 받아 적기 ≤ 턴 상한 × `mission_voice_per_turn`(3),
+  합성 ≤ (턴 상한 + 1 + 힌트 상한) × 3, 사용자 하루(UTC) 받아 적기 `mission_stt_daily_seconds`(1800초) · 합성 `mission_tts_daily_chars`(20000자, 캐시 포함). 넘으면 429 `voice_limit`(`detail.scope`).
+  `mission_voice_per_turn = 0`이면 음성을 끈다. 호출마다 `companion.mission_voice_calls` 한 줄(종류 · 초 · 글자 · 결과 ok/cached/empty/busy/server/failed · 벤더 ms · 모델 · 재시도) —
+  원가 = `outcome = 'ok'`인 줄의 `seconds` 합(Scribe) · `chars` 합(TTS). 같은 값을 구조화 로그(`event: mission_stt | mission_tts`)에도 남긴다.
+- 테스트: `_shared/mission-stt-handler.unit.test.ts` · `mission-tts-handler.unit.test.ts`(가짜 ElevenLabs · Storage) · `mission-voice-pure.unit.test.ts` · `mission-voice.integration.test.ts`(실제 SQL).
+  **진짜 ElevenLabs로는 확인하지 않았다** — 매개변수는 대시보드 실험실이 맥미니에서 검증한 값과 같다.
+- 환경 변수(값은 비워 둔다): `COMPANION_MISSION_STT_MODEL` · `COMPANION_MISSION_TTS_MODEL` · `COMPANION_MISSION_TTS_VOICE` · `COMPANION_MISSION_STT_ZERO_RETENTION` ·
+  `COMPANION_MISSION_AUTOSEND_{CONF_MIN,CONF_MEAN,MIN_SECONDS,HANGUL_MIN,WITHOUT_CONFIDENCE}`. 키는 1단계와 같은 `ELEVENLABS_API_KEY`.
+- 배포: `supabase functions deploy mission-stt` · `supabase functions deploy mission-tts`(`verify_jwt = false`) — 미션 마이그레이션 적용 뒤.
+- 임포트 맵: 미션 함수 다섯(`mission-start` · `mission-hint` · `mission-finish` · `mission-stt` · `mission-tts`)은 `chat-send`와 같은 `deno.json`을 둔다.
+  `_shared/function-import-maps.unit.test.ts`가 함수마다 `index.ts`에서 따라간 외부 import(`zod/mini` · `@anthropic-ai/sdk` …)가 그 폴더 `deno.json`에 있는지 본다.
+
 ## revenuecat-webhook — 구독 · 엽전 팩(ADR-0144)
 
 RevenueCat이 보내는 구독 · 구매 이벤트를 받아 우리 DB(정본)에 반영한다. 인증은 Supabase JWT가 아니라 RevenueCat이 싣는 `Authorization`
@@ -1220,3 +1295,99 @@ Edge Function `companion-stories`(새) · `chat-send`(`story_id`) · `send-push`
 
 **적용 순서** — `20270118130000_my_story_slot_timezone.sql`(`20270118120000_ops_admin_insights` 뒤) → `supabase functions deploy companion-my-story`.
 마이그레이션이 먼저다 — 새 Edge가 옛 함수에 `p_region`을 넘기면 함수를 찾지 못한다. 앱이 `p_region`을 싣는 판은 마이그레이션 적용 뒤에 낸다.
+
+## 롤플레이 미션 DB — 컴패니언 2단계 (20270122)
+
+`migrations/20270122120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
+([ADR-0193](../../docs/adr/0193-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
+컴패니언 쪽 SQL의 `kind = 'companion'` 조건 · 캐릭터당 고유 색인은 그대로 둬 미션 행이 기록 · 선톡 · 요약 · 기억 · 대화 비우기 · 첫 인사에
+섞이지 않는다(D2). 턴의 SQL은 미션 전용 함수다 — `companion_begin_turn` · `companion_finish_turn`은 바뀌지 않는다(D3).
+
+- 표: `companion.missions`(최신 정의 · 켜짐) · `mission_versions`(정의의 판마다 — 판은 시작한 판의 정의로 채점) · `mission_results`(세부 점수 ·
+  그때의 가중치 · 받은 값) · `mission_usage`(하루 무료 횟수, UTC 날짜). 기존 표에 더함: `conversations`의 `mission_id` · `mission_version` ·
+  `status`(active · finished · abandoned) · `mission_state` · `ended_at` · `end_reason`(goals · turn_limit · finish · user · stale) — 미션 행은 `character_id`를
+  비울 수 있다(단역). `credit_holds`의 reason `mission` · `conversation_id`. `messages.origin` `mission`(상대역 메시지 — 컴패니언 평가 · 미디어 대상이
+  아니다). `plans.daily_free_missions`(free 1, 나머지는 임시 — M1). `settings`의 `missions_enabled`(기본 false) · `missions_testers_only`(기본 true) ·
+  `mission_cost`(임시 10) · 가중치 셋(0.5 · 0.3 · 0.2) · `mission_hint_penalty`(5) · `mission_hint_limit`(3) · `mission_stale_after`(30분).
+- 서버 RPC(`service_role`, 첫 인수 `p_user_id`): `companion_mission_start` · `companion_mission_begin_turn` · `companion_mission_finish_turn` ·
+  `companion_mission_take_hint` · `companion_mission_close` · `companion_mission_save_result` · `companion_mission_grading_failed`. 그 밖에
+  `companion_upsert_mission(p_definition)`(미션 파일 → 표, 판을 올리지 않은 변경은 거절) · `companion_close_stale_missions(p_now)`(pg_cron) ·
+  운영 조회 `companion_inspect_missions(p_user_id)` · `companion_inspect_mission(p_conversation_id)`.
+- 앱 RPC(`authenticated`): `companion_list_missions()` · `companion_list_mission_results(p_mission_id)`.
+- 판정 · 값의 정책은 `companion.mission_gate` · `mission_price` · `mission_bill` 셋에만 있다(§3.9). 열림 = 스위치 · 시험 계정 한정 · 에피소드 완료
+  (진행 스냅숏 `catalogProgress`에 정의의 `completionKeys`, 없으면 `RP`). 계정 단위(연령 · 일시 차단 · 사용 시간)는 컴패니언 판정과 같은 규칙이다.
+- 값: 시작 때 판 단위로 예약한다(무료 횟수가 남았으면 금액 0, 아니면 정액). 결과 저장 · 그만둠 · 새 판 · 방치는 확정, 채점 실패는 해제(무료 횟수도
+  돌려줌), 채점 다시 시도가 성공하면 다시 받는다(잔액이 모자라면 리포트만). 판 단위 예약은 `companion_release_stale_holds`가 건드리지 않는다
+  (`reason <> 'mission'` 한 줄).
+- **다시 정의한 기존 함수 · 제약**(ADR-0193 「다시 정의한 기존 함수」 — 모두 main 최신 정의에서 출발해 미션 몫만 더함): `companion_release_stale_holds`(위 한 줄) ·
+  `companion_media_orphans`(합성 캐시 `mission-tts/` 제외) · `companion_proactive_push_gate`(`hasRoom`에 `c.kind = 'companion'`) · 제약 `messages_origin_check` ·
+  `credit_holds_reason_check` · `conversations_kind_check`(각각 `mission` 더함). 그래서 이 파일은 main의 마이그레이션보다 뒤 번호여야 한다.
+- 점수는 `companion_mission_save_result`가 계산한다: 과업 = 달성 목표 ÷ 전체(턴 ∪ 채점자) · 목표 표현 = 쓴 것 ÷ 목표 표현(없으면 100) ·
+  최종 = max(0, round(가중치 합) − 감점 × 힌트). 성공 = 필수 목표 모두.
+- 끝: `companion_mission_finish_turn`은 모든 목표면 `goals`, 턴 상한이면 `turn_limit`을 적는다(필수만이면 적지 않고 상태의 `requiredDone`만 참).
+  `companion_mission_close`(abandon 없이)는 끝나지 않은 판이라도 필수를 모두 이뤘으면 `finish`로 적고 채점 재료를 준다. 판이 길어져도 값은
+  판 단위 예약 하나 그대로다(턴마다 빼지 않는다). 필수를 이룬 채 방치된 판도 `stale`(리포트 없음)로 닫힌다.
+- 예약 작업: `cron/companion-mission.sql`(방치 판 닫기, 5분마다).
+- 테스트: `migrations/companion-mission.integration.test.ts`(정상 흐름(필수 뒤 끝내기) · 과금 · 열림 · 턴 상한 · 힌트 · 필수 뒤 계속(선택으로 닫힘 · 필수 뒤 턴 상한) · 선택 없는 미션 · 그만둠 · 채점 실패와 다시 시도 · 방치 정리 ·
+  새 판 · 남의 판 · 계정 삭제 · 권한 · 정의 올리기 · 격리 · 운영 조회, 테스트마다 「지갑 잔액의 합 = 원장 delta의 합」).
+
+**운영 적용은 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 운영 DB에는 적용하지 않는다(PRD §0.9).** 정리된 뒤의 순서:
+
+1. 앞의 마이그레이션 모두(20261108 ~ 20270121, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유 · 20261229 ~ 20261230 미디어 표본) **뒤에** 적용한다. 이 파일 하나만
+   `supabase db query --linked -f supabase/migrations/20270122120000_companion_mission.sql`로 실행한다(`db push` 금지 — 운영의 마이그레이션 기록이
+   실제와 어긋나 있어 다른 파일까지 다시 돈다). 실행 전에 위 「다시 정의한 기존 함수 · 제약」이 운영에서 main 최신 정의와 같은지 본다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
+2. 미션 파일을 올리는 스크립트로 `companion_upsert_mission`을 부른다(파일마다 한 번, 다시 불러도 같다).
+3. `cron/companion-mission.sql`을 SQL 편집기에서 한 번 실행한다.
+4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
+
+되돌리기: `select cron.unschedule('companion-close-stale-missions')`, 스위치를 끈다. 표 · 칸은 지우지 않는다(판 · 결과가 원장과 이어져 있다).
+
+## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0193)
+
+미션 코어(`_shared/mission-*.ts`)와 미션 DB(20270122)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
+진입 `index.ts`, 인증은 사용자 토큰 또는 플레이그라운드 경로(`Authorization: Bearer <서버 키>` + `x-companion-user-id`), `config.toml`의
+`verify_jwt = false`, 요청마다 로그 한 줄(`mission_start` · `mission_hint` · `mission_finish`, 턴은 `chat_send … mission …`).
+LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고,
+가짜(`COMPANION_LLM=fake`)에는 미션 답을 더한다(학습자 말의 `[goal:<id>]` · `[all-goals]` · `[no-state]` · `[bad-state]` · `[off-task]`,
+채점의 `[grader:<id>]` · `[expr:<id>]` · `[grade-fail]`, 힌트의 `[hint-fail]`). 컴패니언 턴은 이 계층을 써도 같은 호출이다.
+
+| 함수 | 요청(snake_case) | 응답(200) | 하는 일 |
+|---|---|---|---|
+| `mission-start` | `{ contract_version, mission_id }` | `missionStartResponseSchema` | `companion_mission_start` — 판정 · 진행 중이던 판 그만둠 · 판 단위 예약 · 진입 대사 |
+| `chat-send` | 1단계 본문 + `conversation_id`(`character_id`는 선택) | SSE `start` · `notice` · `delta` · `correction` · `translation` · `mission` · `done`(`creditsSpent` 0) | `companion_mission_begin_turn` → 입력 검사 → 미션 프롬프트로 답 → 출력 검사(나이 규칙 그대로) · 교정 · 번역 → `companion_mission_finish_turn` |
+| `mission-hint` | `{ contract_version, conversation_id }` | `missionHintResponseSchema` | `companion_mission_take_hint` → 힌트 프롬프트 → `normalizeHint` |
+| `mission-finish` | `{ contract_version, conversation_id, abandon? }` | `missionFinishResponseSchema`(`graded` · `abandoned` · `grading_failed`) | `companion_mission_close` → 채점 → `companion_mission_save_result`, 채점 실패면 `companion_mission_grading_failed` |
+
+- 갈림은 `chat-send-handler.ts`의 한 줄이다 — 본문에 `conversation_id`가 있으면 `mission-turn-handler.ts`, 없으면 지금의 컴패니언 턴 그대로.
+  미션 턴에는 추천 답변 칩 · 기억 추출 · 이야기 · 학습 삽입 지시 · 친밀도가 없다. 입력 차단은 성격대로 거절 대신 고정 안내(`missionBlockedLine`)로 닫고
+  `blocked`로 저장한다(반복 위반 셈은 SQL이 한다).
+- 진실은 SQL이다 — `mission` 이벤트는 `finish_turn`이 돌려준 상태로 쓰고, 코어 `advanceMission`과 어긋나면 로그 `mission_state_mismatch`만 남긴다.
+  점수도 `save_result`가 계산하고 코어 `scoreMission`과 어긋나면 `score_mismatch`.
+- 학습자 언어(PRD §9 M6): `mission-start`의 `opening.translation`과 목표의 `label[l1]`, `companion_list_missions`의 목표 `label[l1]`이 학습자 언어
+  (`profiles.l1`)로 나간다. 출처는 미션 파일의 그 언어 칸(검수한 번역) → 번역 캐시 `companion.mission_translations`(미션 × 판 × 언어) → 둘 다 없으면
+  1단계 번역 노드(`startTranslation` — 같은 프롬프트 · `COMPANION_TRANSLATION_MODEL`)로 진입 대사와 목표 글을 한 번에 만들어
+  `companion_save_mission_translation`으로 남긴다(검수 전 초안). `l1`이 영어 · 모름이면 파일의 영어 글, 한국어 · `COMPANION_TRANSLATION=off`면 번역 없음.
+  번역이 실패해도 시작은 막지 않는다(영어로 내고 캐시하지 않아 다음 시작 때 다시). 목록은 캐시만 읽는다(LLM을 부르지 않는다). SSE `mission` 이벤트는
+  목표 id · 달성만 싣는다(글이 없다). 힌트의 `meaning`과 채점의 총평은 프롬프트의 `learner_l1`로 이미 학습자 언어다.
+- 진입 대사는 상대역 메시지로 대화 맨 앞에 그대로 둔다(앞에 고정 user 글 없음, 1단계 첫 인사 뒤 턴과 같음). 지난 상대역 답은 `@speech …` 줄로
+  돌려주고 상태 줄 · 번역은 넣지 않는다(`historyMessages`). 실험실 번들의 `prompts.sceneStart` · `historyAssistantFormat`이 같은 설명이다.
+- 오류: 계정 단위 거절은 1단계 표(`PRE_STREAM_ERRORS`), 미션 전용은 계약의 `MISSION_ERRORS` — `mission_not_found` 404 · `mission_closed` ·
+  `mission_ended` · `mission_not_ended` · `hint_limit` · `no_goal_left` 409 · `hint_unavailable` 503. **힌트 수는 SQL이 문장을 만들기 전에 센다** —
+  만들기가 실패하면 503(`detail.hintsLeft`)으로 알리지만 그 힌트는 이미 쓴 것이다.
+- `mission` 이벤트의 `requiredDone`이 참이고 `ended`가 null이면 판은 이어진다 — 앱은 「미션 성공 — 계속하기 / 끝내기」를 띄우고, 끝내기는
+  `mission-finish`(abandon 없이)로 `finish` 채점을 받는다. 프롬프트는 그동안 장면을 이어 가 남은 선택 목표의 기회를 준다(가변부 `required_status`).
+- `mission-finish`는 몇 번 불러도 같은 결과다(채점이 있으면 그대로). 채점 호출이 실패(시간 초과 · 거절 · 깨진 출력)하면 값을 돌려주고
+  `grading_failed`(`retryable: true`)로 답한다 — 같은 요청을 다시 보내면 채점만 다시 돈다.
+- 모델(2026-11-19 사용자 결정): 미션은 컴패니언의 모델 설정을 물려받지 않는다 — `COMPANION_MISSION_MODEL=`(상대역 답, 비우면 `claude-sonnet-5-5`) ·
+  `COMPANION_MISSION_GRADER_MODEL=`(채점, 비우면 `claude-sonnet-5-5`) · `COMPANION_MISSION_FEEDBACK_MODEL=`(교정, 비우면 `claude-haiku-5-5`) ·
+  `COMPANION_MISSION_HINT_MODEL=`(힌트, 비우면 `claude-haiku-5-5`). 미션 턴의 입력 · 출력 검사와 번역은 컴패니언 설정(`COMPANION_MODERATION_MODEL` ·
+  `COMPANION_TRANSLATION_MODEL`) 그대로다. 미션 턴은 계층의 `missionTurn`(답 · 교정만 미션 모델, 생각 깊이 · Haiku 분기는 1단계 구현 그대로)을 쓴다.
+  나머지 환경 값은 1단계 `chat-send`와 같고, 값은 사람이 넣는다.
+- 미션 파일 → 표: `node apps/supabase-functions/scripts/upload-missions.ts`(기본 dry-run — 검증만, 네트워크 없음).
+  실제로 쓰려면 `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node apps/supabase-functions/scripts/upload-missions.ts --write`.
+- 테스트: `_shared/mission-handlers.unit.test.ts`(가짜 fetch + 가짜 LLM), `_shared/mission-server.integration.test.ts`(핸들러를 실제 SQL에 물어
+  한 판을 처음부터 끝까지 · 코어 미션 파일 둘의 upsert · 점수 한 벌 대조 — PostgREST 호출을 pg 질의로 옮기는 가짜 fetch).
+
+**운영 적용과 배포는 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 하지 않는다(PRD §0.9).** 정리된 뒤의 순서는 위 「롤플레이 미션 DB」의
+1 ~ 4 그대로다: 마이그레이션 → `upload-missions.ts --write` → cron → 함수 배포(`mission-start` · `mission-hint` · `mission-finish` · `chat-send`)
+→ 스위치 켜기. `chat-send`는 미션 갈래가 들어간 판으로 함께 다시 배포한다 — `conversation_id` 없는 턴은 그대로다.

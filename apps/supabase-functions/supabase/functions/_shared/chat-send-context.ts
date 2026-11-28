@@ -48,8 +48,14 @@ export const turnRomance = (context: Pick<TurnContext, "gate" | "turn">) => ({
   line: turnRomanceLine(context),
 });
 
+/** 로맨스 선이 읽는 값만 — 미션 턴(ADR-0193)은 인물 · 수위 없이 넘긴다. */
+export type RomanceContext = {
+  readonly gate: Pick<TurnContext["gate"], "ageBand" | "romanceTier">;
+  readonly turn: Pick<BegunTurn, "persona" | "speechLevel">;
+};
+
 /** 이 턴의 적용 로맨스 선(ADR-0168) — 판정의 수위 · 연령대와 턴 시작의 페르소나 · 말투 단계로. */
-export const turnRomanceLine = (context: Pick<TurnContext, "gate" | "turn">): RomanceLine =>
+export const turnRomanceLine = (context: RomanceContext): RomanceLine =>
   romanceLine(
     context.gate.ageBand,
     context.gate.romanceTier,

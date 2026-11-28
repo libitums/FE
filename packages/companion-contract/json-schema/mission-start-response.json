@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "conversationId": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "missionId": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "missionVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "title": {
+      "type": "object",
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "ko": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": ["en"],
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 240
+      }
+    },
+    "scene": {
+      "type": "string"
+    },
+    "counterpart": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "characterId": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["label", "characterId"],
+      "additionalProperties": false
+    },
+    "opening": {
+      "type": "object",
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "ko": {
+          "type": "string"
+        },
+        "roman": {
+          "type": "string"
+        },
+        "en": {
+          "type": "string"
+        },
+        "translation": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["messageId", "ko", "roman", "en", "translation"],
+      "additionalProperties": false
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,31}$"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "object",
+            "properties": {
+              "en": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "ko": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": ["en"],
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240
+            }
+          },
+          "done": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "required", "label", "done"],
+        "additionalProperties": false
+      }
+    },
+    "l1": {
+      "type": ["string", "null"]
+    },
+    "turnLimit": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "turnsLeft": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "hintsLeft": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "charge": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["free", "credits"]
+        },
+        "credits": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": ["source", "credits"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "conversationId",
+    "missionId",
+    "missionVersion",
+    "title",
+    "scene",
+    "counterpart",
+    "opening",
+    "goals",
+    "turnLimit",
+    "turnsLeft",
+    "hintsLeft",
+    "charge"
+  ],
+  "additionalProperties": false
+}

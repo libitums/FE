@@ -32,7 +32,12 @@ test("CC2. 상대 import에만 .ts를 붙이고 외부 import는 그대로 둔�
 test("CC3. FE 전용 파일(fixture · JSON Schema)은 사본에 없다", async () => {
   const names = [...(await expectedCopies()).keys()];
   assert.ok(names.includes("sse-events.ts"));
-  for (const excluded of ["fixtures.ts", "fixtures-streams.ts", "json-schema.ts"]) {
+  for (const excluded of [
+    "fixtures.ts",
+    "fixtures-streams.ts",
+    "fixtures-mission.ts",
+    "json-schema.ts",
+  ]) {
     assert.ok(!names.includes(excluded), excluded);
   }
 });
