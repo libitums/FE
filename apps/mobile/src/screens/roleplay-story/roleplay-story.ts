@@ -14,7 +14,9 @@ export const initialRoleplayTalkState: RoleplayTalkState = {
   phase: "ready",
   heard: "",
   verdict: null,
+  judgement: null,
   hintShown: false,
+  hintUsed: null,
   unavailableReason: null,
   missedReason: null,
   retrying: false,
@@ -42,12 +44,20 @@ export function roleplayTalkReducer(
             phase: "listening",
             unavailableReason: null,
             missedReason: null,
-            retrying: state.phase === "missed",
+            retrying:
+              state.phase === "missed" ||
+              (state.phase === "unavailable" && state.unavailableReason === "failed"),
           }
         : state;
     case "heard":
       return state.phase === "listening"
-        ? { ...state, phase: "heard", heard: action.text, verdict: action.verdict }
+        ? {
+            ...state,
+            phase: "heard",
+            heard: action.text,
+            verdict: action.verdict,
+            judgement: action.judgement,
+          }
         : state;
     // 못 알아들음 — 판정 없이 같은 턴을 다시 말하게 합니다(ADR-0181).
     case "missed":
@@ -60,10 +70,15 @@ export function roleplayTalkReducer(
         : state;
     case "hint":
       return state.hintShown ? state : { ...state, hintShown: true };
+    // 힌트 단계(시안 R5) — 소리 듣기 · 한국어 보기. 한국어 보기가 더 강한 힌트라 덮어쓰지 않습니다.
+    case "hintListen":
+      return state.hintUsed === null ? { ...state, hintUsed: "listen" } : state;
+    case "hintShow":
+      return state.hintUsed === "show" ? state : { ...state, hintUsed: "show" };
     // 틀린 뒤 다시 말하기 — 판정을 지우고 준비로 돌아갑니다. 맞힌 뒤에는 다시 하지 않습니다.
     case "retry":
       return state.phase === "heard" && state.verdict === "incorrect"
-        ? { ...state, phase: "ready", heard: "", verdict: null }
+        ? { ...state, phase: "ready", heard: "", verdict: null, judgement: null }
         : state;
     case "next":
       return state.phase === "heard" && state.verdict !== null
@@ -80,7 +95,7 @@ export function isRoleplayTalkDone(state: RoleplayTalkState, turnCount: number):
   return state.turnIndex >= turnCount;
 }
 
-// 말하기 답 판정은 `@libitums/episode-core/judge`가 정본입니다(랜딩 체험판과 같은 규칙).
+// 말하기 답 판정은 `@libitums/episode-core/judge`가 정본입니다 — 발음 기준, 랜딩 체험판과 같은 잣대(ADR-0201).
 export { judgeRoleplayReply } from "@libitums/episode-core/judge";
 
 /**

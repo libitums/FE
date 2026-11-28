@@ -2,6 +2,7 @@
 // `adoptGuestRecords`만 저장소를 만지며 `"background only"` 안에서만 미전송 칸 모듈을 부릅니다.
 
 import type { LocalDay } from "../lib/learning-progress.contract";
+import { adoptGuestGuides } from "../lib/guide-records";
 import { adoptGuestWordbook } from "../lib/wordbook";
 import { mergeJourneyProgress } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
@@ -96,6 +97,8 @@ export function adoptGuestRecords(userId: string): void {
     clearPendingLearningDays(guestProgressId);
     // 비회원 단어장도 그 계정 칸으로 합칩니다(ADR-0169).
     adoptGuestWordbook(userId);
+    // 비회원이 본 안내(학습 문항 · 메신저)도 그 계정 칸으로 합칩니다(2026-11-27, 계정별 칸).
+    adoptGuestGuides(userId);
   } catch {
     // 저장소 예외는 로그인을 막지 않습니다.
   }

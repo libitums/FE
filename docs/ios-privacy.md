@@ -110,6 +110,19 @@ App Store 응답의 「기기 ID — 개발자 광고 · 추적 예」 범위 �
 「구매 이벤트는 결제 처리자 RevenueCat이 Airbridge로 전달한다」를 더할지. Android는 광고 ID · IP가 같은 길로 간다 — Play 데이터 보안 양식의
 「기기 또는 기타 ID」(광고 · 마케팅, 제3자 공유)도 같은 판단이다.
 
+### Sentry 오류 수집 (2026-11-27)
+
+[ADR-0207](adr/0207-sentry-ios-and-user-id.md). iOS에 Sentry(`Sentry` 9.19.1)가 들어왔고, **DSN이 있는 Release 빌드에서만** 크래시 · 앱 멈춤 · Lynx JS 오류를 보낸다.
+로그인한 사용자는 **내부 사용자 ID 하나**(PostHog와 같은 값)가 이벤트에 실린다 — 이메일 · 이름 · IP · 스크린샷 · breadcrumb은 싣지 않는다.
+
+- **앱 manifest**: `CrashData` · `PerformanceData`(앱 멈춤)를 더했다 — Linked true · Tracking false · 목적 App Functionality. 사용자 ID 행은 이미 있다.
+- **App Store Connect에서 바뀌는 칸**(아직 고치지 않았다 — 사용자): 진단 › **충돌 데이터** · **성능 데이터** 추가, 사용자와 연결 **예**, 추적 아니오, 목적 앱 기능.
+- **SDK manifest**: Sentry pod이 자기 `PrivacyInfo.xcprivacy`를 싣는다 — 손대지 않는다(SDWebImage · Airbridge와 같은 원칙).
+- ⚠ **세션의 `did`에는 Sentry SDK가 만든 설치 id(무작위 UUID, IDFA · IDFV 아님)가 실린다** — Cocoa SDK에 끄는 옵션이 없다(ADR-0207 D4). Android는 끈다.
+- **처리방침**: ~~랜딩 `privacy-*-providers.ts`의 Sentry 행이 「Error reports on Android」 · 사용자 ID 없음으로 적혀 있다 — iOS와 사용자 ID를 더해야 한다(사용자 확인).~~
+  ⟨2026-11-27⟩ 반영했다 — en · ko의 Sentry 행(「Android와 iOS 오류 · 비정상 종료 보고」 · 로그인한 경우 내부 사용자 ID · 이름 · 이메일 · IP 없음)과 「오류 보고」 절(iOS 세션의 무작위 설치 ID 포함), 시행일 2026-11-27.
+- **설치 ID와 App Store 「기기 ID」**: 세션 `did`의 설치 ID는 기기 ID 성격이다. 기기 ID 행은 이미 App Functionality(+ Developer Advertising)로 신고돼 있어 **칸을 새로 만들지 않는다** — 목적 앱 기능 안이다 [추론].
+
 ### 공개 개인정보처리방침에 반영할 문안
 
 2026-10-01 공개 [DURU Privacy Policy](https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402)를 확인했다. 소셜 인증·PostHog·Apple Speech 설명은 있으나 서버 학습 기록·피드백·APNs 토큰이 누락되어 있다. 아래 문안은 코드 근거로 준비했으며 **공개 페이지에는 아직 반영하지 않았다**. 게시 시 effective date도 갱신한다.

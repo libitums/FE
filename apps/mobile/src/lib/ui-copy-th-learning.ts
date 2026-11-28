@@ -48,6 +48,9 @@ export const speakingTh: SpeakingCopy = {
   instruction: "อ่านประโยคนี้ออกเสียง",
   speak: "พูด",
   stopSpeaking: "หยุดพูด",
+  listening: "กำลังฟัง…",
+  checking: "กำลังตรวจ…",
+  tapToStop: "พูดจบแล้วแตะเพื่อหยุด",
   tryAgain: "ลองอีกครั้ง",
   dictationDisabled:
     "Siri หรือการป้อนตามคำบอกปิดอยู่ เปิดได้ที่ การตั้งค่า > ทั่วไป > แป้นพิมพ์ > เปิดใช้งานการป้อนตามคำบอก แล้วลองอีกครั้ง",

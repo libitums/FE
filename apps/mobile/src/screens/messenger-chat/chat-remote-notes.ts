@@ -1,8 +1,8 @@
-// 서버 모드 출처의 도우미입니다(ADR-0137) — 교정 노트 붙이기 · 멱등 id · 턴을 로그에 그리기.
+// 서버 모드 출처의 도우미입니다(ADR-0137) — 교정 노트 붙이기 · 멱등 id · 턴을 로그에 그리기 · 보내지 못한 글의 실패 줄.
 
 import type { ChatCorrection } from "./chat-feedback.contract";
 import { setRemoteIdeas, type RoomState } from "./chat-fixture-room";
-import type { ChatMessage, ChatMyNotes } from "./chat-source.contract";
+import type { ChatMessage, ChatMyNotes, ChatNoticeKind } from "./chat-source.contract";
 import { bubblesOf } from "./companion-parse";
 import { withChatWords } from "./companion-chat-words";
 import type { RemoteHistory } from "./chat-remote.contract";
@@ -66,7 +66,7 @@ export function renderTurn(
     room.notes = withCorrection(room.notes, turn.correction.userMessageId, turn.correction.card);
   if (turn.chatWords !== null)
     room.notes = withChatWords(room.notes, turn.chatWords.userMessageId, turn.chatWords.result);
-  if (turn.ideas !== null) setRemoteIdeas(room, turn.ideas, "turn");
+  if (turn.ideas !== null) setRemoteIdeas(room, turn.ideas, "turn", turn.ideasRef);
   if (turn.bubbles.length > 0) room.typing = false;
   return myId;
 }
@@ -82,4 +82,22 @@ export function withHistoryNotes(
   for (const [id, words] of Object.entries(history.chatWords ?? {}))
     next = withChatWords(next, id, words);
   return next;
+}
+
+export const removeFailedNotice = (room: RoomState, myId: string): void => {
+  room.messages = room.messages.filter((message) => message.id !== `${myId}~failed`);
+};
+
+/** 실패 줄은 그 글 바로 아래에 섭니다 — 뒤에 쌓인 Not sent 글 뒤로 밀리지 않게(리뷰 S3). */
+export function addFailedNotice(
+  room: RoomState,
+  myId: string,
+  notice: ChatNoticeKind,
+  at: number,
+): void {
+  removeFailedNotice(room, myId);
+  const line: ChatMessage = { id: `${myId}~failed`, at, kind: "notice", notice };
+  const index = room.messages.findIndex((message) => message.id === myId);
+  const place = index < 0 ? room.messages.length : index + 1;
+  room.messages = [...room.messages.slice(0, place), line, ...room.messages.slice(place)];
 }

@@ -4,6 +4,7 @@
 import type { Dispatch } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
+import type { RoleplayTurnReport } from "../screens/roleplay-story/roleplay-story.contract";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { NavAction } from "./nav-state";
 
@@ -15,6 +16,8 @@ export type RoleplayStoryWiring = {
     skippedCount: number,
   ) => void;
   readonly onRetryRoleplayStory: (episodeId: string) => void;
+  /** 턴 하나를 넘기거나 건너뛴 순간(측정, ADR-0201 D6 적용 2). */
+  readonly onRoleplayTurnAnswered: (episodeId: string, report: RoleplayTurnReport) => void;
 };
 
 export type RoleplayStoryWiringArgs = {
@@ -38,6 +41,17 @@ export function roleplayStoryWiring(args: RoleplayStoryWiringArgs): RoleplayStor
       dispatch({
         type: "replace",
         screen: { name: "roleplay-story-complete", episodeId, results, skippedCount },
+      });
+    },
+    onRoleplayTurnAnswered: (episodeId, report) => {
+      "background only";
+      args.episodeIntroEventSink?.({
+        name: "roleplay_story_turn_answered",
+        episodeId,
+        turn: String(report.turn),
+        result: report.result,
+        ...(report.grade === undefined ? {} : { grade: report.grade }),
+        ...(report.hintUsed === undefined ? {} : { hintUsed: report.hintUsed }),
       });
     },
     onRetryRoleplayStory: (episodeId) =>

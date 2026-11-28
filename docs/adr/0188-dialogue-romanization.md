@@ -204,6 +204,16 @@
   `MyMessage.lines.ui` ML1 · ML2 · `SuggestedFriendSheet.voice.ui` PV-UI7 · `StoryMessengerScreen.romanization.ui` SMR-U3 / integration
   `App.dialogue-romanization.integration` DRI2.
 
+### D9. 개정(2026-11-27) — 롤플레이 말하기 화면의 대사 상자도 스위치를 따른다
+
+- 브랜치 `fix/roleplay-language`. D1 「범위 밖」의 롤플레이 말하기 상대 대사를 들였다.
+- 상대 줄 · 맞힌 뒤 내 말풍선 · 상대 반응: 켬이면 「한국어 → 로마자 → 구분선 → 뜻」(D7과 같은 순서), 끔이면 로마자 줄이 없다. 전에는 뜻(영어 칸)이
+  없으면 그 자리에 로마자가 섰다 — 스위치를 끈 사람에게도 로마자가 보였다. 이제 뜻이 없으면 아래 줄이 없다(`roleplayDialogLinesOf`).
+- 「Show Korean」 힌트 · 오답 패널의 정답 문장 로마자는 D1의 「정답 공개 · 읽기 도움 자리는 늘 선다」를 따라 그대로 둔다. 오답 패널에는 정답 문장의
+  뜻(앱 언어)을 로마자 아래 한 줄 더 둔다 — 전에는 한국어 · 로마자만 있어 무슨 말인지 알 수 없었다.
+- 대사 상자 안 스위치(`headerSwitch`)는 두지 않는다 — 말하기 패널과 높이를 다투는 화면이고, 바로 앞 컷 화면 · 설정에서 바꾼다.
+- 확인: unit `roleplay-panel` RP6 / ui `RoleplayTalkScreen.lines.ui` RT-L1 ~ RT-L4.
+
 ## 대가
 
 1. **화면이 길어진다** — 컷 대사 · 말풍선 · 전화 대사가 한 줄씩(긴 문장은 두세 줄) 높아진다. 컷 대화 상자는 제 스크롤 안이라 잘리지 않고,
@@ -228,12 +238,12 @@
 
 1. 작은 화면(13 mini · SE) 실측에서 컷 대화 상자가 그림을 거의 가리거나 전화 무대가 버튼을 밀면 — 켬에서 영어 줄을 접는 갈래를 본다.
 2. 끈 사용자 비율(`session_option_changed`)이 크게 나오면 — 기본값을 입장 선택과 묶는 안을 다시 본다(D5 버린 대안).
-3. 최종 테스트 · 롤플레이 말하기 화면에도 넣게 되면 — D1 범위 밖 항목. `romanization` prop만 넘기면 된다.
+3. 최종 테스트 화면에도 넣게 되면 — D1 범위 밖 항목. `romanization` prop만 넘기면 된다(롤플레이 말하기는 D9로 들였다).
 
 ## 미확인 · 후속
 
 1. 기기 확인 — [e2e](../e2e/dialogue-romanization.md) DR-E1 ~ DR-E7. 2026-11-24 iOS 시뮬레이터(iPhone SE 3세대) 프로브로 일부 확인(실행 기록).
-2. 최종 테스트 · 롤플레이 말하기 상대 대사(D1 범위 밖).
+2. 최종 테스트 상대 대사(D1 범위 밖). 롤플레이 말하기는 D9.
 3. 주황 면 대비(「대가」 2) — design.
 4. design-system 보고 — `VisualNovelDialog` `romanization` · `headerSwitch`(개정 D7).
 6. (개정 D7) 스토리북에 `headerSwitch` 예시가 없다 — 앱 화면 테스트 · 기기 확인으로만 본다.

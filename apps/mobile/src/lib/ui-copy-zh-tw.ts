@@ -2,6 +2,8 @@
 // 요금제 · 상점 문구(`ui-copy-zh-tw-plans.ts`) · 연속 학습 보상(`streakRewardZhTw`) · 조립 힌트(`assembledHintZhTw`)도 구획 파일이 집니다.
 // 번역 초안 — 원어민 검수 필요.
 
+import { micPermissionZhTw } from "./ui-copy-mic-permission";
+import { adTicketZhTw } from "./ui-copy-ad-ticket";
 import type { UiCopy } from "./ui-copy.contract";
 import { moreCopy } from "./ui-copy-more";
 import { rankingCopy } from "./ui-copy-ranking";
@@ -84,6 +86,8 @@ export const uiCopyZhTw: UiCopy = {
   sentenceOrder: sentenceOrderZhTw,
   assembledHint: assembledHintZhTw,
   speaking: speakingZhTw,
+  micPermission: micPermissionZhTw,
+  adTicket: adTicketZhTw,
   learningItemGuide: learningItemGuideZhTw,
   assessment: assessmentZhTw,
   lessonComplete: lessonCompleteZhTw,

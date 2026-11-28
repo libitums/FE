@@ -51,11 +51,19 @@ export type ChatLogProps = {
   readonly onPositionChange?: (position: ChatLogPosition) => void;
   /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
   readonly onTap?: () => void;
+  /**
+   * `key`가 바뀌면 그 줄(`lineId`가 같은 상대 줄)이 보이게 가운데로 옮기고, 끝 따라가기를 멈춥니다 — 로그 가운데에 선 줄을 보일 때
+   * (안내의 무료 예시, ADR-0146 개정 ⟨예시 대상⟩). 움직임 줄이기면 점프입니다.
+   */
+  readonly reveal?: ChatLogReveal;
   readonly children: ReactNode;
 };
+export type ChatLogReveal = { readonly lineId: string; readonly key: number };
 export type ChatIncomingRowProps = {
   readonly avatar: ChatAvatar;
   readonly testId: string;
+  /** 있으면 줄 요소에 그 줄의 요소 id를 답니다 — 로그가 그 줄을 보이게 옮길 때 찾습니다(`ChatLogProps.reveal`). */
+  readonly lineId?: string;
   readonly children: ReactNode;
 };
 export type ChatOutgoingRowProps = { readonly testId: string; readonly children: ReactNode };

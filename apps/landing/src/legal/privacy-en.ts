@@ -4,7 +4,7 @@ import { privacyProvidersEn } from "./privacy-en-providers";
 import { legalMail as mail } from "./legal-contact";
 
 /** 개인정보 처리방침의 시행일입니다. 모든 언어판이 이 값을 씁니다. */
-export const privacyEffectiveIso = "2026-11-21";
+export const privacyEffectiveIso = "2026-11-27";
 
 // 개인정보 처리방침(영어 · 기준본)입니다. 내용을 바꾸면 `privacy-ko.ts`를 같은 PR에서 맞추고 시행일을 올립니다.
 export const privacyEn: LegalDocument = {
@@ -14,7 +14,7 @@ export const privacyEn: LegalDocument = {
   description:
     "How Duru, a Korean learning app, collects, uses, shares, and keeps personal information.",
   effectiveLabel: "Effective date",
-  effectiveDate: "November 21, 2026",
+  effectiveDate: "November 27, 2026",
   effectiveIso: privacyEffectiveIso,
   translationNote: "",
   intro: [

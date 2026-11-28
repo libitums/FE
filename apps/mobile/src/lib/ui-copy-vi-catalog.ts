@@ -133,6 +133,13 @@ export const readAloudVi: ReadAloudCopy = {
 export const speakWordVi: SpeakWordCopy = {
   instruction: "Nói từ ứng với bức tranh.",
   recognitionUnavailable: "Hiện chưa thể nhận dạng giọng nói. Chạm Bỏ qua để tiếp tục.",
+  result: {
+    perfect: "Hoàn hảo!",
+    almostPerfect: "Gần như hoàn hảo",
+    modelAnswer: "Câu trả lời mẫu",
+    youSaid: "Bạn đã nói",
+    hearAnswer: "Nghe đáp án",
+  },
 };
 
 export const pairMatchVi: PairMatchCopy = {

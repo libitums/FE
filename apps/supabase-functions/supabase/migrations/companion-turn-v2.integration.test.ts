@@ -338,7 +338,7 @@ test("TV7. 미국 미성년자 — 12 ~ 15세 · 나이 모름은 장기 메모�
   expect(await gate("duksu", "KR")).toMatchObject({ result: "ok" });
 });
 
-test("TV8. 기억 — 같은 원본은 한 번, 앱이 보고 · 고치고 · 지우고, 지운 것은 다음 턴에 없다", async () => {
+test("TV8. 기억 — 같은 원본은 한 번, 앱이 보고 · 고치고 · 지우고, 지운 것은 다음 턴에 없다 · 창 안 원본의 기억은 넣지 않는다", async () => {
   const first = await begin();
   await finish(first, "complete");
   const items = JSON.stringify([
@@ -364,12 +364,16 @@ test("TV8. 기억 — 같은 원본은 한 번, 앱이 보고 · 고치고 · �
   const own = await app.query("select public.companion_list_memories('duksu') as m");
   const eventId = own.rows[0].m.memories[0].id as string;
   await app.query("select public.companion_update_memory($1, '어제 덕수궁에 갔다')", [eventId]);
-  expect((await begin()).memories.map((m) => m.content).sort()).toEqual([
-    "고양이를 키운다",
-    "어제 덕수궁에 갔다",
-  ]);
+  // 원본이 아직 지난 대화 창 안이면 넣지 않는다(ADR-0210 D7) — 원문이 창에 있다. 답 프롬프트는 이 캐릭터 층만(D6, 공유 층 없음).
+  expect((await begin()).memories).toEqual([]);
+  // 요약으로 원본이 창 밖에 나가면 들어간다.
+  await db.admin.query(
+    "update companion.conversations set summarized_until = now() where user_id = $1",
+    [tester],
+  );
+  expect((await begin()).memories.map((m) => m.content)).toEqual(["어제 덕수궁에 갔다"]);
   await app.query("select public.companion_delete_memory($1)", [eventId]);
-  expect((await begin()).memories.map((m) => m.content)).toEqual(["고양이를 키운다"]);
+  expect((await begin()).memories).toEqual([]);
   await expect(
     app.query("select public.companion_delete_memory($1)", [eventId]),
   ).rejects.toMatchObject({ code: "P0002" });

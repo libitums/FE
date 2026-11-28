@@ -4,6 +4,12 @@ export type SpeakingCopy = {
   readonly instruction: string;
   readonly speak: string;
   readonly stopSpeaking: string;
+  /** 공용 마이크가 듣는 중 — 단추 아래 굵은 줄(시안 S1 · R2). */
+  readonly listening: string;
+  /** 공용 마이크가 다 듣고 판정을 기다리는 중. */
+  readonly checking: string;
+  /** 듣는 중 그 아래 옅은 줄 — 말을 마치면 눌러 멈추라는 안내. */
+  readonly tapToStop: string;
   readonly tryAgain: string;
   readonly dictationDisabled: string;
   readonly tapToContinue: string;

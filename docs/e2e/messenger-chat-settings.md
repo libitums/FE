@@ -5,9 +5,9 @@
 | id | 확인 | 기대 |
 |---|---|---|
 | CS-E1 | 설정 탭 | 학습 묶음 끝 「Chats」 줄(설명 한 줄) |
-| CS-E2 | Chats 화면 | Reply ideas 스위치 · They message you first(Once a day · Any time) · 공유 기억(2 memories) · Birth year · 각주 |
+| CS-E2 | Chats 화면 | Reply ideas 스위치 · They message you first(Once a day · Any time) · Birth year · Snapshot 속 내 모습 · 각주(「Each character remembers what you told them…」). 공유 기억 줄 없음(2026-11-27, ADR-0210 D6) |
 | CS-E3 | 먼저 보내는 메시지 시트 | 빈도 셋 · 시각 다섯 · 안내 · Save → 줄 값이 바뀜 |
-| CS-E4 | 공유 기억 화면 | 제목 · 2 / 30 · 안내 · 목록, 고치기 → 대화상자 → Save → 「Edited」, 지우기 → 확인 → 빠짐 |
+| CS-E4 | ~~공유 기억 화면~~ | 2026-11-27 걷음(ADR-0210 D6) — 고치기 · 지우기는 CS-E7 인물 기억 화면에서 본다 |
 | CS-E5 | 방 ☰ | 「What 미나 remembers 2 / 50」 · 「Correction style Card only」, 자동 보기 토글 없음 |
 | CS-E6 | 교정 방식 시트 | 라디오 셋 · Save → 사이드바 값이 바뀌고 **휴대폰 키보드가 뜨지 않음** |
 | CS-E7 | 인물 기억 화면 | 미나 기억 둘, 뒤로 → 방(키보드 없음) |

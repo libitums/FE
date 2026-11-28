@@ -1,5 +1,5 @@
 // 바탕 위에 놓인 것(글 상자 · 단어 스티커)의 끝단 — 순수. 크기 상한과 자리 제한을 회전한 상자의 외접 사각형으로 계산합니다.
-// 오른쪽은 편집 화면의 도구 열(Text · Words)만큼 더 비워 ×·손잡이가 도구 열에 가리지 않게 합니다.
+// 크기 상한은 가장자리 여백 · 오른쪽 도구 열(Text · Words) · 위 줄 · 아래 줄을 뺀 안쪽으로 재고, 자리는 가운데가 화면 안이면 됩니다(`reach`).
 
 import { clamp, MAX_SCALE, MIN_SCALE, round, type Placement } from "./my-story-editor";
 
@@ -7,9 +7,15 @@ import { clamp, MAX_SCALE, MIN_SCALE, round, type Placement } from "./my-story-e
 export const STORY_EDGE = 36;
 /** 오른쪽 도구 열의 폭(px) — `.my-story-tool`의 width(`--libitum-spacing-64`). 열 자체는 바탕 오른쪽 12px 안쪽에 섭니다. */
 export const TOOL_COLUMN = 64;
+/** 화면 끝 · 위 줄 · 아래 줄 밖(가려지지 않는 곳)에 남기는 상자의 몫(px) — 손가락으로 다시 잡을 수 있게. */
+export const STORY_VISIBLE = 32;
 
 export type BoxSize = { readonly width: number; readonly height: number };
-export type CanvasBox = BoxSize;
+/**
+ * 바탕 — 화면 전체(보기와 같은 좌표). `top` · `bottom`은 편집 화면의 위 줄 · 아래 줄이 가리는 높이(px)라, 끝단은 그 안쪽에만 놓습니다.
+ * 없으면 0.
+ */
+export type CanvasBox = BoxSize & { readonly top?: number; readonly bottom?: number };
 
 /** 회전한 상자의 외접 사각형 — |w·cosθ| + |h·sinθ|, |w·sinθ| + |h·cosθ|. */
 export function rotatedBounds(size: BoxSize, rotation: number): BoxSize {
@@ -25,8 +31,9 @@ export function rotatedBounds(size: BoxSize, rotation: number): BoxSize {
 /**
  * 끝단 맞추기 — `sizeAt(s)`는 크기 s로 확정했을 때 상자의 px 크기(회전 전). 끄는 동안은 확정 크기(`settled`)의 상자를 transform으로
  * 키우므로 두 값 중 큰 쪽으로 재어, 끄는 중에도 · 손을 뗀 뒤에도 바탕 안에 남습니다(놓을 때 자리를 다시 고치지 않아 튀지 않음).
- * 크기는 외접 사각형이 바탕(가장자리 여백 · 도구 열 뺌)에 들 때까지만(서버 범위 0.5 ~ 3 안), 자리는 그 사각형이 바탕 안에 남게 안쪽으로
- * 밉니다. 바탕 크기를 모르면(0) 그대로.
+ * 크기는 외접 사각형이 바탕(가장자리 여백 · 도구 열 뺌)에 들 때까지만(서버 범위 0.5 ~ 3 안), 자리는 가운데가 화면 안이고 가려지지 않는
+ * 곳에 상자가 조금 남게(`reach`, 2026-11-27 — 전에는 외접 사각형 전체가 여백 · 도구 열 · 위 줄 · 아래 줄 안쪽이어야 했음). 바탕 크기를
+ * 모르면(0) 그대로.
  */
 export function placedFit(
   sizeAt: (scale: number) => BoxSize,
@@ -50,8 +57,10 @@ export function placedFit(
     );
   };
   const right = STORY_EDGE + TOOL_COLUMN;
+  const top = STORY_EDGE + (canvas.top ?? 0);
+  const bottom = STORY_EDGE + (canvas.bottom ?? 0);
   const roomX = canvas.width - STORY_EDGE - right;
-  const roomY = canvas.height - 2 * STORY_EDGE;
+  const roomY = canvas.height - top - bottom;
   const fits = (s: number) => {
     const b = boundsAt(s);
     return b.width <= roomX && b.height <= roomY;
@@ -70,19 +79,20 @@ export function placedFit(
     fitted = Math.max(MIN_SCALE, Math.floor(low * 1000) / 1000);
   }
   const bounds = boundsAt(fitted);
-  const inside = (value: number, half: number, before: number, after: number) => {
-    const low = half + before;
-    const high = 1 - half - after;
-    return low > high ? round((low + high) / 2) : round(clamp(value, low, high));
-  };
   return {
     scale: round(fitted),
-    x: inside(x, bounds.width / 2 / canvas.width, STORY_EDGE / canvas.width, right / canvas.width),
-    y: inside(
-      y,
-      bounds.height / 2 / canvas.height,
-      STORY_EDGE / canvas.height,
-      STORY_EDGE / canvas.height,
-    ),
+    x: reach(x, bounds.width / 2, canvas.width, 0, 0),
+    y: reach(y, bounds.height / 2, canvas.height, canvas.top ?? 0, canvas.bottom ?? 0),
   };
+}
+
+/**
+ * 옮길 수 있는 곳(2026-11-27, 인스타그램 감각) — 가운데가 화면(0 ~ 1) 안이면 되고 상자 일부는 화면 · 위 줄 · 아래 줄 밖으로 나가도
+ * 됩니다. 다만 가려지지 않는 곳(화면 끝에서 · 위 줄 아래 · 아래 줄 위)에 상자가 적어도 `STORY_VISIBLE`px 남아 다시 잡을 수 있게 합니다.
+ * 보기는 같은 좌표를 화면 전체로 그려 같은 자리입니다.
+ */
+function reach(value: number, half: number, size: number, before: number, after: number) {
+  const low = Math.max(0, (before + STORY_VISIBLE - half) / size);
+  const high = Math.min(1, (size - after - STORY_VISIBLE + half) / size);
+  return low > high ? round((low + high) / 2) : round(clamp(value, low, high));
 }

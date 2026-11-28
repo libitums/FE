@@ -16,6 +16,7 @@ import type {
   ChatTimers,
 } from "./chat-source.contract";
 import { lastPreviewLine } from "./chat-list";
+import type { ChatIdeasRef } from "./chat-suggestion-ref";
 
 export type RoomState = {
   readonly seed: ChatFixtureRoom;
@@ -35,6 +36,14 @@ export type RoomState = {
   remoteIdeas: readonly ChatReplyIdea[] | null;
   /** 서버 추천 답변이 붙은 답장의 출처(ADR-0195) — 모르면 null. */
   remoteIdeasOrigin: ChatIdeasOrigin | null;
+  /** 서버 추천 답변이 묶인 메시지와 보기마다의 서버 자리 — 칩 탭 전송의 표시(ADR-0210 D1). 모르면 null. */
+  remoteIdeasRef: ChatIdeasRef | null;
+  /** 첫 인사(서버 `origin` greeting) 메시지 id — 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩). 모르면 null. */
+  greetingId: string | null;
+  /** 서버 기록의 앞부분을 읽지 않음(`hasMore`) — 첫 인사가 로그 밖이면 무료 예시를 세우지 않습니다(ADR-0146 개정 ⟨가이드 점검⟩ 3). */
+  olderHidden: boolean;
+  /** 이 실행에서 받은 무료 예시의 줄 id 앞부분(받은 순서) — 화면이 그 줄을 보입니다(`ChatThread.samples`). */
+  samples: readonly string[];
   origin: "local" | "server";
   /** 서버 모드 배달(ADR-0138): 서버가 받지 못한 내 글 id(보낸 순서) · 끊긴 답 채우기. */
   unsent: string[];
@@ -84,6 +93,10 @@ export function newRoomState(
     remoteHistory: "idle",
     remoteIdeas: null,
     remoteIdeasOrigin: null,
+    remoteIdeasRef: null,
+    greetingId: null,
+    olderHidden: false,
+    samples: [],
     origin: "local",
     unsent: [],
     recovery: "none",
@@ -109,14 +122,17 @@ export function ideasOf(room: RoomState): readonly ChatReplyIdea[] {
   return sets[room.ideaIndex % Math.max(sets.length, 1)] ?? [];
 }
 
-/** 서버 추천 답변과 그 출처를 함께 바꿉니다(ADR-0195) — 보기가 없으면 출처도 지웁니다. */
+/** 서버 추천 답변과 그 출처 · 서버 자리를 함께 바꿉니다(ADR-0195 · ADR-0210 D1) — 보기가 없으면 출처 · 자리도 지웁니다. */
 export function setRemoteIdeas(
   room: RoomState,
   ideas: readonly ChatReplyIdea[] | null,
   origin: ChatIdeasOrigin | null | undefined,
+  ref?: ChatIdeasRef | null,
 ): void {
+  const none = ideas === null || ideas.length === 0;
   room.remoteIdeas = ideas;
-  room.remoteIdeasOrigin = ideas === null || ideas.length === 0 ? null : (origin ?? null);
+  room.remoteIdeasOrigin = none ? null : (origin ?? null);
+  room.remoteIdeasRef = none ? null : (ref ?? null);
 }
 
 export function advanceIdeas(room: RoomState): void {
@@ -205,6 +221,7 @@ export function threadOf(
       notes: room.notes,
       ratings: room.ratings,
       inputBlock: room.inputBlock,
+      ...(room.samples.length > 0 ? { samples: room.samples } : {}),
     };
   }
   return room.threadCache;

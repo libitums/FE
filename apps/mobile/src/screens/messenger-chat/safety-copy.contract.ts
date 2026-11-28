@@ -29,8 +29,6 @@ export type SafetyCopy = {
     readonly title: string;
     readonly body: string;
     readonly continue: string;
-    readonly skip: string;
-    readonly skipNote: string;
     readonly sidebar: string;
     readonly notSet: string;
   };

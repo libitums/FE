@@ -111,6 +111,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
   );
   const prompt = companionSystemPrompt({
     persona: context.persona,
+    characterId: target.characterId,
     speechLevel: context.speechLevel,
     ageBand: context.ageBand,
     romanceTier: context.romanceTier,

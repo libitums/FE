@@ -7,6 +7,7 @@ import {
   present,
   renderTesterApp,
   resetMessengerChatSource,
+  testerAccessToken,
 } from "./test-helpers/messenger-chat-app";
 import { renderSignedInApp, signedInBootSession } from "./test-helpers/signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
@@ -79,6 +80,11 @@ afterEach(() => {
 
 test("YL-I1 시험 계정: 지급 → 엽전 모달 → 날아간 뒤 채팅 모달 → Start chatting이면 메신저 탭", async () => {
   const events: EpisodeIntroEvent[] = [];
+  // 부팅 세션부터 시험 계정 — 탭 NEW 기록은 계정별 칸(2026-11-27)이라 첫 그림이 그 계정 칸을 읽습니다.
+  store.set(
+    authSessionStorageKey,
+    serializeAuthSession({ ...signedInBootSession, accessToken: testerAccessToken }),
+  );
   await renderTesterApp(
     <App progressSeed={legacyPassedSeed} episodeIntroEventSink={(event) => events.push(event)} />,
     boot(),

@@ -5,7 +5,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 
 import { startTestDatabase } from "./postgres.test-support";
 
-// 20270112(미션)이 다시 정의한 선톡 푸시 문 `companion_proactive_push_gate` — `hasRoom`은 메신저 방(`kind = 'companion'`)만 센다.
+// 20270122(미션)이 다시 정의한 선톡 푸시 문 `companion_proactive_push_gate` — `hasRoom`은 메신저 방(`kind = 'companion'`)만 센다.
 // 롤플레이 미션 판(`kind = 'mission'`, 캐스트 상대역의 `character_id`를 가짐)만 있는 사용자는 그 인물과 방이 없다(사용자 결정 2026-11-26).
 // 그 밖의 칸(mode · tester · hasDevice · pushedToday)은 원본(20261228 friend_stories + my_stories)과 같다.
 const user = "00000000-0000-4000-8000-0000000000a7";

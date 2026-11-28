@@ -71,3 +71,9 @@
 ## 적용 기록
 
 - ⟨2026-11-12, [ADR-0128](0128-messenger-access.md)⟩ 설정 탭 「Chats」 줄은 메신저를 쓸 수 있는 계정(로그인한 시험 계정)에게만 선다 — `onOpenChatSettings`가 null이면 줄이 없다.
+- ⟨2026-11-27, [ADR-0210](0210-companion-memory-quality.md) D6 「앱 인계」⟩ **공유 기억 줄을 걷었다.** 서버가 모든 캐릭터의 공유 기억 층을 없애(기억은 캐릭터마다, 기존 공유 기억은 나온 대화의 캐릭터 층으로 옮김) Chats 화면의 「About you → What everyone knows about you」는 늘 비었다.
+  - D2: About you는 Birth year · Snapshot 속 내 모습 두 줄. 문구 `sharedMemories` · `sharedMemoriesSummary`(「· shared by all characters」)와 테스트 id `chat-settings-shared-memories`를 지웠고, Chats 화면이 공유 층 기억을 읽지 않는다(`useChatMemories` 공유 층 구독 없음).
+  - 각주에서 「also」를 뺐다 — 공유 층을 전제한 말이었다. en 「Each character remembers what you told them. Open a chat and tap ☰ to see what they remember.」, 여덟 언어 모두 같은 뜻으로 고침(es · id · ja · my · th · vi · zh-TW, 원어민 검수 전).
+  - D5: 기억 화면은 인물 층만 — route `chat-memories { characterId, characterName }`(null 없음), `ChatMemoriesScreen`은 `characterId` · `name`을 받고 문구 `memories.titleShared`를 지웠다. 출처 포트의 공유 층(`{ kind: "shared" }`)은 서버 계약에 남아 있어 그대로 둔다(늘 비어 있음).
+  - 캐릭터별 기억에 닿는 길: **방 사이드바(방 머리 ☰) 「What {이름} remembers」 하나**다(D4). 상대 프로필 시트에는 기억 줄이 없다.
+  - 버린 대안 / 후속: 이 줄을 「캐릭터별 기억을 모아 보는 화면」(인물마다 `n / 50` 목록 → 그 인물 기억 화면)으로 바꾸기 — 방을 열지 않고 기억을 한곳에서 보고 지우는 길이 생기지만, 화면 · 문구 여덟 언어 · 테스트가 새로 들고 지금 각 방 사이드바로 충분하다고 봤다. 「어디서 기억을 지우나요」 문의가 늘거나 친구가 많아져 방마다 여는 것이 번거로워지면 다시 본다.

@@ -3,6 +3,7 @@
 // 첫 인사는 청하지 않습니다 — 기록이 비면 그대로 두고, 방을 열 때(`loadRoom`) 지금처럼 첫 인사를 받습니다. 던지지 않습니다.
 
 import type { RoomState } from "./chat-fixture-room";
+import type { UnreadSeen } from "./chat-last-seen";
 import { mergeLog } from "./chat-log-merge";
 import type { ChatRemote } from "./chat-remote.contract";
 
@@ -10,6 +11,8 @@ export type RemotePreviewDeps = {
   readonly remote: ChatRemote;
   readonly live: (roomId: string) => RoomState | null;
   readonly changed: (room: RoomState) => void;
+  /** 본 마지막 인물 메시지(ADR-0213 개정) — 앱이 꺼진 사이 온 인물 메시지를 안 읽음으로 셉니다. 없으면 세지 않습니다. */
+  readonly seen?: UnreadSeen | null;
 };
 
 export function previewRemoteRooms(deps: RemotePreviewDeps, roomIds: readonly string[]): void {
@@ -20,9 +23,11 @@ export function previewRemoteRooms(deps: RemotePreviewDeps, roomIds: readonly st
       .loadHistory(room.seed.counterpart.id)
       .then((history) => {
         // 그사이 방을 열었으면(`loadRoom`) 그쪽이 같은 기록을 합칩니다 — 같은 id는 한 줄입니다(`mergeLog`).
-        if (deps.live(roomId) !== room || history === null || history.messages.length === 0) return;
-        room.messages = mergeLog(room.messages, history.messages);
-        deps.changed(room);
+        if (deps.live(roomId) !== room || history === null) return;
+        const empty = history.messages.length === 0;
+        if (!empty) room.messages = mergeLog(room.messages, history.messages);
+        deps.seen?.settle(room); // 앱이 꺼진 사이 온 인물 메시지 — 기록이 비었으면 빈 대화를 본 것으로
+        if (!empty) deps.changed(room);
       })
       .catch(() => undefined);
   }

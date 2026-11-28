@@ -112,7 +112,7 @@ export const myStoriesZhTw: MyStoriesCopy = {
     posting: "分享中…",
     hintOne: "放上一個單字就能分享。",
     hintOneText: "加一個單字或寫一句話，就能分享。",
-    hintMove: "拖曳移動，用兩指縮放。",
+    hintMove: "拖曳移動，用兩指縮放或旋轉。",
     stickerLabel: (ko, meaning) => `${ko}，${meaning}`,
     remove: (ko) => `移除 ${ko}`,
     textBlocked: "這段文字無法分享，請換個說法。",

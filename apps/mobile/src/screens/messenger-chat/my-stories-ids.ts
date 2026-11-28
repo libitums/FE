@@ -58,6 +58,9 @@ export const myStoriesTestIds = {
   photoReviewSent: ms("photo-review-sent"),
   editor: ms("editor"),
   editorBack: ms("editor-back"),
+  /** 편집 위 줄(뒤로 · 색) · 아래 줄(안내 · Share) — 화면 전체 바탕 위에 겹쳐 서고, 가리는 높이를 끝단에 넘깁니다. */
+  editorTop: ms("editor-top"),
+  editorBottom: ms("editor-bottom"),
   swatch: (background: StoryBackground) => ms(`swatch-${background}`),
   toolText: ms("tool-text"),
   toolWords: ms("tool-words"),

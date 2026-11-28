@@ -5,6 +5,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import type { ConversationCast } from "../lib/conversation-cast";
 import type { ItemAnswerReport } from "../lib/item-answer";
+import { lessonSpeakingKey } from "../lib/lesson-speaking-skip";
 import type { ActivityFinish, LessonPosition } from "../screens/learning/activity-finish";
 import { CultureCardActivity } from "../screens/culture-card/CultureCardActivity";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
@@ -93,6 +94,11 @@ function activityScreenOf(
   };
   // 소리 있는 활동이 함께 받는 값입니다 — 속도는 레슨 동안 이어지므로 활동이 바뀌어도 같은 상태를 읽습니다.
   const lessonAudio = catalogLessonAudioOf(wiring, episodeId, unitKey);
+  // 마이크 권한 안내(ADR-0206) — 「이 레슨의 말하기 건너뜀」은 레슨 열쇠로 이어집니다.
+  const mic = {
+    lessonKey: lessonSpeakingKey(episodeId, unitKey),
+    onEvent: wiring.onMicPermissionEvent,
+  };
   switch (activity.form) {
     case "listening":
       return (
@@ -212,6 +218,7 @@ function activityScreenOf(
           onFinish={onFinish}
           lesson={lesson}
           lessonAudio={lessonAudio}
+          mic={mic}
         />
       );
     case "speak-word":
@@ -224,6 +231,7 @@ function activityScreenOf(
           lesson={lesson}
           lessonAudio={lessonAudio}
           onItemAnswered={onItemAnswered}
+          mic={mic}
         />
       );
     default: {

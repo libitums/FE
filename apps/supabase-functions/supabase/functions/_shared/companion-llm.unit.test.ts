@@ -5,6 +5,8 @@ const calls = vi.hoisted(() => ({
   stream: [] as Record<string, unknown>[],
   parse: [] as Record<string, unknown>[],
 }));
+// 다음 답변 스트림들이 낼 글과 멈춘 까닭(앞에서부터 하나씩 쓴다, 비면 기본 「@speech 안녕」 · end_turn).
+const streamPlan = vi.hoisted(() => [] as { text: string; stop: string }[]);
 // 다음 구조화 호출이 돌려줄 기억 작업(한 번 쓰면 비운다).
 const parsedOps = vi.hoisted(() => [] as Record<string, unknown>[]);
 vi.mock("@anthropic-ai/sdk", () => ({
@@ -13,15 +15,19 @@ vi.mock("@anthropic-ai/sdk", () => ({
       messages: {
         stream(params: Record<string, unknown>) {
           calls.stream.push(params);
+          const step = streamPlan.shift() ?? { text: "@speech 안녕\n", stop: "end_turn" };
           return {
             async *[Symbol.asyncIterator]() {
-              yield {
-                type: "content_block_delta",
-                delta: { type: "text_delta", text: "@speech 안녕\n" },
-              };
+              if (step.text !== "")
+                yield {
+                  type: "content_block_delta",
+                  delta: { type: "text_delta", text: step.text },
+                };
             },
             finalMessage: async () => ({
-              stop_reason: "end_turn",
+              stop_reason: step.stop,
+              stop_details:
+                step.stop === "refusal" ? { type: "refusal", category: "general_harms" } : null,
               usage: {
                 input_tokens: 300,
                 output_tokens: 40,
@@ -84,6 +90,31 @@ beforeEach(() => {
   calls.stream.length = 0;
   calls.parse.length = 0;
   parsedOps.length = 0;
+  streamPlan.length = 0;
+});
+
+test("LL1c. refusal — 아무것도 보내기 전이면 대체 모델로 한 번 다시, 보낸 뒤면 보낸 데까지, 대체가 없으면 오류", async () => {
+  const haiku = { ...config, model: "claude-haiku-5-5", replyFallbackModel: "claude-sonnet-5-5" };
+  vi.spyOn(console, "warn").mockImplementation(() => undefined);
+  streamPlan.push({ text: "", stop: "refusal" }, { text: "@speech 다시 안녕\n", stop: "end_turn" });
+  expect(await reply(anthropicCompanionLlm(haiku))).toEqual(["@speech 다시 안녕\n"]);
+  expect(calls.stream.map((params) => params["model"])).toEqual([
+    "claude-haiku-5-5",
+    "claude-sonnet-5-5",
+  ]);
+  expect(calls.stream[1]).toMatchObject({ fallbacks: "default" });
+
+  calls.stream.length = 0;
+  streamPlan.push({ text: "@speech 반쯤", stop: "refusal" });
+  expect(await reply(anthropicCompanionLlm(haiku))).toEqual(["@speech 반쯤"]);
+  expect(calls.stream).toHaveLength(1);
+
+  streamPlan.push({ text: "", stop: "refusal" });
+  await expect(
+    reply(anthropicCompanionLlm({ ...config, model: "claude-haiku-5-5" })),
+  ).rejects.toThrow("refusal");
+  streamPlan.push({ text: "", stop: "refusal" }, { text: "", stop: "refusal" });
+  await expect(reply(anthropicCompanionLlm(haiku))).rejects.toThrow("refusal");
 });
 
 test("LL1. 답변은 서버 쪽 대체 모델을 싣는다 — Haiku만 뺀다", async () => {
@@ -157,14 +188,14 @@ test("LL2b. 칩을 그대로 고른 유저 말은 기억 원문에 표시가 붙
   expect(JSON.stringify(params["system"])).toContain("not evidence of the learner's facts");
 });
 
-test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이고, 모르는 번호 · 빈 글 · 같은 기억 두 번은 버린다", async () => {
+test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이고, 모르는 번호 · 빈 글 · 같은 기억 두 번은 버리고, 더하기는 늘 이 캐릭터 층(ADR-0210 D6)", async () => {
   parsedOps.push(
-    { op: "update", ref: "m1", kind: null, content: "부산에 산다", shared: null, reason: "moved" },
-    { op: "forget", ref: "m1", kind: null, content: null, shared: null, reason: "again" },
-    { op: "forget", ref: "m9", kind: null, content: null, shared: null, reason: "unknown" },
-    { op: "forget", ref: "m2", kind: null, content: null, shared: null, reason: "locked" },
-    { op: "add", ref: null, kind: "fact", content: " ", shared: true, reason: "empty" },
-    { op: "add", ref: null, kind: "event", content: "이사했다", shared: null, reason: "new" },
+    { op: "update", ref: "m1", kind: null, content: "부산에 산다", reason: "moved" },
+    { op: "forget", ref: "m1", kind: null, content: null, reason: "again" },
+    { op: "forget", ref: "m9", kind: null, content: null, reason: "unknown" },
+    { op: "forget", ref: "m2", kind: null, content: null, reason: "locked" },
+    { op: "add", ref: null, kind: "fact", content: " ", reason: "empty" },
+    { op: "add", ref: null, kind: "event", content: "이사했다", reason: "new" },
   );
   const ops = await anthropicCompanionLlm(config).extractMemories({
     messages: [{ role: "user", text: "부산으로 이사했어요" }],
@@ -182,8 +213,9 @@ test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이�
     { op: "add", kind: "event", content: "이사했다", shared: false, reason: "new" },
   ]);
   const content = (calls.parse.at(-1)!["messages"] as { content: string }[])[0]!.content;
-  expect(content).toContain("m1. [shared] 서울에 산다");
-  expect(content).toContain("m2. [shared] (locked) 이름은 마리아");
+  expect(content).toContain("m1. 서울에 산다");
+  expect(content).toContain("m2. (locked) 이름은 마리아");
+  expect(content).not.toContain("[shared]");
 });
 
 test("LL2d. 요약 — 네 칸(학습자 · 이어지는 이야기 · 캐릭터 · 약속), 칩을 그대로 고른 말은 표시하고 사실로 적지 않는다", () => {

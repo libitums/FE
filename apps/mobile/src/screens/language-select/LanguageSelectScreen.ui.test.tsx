@@ -26,7 +26,7 @@ describe("LanguageSelectScreen", () => {
     const bar = within(screen.getByTestId("language-select-screen-header")).getByTestId(
       "entry-step-bar",
     );
-    expect(bar).toHaveAttribute("accessibility-label", "Step 3 of 3");
+    expect(bar).toHaveAttribute("accessibility-label", "Step 3 of 4");
   });
 
   it("[LS-U1] 제목 · 안내가 서고 언어 넷이 어휘 순서로 선다", () => {

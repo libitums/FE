@@ -4,6 +4,7 @@ import type { LearningItemGuideKind } from "./learning-item-guide.contract";
 import {
   learningItemGuideKindFor,
   learningItemGuideKinds,
+  learningItemGuideRecordAvailable,
   learningItemGuideSeenStorageKey,
   loadSeenLearningItemGuides,
   markLearningItemGuideSeen,
@@ -19,6 +20,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+const guestKey = `${learningItemGuideSeenStorageKey}.guest`;
+
 type StorageDouble = {
   readonly store: Map<string, string>;
   readonly get: ReturnType<typeof vi.fn>;
@@ -29,8 +32,9 @@ function installStorage(
   initial?: string,
   options: { readonly setThrows?: boolean } = {},
 ): StorageDouble {
-  const store = new Map<string, string>();
-  if (initial !== undefined) store.set(learningItemGuideSeenStorageKey, initial);
+  // 비회원 설치 — 기록은 계정별 칸(2026-11-27)의 guest 칸입니다.
+  const store = new Map<string, string>([["libitum.auth.guest", "1"]]);
+  if (initial !== undefined) store.set(guestKey, initial);
   const get = vi.fn((key: string) => store.get(key) ?? null);
   const set = vi.fn((key: string, value: string) => {
     if (options.setThrows === true) throw new Error("storage write failed");
@@ -44,7 +48,7 @@ function installStorage(
 
 // 깨진 값이 남아 있어도 단언 실패(값 불일치)로 드러나게 파싱 실패는 원문을 돌려줍니다.
 const savedKinds = (double: StorageDouble): unknown => {
-  const raw = double.store.get(learningItemGuideSeenStorageKey) ?? "null";
+  const raw = double.store.get(guestKey) ?? "null";
   try {
     return JSON.parse(raw);
   } catch {
@@ -130,11 +134,11 @@ describe("shouldShowLearningItemGuide", () => {
 });
 
 describe("저장 접점", () => {
-  test("ST1: 저장된 값을 그 키로 읽는다", () => {
+  test("ST1: 저장된 값을 그 주인 칸(비회원은 .guest)으로 읽는다", () => {
     const double = installStorage('["sentence-order"]');
 
     expect(loadSeenLearningItemGuides()).toEqual(["sentence-order"]);
-    expect(double.get).toHaveBeenCalledWith("libitum.learning-item-guides.seen");
+    expect(double.get).toHaveBeenCalledWith("libitum.learning-item-guides.seen.guest");
   });
 
   test("ST2: 저장소가 없으면 던지지 않고 빈 배열이다", () => {
@@ -148,7 +152,7 @@ describe("저장 접점", () => {
     markLearningItemGuideSeen("sentence-order");
 
     expect(double.set).toHaveBeenCalledTimes(1);
-    expect(double.set.mock.calls[0]?.[0]).toBe("libitum.learning-item-guides.seen");
+    expect(double.set.mock.calls[0]?.[0]).toBe("libitum.learning-item-guides.seen.guest");
     expect(savedKinds(double)).toEqual(["sentence-order"]);
   });
 
@@ -175,6 +179,18 @@ describe("저장 접점", () => {
     vi.unstubAllGlobals();
     expect(() => markLearningItemGuideSeen("sentence-order")).not.toThrow();
   });
+});
+
+// 계정별 칸(2026-11-27): 주인(계정 · 비회원)이 없으면 읽지도 쓰지도 않고, 안내도 띄우지 않습니다.
+test("ST7: 로그인 전(세션 · 비회원 표식 없음)에는 기록을 쓸 수 없고 적지 않는다", () => {
+  const double = installStorage();
+  double.store.delete("libitum.auth.guest");
+
+  expect(learningItemGuideRecordAvailable()).toBe(false);
+  markLearningItemGuideSeen("sentence-order");
+  expect(double.set).not.toHaveBeenCalled();
+  double.store.set("libitum.auth.guest", "1");
+  expect(learningItemGuideRecordAvailable()).toBe(true);
 });
 
 describe("종류", () => {

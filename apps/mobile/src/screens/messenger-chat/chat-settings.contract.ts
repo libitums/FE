@@ -149,6 +149,8 @@ export type MessengerGuideCopy = {
   readonly newTag: string;
   /** 예시 단계 동안 사진 알약의 가격 자리에 서는 글. */
   readonly free: string;
+  /** 첫 인사를 기다리는 동안 잠긴 입력 칸의 글 · 낭독(ADR-0139 개정 2026-11-27). */
+  readonly greeting: (name: string) => string;
 };
 
 export type ChatSettingsCopy = {
@@ -162,8 +164,6 @@ export type ChatSettingsCopy = {
   readonly sectionProactive: string;
   readonly proactive: string;
   readonly sectionAbout: string;
-  readonly sharedMemories: string;
-  readonly sharedMemoriesSummary: (count: number) => string;
   readonly footnote: string;
   readonly proactiveSheet: {
     readonly title: string;
@@ -178,7 +178,6 @@ export type ChatSettingsCopy = {
     readonly close: string;
   };
   readonly memories: {
-    readonly titleShared: string;
     readonly titleCharacter: (name: string) => string;
     readonly count: (count: number, cap: number) => string;
     readonly fullTitle: string;
@@ -227,7 +226,6 @@ export const chatSettingsTestIds = {
   back: settings("back"),
   replyIdeas: settings("reply-ideas"),
   proactive: settings("proactive"),
-  sharedMemories: settings("shared-memories"),
   birthYear: settings("birth-year"),
   proactiveSheet: settings("proactive-sheet"),
   proactivePref: (pref: string): string => settings(`proactive-${pref}`),

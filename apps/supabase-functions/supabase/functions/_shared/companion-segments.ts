@@ -4,6 +4,8 @@
 // 태그가 없는 줄은 speech입니다(모델이 형식을 놓쳐도 답이 사라지지 않게). 빈 줄은 버립니다.
 // 글자는 받는 대로 내보냅니다 — 줄의 앞 몇 글자로 태그 여부만 가리면 나머지는 기다리지 않습니다.
 // `@state {…}` 줄은 말풍선이 아니라 서버에 주는 신호(친밀도 증감 · 화제)라 내보내지 않고 `state()`로 모읍니다.
+// 모델(특히 Haiku)이 태그를 빠뜨리고 `{"intimacy_delta": …}`만 쓴 줄도 상태 줄로 보고, `_state_placeholder` 같은 찌꺼기 줄은 버립니다 —
+// 말풍선으로 새어 나가지 않게(2026-11-27 Haiku 평가에서 미성년 대화 한 판에 14번).
 
 import type { Segment, TurnState } from "./chat-send.contract.ts";
 import type { SegmentKind } from "./companion-contract/index.ts";
@@ -14,13 +16,26 @@ export type SegmentDelta = {
   readonly text: string;
 };
 
-type LineKind = SegmentKind | "state";
+type LineKind = SegmentKind | "state" | "drop";
 
-const tags: readonly { tag: string; kind: LineKind }[] = [
+// `keep`: 태그 글자도 줄 내용이다(태그 없이 쓴 상태 JSON).
+const tags: readonly { tag: string; kind: LineKind; keep?: true }[] = [
   { tag: "@speech", kind: "speech" },
   { tag: "@action", kind: "action" },
   { tag: "@narration", kind: "narration" },
   { tag: "@state", kind: "state" },
+  { tag: '{"intimacy_delta"', kind: "state", keep: true },
+  { tag: "_state", kind: "drop", keep: true },
+  // Haiku medium이 가끔 한 줄로 내는 찌꺼기(2026-11-27 평가): `<br>` · `<<HUMAN_CONVERSATION_START>>` · `brief:`.
+  { tag: "<br", kind: "drop", keep: true },
+  { tag: "<<", kind: "drop", keep: true },
+  { tag: "brief:", kind: "drop", keep: true },
+  { tag: ">", kind: "drop", keep: true },
+  // 자기 수정 · 메타 줄(2026-11-28 평가 — Haiku 「Wait — I must keep 해요체…」 · 「Let me redo that cleanly」, Sonnet 「Wait, that state is malformed…」).
+  { tag: "Wait", kind: "drop", keep: true },
+  { tag: "Let me", kind: "drop", keep: true },
+  { tag: "Note:", kind: "drop", keep: true },
+  { tag: "(Note", kind: "drop", keep: true },
 ];
 const longestTag = Math.max(...tags.map((entry) => entry.tag.length)) + 1;
 
@@ -77,7 +92,7 @@ export function createSegmentSplitter(): SegmentSplitter {
   let stateText = "";
 
   const body = (text: string, out: SegmentDelta[]) => {
-    if (text === "") return;
+    if (text === "" || kind === "drop") return;
     if (kind === "state") {
       stateText += text;
       return;
@@ -100,6 +115,12 @@ export function createSegmentSplitter(): SegmentSplitter {
     );
     if (match !== undefined) {
       const rest = trimmed.slice(match.tag.length);
+      if (match.keep === true) {
+        kind = match.kind;
+        head = null;
+        body(trimmed, out);
+        return;
+      }
       // `@speechless`처럼 태그 뒤에 글자가 바로 붙으면 태그가 아닙니다.
       if (rest === "" || /^[\s:]/.test(rest)) {
         kind = match.kind;

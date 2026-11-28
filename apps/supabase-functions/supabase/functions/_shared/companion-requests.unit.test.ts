@@ -88,7 +88,9 @@ test("RQ3. 자주 오는 요청 — AI 질문 · 다른 메신저 · 사진은 �
 test("RQ4. 검사 지시 — 자기소개 · 캐릭터에게 묻는 말은 통과, 실제 연락처를 내놓기만 차단, 연애 질문은 선 none에서도 통과", () => {
   for (const ageBand of ["adult", "minor", "unknown"] as const) {
     const input = moderationInstruction("input", ageBand);
-    expect(input).toContain("block only when the learner shares an actual phone number");
+    expect(input).toContain(
+      "block only details that would let someone contact or find the learner",
+    );
     expect(input).toContain('"my name is Sindy Devina"');
     expect(input).toContain("whether they use WhatsApp or Instagram");
     expect(input).toContain("for their photo, selfie or a voice message");
@@ -103,7 +105,8 @@ test("RQ4. 검사 지시 — 자기소개 · 캐릭터에게 묻는 말은 통�
   );
   const output = moderationInstruction("output_sync", "unknown", "none");
   expect(output).toContain("must never give a phone number");
-  expect(output).toContain("mentioning a photo button in this app, is fine");
+  expect(output).toContain("Asking about the learner's life is the heart of conversation practice");
+  expect(output).toContain("mentioning a photo button in this app, is also fine");
 });
 
 test("RQ5. 평가 세트 — 자주 오는 요청 세트가 스키마를 지나고, 답장 케이스가 친밀도를 싣는다", () => {
@@ -136,4 +139,31 @@ test("RQ6. 연애를 되묻지 않는다 — 로맨스 대상이 아닌 인물�
     expect(romanceOf(geonwoo, ageBand), ageBand).toContain(
       "never ask about their love life in return",
     );
+});
+
+test("RQ7. 판정 원칙(ADR-0203) — 뜻으로 보기 · 목적어 · 이중 의미 · 오타 · 겨냥 없는 욕, 오타 줄은 입력에만", () => {
+  for (const ageBand of ["adult", "minor", "unknown"] as const) {
+    const input = moderationInstruction("input", ageBand);
+    expect(input).toContain("How to judge (applies to every rule below)");
+    expect(input).toContain("not single words");
+    expect(input).toContain("are about the learner and the character themselves");
+    expect(input).toContain("are not sexual unless the context makes the sexual meaning clear");
+    expect(input).toContain("Typos, keyboard mashing");
+    expect(input).toContain("A bare swear word on its own");
+    expect(input).toContain("a name written without spaces or in romanization");
+  }
+  const output = moderationInstruction("output_sync", "minor", "none");
+  expect(output).toContain("are about the learner and the character themselves");
+  expect(output).not.toContain("Typos, keyboard mashing");
+});
+
+test("RQ8. 답 프롬프트 — 학습자에게 적극적으로 묻고, 연락처 · 정확한 위치만 묻지 않으며, AI라고 먼저 말하지 않는다", () => {
+  for (const persona of [geonwoo, duksu, mina]) {
+    const { stable, dynamic } = prompt(persona, "unknown", "polite");
+    // 기억이 비면 이번 대화 지시(dynamic)에 「알아 가기」 줄이 들어간다(i10 — 기억이 차면 빠진다).
+    expect(dynamic).toContain("# Getting to know them");
+    expect(stable).toContain("Never ask for the learner's contact details or exact whereabouts");
+    expect(stable).not.toContain("Do not ask for personal information");
+    expect(stable).toContain("never bring up being an AI yourself");
+  }
 });

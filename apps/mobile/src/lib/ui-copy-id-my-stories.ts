@@ -118,7 +118,7 @@ export const myStoriesId: MyStoriesCopy = {
     posting: "Membagikan…",
     hintOne: "Tambahkan satu kata untuk membagikannya.",
     hintOneText: "Tambahkan kata atau tulis satu kalimat untuk membagikannya.",
-    hintMove: "Seret untuk memindahkan, cubit untuk mengubah ukuran.",
+    hintMove: "Seret untuk memindahkan. Cubit untuk mengubah ukuran atau memutar.",
     stickerLabel: (ko, meaning) => `${ko}, ${meaning}`,
     remove: (ko) => `Hapus ${ko}`,
     textBlocked: "Teks ini tidak bisa dibagikan. Coba kata lain.",

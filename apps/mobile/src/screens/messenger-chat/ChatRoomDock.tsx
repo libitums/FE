@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { keyboardDockBodyStyle, type KeyboardDockEdges } from "../../lib/keyboard-dock";
+import { useUiCopy } from "../../lib/ui-copy";
 import { MessengerKeyboard } from "../messenger/MessengerKeyboard";
 import { CHAT_COIN_PRICES } from "./chat-coins";
 import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
@@ -29,8 +30,8 @@ export type ChatRoomDockProps = {
   /** 키보드 자리 높이(바깥 인셋 포함 총높이)와, 입력 칸이 잰 휴대폰 키보드 높이를 받는 곳입니다. */
   readonly keyboard: PhoneKeyboardHeight;
   readonly dispatch: (action: ChatRoomAction) => void;
-  /** 입력 칸의 글을 보냅니다. 답장 보기를 누르면 그 글을 줍니다. */
-  readonly onSend: (idea?: string) => void;
+  /** 입력 칸의 글을 보냅니다. 답장 보기를 누르면 그 글과 보기 자리를 줍니다(자리는 칩 탭 표시, ADR-0210 D1). */
+  readonly onSend: (idea?: string, ideaIndex?: number) => void;
   /** 보내기 단추 종류(T4면 엽전 보내기)입니다. */
   readonly sendCost: SendCost;
   /** 입력 줄 바로 위 자리입니다(T2 마지막 무료 띠). 없으면 null. */
@@ -45,6 +46,8 @@ export type ChatRoomDockProps = {
   readonly onTakeVoiceSample?: () => void;
   /** 비회원(ADR-0166) — 보기가 없어도 전구를 켜 두고 누르면 관문(send 권유)으로 갑니다(2026-11-20). */
   readonly guest?: boolean;
+  /** 안내 전 첫 인사를 기다리는 중(ADR-0139 개정 2026-11-27) — 입력 칸 · 보내기 · 전구를 잠급니다. */
+  readonly waitingGreeting?: boolean;
 };
 
 /** 상대의 마지막 텍스트 글(한국어)입니다. 없으면 null — 보기 판의 인용이 됩니다. */
@@ -72,7 +75,9 @@ export function ChatRoomDock({
   onTakeSample,
   onTakeVoiceSample,
   guest = false,
+  waitingGreeting = false,
 }: ChatRoomDockProps): ReactNode {
+  const guideCopy = useUiCopy().messengerChat.guide;
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
     slot: state.slot,
@@ -154,8 +159,9 @@ export function ChatRoomDock({
         {aboveComposer}
         <ComposerRow
           state={state}
-          ideasDisabled={!guest && thread.ideas.length === 0}
-          sendEnabled={canSend(state.text)}
+          ideasDisabled={waitingGreeting || (!guest && thread.ideas.length === 0)}
+          sendEnabled={canSend(state.text) && !waitingGreeting}
+          locked={waitingGreeting ? guideCopy.greeting(thread.counterpart.name) : null}
           sendCost={sendCost}
           onIdeas={() => dispatch({ type: ideasOpen ? "type-myself" : "open-ideas" })}
           onSend={() => onSend()}
@@ -190,7 +196,7 @@ export function ChatRoomDock({
               const idea = thread.ideas[index];
               if (idea === undefined) return;
               suggestionTapped(index);
-              onSend(idea.ko);
+              onSend(idea.ko, index);
             }}
             onTypeMyself={() => dispatch({ type: "type-myself" })}
             bottomInset={edges.bottom}

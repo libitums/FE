@@ -63,7 +63,8 @@ export type ChatRoomApi = {
   /** 입력 칸이 잰 휴대폰 키보드 높이(pt/dp)를 받습니다(`usePhoneKeyboardHeight`). */
   readonly measureKeyboard: (height: number) => void;
   readonly dispatch: (action: ChatRoomAction) => void;
-  readonly send: (idea?: string) => void;
+  /** `ideaIndex` = 답장 보기의 자리 — 출처가 칩 탭 표시를 싣습니다(ADR-0210 D1). */
+  readonly send: (idea?: string, ideaIndex?: number) => void;
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */
@@ -159,12 +160,17 @@ export function useChatRoom({
     rawDispatch(action);
   }, []);
 
-  function sendTurn(idea?: string) {
+  function sendTurn(idea?: string, ideaIndex?: number) {
     const current = stateRef.current;
     if (idea !== undefined && current.slot.kind !== "ideas") return; // 판이 이미 접힘 — 같은 렌더의 연속 탭
     if (!canSend(idea ?? current.text)) return;
     if (authorizeRef.current !== undefined && !authorizeRef.current(idea !== undefined)) return;
-    const options = idea === undefined ? takeOptionsRef.current?.() : undefined;
+    const options =
+      idea === undefined
+        ? takeOptionsRef.current?.()
+        : ideaIndex === undefined
+          ? undefined
+          : { suggestion: { index: ideaIndex } }; // 칩 탭 표시(ADR-0210 D1)
     try {
       if (options === undefined) source.sendText(roomId, idea ?? current.text);
       else source.sendText(roomId, idea ?? current.text, options); // 스토리 인용(ADR-0178 D5)
@@ -181,7 +187,10 @@ export function useChatRoom({
       setRemount((count) => count + 1);
     });
   }
-  const send = useCallback((idea?: string) => sendTurn(idea), [source, roomId]);
+  const send = useCallback(
+    (idea?: string, ideaIndex?: number) => sendTurn(idea, ideaIndex),
+    [source, roomId],
+  );
 
   const phoneReady = state.keyboard === "phone" && state.slot.kind === "keyboard";
   useEffect(() => {

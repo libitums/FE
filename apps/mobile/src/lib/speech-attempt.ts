@@ -127,9 +127,9 @@ export function speechPhaseFor(availability: SpeechAvailability): SpeechAttemptP
   return availability === "blocked" ? speechBlocked : { kind: "ready" };
 }
 
-/** ready · missed(다시 말하기) → idle, listening → listening, 그 밖 → off. */
+/** ready · 다시 말할 수 있는 실패(missed · failed) → idle, listening → listening, 그 밖 → off. */
 export function speechWavesStateOf(phase: SpeechAttemptPhase): SpeechWavesState {
-  if (phase.kind === "ready" || phase.kind === "missed") {
+  if (phase.kind === "ready" || speechRetryable(phase)) {
     return "idle";
   }
   return phase.kind === "listening" ? "listening" : "off";
@@ -158,4 +158,44 @@ export function speechControlLabel(
 /** 못 알아들은 까닭 → 안내 줄입니다 — 말을 못 알아들음은 다시 말하기, 네트워크는 연결 확인 뒤 다시입니다. */
 export function speechMissedHintOf(reason: SpeechMissReason, copy: UiCopy): string {
   return reason === "network" ? copy.speaking.networkRetry : copy.speaking.notCaught;
+}
+
+/** 같은 문항을 곧바로 다시 말할 수 있는 실패인가 — 못 알아들음 · 인식 실패(ADR-0206 D5). 권한 · 인식기(blocked)는 아닙니다. */
+export function speechRetryable(phase: SpeechAttemptPhase): boolean {
+  if (phase.kind === "missed") return true;
+  return phase.kind === "unavailable" && phase.reason === "failed" && !languageMissing(phase);
+}
+
+// Android 인식기의 언어 없음(12 LANGUAGE_NOT_SUPPORTED · 13 LANGUAGE_UNAVAILABLE) — 한국어 팩 안내(#555)를 그대로 둡니다.
+// 진단에는 도메인이 없어(옛 Android 호스트는 한국어 팩도 싣지 않음) 코드만 봅니다 — 다른 도메인의 같은 코드도 지금 안내 그대로입니다.
+const androidLanguageCodes: readonly number[] = [12, 13];
+
+function languageMissing(phase: { readonly diagnostic?: SpeechDiagnostic }): boolean {
+  const diagnostic = phase.diagnostic;
+  return diagnostic !== undefined && androidLanguageCodes.includes(diagnostic.errorCode);
+}
+
+/** 같은 문항에서 연달아 실패한 수가 이만큼이면 「정답 듣기」를 함께 보입니다(ADR-0206 D5). */
+export const hearAnswerAfterFailures = 2;
+
+/** 실패가 하나 더 쌓인 수 — 다시 말할 수 있는 실패면 +1, 들음이면 0으로, 그 밖(준비 · 듣는 중 · 불가)은 그대로입니다. */
+export function speechFailuresAfter(failures: number, phase: SpeechAttemptPhase): number {
+  if (phase.kind === "heard") return 0;
+  return speechRetryable(phase) ? failures + 1 : failures;
+}
+
+/**
+ * 권한이 다시 열렸다(설정에서 돌아옴 · 사전 안내 허용) — 활동 잠금을 풀고, 불가(blocked) 국면이면 준비로 돌립니다(ADR-0206 D3).
+ * 바뀔 것이 없으면 같은 참조입니다.
+ */
+export function speechReopened<
+  State extends { readonly phase: SpeechAttemptPhase; readonly availability: SpeechAvailability },
+>(state: State): State {
+  const blockedPhase = state.phase.kind === "unavailable" && state.phase.reason === "blocked";
+  if (state.availability === "open" && !blockedPhase) return state;
+  return {
+    ...state,
+    availability: "open",
+    phase: blockedPhase ? { kind: "ready" } : state.phase,
+  };
 }

@@ -15,7 +15,7 @@ import type { EntryEvent } from "../../lib/entry-flow";
 import { contentNotFoundResponse, contentPathOf, isContentRequest } from "./content-requests";
 import { setGlobalProps } from "./journey-map-host";
 import { passSplash } from "./pass-splash";
-import { passLearnerSignup } from "./learner-signup";
+import { passLearnerBirthYearIfShown, passLearnerSignup } from "./learner-signup";
 
 /** 계약이 고정한 저장 키입니다(spec §1-2 · §1-3). 모듈을 import하지 않고 문자열로 짓습니다 — 키가 바뀌면 여기서 빨개집니다. */
 export const guestMarkerKey = "libitum.auth.guest";
@@ -241,6 +241,7 @@ export async function walkGuestEntryToMap(): Promise<void> {
   passLearnerSignup();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButtonIn("language-select-screen-next");
+  passLearnerBirthYearIfShown();
   tapButtonIn("journey-entry-screen-story");
   await flush();
 }

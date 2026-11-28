@@ -173,6 +173,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "learner-name":
     case "learner-country":
     case "language-select":
+    case "learner-birth-year":
     case "journey-entry":
     case "entry-basics-letters":
     case "entry-basics-compose":

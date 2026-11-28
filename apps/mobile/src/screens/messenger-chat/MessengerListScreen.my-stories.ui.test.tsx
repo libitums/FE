@@ -137,7 +137,9 @@ test("MS-UI3. 안내 → 시작 → 편집 → 단어 스티커 → 올림 → �
   expect(screen.getByTestId(ids.editorHint).textContent).toBe("Add a word to share it.");
   place("w2");
   expect(screen.queryByTestId(ids.composer)).toBeNull();
-  expect(screen.getByTestId(ids.editorHint).textContent).toBe("Drag to move, pinch to resize.");
+  expect(screen.getByTestId(ids.editorHint).textContent).toBe(
+    "Drag to move. Pinch to resize or rotate.",
+  );
   tapId(ids.share);
   await flush();
   expect(fake.post).toHaveBeenCalledWith(

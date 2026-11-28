@@ -40,6 +40,8 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
             : `${count} tin nhắn mới`,
     jump: "Đi tới tin nhắn mới",
     latest: "Cuộn xuống tin mới nhất",
+    above: (media) =>
+      media === "photo" ? "Ảnh đã đến ở phía trên" : "Tin nhắn thoại đã đến ở phía trên",
   },
   replyToast: {
     dismiss: "Đóng",
@@ -65,10 +67,8 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     sectionProactive: "Tin nhắn từ nhân vật",
     proactive: "Nhân vật nhắn trước",
     sectionAbout: "Về bạn",
-    sharedMemories: "Điều mọi nhân vật biết về bạn",
-    sharedMemoriesSummary: (count) => `${count} ghi nhớ · dùng chung cho mọi nhân vật`,
     footnote:
-      "Mỗi nhân vật cũng nhớ những điều từ cuộc trò chuyện với bạn. Mở một cuộc trò chuyện và chạm ☰ để xem.",
+      "Mỗi nhân vật nhớ những điều bạn đã kể với họ. Mở một cuộc trò chuyện và chạm ☰ để xem.",
     proactiveSheet: {
       title: "Nhân vật nhắn trước",
       body: "Khi bạn im lặng một lúc, nhân vật có thể bắt đầu trò chuyện. Không bao giờ tốn xu.",
@@ -83,7 +83,6 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       close: "Đóng",
     },
     memories: {
-      titleShared: "Điều mọi nhân vật biết về bạn",
       titleCharacter: (name) => `Điều ${name} nhớ`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "Bộ nhớ đã đầy",
@@ -172,7 +171,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       media:
         "Bạn cũng có thể nhờ mình gửi ảnh hoặc tin nhắn thoại bằng các nút phía trên bàn phím.",
       sample:
-        "Muốn xem mình đang làm gì không? Chạm Snapshot, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
+        "Muốn xem mình đang làm gì không? Chạm Ảnh chụp nhanh, mình sẽ gửi một tấm ảnh. Tấm đầu tiên mình tặng.",
       voice:
         "Muốn nghe giọng mình không? Chạm Giọng nói nhanh, mình sẽ đọc tin nhắn đó. Lần đầu mình cũng tặng.",
     },
@@ -192,6 +191,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step}/${total}`,
     newTag: "Mới",
     free: "MIỄN PHÍ",
+    greeting: (name) => `${name} đang chào bạn…`,
   },
   launch: {
     newTag: "MỚI",

@@ -135,6 +135,13 @@ export const readAloudId: ReadAloudCopy = {
 export const speakWordId: SpeakWordCopy = {
   instruction: "Ucapkan kata untuk gambar ini.",
   recognitionUnavailable: "Pengenalan suara sedang tidak tersedia. Ketuk Lewati untuk lanjut.",
+  result: {
+    perfect: "Sempurna!",
+    almostPerfect: "Hampir sempurna",
+    modelAnswer: "Contoh jawaban",
+    youSaid: "Kamu bilang",
+    hearAnswer: "Dengarkan jawaban",
+  },
 };
 
 export const pairMatchId: PairMatchCopy = {

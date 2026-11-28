@@ -1,0 +1,84 @@
+/* 짝 CSS 파일입니다(ADR-0015 D2). 답하면 카드가 펼쳐지는 공용 상자(ADR-0212, 시안 C안).
+
+   시간은 전부 토큰이고 `calc()`를 쓰지 않습니다 — Lynx(iOS 시뮬레이터 관찰)는 `transition`의 시간에 `calc()`를 주면
+   0으로 읽어 높이가 한 번에 섭니다(ADR-0212 D2). 그래서 시안의 280 · 120 · 60ms를 가장 가까운 토큰으로 옮겼습니다 —
+   높이 d6(300ms), 글은 d2 · d3 · d4 · d5(100ms부터 50ms 간격)에 하나씩 d4(200ms) 동안. 가속은 ease-out 꼴의 `enter`입니다.
+   같은 값을 `reveal-on-answer.ts`의 시간표가 씁니다.
+
+   상자와 글 칸은 세로 묶음이고 가운데 정렬입니다 — 한글 · 로마자는 가운데에 서고, 구분선 · 정답 상자는 스스로
+   `align-self: stretch`로 폭을 다 받습니다. */
+.reveal-on-answer {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  /* Lynx flex는 웹의 자동 최소 크기를 만들지 않아 내용이 있어도 계속 줄어듭니다. */
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* 재는 중 · 펼치는 중 — 넘치는 글을 자르고, 높이(인라인 style 0px → 잰 높이)를 전환합니다. */
+.reveal-on-answer-measuring,
+.reveal-on-answer-expanding {
+  overflow: hidden;
+  transition: height var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter);
+}
+
+.reveal-on-answer-frame {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* 재는 중 · 펼치는 중 — 틀을 흐름에서 띄웁니다. 높이는 인라인 style(넉넉한 높이 → 잰 높이)입니다(reveal-on-answer.ts). */
+.reveal-on-answer-frame-floating {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.reveal-on-answer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.reveal-on-answer-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* 재는 중 — 아직 보이지 않고 6px 아래에서 기다립니다. */
+.reveal-on-answer-item-pending {
+  opacity: 0;
+  transform: translateY(var(--libitum-spacing-6));
+}
+
+/* 펼침 · 글만 나타남(A안) — 순서마다 늦게 떠오르며 진해집니다. */
+.reveal-on-answer-item-entering {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--libitum-motion-duration-d4) var(--libitum-motion-easing-enter),
+    transform var(--libitum-motion-duration-d4) var(--libitum-motion-easing-enter);
+}
+
+.reveal-on-answer-item-0 {
+  transition-delay: var(--libitum-motion-duration-d2);
+}
+
+.reveal-on-answer-item-1 {
+  transition-delay: var(--libitum-motion-duration-d3);
+}
+
+.reveal-on-answer-item-2 {
+  transition-delay: var(--libitum-motion-duration-d4);
+}
+
+.reveal-on-answer-item-3 {
+  transition-delay: var(--libitum-motion-duration-d5);
+}

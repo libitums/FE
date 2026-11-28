@@ -49,7 +49,7 @@ test("IS-UI1. 보기를 누르면 그 글을 바로 보내고 입력 칸은 비�
   tapId(ids.idea(1));
 
   expect(sendText).toHaveBeenCalledTimes(1);
-  expect(sendText).toHaveBeenCalledWith("mina", ideaSetA[1].ko);
+  expect(sendText).toHaveBeenCalledWith("mina", ideaSetA[1].ko, { suggestion: { index: 1 } }); // 칩 탭 표시(ADR-0210 D1)
   expect(outgoingCount()).toBe(1);
   expect(textOf(ids.display)).not.toContain(ideaSetA[1].ko);
   expect(screen.queryByTestId(ids.ideasPanel)).toBeNull();
@@ -93,7 +93,7 @@ test("IS-UI3. 휴대폰으로 쓰던 글은 보기를 보내도 입력 칸에 �
 
   tapId(ids.idea(2));
 
-  expect(sendText).toHaveBeenCalledWith("mina", ideaSetA[2].ko);
+  expect(sendText).toHaveBeenCalledWith("mina", ideaSetA[2].ko, { suggestion: { index: 2 } });
   expect(vi.mocked(inputFocus.clearPhoneInput)).not.toHaveBeenCalled();
   expect(screen.getByTestId(ids.send).getAttribute("data-enabled")).toBe("true");
 });

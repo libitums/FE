@@ -397,7 +397,7 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     // 서버가 곧바로 답해도 잠깐은 만드는 중으로 보인다.
     expect(env.lines().at(-1)).toMatchObject({ kind: "photo-pending" });
     await env.advance(1_500);
-    expect(await done).toBe(true);
+    expect(await done).toBe("received");
     const tail = env.lines().slice(-2);
     expect(tail[0]).toMatchObject({
       kind: "photo",
@@ -422,7 +422,7 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     expect(env.lines().at(-1)).toMatchObject({ kind: "voice-pending", startedAt: 1_000 });
     expect(sample.claim).toHaveBeenCalledWith(A1, "voice");
     await env.advance(1_500);
-    expect(await done).toBe(true);
+    expect(await done).toBe("received");
     const tail = env.lines().slice(-2);
     expect(tail[0]).toMatchObject({
       kind: "voice",
@@ -452,22 +452,22 @@ describe("예시 스냅샷(ADR-0146 추가 — 안내에서 무료 예시 한 �
     expect(row?.updatedAt).toBe(row?.lastMessage?.at);
   });
 
-  test("CM-U32 받지 못하면 대기 줄이 회색 안내로 바뀌고 false — 사진 · 무료 줄은 서지 않는다", async () => {
+  test("CM-U32 받지 못하면 대기 줄이 회색 안내로 바뀌고 failed(GA-U3: 받음 · 거절 · 실패를 가른다) — 사진 · 무료 줄은 서지 않는다", async () => {
     const env = await opened({ sample: sampleOf({ kind: "failed" }) });
     const done = env.source.sampleSnapshot?.claim("duksu");
     await env.advance(1_500);
-    expect(await done).toBe(false);
+    expect(await done).toBe("failed");
     expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "request-failed" });
     expect(env.lines().some((m) => m.kind === "photo" || m.kind === "photo-pending")).toBe(false);
   });
 
-  test("CM-U33 서버가 주지 않기로 했으면(다른 기기에서 이미 씀 · 예시 꺼짐) 「연결 확인」이 아니라 「지금은 쓸 수 없음」 줄이 선다", async () => {
+  test("CM-U33 서버가 주지 않기로 했으면(다른 기기에서 이미 씀 · 예시 꺼짐) 「연결 확인」이 아니라 「지금은 쓸 수 없음」 줄이 서고 refused(GA-U3)", async () => {
     const env = await opened({
       sample: sampleOf({ kind: "refused", notice: "not-eligible", until: null }),
     });
     const done = env.source.sampleSnapshot?.claim("duksu");
     await env.advance(1_500);
-    expect(await done).toBe(false);
+    expect(await done).toBe("refused");
     expect(env.lines().at(-1)).toMatchObject({ kind: "media-notice", notice: "unavailable" });
   });
 });

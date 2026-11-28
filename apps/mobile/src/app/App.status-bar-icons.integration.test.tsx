@@ -3,7 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerBirthYear, passLearnerSignup } from "./test-helpers/learner-signup";
 import { legacyPassedSeed, u01OpenSeed } from "./test-helpers/progress-seed";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
@@ -225,19 +225,23 @@ test("[IS5] 표지에서 Skip → 확인창 → 머무르기: 1 → 1 → 1", as
   expect(markerIds()).toEqual(["episode-intro-screen"]);
 });
 
-test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시작(맵): 0 → 1 → 0 → 1 → 0", async () => {
+// 개정(ADR-0059 2026-11-27) — 언어 선택과 journey-entry 사이에 ④ 출생 연도가 있어, 뒤로는 ④에 섭니다(밝은 화면이라 0).
+test("[IS8] 언어 선택 → ④ 출생 연도 → journey-entry → 뒤로(④) → 다시 → 여정 시작(맵): 0 → 0 → 1 → 0 → 1 → 0", async () => {
   await signInWithGoogleToLanguageSelect();
   expect(markers()).toBe(0);
 
   tapButtonIn("language-select-screen-next");
+  expect(screen.getByTestId("learner-birth-year-screen-title")).toBeInTheDocument();
+  expect(markers()).toBe(0);
+  passLearnerBirthYear();
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
   expectJourneyEntryMarker();
 
   tapRoundButtonIn("journey-entry-screen-header");
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-birth-year-screen-title")).toBeInTheDocument();
   expect(markers()).toBe(0);
 
-  tapButtonIn("language-select-screen-next");
+  passLearnerBirthYear();
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
   expectJourneyEntryMarker();
 

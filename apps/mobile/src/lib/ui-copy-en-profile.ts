@@ -49,6 +49,10 @@ export const learnerProfileEn: LearnerProfileCopy = {
       jumpTo: (letter) => `Jump to ${letter}`,
       jumpBar: "Jump to letter",
     },
+    birthYear: {
+      title: "What year were you born?",
+      caption: "We use it to keep the app right for your age. It's never shown to anyone.",
+    },
   },
   settings: {
     title: "Name and country",

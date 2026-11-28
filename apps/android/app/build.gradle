@@ -68,6 +68,19 @@ def revenueCatValue = { String key ->
   (revenueCatProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
 }
 
+// AdMob 앱 ID는 추적하지 않는 admob.properties에서 읽는다(ADR-0209 D10). 광고 단위 ID는 앱에 두지 않는다 — 서버가 상태 응답으로 내린다.
+// 매니페스트 앱 ID(com.google.android.gms.ads.APPLICATION_ID)는 비면 SDK가 앱을 죽이므로, 값이 없을 때 Google 샘플 앱 ID로 채운다.
+// 샘플 앱 ID는 release 빌드에서 광고 모듈을 열지 않는다(RewardedAdConfig) — 스토어 빌드는 진짜 앱 ID가 있어야 한다.
+def admobProperties = new Properties()
+def admobPropertiesFile = file('admob.properties')
+if (admobPropertiesFile.exists()) {
+  admobPropertiesFile.withInputStream { admobProperties.load(it) }
+}
+def admobValue = { String key ->
+  (admobProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
+}
+def admobSampleAppId = 'ca-app-pub-3940256099942544~3347511713'
+
 android {
   namespace 'com.libitum.host'
   compileSdk 36
@@ -77,8 +90,8 @@ android {
     minSdk 26
     targetSdk 36
     // Play에 올릴 커밋에서 손으로 1 올린다 (spec §4). Play에는 22가 이미 올라가 있을 수 있다.
-    versionCode 28
-    versionName '1.7.0'
+    versionCode 31
+    versionName '1.7.2'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     // debug keeps these empty: dev-server and HMR errors must not reach the collector.
     buildConfigField 'String', 'SENTRY_DSN', '""'
@@ -86,6 +99,8 @@ android {
     buildConfigField 'String', 'AIRBRIDGE_APP_NAME', "\"${airbridgeValue('AIRBRIDGE_APP_NAME')}\""
     buildConfigField 'String', 'AIRBRIDGE_SDK_TOKEN', "\"${airbridgeValue('AIRBRIDGE_SDK_TOKEN')}\""
     buildConfigField 'String', 'REVENUECAT_API_KEY', "\"${revenueCatValue('REVENUECAT_API_KEY')}\""
+    buildConfigField 'String', 'ADMOB_APP_ID', "\"${admobValue('ADMOB_APP_ID') ?: admobSampleAppId}\""
+    manifestPlaceholders = [admobAppId: admobValue('ADMOB_APP_ID') ?: admobSampleAppId]
   }
 
   buildTypes {
@@ -162,6 +177,12 @@ dependencies {
   implementation 'io.airbridge:sdk-android:4.12.0'
   // 스토어 결제 · 영수증 · 구독 상태(ADR-0144 D1). 정확 버전 — Play Billing 8을 싣는 줄이다. 키가 없으면 시작하지 않는다.
   implementation 'com.revenuecat.purchases:purchases:10.30.1'
+  // 「Out of tickets」의 광고 보고 1장 — AdMob 보상형(ADR-0209). 값이 없으면 시작하지 않는다.
+  // appcompat-resources 1.4.1(play hsdp 경유)은 Lynx xelement가 쓰는 appcompat 1.0.0과 클래스가 겹친다(checkBundledDuplicateClasses) —
+  // 같은 클래스가 appcompat 1.0.0에 있으므로 뺀다. 광고 불러오기 · 보여 주기는 Android 에뮬레이터에서 테스트 ID로 확인했다.
+  implementation('com.google.android.gms:play-services-ads:25.5.0') {
+    exclude group: 'androidx.appcompat', module: 'appcompat-resources'
+  }
   implementation platform('com.google.firebase:firebase-bom:34.19.0')
   implementation 'com.google.firebase:firebase-messaging'
   implementation 'io.sentry:sentry-android-core:8.60.0'
