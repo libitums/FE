@@ -5,6 +5,8 @@ import { vitestTestingLibraryPlugin } from "@lynx-js/react/testing-library/plugi
 // 러너는 vitest입니다(ADR-0006 D4). `createVitestConfig`가 deprecated라 플러그인을 씁니다.
 export default defineConfig({
   plugins: [vitestTestingLibraryPlugin()],
+  // 롤플레이 미션 코드의 빌드 상수(`lynx.config.ts`) — 테스트는 늘 미션 코드를 싣습니다.
+  define: { __ROLEPLAY_MISSION_IN_BUNDLE__: "true" },
   resolve: {
     alias: {
       "@libitums/ui-lynx/overlay": fileURLToPath(

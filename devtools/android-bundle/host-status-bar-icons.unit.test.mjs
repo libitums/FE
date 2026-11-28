@@ -109,6 +109,8 @@ const CARRIER_PATHS = {
   episodeBanner: "screens/catalog-cover/EpisodeBannerScreen.tsx",
   roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
   roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
+  missionPreview: "screens/roleplay-mission/MissionPreviewScreen.tsx",
+  missionTalk: "screens/roleplay-mission/MissionTalkScreen.tsx",
   storyIntro: "screens/story-intro/StoryIntroScreen.tsx",
   storyCall: "screens/story-call/StoryCallScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
@@ -126,6 +128,7 @@ const appSession = (
     "catalog-final",
     "catalog-epilogue",
     "roleplay-story",
+    "roleplay-mission",
   ],
 ) => `function isFullBleedScreen(screen: Screen): boolean {
   return (
@@ -231,6 +234,11 @@ function healthyBase(overrides = {}) {
         "roleplay-story-screen",
       ),
       [CARRIER_PATHS.roleplayTalk]: carrierComponent("RoleplayTalkScreen", "roleplay-story-screen"),
+      [CARRIER_PATHS.missionPreview]: carrierComponent(
+        "MissionPreviewScreen",
+        "roleplay-story-screen",
+      ),
+      [CARRIER_PATHS.missionTalk]: carrierComponent("MissionTalkScreen", "mission-talk-screen"),
       [CARRIER_PATHS.storyIntro]: carrierComponent("StoryIntroScreen", "story-intro"),
       [CARRIER_PATHS.storyCall]: carrierComponent("StoryCallScreen", "story-call"),
       [CARRIER_PATHS.episodeBanner]: carrierComponent(
@@ -456,6 +464,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
     "catalog-story",
     "entry-basics-ready",
     "journey-entry",
+    "roleplay-mission",
     "roleplay-story",
   ]);
   // 밝은 전체 화면(ADR-0176) — 표지를 다는 컴포넌트가 없다.
@@ -479,6 +488,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (seven routes, eight C
   assert.match(routeText("roleplay-story"), /RoleplayPreviewScreen/);
   assert.match(routeText("roleplay-story"), /CatalogCoverScreen/);
   assert.match(routeText("roleplay-story"), /RoleplayTalkScreen/);
+  assert.match(routeText("roleplay-mission"), /MissionPreviewScreen/);
+  assert.match(routeText("roleplay-mission"), /MissionTalkScreen/);
 
   // DP1 — 지운 route · 컴포넌트는 등록부에 없다.
   for (const route of [

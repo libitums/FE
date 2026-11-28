@@ -1,0 +1,163 @@
+// 롤플레이 미션 새 칸(`ui-copy-roleplay-mission-extra.ts`)의 번역 초안 — 인도네시아어 · 베트남어 · 태국어 · 미얀마어. 원어민 검수 필요.
+
+import type { MissionExtraCopy } from "./ui-copy-roleplay-mission-extra";
+
+export const missionExtraId: MissionExtraCopy = {
+  success: {
+    title: "Misi berhasil!",
+    body: "Kamu sudah menyelesaikan tujuan wajib. Lanjutkan mengobrol untuk mencoba tujuan pilihan, atau selesai sekarang untuk melihat laporanmu.",
+    keepGoing: "Lanjutkan",
+    finish: "Selesai",
+    mark: "Misi berhasil",
+  },
+  quitSuccess: {
+    title: "Selesaikan misi ini?",
+    body: "Kamu sudah menyelesaikan tujuan wajib, jadi kami akan menilai percakapanmu dan menampilkan laporannya.",
+    confirm: "Selesai",
+  },
+  voice: {
+    transcribing: "Menuliskan ucapanmu…",
+    heardCheck: "Apakah aku mendengarnya dengan benar? Periksa, lalu kirim.",
+    heardNotKorean: "Itu tidak terdengar seperti bahasa Korea. Coba lagi?",
+    tooShort: "Bicara sedikit lebih lama lalu coba lagi.",
+    notHeard: "Kami tidak bisa mendengarmu. Coba lagi atau ketik.",
+    busy: "Terlalu banyak permintaan saat ini. Coba lagi sebentar lagi.",
+    serverDown: "Pengenalan suara tidak merespons. Coba lagi atau ketik.",
+    micDenied: "Izinkan akses mikrofon di Pengaturan untuk berbicara.",
+    maxLength: "Rekaman berhenti setelah 30 detik.",
+    replay: "Putar lagi",
+    autoPlay: "Putar otomatis",
+  },
+  report: {
+    scoreParts: "Rincian skormu",
+    partTask: "Tujuan",
+    partAccuracy: "Ketepatan",
+    partExpression: "Ungkapan target",
+    partHints: "Petunjuk",
+    tips: "Kamu bisa mengatakan",
+    focus: "Koreksi penting",
+    strengths: "Yang sudah bagus",
+    better: "Terdengar lebih alami",
+    nextStep: "Tantangan berikutnya",
+  },
+};
+
+export const missionExtraVi: MissionExtraCopy = {
+  success: {
+    title: "Nhiệm vụ thành công!",
+    body: "Bạn đã hoàn thành các mục tiêu bắt buộc. Hãy tiếp tục trò chuyện để thử các mục tiêu tùy chọn, hoặc kết thúc ngay để xem báo cáo.",
+    keepGoing: "Tiếp tục",
+    finish: "Kết thúc",
+    mark: "Nhiệm vụ thành công",
+  },
+  quitSuccess: {
+    title: "Kết thúc nhiệm vụ này?",
+    body: "Bạn đã hoàn thành các mục tiêu bắt buộc, nên chúng tôi sẽ chấm cuộc trò chuyện và cho bạn xem báo cáo.",
+    confirm: "Kết thúc",
+  },
+  voice: {
+    transcribing: "Đang chuyển thành chữ…",
+    heardCheck: "Mình nghe đúng chưa? Kiểm tra rồi gửi nhé.",
+    heardNotKorean: "Nghe không giống tiếng Hàn. Thử lại nhé?",
+    tooShort: "Hãy nói lâu hơn một chút rồi thử lại.",
+    notHeard: "Chúng tôi không nghe thấy bạn. Hãy thử lại hoặc gõ chữ.",
+    busy: "Hiện có quá nhiều yêu cầu. Hãy thử lại sau giây lát.",
+    serverDown: "Nhận dạng giọng nói không phản hồi. Hãy thử lại hoặc gõ chữ.",
+    micDenied: "Hãy cho phép truy cập micrô trong Cài đặt để nói.",
+    maxLength: "Ghi âm sẽ dừng sau 30 giây.",
+    replay: "Nghe lại",
+    autoPlay: "Tự động phát",
+  },
+  report: {
+    scoreParts: "Điểm của bạn được tính thế nào",
+    partTask: "Mục tiêu",
+    partAccuracy: "Độ chính xác",
+    partExpression: "Mẫu câu mục tiêu",
+    partHints: "Gợi ý",
+    tips: "Bạn có thể nói",
+    focus: "Lỗi cần nhớ",
+    strengths: "Điểm làm tốt",
+    better: "Nghe tự nhiên hơn",
+    nextStep: "Thử thách tiếp theo",
+  },
+};
+
+export const missionExtraTh: MissionExtraCopy = {
+  success: {
+    title: "ภารกิจสำเร็จ!",
+    body: "คุณทำเป้าหมายที่จำเป็นครบแล้ว คุยต่อเพื่อลองเป้าหมายเสริม หรือจบตอนนี้เพื่อดูรายงาน",
+    keepGoing: "คุยต่อ",
+    finish: "จบ",
+    mark: "ภารกิจสำเร็จ",
+  },
+  quitSuccess: {
+    title: "จบภารกิจนี้ไหม?",
+    body: "คุณทำเป้าหมายที่จำเป็นครบแล้ว เราจะให้คะแนนบทสนทนาและแสดงรายงานของคุณ",
+    confirm: "จบ",
+  },
+  voice: {
+    transcribing: "กำลังถอดเป็นข้อความ…",
+    heardCheck: "ฟังถูกไหม? ตรวจแล้วค่อยส่งนะ",
+    heardNotKorean: "ฟังไม่เหมือนภาษาเกาหลี ลองอีกครั้งไหม?",
+    tooShort: "พูดให้นานขึ้นอีกนิดแล้วลองใหม่",
+    notHeard: "เราไม่ได้ยินเสียงของคุณ ลองอีกครั้งหรือพิมพ์แทน",
+    busy: "ตอนนี้มีคำขอมากเกินไป ลองใหม่อีกสักครู่",
+    serverDown: "ระบบรู้จำเสียงไม่ตอบสนอง ลองอีกครั้งหรือพิมพ์แทน",
+    micDenied: "อนุญาตการเข้าถึงไมโครโฟนในการตั้งค่าเพื่อพูด",
+    maxLength: "การบันทึกจะหยุดหลัง 30 วินาที",
+    replay: "ฟังอีกครั้ง",
+    autoPlay: "เล่นอัตโนมัติ",
+  },
+  report: {
+    scoreParts: "คะแนนของคุณมาจากไหน",
+    partTask: "เป้าหมาย",
+    partAccuracy: "ความถูกต้อง",
+    partExpression: "สำนวนเป้าหมาย",
+    partHints: "คำใบ้",
+    tips: "คุณพูดแบบนี้ได้",
+    focus: "จุดแก้ที่สำคัญ",
+    strengths: "สิ่งที่ทำได้ดี",
+    better: "ฟังเป็นธรรมชาติกว่า",
+    nextStep: "ความท้าทายถัดไป",
+  },
+};
+
+export const missionExtraMy: MissionExtraCopy = {
+  success: {
+    title: "မစ်ရှင် အောင်မြင်ပြီ!",
+    body: "မဖြစ်မနေ ပန်းတိုင်များ ပြီးပါပြီ။ ရွေးချယ်နိုင်သော ပန်းတိုင်များ စမ်းရန် ဆက်ပြောပါ၊ သို့မဟုတ် အစီရင်ခံစာ ကြည့်ရန် ယခု ပြီးဆုံးပါ။",
+    keepGoing: "ဆက်ပြောရန်",
+    finish: "ပြီးဆုံးရန်",
+    mark: "မစ်ရှင် အောင်မြင်",
+  },
+  quitSuccess: {
+    title: "ဤမစ်ရှင်ကို ပြီးဆုံးမလား?",
+    body: "မဖြစ်မနေ ပန်းတိုင်များ ပြီးပြီဖြစ်၍ စကားပြောကို အမှတ်ပေးပြီး အစီရင်ခံစာ ပြပေးပါမယ်။",
+    confirm: "ပြီးဆုံးရန်",
+  },
+  voice: {
+    transcribing: "စာအဖြစ် ပြောင်းနေသည်…",
+    heardCheck: "မှန်မှန် ကြားခဲ့လား? စစ်ပြီးမှ ပို့ပါ။",
+    heardNotKorean: "ကိုရီးယားစကားလို မကြားရပါ။ ထပ်ကြိုးစားမလား?",
+    tooShort: "နည်းနည်း ပိုကြာကြာ ပြောပြီး ထပ်ကြိုးစားပါ။",
+    notHeard: "အသံ မကြားရပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် စာရိုက်ပါ။",
+    busy: "ယခု တောင်းဆိုမှု များနေပါသည်။ ခဏနေမှ ထပ်ကြိုးစားပါ။",
+    serverDown: "အသံမှတ်သားစနစ် တုံ့ပြန်မှု မရှိပါ။ ထပ်ကြိုးစားပါ သို့မဟုတ် စာရိုက်ပါ။",
+    micDenied: "စကားပြောရန် ဆက်တင်များတွင် မိုက်ခရိုဖုန်းကို ခွင့်ပြုပါ။",
+    maxLength: "အသံဖမ်းခြင်းသည် စက္ကန့် 30 ပြည့်လျှင် ရပ်ပါမယ်။",
+    replay: "ထပ်နားထောင်ရန်",
+    autoPlay: "အလိုအလျောက်ဖွင့်",
+  },
+  report: {
+    scoreParts: "သင့်အမှတ် ပေါင်းပုံ",
+    partTask: "ပန်းတိုင်",
+    partAccuracy: "တိကျမှု",
+    partExpression: "ပစ်မှတ် အသုံးအနှုန်း",
+    partHints: "အရိပ်အမြွက်",
+    tips: "ဤသို့ ပြောနိုင်ခဲ့သည်",
+    focus: "အရေးကြီး ပြင်ဆင်ချက်",
+    strengths: "ကောင်းခဲ့သည့်အချက်",
+    better: "ပိုသဘာဝကျသည်",
+    nextStep: "နောက်စိန်ခေါ်မှု",
+  },
+};

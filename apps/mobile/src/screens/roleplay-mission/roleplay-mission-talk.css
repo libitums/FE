@@ -1,0 +1,295 @@
+/* 롤플레이 미션 — 대화 화면(ADR-0193). 시안이 없어 기존 화면의 값을 그대로 옮겼습니다 — 위 띠는 롤플레이 대화
+   (`roleplay-story-screen.css`)의 짙은 장면 · 머리, 가운데 · 아래는 메신저 방(`messenger-chat.css`)의 바탕 · 입력 줄입니다.
+   토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). z-index는 쓰지 않습니다 — 문서 순서가 겹침 순서입니다(ADR-0022).
+   움직임이 없습니다(ADR-0053) — 말풍선 등장 · 입력 중 점은 공용 채팅 부품이 집니다. */
+
+.mission-talk-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-background-primary);
+}
+
+/* ---------------------------------------------------------------- 위 띠 — 장면(작게) · 머리 · 목표 */
+
+.mission-talk-top {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-gray-950);
+}
+
+.mission-talk-scene {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 장면 위 글자가 읽히도록 띠 전체를 덮는 그늘 — 롤플레이 대화의 위 그늘과 같은 색. */
+.mission-talk-scene-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: linear-gradient(
+    to bottom,
+    var(--libitum-color-gray-950),
+    rgba(26, 28, 32, 0.72)
+  );
+}
+
+.mission-talk-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x);
+}
+
+.mission-talk-header-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+/* 한 줄로 두고 넘치면 말줄임 — 큰 글자에서 둘째 줄이 아래 남은 턴 줄과 겹치던 것(QA 5). */
+.mission-talk-title {
+  text-overflow: ellipsis;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.mission-talk-turns {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+/* 목표 체크리스트 — 큰 글자에서는 띠가 커지지 않게 스크롤합니다(대화 로그 몫을 남김). */
+.mission-goals-scroll {
+  max-height: calc(var(--libitum-spacing-48) * 3);
+}
+
+.mission-goals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-6);
+  padding: 0 var(--libitum-layout-screen-padding-x) var(--libitum-spacing-12);
+}
+
+.mission-goal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.mission-goal-mark {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+}
+
+.mission-goal-mark-done {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.mission-goal-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.mission-goal-label {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 필수/선택 알약 — 롤플레이 미리보기의 알약과 같은 면. */
+.mission-goal-tag {
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.16);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+/* ---------------------------------------------------------------- 가운데 — 대화 */
+
+.mission-talk-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 내 줄 — 줄 폭을 다 써서(정해진 폭) 아래 교정 카드의 글 높이가 바르게 잡히게 합니다(QA 2). 말풍선은 오른쪽 끝. */
+.mission-talk-mine {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 끝 · 채점 중 줄 — 로그 끝 가운데의 회색 글(메신저 고지 줄과 같은 결). */
+.mission-talk-status {
+  align-self: center;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+/* ---------------------------------------------------------------- 아래 — 입력 줄(메신저 입력 줄과 같은 값) */
+
+.mission-composer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-background-primary);
+}
+
+.mission-composer-tools {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x) 0;
+}
+
+.mission-composer-row {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x);
+}
+
+.mission-composer-pill {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.mission-composer-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border-width: 0;
+  background-color: transparent;
+  color: var(--libitum-color-fg-neutral);
+  caret-color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.mission-composer-round {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.mission-composer-round:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+/* 마이크 — 대본형 롤플레이 마이크(`.roleplay-story-mic` · 공용 `SpeechMic`)와 같은 말: 주색 면 · 흰 아이콘, 둘레의 옅은 주색 고리
+   (주색 24%, 녹음 중 48% — 맞는 토큰이 없어 대본형과 같은 값). 고리 몫만큼 보내기보다 큽니다(48 — 44pt 넘음). */
+.mission-composer-mic {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-width: var(--libitum-spacing-4);
+  border-style: solid;
+  border-color: rgba(244, 107, 24, 0.24);
+}
+
+.mission-composer-mic-listening {
+  border-color: rgba(244, 107, 24, 0.48);
+}
+
+.mission-composer-round-disabled {
+  opacity: var(--libitum-opacity-disabled);
+}
+
+.mission-composer-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+/* 힌트 · 듣는 중 안내 — 입력 줄 위 작은 글 단추(롤플레이 대화의 「Show hint」 링크와 같은 결). */
+.mission-composer-link {
+  padding: var(--libitum-spacing-4) 0;
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+}
+
+.mission-composer-link-disabled {
+  color: var(--libitum-color-fg-disabled);
+}
+
+.mission-composer-note {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: right;
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}

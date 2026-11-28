@@ -71,6 +71,26 @@ test("[DP-I1] 최종 설정: render-dev-probe.tsx를 부수 효과 없는 모듈
   expect(sideEffectFreeRules).toHaveLength(1);
 });
 
+test("[MD-I1] 최종 설정: roleplay-mission-dev-fakes.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0193)", () => {
+  // 이 규칙이 빠지면 release에서 `__DEV__` 호출은 죽어도 미션 가짜 출처 · 가짜 기기 · fixture가 번들에 남습니다.
+  const fakesModule = resolve(import.meta.dirname, "roleplay-mission-dev-fakes.ts");
+  const sideEffectFreeRules = bundlerConfig.module.rules.filter(
+    (rule) =>
+      rule?.sideEffects === false && rule.test instanceof RegExp && rule.test.test(fakesModule),
+  );
+  expect(sideEffectFreeRules).toHaveLength(1);
+});
+
+test("[ME-I1] 최종 설정: roleplay-mission-entry.ts를 부수 효과 없는 모듈로 표시하는 규칙이 있다(ADR-0193)", () => {
+  // 이 규칙이 빠지면 스위치가 꺼진 release에서도 미션 화면 · 문구 · CSS가 번들에 남습니다(약 150 kB).
+  const entryModule = resolve(import.meta.dirname, "roleplay-mission-entry.ts");
+  const sideEffectFreeRules = bundlerConfig.module.rules.filter(
+    (rule) =>
+      rule?.sideEffects === false && rule.test instanceof RegExp && rule.test.test(entryModule),
+  );
+  expect(sideEffectFreeRules).toHaveLength(1);
+});
+
 test("[FS-I1] 최종 설정: 메인 스레드에서는 ui-lynx 모듈을 부수 효과 있음으로 둔다(ADR-0149 「줄인 기록」 1)", () => {
   // 메인 스레드는 스플래시 밖 화면을 그리지 않아(render-app-content.tsx) 그 화면만 쓰는 ui-lynx 컴포넌트의 import가
   // 쓰이지 않게 됩니다. ui-lynx는 `sideEffects`에 CSS만 적어 두어, 이 규칙이 없으면 번들러가 그 모듈을 통째로 버리고

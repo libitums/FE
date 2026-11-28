@@ -1,0 +1,106 @@
+{
+  "missionId": "u01-water",
+  "scene": "낮, 익선동 골목 어귀의 편의점 계산대.",
+  "title": { "ko": "편의점에서 계산하기", "en": "Pay at the convenience store" },
+  "counterpart": { "label": "편의점 점원", "characterId": null },
+  "opening": {
+    "messageId": "8e4fab5d-7f40-4ca1-8d84-5a6b7c8d9ea3",
+    "ko": "봉투 드릴까요?",
+    "roman": "bongtu deurilkkayo?",
+    "en": "Would you like a bag?"
+  },
+  "goals": [
+    { "id": "bag", "required": true, "label": { "en": "Answer about the bag" } },
+    { "id": "pay", "required": true, "label": { "en": "Say how you'll pay" } },
+    { "id": "receipt", "required": false, "label": { "en": "Answer about the receipt" } },
+    { "id": "ask", "required": false, "label": { "en": "Ask for something else" } }
+  ],
+  "turnLimit": 8,
+  "goalWords": {
+    "bag": ["봉투", "괜찮아요", "필요 없어요"],
+    "pay": ["카드", "현금"],
+    "receipt": ["영수증"],
+    "ask": ["따뜻한", "보리차", "있어요?"]
+  },
+  "expressionWords": { "patt:b3d9256a": "로 할게요" },
+  "replies": {
+    "bag": {
+      "ko": "네. 삼천 원입니다. 결제는 어떻게 하시겠어요?",
+      "en": "Okay. That's 3,000 won. How would you like to pay?"
+    },
+    "pay": {
+      "ko": "카드 받았습니다. 영수증 드릴까요?",
+      "en": "I've got your card. Would you like a receipt?"
+    },
+    "receipt": { "ko": "네, 여기 있습니다.", "en": "Sure, here you go." },
+    "ask": {
+      "ko": "따뜻한 물은 없고요, 온장고에 따뜻한 보리차가 있어요. 천오백 원이에요.",
+      "en": "We don't have hot water, but there's warm barley tea in the warmer. It's 1,500 won."
+    }
+  },
+  "nudge": { "ko": "봉투 필요하세요?", "en": "Do you need a bag?" },
+  "closing": { "ko": "감사합니다. 안녕히 가세요.", "en": "Thank you. Have a good day." },
+  "timeUp": {
+    "ko": "죄송합니다, 뒤에 손님이 계셔서요. 안녕히 가세요.",
+    "en": "Sorry, there are customers waiting. Have a good day."
+  },
+  "fixes": [
+    {
+      "kind": "better",
+      "from": "봉투 안 필요해요",
+      "to": "봉투는 괜찮아요",
+      "reason": "괜찮아요 is the usual polite way to turn down a bag."
+    },
+    {
+      "kind": "correction",
+      "from": "카드으로",
+      "to": "카드로",
+      "reason": "After a vowel, use 로 instead of 으로."
+    }
+  ],
+  "focusReason": "After a vowel, use 로.",
+  "hintExamples": {
+    "bag": {
+      "ko": "봉투는 괜찮아요.",
+      "roman": "bongtuneun gwaenchanayo.",
+      "meaning": "I don't need a bag."
+    },
+    "pay": { "ko": "카드로 할게요.", "roman": "kadeuro halgeyo.", "meaning": "I'll pay by card." },
+    "receipt": {
+      "ko": "영수증 주세요.",
+      "roman": "yeongsujeung juseyo.",
+      "meaning": "A receipt, please."
+    },
+    "ask": {
+      "ko": "따뜻한 물 있어요?",
+      "roman": "ttatteutan mul isseoyo?",
+      "meaning": "Do you have hot water?"
+    }
+  },
+  "heard": [
+    { "text": "봉투는 괜찮아요.", "autoSend": true, "reason": "ok" },
+    { "text": "카드로 할게요.", "autoSend": false, "reason": "low_confidence" },
+    { "error": "speech_empty" },
+    { "text": "receipt please", "autoSend": false, "reason": "not_korean" },
+    { "error": "speech_busy" },
+    { "error": "speech_unavailable" },
+    { "text": "따뜻한 물 있어요?", "autoSend": true, "reason": "ok" }
+  ],
+  "report": {
+    "expressions": [
+      { "id": "patt:b3d9256a", "ko": "{수단}로 할게요.", "meaning": "I'll pay with {method}." }
+    ],
+    "retryFor": { "patt:b3d9256a": { "ko": "카드로 할게요.", "meaning": "I'll pay by card." } },
+    "headline": {
+      "success": "You answered about the bag and paid — mission complete!",
+      "fail": "You got started — you haven't paid yet."
+    },
+    "summary": {
+      "success": "You turned down the bag politely and paid without trouble. Next time, try asking if they have something warm. You're ready for the next store visit!",
+      "fail": "You got part of the way. Try saying how you'll pay before the time runs out."
+    },
+    "strengthGoal": "bag",
+    "strengthNote": "A short, polite answer the clerk understood right away.",
+    "nextStep": "Play again and ask if they have hot water."
+  }
+}

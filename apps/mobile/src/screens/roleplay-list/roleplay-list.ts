@@ -3,6 +3,11 @@
 import type { Motion } from "@libitums/ui-lynx/motion";
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
+import {
+  missionFormLabel,
+  missionItemBadgeSpoken,
+  missionItemSubtitle,
+} from "../roleplay-mission/roleplay-mission-list-entry";
 import type {
   PremiumRoleplayItem,
   PremiumRoleplayLock,
@@ -13,13 +18,20 @@ import type {
   RoleplayUnitForm,
 } from "./roleplay-list.contract";
 
+// 미션 항목의 낱말 · 배지는 미션 쪽 입구에서 옵니다 — 스위치가 꺼진 release에서는 미션 항목이 없고 미션 문구도 번들에 없습니다
+// (`__ROLEPLAY_MISSION_IN_BUNDLE__`, ADR-0193). 그 삼항을 풀지 않습니다(ME-S2).
 export function roleplayFormLabel(form: RoleplayUnitForm, copy: UiCopy): string {
-  return copy.roleplay.form[form];
+  if (form !== "mission") return copy.roleplay.form[form];
+  return __ROLEPLAY_MISSION_IN_BUNDLE__ ? missionFormLabel(copy.learnerProfile.language) : "";
 }
 
-/** 카드 둘째 줄입니다 — 형태 낱말에 대사 수를 덧붙입니다. */
+/** 카드 둘째 줄입니다 — 형태 낱말에 대사 수(미션은 목표 수 · 최고 기록)를 덧붙입니다. */
 export function roleplayItemSubtitle(item: RoleplayItem, copy: UiCopy): string {
-  return `${roleplayFormLabel(item.form, copy)} · ${copy.roleplayStory.lineCount(item.lineCount)}`;
+  if (item.form === "story")
+    return `${roleplayFormLabel(item.form, copy)} · ${copy.roleplayStory.lineCount(item.lineCount)}`;
+  return __ROLEPLAY_MISSION_IN_BUNDLE__
+    ? missionItemSubtitle(item, copy.learnerProfile.language)
+    : "";
 }
 
 // 잠긴 항목은 이름 뒤에 상태를 붙입니다 — 구분자와 낱말은 문구표의 `common.locked`이고
@@ -29,7 +41,11 @@ export function roleplayItemAccessibilityLabel(
   locked: boolean,
   copy: UiCopy,
 ): string {
-  const name = `${item.title}, ${roleplayItemSubtitle(item, copy)}`;
+  const badge =
+    __ROLEPLAY_MISSION_IN_BUNDLE__ && item.form === "mission" && item.reportBadge !== null
+      ? `, ${missionItemBadgeSpoken(item.reportBadge, copy.learnerProfile.language)}`
+      : "";
+  const name = `${item.title}, ${roleplayItemSubtitle(item, copy)}${badge}`;
   return locked ? copy.common.locked(name) : name;
 }
 

@@ -129,7 +129,9 @@ export function RoleplayListScreen({
                     <RoleplayCard
                       key={item.unitId}
                       item={item}
-                      locked={!section.unlocked}
+                      locked={
+                        !section.unlocked || (item.form === "mission" && item.locked === true)
+                      }
                       layout="row"
                       onSelect={onSelectItem}
                     />

@@ -20,7 +20,7 @@ import { deeplinkActions } from "./deeplink-target";
 import { useLearningTrail } from "./learning-trail-port";
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
-import { roleplaySectionsOf } from "./roleplay-sections";
+import { useRoleplaySections } from "./roleplay-sections";
 import { useAccountState } from "./use-account-state";
 import { useSessionCatalog } from "./use-session-catalog";
 import type { AppSessionContent } from "./episode-content";
@@ -121,7 +121,7 @@ export function AppSession({
 
   // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
   const catalog = { episodeContent, catalogSections, catalogProgress };
-  const roleplaySections = roleplaySectionsOf({
+  const roleplaySections = useRoleplaySections({
     catalog,
     learnerFill: learner.learnerFill,
     episodeLabel: uiCopyFor(entryLanguage).catalogMap.episodeLabel,
