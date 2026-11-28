@@ -4,6 +4,7 @@
 import type { ChatCorrection, ChatWordsResult } from "./chat-feedback.contract";
 import type { RemoteSendFailure } from "./chat-remote.contract";
 import type { ChatCrisisResource, ChatNoticeKind, ChatReplyIdea } from "./chat-source.contract";
+import { ideasRefOf, type ChatIdeasRef } from "./chat-suggestion-ref";
 import { correctionOf, crisisOf, ideasOf, noticeKindOf, segmentText } from "./companion-parse";
 import { chatWordsOf } from "./companion-chat-words";
 
@@ -25,6 +26,8 @@ export type TurnState = {
   /** 이 글로 얻은 채팅 단어(ADR-0170) — `correction` 본문의 `chatWords`. */
   readonly chatWords: { readonly userMessageId: string; readonly result: ChatWordsResult } | null;
   readonly ideas: readonly ChatReplyIdea[] | null;
+  /** 그 칩의 메시지 · 보기마다 서버 자리(ADR-0210 D1) — 모르면 없음. */
+  readonly ideasRef?: ChatIdeasRef;
   readonly crisis: readonly ChatCrisisResource[] | null;
   readonly finished: boolean;
   readonly failure: RemoteSendFailure | null;
@@ -130,7 +133,11 @@ export function applyTurnEvent(state: TurnState, event: string, data: string): T
     case "suggestions": {
       if (payload.status !== "ok") return state;
       const ideas = ideasOf(payload.items);
-      return ideas === null ? state : { ...state, ideas };
+      if (ideas === null) return state;
+      const owner =
+        typeof payload.messageId === "string" ? payload.messageId : state.assistantMessageId;
+      const ideasRef = ideasRefOf(owner, payload.items);
+      return ideasRef === null ? { ...state, ideas } : { ...state, ideas, ideasRef };
     }
     case "crisis": {
       const crisis = crisisOf(payload);

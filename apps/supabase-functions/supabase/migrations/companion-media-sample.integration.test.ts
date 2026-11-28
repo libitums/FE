@@ -97,6 +97,7 @@ beforeEach(async () => {
 });
 
 test("MS1. 제안 — 그 인물의 예시가 켜져 있고 스냅샷을 한 번도 만든 적이 없을 때만 available", async () => {
+  await message(learner); // 제안은 첫 인사가 있는 대화에만(20270115, MS18)
   expect(await offer()).toMatchObject({ available: true });
   expect(await offer("mina")).toMatchObject({ available: false });
   await db.admin.query("update companion.media_samples set active = false");
@@ -216,10 +217,10 @@ test("MS8. 대화를 쓰지 못하는 계정(14세 미만 · 일시 차단)은 �
 // ------------------------------------------------------------------ 예시 음성(20261230) — 스냅샷 다음 단계에서 미리 만든 음성 하나
 
 test("MS9. 음성 제안 — 그 인물의 음성 예시가 켜져 있고 음성을 한 번도 만든 적이 없을 때만 voice. 사진 제안과 따로 간다", async () => {
+  const id = await message(learner); // 제안은 첫 인사가 있는 대화에만(20270115)
   expect(await offer()).toEqual({ available: true, voice: false });
   await addVoiceSample();
   expect(await offer()).toEqual({ available: true, voice: true });
-  const id = await message(learner);
   await db.admin.query(
     `insert into companion.media (user_id, character_id, message_id, kind, status, charge, cost, storage_path, mime, text)
      values ($1, 'duksu', $2, 'voice', 'complete', 'voice', 15, $3, 'audio/mpeg', '안녕')`,
@@ -267,4 +268,198 @@ test("MS11. 음성 막는 경우 — 음성 예시가 없으면 no_sample, 음�
   await expect(
     app.query("select public.companion_claim_sample_snapshot($1, 'video')", [id]),
   ).rejects.toMatchObject({ code: "22023" });
+});
+
+// ------------------------------------------------------------------ 대상은 그 대화의 첫 인사(20270113, 이슈 #648)
+// 예시 사진 · 음성은 덕수쌤 첫 인사에 맞춰 미리 만든 파일이다. 배포된 앱은 가장 최근 캐릭터 메시지를 보내므로, 받기는 받은 id를 믿지 않고
+// 그 메시지가 속한 대화의 첫 인사(origin greeting)로 바꿔 붙인다. 자막(`source` → `media.line`)도 첫 인사의 글이다.
+
+const REPLY = "좋아요! 오늘은 뭘 배워 볼까요?";
+
+/** 첫 인사 → 학습자 답 → 덕수쌤 응답(turn) → 선톡(proactive)이 있는 대화. */
+async function room(user: string) {
+  const greeting = await message(user);
+  const conversation = (
+    await db.admin.query("select conversation_id from companion.messages where id = $1", [greeting])
+  ).rows[0].conversation_id as string;
+  const assistant = async (origin: string, minutes: number) =>
+    (
+      await db.admin.query(
+        `insert into companion.messages (conversation_id, user_id, role, origin, status, segments, created_at)
+         values ($1, $2, 'assistant', $3, 'complete', $4::jsonb, now() - make_interval(mins => $5)) returning id`,
+        [
+          conversation,
+          user,
+          origin,
+          JSON.stringify([{ kind: "speech", text: REPLY, translation: "Great!" }]),
+          minutes,
+        ],
+      )
+    ).rows[0].id as string;
+  const answer = await message(user, "duksu", "user");
+  const reply = await assistant("turn", 50);
+  const proactive = await assistant("proactive", 10);
+  return { conversation, greeting, answer, reply, proactive };
+}
+type Placed = Claim & { media?: { messageId: string; line: { ko: string; en: string } } };
+const placed = async (messageId: string, kind: "snapshot" | "voice") =>
+  (await app.query("select public.companion_claim_sample_snapshot($1, $2) as c", [messageId, kind]))
+    .rows[0].c as Placed;
+const sourceOf = async (mediaId: string | undefined) =>
+  (await db.admin.query("select message_id, source from companion.media where id = $1", [mediaId]))
+    .rows[0] as { message_id: string; source: { text: string }[] };
+
+test("MS12. 응답(turn)의 id로 받아도 사진 · 음성 모두 첫 인사에 붙고, 자막도 첫 인사의 글이다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  for (const kind of ["snapshot", "voice"] as const) {
+    const got = await placed(chat.reply, kind);
+    expect(got.result).toBe("ok");
+    // 응답에 실린 id가 실제로 붙은 메시지다 — 새 앱은 이것으로 자리를 맞춘다.
+    expect(got.media?.messageId).toBe(chat.greeting);
+    expect(got.media?.line).toEqual({ ko: GREETING, en: "Hello!" });
+    const row = await sourceOf(got.media?.id);
+    expect(row.message_id).toBe(chat.greeting);
+    expect(row.source.map((seg) => seg.text)).toEqual([GREETING]);
+  }
+});
+
+test("MS13. 선톡(proactive)의 id로 받아도 첫 인사에 붙는다", async () => {
+  const chat = await room(learner);
+  const got = await placed(chat.proactive, "snapshot");
+  expect(got.result).toBe("ok");
+  expect(got.media?.messageId).toBe(chat.greeting);
+});
+
+test("MS14. 첫 인사의 id면 그대로 그 메시지에 붙는다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  for (const kind of ["snapshot", "voice"] as const) {
+    const got = await placed(chat.greeting, kind);
+    expect(got.result).toBe("ok");
+    expect(got.media?.messageId).toBe(chat.greeting);
+  }
+});
+
+test("MS15. 대화에 첫 인사가 없으면(숨김 · 지워짐) 받지 않는다 — not_eligible, 행도 생기지 않는다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  await db.admin.query("update companion.messages set hidden = true where id = $1", [
+    chat.greeting,
+  ]);
+  expect((await placed(chat.reply, "snapshot")).result).toBe("not_eligible");
+  await db.admin.query("delete from companion.messages where id = $1", [chat.greeting]);
+  expect((await placed(chat.reply, "snapshot")).result).toBe("not_eligible");
+  expect((await placed(chat.reply, "voice")).result).toBe("not_eligible");
+  const rows = await db.admin.query(
+    "select count(*)::int as n from companion.media where user_id = $1",
+    [learner],
+  );
+  expect(rows.rows[0].n).toBe(0);
+  // 제안도 꺼진다(20270115) — 받기가 거절할 단계를 세우지 않는다. 새 첫 인사가 오면(대화 초기화 뒤) 다시 제안한다.
+  expect(await offer()).toEqual({ available: false, voice: false });
+});
+
+test("MS16. 계정당 한 번 — 응답으로 받은 뒤 첫 인사 · 다른 메시지로 다시 불러도 already로 같은 행", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  for (const kind of ["snapshot", "voice"] as const) {
+    const first = await placed(chat.reply, kind);
+    expect(first.result).toBe("ok");
+    for (const id of [chat.greeting, chat.proactive]) {
+      const again = await placed(id, kind);
+      expect(again.result).toBe("already");
+      expect(again.media?.id).toBe(first.media?.id);
+    }
+  }
+  const rows = await db.admin.query(
+    "select count(*)::int as n from companion.media where user_id = $1 and charge = 'sample'",
+    [learner],
+  );
+  expect(rows.rows[0].n).toBe(2);
+});
+
+test("MS17. 다른 사람 대화의 메시지 id면(첫 인사 · 응답 모두) forbidden — 남의 첫 인사에 붙지 않는다", async () => {
+  await addVoiceSample();
+  const theirs = await room(other);
+  for (const id of [theirs.greeting, theirs.reply]) {
+    expect((await placed(id, "snapshot")).result).toBe("forbidden");
+    expect((await placed(id, "voice")).result).toBe("forbidden");
+  }
+  const rows = await db.admin.query("select count(*)::int as n from companion.media");
+  expect(rows.rows[0].n).toBe(0);
+});
+
+// ------------------------------------------------------------------ 제안은 받을 수 있는 사람에게만(20270115, 가이드 점검 2)
+// 제안이 「받은 적 없음」만 보고 받기는 14세 미만 · 일시 차단 · 첫 인사 없음을 거절해, 받을 수 없는 사람에게 예시 단계가 서고 회색 줄이 섰다.
+
+test("MS18. 제안 — 그 인물과의 대화에 쓸 수 있는 첫 인사가 있어야 한다(대화 없음 · 첫 인사 없음 · 숨김은 둘 다 false)", async () => {
+  await addVoiceSample();
+  expect(await offer()).toEqual({ available: false, voice: false });
+  const chat = await room(learner);
+  expect(await offer()).toEqual({ available: true, voice: true });
+  // 다른 인물의 대화에 첫 인사가 있어도 이 인물의 제안은 아니다.
+  expect(await offer("mina")).toEqual({ available: false, voice: false });
+  await db.admin.query("update companion.messages set hidden = true where id = $1", [
+    chat.greeting,
+  ]);
+  expect(await offer()).toEqual({ available: false, voice: false });
+  await db.admin.query(
+    "update companion.messages set hidden = false, status = 'failed' where id = $1",
+    [chat.greeting],
+  );
+  expect(await offer()).toEqual({ available: false, voice: false });
+});
+
+test("MS19. 제안 — 14세 미만 · 일시 차단 중이면 둘 다 false, 풀리면 다시 제안한다(받기와 같은 막음)", async () => {
+  await addVoiceSample();
+  await message(learner);
+  expect(await offer()).toEqual({ available: true, voice: true });
+  await db.admin.query(
+    "update companion.profiles set birth_year = extract(year from now())::int - 12 where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: false, voice: false });
+  // 14세 이상 미성년은 받기처럼 막지 않는다.
+  await db.admin.query(
+    "update companion.profiles set birth_year = extract(year from now())::int - 15 where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: true, voice: true });
+  await db.admin.query("update companion.profiles set birth_year = 1990 where user_id = $1", [
+    learner,
+  ]);
+  await db.admin.query(
+    `insert into companion.moderation_state (user_id, blocked_until) values ($1, now() + interval '1 hour')
+     on conflict (user_id) do update set blocked_until = excluded.blocked_until`,
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: false, voice: false });
+  await db.admin.query(
+    "update companion.moderation_state set blocked_until = now() - interval '1 minute' where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toEqual({ available: true, voice: true });
+});
+
+test("MS20. 제안이 true면 받기도 ok다 — 제안과 받기의 조건이 같다", async () => {
+  await addVoiceSample();
+  const chat = await room(learner);
+  expect(await offer()).toEqual({ available: true, voice: true });
+  expect((await placed(chat.reply, "snapshot")).result).toBe("ok");
+  expect((await placed(chat.reply, "voice")).result).toBe("ok");
+  expect(await offer()).toEqual({ available: false, voice: false });
+});
+
+test("MS21. 생년을 모르거나(null) 프로필 행이 없어도 오류 없이 제안한다 — 받기와 같이 14세 미만으로 보지 않는다(리뷰)", async () => {
+  await message(learner);
+  await db.admin.query(
+    "update companion.profiles set birth_year = null, age_source = null where user_id = $1",
+    [learner],
+  );
+  expect(await offer()).toMatchObject({ available: true });
+  await db.admin.query("delete from companion.profiles where user_id = $1", [learner]);
+  expect(await offer()).toMatchObject({ available: true });
+  const id = await message(learner);
+  expect((await claim(id)).result).toBe("ok");
 });

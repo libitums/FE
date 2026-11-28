@@ -50,6 +50,10 @@ export const learnerProfileMy: LearnerProfileCopy = {
       jumpTo: (letter) => `${letter} စာလုံးသို့`,
       jumpBar: "စာလုံးသို့ သွားရန်",
     },
+    birthYear: {
+      title: "ဘယ်နှစ်မှာ မွေးလဲ",
+      caption: "အက်ပ်ကို သင့်အသက်အရွယ်နှင့် ကိုက်ညီအောင် ဒါကို သုံးပါတယ်။ ဘယ်သူမှ မမြင်ရပါ။",
+    },
   },
   settings: {
     title: "အမည်နှင့် နိုင်ငံ",

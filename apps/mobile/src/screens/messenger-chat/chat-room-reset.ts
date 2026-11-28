@@ -4,6 +4,7 @@
 // - 방 지우기(`deleteRoom`): 메모리에서만 방을 뺍니다(테스트 · 옛 길).
 
 import type { RoomState } from "./chat-fixture-room";
+import type { UnreadSeen } from "./chat-last-seen";
 import type { ChatRemote } from "./chat-remote.contract";
 import type { ChatClearOutcome, ChatMessage } from "./chat-source.contract";
 
@@ -19,6 +20,8 @@ export type RoomResetDeps = {
   readonly isOpen: (roomId: string) => boolean;
   /** 방을 출처에서 뺍니다(`deleteRoom`). */
   readonly forget: (roomId: string) => void;
+  /** 본 마지막 인물 메시지(ADR-0213 개정) — 비운 서버 방은 빈 대화를 본 것으로 둡니다. */
+  readonly seen?: UnreadSeen | null;
 };
 
 /** 방을 막 해금한 빈 모습으로 되돌립니다 — 접근(열림) · 설정 · 입력 막힘은 그대로입니다. */
@@ -29,6 +32,10 @@ export function emptyRoom(room: RoomState, opening: ChatMessage | null): void {
   room.remoteHistory = "idle";
   room.remoteIdeas = null;
   room.remoteIdeasOrigin = null;
+  room.remoteIdeasRef = null;
+  room.greetingId = null;
+  room.olderHidden = false;
+  room.samples = [];
   room.unsent = [];
   room.recovery = "none";
   room.unread = 0;
@@ -65,6 +72,7 @@ export function roomResetMethods(deps: RoomResetDeps) {
       }
       clearHandles(room);
       emptyRoom(room, server ? null : deps.openingOf(room));
+      if (server) deps.seen?.reset(room.seed.counterpart.id);
       changed(room);
       if (server && deps.isOpen(roomId)) deps.loadRoom?.(roomId);
       return "cleared";

@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-libra
 
 import { recognized, stubSpeechHost } from "../../lib/speech-host.test-support";
 import type { SpeechHostResult } from "../../lib/speech-host.test-support";
+import { tapSpeakWordPrimary } from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
@@ -67,7 +68,7 @@ test("SWH1. 인식 실패로 선 안내 줄이 자리를 잡으면 그 줄을 �
   const calls = recordQueries();
   mount();
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  tapSpeakWordPrimary();
   expect(screen.getByTestId("speak-word-hint")).toHaveTextContent(
     "Speech recognition isn't available right now",
   );
@@ -94,14 +95,15 @@ test("SWH2. 준비 국면에서는 안내 줄이 없어 끌어오지 않는다",
   expect(hintScrolls(calls)).toEqual([]);
 });
 
-test("SWH3. 들은 뒤의 「Tap the screen to continue」 줄은 끌어오지 않는다 — 판정 상자를 가리지 않게", () => {
+test("SWH3. 들은 뒤에는 안내 줄이 없어 끌어오지 않는다 — 결과 시트가 대신 선다(시안 S2)", () => {
   stubSpeechHost({ result: () => recognized("카드") });
   const calls = recordQueries();
   mount();
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  tapSpeakWordPrimary();
   expect(screen.getByTestId("speak-word-content")).toHaveAttribute("data-phase", "heard");
-  layOut("speak-word-hint");
+  expect(screen.queryByTestId("speak-word-hint")).toBeNull();
+  expect(screen.getByTestId("speak-word-result")).toBeInTheDocument();
 
   expect(hintScrolls(calls)).toEqual([]);
 });

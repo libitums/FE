@@ -2,6 +2,7 @@
 // `chat-fixture-remote.ts`가 방을 열 때 · 출처가 인물을 해금할 때 부릅니다. 던지지 않습니다.
 
 import { setRemoteIdeas, type RoomState } from "./chat-fixture-room";
+import { bubbleOwner } from "./chat-media-rules";
 import type { ChatRemote, RemoteGreeting } from "./chat-remote.contract";
 
 export type RemoteGreetingDeps = {
@@ -24,7 +25,11 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
   const place = (room: RoomState, greeting: RemoteGreeting) => {
     const known = new Set(room.messages.map((message) => message.id));
     room.messages = [...greeting.messages.filter((m) => !known.has(m.id)), ...room.messages];
-    if (room.pendingReplies === 0) setRemoteIdeas(room, greeting.ideas, "greeting");
+    // 무료 예시의 대상(ADR-0146 개정 ⟨예시 대상⟩) — 인사 말풍선의 메시지 id. 안내 줄뿐이면 그대로.
+    const owner = greeting.messages.map(bubbleOwner).find((id) => id !== null);
+    if (room.greetingId === null && owner !== undefined) room.greetingId = owner;
+    if (room.pendingReplies === 0)
+      setRemoteIdeas(room, greeting.ideas, "greeting", greeting.ideasRef);
   };
 
   return {
@@ -62,7 +67,7 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
         const bubbles = greeting.messages.filter((message) => message.kind !== "notice");
         if (bubbles.length === 0) return;
         const before = room.messages.length;
-        place(room, { messages: bubbles, ideas: greeting.ideas });
+        place(room, { ...greeting, messages: bubbles });
         if (room.messages.length > before && !deps.isOpen(roomId)) room.unread += 1;
         changed(room);
       })();

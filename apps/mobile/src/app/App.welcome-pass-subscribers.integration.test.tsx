@@ -12,6 +12,7 @@ import type { PlanEntitlements } from "../lib/plans-api";
 import { setRewardTicketPass, setWelcomeTicketPass } from "../lib/reward-ticket-pass";
 import { ticketsUnlimited } from "../lib/unlimited-tickets";
 import { catalogV1 } from "../screens/plans/plans.test-support";
+import { welcomePassShownStorageKey } from "./welcome-pass-record";
 
 // `integration` 계층(WP-I5 ~ I9, ADR-0186 개정 2 — 2026-11-25 사용자 「이미 구독한 사람한텐 뜨면 안된다」): 만든 지 한 시간 된
 // 계정이라도 활성 구독이 하나라도 있으면(요금제 종류 무관) 첫날 무제한 칩 · 남은 시간 판 · 티켓 판정이 없다. 구독 상태를 아직
@@ -87,6 +88,8 @@ async function boot(): Promise<void> {
       }),
     ],
     [learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue],
+    // 가입 보상 창을 계정 생성 때 이미 본 계정(ADR-0186 개정 4 — 시작은 창이 선 때).
+    [welcomePassShownStorageKey("wp-user"), String(createdAt)],
   ]);
   const refreshedBody = JSON.stringify({
     access_token: `e30.${btoa(JSON.stringify({ sub: "wp-user" })).replace(/=+$/, "")}.sig`,

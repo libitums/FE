@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowDown from "@libitums/icons/lynx/arrow-down";
+import arrowUp from "@libitums/icons/lynx/arrow-up";
 import camera from "@libitums/icons/lynx/camera";
 import mic from "@libitums/icons/lynx/mic";
 import { color } from "@libitums/design-tokens";
@@ -49,15 +50,18 @@ export function NewMessagePill({ view, avatar, copy, onJump }: NewMessagePillPro
       </view>
     );
   }
-  const media = view.arrival.latest;
+  // 「위에 도착 ↑」(안내의 무료 예시 — 첫 인사 아래에 도착): 같은 알약에 문구 · ↑만 다릅니다.
+  const above = view.kind === "above";
+  const media = above ? view.media : view.arrival.latest;
+  const label = above ? copy.above(view.media) : copy.label(view.arrival);
   return (
     <view className="messenger-chat-newpill-row">
       <view
         className="messenger-chat-newpill"
-        data-testid={ids.pill}
+        data-testid={above ? ids.above : ids.pill}
         accessibility-element={true}
         accessibility-traits="button"
-        accessibility-label={copy.jump}
+        accessibility-label={above ? label : copy.jump}
         bindtap={jump}
       >
         <Avatar
@@ -73,8 +77,12 @@ export function NewMessagePill({ view, avatar, copy, onJump }: NewMessagePillPro
             current-color={color.white}
           />
         )}
-        <text className="messenger-chat-newpill-label">{copy.label(view.arrival)}</text>
-        <svg className="messenger-chat-icon-xs" content={arrowDown} current-color={color.white} />
+        <text className="messenger-chat-newpill-label">{label}</text>
+        <svg
+          className="messenger-chat-icon-xs"
+          content={above ? arrowUp : arrowDown}
+          current-color={color.white}
+        />
       </view>
     </view>
   );

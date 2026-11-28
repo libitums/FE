@@ -204,8 +204,6 @@ export const messengerChatZhTw: MessengerChatCopy = {
       title: "你是哪一年出生的？",
       body: "我們用它來讓聊天內容適合你的年齡。這不會顯示給任何人，之後也可以在聊天設定中修改。",
       continue: "繼續",
-      skip: "暫時略過",
-      skipNote: "如果略過，聊天會使用未滿18歲的設定。",
       sidebar: "出生年份",
       notSet: "未設定",
     },

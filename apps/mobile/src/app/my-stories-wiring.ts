@@ -10,6 +10,7 @@ import type { MyStoriesPort } from "../screens/messenger-chat/my-stories.contrac
 import type { MyStoryPhotoPort } from "../screens/messenger-chat/my-story-photo.contract";
 import { discardStoryPhoto, pickStoryPhoto, storyPhotosAvailable } from "../lib/story-photo";
 import { tzOffsetMinOf } from "../screens/messenger-chat/my-stories";
+import { accountMemory } from "../screens/messenger-chat/story-row-memory";
 import { loadCurrentWordbook, todayLocal } from "./learning-trail-port";
 import { myStoryChoicesOf } from "./my-stories-choices";
 import { companionServerRemote } from "./suggested-friends-wiring";
@@ -52,6 +53,8 @@ export type MyStoriesWiringArgs = {
   readonly accountKey: () => string;
   /** 친구 스토리 본 것 저장(같은 계정) — 본 반응도 여기에. */
   readonly seen: () => StorySeenStore;
+  /** 다시 읽은 내 스토리의 답이 늘었을 때(계정의 첫 읽기는 기준) — 메신저 목록을 맞춥니다(ADR-0213). */
+  readonly onReplies?: () => void;
 };
 
 /** 서명 주소를 다시 쓰는 시간 — 서버 수명(한 시간)보다 짧게. */
@@ -100,6 +103,7 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
   const shownThisRun = new Set<string>();
   // 계정마다 — 계정을 바꾸면 앞 계정의 값이 설정 줄을 세우지 않게(리뷰 m8).
   const enabled = new Map<string, boolean>();
+  const replies = new Map<string, number>(); // 계정 → 지난 읽기의 답 수
   const photo = photoPortOf(companionServerRemote);
   return {
     // 호스트 모듈이 있을 때만(옛 호스트 · Explorer에는 사진 선택지가 없음) — 부를 때마다 봅니다.
@@ -109,7 +113,13 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
     load: async () => {
       try {
         const state = (await remote()?.list(tzOffsetMinOf(Date.now()))) ?? null;
-        if (state !== null) enabled.set(args.accountKey(), state.enabled);
+        if (state === null) return null;
+        const account = args.accountKey();
+        enabled.set(account, state.enabled);
+        const count = state.stories.reduce((sum, story) => sum + story.reactions.length, 0);
+        const before = replies.get(account);
+        replies.set(account, count);
+        if (before !== undefined && count > before) args.onReplies?.();
         return state;
       } catch {
         return null;
@@ -136,5 +146,6 @@ export function myStoriesPortOf(args: MyStoriesWiringArgs): MyStoriesPort {
       for (const id of ids) args.seen().markSeen(id, until, now);
     },
     newClientId: () => uuidV4(),
+    memory: accountMemory(args.accountKey),
   };
 }

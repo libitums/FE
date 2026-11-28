@@ -6,7 +6,8 @@ import { vi } from "vitest";
 import { learningItemGuideKinds } from "./learning-item-guide";
 import type { LearningItemGuideKind } from "./learning-item-guide.contract";
 
-export const guideSeenKey = "libitum.learning-item-guides.seen";
+/** 안내 기록 칸 — 계정별 칸(2026-11-27)이며, 이 대역은 비회원 설치(표식 `libitum.auth.guest`)라 guest 칸입니다. */
+export const guideSeenKey = "libitum.learning-item-guides.seen.guest";
 
 /** 안내 루트(종류 여섯)만 고르는 선택자입니다 — 제목 · 설명 testid는 포함하지 않습니다. */
 export const guideRootSelector = learningItemGuideKinds
@@ -42,7 +43,11 @@ export type GuideStorageOptions = {
 
 /** `NativeModules.StorageModule` 대역을 세웁니다. */
 export function stubGuideStorage(options: GuideStorageOptions = {}): GuideStorageDouble {
-  const store = new Map<string, string>(Object.entries(options.entries ?? {}));
+  // 기록의 주인이 있어야 안내가 섭니다 — 세션을 따로 심지 않으면 비회원 설치로 둡니다.
+  const store = new Map<string, string>([
+    ["libitum.auth.guest", "1"],
+    ...Object.entries(options.entries ?? {}),
+  ]);
   if (options.raw !== undefined) store.set(guideSeenKey, options.raw);
   else if (options.seen !== undefined) store.set(guideSeenKey, JSON.stringify(options.seen));
   const get = vi.fn((key: string) => store.get(key) ?? null);

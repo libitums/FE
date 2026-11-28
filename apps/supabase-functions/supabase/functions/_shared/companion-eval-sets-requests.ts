@@ -6,7 +6,7 @@ import type { EvalCase } from "./companion-eval-schema.ts";
 import { replySet, type EvalSet, type EvalVerdict } from "./companion-eval-set-shape.ts";
 
 type Line = NonNullable<EvalCase["romanceLine"]>;
-type Row = readonly [
+export type Row = readonly [
   string,
   NonNullable<EvalCase["layer"]>,
   NonNullable<EvalCase["ageBand"]>,
@@ -85,7 +85,7 @@ const requestRows: readonly Row[] = [
   ],
 ];
 
-function moderationSet(id: string, title: string, rows: readonly Row[]): EvalSet {
+export function moderationSet(id: string, title: string, rows: readonly Row[]): EvalSet {
   return {
     id,
     title,

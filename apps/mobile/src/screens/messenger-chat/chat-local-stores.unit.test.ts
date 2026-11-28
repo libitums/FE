@@ -151,17 +151,21 @@ describe("생년 (BY-U9)", () => {
   test("BY-U9. 키 libitum.messenger.birth-year에 계정마다 적고, 다른 계정 값은 지우지 않는다", async () => {
     const { BIRTH_YEAR_KEY, deviceBirthYearStore } = await freshStores();
     expect(BIRTH_YEAR_KEY).toBe("libitum.messenger.birth-year");
-    storage.getItem.mockReturnValue(JSON.stringify({ "server:b": { kind: "skipped" } }));
+    storage.getItem.mockReturnValue(JSON.stringify({ "server:b": { kind: "set", year: 1980 } }));
     deviceBirthYearStore("server:a").write({ kind: "set", year: 1995 });
     expect(storage.setItem).toHaveBeenCalledWith(
       "libitum.messenger.birth-year",
-      JSON.stringify({ "server:b": { kind: "skipped" }, "server:a": { kind: "set", year: 1995 } }),
+      JSON.stringify({
+        "server:b": { kind: "set", year: 1980 },
+        "server:a": { kind: "set", year: 1995 },
+      }),
     );
     storage.getItem.mockReturnValue(
       JSON.stringify({ "server:a": { kind: "set", year: 1995 }, "server:b": { kind: "skipped" } }),
     );
     expect(deviceBirthYearStore("server:a").read()).toEqual({ kind: "set", year: 1995 });
-    expect(deviceBirthYearStore("server:b").read()).toEqual({ kind: "skipped" });
+    // 옛 앱(1.6 이전)의 「Skip for now」 기록은 적힌 것 없음 — 다음에 방에 들어오면 다시 묻습니다(2026-11-27).
+    expect(deviceBirthYearStore("server:b").read()).toBeNull();
     expect(deviceBirthYearStore("fixture").read()).toBeNull();
   });
 
@@ -170,6 +174,7 @@ describe("생년 (BY-U9)", () => {
     expect(parseBirthYear({ kind: "set", year: 1995.5 })).toBeNull();
     expect(parseBirthYear({ kind: "set", year: "1995" })).toBeNull();
     expect(parseBirthYear({ kind: "unasked" })).toBeNull();
+    expect(parseBirthYear({ kind: "skipped" })).toBeNull();
     expect(parseBirthYear("1995")).toBeNull();
     storage.getItem.mockImplementation(() => {
       throw new Error("native module failed");

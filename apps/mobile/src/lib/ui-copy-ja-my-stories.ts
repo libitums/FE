@@ -119,7 +119,7 @@ export const myStoriesJa: MyStoriesCopy = {
     posting: "シェア中…",
     hintOne: "単語を1つ置くとシェアできます。",
     hintOneText: "単語を置くか一言書くと、シェアできます。",
-    hintMove: "ドラッグで移動、ピンチで大きさを変えられます。",
+    hintMove: "ドラッグで移動、ピンチで大きさの変更や回転ができます。",
     stickerLabel: (ko, meaning) => `${ko}、${meaning}`,
     remove: (ko) => `削除：${ko}`,
     textBlocked: "このテキストはシェアできません。別の言葉で試してください。",

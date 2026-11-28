@@ -1,0 +1,168 @@
+/* 말하기 퀴즈 결과 시트(시안 S2 ~ S4). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   대비: 연초록 면 위 `feedback-correct-text` · 흰 면 위 `feedback-incorrect-text` · `fg-neutral-muted`는 모두 4.5:1을 넘습니다.
+   정답 상자는 판정과 상관없이 흰 면 · 회색 테(중립)입니다. 소리 단추는 44 × 44입니다. */
+.speak-word-result {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.speak-word-result-correct {
+  background: var(--libitum-color-feedback-correct-surface);
+}
+
+.speak-word-result-incorrect {
+  background: var(--libitum-color-white);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+}
+
+.speak-word-result-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.speak-word-result-mark {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--libitum-spacing-8);
+}
+
+.speak-word-result-mark-correct {
+  background: var(--libitum-color-feedback-correct);
+}
+
+.speak-word-result-mark-incorrect {
+  background: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.speak-word-result-mark-icon {
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+}
+
+.speak-word-result-title {
+  flex: 1;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.speak-word-result-title-correct {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.speak-word-result-title-incorrect {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.speak-word-result-chip {
+  padding-left: var(--libitum-spacing-8);
+  padding-right: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-2);
+  padding-bottom: var(--libitum-spacing-2);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-white);
+  color: var(--libitum-color-feedback-correct-text);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.speak-word-result-heard,
+.speak-word-result-answer-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--libitum-spacing-12);
+}
+
+.speak-word-result-label {
+  margin-bottom: var(--libitum-spacing-4);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.speak-word-result-heard-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.speak-word-result-heard-small {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 다른 음절 — 색만으로 말하지 않도록 밑줄을 함께 긋습니다. */
+.speak-word-result-differs {
+  color: var(--libitum-color-brand-strong);
+  text-decoration: underline;
+}
+
+.speak-word-result-answer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-500);
+  background: var(--libitum-color-white);
+}
+
+.speak-word-result-play {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--libitum-spacing-12);
+  background: var(--libitum-color-background-elevated);
+}
+
+.speak-word-result-play-icon {
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+}
+
+.speak-word-result-answer-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.speak-word-result-word {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.speak-word-result-romanization {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}

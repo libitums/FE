@@ -76,7 +76,6 @@ export type ChatInputBlock =
 /** 첫 대화 전에 묻는 생년입니다. 건너뛰면 18세 미만 기본값이 적용됩니다(서버 몫). */
 export type ChatBirthYear =
   | { readonly kind: "unasked" }
-  | { readonly kind: "skipped" }
   | { readonly kind: "set"; readonly year: number };
 
 // 대화 설정 · 기억 타입(ADR-0126)은 대화 설정 계약에 둡니다 — 이 파일은 그 이름을 그대로 다시 내보냅니다.
@@ -146,6 +145,11 @@ export type ChatThread = {
   readonly ratings: Readonly<Record<string, ChatRating>>;
   /** null이면 보통 입력 줄입니다. */
   readonly inputBlock: ChatInputBlock | null;
+  /**
+   * 이 실행에서 안내로 받은 무료 예시의 줄 id 앞부분(`samplePrefixOf`, 받은 순서) — 서버 방만, 없으면 없음. 예시 줄은 첫 인사 아래에
+   * 서서 화면이 끝으로 내리지 않고 그 줄을 보입니다(ADR-0146 개정 ⟨예시 대상⟩).
+   */
+  readonly samples?: readonly string[];
 };
 
 /** 잔액(보유 엽전)은 출처가 아니라 앱이 줍니다(§9 · ADR-0116). */
@@ -208,7 +212,14 @@ export function notesOf(thread: ChatThread, messageId: string): ChatMyNotes {
 }
 
 /** 보내기 선택 칸 — 친구 스토리 인용(ADR-0178). */
-export type ChatSendOptions = { readonly story?: ChatStoryQuote };
+/**
+ * `story` = 친구 스토리 인용(ADR-0178 D5). `suggestion` = 보기 판의 `index`번째 보기를 탭해 보냄 — 서버 방은 그 칩의 표시를 턴 요청에
+ * 싣습니다(ADR-0210 D1). 앱 안 방은 무시합니다.
+ */
+export type ChatSendOptions = {
+  readonly story?: ChatStoryQuote;
+  readonly suggestion?: { readonly index: number };
+};
 
 export type ChatReportReasonId = "rude" | "sexual" | "hateful" | "wrong-korean" | "other";
 
@@ -248,8 +259,8 @@ export type ChatSource = {
   /** 교정 available일 때만: seen = true(즉시), detail idle이면 loading → timing.correctionMs 뒤 ready. */
   readonly openCorrection: (roomId: string, messageId: string) => void;
   readonly unlockCharacter: (characterId: string) => ChatUnlockResult;
-  /** null = 건너뜀. 바뀌면 구독자에게 알립니다. */
-  readonly setBirthYear: (year: number | null) => void;
+  /** 고른 연도를 적습니다 — 건너뛰기는 없습니다(ADR-0125 개정 2026-11-27). 바뀌면 구독자에게 알립니다. */
+  readonly setBirthYear: (year: number) => void;
   /** 바뀐 칸만 넘깁니다. 바뀌면 구독자에게 알립니다. */
   readonly setPreferences: (patch: Partial<ChatPreferences>) => void;
   /** 같은 상태면 같은 참조입니다. */

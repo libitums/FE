@@ -39,6 +39,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
             : `မက်ဆေ့ချ်အသစ် ${count} ခု`,
     jump: "မက်ဆေ့ချ်အသစ်များသို့ သွားရန်",
     latest: "နောက်ဆုံးမက်ဆေ့ချ်သို့ ဆင်းရန်",
+    above: (media) => (media === "photo" ? "အပေါ်မှာ ဓာတ်ပုံ ရောက်လာပါပြီ" : "အပေါ်မှာ အသံမက်ဆေ့ချ် ရောက်လာပါပြီ"),
   },
   replyToast: {
     dismiss: "ပိတ်ရန်",
@@ -64,9 +65,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     sectionProactive: "ဇာတ်ကောင်ထံမှ စာ",
     proactive: "ဇာတ်ကောင်က အရင် စာပို့ခြင်း",
     sectionAbout: "သင့်အကြောင်း",
-    sharedMemories: "ဇာတ်ကောင်အားလုံး သိထားသော သင့်အကြောင်း",
-    sharedMemoriesSummary: (count) => `မှတ်ဉာဏ် ${count} ခု · ဇာတ်ကောင်အားလုံး မျှသုံး`,
-    footnote: "ဇာတ်ကောင်တစ်ဦးစီသည် သင်နှင့် ပြောခဲ့တာတွေကိုလည်း မှတ်ထားပါတယ်။ ကြည့်ရန် ချတ်တစ်ခု ဖွင့်ပြီး ☰ ကို တို့ပါ။",
+    footnote: "ဇာတ်ကောင်တစ်ဦးစီသည် သင် ပြောပြခဲ့တာတွေကို မှတ်ထားပါတယ်။ ကြည့်ရန် ချတ်တစ်ခု ဖွင့်ပြီး ☰ ကို တို့ပါ။",
     proactiveSheet: {
       title: "ဇာတ်ကောင်က အရင် စာပို့ခြင်း",
       body: "သင် ခဏ တိတ်နေရင် ဇာတ်ကောင်က စကားစပြောနိုင်ပါတယ်။ ဒင်္ဂါး ဘယ်တော့မှ မကုန်ပါ။",
@@ -81,7 +80,6 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
       close: "ပိတ်ရန်",
     },
     memories: {
-      titleShared: "ဇာတ်ကောင်အားလုံး သိထားသော သင့်အကြောင်း",
       titleCharacter: (name) => `${name} မှတ်မိထားတာ`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "မှတ်ဉာဏ် ပြည့်သွားပါပြီ",
@@ -167,7 +165,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     steps: {
       ideas: "ဘာပြောရမလဲ မသိဘူးလား။ အဖြေ အကြံပြုချက် ကြည့်ရန် စာရိုက်အကွက်ဘေးက မီးသီးကို တို့ပါ။",
       media: "ကီးဘုတ်အပေါ်က ခလုတ်တွေနဲ့ ဓာတ်ပုံ သို့မဟုတ် အသံမက်ဆေ့ချ် တောင်းလို့လည်း ရပါတယ်။",
-      sample: "ကျွန်တော် အခု ဘာလုပ်နေလဲ ကြည့်ချင်လား။ Snapshot ကိုနှိပ်ရင် ဓာတ်ပုံတစ်ပုံ ပို့ပေးမယ်။ ပထမတစ်ပုံ အခမဲ့ပါ။",
+      sample: "ကျွန်တော် အခု ဘာလုပ်နေလဲ ကြည့်ချင်လား။ ဓာတ်ပုံ ကိုနှိပ်ရင် ဓာတ်ပုံတစ်ပုံ ပို့ပေးမယ်။ ပထမတစ်ပုံ အခမဲ့ပါ။",
       voice: "ကျွန်တော့်အသံနဲ့ နားထောင်ချင်လား။ အသံ ကိုနှိပ်ရင် အဲဒီစာကို ဖတ်ပြမယ်။ ပထမတစ်ခါလည်း အခမဲ့ပါ။",
     },
     keyboard: {
@@ -186,6 +184,7 @@ export const messengerChatExtraMy: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step}/${total}`,
     newTag: "အသစ်",
     free: "အခမဲ့",
+    greeting: (name) => `${name} နှုတ်ဆက်နေသည်…`,
   },
   launch: {
     newTag: "အသစ်",

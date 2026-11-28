@@ -2,6 +2,7 @@
 
 import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
+import type { LastSeenStore } from "./chat-last-seen";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import type { ChatRemote } from "./chat-remote.contract";
 import type { ReplyIdeasStore } from "./reply-ideas-pref";
@@ -105,6 +106,8 @@ export type FixtureChatSourceOptions = {
   readonly birthYearStore?: BirthYearStore;
   /** 추천 답변 설정의 기기 저장(ADR-0156) — 없으면 메모리만(테스트 · 데모). */
   readonly replyIdeasStore?: ReplyIdeasStore;
+  /** 서버 모드에서 방마다 본 마지막 인물 메시지의 기기 저장(ADR-0213 개정) — 없으면 앱이 꺼진 사이 온 메시지를 세지 않습니다. */
+  readonly lastSeen?: LastSeenStore;
   /**
    * 서버 없는 출처에서 열린 빈 방을 열면 그 방의 `opening`을 첫 인사로 놓습니다(비회원 미리보기, ADR-0166). 서버 모드는 서버가
    * 첫 인사를 주므로 보지 않습니다.

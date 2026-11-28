@@ -108,7 +108,6 @@ export function MessengerChatScreen({
   const server = thread !== null && thread.server !== null;
   // 답 · 첫 인사를 기다리는 중 — 이때 온 말만 「새로 도착」으로 봅니다(방을 열며 읽은 기록은 아님, 리뷰 W2 · W4).
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
-  serverBusy.current = server && busy;
   const tools = useBubbleTools({ roomId, source, thread, announce });
   const guide = useRoomGuide(
     roomId,
@@ -118,11 +117,12 @@ export function MessengerChatScreen({
     source.sampleSnapshot,
     plan.toggle === "shown",
   );
-  // 키보드 단계가 입력 줄 키보드를 맞추고 휴대폰 키보드가 내려간 것을 봄(ADR-0190)
-  const measurePhoneKeyboard = useGuideKeyboard(guide, state, dispatch, room.measureKeyboard);
+  serverBusy.current = server && (busy || guide.waitingGreeting); // 안내 전 첫 인사 · 기록 읽기 중도(ADR-0139 개정)
+  const measurePhoneKeyboard = useGuideKeyboard(guide, state, dispatch, room.measureKeyboard); // 키보드 단계(ADR-0190)
   useAutoIdeas({
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
     enabled: preferences.replyIdeas,
+    guiding: guide.holding, // 안내 동안 미뤘다가 끝나면 엶 — 안내 끝 키보드 접기 뒤 순서(ADR-0137 · 0190 개정)
     busy,
     text: state.text,
     ideasOpen: state.slot.kind === "ideas",
@@ -270,7 +270,7 @@ export function MessengerChatScreen({
             guideClass={guideTargetClass(guide.step)}
             {...(guide.step === "sample" ? { onTakeSample: guide.takeSample } : {})}
             {...(guide.step === "voice" ? { onTakeVoiceSample: guide.takeSample } : {})}
-            guest={guest.active}
+            {...{ guest: guest.active, waitingGreeting: guide.waitingGreeting }}
             aboveComposer={
               <>
                 {story.bar(thread.counterpart.name)}
@@ -286,7 +286,7 @@ export function MessengerChatScreen({
       />
       <ChatRoomOverlays
         {...{ state, dispatch, thread, source, learnerName, wallet, coinBalance, birthYear }}
-        {...{ preferences, onOpenMemories, onOpenAlbum, onOpenMyProfile }}
+        {...{ preferences, onOpenMemories, onOpenAlbum, onOpenMyProfile, onExit }}
       />
       {state.overlay.kind === "profile" ? (
         <ChatProfileSheet

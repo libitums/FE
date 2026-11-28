@@ -9,12 +9,24 @@ export {
   speakingWords,
   type SpeakingChunk,
 } from "./speaking-judge";
-export { judgeRoleplayReply } from "./roleplay-reply";
-export { spokenUnitsOf } from "./hangul-pronunciation";
+export { judgeRoleplayReplyExact } from "./roleplay-reply";
+export {
+  judgeRoleplayReply,
+  judgeSpokenAnswer,
+  type SpokenAnswerJudgement,
+  type SpokenGrade,
+} from "./spoken-answer";
+export { spokenTrackOf, spokenUnitsOf, type SpokenTrack } from "./hangul-pronunciation";
+export { negationMismatch } from "./spoken-negation";
 export {
   judgeSpokenLenient,
+  SPOKEN_EXACT_MAX_UNITS,
+  SPOKEN_FLOOR_MIN_UNITS,
   SPOKEN_LENIENT_THRESHOLD,
+  SPOKEN_ONE_SLIP_MAX_UNITS,
   SPOKEN_SEGMENT_FLOOR,
+  spokenAllowedDistance,
+  spokenPasses,
   spokenSimilarity,
   type SpokenJudgement,
   type SpokenOutcome,

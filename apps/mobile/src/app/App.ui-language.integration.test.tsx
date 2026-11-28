@@ -9,7 +9,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerBirthYearIfShown, passLearnerSignup } from "./test-helpers/learner-signup";
 import { lessonPlan } from "./test-helpers/episode-format-harness";
 import { solveActivity, solveLesson } from "./test-helpers/episode-format-solvers";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
@@ -182,6 +182,7 @@ async function walkEntryFlow(
     fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   }
   tapButtonIn("language-select-screen-next");
+  passLearnerBirthYearIfShown();
   tapButtonIn("journey-entry-screen-story");
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   return events;
@@ -482,6 +483,7 @@ test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바�
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-id"), {});
   expect(storage.store.get(uiLanguageStorageKey)).toBe("id");
   tapButtonIn("language-select-screen-next");
+  passLearnerBirthYearIfShown();
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
@@ -504,6 +506,7 @@ test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-es"), {});
   expect(storage.store.get(uiLanguageStorageKey)).toBe("es");
   tapButtonIn("language-select-screen-next");
+  passLearnerBirthYearIfShown();
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Ajustes");
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(
@@ -526,6 +529,7 @@ test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-ja"), {});
   expect(storage.store.get(uiLanguageStorageKey)).toBe("ja");
   tapButtonIn("language-select-screen-next");
+  passLearnerBirthYearIfShown();
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("設定");
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-more")).toHaveAttribute(

@@ -6,11 +6,12 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { phoneKeyboardHeightOf } from "./keyboard-height";
 import { STORY_TEXT_COLORS } from "./my-story-editor";
+import { TEXT_LINES_MAX } from "./my-story-lines";
 import { myStoriesTestIds as ids, type StoryTextColor } from "./my-stories.contract";
 
 import "./my-stories.css";
 
-/** 글 한 줄의 길이 상한 — 사진 스토리 한 줄과 같게 둡니다(서버 반영 예상). */
+/** 글 길이 상한(줄바꿈 포함) — 사진 스토리 한 줄과 같게 둡니다(서버 반영 예상). */
 const TEXT_MAX = 80;
 /** 위 안전 영역 아래 글자색 줄까지의 틈(px, 편집 위 줄과 같은 높이). */
 const TOP_GAP = 12;
@@ -124,22 +125,19 @@ export function MyStoryTextEntry({
         }}
       >
         <view className="my-story-typing-box">
-          <input
+          {/* 여러 줄(2026-11-27) — Enter는 줄바꿈이라 confirm-type을 두지 않습니다. 마침은 위 Done · 시스템 뒤로. */}
+          <textarea
             id={TYPING_INPUT_ID}
             className={`my-story-typing-input my-story-ink-${textColor}`}
             data-testid={ids.textInput}
             default-value={initial}
             maxlength={TEXT_MAX}
-            confirm-type="done"
+            maxlines={TEXT_LINES_MAX}
             accessibility-element={true}
             accessibility-label={copy.label}
             bindinput={(event: NativeInputEvent) => {
               "background only";
               value.current = event.detail.value;
-            }}
-            bindconfirm={() => {
-              "background only";
-              done();
             }}
             {...keyboardProps}
           />

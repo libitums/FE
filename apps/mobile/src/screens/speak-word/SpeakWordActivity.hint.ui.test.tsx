@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testi
 import type { ItemAnswerReport } from "../../lib/item-answer";
 import { echoAudioOf, ECHO_SOURCE, withAudio } from "../../lib/question-audio.test-support";
 import { recognized, stubSpeechHost } from "../../lib/speech-host.test-support";
+import { tapSpeakWordPrimary } from "./speak-word-controls.test-support";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 
@@ -85,7 +86,7 @@ test("SWHN2. 정답 보기를 쓴 판정은 hintUsed show로 보고되고, 판�
   const onItemAnswered = mount([card]);
 
   pickHint("show");
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  tapSpeakWordPrimary();
 
   expect(onItemAnswered).toHaveBeenCalledWith(
     expect.objectContaining({ outcome: "correct", hintUsed: "show" }),
@@ -102,7 +103,7 @@ test("SWHN3. 정답 듣기는 정답 소리를 한 번 내고 hintUsed listen으
   expect(playAudio).toHaveBeenCalledWith(ECHO_SOURCE, expect.any(Function));
   expect(maybe("speak-word-romanization")).toBeNull();
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  tapSpeakWordPrimary();
   expect(onItemAnswered).toHaveBeenCalledWith(
     expect.objectContaining({ outcome: "correct", hintUsed: "listen" }),
   );
@@ -112,7 +113,7 @@ test("SWHN4. 힌트를 쓰지 않은 판정에는 hintUsed가 없다", () => {
   stubSpeechHost({ result: () => recognized("카드") });
   const onItemAnswered = mount([card]);
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  tapSpeakWordPrimary();
 
   const [report] = onItemAnswered.mock.calls[0] ?? [];
   expect(report).toBeDefined();

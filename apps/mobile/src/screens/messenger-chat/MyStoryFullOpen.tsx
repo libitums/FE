@@ -52,7 +52,9 @@ export function MyStoryFullOpen({
 }): ReactNode {
   const name = useUiCopy().messengerChat.myStories.viewer.yourStory;
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const [opened] = useState(() => myViewerItemsOf(stories, openedId, now, name));
+  // 장 목록은 연 때의 시각으로 — 다시 읽은 Seen by · 답(개정 ⟨살아 있는 보기⟩)은 같은 장에 바로 서고, 보는 중에 지나도 장이 빠지지 않습니다.
+  const [at] = useState(now);
+  const opened = myViewerItemsOf(stories, openedId, at, name);
   const removal = useMyStoryDelete({ rooms, remove, onDeleted });
   if (opened === null) return null;
   return (

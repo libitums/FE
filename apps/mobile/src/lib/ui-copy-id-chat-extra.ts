@@ -40,6 +40,7 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
             : `${count} pesan baru`,
     jump: "Lompat ke pesan baru",
     latest: "Gulir ke pesan terbaru",
+    above: (media) => (media === "photo" ? "Foto masuk di atas" : "Pesan suara masuk di atas"),
   },
   replyToast: {
     dismiss: "Tutup",
@@ -65,10 +66,8 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     sectionProactive: "Pesan dari karakter",
     proactive: "Mereka mengirim pesan lebih dulu",
     sectionAbout: "Tentang kamu",
-    sharedMemories: "Yang diketahui semua karakter tentangmu",
-    sharedMemoriesSummary: (count) => `${count} ingatan · dibagikan ke semua karakter`,
     footnote:
-      "Setiap karakter juga mengingat hal dari obrolan denganmu. Buka obrolan dan ketuk ☰ untuk melihatnya.",
+      "Setiap karakter mengingat apa yang kamu ceritakan kepadanya. Buka obrolan dan ketuk ☰ untuk melihatnya.",
     proactiveSheet: {
       title: "Mereka mengirim pesan lebih dulu",
       body: "Kalau kamu lama tidak mengobrol, karakter bisa memulai obrolan. Tidak pernah memakai koin.",
@@ -83,7 +82,6 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       close: "Tutup",
     },
     memories: {
-      titleShared: "Yang diketahui semua karakter tentangmu",
       titleCharacter: (name) => `Yang diingat ${name}`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "Ingatan penuh",
@@ -171,7 +169,7 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       ideas: "Bingung mau bilang apa? Ketuk lampu di samping kotak pesan untuk ide balasan.",
       media: "Kamu juga bisa minta foto atau pesan suara lewat tombol di atas keyboard.",
       sample:
-        "Mau lihat aku lagi apa? Ketuk Snapshot dan aku kirim foto. Yang pertama gratis dariku.",
+        "Mau lihat aku lagi apa? Ketuk Foto kilat dan aku kirim foto. Yang pertama gratis dariku.",
       voice:
         "Mau dengar suaraku? Ketuk Suara kilat dan aku bacakan pesan itu. Yang pertama juga gratis dariku.",
     },
@@ -192,6 +190,7 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step} dari ${total}`,
     newTag: "Baru",
     free: "GRATIS",
+    greeting: (name) => `${name} sedang menyapa…`,
   },
   launch: {
     newTag: "BARU",

@@ -1,5 +1,6 @@
 /* 엽전 출시 · 채팅 새 기능 모달(ADR-0140, 시안 5판). 움직임은 토큰만 — 길이 d1 · d7 · d8 · reward, 가속 enter-expressive · exit.
-   차례 지연은 d1(50)의 배수. 움직임 줄이기(`launch-still`)면 처음부터 최종 상태. 화면 지역 상수: 날아가는 엽전의 끝 자리
+   차례 지연은 d1(50)의 배수 — 토큰과 같은 값은 토큰, 토큰에 없는 값(350 · 450 · 550 · 650 · 750 · 800ms)은 리터럴입니다.
+   Lynx는 시간 값의 `calc(var(…))`를 0으로 읽어 쓰지 않습니다(ADR-0212 개정 1). 움직임 줄이기(`launch-still`)면 처음부터 최종 상태. 화면 지역 상수: 날아가는 엽전의 끝 자리
    (오른쪽 위 엽전 칩 — 위 64 · 오른쪽 28)와 출발 거리(-150 · 320)는 실측(토큰 없음). */
 
 .launch {
@@ -85,7 +86,7 @@
   line-height: var(--libitum-typography-caption-line-height);
   animation: launch-tag var(--libitum-motion-duration-d7)
     var(--libitum-motion-easing-enter-expressive) both;
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 8);
+  animation-delay: var(--libitum-motion-duration-d7);
 }
 
 .launch-coin {
@@ -104,7 +105,7 @@
   height: var(--libitum-spacing-64);
   animation: launch-spin var(--libitum-motion-duration-d8)
     var(--libitum-motion-easing-enter-expressive) both;
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+  animation-delay: var(--libitum-motion-duration-d6);
 }
 
 .launch-title {
@@ -148,15 +149,15 @@
 }
 
 .launch-row-0 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 12);
+  animation-delay: var(--libitum-motion-duration-d8);
 }
 
 .launch-row-1 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 16);
+  animation-delay: 800ms;
 }
 
 .launch-row-2 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 20);
+  animation-delay: var(--libitum-motion-duration-d9);
 }
 
 .launch-row-label,
@@ -267,19 +268,19 @@
 }
 
 .launch-person-0 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 7);
+  animation-delay: 350ms;
 }
 .launch-person-1 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 9);
+  animation-delay: 450ms;
 }
 .launch-person-2 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 11);
+  animation-delay: 550ms;
 }
 .launch-person-3 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 13);
+  animation-delay: 650ms;
 }
 .launch-person-4 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 15);
+  animation-delay: 750ms;
 }
 
 .launch-face {
@@ -361,7 +362,7 @@
   border-radius: var(--libitum-radius-full);
   background-color: var(--libitum-color-brand-primary);
   animation: launch-fill var(--libitum-motion-duration-d9) var(--libitum-motion-easing-enter) both;
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 20);
+  animation-delay: var(--libitum-motion-duration-d9);
 }
 
 .launch-meta {

@@ -13,6 +13,7 @@ export type EntryScreenName =
   | "learner-name"
   | "learner-country"
   | "language-select"
+  | "learner-birth-year"
   | "journey-entry"
   | "entry-basics-letters"
   | "entry-basics-compose"

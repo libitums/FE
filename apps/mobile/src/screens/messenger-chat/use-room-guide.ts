@@ -14,6 +14,7 @@ import { useChatEvents } from "./chat-events";
 import type { SampleOffer } from "./chat-media.contract";
 import type { SampleSnapshotMethods } from "./chat-remote-sample";
 import type { ChatThread } from "./chat-source.contract";
+import { useGreetingLock } from "./use-greeting-lock";
 import {
   finishedRoomPart,
   GUIDE_ROOM_ID,
@@ -52,6 +53,10 @@ export type RoomGuide = {
   readonly selectKeyboard: (mode: ComposerKeyboard) => void;
   /** 입력 칸이 알린 휴대폰 키보드 높이(pt/dp, 내려가면 0) — 휴대폰 키보드 화면에서 키보드가 내려가면 Hangul keys 화면으로 넘깁니다. */
   readonly phoneKeyboardHeight: (height: number) => void;
+  /** 안내 전 첫 인사를 기다리는 중 — 입력 줄 보내기 · 답장 보기를 잠급니다(ADR-0139 개정 2026-11-27, 상한 시간 뒤 풂). */
+  readonly waitingGreeting: boolean;
+  /** 안내가 섰거나 설 차례(끝나지 않았고 단계가 있음) — 그동안 답장 보기 판을 저절로 열지 않습니다(ADR-0137 · 0190 개정 2026-11-28). */
+  readonly holding: boolean;
 };
 
 export function useRoomGuide(
@@ -80,6 +85,7 @@ export function useRoomGuide(
     !thread.typing &&
     thread.messages.some((m) => m.kind === "text" && m.from === "them");
   const server = thread !== null && thread.server !== null;
+  const waitingGreeting = useGreetingLock(guideRoom, !roomSeen, thread);
 
   // 예시를 줄 수 있는지는 서버가 정합니다 — 첫 인사가 온 뒤 한 번 묻고, 답이 올 때까지 안내를 세우지 않습니다(도중에 단계 수가
   // 바뀌지 않게).
@@ -111,7 +117,10 @@ export function useRoomGuide(
       })
     : [];
   const ready = !asks || answered;
-  const shown = !ended && ready && steps.length > 0 && !covered && server && greeted;
+  // 입력이 막히면(나이 · 일시 차단 · 이용 시간, ADR-0125) 숨깁니다 — 가리킬 알약이 사라지고, 안내가 뒤로가기를 삼켜 방에 갇혔습니다
+  // (점검 1). 풀리면 같은 단계로 돌아옵니다.
+  const blocked = thread !== null && thread.inputBlock !== null;
+  const shown = !ended && ready && steps.length > 0 && !covered && !blocked && server && greeted;
   const step = shown ? (steps[index] ?? null) : null;
   const taken = useRef<GuideStep | null>(null);
   const keyboardEvent = (
@@ -155,6 +164,8 @@ export function useRoomGuide(
     index,
     step,
     sampleOnly: roomSeen,
+    waitingGreeting,
+    holding: !ended && steps.length > 0,
     keyboardStage,
     next: () => {
       // 예시 단계는 그 알약을 눌러야 끝납니다.
@@ -185,10 +196,11 @@ export function useRoomGuide(
       if (!isSampleStep(step) || sample === undefined || taken.current === step) return;
       taken.current = step;
       advance();
-      // 받은 뒤에야 본 것으로 적습니다 — 받지 못하면 다음에 방에 올 때 다시 권합니다.
+      // 받았거나 서버가 주지 않기로 했으면 본 것으로 적습니다 — 거절을 적지 않으면 방에 올 때마다 같은 단계 · 회색 줄이 다시 섰습니다
+      // (점검 2). 못 물었으면(연결) 다음에 방에 올 때 다시 권합니다.
       const part = step === "sample" ? "snapshot" : "voice";
-      void sample.claim(roomId, step === "sample" ? "photo" : "voice").then((received) => {
-        if (received) store.markSeen(part);
+      void sample.claim(roomId, step === "sample" ? "photo" : "voice").then((outcome) => {
+        if (outcome !== "failed") store.markSeen(part);
       });
     },
   };

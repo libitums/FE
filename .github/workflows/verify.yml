@@ -163,6 +163,10 @@ jobs:
         run: pnpm size:check
         env:
           BUNDLE_SIZES_OUT: bundle-sizes.json
+      # 메인 스레드가 background의 그리기 틀 · worklet을 모두 갖는지 봅니다(ADR-0149 「줄인 기록」 1). 앱을 DEBUG로 한 번 더
+      # 빌드하므로 크기 검사 뒤에 둡니다 — 실측(bundle-sizes.json)은 이미 적혀 있습니다.
+      - name: Check main-thread snapshots
+        run: pnpm size:snapshots
       # main의 실측은 다음 PR들의 비교 기준입니다.
       - name: Keep main bundle sizes
         if: ${{ github.event_name == 'push' && !cancelled() && hashFiles('bundle-sizes.json') != '' }}
@@ -228,7 +232,13 @@ jobs:
       - name: Assemble bundled APK
         if: ${{ steps.decide.outputs.build == 'true' }}
         working-directory: apps/android
-        run: ./gradlew --no-daemon :app:assembleBundled
+        # bash는 여기서 `-eo pipefail`이라 tee가 gradlew의 실패를 삼키지 않습니다.
+        shell: bash
+        run: ./gradlew --no-daemon :app:assembleBundled 2>&1 | tee "$RUNNER_TEMP/gradle-android.log"
+      # lintVital은 Kotlin metadata 판 불일치를 `e:` 줄로만 내고 빌드를 통과시킵니다. 그 줄을 실패로 바꿉니다.
+      - name: Check Gradle output for Kotlin metadata mismatch
+        if: ${{ steps.decide.outputs.build == 'true' }}
+        run: node devtools/android-build/check-gradle-log.mjs "$RUNNER_TEMP/gradle-android.log"
 
   policy:
     name: Performance report policy

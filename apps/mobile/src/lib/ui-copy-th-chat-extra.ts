@@ -39,6 +39,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
             : `ข้อความใหม่ ${count} ข้อความ`,
     jump: "ไปที่ข้อความใหม่",
     latest: "เลื่อนไปข้อความล่าสุด",
+    above: (media) => (media === "photo" ? "มีรูปภาพมาถึงด้านบน" : "มีข้อความเสียงมาถึงด้านบน"),
   },
   replyToast: {
     dismiss: "ปิด",
@@ -64,9 +65,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     sectionProactive: "ข้อความจากตัวละคร",
     proactive: "ตัวละครทักมาก่อน",
     sectionAbout: "เกี่ยวกับคุณ",
-    sharedMemories: "สิ่งที่ตัวละครทุกคนรู้เกี่ยวกับคุณ",
-    sharedMemoriesSummary: (count) => `${count} ความทรงจำ · ใช้ร่วมกันทุกตัวละคร`,
-    footnote: "ตัวละครแต่ละคนยังจำเรื่องจากแชทกับคุณด้วย เปิดแชทแล้วแตะ ☰ เพื่อดู",
+    footnote: "ตัวละครแต่ละคนจำสิ่งที่คุณเล่าให้ฟังได้ เปิดแชทแล้วแตะ ☰ เพื่อดู",
     proactiveSheet: {
       title: "ตัวละครทักมาก่อน",
       body: "เมื่อคุณเงียบไปสักพัก ตัวละครอาจเริ่มแชทก่อน ไม่เสียเหรียญเลย",
@@ -81,7 +80,6 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
       close: "ปิด",
     },
     memories: {
-      titleShared: "สิ่งที่ตัวละครทุกคนรู้เกี่ยวกับคุณ",
       titleCharacter: (name) => `สิ่งที่ ${name} จำได้`,
       count: (count, cap) => `${count} / ${cap}`,
       fullTitle: "ความทรงจำเต็มแล้ว",
@@ -167,7 +165,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     steps: {
       ideas: "ไม่รู้จะพูดอะไร แตะหลอดไฟข้างช่องพิมพ์เพื่อดูคำตอบแนะนำ",
       media: "คุณยังขอให้เราส่งรูปภาพหรือข้อความเสียงได้ด้วยปุ่มเหนือแป้นพิมพ์",
-      sample: "อยากเห็นไหมว่าตอนนี้ฉันทำอะไรอยู่ แตะ Snapshot แล้วฉันจะส่งรูปให้ รูปแรกให้ฟรี",
+      sample: "อยากเห็นไหมว่าตอนนี้ฉันทำอะไรอยู่ แตะ ภาพถ่าย แล้วฉันจะส่งรูปให้ รูปแรกให้ฟรี",
       voice: "อยากฟังเสียงฉันไหม แตะ เสียงสั้น แล้วฉันจะอ่านข้อความนั้นให้ฟัง ครั้งแรกให้ฟรีเหมือนกัน",
     },
     keyboard: {
@@ -186,6 +184,7 @@ export const messengerChatExtraTh: MessengerChatExtraCopy = {
     stepOf: (step, total) => `${step}/${total}`,
     newTag: "ใหม่",
     free: "ฟรี",
+    greeting: (name) => `${name} กำลังทักทาย…`,
   },
   launch: {
     newTag: "ใหม่",

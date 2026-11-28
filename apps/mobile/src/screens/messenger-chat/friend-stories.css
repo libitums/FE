@@ -21,14 +21,9 @@
   border-color: var(--libitum-color-brand-primary);
 }
 
-/* 다 본 스토리(친구 · 안 만난 친구) — 회색 점선(D3 개정 ⟨점선⟩). 내 스토리는 회색 실선 그대로. */
+/* 색은 봤는가(다 본 것 회색) · 선은 만났는가(안 만난 친구만 점선) — D3 개정 ⟨점선⟩ · 사용자 정정 2026-11-26. */
 .story-ring-seen {
-  border-style: dashed;
   border-color: var(--libitum-color-gray-500);
-}
-
-.my-story-faces .story-ring-seen {
-  border-style: solid;
 }
 
 /* 내 스토리 | 다른 인물 사이 세로 선(D3 개정 ⟨내 스토리 구분 선⟩) — 아바타(64)의 약 60% 높이, 고리(74) 가운데에 맞춥니다. 양옆 간격은 줄의 gap 그대로. */
@@ -40,7 +35,6 @@
   background-color: var(--libitum-color-border-default);
 }
 
-/* 안 본 안 만난 친구 — 점선 brand(시안). */
 .story-ring-unmet {
   border-style: dashed;
 }

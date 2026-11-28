@@ -94,21 +94,27 @@
   문구 키 `stories.listPreview` · `stories.listRowLabel`(8개 언어)과 순수 함수 `listStoryOf`, 목록 줄의 `story` · `onOpenStory`도 지웠다.
 - 확인: ui FS-UI7(「안 본 스토리가 있어도 목록 줄은 평소 미리보기 · 누르면 그 방」) · integration FSI2(목록 줄에 「New story」 없음).
 
-#### D3 개정 ⟨점선⟩ — 다 본 스토리 고리는 회색 점선 ⟨2026-11-26⟩
+#### D3 개정 ⟨점선⟩ — 점선은 안 만난 친구만, 회색은 다 본 것 ⟨2026-11-26 · 사용자 정정 2026-11-26⟩
 
-사용자 말(2026-11-26): 「unlock된 친구 스토리 봤으면 회색 점선으로」. 위 D3 · D3 개정의 「본 것 = 회색 고리」를 바꾼다. 고리 두께 3 · 틈 2는 그대로다.
+사용자 말(2026-11-26): 「unlock된 친구 스토리 봤으면 회색 점선으로」. 첫 판(#634)은 이 말을 「다 본 고리는 모두 회색 점선」으로 옮겼다.
+**사용자 정정(2026-11-26)**: 「해금 안 되어 있거나 채팅방 리스트에 없는 친구일 때 점선으로 했으면 좋겠다는 거였는데, 이미 채팅방 리스트에 있거나 해금한 친구면 실선이고」.
+그래서 선 모양은 **만났는가**로, 색은 **봤는가**로 따로 정한다. 위 D3 · D3 개정의 「본 것 = 회색 고리」는 그대로다. 고리 두께 3 · 틈 2도 그대로다.
 
 | 칸 | 안 본 것 있음 | 다 봄 |
 | --- | --- | --- |
-| 친구(열린 방) | brand 실선 | **회색(gray-500) 점선** · 「Seen」 |
-| 안 만난 친구 | brand 점선 · 「New」 | **회색 점선** · 「New」 그대로 |
+| 만난 친구(채팅 목록에 열린 방) | brand 실선 | 회색(gray-500) **실선** · 「Seen」 |
+| 안 만난 친구(방이 아직 열리지 않음) | brand **점선** · 「New」 | 회색 **점선** · 「New」 그대로 |
 | 내 스토리(ADR-0194) | brand 실선 | 회색 실선 그대로 |
 
-- 「다 봄」 = 그 인물의 살아 있는 스토리를 모두 봄(`storyRowOf`, 기기 저장 본 것). 안 만난 친구 칸도 `UnmetStoryEntry.seen`을 받고, 다 봤으면 칸 상태(`data-state`)가 `seen`이다.
-  안 만난 친구는 친구가 되기 전까지 「New」 · 낭독 「<이름>'s story, new friend」 그대로다 — 친구 / 안 만난 친구는 회색이 된 뒤에는 둘째 줄(「Seen」 / 「New」)로 가른다.
+- 「만났는가」 = `storyRowOf`의 판정 그대로다. 친구 = 대화 스냅숏에서 방이 열림(`access.kind === "open"`, 추천 친구의 `added`) · 안 만난 친구 = 추천 친구(`suggestedFriendsOf`, 방이 열리지 않은 `addable` · `locked`).
+  이야기를 끝내 추가할 수 있게 됐지만(`addable`) 아직 추가하지 않은 인물은 채팅 목록에 없으므로 안 만난 친구 — 점선이다.
+- 「다 봄」 = 그 인물의 살아 있는 스토리를 모두 봄(`storyRowOf`, 기기 저장 본 것). 안 만난 친구 칸도 `UnmetStoryEntry.seen`을 받고, 칸 상태(`data-state`)는 친구와 같이 `unseen` · `seen` 둘뿐이다(정정 전 안 본 안 만난 친구의 `unmet`은 없앴다 — 안 만난 친구인지는 칸 id `friend-stories-unmet-*`와 고리 클래스로 가른다).
+  안 만난 친구는 친구가 되기 전까지 「New」 · 낭독 「<이름>'s story, new friend」 그대로다.
+- 구현: `.story-ring-seen`은 색만(회색), 점선은 `.story-ring-unmet`만 정한다. 안 만난 친구 칸은 `story-ring-<unseen|seen> story-ring-unmet` 두 클래스를 함께 단다(`StoryFace`의 `unmet`).
+  내 스토리는 `unmet`을 달지 않으므로 실선이고, 첫 판의 내 스토리 예외 규칙(`.my-story-faces .story-ring-seen`)은 지웠다.
 - 낭독은 바뀌지 않는다(친구 「…, seen」).
-- 범위는 스토리 줄 고리만. 내 스토리 고리는 실선으로 남긴다(「이번 창을 썼음」 동그라미가 이미 회색 점선이라 겹치지 않게, `.my-story-faces .story-ring-seen`). 보기 머리 아바타에는 고리가 없다.
-- 확인: unit FS-U35(안 만난 친구의 본 것) · FS-CSS1(`friend-stories.css.unit.test.ts`, 고리 선언), ui FS-UI48(고리 클래스 · 낭독), 기기에서 둥근 점선(iOS · Android).
+- 범위는 스토리 줄 고리만. 보기 머리 아바타에는 고리가 없다.
+- 확인: unit FS-U35(안 만난 친구의 본 것) · FS-CSS1(`friend-stories.css.unit.test.ts`, 고리 선언 — 점선 선택자는 `.story-ring-unmet` 하나), ui FS-UI48(네 칸의 고리 클래스 · 상태 · 낭독), 기기에서 네 칸(iOS 시뮬레이터).
 
 #### D3 개정 ⟨내 스토리 구분 선⟩ — 내 스토리 | 다른 인물 사이 세로 선 ⟨2026-11-26⟩
 
@@ -159,7 +165,7 @@
   testers 단계도 묶음 「스토리 시험」으로 기록한다(대조군 없음) — 기록이 없으면 매시 다시 보내 하루 한 번을 지킬 수 없다.
 - 대상: 푸시 기기가 있고, 그 인물의 방이 기기에 있다고 볼 수 있고(ADR-0127 `hasRoom` 규칙), 선톡 설정이 off가 아니며, 그 스토리에 답하지 않았고,
   스토리가 올린 지 6시간 안이고, 현지 시각(프로필 · 지역 · 학습 나라 시간대, 모르면 보내지 않음)이 09 ~ 21시인 사람. 사람마다 가장 새 스토리 하나.
-- **하루 한 번 합산**: 스토리 알림은 현지 하루 시작 뒤 **어떤 묶음이든**(자동 캠페인 포함) 보낸(`group = 'sent'`) 줄이 있으면 보내지 않는다. 선톡 푸시는
+- **하루 한 번 합산**: 스토리 알림은 현지 하루 시작 뒤 **어떤 묶음이든**(자동 캠페인 포함) 보낸(`group = 'sent'`) 줄이 있으면 보내지 않는다. **→ 아래 「D7 개정 ⟨학습 캠페인⟩」(2026-11-27): 학습 자동 캠페인(「자동 · 」 · 「빈도 · 」 묶음)은 세지 않는다.** 선톡 푸시는
   `companion_proactive_push_gate`가 더 돌려주는 `pushedToday`(묶음 「선톡」 · 「스토리」 · 「스토리 시험」)가 참이면 `daily_cap`으로 건너뛴다 — 선톡의 기존 동작을
   덜 바꾸려고 셈 범위를 그 셋으로 좁혔다. 현지 시간대를 모르면(스토리 알림은 이때 보내지 않음) 선톡 쪽은 UTC 하루로 센다.
 - **대조군도 그날 선톡 푸시를 막는다**(검수 A2): 스토리 묶음(「스토리」 · 「스토리 시험」)은 대조군(`control`) 줄도 「오늘 이미 받음」으로 센다
@@ -234,6 +240,20 @@
 - 스스로 정한 기본값: 5분 타이머는 보기가 열려 있어도 돌고(결과는 보류), 목록이 서 있는 동안만 돈다. 보류 중에 또 읽으면 마지막 결과만 남긴다.
 - 확인: unit `friend-stories-reload.unit.test.ts`(FS-U15) · `friend-stories-wiring.unit.test.ts`(FS-U16) · ui `MessengerListScreen.stories-reload.ui.test.tsx`(FS-UI14 ~ UI17) ·
   `use-messenger-refresh.ui.test.tsx`(FS-UI18) · integration `App.friend-stories.integration.test.tsx`(FSI7 · FSI8) · e2e FS-E13 ~ E15.
+
+### 탭 재진입의 첫 프레임 ⟨2026-11-27⟩
+
+제보: 메뉴(하단 탭)를 바꿀 때마다 「+」(내 스토리 만들기)가 새로 서며 레이아웃이 밀리고, 스토리 줄 순서가 달랐다가 다시 바뀐다.
+
+- 원인: 탭 루트 전환은 목록 화면을 다시 마운트하고(맵만 숨김 상자로 남음, ADR-0106), 줄 재료 셋이 빈 값에서 시작했다 — 친구 스토리 · 내 스토리는 `null`이라
+  첫 프레임에 스토리 줄 대신 **추천 줄**이 서고 두 RPC가 끝나면 스토리 줄(「+」 맨 앞)로 갈아 끼웠다. 먼저 만나기 제안(`offers`)도 `[]`에서 시작해, 제안이
+  얹히면 추천 순서(제안 있는 잠긴 인물이 앞, `rankOf`)가 바뀌었다. 정렬 규칙(`storyOrderOf` · `suggestedFriendsOf`)은 하나였고, 재료가 늦게 와서 순서가 바뀐 것이다.
+- 이제 셋 다 **계정마다 실행 동안 마지막 값**을 기억해(`story-row-memory.ts` `accountMemory` · 포트 `memory` · `lastOffers`, 보이는 친구의 `lastVisibleFriends`와 같은 꼴)
+  첫 프레임을 그 값으로 그리고, 마운트 읽기는 뒤에서 한다(stale-while-revalidate). 같은 정렬 규칙이 같은 재료를 받으므로 순서가 같다. 새 값이 오면 바뀐 것만 바뀐다.
+- 기억이 있으면 첫 읽기 대기(`rowPending`)가 아니다 — 그린 줄이 곧 그 줄이다(노출 이벤트 규칙 그대로).
+- 채팅방 줄은 대화 출처가 앱 하나라(스냅숏) 이미 첫 프레임부터 같다. 기기 저장(앱을 새로 켤 때)은 하지 않는다 — 스토리는 24시간짜리라 오래된 값을 그릴 위험이 크다.
+- 확인: unit `story-row-memory.unit.test.ts`(SRM-U1 ~ U3) · ui `MessengerListScreen.story-row-memory.ui.test.tsx`(SRM-UI1 ~ UI4) ·
+  integration `App.story-row-memory.integration.test.tsx`(SRM-I1 — 탭 다섯 번 재진입, 다시 읽기 전 첫 프레임이 같은 순서).
 
 ## D5 개정 — 보기에서 바로 답장 ⟨2026-11-25⟩
 
@@ -441,6 +461,30 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
 - 확인: unit CT-U1 ~ U8(`chat-story-thumb.unit.test.ts`), ui CT-UI1 ~ UI8(`StoryQuote.thumb.ui.test.tsx`) · FS-UI8 갱신, integration CT-I1 ~ I5
   (`ChatStoryHost.integration.test.tsx`), e2e FS-E18(기기). 번들 천장은 사용자 결정으로 6,180,000 B([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 7).
 
+## D7 개정 ⟨학습 캠페인⟩ — 스토리 알림의 하루 한 번은 학습 자동 캠페인을 세지 않는다 ⟨2026-11-27⟩
+
+- **사용자 결정 A** (2026-11-27). 마이그레이션 `20270115120000_story_push_ignore_learning_campaigns.sql`. 운영 미적용.
+- 까닭: [ADR-0208](0208-push-frequency-experiment.md)은 자동 학습 푸시를 칸 셋으로 나눈다(안 보냄 · 하루 1번 · 하루 2번).
+  D7대로 「어떤 묶음이든」 세면 스토리 알림(현지 09 ~ 20시)이 칸마다 다르게 막힌다. 「하루 2번」은 12시 뒤, 「하루 1번」은 20시 뒤에 막히고, 대조군은 막히지 않는다.
+  그러면 빈도 실험의 결과에 스토리 알림 노출 차이가 섞이고, 스토리 알림의 대조군 비교에도 학습 캠페인 칸이 섞인다.
+- 바꾼 것: 알림 후보 `companion_story_push_candidates`가 `companion.pushed_today(…, null)` 대신 새 `companion.story_pushed_today`를 쓴다.
+  셈은 같되, 묶음 이름이 「자동 · 」(앞선 자동 캠페인, ADR-0130 D12) 또는 「빈도 · 」(빈도 실험, ADR-0208 D1)로 시작하는 줄은 뺀다
+  (`companion.is_learning_campaign_series`). 이름은 Edge Function의 `seriesOf` · `frequencySeriesOf`와 같아야 한다. 통합 테스트가 그 함수로 줄을 만든다.
+- 그대로인 것:
+  - 선톡 · 스토리 · 스토리 시험 · 스토리 반응을 받은 날은 그대로 막힌다. 스토리 묶음의 대조군 줄도 그대로 센다.
+  - `companion.pushed_today` 자체와 선톡 푸시 문(`companion_proactive_push_gate` — 원래 캠페인을 세지 않음)은 바꾸지 않았다.
+  - 반응 푸시 문(하루 판정 없음)도 바꾸지 않았다. 전체 하루 상한은 새로 두지 않았다.
+- **콘솔 캠페인(ADR-0130 · 0175)**: 기본안은 「사람이 보내는 캠페인은 계속 센다」이다. 빼는 목록을 학습 자동 캠페인 접두 둘로만 좁혔고, 그 밖의 묶음은 모두 센다.
+  다만 콘솔은 발송을 `push_campaign_sends`에 남기지 않는다. 기록은 로컬 파일이고, 보상 캠페인은 `push_campaign_reward_recipients`에 남긴다.
+  그래서 콘솔 캠페인은 이 개정 전에도 스토리 알림의 셈에 잡히지 않았고, 지금도 잡히지 않는다. 2026-11-27 운영 표에도 콘솔 묶음 줄은 없다.
+  콘솔 발송을 세려면 콘솔이 이 표에 기록하거나 보상 수신자 표를 셈에 더해야 한다. 이 개정의 범위 밖이므로 따로 결정한다.
+- 대가: 같은 날 학습 알림(최대 2통)과 스토리 알림(1통)을 함께 받는 사람이 생긴다. 하루 최대 3통이고, 반응 푸시는 따로다.
+  ADR-0208 D3에 따라 학습 캠페인은 다른 알림이 6시간 안에 배정됐으면 건너뛴다. 그래서 같은 몇 시간 안에 겹쳐 오지는 않는다.
+- 운영 적용 순서: 이 마이그레이션 → `push-campaigns` 배포(ADR-0208). 둘 다 사용자 승인 뒤 진행한다.
+  마이그레이션을 먼저 넣으면 지금 운영 중인 「자동 · 」 캠페인(현지 20시)도 20시대 스토리 알림을 막지 않는다.
+- 확인: SQL `friend-stories.integration.test.ts` FS18d(캠페인만 받은 날 나감 · 선톡/스토리/반응을 받은 날 막힘 · 그 밖의 묶음은 셈) ·
+  FS18e(선톡 푸시 문 · 반응 푸시 문 · `pushed_today`는 그대로).
+
 ## 스스로 정한 기본값(사용자가 바꿀 수 있음)
 
 - 스토리 데이터 = 서버 표(D1) · 하루 한 번 UTC 01 ~ 10시(인물마다 고정) · 24시간 만료 · 가장 적게 올린 줄부터 · 본 것 = 기기 저장(D3).
@@ -456,6 +500,6 @@ D5 개정의 「칸 밖을 누르면 키보드만 내리고 넘기지 않음」�
   분석 이름 수(AN1 104 · AB3 77/74).
 - ui: `FriendStoriesRow` · `StoryViewer` · `StoryQuote` · `MessengerListScreen.stories` · `MessengerChatScreen.story`(FS-UI1 ~ UI9).
 - integration: `App.friend-stories.integration.test.tsx`(FSI1 · FSI2 · FSI3 · FSI6 · FSI9) · `chat-fixture-remote.story.integration.test.ts`(FSI-R1 · R2).
-- 서버: SQL `friend-stories.integration.test.ts`(FS1 ~ FS19) · `friend-stories-pool.integration.test.ts`(FSP1 · FSP2) · `companion-proactive-push`(PG1 `pushedToday` · PP9) ·
+- 서버: SQL `friend-stories.integration.test.ts`(FS1 ~ FS20 · FS18d · FS18e) · `friend-stories-pool.integration.test.ts`(FSP1 · FSP2) · `companion-proactive-push`(PG1 `pushedToday` · PP9) ·
   chat-send(CSS1 ~ CSS3) · `companion-stories-handler`(SH1 ~ SH4) · send-push(SP1) · 계약 패키지(CS3e).
 - e2e: [docs/e2e/friend-stories.md](../e2e/friend-stories.md)(기기 절차). 계약 · 테스트 계획: [docs/specs/friend-stories.md](../specs/friend-stories.md).

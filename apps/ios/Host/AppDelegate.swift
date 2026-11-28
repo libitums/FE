@@ -13,11 +13,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       AirbridgeEvents.start(config)
     }
 
+    // 오류 수집(ADR-0207). Airbridge가 실행 끝 처리의 맨 위를 요구해 그 바로 뒤다 — 뒤 SDK들의 시작 크래시도 잡힌다.
+    // DSN이 없거나 Debug 구성이면 SDK를 한 줄도 부르지 않는다.
+    CrashReporting.start(CrashReportConfig.fromBundle())
+
     // RevenueCat 구매 SDK(ADR-0144 2단계). 키가 없으면 한 줄도 부르지 않는다. 사용자 id는 로그인 뒤 JS가 맞춘다.
     if let config = PurchasesConfig.fromBundle() {
       PurchasesSDK.start(config)
       // RevenueCat → Airbridge 구매 이벤트가 기기 · 광고 클릭에 잇도록 Airbridge 기기 id를 건다(비동기, 두 SDK가 섰을 때만).
       PurchasesAttribution.linkAirbridgeDevice()
+    }
+
+    // AdMob 보상형 광고(ADR-0209 D10). 앱 ID만 읽어 둔다 — SDK는 서버가 광고 단위를 준 첫 불러오기 때 시작한다.
+    if let config = RewardedAdConfig.fromBundle() {
+      RewardedAdSDK.configure(config)
     }
 
     // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.

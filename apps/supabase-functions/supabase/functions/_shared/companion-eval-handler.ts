@@ -3,9 +3,10 @@
 //
 // GET  → 지금 설정된 모델 · 고를 수 있는 모델 · LLM 종류. `?docs=1`이면 프롬프트 · 캐릭터 · 설정 문서(`companion-eval-docs.ts`).
 // POST { kind, model?, judgeModel?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄 · `suggest()` 칩 셋 · 학습 표현을 넣은 답(`learning`) ·
-// 운영 페르소나로 만든 답장과 그 채점(`reply`, `companion-eval-reply.ts`). 케이스 하나가 실패해도
+// 운영 페르소나로 만든 답장과 그 채점(`reply`, `companion-eval-reply.ts`) · 기억 작업(`memory`, `companion-eval-memory.ts`, DB에 적용하지 않음). 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
 
+import { guardrailRev } from "./guardrail-rev.ts";
 import type {
   ChatSendEnv,
   ChatSendLogEntry,
@@ -21,6 +22,7 @@ import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
 import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import { evalLearning, type LearningEvalOutput } from "./companion-eval-learning.ts";
+import { evalMemory, type MemoryEvalOutput } from "./companion-eval-memory.ts";
 import { defaultJudgeModel } from "./companion-eval-judge.ts";
 import { evalReply, type ReplyEvalOutput, UnsupportedCase } from "./companion-eval-reply.ts";
 import { evalSuggestions } from "./companion-eval-suggest.ts";
@@ -67,6 +69,7 @@ type CaseResult =
         | { text: string }
         | { items: ReplySuggestion[]; candidates: CandidateRecord[] }
         | LearningEvalOutput
+        | MemoryEvalOutput
         | ReplyEvalOutput;
       ms: number;
     }
@@ -179,6 +182,8 @@ function runCase(
     return withTimeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs, (signal) =>
       evalLearning(llm, item, signal),
     );
+  // 운영 기억 작업은 턴 뒤에 30초까지 기다린다(`companion-after-turn.ts`).
+  if (kind === "memory") return withTimeout(30_000, (signal) => evalMemory(llm, item, signal));
   if (kind === "suggestions")
     return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, (signal) =>
       evalSuggestions(llm, item, signal),
@@ -234,8 +239,15 @@ export function createCompanionEvalHandler(
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) return json(400, { error: "invalid_request" });
     const { kind, cases } = parsed.data;
+    // 기억 추출은 운영에서 검사 모델로 돈다(`companion-llm.ts`의 extractMemories).
     const step =
-      kind === "suggestions" ? "suggest" : kind === "learning" || kind === "reply" ? "reply" : kind;
+      kind === "suggestions"
+        ? "suggest"
+        : kind === "learning" || kind === "reply"
+          ? "reply"
+          : kind === "memory"
+            ? "moderation"
+            : kind;
     const model = parsed.data.model ?? models[step];
     const llm = deps.llmFor(model);
     const judgeModel = kind === "reply" ? (parsed.data.judgeModel ?? defaultJudgeModel) : null;
@@ -275,6 +287,11 @@ export function createCompanionEvalHandler(
       status: 200,
       outcome: `${kind} ${model}${judgeModel ? ` judge=${judgeModel}` : ""} ok=${results.filter((result) => result.ok).length}/${results.length}`,
     });
-    return json(200, judgeModel ? { kind, model, judgeModel, results } : { kind, model, results });
+    // 이 실행이 쓴 지시문의 리비전(운영 도구 재현이 판정 줄의 리비전과 견준다 — ops-dashboard 계약 G-B절).
+    const rev = guardrailRev();
+    return json(
+      200,
+      judgeModel ? { kind, model, judgeModel, rev, results } : { kind, model, rev, results },
+    );
   };
 }

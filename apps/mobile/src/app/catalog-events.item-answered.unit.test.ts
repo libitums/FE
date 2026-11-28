@@ -160,6 +160,24 @@ describe("itemAnsweredEventOf — 말하기 인식 진단", () => {
     ).toMatchObject({ result: "correct", speechErrorCode: "0", speechFallback: "pack-missing" });
   });
 
+  test("IE12. 말하기 등급(perfect · close · incorrect)을 grade로 싣는다 — 들은 글자는 싣지 않는다", () => {
+    const event = itemAnsweredEventOf("u01-mina", "S5", ref, {
+      questionIndex: 0,
+      outcome: "correct",
+      density: "regular",
+      grade: "close",
+    });
+    expect(event).toMatchObject({ result: "correct", grade: "close" });
+    expect(JSON.stringify(event)).not.toContain("heard");
+    expect(
+      itemAnsweredEventOf("u01-mina", "S5", ref, {
+        questionIndex: 0,
+        outcome: "skipped",
+        density: "regular",
+      }),
+    ).not.toHaveProperty("grade");
+  });
+
   test("IE11. 진단이 없으면 speech 키가 하나도 없다", () => {
     const event = itemAnsweredEventOf("u01-mina", "S5", ref, {
       questionIndex: 0,

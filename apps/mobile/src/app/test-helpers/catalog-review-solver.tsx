@@ -115,7 +115,7 @@ export function answerQuestion(activity: CatalogActivity, questionIndex: number,
     case "speak-word": {
       const picture = screen.queryByTestId("speak-word-picture-image");
       if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
-      tapId("learning-shell-action");
+      tapId("speak-word-mic-button");
       return;
     }
     default:

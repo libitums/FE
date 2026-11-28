@@ -15,7 +15,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { ChatModalFrame } from "./ChatModalFrame";
 import { MEMORY_MAX_LENGTH, normalizeMemoryText } from "./chat-settings-rules";
-import type { ChatMemory, ChatMemoryScope, ChatSource } from "./chat-source.contract";
+import type { ChatMemory, ChatSource } from "./chat-source.contract";
 import { chatSettingsTestIds as ids } from "./chat-settings.contract";
 import { MemoryIconButton } from "./MemoryIconButton";
 import { useChatMemories } from "./use-chat-source";
@@ -25,9 +25,8 @@ import "./chat-settings.css";
 
 export type ChatMemoriesScreenProps = {
   readonly source: ChatSource;
-  readonly scope: ChatMemoryScope;
-  /** 인물 층이면 그 이름, 공유 층이면 null. */
-  readonly name: string | null;
+  readonly characterId: string;
+  readonly name: string;
   readonly onBack: () => void;
 };
 
@@ -36,10 +35,10 @@ type Dialog =
   | { readonly kind: "edit"; readonly memory: ChatMemory; readonly text: string }
   | { readonly kind: "delete"; readonly memory: ChatMemory };
 
-// 기억 화면입니다(ADR-0126) — 공유 층 · 인물 층 같은 모양. 고치기는 시트, 지우기는 확인 대화를 거칩니다.
+// 한 인물의 기억 화면입니다(ADR-0126) — 공유 층 화면은 없습니다(ADR-0210 D6). 고치기는 시트, 지우기는 확인 대화를 거칩니다.
 export function ChatMemoriesScreen({
   source,
-  scope,
+  characterId,
   name,
   onBack,
 }: ChatMemoriesScreenProps): ReactNode {
@@ -51,7 +50,7 @@ export function ChatMemoriesScreen({
     const date = new Date(at);
     return chatCopy.time.date(date.getMonth() + 1, date.getDate());
   };
-  const list = useChatMemories(source, scope);
+  const list = useChatMemories(source, { kind: "character", characterId });
   const [dialog, setDialog] = useState<Dialog>({ kind: "none" });
   const close = () => setDialog({ kind: "none" });
   useScreenBack(() => {
@@ -59,7 +58,7 @@ export function ChatMemoriesScreen({
     if (dialog.kind !== "none") close();
     else onBack();
   });
-  const title = name === null ? copy.titleShared : copy.titleCharacter(name);
+  const title = copy.titleCharacter(name);
   // 빈 글이거나 바꾼 것이 없으면 Save를 끕니다 — 같은 글로 저장해 「Edited」가 붙지 않게요.
   const normalized = dialog.kind === "edit" ? normalizeMemoryText(dialog.text) : null;
   const editText =

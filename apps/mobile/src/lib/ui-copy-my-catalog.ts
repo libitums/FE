@@ -132,6 +132,13 @@ export const readAloudMy: ReadAloudCopy = {
 export const speakWordMy: SpeakWordCopy = {
   instruction: "ပုံနှင့် ကိုက်ညီသော စကားလုံးကို ပြောပါ။",
   recognitionUnavailable: "အသံ မှတ်သားမှု ယခု မရနိုင်ပါ။ ဆက်ရန် ကျော်ရန် ခလုတ်ကို တို့ပါ။",
+  result: {
+    perfect: "ပြီးပြည့်စုံပါတယ်!",
+    almostPerfect: "နီးပါး ပြီးပြည့်စုံပါတယ်",
+    modelAnswer: "နမူနာ အဖြေ",
+    youSaid: "သင်ပြောခဲ့သည်",
+    hearAnswer: "အဖြေကို နားထောင်ရန်",
+  },
 };
 
 export const pairMatchMy: PairMatchCopy = {

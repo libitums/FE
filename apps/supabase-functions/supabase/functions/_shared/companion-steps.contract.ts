@@ -22,6 +22,7 @@ export type TranslationRequest = {
 export type MemoryItem = {
   readonly kind: "fact" | "event";
   readonly content: string;
+  /** 늘 거짓 — 기억은 들은 캐릭터의 층에만 쓴다(ADR-0210 D6). `companion_apply_memory_ops`의 칸이라 남겨 둔다. */
   readonly shared: boolean;
 };
 
@@ -49,6 +50,8 @@ export type MemoryRequest = {
   /** 아직 기억을 뽑지 않은 메시지들(유저 · 캐릭터, 오래된 것부터) — 턴마다가 아니라 몇 턴씩 묶어서 뽑는다. */
   readonly messages: readonly HistoryEntry[];
   readonly existing: readonly ExistingMemory[];
+  /** 마지막 메시지의 학습자 현지 날짜(YYYY-MM-DD, 20270114). 상대 시간을 날짜로 바꿔 적는 데 쓴다 — 옛 DB면 없다. */
+  readonly localDate?: string;
   /** 미성년자 · 나이 모름이면 건강 · 심리 정보를 뺀다(뉴욕 Art.48). */
   readonly minor: boolean;
   readonly signal: AbortSignal;

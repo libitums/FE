@@ -10,7 +10,7 @@ import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
 import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
 import { uiLanguageStorageKey } from "../lib/ui-language";
 import { productUnavailableLoginMethods, socialLoginMethods } from "../screens/login/login";
-import { passLearnerSignup } from "./test-helpers/learner-signup";
+import { passLearnerBirthYearIfShown, passLearnerSignup } from "./test-helpers/learner-signup";
 import {
   contentNotFoundResponse,
   isContentRequest,
@@ -416,6 +416,7 @@ function continueLanguageSelect(): void {
     within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),
     {},
   );
+  passLearnerBirthYearIfShown();
 }
 
 function startJourney(): void {
@@ -934,7 +935,8 @@ test("[IE6b] 언어 선택 → ② 나라 → ① 이름 → 코드 검증 순�
 
 // 2026-09-21 디자인 반영 — 여정 입장의 뒤로가기는 언어 선택으로 돌아갑니다.
 // 개정(test-plan §5.2 IE7b) — 비동기 헬퍼로 바뀝니다.
-test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선다", async () => {
+// 개정(ADR-0059 2026-11-27) — 회원은 언어 선택과 여정 입장 사이에 ④ 출생 연도가 있어, 뒤로는 ④ → ③ 한 칸씩입니다.
+test("[IE7b] 여정 입장에서 뒤로가기를 누르면 ④ 출생 연도, 한 번 더면 언어 선택이 선다", async () => {
   const { starts } = stubHostWithWebAuthentication(completedWebAuthentication);
   const calls = stubSupabase({ pkce: { status: 200, body: sessionResponseBody() } });
   vi.useFakeTimers();
@@ -957,6 +959,14 @@ test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선�
   );
 
   expect(screen.queryByTestId("journey-entry-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learner-birth-year-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("learner-birth-year-screen-back")).getByTestId(
+      "ui-lynx-round-button",
+    ),
+    {},
+  );
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 });
 
@@ -1165,7 +1175,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 빈 저장소로 새�
 // (스플래시 부재는 이 배열 안에 "splash"가 없다는 것으로 직접 확인합니다).
 // 개정(test-plan §4.2) — `stubSupabase`로 경로를 통과하고 코드는 6자리입니다. 열람
 // 순서 배열은 그대로입니다.
-test("[IE13] entry_screen_viewed가 화면 일곱에 대해 각 전이 직전 1회씩 순서대로 나고 스플래시에는 나지 않는다", async () => {
+test("[IE13] entry_screen_viewed가 화면 여덟에 대해 각 전이 직전 1회씩 순서대로 나고 스플래시에는 나지 않는다", async () => {
   emptyStorageStub();
   stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -1195,6 +1205,7 @@ test("[IE13] entry_screen_viewed가 화면 일곱에 대해 각 전이 직전 1�
     "learner-name",
     "learner-country",
     "language-select",
+    "learner-birth-year",
     "journey-entry",
   ]);
   expect(viewedScreens).not.toContain("splash");

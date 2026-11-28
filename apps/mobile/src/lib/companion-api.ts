@@ -19,6 +19,7 @@ import {
   profileL1From,
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
+import { lastMessagesFrom } from "../screens/messenger-chat/companion-activity-parse";
 import { earlyOffersFrom, earlyUnlockFrom } from "../screens/messenger-chat/early-access-parse";
 import { friendStoriesFrom } from "../screens/messenger-chat/friend-stories-parse";
 import { myStoriesRemote } from "./companion-my-stories-api";
@@ -84,6 +85,9 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
   return {
     media,
     wallet: async () => walletOf(await call("/rest/v1/rpc/companion_get_wallet", {})),
+    // 목록 요약(ADR-0213) — 방별 서버 마지막 메시지 시각, 목록 맞추기가 바뀐 방만 다시 읽게.
+    lastMessages: async () =>
+      lastMessagesFrom(await call("/rest/v1/rpc/companion_list_characters", {})),
     // 엽전 먼저 만나기(20261213, ADR-0162 D5).
     earlyAccess: {
       offers: async () =>
@@ -201,6 +205,15 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
                 text: request.text,
                 input_mode: "text",
                 ...(request.storyId === undefined ? {} : { story_id: request.storyId }),
+                // 칩을 탭해 보냄(ADR-0210 D1) — 모르는 키는 서버가 버린다.
+                ...(request.suggestion === undefined
+                  ? {}
+                  : {
+                      suggestion: {
+                        message_id: request.suggestion.messageId,
+                        index: request.suggestion.index,
+                      },
+                    }),
               }),
             },
             {

@@ -86,7 +86,10 @@ export function readCachedSource(
   return { manifest: safeGet(store, CONTENT_MANIFEST_KEY), episodes };
 }
 
-/** 항목마다 매니페스트가 적은 언어의 저장 번역 파일 원문을 읽습니다(ADR-0102) — 에피소드 id → 언어 → 원문. */
+/**
+ * 항목마다 매니페스트가 적은 언어의 저장 번역 파일 원문을 읽습니다(ADR-0102) — 에피소드 id → 언어 → 원문. 활성 · 받은
+ * 매니페스트 항목을 함께 넘길 수 있고, 같은 (편, 언어)는 한 번만 읽습니다.
+ */
 export function readCachedTranslations(
   store: ContentStore,
   entries: readonly ManifestEntry[],
@@ -94,6 +97,7 @@ export function readCachedTranslations(
   const out: Record<string, Record<string, string>> = {};
   for (const entry of entries) {
     for (const language of Object.keys(entry.translations ?? {})) {
+      if (out[entry.id]?.[language] !== undefined) continue;
       const text = safeGet(store, contentTranslationKey(language, entry.id));
       if (text === null) continue;
       out[entry.id] = { ...out[entry.id], [language]: text };

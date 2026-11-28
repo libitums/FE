@@ -136,6 +136,13 @@ export const speakWordEs: SpeakWordCopy = {
   instruction: "Di la palabra de la imagen.",
   recognitionUnavailable:
     "El reconocimiento de voz no está disponible ahora. Toca Omitir para continuar.",
+  result: {
+    perfect: "¡Perfecto!",
+    almostPerfect: "Casi perfecto",
+    modelAnswer: "Respuesta modelo",
+    youSaid: "Dijiste",
+    hearAnswer: "Escuchar la respuesta",
+  },
 };
 
 export const pairMatchEs: PairMatchCopy = {

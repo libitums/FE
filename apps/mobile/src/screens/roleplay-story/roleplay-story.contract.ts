@@ -2,8 +2,11 @@
 // 턴 모양은 최종 테스트의 것을 그대로 받습니다 — 같은 콘텐츠(`RP` 스텝)를 같은 계획 함수로 만듭니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { MicPermissionContext } from "../../lib/mic-permission-event.contract";
+import type { SpokenAnswerJudgement } from "../../lib/speaking-judge";
 import type { SpeechMissReason, SpeechUnavailableReason } from "../../lib/speech-attempt";
 import type { SafeAreaInsets } from "../../lib/safe-area";
+import type { ChoiceRomanization } from "../../lib/session-options";
 import type { CatalogRoleplayTurns } from "../catalog-final/catalog-final.contract";
 
 /**
@@ -19,13 +22,17 @@ export type RoleplayTalkState = {
   readonly heard: string;
   /** 이번 턴의 판정입니다. `heard` 밖에서는 `null`입니다. */
   readonly verdict: AnswerResult | null;
-  /** 힌트(내가 할 말의 뜻)를 펼쳤는가입니다. 턴이 바뀌면 접힙니다. */
+  /** 이번 턴의 발음 판정(등급 · 모범 문장)입니다. `heard` 밖에서는 `null`입니다. */
+  readonly judgement: SpokenAnswerJudgement | null;
+  /** 힌트 줄(소리 듣기 · 한국어 보기)을 펼쳤는가입니다. 뜻은 패널 맨 위에 늘 섭니다. 턴이 바뀌면 접힙니다. */
   readonly hintShown: boolean;
+  /** 이번 턴에 쓴 가장 강한 힌트 — 한국어 보기(`show`)가 소리 듣기(`listen`)보다 앞섭니다. 안 썼으면 `null`. */
+  readonly hintUsed: "listen" | "show" | null;
   /** 듣지 못한 까닭 — `unavailable`에서만 값이 있습니다(권한 · 인식기 / 받아쓰기 꺼짐 / 그 한 번의 실패). */
   readonly unavailableReason: SpeechUnavailableReason | null;
   /** 못 알아들은 까닭 — `missed`에서만 값이 있습니다(ADR-0181). */
   readonly missedReason: SpeechMissReason | null;
-  /** 못 알아들은 뒤 다시 듣는 중인가 — 그 동안 Try again 자리가 Stop으로 남습니다(포커스를 잃지 않게). */
+  /** 못 알아들은 뒤 다시 듣는 중인가(기록용) — 화면은 마이크 하나가 Try again → Stop으로 이름만 바뀝니다(ADR-0206 D5 개정). */
   readonly retrying: boolean;
   /** 넘긴 턴의 판정입니다. 건너뛴 턴은 싣지 않습니다(인식 불가 · 말할 수 없음을 오답으로 접지 않습니다). */
   readonly results: readonly AnswerResult[];
@@ -34,10 +41,17 @@ export type RoleplayTalkState = {
 
 export type RoleplayTalkAction =
   | { readonly type: "start" }
-  | { readonly type: "heard"; readonly text: string; readonly verdict: AnswerResult }
+  | {
+      readonly type: "heard";
+      readonly text: string;
+      readonly verdict: AnswerResult;
+      readonly judgement: SpokenAnswerJudgement | null;
+    }
   | { readonly type: "missed"; readonly reason: SpeechMissReason }
   | { readonly type: "unavailable"; readonly reason: SpeechUnavailableReason }
   | { readonly type: "hint" }
+  | { readonly type: "hintListen" }
+  | { readonly type: "hintShow" }
   | { readonly type: "retry" }
   | { readonly type: "next" }
   | { readonly type: "skip" };
@@ -79,6 +93,21 @@ export type RoleplayTalkScreenProps = {
   /** 마지막 턴 뒤 — 한 번만 부릅니다. */
   readonly onFinish: (results: readonly AnswerResult[], skippedCount: number) => void;
   readonly onExit: () => void;
+  /** 마이크 권한 안내의 맥락(ADR-0206) — 롤플레이는 레슨 밖이라 열쇠가 없습니다. 없으면 이벤트도 없습니다. */
+  readonly mic?: MicPermissionContext;
+  /** 턴 하나를 넘기거나 건너뛸 때마다 한 번(측정). 들은 글자는 싣지 않습니다. */
+  readonly onTurnAnswered?: (report: RoleplayTurnReport) => void;
+  /** 로마자 스위치(ADR-0188) — 켜면 대사 상자에 로마자 줄이 섭니다. 없으면 `"hidden"`. */
+  readonly romanization?: ChoiceRomanization;
+};
+
+/** 턴 하나를 넘길 때의 측정입니다(`roleplay-panel.ts`가 만듭니다). */
+export type RoleplayTurnReport = {
+  /** 1부터. */
+  readonly turn: number;
+  readonly result: "correct" | "incorrect" | "skipped";
+  readonly grade?: "perfect" | "close" | "incorrect";
+  readonly hintUsed?: "listen" | "show";
 };
 
 /** 에피소드 롤플레이의 분석 이벤트입니다 — 열림과 끝까지 마침. 대사 · 들은 문장은 싣지 않습니다(ADR-0029 D14). */
@@ -91,6 +120,18 @@ export type RoleplayStoryEvent =
       readonly correctCount: string;
       readonly judgedCount: string;
       readonly skippedCount: string;
+    }
+  /** 턴 하나를 넘기거나 건너뛴 순간 한 번(ADR-0201 D6 적용 2) — 들은 문장 · 대사는 싣지 않습니다. */
+  | {
+      readonly name: "roleplay_story_turn_answered";
+      readonly episodeId: string;
+      /** 몇째 턴인가(1부터, 10진 문자열). */
+      readonly turn: string;
+      readonly result: "correct" | "incorrect" | "skipped";
+      /** 판정이 났을 때만 — perfect · close · incorrect. */
+      readonly grade?: "perfect" | "close" | "incorrect";
+      /** 쓴 힌트 — 소리 듣기(listen) · 한국어 보기(show). 안 썼으면 없습니다. */
+      readonly hintUsed?: "listen" | "show";
     };
 
 export type RoleplayStoryCopy = {
@@ -103,6 +144,12 @@ export type RoleplayStoryCopy = {
   readonly speak: string;
   readonly stop: string;
   readonly listening: string;
+  /** 아래 패널 맨 위 머리 줄 — 내가 말할 문장(시안 R1). */
+  readonly yourLine: string;
+  /** 힌트 단계 ② 내 문장 소리 듣기(시안 R5). */
+  readonly hearIt: string;
+  /** 힌트 단계 ③ 내 문장 한국어 · 로마자 보기(시안 R5). */
+  readonly showKorean: string;
   readonly showHint: string;
   readonly hint: (translation: string) => string;
   readonly cantSpeak: string;
