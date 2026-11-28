@@ -8,6 +8,8 @@
 // - 대화 글을 신뢰하지 않는 데이터로 감싸는 규칙(`PROMPT_DATA_RULES`).
 // - 고정 대상 기준 그림(ADR-0179 D8, 2026-11-28): PLAN_SYSTEM의 대상 규칙 줄 셋 · PLAN_TOOL `subjects` · 입력의 대상 목록 · 대상 문장
 //   (`companion-snapshot-v2-subjects.ts`) · 검사 글 `SUBJECT_CHECK`. 아직 lab에 없다 — lab에도 같은 글을 넣는다.
+// - 학습자는 기본으로 없다(ADR-0179 D9, 2026-11-28): PLAN_SYSTEM의 학습자 두 줄 · PLAN_TOOL `learner` 설명 · `learnerClause` ·
+//   CHECK_SYSTEM의 learner matches 정의를 고쳤다. 아직 lab에 없다 — lab에도 같은 글을 넣는다.
 //
 // 기준 그림은 대시보드가 미리 합쳐 `companion-refs/v2/<slug>/`에 올린다(ops-dashboard `snapshot_bundle.py`): `manifest.json`(옷장 ·
 // 체형 유지 · 파일과 역할) + 표정 8 × 그림 있는 옷마다 한 장. 묶음이 없는 인물은 v1으로 그린다.

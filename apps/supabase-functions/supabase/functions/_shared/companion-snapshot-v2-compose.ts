@@ -16,24 +16,28 @@ import { type RoutedSubject, subjectText } from "./companion-snapshot-v2-subject
 const LEARNER_TEXT: Record<SnapshotSelf, Record<"back_view" | "hands", string>> = {
   female: {
     back_view:
-      "The learner, a young woman with long hair, is seen only from behind — back of the head, hair and shoulders, facing away from the viewer — never her face.",
-    hands: "Only the learner's hands appear at the frame edge — never her face.",
+      "The learner, a young woman with long hair, is seen only from behind at the edge of the frame, a small part of the picture — back of the head, hair and a shoulder, facing away from the viewer — never her face.",
+    hands:
+      "Only the learner's hand or forearm appears at the frame edge, a small part of the picture — never her face or body.",
   },
   male: {
     back_view:
-      "The learner, a young man with short hair, is seen only from behind — back of the head, hair and shoulders, facing away from the viewer — never his face.",
-    hands: "Only the learner's hands appear at the frame edge — never his face.",
+      "The learner, a young man with short hair, is seen only from behind at the edge of the frame, a small part of the picture — back of the head, hair and a shoulder, facing away from the viewer — never his face.",
+    hands:
+      "Only the learner's hand or forearm appears at the frame edge, a small part of the picture — never his face or body.",
   },
   hidden: {
     back_view:
-      "Only the learner's hands appear at the frame edge — no head, hair or back view, never a face.",
+      "Only the learner's hand or forearm appears at the frame edge, a small part of the picture — no head, hair or back view, never a face.",
     hands:
-      "Only the learner's hands appear at the frame edge — no head, hair or back view, never a face.",
+      "Only the learner's hand or forearm appears at the frame edge, a small part of the picture — no head, hair or back view, never a face.",
   },
 };
 
+/** 학습자 문장. 기본은 없음(사용자 결정 2026-11-28) — 없을 때도 남의 손 · 팔 · 뒷모습이 앞에 끼지 않게 적는다. */
 export function learnerClause(learner: Learner, self: SnapshotSelf): string {
-  if (learner === "none") return "The character is alone in the picture; no second main person.";
+  if (learner === "none")
+    return "The character is alone in the picture; no second main person, and no other person's hands, arms, shoulder or back in the foreground.";
   return (LEARNER_TEXT[self] ?? LEARNER_TEXT.female)[learner];
 }
 

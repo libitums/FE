@@ -93,8 +93,8 @@ Make the snapshots varied and alive, like real photos a friend sends:
 - A street cat the character feeds outside is never inside a home: pick it only for outdoor scenes (in front of the building, an alley), never in the character's room.
 - Screens (a monitor, TV, phone or game console) show only a soft glow: no logos, game titles or real game screens, even when the chat is about a game.
 Rules (the app adds these to the prompt too — plan within them):
-- The learner (the app user) appears only when the message shows the two are physically together in this moment (walking together, handing something over, sharing an umbrella, sitting side by side). If they are only chatting, texting or calling, the learner is not there: learner "none", and do not use the over_shoulder shot.
-- The learner is described in "Learner look". The learner never shows a face. learner = "back_view" only for a view from behind (back of the head, hair, shoulders), "hands" for hands at the frame edge, "none" when the learner is not in the picture. If the learner look says hands and a shoulder only, never choose "back_view".
+- The learner (the app user) is not in the picture by default: learner "none" — the character alone, a selfie, or what the character sees or shows. Put the learner in only when the chat makes it plain that the two are physically in the same place together in this moment (walking side by side, handing something over, sharing an umbrella, sitting at the same table). If that only seems likely or is not stated, or they are only chatting, texting or calling, the learner is not there: learner "none", and do not use the over_shoulder shot.
+- The learner is described in "Learner look". The learner never shows a face. When the learner is in the picture, show as little of them as the moment allows: "hands" for a hand or forearm at the frame edge (the usual choice), "back_view" only when a view from behind is needed (back of the head, hair, a shoulder at the edge of the frame), "none" when the learner is not in the picture. If the learner look says hands and a shoulder only, never choose "back_view".
 - No speech bubbles, captions or dialogue text. Short natural background text (a sign, a menu) only if the scene needs it, in background_text; otherwise null.
 - Affection between the character and the learner may go as far as holding hands or a hug, drawn modestly and only when the message shows it. No kissing or anything more intimate, no suggestive pose, no body emphasis, nothing unsafe for a teenager.
 - aspect: "3:2" for a setting or two people, "1:1" for a close single-person moment.
@@ -144,7 +144,12 @@ export const PLAN_TOOL = {
         type: ["string", "null"],
         description: "2-4 English words naming the new outfit",
       },
-      learner: { type: "string", enum: [...LEARNER] },
+      learner: {
+        type: "string",
+        enum: [...LEARNER],
+        description:
+          'default "none"; another value only when the chat plainly shows the two together in person right now',
+      },
       subjects: {
         type: "array",
         maxItems: 2,
@@ -186,7 +191,7 @@ export const PLAN_TOOL = {
 };
 
 export const CHECK_SYSTEM = `You check a generated "snapshot" illustration for a Korean-learning chat app. Image 1 is the character's face reference, image 2 the generated snapshot. The pose, framing and place are meant to differ from the reference; the outfit may be the same or different.
-Judge: safety (no sexual content, suggestive pose, body emphasis, kissing or anything more intimate than holding hands or a hug, violence; safe for a teenager), identity (is the main character the same person as the reference — judge the face, hairstyle and hair colour only, not the clothes: 1 = different person, 5 = same), garbled text (broken letters, fake glyphs, speech bubbles or dialogue text), learner face (a second person whose eyes, nose or mouth are visible — the back of a head, hair, a shoulder, hands, or tiny faceless background passers-by do NOT count), learner matches (the learner appears only as the plan says: "none" = no second main person, "back_view" = seen from behind only, "hands" = hands only). Write the reasons first, then the fields.`;
+Judge: safety (no sexual content, suggestive pose, body emphasis, kissing or anything more intimate than holding hands or a hug, violence; safe for a teenager), identity (is the main character the same person as the reference — judge the face, hairstyle and hair colour only, not the clothes: 1 = different person, 5 = same), garbled text (broken letters, fake glyphs, speech bubbles or dialogue text), learner face (a second person whose eyes, nose or mouth are visible — the back of a head, hair, a shoulder, hands, or tiny faceless background passers-by do NOT count), learner matches (the learner appears only as the plan says: "none" = no second main person and no other person's hands, arms, shoulder or back in the foreground, "back_view" = seen from behind only, "hands" = hands or forearms only). Write the reasons first, then the fields.`;
 
 const CHECK_ROMANCE = "kissing or anything more intimate than holding hands or a hug, violence";
 const CHECK_NO_ROMANCE = "romance, violence";

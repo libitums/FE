@@ -5,16 +5,19 @@ import { createMediaHandler } from "./companion-media-handler.ts";
 import { type MediaEnv, mediaEnvFrom } from "./companion-media-env.ts";
 import { CHECK_MINOR_RULES, PROMPT_MINOR_RULES } from "./companion-snapshot-prompts.ts";
 import {
+  CHECK_SYSTEM,
   checkSystem,
   compose,
   FIGURE_CHECK,
   FIGURE_TEXT,
+  learnerClause,
   type Manifest,
   manifestFrom,
   MODEST_TEXT,
   normalizePlan,
   PLAN_SYSTEM,
   planContent,
+  PLAN_TOOL,
   planSystem,
   referenceText,
   route,
@@ -212,7 +215,9 @@ test("SV6. 조립 — 합친 한 장 문장 · 비율 고정 · 체형 유지 �
     "The reference image is one sheet: on the left the character from four angles",
   );
   expect(kept).toContain("head-to-body proportions");
-  expect(kept).toContain("Only the learner's hands appear at the frame edge — never her face.");
+  expect(kept).toContain(
+    "Only the learner's hand or forearm appears at the frame edge, a small part of the picture — never her face or body.",
+  );
   expect(kept.endsWith(FIGURE_TEXT)).toBe(true);
   expect(compose(plan, "female", route(MANIFEST, plan), false).endsWith(MODEST_TEXT)).toBe(true);
   const [separate] = referenceText(["angles", "expression"], false, true);
@@ -837,4 +842,33 @@ test("SV20. 계획이 대상을 비웠는데 메시지에 첫 부르는 말이 �
   const form = to("https://api.openai.com/")[0]!.body as FormData;
   expect(form.getAll("image[]")).toHaveLength(1);
   expect(finish().p_result["meta"]).toMatchObject({ subjectsMentioned: ["cheese"] });
+});
+
+// ------------------------------------------------------------------ 학습자는 기본으로 없다(사용자 결정 2026-11-28)
+
+test("SV21. 학습자 — 기본은 없음, 함께 있는 것이 분명할 때만 · 넣어도 손 · 팔 · 뒷모습 작게, 미성년자 규칙은 그대로", () => {
+  expect(PLAN_SYSTEM).toContain('is not in the picture by default: learner "none"');
+  expect(PLAN_SYSTEM).toContain("only when the chat makes it plain");
+  expect(PLAN_SYSTEM).toContain("If that only seems likely or is not stated");
+  expect(PLAN_SYSTEM).toContain("only chatting, texting or calling");
+  expect(PLAN_SYSTEM).toContain(
+    '"hands" for a hand or forearm at the frame edge (the usual choice)',
+  );
+  expect(
+    (PLAN_TOOL.input_schema.properties.learner as { description: string }).description,
+  ).toContain('default "none"');
+  // 없을 때도 남의 손 · 팔 · 뒷모습이 앞에 끼지 않게 — 검사 노드도 같은 기준
+  expect(learnerClause("none", "female")).toContain(
+    "no other person's hands, arms, shoulder or back in the foreground",
+  );
+  expect(CHECK_SYSTEM).toContain(
+    '"none" = no second main person and no other person\'s hands, arms, shoulder or back in the foreground',
+  );
+  expect(learnerClause("back_view", "male")).toContain("at the edge of the frame, a small part");
+  expect(learnerClause("back_view", "hidden")).not.toContain("from behind");
+  // 미성년자 · 나이 모름: 학습자와 함께 침실 금지 · 접촉은 물건 건네기까지 그대로
+  const minor = planSystem("minor");
+  expect(minor).toContain("never the learner together with the character in a bedroom");
+  expect(minor).toContain("beyond handing over an object");
+  expect(checkSystem("minor", false)).toContain(CHECK_MINOR_RULES);
 });
