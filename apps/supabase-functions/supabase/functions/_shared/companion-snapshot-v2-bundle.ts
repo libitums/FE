@@ -1,15 +1,25 @@
-// 스냅샷 v2m(ADR-0179) — 기준 그림 묶음(manifest) · 계획 모양 · 라우팅(계획 → 미리 합친 기준 그림 한 장).
+// 스냅샷 v2m(ADR-0179) — 기준 그림 묶음(manifest) · 계획 모양 · 다양성 추천 · 라우팅(계획 → 미리 합친 기준 그림 한 장 + 고정 대상 그림).
 // 묶음은 대시보드가 만든다(ops-dashboard `snapshot_bundle.py`). 모아 쓰는 곳은 `companion-snapshot-v2.ts`.
 
 import type { Aspect } from "./companion-snapshot-prompts.ts";
 import {
   type Angle,
+  ANGLES,
   type Expression,
   type Learner,
   type OutfitChange,
   PIPELINE,
+  SELFIE_SHOTS,
   type Shot,
+  SHOTS,
+  TOGETHER_SHOTS,
 } from "./companion-snapshot-v2-prompts.ts";
+import {
+  type ManifestSubject,
+  type PlanSubject,
+  type RoutedSubject,
+  subjectsFrom,
+} from "./companion-snapshot-v2-subjects.ts";
 
 // ------------------------------------------------------------------ 묶음(manifest)
 
@@ -32,6 +42,8 @@ export type Manifest = {
   readonly figureKeep: boolean;
   readonly outfits: readonly ManifestOutfit[];
   readonly refs: Readonly<Record<string, Readonly<Record<string, ManifestRef>>>>;
+  /** 고정 대상. 칸이 없는 옛 묶음이면 빈 목록. */
+  readonly subjects: readonly ManifestSubject[];
 };
 
 /** 버킷의 묶음 경로 앞부분. slug는 시작 RPC가 고른 기준 그림 `<slug>-ref.png`에서. */
@@ -78,7 +90,10 @@ function refsFrom(input: unknown): Manifest["refs"] | null {
   return out["neutral"]?.["default"] ? out : null;
 }
 
-/** manifest.json → 모양 검사. 틀리면 null(그 인물은 v1으로 그린다). 칸 하나가 틀리면 그 칸만 버린다(라우팅이 기본 칸으로 간다). */
+/**
+ * manifest.json → 모양 검사. 틀리면 null(그 인물은 v1으로 그린다). 칸 하나가 틀리면 그 칸만 버린다(라우팅이 기본 칸으로 간다).
+ * 고정 대상(`subjects`)은 틀려도 null로 만들지 않는다 — 틀린 대상만 버린다.
+ */
 export function manifestFrom(input: unknown): Manifest | null {
   if (typeof input !== "object" || input === null) return null;
   const value = input as Record<string, unknown>;
@@ -110,6 +125,7 @@ export function manifestFrom(input: unknown): Manifest | null {
     figureKeep: value["figureKeep"] === true,
     outfits: clean,
     refs,
+    subjects: subjectsFrom(value["subjects"]),
   };
 }
 
@@ -128,6 +144,8 @@ export type Plan = {
   readonly new_outfit: string | null;
   readonly new_outfit_name: string | null;
   readonly learner: Learner;
+  /** 이 순간 그림에 실제로 보이는 고정 대상(장소 하나 · 동물이나 물건 하나까지, 장소 먼저). file은 묶음 폴더 안의 이름. */
+  readonly subjects: readonly PlanSubject[];
   readonly aspect: Aspect;
   readonly background_text: string | null;
   readonly safety: "allow" | "block";
@@ -153,6 +171,42 @@ export type RecentPlan = {
   readonly setting?: string;
 };
 
+/**
+ * 최근 계획들(새것부터)을 보고 권할 구도 · 각도(lab `suggestion`). 바로 앞 둘에 쓴 구도 · 각도는 피하고, 덜 쓴 것에 무게를 둔다.
+ * 어깨 너머는 학습자가 그 자리에 있어야 하는 구도라 권하지 않는다.
+ */
+export function suggestion(
+  recent: readonly RecentPlan[],
+  random: () => number = Math.random,
+): { shot: Shot; angle: Angle } {
+  const shotsUsed = recent.map((p) => p.shot);
+  const anglesUsed = recent.map((p) => p.angle);
+  const solo = SHOTS.filter((s) => !TOGETHER_SHOTS.includes(s));
+  const shotPool = solo.filter((s) => !shotsUsed.slice(0, 2).includes(s));
+  const anglePool = ANGLES.filter((a) => !anglesUsed.slice(0, 2).includes(a));
+  const pick = <T extends string>(pool: readonly T[], used: readonly (string | undefined)[]): T => {
+    const weights = pool.map((x) => 1 / (1 + used.filter((u) => u === x).length));
+    let roll = random() * weights.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < pool.length; i += 1) {
+      roll -= weights[i]!;
+      if (roll <= 0) return pool[i]!;
+    }
+    return pool[pool.length - 1]!;
+  };
+  let shot = pick(shotPool.length ? shotPool : solo, shotsUsed);
+  const angle = pick(anglePool.length ? anglePool : ANGLES, anglesUsed);
+  if (angle === "selfie" && !SELFIE_SHOTS.includes(shot)) {
+    shot = SELFIE_SHOTS[Math.floor(random() * SELFIE_SHOTS.length)] ?? "medium";
+  }
+  return { shot, angle };
+}
+
+/** lab `recent_line`. */
+export function recentLine(plan: RecentPlan): string {
+  const outfit = plan.outfit_name || plan.new_outfit_name || "-";
+  return `- ${plan.shot ?? "-"}, ${plan.angle ?? "-"}, ${plan.expression ?? "-"}, outfit: ${outfit}, place: ${(plan.setting || "-").slice(0, 60)}`;
+}
+
 // ------------------------------------------------------------------ 라우팅
 
 export type Route = {
@@ -163,6 +217,8 @@ export type Route = {
   readonly outfitText: string | null;
   readonly defaultOutfit: boolean;
   readonly outfitName: string | null;
+  /** 붙일 대상 그림 — 인물 그림 다음에 이 순서로(장소 → 동물 · 물건). 받지 못한 것은 부르는 쪽이 빼고 조립한다. */
+  readonly subjects: readonly RoutedSubject[];
 };
 
 /** 계획 → 미리 합친 기준 그림 하나와 옷 문장(lab `route`의 v2m 갈래). 그 표정 · 옷 칸이 없으면 기본 옷 칸, 그것도 없으면 무표정. */
@@ -186,5 +242,19 @@ export function route(manifest: Manifest, plan: Plan): Route {
     outfitText,
     defaultOutfit,
     outfitName: row?.name ?? plan.new_outfit_name,
+    subjects: plan.subjects.flatMap((chosen): RoutedSubject[] => {
+      const subject = manifest.subjects.find((s) => s.id === chosen.id);
+      const file = subject?.files.find((f) => f.file === chosen.file);
+      if (subject === undefined || file === undefined) return [];
+      return [
+        {
+          id: subject.id,
+          kind: subject.kind,
+          ref: `${bundleDir(manifest.slug)}/${file.file}`,
+          caption: file.caption,
+          description: subject.description,
+        },
+      ];
+    }),
   };
 }

@@ -1,24 +1,16 @@
 // 스냅샷 작업(`companion-media-run.ts`)의 앞 단계 — 그릴 것을 정한다. v1은 프롬프트 노드(ADR-0146), v2m은 장면 설계 + 미리 합친
-// 기준 그림 한 장(ADR-0179). 검사 노드 요청과 새 옷 후보 기록도 여기. 시간 예산 · 닫기는 부르는 쪽이 한다.
+// 기준 그림 한 장(ADR-0179). 새 옷 후보 기록도 여기, 검사 노드 요청은 `companion-media-snapshot-check.ts`. 시간 예산 · 닫기는 부르는 쪽이 한다.
 
 import type { Segment } from "./chat-send.contract.ts";
 import type { SnapshotSelf } from "./companion-contract/index.ts";
-import {
-  claudeTool,
-  downloadRef,
-  downloadRefJson,
-  type Image,
-  imageBlock,
-  type ToolCall,
-} from "./companion-media-engines.ts";
+import { claudeTool, downloadRef, downloadRefJson, type Image } from "./companion-media-engines.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
 import type { SNAPSHOT_PHASES } from "./companion-media-budget.ts";
 import {
   type Aspect,
-  CHECK_TOOL,
-  checkSystem,
   type ContextLine,
   imagePrompt,
+  messageLine,
   PROMPT_TOOL,
   promptContent,
   promptSystem,
@@ -27,17 +19,17 @@ import {
 } from "./companion-snapshot-prompts.ts";
 import {
   bundleDir,
-  CHECK_TOOL as V2_CHECK_TOOL,
-  checkSystem as v2CheckSystem,
   compose,
   type Manifest,
   manifestFrom,
+  mentionedSubjects,
   normalizePlan,
   PLAN_TOOL,
   planContent,
   planSystem,
   type RecentPlan,
   route,
+  type RoutedSubject,
   slugFromRefs,
   type StoredPlan,
   suggestion,
@@ -65,7 +57,14 @@ export type SnapshotJob = {
 export type PhaseFn = (name: keyof typeof SNAPSHOT_PHASES, capMs?: number) => number;
 export type TimedFn = <T>(name: string, work: () => Promise<T>) => Promise<T>;
 export type V2Ready = { readonly manifest: Manifest; readonly recent: readonly RecentPlan[] };
-export type Drawn<P> = { refs: Image[]; prompt: P; aspect: Aspect; text: string };
+export type Drawn<P> = {
+  refs: Image[];
+  prompt: P;
+  aspect: Aspect;
+  text: string;
+  /** v2m: 인물 그림 뒤에 실제로 붙인 고정 대상(`refs[1..]`과 같은 순서). */
+  subjects?: readonly RoutedSubject[];
+};
 export type Failed = { failure: string; error: string };
 
 /**
@@ -114,7 +113,10 @@ export async function prepareV2(
   return { manifest, recent };
 }
 
-/** 장면 설계 → 라우팅 → 기준 그림 한 장 → 조립. 실패는 그대로 닫을 결과(failure)로. */
+/**
+ * 장면 설계 → 라우팅 → 기준 그림 한 장(+ 고정 대상 그림 2장까지, ADR-0179 D8) → 조립. 실패는 그대로 닫을 결과(failure)로.
+ * 대상 그림은 인물 그림과 동시에 `refs` 예산 안에서 받는다. 못 받은 대상은 빼고 그린다(`meta.subjectsMissing`) — 인물 그림만 `refs_missing`.
+ */
 export async function planV2(
   deps: MediaRunDeps,
   env: MediaEnv,
@@ -123,6 +125,7 @@ export async function planV2(
   phase: PhaseFn,
   timed: TimedFn,
   usage: Record<string, unknown>,
+  meta: Record<string, unknown>,
 ): Promise<Drawn<StoredPlan> | Failed> {
   const suggest = suggestion(v2.recent);
   const promptTimeout = phase("prompt", deps.textTimeoutMs);
@@ -156,16 +159,50 @@ export async function planV2(
     ref: routed.ref,
     figure: v2.manifest.figureKeep,
   };
+  if (plan.subjects.length === 0) {
+    // 놓친 대상을 재려고 남긴다 — 붙이지는 않는다.
+    const mentioned = mentionedSubjects(v2.manifest, messageLine(job.segments));
+    if (mentioned.length) meta["subjectsMentioned"] = mentioned;
+  }
   const aspect: Aspect = job.aspect === "auto" ? plan.aspect : job.aspect;
-  const text = compose(plan, job.snapshotSelf, routed, v2.manifest.figureKeep);
-  if (plan.safety === "block") return { refs: [], prompt: stored, aspect, text };
+  const figure = v2.manifest.figureKeep;
+  if (plan.safety === "block")
+    return {
+      refs: [],
+      prompt: stored,
+      aspect,
+      text: compose(plan, job.snapshotSelf, routed, figure),
+    };
+  let loaded: PromiseSettledResult<Image>[];
   try {
     const refsTimeout = phase("refs", deps.storageTimeoutMs);
-    const ref = await timed("refs", () => downloadRef(deps.fetch, env, routed.ref, refsTimeout));
-    return { refs: [ref], prompt: stored, aspect, text };
+    loaded = await timed("refs", () =>
+      Promise.allSettled(
+        [routed.ref, ...routed.subjects.map((s) => s.ref)].map((name) =>
+          downloadRef(deps.fetch, env, name, refsTimeout),
+        ),
+      ),
+    );
   } catch (error) {
     return { failure: "refs_missing", error: short(error) };
   }
+  const [person, ...rest] = loaded;
+  if (person!.status === "rejected")
+    return { failure: "refs_missing", error: short(person!.reason) };
+  const refs = [person!.value];
+  const attached: RoutedSubject[] = [];
+  const missing: { id: string; error: string }[] = [];
+  rest.forEach((result, i) => {
+    const subject = routed.subjects[i]!;
+    if (result.status === "fulfilled") {
+      refs.push(result.value);
+      attached.push(subject);
+    } else missing.push({ id: subject.id, error: short(result.reason) });
+  });
+  if (routed.subjects.length) meta["subjects"] = attached.map((s) => s.id);
+  if (missing.length) meta["subjectsMissing"] = missing;
+  const text = compose(plan, job.snapshotSelf, routed, figure, attached);
+  return { refs, prompt: stored, aspect, text, subjects: attached };
 }
 
 /** 옷장에 없는 옷을 골랐으면 후보로 기록만 한다(운영 대시보드 크론이 모아 그린다). 실패해도 스냅샷은 그대로 — 던지지 않는다. */
@@ -233,38 +270,4 @@ export async function planV1(
   if (prompt === null) return { failure: "prompt_failed", error: "bad prompt shape" };
   const aspect = job.aspect === "auto" ? prompt.aspect : job.aspect;
   return { refs: loaded.value, prompt, aspect, text: imagePrompt(prompt, job.snapshotSelf) };
-}
-
-/** 검사 노드 요청 — v1은 v1 글, v2m은 학습자 배치까지 보는 글(ADR-0179 D5). 기준 이미지 첫 장과 결과를 나란히. */
-export function checkRequest(
-  job: SnapshotJob,
-  v2: V2Ready | null,
-  ref: Image,
-  png: Uint8Array,
-  prompt: SnapshotPrompt | StoredPlan,
-): ToolCall {
-  const images = [imageBlock(ref), imageBlock({ bytes: png, mime: "image/png" })];
-  if (v2 === null)
-    return {
-      system: checkSystem(job.ageBand),
-      tool: CHECK_TOOL,
-      content: [
-        ...images,
-        { type: "text" as const, text: "Image 1: reference. Image 2: snapshot. Give the verdict." },
-      ],
-      maxTokens: 600,
-    };
-  const learner = (prompt as StoredPlan).learner;
-  return {
-    system: v2CheckSystem(job.ageBand, v2.manifest.figureKeep),
-    tool: V2_CHECK_TOOL,
-    content: [
-      ...images,
-      {
-        type: "text" as const,
-        text: `Image 1: face reference. Image 2: snapshot. Planned learner: ${learner}. Give the verdict.`,
-      },
-    ],
-    maxTokens: 600,
-  };
 }

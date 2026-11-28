@@ -86,9 +86,11 @@ export type DrawContext = {
 export type Drawn = { readonly bytes: Uint8Array; readonly warnings: string[] };
 
 /** 인물 컷: 장면 설계 → 조립 → 기준 그림 + 편집 → 검사. */
-export async function drawCharacter(ctx: DrawContext, manifest: Manifest): Promise<Drawn> {
+export async function drawCharacter(ctx: DrawContext, bundle: Manifest): Promise<Drawn> {
   // ---- 인물 컷: 장면 설계 → 조립 → 기준 그림 + 편집
   ctx.meta["pipeline"] = "story-v2m";
+  // 고정 대상 그림(ADR-0179 D8)은 스냅샷에만 붙인다 — 스토리의 장면 설계 입력 · 계획에는 넣지 않는다(글이 전과 같다).
+  const manifest: Manifest = { ...bundle, subjects: [] };
   // 셀카면 각도를 셀카로, 남이 찍어 준 컷이면 셀카 각도를 쓰지 않는다 — 권하는 값과 계획 둘 다에서 고정한다.
   const selfie = ctx.job.shot === "selfie";
   const base = suggestion(ctx.job.recent);

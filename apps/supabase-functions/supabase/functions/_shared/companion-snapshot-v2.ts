@@ -6,6 +6,10 @@
 // 앱 기능에서 더한 것(v1 `companion-snapshot-prompts.ts`와 같은 규칙):
 // - 미성년자 · 나이 모름: 「손잡기 · 포옹까지」 줄을 「로맨스 없음」 줄로 바꾸고 더 엄격한 규칙(`PROMPT_MINOR_RULES` · `CHECK_MINOR_RULES`)을 더한다.
 // - 대화 글을 신뢰하지 않는 데이터로 감싸는 규칙(`PROMPT_DATA_RULES`).
+// - 고정 대상 기준 그림(ADR-0179 D8, 2026-11-28): PLAN_SYSTEM의 대상 규칙 줄 셋 · PLAN_TOOL `subjects` · 입력의 대상 목록 · 대상 문장
+//   (`companion-snapshot-v2-subjects.ts`) · 검사 글 `SUBJECT_CHECK`. 아직 lab에 없다 — lab에도 같은 글을 넣는다.
+// - 학습자는 기본으로 없다(ADR-0179 D9, 2026-11-28): PLAN_SYSTEM의 학습자 두 줄 · PLAN_TOOL `learner` 설명 · `learnerClause` ·
+//   CHECK_SYSTEM의 learner matches 정의를 고쳤다. 아직 lab에 없다 — lab에도 같은 글을 넣는다.
 //
 // 기준 그림은 대시보드가 미리 합쳐 `companion-refs/v2/<slug>/`에 올린다(ops-dashboard `snapshot_bundle.py`): `manifest.json`(옷장 ·
 // 체형 유지 · 파일과 역할) + 표정 8 × 그림 있는 옷마다 한 장. 묶음이 없는 인물은 v1으로 그린다.
@@ -15,65 +19,32 @@ import type { SnapshotSelf } from "./companion-contract/index.ts";
 import { type ContextLine, messageLine, SELF_LOOK } from "./companion-snapshot-prompts.ts";
 import {
   type Angle,
-  ANGLE_TEXT,
   ANGLES,
-  EXPRESSION_TEXT,
   EXPRESSIONS,
   FIGURE_PLAN,
-  FIGURE_TEXT,
   LEARNER,
-  type Learner,
-  MODEST_TEXT,
   OUTFIT_CHANGES,
   PIPELINE,
   SELFIE_SHOTS,
   type Shot,
-  SHOT_TEXT,
   SHOTS,
-  TOGETHER_SHOTS,
 } from "./companion-snapshot-v2-prompts.ts";
-import type { Manifest, Plan, RecentPlan, Route } from "./companion-snapshot-v2-bundle.ts";
+import {
+  type Manifest,
+  type Plan,
+  type RecentPlan,
+  recentLine,
+} from "./companion-snapshot-v2-bundle.ts";
+import { planSubjects, subjectLine } from "./companion-snapshot-v2-subjects.ts";
 
 export * from "./companion-snapshot-v2-prompts.ts";
 export * from "./companion-snapshot-v2-bundle.ts";
+export * from "./companion-snapshot-v2-subjects.ts";
+export * from "./companion-snapshot-v2-compose.ts";
 
-// ------------------------------------------------------------------ 다양성 · 장면 설계 입력
-
-/**
- * 최근 계획들(새것부터)을 보고 권할 구도 · 각도(lab `suggestion`). 바로 앞 둘에 쓴 구도 · 각도는 피하고, 덜 쓴 것에 무게를 둔다.
- * 어깨 너머는 학습자가 그 자리에 있어야 하는 구도라 권하지 않는다.
- */
-export function suggestion(
-  recent: readonly RecentPlan[],
-  random: () => number = Math.random,
-): { shot: Shot; angle: Angle } {
-  const shotsUsed = recent.map((p) => p.shot);
-  const anglesUsed = recent.map((p) => p.angle);
-  const solo = SHOTS.filter((s) => !TOGETHER_SHOTS.includes(s));
-  const shotPool = solo.filter((s) => !shotsUsed.slice(0, 2).includes(s));
-  const anglePool = ANGLES.filter((a) => !anglesUsed.slice(0, 2).includes(a));
-  const pick = <T extends string>(pool: readonly T[], used: readonly (string | undefined)[]): T => {
-    const weights = pool.map((x) => 1 / (1 + used.filter((u) => u === x).length));
-    let roll = random() * weights.reduce((a, b) => a + b, 0);
-    for (let i = 0; i < pool.length; i += 1) {
-      roll -= weights[i]!;
-      if (roll <= 0) return pool[i]!;
-    }
-    return pool[pool.length - 1]!;
-  };
-  let shot = pick(shotPool.length ? shotPool : solo, shotsUsed);
-  const angle = pick(anglePool.length ? anglePool : ANGLES, anglesUsed);
-  if (angle === "selfie" && !SELFIE_SHOTS.includes(shot)) {
-    shot = SELFIE_SHOTS[Math.floor(random() * SELFIE_SHOTS.length)] ?? "medium";
-  }
-  return { shot, angle };
-}
-
-/** lab `recent_line`. */
-export function recentLine(plan: RecentPlan): string {
-  const outfit = plan.outfit_name || plan.new_outfit_name || "-";
-  return `- ${plan.shot ?? "-"}, ${plan.angle ?? "-"}, ${plan.expression ?? "-"}, outfit: ${outfit}, place: ${(plan.setting || "-").slice(0, 60)}`;
-}
+// ------------------------------------------------------------------ 장면 설계 입력 · 계획 정리
+// 다양성 추천(`suggestion` · `recentLine`)은 `companion-snapshot-v2-bundle.ts`, 고정 대상은 `companion-snapshot-v2-subjects.ts`,
+// 학습자 · 기준 그림 문장과 이미지 프롬프트 조립(`compose`)은 `companion-snapshot-v2-compose.ts`.
 
 /** 대화 글 안의 구분자 위조를 지운다(v1 `promptContent`와 같다). */
 const unquoted = (text: string) => text.replace(/<\/?\s*(chat|message)\s*>/gi, "").trim();
@@ -102,12 +73,19 @@ export function planContent(input: {
       .map((o) => `- id ${o.id}: ${o.name} — ${o.description.slice(0, 160)}`)
       .join("\n") || "- (none yet — describe a new outfit)";
   const avoid = input.recent.map(recentLine).join("\n") || "- (no earlier snapshots)";
+  // 고정 대상(ADR-0179 D8)이 있는 인물만 — 없으면 이 칸 자체를 쓰지 않는다(옛 묶음 · 대상 없는 인물은 글이 그대로다).
+  const subjects = input.manifest.subjects.length
+    ? `Fixed subjects of ${input.characterName} (things that must look the same in every picture):\n` +
+      input.manifest.subjects.map(subjectLine).join("\n") +
+      "\n\n"
+    : "";
   return (
     `Character: ${input.characterName}\n` +
     `Look (face and hair are fixed; the clothes in this note are only the default outfit): ${input.look}\n` +
     (input.manifest.figureKeep ? `${FIGURE_PLAN}\n` : "") +
     `Learner look: ${SELF_LOOK[input.snapshotSelf] ?? SELF_LOOK.female}\n\n` +
     `Wardrobe of ${input.characterName}:\n${wardrobe}\n\n` +
+    subjects +
     `Avoid (recent snapshots of this character, newest first):\n${avoid}\n\n` +
     `Suggested: shot ${input.suggest.shot}, angle ${input.suggest.angle}\n` +
     `Expressions: ${EXPRESSIONS.join(", ")}\n\n` +
@@ -168,118 +146,10 @@ export function normalizePlan(raw: unknown, manifest: Manifest, self: SnapshotSe
     new_outfit: outfitId !== null ? null : newOutfit,
     new_outfit_name: outfitId !== null ? null : text(value["new_outfit_name"], 40) || null,
     learner,
+    subjects: planSubjects(value["subjects"], manifest),
     aspect: value["aspect"] === "1:1" ? "1:1" : "3:2",
     background_text: text(value["background_text"], 60) || null,
     safety: value["safety"],
     reason: text(value["reason"], 300),
   };
-}
-
-// ------------------------------------------------------------------ 라우팅 · 조립
-
-const LEARNER_TEXT: Record<SnapshotSelf, Record<"back_view" | "hands", string>> = {
-  female: {
-    back_view:
-      "The learner, a young woman with long hair, is seen only from behind — back of the head, hair and shoulders, facing away from the viewer — never her face.",
-    hands: "Only the learner's hands appear at the frame edge — never her face.",
-  },
-  male: {
-    back_view:
-      "The learner, a young man with short hair, is seen only from behind — back of the head, hair and shoulders, facing away from the viewer — never his face.",
-    hands: "Only the learner's hands appear at the frame edge — never his face.",
-  },
-  hidden: {
-    back_view:
-      "Only the learner's hands appear at the frame edge — no head, hair or back view, never a face.",
-    hands:
-      "Only the learner's hands appear at the frame edge — no head, hair or back view, never a face.",
-  },
-};
-
-export function learnerClause(learner: Learner, self: SnapshotSelf): string {
-  if (learner === "none") return "The character is alone in the picture; no second main person.";
-  return (LEARNER_TEXT[self] ?? LEARNER_TEXT.female)[learner];
-}
-
-const PROPORTION_SEPARATE =
-  "It is a large head-only close-up: keep the head size and the head-to-body proportions (height, leg length) exactly as in image 1.";
-const PROPORTION_MERGED =
-  " The expression part is a large head-only close-up: keep the head size and the head-to-body proportions (height, leg length) exactly as the character on the left.";
-
-/** 기준 그림의 역할 문장(lab `reference_text`) → [글, 의상 그림을 가리키는 말 또는 null]. roles 첫째는 인물(sheet · angles). */
-export function referenceText(
-  roles: readonly string[],
-  merged: boolean,
-  defaultOutfit: boolean,
-): [string, string | null] {
-  const angles = roles[0] === "angles";
-  const keep = defaultOutfit
-    ? "keep the same face, hairstyle, hair colour and outfit"
-    : "keep the same face, hairstyle and hair colour";
-  if (merged) {
-    const rest = roles.slice(1);
-    // 역할은 묶음 검사(`manifestFrom`)가 표정 · 옷으로만 남긴다 — 그래도 모르는 이름이면 그 이름 그대로.
-    const names: Record<string, string> = {
-      expression: "the facial expression to use",
-      outfit: "the outfit to wear",
-    };
-    const name = (role: string) => names[role] ?? role;
-    const right =
-      rest.length > 1
-        ? `; on the right, top: ${name(rest[0]!)}; bottom: ${name(rest[1]!)}`
-        : rest.length
-          ? `; on the right: ${name(rest[0]!)}`
-          : "";
-    const body =
-      `The reference image is one sheet: on the left the character` +
-      `${angles ? " from four angles (front, three-quarter, side, back)" : ""}${right}. Use each part only for ` +
-      `that: ${keep}${angles ? ", matching the view this shot needs" : ""}` +
-      `${defaultOutfit || rest.includes("outfit") ? "" : ", but not its clothes"}; do not copy the sheet's layout, ` +
-      "poses, framing or background, and draw one single scene, not panels." +
-      `${rest.includes("expression") ? PROPORTION_MERGED : ""}`;
-    return [body, rest.includes("outfit") ? "as shown on the right of the reference sheet" : null];
-  }
-  const clothes = defaultOutfit ? "" : "clothes, ";
-  const sentences = angles
-    ? [
-        `Image 1 shows the character from four angles (front, three-quarter, side, back): ${keep}, matching ` +
-          `the view this shot needs, but do not copy its ${clothes}poses, layout or background.`,
-      ]
-    : [
-        `Image 1 is the character's reference: ${keep}, but do not copy its ${clothes}pose, framing or background.`,
-      ];
-  let outfitAt: string | null = null;
-  roles.slice(1).forEach((role, index) => {
-    const i = index + 2;
-    if (role === "expression")
-      sentences.push(
-        `Image ${i} shows only the facial expression to use: copy the expression, not its head angle, ` +
-          `framing, head size or background. ${PROPORTION_SEPARATE}`,
-      );
-    else if (role === "outfit") outfitAt = `as in image ${i}`;
-  });
-  return [sentences.join(" "), outfitAt];
-}
-
-/** 계획 → 이미지 프롬프트(lab `compose`). 규칙 문장은 고정이다(모델이 바꾸지 못한다). */
-export function compose(plan: Plan, self: SnapshotSelf, routed: Route, figure: boolean): string {
-  const [refsText, outfitAt] = referenceText(routed.roles, routed.merged, routed.defaultOutfit);
-  const parts = [
-    `${SHOT_TEXT[plan.shot]}, ${ANGLE_TEXT[plan.angle]}.`,
-    plan.action ? `Action: ${plan.action}.` : "",
-    plan.setting ? `Setting: ${plan.setting}.` : "",
-    plan.lighting ? `Lighting: ${plan.lighting}.` : "",
-    `Expression: ${EXPRESSION_TEXT[plan.expression]}.`,
-    routed.outfitText ? `Outfit: ${routed.outfitText}${outfitAt ? ` — ${outfitAt}.` : "."}` : "",
-    learnerClause(plan.learner, self),
-    plan.background_text
-      ? `Background text allowed only: "${plan.background_text}", short and natural.`
-      : "No text anywhere in the image.",
-    "Korean webtoon / manhwa illustration, clean line art, soft cel shading. " + refsText,
-    "No speech bubbles, captions or dialogue. " + (figure ? FIGURE_TEXT : MODEST_TEXT),
-  ];
-  return parts
-    .filter((p) => p)
-    .join(" ")
-    .replaceAll("..", ".");
 }
