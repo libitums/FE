@@ -18,6 +18,7 @@ import {
   planSystem,
   referenceText,
   route,
+  SUBJECT_CHECK,
   slugFromRefs,
   suggestion,
   v2VerdictFrom,
@@ -78,6 +79,7 @@ const RAW = {
   new_outfit: null,
   new_outfit_name: null,
   learner: "hands",
+  subjects: [],
   aspect: "3:2",
   background_text: null,
   safety: "allow",
@@ -312,6 +314,8 @@ let work: Promise<unknown>[];
 let manifestReply: { status: number; body?: unknown };
 let context: { tester: boolean; recent: unknown[] };
 let planInput: Record<string, unknown>;
+let missingRefs: Set<string>;
+let checkInput: Record<string, unknown>;
 
 const job = {
   mediaId: MEDIA,
@@ -359,7 +363,9 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       ? json(manifestReply.status, { error: "not found" })
       : json(manifestReply.status, manifestReply.body);
   if (url.startsWith(`${SUPA}/storage/v1/object/companion-refs/`))
-    return new Response(PNG as BodyInit, { status: 200 });
+    return missingRefs.has(url.split("companion-refs/")[1]!)
+      ? json(400, { error: "not found" })
+      : new Response(PNG as BodyInit, { status: 200 });
   if (url.startsWith(`${SUPA}/storage/v1/object/companion-media`)) return json(200, {});
   if (url === "https://api.anthropic.com/v1/messages") {
     const name = (body as { tool_choice: { name: string } }).tool_choice.name;
@@ -367,14 +373,7 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       name === "snapshot_plan"
         ? planInput
         : name === "snapshot_check"
-          ? {
-              reasons: "fine",
-              safe: true,
-              identity: 5,
-              garbled_text: false,
-              learner_face: false,
-              learner_matches: true,
-            }
+          ? checkInput
           : {
               scene: "A girl with kimbap on a picnic mat.",
               aspect: "3:2",
@@ -439,6 +438,15 @@ beforeEach(() => {
     recent: [{ shot: "close_up", angle: "selfie", expression: "smile", setting: "cafe" }],
   };
   planInput = { ...RAW };
+  missingRefs = new Set();
+  checkInput = {
+    reasons: "fine",
+    safe: true,
+    identity: 5,
+    garbled_text: false,
+    learner_face: false,
+    learner_matches: true,
+  };
 });
 
 test("SV9. v2m — 묶음 · 최근 계획을 읽고, 장면 설계로 고른 합친 그림 한 장을 엔진에 넣고, 계획을 결과에 남긴다", async () => {
@@ -561,4 +569,272 @@ test("SV14. v2m도 그리기 직전에 단계 drawing과 장면 설계가 고른
   expect(await snap()).toBe(202);
   expect(finish().p_status).toBe("blocked");
   expect(to(`${SUPA}/rest/v1/rpc/companion_media_stage`)).toHaveLength(0);
+});
+
+// ------------------------------------------------------------------ 고정 대상(ADR-0179 D8)
+
+const CHEESE = {
+  id: "cheese",
+  name: "치즈",
+  kind: "pet",
+  description:
+    "치즈 (Cheese), the street cat Daeun feeds near her building: an orange mackerel tabby, no collar.",
+  aliases: ["치즈", "길고양이"],
+  files: [
+    { file: "subject_cheese.png", view: "sheet", caption: "reference sheet of the cat", asset: 3 },
+  ],
+};
+const ROOM = {
+  id: "room",
+  name: "다은 자취방",
+  kind: "place",
+  description:
+    "Daeun's small one-room studio flat at night: a white desk, a monitor glowing soft lilac.",
+  aliases: ["자취방", "원룸"],
+  files: [
+    { file: "subject_room.png", view: "desk", caption: "the desk by the window seen from the bed" },
+    { file: "subject_room--wide.png", view: "wide", caption: "the whole room from the door" },
+  ],
+};
+const WITH_SUBJECTS: Manifest = manifestFrom({ ...MANIFEST, subjects: [CHEESE, ROOM] })!;
+
+test("SV15. 묶음의 고정 대상 — 옛 묶음은 빈 목록, 있으면 칸마다 검사, 틀린 대상만 버리고 인물은 그대로", () => {
+  // 옛 묶음(subjects 칸 없음)
+  expect(MANIFEST.subjects).toEqual([]);
+  // 있는 묶음
+  expect(WITH_SUBJECTS.subjects.map((s) => s.id)).toEqual(["cheese", "room"]);
+  expect(WITH_SUBJECTS.subjects[1]).toMatchObject({
+    kind: "place",
+    files: [
+      { file: "subject_room.png", view: "desk" },
+      { file: "subject_room--wide.png", view: "wide" },
+    ],
+  });
+  // 틀린 대상이 섞인 묶음 — 인물 칸은 그대로, 맞는 대상만 남는다
+  const mixed = manifestFrom({
+    ...MANIFEST,
+    subjects: [
+      CHEESE,
+      { ...ROOM, id: "Room!" }, // id 식
+      { ...ROOM, id: "bed", kind: "furniture" }, // 종류
+      { ...ROOM, id: "desk", description: "  " }, // 빈 설명
+      { ...ROOM, id: "lamp", files: [{ file: "../neutral.png", view: "desk" }] }, // 맞는 파일 없음
+      { ...ROOM, id: "sofa", files: [{ file: "neutral.png", view: "desk" }] }, // 인물 파일 이름
+      { ...CHEESE, description: "a different cat" }, // 같은 id는 첫째만
+      {
+        ...ROOM,
+        files: [
+          { file: "subject_room.png", view: "Desk View" }, // 시점 식
+          { file: "subject_room--wide.png", view: "wide" },
+        ],
+      },
+      "junk",
+    ],
+  })!;
+  expect(mixed).not.toBeNull();
+  expect(Object.keys(mixed.refs)).toEqual(Object.keys(MANIFEST.refs));
+  expect(mixed.subjects.map((s) => s.id)).toEqual(["cheese", "room"]);
+  expect(mixed.subjects[0]!.description).toContain("street cat");
+  expect(mixed.subjects[1]!.files.map((f) => f.view)).toEqual(["wide"]);
+  // 칸 자체가 틀려도 묶음은 산다
+  expect(manifestFrom({ ...MANIFEST, subjects: "x" })!.subjects).toEqual([]);
+  // 설명 600자 · 부르는 말 12개
+  const long = manifestFrom({
+    ...MANIFEST,
+    subjects: [{ ...CHEESE, description: "a".repeat(900), aliases: Array(20).fill("치즈") }],
+  })!;
+  expect(long.subjects[0]!.description).toHaveLength(600);
+  expect(long.subjects[0]!.aliases).toHaveLength(12);
+});
+
+test("SV16. 장면 설계의 대상 칸 — 묶음에 없는 id는 버리고, 장소 하나 · 동물 하나, 장소 먼저, 모르는 시점은 첫 파일", () => {
+  expect(normalizePlan(RAW, WITH_SUBJECTS, "female")!.subjects).toEqual([]);
+  const both = normalizePlan(
+    {
+      ...RAW,
+      subjects: [
+        { id: "cheese", view: null },
+        { id: "meokmul", view: null },
+        { id: "room", view: "wide" },
+        { id: "room", view: "desk" },
+      ],
+    },
+    WITH_SUBJECTS,
+    "female",
+  )!;
+  expect(both.subjects).toEqual([
+    { id: "room", file: "subject_room--wide.png" },
+    { id: "cheese", file: "subject_cheese.png" },
+  ]);
+  expect(
+    normalizePlan({ ...RAW, subjects: [{ id: "room", view: "x" }] }, WITH_SUBJECTS, "female")!
+      .subjects,
+  ).toEqual([{ id: "room", file: "subject_room.png" }]);
+  // 칸이 틀려도 계획은 산다
+  expect(normalizePlan({ ...RAW, subjects: "room" }, WITH_SUBJECTS, "female")!.subjects).toEqual(
+    [],
+  );
+  expect(normalizePlan({ ...RAW, subjects: undefined }, MANIFEST, "female")!.subjects).toEqual([]);
+  // 장면 설계 글 · 도구
+  expect(PLAN_SYSTEM).toContain("pick only those actually visible in this picture");
+  expect(PLAN_SYSTEM).toContain("never in the character's room");
+  expect(PLAN_SYSTEM).toContain("no logos, game titles or real game screens");
+  // 입력: 대상이 있는 인물만 칸이 생긴다
+  const input = (manifest: Manifest) =>
+    planContent({
+      characterName: "송다은",
+      look: "long wavy brown hair",
+      context: [],
+      segments: [{ kind: "speech", text: "치즈 왔어!" }],
+      snapshotSelf: "female",
+      manifest,
+      recent: [],
+      suggest: { shot: "wide", angle: "low" },
+    });
+  expect(input(MANIFEST)).not.toContain("Fixed subjects");
+  const withSubjects = input(WITH_SUBJECTS);
+  expect(withSubjects).toContain(
+    "Fixed subjects of 송다은 (things that must look the same in every picture):",
+  );
+  expect(withSubjects).toContain("- id cheese (pet; called 치즈, 길고양이): 치즈 (Cheese)");
+  expect(withSubjects).toContain("- id room (place; called 자취방, 원룸; views: desk, wide):");
+});
+
+test("SV17. 조립 — 대상 그림이 있으면 「Image 1 is one sheet」와 대상 문장(장소 → 동물), 없으면 글이 전과 같다", () => {
+  const plan = normalizePlan(
+    {
+      ...RAW,
+      subjects: [
+        { id: "cheese", view: null },
+        { id: "room", view: "desk" },
+      ],
+    },
+    WITH_SUBJECTS,
+    "female",
+  )!;
+  const routed = route(WITH_SUBJECTS, plan);
+  expect(routed.subjects.map((s) => s.ref)).toEqual([
+    "v2/daeun/subject_room.png",
+    "v2/daeun/subject_cheese.png",
+  ]);
+  const text = compose(plan, "female", routed, true, routed.subjects);
+  expect(text).toContain("Image 1 is one sheet: on the left the character");
+  expect(text).not.toContain("The reference image is one sheet");
+  expect(text).toContain("default outfit, exactly as in image 1");
+  expect(text).toContain(
+    "Image 2 shows the place of this scene (the desk by the window seen from the bed): keep the same furniture",
+  );
+  expect(text).toContain(
+    "Image 3 is a reference sheet of 치즈 (Cheese), the street cat Daeun feeds near her building from several angles: draw that same animal once",
+  );
+  expect(text.endsWith(FIGURE_TEXT)).toBe(true);
+  // 받지 못한 대상은 빼고 조립 — 대상이 하나도 없으면 옛 글 그대로
+  const plain = normalizePlan(RAW, MANIFEST, "female")!;
+  expect(compose(plan, "female", routed, true, [])).toBe(
+    compose(plain, "female", route(MANIFEST, plain), true),
+  );
+  // 옷 그림이 합쳐진 한 장이면 옷 가리키는 말도 1번 그림
+  const [merged, outfitAt] = referenceText(["angles", "outfit"], true, false, 1);
+  expect(merged.startsWith("Image 1 is one sheet")).toBe(true);
+  expect(outfitAt).toBe("as shown on the right of image 1");
+});
+
+test("SV18. v2m + 대상 — 인물 → 장소 → 동물 순으로 3장을 넣고, 검사 노드에 대상 그림을 넣어 subject_matches만 기록한다", async () => {
+  manifestReply = { status: 200, body: { ...MANIFEST, subjects: [CHEESE, ROOM] } };
+  planInput = {
+    ...RAW,
+    subjects: [
+      { id: "cheese", view: "sheet" },
+      { id: "room", view: "desk" },
+    ],
+  };
+  checkInput = { ...checkInput, subject_matches: false };
+  expect(await snap()).toBe(202);
+  const refs = to(`${SUPA}/storage/v1/object/companion-refs/`).map(
+    (c) => c.url.split("companion-refs/")[1],
+  );
+  expect(refs).toEqual([
+    "v2/daeun/manifest.json",
+    "v2/daeun/smile.png",
+    "v2/daeun/subject_room.png",
+    "v2/daeun/subject_cheese.png",
+  ]);
+  const form = to("https://api.openai.com/")[0]!.body as FormData;
+  expect((form.getAll("image[]") as File[]).map((f) => f.name)).toEqual([
+    "v2/daeun/smile.png",
+    "v2/daeun/subject_room.png",
+    "v2/daeun/subject_cheese.png",
+  ]);
+  expect(String(form.get("prompt"))).toContain("Image 3 is a reference sheet of 치즈");
+  const check = to("https://api.anthropic.com/")[1]!.body as {
+    system: string;
+    messages: { content: { type: string; text?: string }[] }[];
+  };
+  expect(check.system.endsWith(SUBJECT_CHECK)).toBe(true);
+  const content = check.messages[0]!.content;
+  expect(content.filter((c) => c.type === "image")).toHaveLength(4);
+  expect(content.at(-1)!.text).toContain(
+    "Image 3: fixed subject reference (place, room). Image 4: fixed subject reference (pet, cheese).",
+  );
+  // subject_matches가 false여도 통과 — 기록만
+  const done = finish();
+  expect(done.p_status).toBe("complete");
+  expect(done.p_result["verdict"]).toMatchObject({ subject_matches: false, pass: true });
+  expect(done.p_result["prompt"]).toMatchObject({
+    subjects: [
+      { id: "room", file: "subject_room.png" },
+      { id: "cheese", file: "subject_cheese.png" },
+    ],
+  });
+  expect(done.p_result["meta"]).toMatchObject({ subjects: ["room", "cheese"] });
+});
+
+test("SV19. 대상 그림을 못 받으면 그 대상만 빼고 그린다(refs_missing 아님) — 인물 그림을 못 받으면 refs_missing", async () => {
+  manifestReply = { status: 200, body: { ...MANIFEST, subjects: [CHEESE, ROOM] } };
+  planInput = {
+    ...RAW,
+    subjects: [
+      { id: "cheese", view: null },
+      { id: "room", view: null },
+    ],
+  };
+  missingRefs = new Set(["v2/daeun/subject_room.png"]);
+  await snap();
+  const form = to("https://api.openai.com/")[0]!.body as FormData;
+  expect(form.getAll("image[]")).toHaveLength(2);
+  const prompt = String(form.get("prompt"));
+  expect(prompt).toContain("Image 2 is a reference sheet of 치즈");
+  expect(prompt).not.toContain("shows the place of this scene");
+  const done = finish();
+  expect(done.p_status).toBe("complete");
+  expect(done.p_result["meta"]).toMatchObject({
+    subjects: ["cheese"],
+    subjectsMissing: [{ id: "room" }],
+  });
+
+  calls = [];
+  work = [];
+  missingRefs = new Set(["v2/daeun/smile.png"]);
+  await snap();
+  expect(to("https://api.openai.com/")).toHaveLength(0);
+  expect(finish()).toMatchObject({ p_status: "failed", p_result: { failure: "refs_missing" } });
+});
+
+test("SV20. 계획이 대상을 비웠는데 메시지에 첫 부르는 말이 있으면 로그에만 남기고 붙이지 않는다", async () => {
+  manifestReply = { status: 200, body: { ...MANIFEST, subjects: [CHEESE, ROOM] } };
+  await snap(); // 메시지: 「김밥 싸 왔어!」 — 대상 이름 없음
+  expect(finish().p_result["meta"]).not.toHaveProperty("subjectsMentioned");
+  expect(finish().p_result["meta"]).not.toHaveProperty("subjects");
+
+  calls = [];
+  work = [];
+  job.segments = [{ kind: "speech", text: "치즈가 오늘도 밥 먹으러 왔어" }];
+  try {
+    await snap();
+  } finally {
+    job.segments = [{ kind: "speech", text: "김밥 싸 왔어!" }];
+  }
+  const form = to("https://api.openai.com/")[0]!.body as FormData;
+  expect(form.getAll("image[]")).toHaveLength(1);
+  expect(finish().p_result["meta"]).toMatchObject({ subjectsMentioned: ["cheese"] });
 });

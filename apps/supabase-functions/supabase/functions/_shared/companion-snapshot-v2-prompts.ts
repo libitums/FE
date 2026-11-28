@@ -89,6 +89,9 @@ Make the snapshots varied and alive, like real photos a friend sends:
 - Angle "selfie" is the character alone at arm's length (shot close_up or medium, learner none).
 - Expression: one of the listed values only.
 - Actions in *asterisks* in the message are the character's stage directions: use them for the pose.
+- Fixed subjects (listed under "Fixed subjects", if any): in subjects, pick only those actually visible in this picture — the scene takes place in that place, or that animal or object is in the frame. A subject only mentioned in the chat but not in view (somewhere else, a past story) is not picked, and never add one for variety. At most one place and one animal or object; usually an empty list. view: the listed view that fits the shot, or null. If you pick a place, write the setting so it matches that place's description.
+- A street cat the character feeds outside is never inside a home: pick it only for outdoor scenes (in front of the building, an alley), never in the character's room.
+- Screens (a monitor, TV, phone or game console) show only a soft glow: no logos, game titles or real game screens, even when the chat is about a game.
 Rules (the app adds these to the prompt too — plan within them):
 - The learner (the app user) appears only when the message shows the two are physically together in this moment (walking together, handing something over, sharing an umbrella, sitting side by side). If they are only chatting, texting or calling, the learner is not there: learner "none", and do not use the over_shoulder shot.
 - The learner is described in "Learner look". The learner never shows a face. learner = "back_view" only for a view from behind (back of the head, hair, shoulders), "hands" for hands at the frame edge, "none" when the learner is not in the picture. If the learner look says hands and a shoulder only, never choose "back_view".
@@ -142,6 +145,20 @@ export const PLAN_TOOL = {
         description: "2-4 English words naming the new outfit",
       },
       learner: { type: "string", enum: [...LEARNER] },
+      subjects: {
+        type: "array",
+        maxItems: 2,
+        description:
+          "fixed subjects actually visible in this picture (at most one place and one animal or object); usually []",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            view: { type: ["string", "null"] },
+          },
+          required: ["id", "view"],
+        },
+      },
       aspect: { type: "string", enum: ["3:2", "1:1"] },
       background_text: { type: ["string", "null"] },
       safety: { type: "string", enum: ["allow", "block"] },
@@ -159,6 +176,7 @@ export const PLAN_TOOL = {
       "new_outfit",
       "new_outfit_name",
       "learner",
+      "subjects",
       "aspect",
       "background_text",
       "safety",
@@ -189,13 +207,24 @@ export const FIGURE_CHECK =
   "that alone is not body emphasis. Count body emphasis only beyond what the reference shows, or a pose or " +
   "framing that focuses on the body.";
 
-/** 확인 노드 시스템 글: 성인은 lab 글, 미성년자 · 나이 모름은 로맨스 없음 + 엄격한 규칙. 체형 유지 인물이면 그 기준을 더한다. */
-export function checkSystem(ageBand: "adult" | "minor" | "unknown", figure: boolean): string {
+/**
+ * 고정 대상 그림을 함께 넣었을 때(ADR-0179 D8) 더하는 글 — 대상이 기준 그림과 같은지만 적게 한다. 통과 기준에는 넣지 않는다
+ * (`v2VerdictFrom`). 대상 그림에는 사람이 없어 동일성 · 학습자 판정과 섞이지 않는다.
+ */
+export const SUBJECT_CHECK =
+  " The images after the snapshot are references of fixed subjects (an animal, an object or a place) that the plan put in this scene; they have no people. Also judge subject matches: does each such subject in the snapshot look like its reference (colours, markings, shape; for a place the furniture, colours and layout — the camera angle may differ)? false if one is missing or clearly different.";
+
+/** 확인 노드 시스템 글: 성인은 lab 글, 미성년자 · 나이 모름은 로맨스 없음 + 엄격한 규칙. 체형 유지 인물이면 그 기준을, 대상 그림이 있으면 그 글을 더한다. */
+export function checkSystem(
+  ageBand: "adult" | "minor" | "unknown",
+  figure: boolean,
+  subjects = false,
+): string {
   const base =
     ageBand === "adult"
       ? CHECK_SYSTEM
       : CHECK_SYSTEM.replace(CHECK_ROMANCE, CHECK_NO_ROMANCE) + CHECK_MINOR_RULES;
-  return base + (figure ? FIGURE_CHECK : "");
+  return base + (figure ? FIGURE_CHECK : "") + (subjects ? SUBJECT_CHECK : "");
 }
 
 export const CHECK_TOOL = {
@@ -210,6 +239,10 @@ export const CHECK_TOOL = {
       garbled_text: { type: "boolean" },
       learner_face: { type: "boolean" },
       learner_matches: { type: "boolean" },
+      subject_matches: {
+        type: ["boolean", "null"],
+        description: "only when fixed-subject references are given; otherwise null",
+      },
     },
     required: ["reasons", "safe", "identity", "garbled_text", "learner_face", "learner_matches"],
   },
@@ -222,10 +255,15 @@ export type V2Verdict = {
   readonly garbled_text: boolean;
   readonly learner_face: boolean;
   readonly learner_matches: boolean | null;
+  /** 고정 대상이 기준 그림과 같은가(대상 그림을 넣었을 때만). 기록만 하고 pass에는 쓰지 않는다. */
+  readonly subject_matches: boolean | null;
   readonly pass: boolean;
 };
 
-/** pass는 모델에 묻지 않고 계산한다(lab `with_pass`) — 학습자 노출이 계획과 맞아야 한다가 v1보다 더해졌다. */
+/**
+ * pass는 모델에 묻지 않고 계산한다(lab `with_pass`) — 학습자 노출이 계획과 맞아야 한다가 v1보다 더해졌다.
+ * `subject_matches`는 기록만 한다 — 탈락이 늘면 학습자에게 「사진을 못 보냈어요」가 늘어서, 수치를 본 뒤 정한다(ADR-0179 D8).
+ */
 export function v2VerdictFrom(input: unknown): V2Verdict | null {
   if (typeof input !== "object" || input === null) return null;
   const value = input as Record<string, unknown>;
@@ -238,6 +276,8 @@ export function v2VerdictFrom(input: unknown): V2Verdict | null {
     garbled_text: value["garbled_text"] === true,
     learner_face: value["learner_face"] === true,
     learner_matches: matches,
+    subject_matches:
+      typeof value["subject_matches"] === "boolean" ? value["subject_matches"] : null,
   };
   return {
     ...verdict,

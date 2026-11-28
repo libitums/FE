@@ -27,9 +27,14 @@ import {
   type SnapshotVerdict,
   verdictFrom,
 } from "./companion-snapshot-prompts.ts";
-import { type StoredPlan, type V2Verdict, v2VerdictFrom } from "./companion-snapshot-v2.ts";
 import {
-  checkRequest,
+  type RoutedSubject,
+  type StoredPlan,
+  type V2Verdict,
+  v2VerdictFrom,
+} from "./companion-snapshot-v2.ts";
+import { checkRequest } from "./companion-media-snapshot-check.ts";
+import {
   planV1,
   planV2,
   prepareV2,
@@ -108,10 +113,12 @@ export async function runSnapshot(
     let prompt: SnapshotPrompt | StoredPlan;
     let aspect: Aspect;
     let text: string;
+    let subjects: readonly RoutedSubject[] = [];
     if (v2 !== null) {
-      const drawn = await planV2(deps, env, job, v2, phase, timed, usage);
+      const drawn = await planV2(deps, env, job, v2, phase, timed, usage, meta);
       if ("failure" in drawn) return await done("failed", drawn);
       ({ refs, prompt, aspect, text } = drawn);
+      subjects = drawn.subjects ?? [];
     } else {
       const drawn = await planV1(deps, env, job, phase, timed, usage);
       if ("failure" in drawn) return await done("failed", drawn);
@@ -180,7 +187,7 @@ export async function runSnapshot(
       });
     }
 
-    // 3. 검사 노드 — 켰을 때 또는 미성년자 · 나이 모름이면 늘, 기준 이미지 첫 장과 나란히.
+    // 3. 검사 노드 — 켰을 때 또는 미성년자 · 나이 모름이면 늘, 기준 이미지 첫 장과 나란히(v2m은 붙인 대상 그림도 — 기록만).
     let verdict: SnapshotVerdict | V2Verdict | null = null;
     if (!env.snapshotCheck && job.ageBand === "adult") {
       meta["check"] = "skipped";
@@ -192,7 +199,7 @@ export async function runSnapshot(
             deps.fetch,
             env.anthropicKey!,
             env.snapshotModel,
-            checkRequest(job, v2, refs[0]!, png, prompt),
+            checkRequest(job, v2, refs, png, prompt, subjects),
             timeout,
           ),
         );
